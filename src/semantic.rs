@@ -118,16 +118,14 @@ fn process_optional_filter(
     clause: ClauseKind,
     columns: &mut Vec<ColumnSemantics>,
 ) {
-    match expr {
-        Some(expr) => process_filter_expr(expr, clause, columns),
-        None => {}
+    if let Some(expr) = expr {
+        process_filter_expr(expr, clause, columns);
     }
 }
 
 fn process_optional_qualify(expr: Option<&Expr>, columns: &mut Vec<ColumnSemantics>) {
-    match expr {
-        Some(expr) => process_qualify_expr(expr, columns),
-        None => {}
+    if let Some(expr) = expr {
+        process_qualify_expr(expr, columns);
     }
 }
 
@@ -227,7 +225,7 @@ fn process_qualify_expr(expr: &Expr, columns: &mut Vec<ColumnSemantics>) {
 }
 
 #[inline(never)]
-fn process_group_by(select: &Select, columns: &mut Vec<ColumnSemantics>) {
+fn process_group_by(select: &Select, columns: &mut [ColumnSemantics]) {
     let GroupByExpr::Expressions(exprs, _) = &select.group_by else {
         return;
     };
