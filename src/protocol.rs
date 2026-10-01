@@ -65,8 +65,7 @@ pub enum ProtocolStatement {
 /// Partially analyzed query semantics.
 ///
 /// Sections whose analysis has not been implemented are emitted conservatively as empty protocol
-/// collections and accompanied by diagnostics. Predicates that are present but not understood are
-/// retained explicitly through Predicate.
+/// collections and accompanied by diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QueryStatement {
     predicates: Predicates,
@@ -129,17 +128,535 @@ impl Predicates {
     }
 }
 
-/// Predicate semantics currently known by the analyzer.
+/// Parser-independent expression semantics.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum Expression {
+    /// A column reference.
+    Column(ColumnExpression),
+    /// A typed literal.
+    Literal(LiteralExpression),
+    /// A function call whose argument semantics are understood.
+    Function(FunctionExpression),
+    /// A supported unary operation.
+    Unary(UnaryExpression),
+    /// A supported binary operation.
+    Binary(BinaryExpression),
+    /// Semantics exist but cannot be resolved precisely from available information.
+    Unknown(UnknownSemantic),
+    /// The producer recognizes the expression but does not support its semantics.
+    Unsupported(UnsupportedSemantic),
+}
+
+/// A column expression with an optional relation qualifier.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ColumnExpression {
+    relation: Option<String>,
+    name: String,
+}
+
+impl ColumnExpression {
+    pub(crate) fn new(relation: Option<String>, name: String) -> Self {
+        Self { relation, name }
+    }
+
+    /// Return the relation qualifier when one is present.
+    pub fn relation(&self) -> Option<&str> {
+        self.relation.as_deref()
+    }
+
+    /// Return the column name.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+/// A typed literal expression.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LiteralExpression {
+    literal_type: LiteralType,
+    value: LiteralValue,
+}
+
+impl LiteralExpression {
+    pub(crate) fn new(literal_type: LiteralType, value: LiteralValue) -> Self {
+        Self {
+            literal_type,
+            value,
+        }
+    }
+
+    /// Return the protocol literal type.
+    pub fn literal_type(&self) -> LiteralType {
+        self.literal_type
+    }
+
+    /// Return the literal value.
+    pub fn value(&self) -> &LiteralValue {
+        &self.value
+    }
+}
+
+/// Literal types defined by protocol v0.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LiteralType {
+    /// SQL NULL.
+    Null,
+    /// Boolean literal.
+    Boolean,
+    /// Integer numeric literal.
+    Integer,
+    /// Decimal or exponent numeric literal.
+    Decimal,
+    /// Text string literal.
+    String,
+    /// Date literal.
+    Date,
+    /// Time literal.
+    Time,
+    /// Timestamp literal.
+    Timestamp,
+    /// Interval literal.
+    Interval,
+}
+
+impl LiteralType {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Null => "null",
+            Self::Boolean => "boolean",
+            Self::Integer => "integer",
+            Self::Decimal => "decimal",
+            Self::String => "string",
+            Self::Date => "date",
+            Self::Time => "time",
+            Self::Timestamp => "timestamp",
+            Self::Interval => "interval",
+        }
+    }
+}
+
+/// Literal payload used by LiteralExpression.
 ///
-/// Concrete predicate forms are added by later semantic-analysis tasks. Until then, a parsed
-/// predicate is retained as either unknown or explicitly unsupported rather than omitted.
+/// Number values are canonical JSON-number text validated before protocol construction.
+/// Text carries string-like SQL literals, including date/time literals whose type is retained by
+/// LiteralExpression::literal_type.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum LiteralValue {
+    /// SQL NULL.
+    Null,
+    /// Boolean value.
+    Boolean(bool),
+    /// Canonical JSON-number text.
+    Number(String),
+    /// String-like literal value.
+    Text(String),
+}
+
+/// A normalized function call.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FunctionExpression {
+    name: String,
+    arguments: Vec<Expression>,
+    distinct: bool,
+}
+
+impl FunctionExpression {
+    pub(crate) fn new(name: String, arguments: Vec<Expression>, distinct: bool) -> Self {
+        Self {
+            name,
+            arguments,
+            distinct,
+        }
+    }
+
+    /// Return the function name.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Return normalized function arguments in SQL order.
+    pub fn arguments(&self) -> &[Expression] {
+        &self.arguments
+    }
+
+    /// Return whether the function argument list uses DISTINCT.
+    pub fn distinct(&self) -> bool {
+        self.distinct
+    }
+}
+
+/// A normalized unary operation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnaryExpression {
+    operator: UnaryOperator,
+    operand: Box<Expression>,
+}
+
+impl UnaryExpression {
+    pub(crate) fn new(operator: UnaryOperator, operand: Expression) -> Self {
+        Self {
+            operator,
+            operand: Box::new(operand),
+        }
+    }
+
+    /// Return the unary operator.
+    pub fn operator(&self) -> UnaryOperator {
+        self.operator
+    }
+
+    /// Return the unary operand.
+    pub fn operand(&self) -> &Expression {
+        &self.operand
+    }
+}
+
+/// Unary expression operators defined by protocol v0.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UnaryOperator {
+    /// Unary plus.
+    Plus,
+    /// Unary minus.
+    Minus,
+    /// Bitwise NOT.
+    BitwiseNot,
+}
+
+impl UnaryOperator {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Plus => "plus",
+            Self::Minus => "minus",
+            Self::BitwiseNot => "bitwise_not",
+        }
+    }
+}
+
+/// A normalized binary operation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BinaryExpression {
+    operator: BinaryOperator,
+    left: Box<Expression>,
+    right: Box<Expression>,
+}
+
+impl BinaryExpression {
+    pub(crate) fn new(operator: BinaryOperator, left: Expression, right: Expression) -> Self {
+        Self {
+            operator,
+            left: Box::new(left),
+            right: Box::new(right),
+        }
+    }
+
+    /// Return the binary operator.
+    pub fn operator(&self) -> BinaryOperator {
+        self.operator
+    }
+
+    /// Return the left operand.
+    pub fn left(&self) -> &Expression {
+        &self.left
+    }
+
+    /// Return the right operand.
+    pub fn right(&self) -> &Expression {
+        &self.right
+    }
+}
+
+/// Binary expression operators defined by protocol v0.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BinaryOperator {
+    /// Addition.
+    Add,
+    /// Subtraction.
+    Subtract,
+    /// Multiplication.
+    Multiply,
+    /// Division.
+    Divide,
+    /// Modulo.
+    Modulo,
+    /// String concatenation.
+    StringConcat,
+    /// Bitwise AND.
+    BitwiseAnd,
+    /// Bitwise OR.
+    BitwiseOr,
+    /// Bitwise XOR.
+    BitwiseXor,
+}
+
+impl BinaryOperator {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Add => "add",
+            Self::Subtract => "subtract",
+            Self::Multiply => "multiply",
+            Self::Divide => "divide",
+            Self::Modulo => "modulo",
+            Self::StringConcat => "string_concat",
+            Self::BitwiseAnd => "bitwise_and",
+            Self::BitwiseOr => "bitwise_or",
+            Self::BitwiseXor => "bitwise_xor",
+        }
+    }
+}
+
+/// Predicate semantics known by the analyzer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Predicate {
+    /// A comparison between two expressions.
+    Comparison(ComparisonPredicate),
+    /// Logical conjunction preserving SQL tree order.
+    And(LogicalPredicate),
+    /// Logical disjunction preserving SQL tree order.
+    Or(LogicalPredicate),
+    /// Logical negation.
+    Not(NotPredicate),
+    /// SQL IS NULL or IS NOT NULL.
+    IsNull(IsNullPredicate),
+    /// SQL IN or NOT IN.
+    In(InPredicate),
+    /// SQL BETWEEN or NOT BETWEEN.
+    Between(BetweenPredicate),
+    /// An expression interpreted in boolean predicate context.
+    BooleanExpression(Expression),
     /// Semantics exist but cannot be resolved precisely from available information.
     Unknown(UnknownSemantic),
     /// The producer recognizes the feature but does not support its semantics yet.
     Unsupported(UnsupportedSemantic),
+}
+
+/// A comparison predicate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComparisonPredicate {
+    left: Expression,
+    operator: ComparisonOperator,
+    right: Expression,
+}
+
+impl ComparisonPredicate {
+    pub(crate) fn new(left: Expression, operator: ComparisonOperator, right: Expression) -> Self {
+        Self {
+            left,
+            operator,
+            right,
+        }
+    }
+
+    /// Return the left comparison expression.
+    pub fn left(&self) -> &Expression {
+        &self.left
+    }
+
+    /// Return the comparison operator.
+    pub fn operator(&self) -> ComparisonOperator {
+        self.operator
+    }
+
+    /// Return the right comparison expression.
+    pub fn right(&self) -> &Expression {
+        &self.right
+    }
+}
+
+/// Comparison operators defined by protocol v0.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ComparisonOperator {
+    /// Equal.
+    Eq,
+    /// Not equal.
+    Neq,
+    /// Less than.
+    Lt,
+    /// Less than or equal.
+    Lte,
+    /// Greater than.
+    Gt,
+    /// Greater than or equal.
+    Gte,
+    /// IS DISTINCT FROM.
+    IsDistinctFrom,
+    /// IS NOT DISTINCT FROM.
+    IsNotDistinctFrom,
+}
+
+impl ComparisonOperator {
+    pub(crate) fn reversed(self) -> Self {
+        match self {
+            Self::Eq => Self::Eq,
+            Self::Neq => Self::Neq,
+            Self::Lt => Self::Gt,
+            Self::Lte => Self::Gte,
+            Self::Gt => Self::Lt,
+            Self::Gte => Self::Lte,
+            Self::IsDistinctFrom => Self::IsDistinctFrom,
+            Self::IsNotDistinctFrom => Self::IsNotDistinctFrom,
+        }
+    }
+
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Eq => "eq",
+            Self::Neq => "neq",
+            Self::Lt => "lt",
+            Self::Lte => "lte",
+            Self::Gt => "gt",
+            Self::Gte => "gte",
+            Self::IsDistinctFrom => "is_distinct_from",
+            Self::IsNotDistinctFrom => "is_not_distinct_from",
+        }
+    }
+}
+
+/// Operands for an AND or OR predicate.
+///
+/// Construction is crate-private so protocol values emitted by the analyzer always contain at
+/// least the two operands required by protocol v0.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LogicalPredicate {
+    operands: Vec<Predicate>,
+}
+
+impl LogicalPredicate {
+    pub(crate) fn pair(left: Predicate, right: Predicate) -> Self {
+        Self {
+            operands: vec![left, right],
+        }
+    }
+
+    /// Return logical operands in SQL evaluation-tree order.
+    pub fn operands(&self) -> &[Predicate] {
+        &self.operands
+    }
+}
+
+/// A logical NOT predicate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NotPredicate {
+    operand: Box<Predicate>,
+}
+
+impl NotPredicate {
+    pub(crate) fn new(operand: Predicate) -> Self {
+        Self {
+            operand: Box::new(operand),
+        }
+    }
+
+    /// Return the predicate being negated.
+    pub fn operand(&self) -> &Predicate {
+        &self.operand
+    }
+}
+
+/// An IS NULL predicate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IsNullPredicate {
+    expression: Expression,
+    negated: bool,
+}
+
+impl IsNullPredicate {
+    pub(crate) fn new(expression: Expression, negated: bool) -> Self {
+        Self {
+            expression,
+            negated,
+        }
+    }
+
+    /// Return the tested expression.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Return whether the SQL form is IS NOT NULL.
+    pub fn negated(&self) -> bool {
+        self.negated
+    }
+}
+
+/// An IN-list predicate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InPredicate {
+    expression: Expression,
+    values: Vec<Expression>,
+    negated: bool,
+}
+
+impl InPredicate {
+    pub(crate) fn new(expression: Expression, values: Vec<Expression>, negated: bool) -> Self {
+        Self {
+            expression,
+            values,
+            negated,
+        }
+    }
+
+    /// Return the expression tested for membership.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Return IN-list values in SQL order.
+    pub fn values(&self) -> &[Expression] {
+        &self.values
+    }
+
+    /// Return whether the SQL form is NOT IN.
+    pub fn negated(&self) -> bool {
+        self.negated
+    }
+}
+
+/// A BETWEEN predicate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BetweenPredicate {
+    expression: Expression,
+    lower: Expression,
+    upper: Expression,
+    negated: bool,
+}
+
+impl BetweenPredicate {
+    pub(crate) fn new(
+        expression: Expression,
+        lower: Expression,
+        upper: Expression,
+        negated: bool,
+    ) -> Self {
+        Self {
+            expression,
+            lower,
+            upper,
+            negated,
+        }
+    }
+
+    /// Return the constrained expression.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Return the lower bound expression.
+    pub fn lower(&self) -> &Expression {
+        &self.lower
+    }
+
+    /// Return the upper bound expression.
+    pub fn upper(&self) -> &Expression {
+        &self.upper
+    }
+
+    /// Return whether the SQL form is NOT BETWEEN.
+    pub fn negated(&self) -> bool {
+        self.negated
+    }
 }
 
 /// Semantic value whose precise meaning cannot currently be resolved.
