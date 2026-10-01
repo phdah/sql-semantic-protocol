@@ -28,4 +28,5 @@ Dialect handling must continue to delegate to the sqlparser dialect registry rat
 - [x] Parse, file, and analysis errors identify the input that caused them.
 - [x] Every dialect supported through the existing sqlparser dialect resolver remains available.
 - [x] The existing one-string, one-file, and stdin workflows continue to work or have a documented migration path.
+- [x] All supported invocation forms emit the same active protocol version and root document shape.
 - [x] Tests cover multiple strings, multiple files, recursive directories, ignored non-SQL files, and mixed input forms.
