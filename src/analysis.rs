@@ -70,10 +70,9 @@ fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
     match statement {
         SqlStatement::Query(query) => ProtocolStatement::Query(analyze_query(query, None)),
         SqlStatement::CreateTable(create_table) => match &create_table.query {
-            Some(query) => ProtocolStatement::Query(analyze_query(
-                query,
-                Some(create_table.name.to_string()),
-            )),
+            Some(query) => {
+                ProtocolStatement::Query(analyze_query(query, Some(create_table.name.to_string())))
+            }
             None => unsupported_queryless_create_table(),
         },
         SqlStatement::CreateView(create_view) => ProtocolStatement::Query(analyze_query(
