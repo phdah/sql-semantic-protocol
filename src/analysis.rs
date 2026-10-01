@@ -118,9 +118,9 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         predicates,
         column_domains,
         output,
-        produced_relation,
         diagnostics,
     )
+    .with_produced_relation(produced_relation)
 }
 
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
