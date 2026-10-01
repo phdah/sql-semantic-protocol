@@ -32,9 +32,9 @@ fn stdin_input_and_selected_dialect_emit_only_protocol_json() {
     let json: serde_json::Value =
         serde_json::from_str(stdout.trim()).expect("stdout should contain protocol JSON only");
 
-    assert_eq!(json["protocol_version"], "0.1.0");
-    assert_eq!(json["source"]["dialect"], "snowflake");
-    assert_eq!(json["statements"][0]["kind"], "query");
+    assert_eq!(json["protocol_version"], "0.2.0");
+    assert_eq!(json["inputs"][0]["dialect"], "snowflake");
+    assert_eq!(json["inputs"][0]["statements"][0]["kind"], "query");
     assert!(!stdout.contains("sqlparser"));
 }
 
@@ -69,7 +69,7 @@ fn all_sqlparser_recognized_dialect_names_are_supported() {
 
         let json: serde_json::Value =
             serde_json::from_slice(&output.stdout).expect("dialect should emit protocol JSON");
-        assert_eq!(json["source"]["dialect"].as_str(), Some(*dialect));
+        assert_eq!(json["inputs"][0]["dialect"].as_str(), Some(*dialect));
     }
 }
 
@@ -107,7 +107,7 @@ fn file_input_is_supported() {
 
     let json: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("file input should emit protocol JSON");
-    assert_eq!(json["source"]["dialect"], "generic");
+    assert_eq!(json["inputs"][0]["dialect"], "generic");
 }
 
 #[test]
@@ -118,7 +118,8 @@ fn parse_errors_are_fatal_and_distinct_from_protocol_diagnostics() {
     assert!(output.stdout.is_empty());
 
     let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
-    assert!(stderr.starts_with("SQL parse error:"));
+    assert!(stderr.contains("input-0001"));
+    assert!(stderr.contains("SQL parse error:"));
 }
 
 #[test]
@@ -141,9 +142,9 @@ fn unsupported_semantics_remain_successful_protocol_output() {
 
     let json: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("unsupported SQL should still emit JSON");
-    assert_eq!(json["statements"][0]["kind"], "unsupported");
+    assert_eq!(json["inputs"][0]["statements"][0]["kind"], "unsupported");
     assert_eq!(
-        json["statements"][0]["diagnostics"][0]["code"],
+        json["inputs"][0]["statements"][0]["diagnostics"][0]["code"],
         "unsupported_statement"
     );
 }
