@@ -68,16 +68,43 @@ pub enum ProtocolStatement {
 /// collections and accompanied by diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QueryStatement {
+    sources: Vec<SourceRelation>,
+    dependencies: Vec<String>,
+    joins: Vec<Join>,
     predicates: Box<Predicates>,
     diagnostics: Vec<Diagnostic>,
 }
 
 impl QueryStatement {
-    pub(crate) fn new(predicates: Predicates, diagnostics: Vec<Diagnostic>) -> Self {
+    pub(crate) fn new(
+        sources: Vec<SourceRelation>,
+        dependencies: Vec<String>,
+        joins: Vec<Join>,
+        predicates: Predicates,
+        diagnostics: Vec<Diagnostic>,
+    ) -> Self {
         Self {
+            sources,
+            dependencies,
+            joins,
             predicates: Box::new(predicates),
             diagnostics,
         }
+    }
+
+    /// Return direct relational inputs in first semantic appearance order.
+    pub fn sources(&self) -> &[SourceRelation] {
+        &self.sources
+    }
+
+    /// Return normalized physical upstream dependencies in lexicographic order.
+    pub fn dependencies(&self) -> &[String] {
+        &self.dependencies
+    }
+
+    /// Return joins in SQL join order.
+    pub fn joins(&self) -> &[Join] {
+        &self.joins
     }
 
     /// Return WHERE, HAVING, and QUALIFY semantics known for the query.
@@ -88,6 +115,142 @@ impl QueryStatement {
     /// Return diagnostics describing incomplete query semantics.
     pub fn diagnostics(&self) -> &[Diagnostic] {
         &self.diagnostics
+    }
+}
+
+/// A direct relational input to a query.
+///
+/// Physical relations also appear in QueryStatement::dependencies. Local relations such as CTEs
+/// and derived tables do not.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SourceRelation {
+    name: String,
+    alias: Option<String>,
+}
+
+impl SourceRelation {
+    pub(crate) fn new(name: String, alias: Option<String>) -> Self {
+        Self { name, alias }
+    }
+
+    /// Return the relation name or stable local relation identity.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Return the SQL alias when one is present.
+    pub fn alias(&self) -> Option<&str> {
+        self.alias.as_deref()
+    }
+}
+
+/// A relation participating in a join.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RelationRef {
+    relation: String,
+    alias: Option<String>,
+}
+
+impl RelationRef {
+    pub(crate) fn new(relation: String, alias: Option<String>) -> Self {
+        Self { relation, alias }
+    }
+
+    /// Return the relation name or stable local relation identity.
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
+
+    /// Return the SQL alias when one is present.
+    pub fn alias(&self) -> Option<&str> {
+        self.alias.as_deref()
+    }
+}
+
+/// Supported protocol join kinds.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JoinKind {
+    /// INNER JOIN or JOIN.
+    Inner,
+    /// LEFT JOIN.
+    Left,
+    /// RIGHT JOIN.
+    Right,
+    /// FULL JOIN.
+    Full,
+    /// CROSS JOIN.
+    Cross,
+    /// LEFT SEMI JOIN.
+    LeftSemi,
+    /// RIGHT SEMI JOIN.
+    RightSemi,
+    /// LEFT ANTI JOIN.
+    LeftAnti,
+    /// RIGHT ANTI JOIN.
+    RightAnti,
+    /// The join exists but its exact kind is unsupported.
+    Unknown,
+}
+
+impl JoinKind {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Inner => "inner",
+            Self::Left => "left",
+            Self::Right => "right",
+            Self::Full => "full",
+            Self::Cross => "cross",
+            Self::LeftSemi => "left_semi",
+            Self::RightSemi => "right_semi",
+            Self::LeftAnti => "left_anti",
+            Self::RightAnti => "right_anti",
+            Self::Unknown => "unknown",
+        }
+    }
+}
+
+/// A normalized relationship between two query relations.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Join {
+    kind: JoinKind,
+    left: RelationRef,
+    right: RelationRef,
+    condition: Option<Predicate>,
+}
+
+impl Join {
+    pub(crate) fn new(
+        kind: JoinKind,
+        left: RelationRef,
+        right: RelationRef,
+        condition: Option<Predicate>,
+    ) -> Self {
+        Self {
+            kind,
+            left,
+            right,
+            condition,
+        }
+    }
+
+    /// Return the normalized join kind.
+    pub fn kind(&self) -> JoinKind {
+        self.kind
+    }
+
+    /// Return the left relation participating in the join.
+    pub fn left(&self) -> &RelationRef {
+        &self.left
+    }
+
+    /// Return the right relation participating in the join.
+    pub fn right(&self) -> &RelationRef {
+        &self.right
+    }
+
+    /// Return the normalized join condition when it can be represented safely.
+    pub fn condition(&self) -> Option<&Predicate> {
+        self.condition.as_ref()
     }
 }
 

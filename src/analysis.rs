@@ -3,22 +3,24 @@
 //! This module is the only layer that converts sqlparser AST statements into public protocol
 //! values. Unsupported semantics are retained explicitly rather than silently discarded.
 
-use std::{fmt, str::FromStr};
+use std::{collections::BTreeSet, fmt, str::FromStr};
 
 use serde_json::Number;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, DuplicateTreatment, Expr, Function, FunctionArg,
-    FunctionArgExpr, FunctionArguments, GroupByExpr, Query as SqlQuery, Select, SelectItem,
-    SetExpr, Statement as SqlStatement, TableFactor, UnaryOperator as SqlUnaryOperator, Value,
+    FunctionArgExpr, FunctionArguments, GroupByExpr, Join as SqlJoin, JoinConstraint, JoinOperator,
+    Query as SqlQuery, Select, SelectItem, SetExpr, Statement as SqlStatement, TableFactor,
+    TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
 };
 
 use crate::parser::ParsedSql;
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, BinaryOperator, ColumnExpression, ComparisonOperator,
     ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity, Expression,
-    FunctionExpression, InPredicate, IsNullPredicate, LiteralExpression, LiteralType, LiteralValue,
-    LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol, ProtocolStatement,
-    QueryStatement, UnaryExpression, UnaryOperator, UnsupportedSemantic, UnsupportedStatement,
+    FunctionExpression, InPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate, Predicate,
+    Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef, SourceRelation,
+    UnaryExpression, UnaryOperator, UnsupportedSemantic, UnsupportedStatement,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -67,6 +69,13 @@ fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
 
 fn analyze_query(query: &SqlQuery) -> QueryStatement {
     let mut diagnostics = Vec::new();
+    let mut derived_index = 0;
+    let relation_analysis = analyze_query_relations(
+        query,
+        &BTreeSet::new(),
+        &mut diagnostics,
+        &mut derived_index,
+    );
 
     let predicates = match query.body.as_ref() {
         SetExpr::Select(select) => analyze_select(select, &mut diagnostics),
@@ -83,12 +92,17 @@ fn analyze_query(query: &SqlQuery) -> QueryStatement {
     inspect_query_features(query, &mut diagnostics);
     sort_diagnostics(&mut diagnostics);
 
-    QueryStatement::new(predicates, diagnostics)
+    QueryStatement::new(
+        relation_analysis.sources,
+        relation_analysis.dependencies.into_iter().collect(),
+        relation_analysis.joins,
+        predicates,
+        diagnostics,
+    )
 }
 
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     inspect_projection(select, diagnostics);
-    inspect_sources(select, diagnostics);
     inspect_select_features(select, diagnostics);
 
     Predicates::new(
@@ -105,6 +119,538 @@ fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predica
             .as_ref()
             .map(|expression| analyze_predicate(expression, diagnostics)),
     )
+}
+
+#[derive(Default)]
+struct RelationAnalysis {
+    sources: Vec<SourceRelation>,
+    dependencies: BTreeSet<String>,
+    joins: Vec<ProtocolJoin>,
+}
+
+struct AnalyzedRelation {
+    source: SourceRelation,
+    reference: RelationRef,
+    dependencies: BTreeSet<String>,
+}
+
+fn analyze_query_relations(
+    query: &SqlQuery,
+    inherited_local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+) -> RelationAnalysis {
+    let mut analysis = RelationAnalysis::default();
+    let mut local_relations = inherited_local_relations.clone();
+
+    if let Some(with) = &query.with {
+        for cte in &with.cte_tables {
+            local_relations.insert(cte.alias.name.to_string());
+        }
+
+        for cte in &with.cte_tables {
+            let nested =
+                analyze_query_relations(&cte.query, &local_relations, diagnostics, derived_index);
+            analysis.dependencies.extend(nested.dependencies);
+        }
+    }
+
+    let body = analyze_set_expr_relations(
+        query.body.as_ref(),
+        &local_relations,
+        diagnostics,
+        derived_index,
+    );
+    merge_relation_analysis(&mut analysis, body);
+    analysis
+}
+
+fn analyze_set_expr_relations(
+    expression: &SetExpr,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+) -> RelationAnalysis {
+    match expression {
+        SetExpr::Select(select) => {
+            analyze_select_relations(select, local_relations, diagnostics, derived_index)
+        }
+        SetExpr::Query(query) => {
+            analyze_query_relations(query, local_relations, diagnostics, derived_index)
+        }
+        SetExpr::SetOperation { left, right, .. } => {
+            let mut analysis =
+                analyze_set_expr_relations(left, local_relations, diagnostics, derived_index);
+            let right =
+                analyze_set_expr_relations(right, local_relations, diagnostics, derived_index);
+            merge_relation_analysis(&mut analysis, right);
+            analysis
+        }
+        _ => RelationAnalysis::default(),
+    }
+}
+
+fn analyze_select_relations(
+    select: &Select,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+) -> RelationAnalysis {
+    let mut analysis = RelationAnalysis::default();
+
+    for source in &select.from {
+        analyze_table_with_joins(
+            source,
+            local_relations,
+            diagnostics,
+            derived_index,
+            &mut analysis,
+        );
+    }
+
+    for item in &select.projection {
+        match item {
+            SelectItem::UnnamedExpr(expression)
+            | SelectItem::ExprWithAlias {
+                expr: expression, ..
+            } => collect_expression_dependencies(
+                expression,
+                local_relations,
+                diagnostics,
+                derived_index,
+                &mut analysis.dependencies,
+            ),
+            SelectItem::QualifiedWildcard(_, _) | SelectItem::Wildcard(_) => {}
+        }
+    }
+
+    for expression in [
+        select.selection.as_ref(),
+        select.having.as_ref(),
+        select.qualify.as_ref(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        collect_expression_dependencies(
+            expression,
+            local_relations,
+            diagnostics,
+            derived_index,
+            &mut analysis.dependencies,
+        );
+    }
+
+    analysis
+}
+
+fn analyze_table_with_joins(
+    source: &TableWithJoins,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    analysis: &mut RelationAnalysis,
+) {
+    let mut left = register_table_factor(
+        &source.relation,
+        local_relations,
+        diagnostics,
+        derived_index,
+        analysis,
+    );
+
+    for join in &source.joins {
+        let right = register_table_factor(
+            &join.relation,
+            local_relations,
+            diagnostics,
+            derived_index,
+            analysis,
+        );
+
+        if let (Some(left_ref), Some(right_ref)) = (left.as_ref(), right.as_ref()) {
+            analysis.joins.push(analyze_join(
+                join,
+                left_ref,
+                right_ref,
+                local_relations,
+                diagnostics,
+                derived_index,
+                &mut analysis.dependencies,
+            ));
+        } else {
+            diagnostics.push(warning(
+                "unsupported_join_relation",
+                DiagnosticArea::Join,
+                "join participants could not both be represented safely",
+            ));
+        }
+
+        if right.is_some() {
+            left = right;
+        }
+    }
+}
+
+fn register_table_factor(
+    factor: &TableFactor,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    analysis: &mut RelationAnalysis,
+) -> Option<RelationRef> {
+    let relation = analyze_table_factor(factor, local_relations, diagnostics, derived_index)?;
+
+    for dependency in relation.dependencies {
+        analysis.dependencies.insert(dependency);
+    }
+
+    if !analysis.sources.iter().any(|existing| {
+        existing.name() == relation.source.name() && existing.alias() == relation.source.alias()
+    }) {
+        analysis.sources.push(relation.source);
+    }
+
+    Some(relation.reference)
+}
+
+fn analyze_table_factor(
+    factor: &TableFactor,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+) -> Option<AnalyzedRelation> {
+    match factor {
+        TableFactor::Table {
+            name,
+            alias,
+            args: None,
+            ..
+        } => {
+            let name = name.to_string();
+            let alias = alias.as_ref().map(|alias| alias.name.to_string());
+            let dependencies = if local_relations.contains(&name) {
+                BTreeSet::new()
+            } else {
+                BTreeSet::from([name.clone()])
+            };
+
+            Some(AnalyzedRelation {
+                source: SourceRelation::new(name.clone(), alias.clone()),
+                reference: RelationRef::new(name, alias),
+                dependencies,
+            })
+        }
+        TableFactor::Derived {
+            subquery, alias, ..
+        } => {
+            let nested =
+                analyze_query_relations(subquery, local_relations, diagnostics, derived_index);
+            let alias = alias.as_ref().map(|alias| alias.name.to_string());
+            let name = match &alias {
+                Some(_) => "subquery".to_string(),
+                None => {
+                    *derived_index += 1;
+                    format!("subquery#{}", derived_index)
+                }
+            };
+
+            Some(AnalyzedRelation {
+                source: SourceRelation::new(name.clone(), alias.clone()),
+                reference: RelationRef::new(name, alias),
+                dependencies: nested.dependencies,
+            })
+        }
+        _ => {
+            diagnostics.push(warning(
+                "unsupported_table_factor",
+                DiagnosticArea::Source,
+                &format!(
+                    "table factor {factor} is parsed but its source semantics are not implemented"
+                ),
+            ));
+            None
+        }
+    }
+}
+
+fn analyze_join(
+    join: &SqlJoin,
+    left: &RelationRef,
+    right: &RelationRef,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) -> ProtocolJoin {
+    if join.global {
+        diagnostics.push(warning(
+            "unsupported_global_join",
+            DiagnosticArea::Join,
+            "GLOBAL join modifier semantics are not implemented",
+        ));
+    }
+
+    let (kind, constraint, exact_kind) = match &join.join_operator {
+        JoinOperator::Join(constraint) | JoinOperator::Inner(constraint) => {
+            (JoinKind::Inner, Some(constraint), true)
+        }
+        JoinOperator::Left(constraint) | JoinOperator::LeftOuter(constraint) => {
+            (JoinKind::Left, Some(constraint), true)
+        }
+        JoinOperator::Right(constraint) | JoinOperator::RightOuter(constraint) => {
+            (JoinKind::Right, Some(constraint), true)
+        }
+        JoinOperator::FullOuter(constraint) => (JoinKind::Full, Some(constraint), true),
+        JoinOperator::CrossJoin => (JoinKind::Cross, None, true),
+        JoinOperator::Semi(constraint) | JoinOperator::LeftSemi(constraint) => {
+            (JoinKind::LeftSemi, Some(constraint), true)
+        }
+        JoinOperator::RightSemi(constraint) => (JoinKind::RightSemi, Some(constraint), true),
+        JoinOperator::Anti(constraint) | JoinOperator::LeftAnti(constraint) => {
+            (JoinKind::LeftAnti, Some(constraint), true)
+        }
+        JoinOperator::RightAnti(constraint) => (JoinKind::RightAnti, Some(constraint), true),
+        JoinOperator::StraightJoin(constraint) => (JoinKind::Unknown, Some(constraint), false),
+        JoinOperator::AsOf { constraint, .. } => (JoinKind::Unknown, Some(constraint), false),
+        JoinOperator::CrossApply | JoinOperator::OuterApply => (JoinKind::Unknown, None, false),
+    };
+
+    if !exact_kind {
+        diagnostics.push(warning(
+            "unsupported_join_form",
+            DiagnosticArea::Join,
+            "join kind is parsed but is not represented precisely by protocol v0",
+        ));
+    }
+
+    if let Some(JoinConstraint::On(expression)) = constraint {
+        collect_expression_dependencies(
+            expression,
+            local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        );
+    }
+
+    let condition = constraint
+        .and_then(|constraint| analyze_join_constraint(constraint, left, right, diagnostics));
+
+    ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
+}
+
+fn analyze_join_constraint(
+    constraint: &JoinConstraint,
+    left: &RelationRef,
+    right: &RelationRef,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<Predicate> {
+    match constraint {
+        JoinConstraint::On(expression) => Some(analyze_predicate(expression, diagnostics)),
+        JoinConstraint::Using(columns) => {
+            let left_name = left.alias().unwrap_or(left.relation()).to_string();
+            let right_name = right.alias().unwrap_or(right.relation()).to_string();
+            let predicates = columns.iter().map(|column| {
+                Predicate::Comparison(ComparisonPredicate::new(
+                    Expression::Column(ColumnExpression::new(
+                        Some(left_name.clone()),
+                        column.to_string(),
+                    )),
+                    ComparisonOperator::Eq,
+                    Expression::Column(ColumnExpression::new(
+                        Some(right_name.clone()),
+                        column.to_string(),
+                    )),
+                ))
+            });
+            combine_conjunction(predicates)
+        }
+        JoinConstraint::Natural => {
+            diagnostics.push(warning(
+                "unsupported_natural_join_condition",
+                DiagnosticArea::Join,
+                "NATURAL JOIN columns cannot be resolved without source schema information",
+            ));
+            None
+        }
+        JoinConstraint::None => None,
+    }
+}
+
+fn combine_conjunction(predicates: impl IntoIterator<Item = Predicate>) -> Option<Predicate> {
+    let mut predicates = predicates.into_iter();
+    let first = predicates.next()?;
+    Some(predicates.fold(first, |left, right| {
+        Predicate::And(LogicalPredicate::pair(left, right))
+    }))
+}
+
+fn collect_expression_dependencies(
+    expression: &Expr,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) {
+    match expression {
+        Expr::Subquery(query)
+        | Expr::Exists {
+            subquery: query, ..
+        } => {
+            let nested =
+                analyze_query_relations(query, local_relations, diagnostics, derived_index);
+            dependencies.extend(nested.dependencies);
+        }
+        Expr::InSubquery { expr, subquery, .. } => {
+            collect_expression_dependencies(
+                expr,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+            let nested =
+                analyze_query_relations(subquery, local_relations, diagnostics, derived_index);
+            dependencies.extend(nested.dependencies);
+        }
+        Expr::BinaryOp { left, right, .. }
+        | Expr::AnyOp { left, right, .. }
+        | Expr::AllOp { left, right, .. } => {
+            collect_expression_dependencies(
+                left,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+            collect_expression_dependencies(
+                right,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+        }
+        Expr::UnaryOp { expr, .. } | Expr::Nested(expr) => collect_expression_dependencies(
+            expr,
+            local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        ),
+        Expr::Between {
+            expr, low, high, ..
+        } => {
+            collect_expression_dependencies(
+                expr,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+            collect_expression_dependencies(
+                low,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+            collect_expression_dependencies(
+                high,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+        }
+        Expr::InList { expr, list, .. } => {
+            collect_expression_dependencies(
+                expr,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+            for value in list {
+                collect_expression_dependencies(
+                    value,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    dependencies,
+                );
+            }
+        }
+        Expr::Function(function) => {
+            collect_function_argument_dependencies(
+                &function.parameters,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+            collect_function_argument_dependencies(
+                &function.args,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+            if let Some(filter) = &function.filter {
+                collect_expression_dependencies(
+                    filter,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    dependencies,
+                );
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_function_argument_dependencies(
+    arguments: &FunctionArguments,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) {
+    match arguments {
+        FunctionArguments::None => {}
+        FunctionArguments::Subquery(query) => {
+            let nested =
+                analyze_query_relations(query, local_relations, diagnostics, derived_index);
+            dependencies.extend(nested.dependencies);
+        }
+        FunctionArguments::List(arguments) => {
+            for argument in &arguments.args {
+                if let FunctionArg::Unnamed(FunctionArgExpr::Expr(expression)) = argument {
+                    collect_expression_dependencies(
+                        expression,
+                        local_relations,
+                        diagnostics,
+                        derived_index,
+                        dependencies,
+                    );
+                }
+            }
+        }
+    }
+}
+
+fn merge_relation_analysis(target: &mut RelationAnalysis, source: RelationAnalysis) {
+    for relation in source.sources {
+        if !target.sources.iter().any(|existing| {
+            existing.name() == relation.name() && existing.alias() == relation.alias()
+        }) {
+            target.sources.push(relation);
+        }
+    }
+    target.dependencies.extend(source.dependencies);
+    target.joins.extend(source.joins);
 }
 
 fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Predicate {
@@ -537,42 +1083,6 @@ fn inspect_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) {
     let _ = analyze_expression(expression, diagnostics);
 }
 
-fn inspect_sources(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
-    let mut has_regular_source = false;
-    let mut has_joins = false;
-
-    for source in &select.from {
-        match &source.relation {
-            TableFactor::Table { args: None, .. } => has_regular_source = true,
-            factor => diagnostics.push(warning(
-                "unsupported_table_factor",
-                DiagnosticArea::Source,
-                &format!(
-                    "table factor {factor} is parsed but its source semantics are not implemented"
-                ),
-            )),
-        }
-
-        has_joins |= !source.joins.is_empty();
-    }
-
-    if has_regular_source {
-        diagnostics.push(warning(
-            "source_analysis_pending",
-            DiagnosticArea::Source,
-            "source-relation semantics are not implemented yet",
-        ));
-    }
-
-    if has_joins {
-        diagnostics.push(warning(
-            "join_analysis_pending",
-            DiagnosticArea::Join,
-            "join semantics are not implemented yet",
-        ));
-    }
-}
-
 fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
     if select.distinct.is_some() {
         diagnostics.push(warning(
@@ -668,13 +1178,6 @@ fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
 }
 
 fn inspect_query_features(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) {
-    if query.with.is_some() {
-        diagnostics.push(warning(
-            "unsupported_cte",
-            DiagnosticArea::Source,
-            "CTE semantics are not implemented yet",
-        ));
-    }
     if query.order_by.is_some() {
         diagnostics.push(warning(
             "unsupported_order_by",

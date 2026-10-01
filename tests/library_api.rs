@@ -1,7 +1,7 @@
 use sql_semantic_protocol::{
     analyze_sql, to_json, AnalysisError, BinaryOperator, ComparisonOperator, DiagnosticArea, Error,
-    Expression, LiteralType, LiteralValue, Predicate, Protocol, ProtocolStatement, QueryStatement,
-    UnaryOperator,
+    Expression, JoinKind, LiteralType, LiteralValue, Predicate, Protocol, ProtocolStatement,
+    QueryStatement, UnaryOperator,
 };
 use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
 
@@ -332,8 +332,12 @@ fn unsupported_query_body_is_diagnosed_without_dropping_query() {
 #[test]
 fn unsupported_table_factor_is_diagnosed() {
     let dialect = GenericDialect {};
-    let protocol = analyze_sql("SELECT * FROM (SELECT 1) AS derived", "generic", &dialect)
-        .expect("derived table should parse");
+    let protocol = analyze_sql(
+        "SELECT * FROM generate_series(1, 10) AS derived",
+        "generic",
+        &dialect,
+    )
+    .expect("table-valued function should parse");
 
     let statement = first_query(&protocol);
 
@@ -387,4 +391,218 @@ fn unsupported_function_shape_is_diagnosed() {
             diagnostic.area() == DiagnosticArea::Function
                 && diagnostic.code() == "unsupported_function"
         }));
+}
+
+#[test]
+fn relation_sources_preserve_multi_part_names_aliases_and_sorted_dependencies() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT o.id FROM warehouse.sales.orders AS o, crm.customers AS c",
+        "generic",
+        &dialect,
+    )
+    .expect("physical relations should be analyzed");
+
+    let statement = first_query(&protocol);
+    assert_eq!(statement.sources().len(), 2);
+    assert_eq!(statement.sources()[0].name(), "warehouse.sales.orders");
+    assert_eq!(statement.sources()[0].alias(), Some("o"));
+    assert_eq!(statement.sources()[1].name(), "crm.customers");
+    assert_eq!(statement.sources()[1].alias(), Some("c"));
+    assert_eq!(
+        statement
+            .dependencies()
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
+        vec!["crm.customers", "warehouse.sales.orders"]
+    );
+    assert!(!statement
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "source_analysis_pending"));
+}
+
+#[test]
+fn using_join_is_normalized_with_relation_identity() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT x.id FROM warehouse.orders AS x LEFT JOIN crm.customers AS y USING (id)",
+        "generic",
+        &dialect,
+    )
+    .expect("USING join should be analyzed");
+
+    let statement = first_query(&protocol);
+    let join = statement.joins().first().expect("join should be present");
+    assert_eq!(join.kind(), JoinKind::Left);
+    assert_eq!(join.left().relation(), "warehouse.orders");
+    assert_eq!(join.left().alias(), Some("x"));
+    assert_eq!(join.right().relation(), "crm.customers");
+    assert_eq!(join.right().alias(), Some("y"));
+
+    let comparison = match join.condition() {
+        Some(Predicate::Comparison(comparison)) => comparison,
+        other => panic!("expected normalized USING comparison, got {other:?}"),
+    };
+
+    match comparison.left() {
+        Expression::Column(column) => {
+            assert_eq!(column.relation(), Some("x"));
+            assert_eq!(column.name(), "id");
+        }
+        other => panic!("expected left USING column, got {other:?}"),
+    }
+    match comparison.right() {
+        Expression::Column(column) => {
+            assert_eq!(column.relation(), Some("y"));
+            assert_eq!(column.name(), "id");
+        }
+        other => panic!("expected right USING column, got {other:?}"),
+    }
+
+    let json: serde_json::Value =
+        serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
+    assert_eq!(json["statements"][0]["joins"][0]["kind"], "left");
+    assert_eq!(
+        json["statements"][0]["joins"][0]["condition"]["operator"],
+        "eq"
+    );
+}
+
+#[test]
+fn ctes_and_derived_tables_remain_local_while_dependencies_recurse() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "WITH recent AS (
+            SELECT id, customer_id FROM raw.orders
+        )
+        SELECT r.id
+        FROM recent AS r
+        JOIN (SELECT id FROM crm.customers) AS c
+          ON r.customer_id = c.id",
+        "generic",
+        &dialect,
+    )
+    .expect("CTE and derived table should be analyzed");
+
+    let statement = first_query(&protocol);
+    assert_eq!(statement.sources().len(), 2);
+    assert_eq!(statement.sources()[0].name(), "recent");
+    assert_eq!(statement.sources()[0].alias(), Some("r"));
+    assert_eq!(statement.sources()[1].name(), "subquery");
+    assert_eq!(statement.sources()[1].alias(), Some("c"));
+    assert_eq!(
+        statement
+            .dependencies()
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
+        vec!["crm.customers", "raw.orders"]
+    );
+    assert!(!statement.dependencies().iter().any(|name| name == "recent"));
+    assert!(!statement
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_cte"));
+}
+
+#[test]
+fn scalar_subqueries_contribute_physical_dependencies() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT u.id
+         FROM app.users AS u
+         WHERE EXISTS (
+             SELECT 1
+             FROM audit.events AS e
+             WHERE e.user_id = u.id
+         )",
+        "generic",
+        &dialect,
+    )
+    .expect("EXISTS subquery should preserve dependency information");
+
+    let statement = first_query(&protocol);
+    assert_eq!(
+        statement
+            .dependencies()
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
+        vec!["app.users", "audit.events"]
+    );
+}
+
+#[test]
+fn self_join_sources_remain_distinct_by_alias() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT u1.id
+         FROM users AS u1
+         JOIN users AS u2 ON u1.manager_id = u2.id",
+        "generic",
+        &dialect,
+    )
+    .expect("self join should be analyzed");
+
+    let statement = first_query(&protocol);
+    assert_eq!(statement.sources().len(), 2);
+    assert_eq!(statement.sources()[0].alias(), Some("u1"));
+    assert_eq!(statement.sources()[1].alias(), Some("u2"));
+    assert_eq!(
+        statement
+            .dependencies()
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
+        vec!["users"]
+    );
+
+    let join = statement
+        .joins()
+        .first()
+        .expect("self join should be present");
+    assert_eq!(join.left().alias(), Some("u1"));
+    assert_eq!(join.right().alias(), Some("u2"));
+}
+
+#[test]
+fn multiple_joins_preserve_sql_order_and_alias_identity() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT u.id
+         FROM users AS u
+         JOIN managers AS m ON u.manager_id = m.id
+         JOIN departments AS d ON m.department_id = d.id",
+        "generic",
+        &dialect,
+    )
+    .expect("multiple joins should be analyzed");
+
+    let joins = first_query(&protocol).joins();
+    assert_eq!(joins.len(), 2);
+    assert_eq!(joins[0].left().alias(), Some("u"));
+    assert_eq!(joins[0].right().alias(), Some("m"));
+    assert_eq!(joins[1].left().alias(), Some("m"));
+    assert_eq!(joins[1].right().alias(), Some("d"));
+}
+
+#[test]
+fn natural_join_reports_unresolved_condition() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT * FROM users AS u NATURAL JOIN managers AS m",
+        "generic",
+        &dialect,
+    )
+    .expect("NATURAL JOIN should parse");
+
+    let statement = first_query(&protocol);
+    assert_eq!(statement.joins().len(), 1);
+    assert!(statement.joins()[0].condition().is_none());
+    assert!(statement.diagnostics().iter().any(|diagnostic| {
+        diagnostic.area() == DiagnosticArea::Join
+            && diagnostic.code() == "unsupported_natural_join_condition"
+    }));
 }
