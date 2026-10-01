@@ -1,7 +1,7 @@
 ---
 id: TASK-2
 title: Establish library-first analysis API
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -17,10 +17,10 @@ The command-line binary should become a thin consumer of the same public library
 
 ## Acceptance Criteria
 
-- [ ] `src/lib.rs` exposes the supported public entry point for converting SQL text and a caller-selected dialect into protocol domain values or a domain error.
-- [ ] Parsing, semantic analysis, and protocol serialization are separate modules with explicit boundaries.
-- [ ] sqlparser AST types do not appear in public protocol types.
-- [ ] The SQL dialect is selected by the caller and is not hardcoded in analysis code.
-- [ ] Library errors distinguish parsing failures from semantic-analysis failures.
-- [ ] `main.rs` contains no semantic-analysis logic.
-- [ ] Existing debug/probe behavior is removed from the production path or isolated from the public API.
+- [x] `src/lib.rs` exposes the supported public entry point for converting SQL text and a caller-selected dialect into protocol domain values or a domain error.
+- [x] Parsing, semantic analysis, and protocol serialization are separate modules with explicit boundaries.
+- [x] sqlparser AST types do not appear in public protocol types.
+- [x] The SQL dialect is selected by the caller and is not hardcoded in analysis code.
+- [x] Library errors distinguish parsing failures from semantic-analysis failures.
+- [x] `main.rs` contains no semantic-analysis logic.
+- [x] Existing debug/probe behavior is removed from the production path or isolated from the public API.

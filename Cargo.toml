@@ -9,5 +9,5 @@ opt-level = 0   # no optimisations → no inlining, no dead-code elision
 incremental = false
 
 [dependencies]
-sqlparser = { version = "0.58", features = ["serde"] }
+sqlparser = "0.58"
 serde_json = "1"
