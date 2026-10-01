@@ -39,10 +39,21 @@ Object member order is not semantically significant. A concrete emitter may addi
 
 ## Example
 
-`examples/protocol-v0.json` is a representative protocol document for:
+`examples/protocol-v0.json` is the representative protocol document for a query that exercises multiple v0 concepts together:
 
 ```sql
-SELECT b FROM t WHERE a > 10;
+SELECT
+    o.id,
+    c.country,
+    o.total_amount
+FROM orders AS o
+JOIN customers AS c
+    ON o.customer_id = c.id
+WHERE o.total_amount >= 100
+  AND o.created_at < DATE '2026-01-01'
+  AND c.country IN ('SE', 'NO', 'DK');
 ```
 
-It validates against the v0 JSON Schema.
+It covers multiple source relations, physical dependencies, an inner join with a structured join predicate, qualified column references, boolean `AND`, range domains, a finite set domain, output ordering, and lineage across relations.
+
+`examples/protocol-v0-simple.json` retains the minimal `SELECT b FROM t WHERE a > 10` fixture for focused contract checks. Both documents validate against the v0 JSON Schema.
