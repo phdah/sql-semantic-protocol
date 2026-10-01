@@ -1,7 +1,7 @@
 //! Parser-independent SQL Semantic Protocol domain values.
 //!
-//! The Rust model intentionally contains no sqlparser AST types. The v0 model is expanded as
-//! semantic-analysis tasks are implemented; unsupported parsed statements remain explicit.
+//! The Rust model intentionally contains no sqlparser AST types. Unknown and unsupported
+//! semantics remain explicit so consumers can distinguish incomplete analysis from known values.
 
 /// Current protocol version emitted by this crate.
 pub const PROTOCOL_VERSION: &str = "0.1.0";
@@ -56,8 +56,126 @@ impl ProtocolSource {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum ProtocolStatement {
-    /// A parsed statement whose semantics are not yet modeled.
+    /// A query for which known semantics and analysis gaps are preserved independently.
+    Query(QueryStatement),
+    /// A parsed statement whose statement-level semantics are not modeled.
     Unsupported(UnsupportedStatement),
+}
+
+/// Partially analyzed query semantics.
+///
+/// Sections whose analysis has not been implemented are emitted conservatively as empty protocol
+/// collections and accompanied by diagnostics. Predicates that are present but not understood are
+/// retained explicitly through Predicate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QueryStatement {
+    predicates: Predicates,
+    diagnostics: Vec<Diagnostic>,
+}
+
+impl QueryStatement {
+    pub(crate) fn new(predicates: Predicates, diagnostics: Vec<Diagnostic>) -> Self {
+        Self {
+            predicates,
+            diagnostics,
+        }
+    }
+
+    /// Return WHERE, HAVING, and QUALIFY semantics known for the query.
+    pub fn predicates(&self) -> &Predicates {
+        &self.predicates
+    }
+
+    /// Return diagnostics describing incomplete query semantics.
+    pub fn diagnostics(&self) -> &[Diagnostic] {
+        &self.diagnostics
+    }
+}
+
+/// Query predicates grouped by their SQL clause.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Predicates {
+    where_predicate: Option<Predicate>,
+    having_predicate: Option<Predicate>,
+    qualify_predicate: Option<Predicate>,
+}
+
+impl Predicates {
+    pub(crate) fn new(
+        where_predicate: Option<Predicate>,
+        having_predicate: Option<Predicate>,
+        qualify_predicate: Option<Predicate>,
+    ) -> Self {
+        Self {
+            where_predicate,
+            having_predicate,
+            qualify_predicate,
+        }
+    }
+
+    /// Return the WHERE predicate when the query contains one.
+    pub fn where_predicate(&self) -> Option<&Predicate> {
+        self.where_predicate.as_ref()
+    }
+
+    /// Return the HAVING predicate when the query contains one.
+    pub fn having_predicate(&self) -> Option<&Predicate> {
+        self.having_predicate.as_ref()
+    }
+
+    /// Return the QUALIFY predicate when the query contains one.
+    pub fn qualify_predicate(&self) -> Option<&Predicate> {
+        self.qualify_predicate.as_ref()
+    }
+}
+
+/// Predicate semantics currently known by the analyzer.
+///
+/// Concrete predicate forms are added by later semantic-analysis tasks. Until then, a parsed
+/// predicate is retained as either unknown or explicitly unsupported rather than omitted.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum Predicate {
+    /// Semantics exist but cannot be resolved precisely from available information.
+    Unknown(UnknownSemantic),
+    /// The producer recognizes the feature but does not support its semantics yet.
+    Unsupported(UnsupportedSemantic),
+}
+
+/// Semantic value whose precise meaning cannot currently be resolved.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnknownSemantic {
+    reason: String,
+}
+
+impl UnknownSemantic {
+    /// Return the reason the semantic value could not be resolved.
+    pub fn reason(&self) -> &str {
+        &self.reason
+    }
+}
+
+/// Semantic feature recognized by the parser but not supported by the analyzer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnsupportedSemantic {
+    feature: String,
+    reason: Option<String>,
+}
+
+impl UnsupportedSemantic {
+    pub(crate) fn new(feature: String, reason: Option<String>) -> Self {
+        Self { feature, reason }
+    }
+
+    /// Return the stable name of the unsupported semantic feature.
+    pub fn feature(&self) -> &str {
+        &self.feature
+    }
+
+    /// Return an optional human-readable reason for the unsupported feature.
+    pub fn reason(&self) -> Option<&str> {
+        self.reason.as_deref()
+    }
 }
 
 /// A parsed statement that cannot yet be represented semantically.
