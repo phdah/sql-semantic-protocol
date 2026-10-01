@@ -179,7 +179,38 @@ fn representative_generic_query_matches_complete_protocol_document() {
                 ]
             }
         ],
-        "layers": [],
+        "layers": [
+            {
+                "id": "layer-0001",
+                "statement": {
+                    "input_id": "input-0001",
+                    "statement_index": 0
+                },
+                "produces": [
+                    {
+                        "kind": "anonymous",
+                        "layer_id": "layer-0001"
+                    }
+                ],
+                "consumes": [
+                    "crm.customers",
+                    "sales.orders"
+                ],
+                "composed_semantics": {
+                    "status": "unresolved",
+                    "reason": "unsupported",
+                    "diagnostics": [
+                        {
+                            "severity": "warning",
+                            "code": "semantic_composition_pending",
+                            "message": "cross-input semantic composition is not implemented yet",
+                            "input_id": "input-0001",
+                            "layer_id": "layer-0001"
+                        }
+                    ]
+                }
+            }
+        ],
         "graph": {
             "edges": [],
             "components": [],
