@@ -7,11 +7,9 @@ use std::fmt;
 
 use sqlparser::dialect::Dialect;
 
-use crate::protocol::ProtocolStatement;
+use crate::protocol::{ProtocolStatement, PROTOCOL_VERSION};
 use crate::{analyze_sql, Error};
 
-/// Protocol version used by multi-input analysis bundles.
-pub const MULTI_INPUT_PROTOCOL_VERSION: &str = "0.2.0";
 
 /// Source identity retained for one SQL input unit.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -195,7 +193,7 @@ pub fn analyze_inputs(
     }
 
     Ok(AnalysisBundle {
-        protocol_version: MULTI_INPUT_PROTOCOL_VERSION,
+        protocol_version: PROTOCOL_VERSION,
         inputs: analyzed_inputs,
     })
 }
