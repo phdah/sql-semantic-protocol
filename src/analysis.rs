@@ -68,12 +68,23 @@ pub(crate) fn analyze(parsed: ParsedSql, dialect_name: &str) -> Result<Protocol,
 
 fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
     match statement {
-        SqlStatement::Query(query) => ProtocolStatement::Query(analyze_query(query)),
+        SqlStatement::Query(query) => ProtocolStatement::Query(analyze_query(query, None)),
+        SqlStatement::CreateTable(create_table) => match &create_table.query {
+            Some(query) => ProtocolStatement::Query(analyze_query(
+                query,
+                Some(create_table.name.to_string()),
+            )),
+            None => unsupported_queryless_create_table(),
+        },
+        SqlStatement::CreateView(create_view) => ProtocolStatement::Query(analyze_query(
+            &create_view.query,
+            Some(create_view.name.to_string()),
+        )),
         _ => unsupported_statement(),
     }
 }
 
-fn analyze_query(query: &SqlQuery) -> QueryStatement {
+fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QueryStatement {
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let relation_analysis = analyze_query_relations(
@@ -109,6 +120,7 @@ fn analyze_query(query: &SqlQuery) -> QueryStatement {
         predicates,
         column_domains,
         output,
+        produced_relation,
         diagnostics,
     )
 }
@@ -1552,6 +1564,19 @@ fn has_group_by(group_by: &GroupByExpr) -> bool {
             !expressions.is_empty() || !modifiers.is_empty()
         }
     }
+}
+
+fn unsupported_queryless_create_table() -> ProtocolStatement {
+    let diagnostic = warning(
+        "unsupported_queryless_create_table",
+        DiagnosticArea::Statement,
+        "CREATE TABLE without an AS query does not define transformation semantics",
+    );
+
+    ProtocolStatement::Unsupported(UnsupportedStatement::new(
+        "create_table".to_string(),
+        vec![diagnostic],
+    ))
 }
 
 fn unsupported_statement() -> ProtocolStatement {
