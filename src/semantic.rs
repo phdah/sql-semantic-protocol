@@ -349,7 +349,6 @@ fn collect_refs_inner(expr: &Expr, refs: &mut Vec<String>) {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::extract_schema;
@@ -359,9 +358,8 @@ mod tests {
 
     #[test]
     fn where_comparison_is_extracted() {
-        let statements =
-            Parser::parse_sql(&GenericDialect {}, "SELECT b FROM t WHERE a > 10")
-                .expect("test SQL must parse");
+        let statements = Parser::parse_sql(&GenericDialect {}, "SELECT b FROM t WHERE a > 10")
+            .expect("test SQL must parse");
 
         let select = match statements.first() {
             Some(Statement::Query(query)) => match query.body.as_ref() {
