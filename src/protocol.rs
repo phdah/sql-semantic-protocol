@@ -86,7 +86,6 @@ impl QueryStatement {
         predicates: Predicates,
         mut column_domains: Vec<ColumnDomain>,
         output: Output,
-        produced_relation: Option<String>,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
         column_domains.sort_by(|left, right| left.column.cmp(&right.column));
@@ -97,9 +96,14 @@ impl QueryStatement {
             predicates: Box::new(predicates),
             column_domains,
             output,
-            produced_relation,
+            produced_relation: None,
             diagnostics,
         }
+    }
+
+    pub(crate) fn with_produced_relation(mut self, produced_relation: Option<String>) -> Self {
+        self.produced_relation = produced_relation;
+        self
     }
 
     /// Return direct relational inputs in first semantic appearance order.
