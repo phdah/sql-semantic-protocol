@@ -5,7 +5,7 @@
 
 use serde_json::{json, Value};
 
-use crate::bundle::{AnalysisBundle, SqlInputSource};
+use crate::bundle::{AnalysisBundle, DatasetRef, SqlInputSource, TransformationLayer};
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate, IsNullPredicate,
@@ -17,13 +17,13 @@ use crate::protocol::{
 
 /// Serialize single-input analysis using the one active protocol document shape.
 pub fn to_json(protocol: &Protocol) -> String {
-    single_input_to_value(protocol).to_string()
+    bundle_to_value(&AnalysisBundle::from_protocol(protocol)).to_string()
 }
 
 /// Serialize an analysis bundle using the one active protocol document shape.
 ///
-/// TASK-11 populates ordered input analysis only. Cross-input layers and graph composition remain
-/// explicitly pending until the later composition tasks implement them.
+/// Local transformation layers and produced relation identities are populated. Cross-input graph
+/// resolution and transitive semantic composition remain explicitly pending.
 pub fn to_bundle_json(bundle: &AnalysisBundle) -> String {
     bundle_to_value(bundle).to_string()
 }
@@ -58,35 +58,58 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         })
         .collect::<Vec<_>>();
 
+    let layers = bundle
+        .layers()
+        .iter()
+        .map(transformation_layer_to_value)
+        .collect::<Vec<_>>();
+
     json!({
         "protocol_version": bundle.protocol_version(),
         "inputs": inputs,
-        "layers": [],
+        "layers": layers,
         "graph": pending_graph_value()
     })
 }
 
-fn single_input_to_value(protocol: &Protocol) -> Value {
-    let statements = protocol
-        .statements()
-        .iter()
-        .map(statement_to_value)
-        .collect::<Vec<_>>();
-
+fn transformation_layer_to_value(layer: &TransformationLayer) -> Value {
     json!({
-        "protocol_version": protocol.protocol_version(),
-        "inputs": [{
-            "id": "input-0001",
-            "source": {
-                "kind": "inline",
-                "label": Value::Null
-            },
-            "dialect": protocol.source().dialect(),
-            "statements": statements
-        }],
-        "layers": [],
-        "graph": pending_graph_value()
+        "id": layer.id(),
+        "statement": {
+            "input_id": layer.input_id(),
+            "statement_index": layer.statement_index()
+        },
+        "produces": layer
+            .produces()
+            .iter()
+            .map(dataset_ref_to_value)
+            .collect::<Vec<_>>(),
+        "consumes": layer.consumes(),
+        "composed_semantics": {
+            "status": "unresolved",
+            "reason": "unsupported",
+            "diagnostics": [{
+                "severity": "warning",
+                "code": "semantic_composition_pending",
+                "message": "cross-input semantic composition is not implemented yet",
+                "input_id": layer.input_id(),
+                "layer_id": layer.id()
+            }]
+        }
     })
+}
+
+fn dataset_ref_to_value(dataset: &DatasetRef) -> Value {
+    match dataset {
+        DatasetRef::Relation { name } => json!({
+            "kind": "relation",
+            "name": name
+        }),
+        DatasetRef::Anonymous { layer_id } => json!({
+            "kind": "anonymous",
+            "layer_id": layer_id
+        }),
+    }
 }
 
 fn pending_graph_value() -> Value {
