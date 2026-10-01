@@ -54,10 +54,9 @@ fn simple_query_emission_matches_schema_valid_v0_fixture() {
 
     let actual: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("emitted protocol should be JSON");
-    let expected: serde_json::Value = serde_json::from_str(include_str!(
-        "../examples/protocol-v0-simple.json"
-    ))
-    .expect("checked-in protocol fixture should be JSON");
+    let expected: serde_json::Value =
+        serde_json::from_str(include_str!("../examples/protocol-v0-simple.json"))
+            .expect("checked-in protocol fixture should be JSON");
 
     assert_eq!(actual, expected);
 }
