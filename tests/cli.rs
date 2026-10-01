@@ -39,6 +39,58 @@ fn stdin_input_and_selected_dialect_emit_only_protocol_json() {
 }
 
 #[test]
+fn all_sqlparser_recognized_dialect_names_are_supported() {
+    const DIALECTS: &[&str] = &[
+        "generic",
+        "mysql",
+        "postgresql",
+        "postgres",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
+    ];
+
+    for dialect in DIALECTS {
+        let output = run_with_stdin(
+            &["--dialect", *dialect],
+            "SELECT a FROM t WHERE a > 10",
+        );
+
+        assert!(
+            output.status.success(),
+            "dialect {dialect} failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(output.stderr.is_empty());
+
+        let json: serde_json::Value =
+            serde_json::from_slice(&output.stdout).expect("dialect should emit protocol JSON");
+        assert_eq!(json["source"]["dialect"].as_str(), Some(*dialect));
+    }
+}
+
+#[test]
+fn unknown_dialect_is_an_input_error() {
+    let output = run_with_stdin(
+        &["--dialect", "not-a-real-dialect"],
+        "SELECT a FROM t",
+    );
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.contains("use a built-in dialect recognized by sqlparser"));
+}
+
+#[test]
 fn file_input_is_supported() {
     let path = std::env::temp_dir().join(format!(
         "sql-semantic-protocol-cli-{}.sql",
