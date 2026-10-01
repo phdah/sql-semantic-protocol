@@ -40,7 +40,23 @@ sql-semantic-protocol [--dialect <name>] [--file <path>] [SQL ...]
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
 
-With `sqlparser` 0.58, recognized dialect names are `generic`, `mysql`, `postgresql` (or `postgres`), `hive`, `sqlite`, `snowflake`, `redshift`, `mssql`, `clickhouse`, `bigquery`, `ansi`, `duckdb`, and `databricks`.
+With `sqlparser` 0.58, the following built-in dialects are available:
+
+| Dialect | CLI name |
+| --- | --- |
+| ANSI | `ansi` |
+| BigQuery | `bigquery` |
+| ClickHouse | `clickhouse` |
+| Databricks | `databricks` |
+| DuckDB | `duckdb` |
+| Generic | `generic` |
+| Hive | `hive` |
+| Microsoft SQL Server | `mssql` |
+| MySQL | `mysql` |
+| PostgreSQL | `postgresql`, `postgres` |
+| Redshift | `redshift` |
+| Snowflake | `snowflake` |
+| SQLite | `sqlite` |
 
 SQL can be supplied directly:
 
