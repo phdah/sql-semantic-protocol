@@ -104,7 +104,7 @@
         "statements": {
           "type": "array",
           "items": {
-            "$ref": "protocol-v0.schema.json#/$defs/statement"
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/statement"
           }
         }
       }
@@ -233,11 +233,11 @@
         "column_domains": {
           "type": "array",
           "items": {
-            "$ref": "protocol-v0.schema.json#/$defs/columnDomain"
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
           }
         },
         "output": {
-          "$ref": "protocol-v0.schema.json#/$defs/output"
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/output"
         },
         "diagnostics": {
           "type": "array",
