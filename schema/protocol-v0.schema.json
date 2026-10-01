@@ -1,0 +1,566 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/phdah/sql-semantic-protocol/blob/main/schema/protocol-v0.schema.json",
+  "title": "SQL Semantic Protocol v0",
+  "description": "Public, parser-independent contract for SQL Semantic Protocol 0.1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_version", "source", "statements"],
+  "properties": {
+    "protocol_version": { "const": "0.1.0" },
+    "source": { "$ref": "#/$defs/source" },
+    "statements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/statement" }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dialect"],
+      "properties": {
+        "dialect": { "type": "string", "minLength": 1 }
+      }
+    },
+    "statement": {
+      "oneOf": [
+        { "$ref": "#/$defs/queryStatement" },
+        { "$ref": "#/$defs/unsupportedStatement" }
+      ]
+    },
+    "queryStatement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "sources",
+        "dependencies",
+        "joins",
+        "predicates",
+        "column_domains",
+        "output",
+        "diagnostics"
+      ],
+      "properties": {
+        "kind": { "const": "query" },
+        "sources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sourceRelation" }
+        },
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relationName" }
+        },
+        "joins": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/join" }
+        },
+        "predicates": { "$ref": "#/$defs/predicates" },
+        "column_domains": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/columnDomain" }
+        },
+        "output": { "$ref": "#/$defs/output" },
+        "diagnostics": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/diagnostic" }
+        }
+      }
+    },
+    "unsupportedStatement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "category", "diagnostics"],
+      "properties": {
+        "kind": { "const": "unsupported" },
+        "category": { "type": "string", "minLength": 1 },
+        "diagnostics": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/diagnostic" }
+        }
+      }
+    },
+    "relationName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceRelation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "alias"],
+      "properties": {
+        "kind": { "const": "relation" },
+        "name": { "$ref": "#/$defs/relationName" },
+        "alias": { "type": ["string", "null"] }
+      }
+    },
+    "relationRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relation", "alias"],
+      "properties": {
+        "relation": { "$ref": "#/$defs/relationName" },
+        "alias": { "type": ["string", "null"] }
+      }
+    },
+    "columnRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relation", "name"],
+      "properties": {
+        "relation": {
+          "anyOf": [
+            { "$ref": "#/$defs/relationName" },
+            { "type": "null" }
+          ]
+        },
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "join": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "left", "right", "condition"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "inner",
+            "left",
+            "right",
+            "full",
+            "cross",
+            "left_semi",
+            "right_semi",
+            "left_anti",
+            "right_anti",
+            "unknown"
+          ]
+        },
+        "left": { "$ref": "#/$defs/relationRef" },
+        "right": { "$ref": "#/$defs/relationRef" },
+        "condition": {
+          "anyOf": [
+            { "$ref": "#/$defs/predicate" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "predicates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["where", "having", "qualify"],
+      "properties": {
+        "where": {
+          "anyOf": [
+            { "$ref": "#/$defs/predicate" },
+            { "type": "null" }
+          ]
+        },
+        "having": {
+          "anyOf": [
+            { "$ref": "#/$defs/predicate" },
+            { "type": "null" }
+          ]
+        },
+        "qualify": {
+          "anyOf": [
+            { "$ref": "#/$defs/predicate" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "predicate": {
+      "oneOf": [
+        { "$ref": "#/$defs/comparisonPredicate" },
+        { "$ref": "#/$defs/andPredicate" },
+        { "$ref": "#/$defs/orPredicate" },
+        { "$ref": "#/$defs/notPredicate" },
+        { "$ref": "#/$defs/isNullPredicate" },
+        { "$ref": "#/$defs/inPredicate" },
+        { "$ref": "#/$defs/betweenPredicate" },
+        { "$ref": "#/$defs/booleanExpressionPredicate" },
+        { "$ref": "#/$defs/unknownSemantic" },
+        { "$ref": "#/$defs/unsupportedSemantic" }
+      ]
+    },
+    "comparisonPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "left", "operator", "right"],
+      "properties": {
+        "kind": { "const": "comparison" },
+        "left": { "$ref": "#/$defs/expression" },
+        "operator": {
+          "enum": [
+            "eq",
+            "neq",
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+            "is_distinct_from",
+            "is_not_distinct_from"
+          ]
+        },
+        "right": { "$ref": "#/$defs/expression" }
+      }
+    },
+    "andPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "operands"],
+      "properties": {
+        "kind": { "const": "and" },
+        "operands": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/predicate" }
+        }
+      }
+    },
+    "orPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "operands"],
+      "properties": {
+        "kind": { "const": "or" },
+        "operands": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/predicate" }
+        }
+      }
+    },
+    "notPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "operand"],
+      "properties": {
+        "kind": { "const": "not" },
+        "operand": { "$ref": "#/$defs/predicate" }
+      }
+    },
+    "isNullPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "expression", "negated"],
+      "properties": {
+        "kind": { "const": "is_null" },
+        "expression": { "$ref": "#/$defs/expression" },
+        "negated": { "type": "boolean" }
+      }
+    },
+    "inPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "expression", "values", "negated"],
+      "properties": {
+        "kind": { "const": "in" },
+        "expression": { "$ref": "#/$defs/expression" },
+        "values": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/expression" }
+        },
+        "negated": { "type": "boolean" }
+      }
+    },
+    "betweenPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "expression", "lower", "upper", "negated"],
+      "properties": {
+        "kind": { "const": "between" },
+        "expression": { "$ref": "#/$defs/expression" },
+        "lower": { "$ref": "#/$defs/expression" },
+        "upper": { "$ref": "#/$defs/expression" },
+        "negated": { "type": "boolean" }
+      }
+    },
+    "booleanExpressionPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "expression"],
+      "properties": {
+        "kind": { "const": "boolean_expression" },
+        "expression": { "$ref": "#/$defs/expression" }
+      }
+    },
+    "expression": {
+      "oneOf": [
+        { "$ref": "#/$defs/columnExpression" },
+        { "$ref": "#/$defs/literalExpression" },
+        { "$ref": "#/$defs/functionExpression" },
+        { "$ref": "#/$defs/unaryExpression" },
+        { "$ref": "#/$defs/binaryExpression" },
+        { "$ref": "#/$defs/unknownSemantic" },
+        { "$ref": "#/$defs/unsupportedSemantic" }
+      ]
+    },
+    "columnExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "relation", "name"],
+      "properties": {
+        "kind": { "const": "column" },
+        "relation": {
+          "anyOf": [
+            { "$ref": "#/$defs/relationName" },
+            { "type": "null" }
+          ]
+        },
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "literalExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "type", "value"],
+      "properties": {
+        "kind": { "const": "literal" },
+        "type": {
+          "enum": [
+            "null",
+            "boolean",
+            "integer",
+            "decimal",
+            "string",
+            "date",
+            "time",
+            "timestamp",
+            "interval"
+          ]
+        },
+        "value": {
+          "type": ["string", "number", "boolean", "null"]
+        }
+      }
+    },
+    "functionExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "arguments", "distinct"],
+      "properties": {
+        "kind": { "const": "function" },
+        "name": { "type": "string", "minLength": 1 },
+        "arguments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/expression" }
+        },
+        "distinct": { "type": "boolean" }
+      }
+    },
+    "unaryExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "operator", "operand"],
+      "properties": {
+        "kind": { "const": "unary" },
+        "operator": { "enum": ["plus", "minus", "bitwise_not"] },
+        "operand": { "$ref": "#/$defs/expression" }
+      }
+    },
+    "binaryExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "operator", "left", "right"],
+      "properties": {
+        "kind": { "const": "binary" },
+        "operator": {
+          "enum": [
+            "add",
+            "subtract",
+            "multiply",
+            "divide",
+            "modulo",
+            "string_concat",
+            "bitwise_and",
+            "bitwise_or",
+            "bitwise_xor"
+          ]
+        },
+        "left": { "$ref": "#/$defs/expression" },
+        "right": { "$ref": "#/$defs/expression" }
+      }
+    },
+    "columnDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["column", "domain"],
+      "properties": {
+        "column": { "$ref": "#/$defs/columnRef" },
+        "domain": { "$ref": "#/$defs/valueDomain" }
+      }
+    },
+    "valueDomain": {
+      "oneOf": [
+        { "$ref": "#/$defs/unboundedDomain" },
+        { "$ref": "#/$defs/rangesDomain" },
+        { "$ref": "#/$defs/setDomain" },
+        { "$ref": "#/$defs/emptyDomain" },
+        { "$ref": "#/$defs/unknownDomain" }
+      ]
+    },
+    "unboundedDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "unbounded" }
+      }
+    },
+    "rangesDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ranges"],
+      "properties": {
+        "kind": { "const": "ranges" },
+        "ranges": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/range" }
+        }
+      }
+    },
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lower", "upper"],
+      "properties": {
+        "lower": {
+          "anyOf": [
+            { "$ref": "#/$defs/bound" },
+            { "type": "null" }
+          ]
+        },
+        "upper": {
+          "anyOf": [
+            { "$ref": "#/$defs/bound" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "bound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "inclusive"],
+      "properties": {
+        "value": { "$ref": "#/$defs/literalExpression" },
+        "inclusive": { "type": "boolean" }
+      }
+    },
+    "setDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "mode", "values"],
+      "properties": {
+        "kind": { "const": "set" },
+        "mode": { "enum": ["include", "exclude"] },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/literalExpression" }
+        }
+      }
+    },
+    "emptyDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "empty" }
+      }
+    },
+    "unknownDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "reason"],
+      "properties": {
+        "kind": { "const": "unknown" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["columns"],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/outputColumn" }
+        }
+      }
+    },
+    "outputColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "expression", "lineage"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "expression": { "$ref": "#/$defs/expression" },
+        "lineage": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/lineageSource" }
+        }
+      }
+    },
+    "lineageSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relation", "column"],
+      "properties": {
+        "relation": { "$ref": "#/$defs/relationName" },
+        "column": { "type": "string", "minLength": 1 }
+      }
+    },
+    "unknownSemantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "reason"],
+      "properties": {
+        "kind": { "const": "unknown" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "unsupportedSemantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "feature", "reason"],
+      "properties": {
+        "kind": { "const": "unsupported" },
+        "feature": { "type": "string", "minLength": 1 },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "code", "area", "message"],
+      "properties": {
+        "severity": { "enum": ["info", "warning", "error"] },
+        "code": { "type": "string", "minLength": 1 },
+        "area": {
+          "enum": [
+            "statement",
+            "source",
+            "join",
+            "predicate",
+            "domain",
+            "output",
+            "expression",
+            "function",
+            "other"
+          ]
+        },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
