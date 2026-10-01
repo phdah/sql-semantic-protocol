@@ -34,7 +34,7 @@ The active contract is defined by [`schema/protocol-v0.2.schema.json`](schema/pr
 
 Version `0.1.0` files remain in the repository only as historical references. Current runtime code does not emit `0.1.0`.
 
-TASK-11 populates the active `0.2.0` envelope with ordered analyzed inputs. Transformation layers, dependency edges, graph components, and transitive composition are not populated yet; the emitted graph carries an explicit `multi_input_composition_pending` diagnostic until those later tasks are implemented.
+TASK-12 populates transformation layers for analyzed query statements. Query-backed `CREATE TABLE ... AS SELECT` and `CREATE VIEW ... AS SELECT` statements produce named relations, while bare queries produce anonymous layer outputs. Cross-input dependency edges, graph components, and transitive composition remain pending; the emitted graph carries an explicit `multi_input_composition_pending` diagnostic until those later tasks are implemented.
 
 ## Versioning
 
@@ -103,6 +103,8 @@ printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
 ```
 
 Every successful invocation emits protocol `0.2.0`. One input produces an `inputs` array with one element; multiple inputs use the same document shape with additional elements.
+
+Query-backed DDL is analyzed through its defining query and records the created relation as the layer output. For example, `CREATE TABLE mart.orders AS SELECT ...` produces `mart.orders`, while a bare `SELECT` produces an anonymous layer result.
 
 ### Example output
 
@@ -202,7 +204,35 @@ the protocol still uses the active `0.2.0` envelope even though there is only on
       ]
     }
   ],
-  "layers": [],
+  "layers": [
+    {
+      "id": "layer-0001",
+      "statement": {
+        "input_id": "input-0001",
+        "statement_index": 0
+      },
+      "produces": [
+        {
+          "kind": "anonymous",
+          "layer_id": "layer-0001"
+        }
+      ],
+      "consumes": ["t"],
+      "composed_semantics": {
+        "status": "unresolved",
+        "reason": "unsupported",
+        "diagnostics": [
+          {
+            "severity": "warning",
+            "code": "semantic_composition_pending",
+            "message": "cross-input semantic composition is not implemented yet",
+            "input_id": "input-0001",
+            "layer_id": "layer-0001"
+          }
+        ]
+      }
+    }
+  ],
   "graph": {
     "edges": [],
     "components": [],
