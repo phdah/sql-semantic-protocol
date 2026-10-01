@@ -50,8 +50,7 @@ struct Options {
     positional_sql: Vec<String>,
 }
 
-fn parse_args(arguments: impl Iterator<Item = String>) -> Result<Command, CliError> {
-    let mut arguments = arguments.peekable();
+fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, CliError> {
     let mut dialect = "generic".to_string();
     let mut file = None;
     let mut positional_sql = Vec::new();
@@ -144,7 +143,7 @@ impl CliError {
         match self {
             Self::Input(_) => ExitCode::from(2),
             Self::Protocol(ProtocolError::Parse(_)) => ExitCode::from(3),
-            Self::Protocol(ProtocolError::Analysis(_)) | Self::Protocol(_) => ExitCode::from(4),
+            Self::Protocol(_) => ExitCode::from(4),
         }
     }
 }
@@ -155,7 +154,7 @@ impl fmt::Display for CliError {
             Self::Input(message) => write!(formatter, "input error: {message}"),
             Self::Protocol(error) => match error {
                 ProtocolError::Parse(_) => write!(formatter, "{error}"),
-                ProtocolError::Analysis(_) | _ => write!(formatter, "analysis error: {error}"),
+                _ => write!(formatter, "analysis error: {error}"),
             },
         }
     }
