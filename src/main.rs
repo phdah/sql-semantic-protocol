@@ -8,7 +8,7 @@ use std::process::ExitCode;
 use sql_semantic_protocol::{analyze_sql, to_json, Error as ProtocolError};
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <generic|snowflake>] [--file <path>] [SQL ...]\n\nIf neither --file nor SQL is supplied, SQL is read from stdin.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--file <path>] [SQL ...]\n\nIf neither --file nor SQL is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -30,7 +30,7 @@ fn run() -> Result<(), CliError> {
             let sql = read_sql(&options)?;
             let (dialect_name, dialect) = select_dialect(&options.dialect)?;
             let protocol =
-                analyze_sql(&sql, dialect_name, dialect.as_ref()).map_err(CliError::Protocol)?;
+                analyze_sql(&sql, &dialect_name, dialect.as_ref()).map_err(CliError::Protocol)?;
             println!("{}", to_json(&protocol));
             Ok(())
         }
