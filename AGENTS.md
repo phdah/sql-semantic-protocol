@@ -65,7 +65,7 @@ changes for consumers. Make them deliberately, cover them with tests that assert
 output for representative queries, and update the README when the documented shape
 changes.
 
-**Small, pure functions** Analysis functions take inputs and return values, with no I/O,
+**One active protocol version** Keep exactly one protocol version active at a time. Every supported invocation and public emission path emits the same version and root document shape. Input count or source type must not implicitly select a protocol version. Historical schemas and documentation may remain in the repository, but current runtime code must not emit them. When a new version becomes active, migrate all emission paths together.\n\n**Small, pure functions** Analysis functions take inputs and return values, with no I/O,
 global state, or environment reads. If something is hard to test, the design is wrong.
 
 **Composition over inheritance** Use traits to define contracts, not to share
