@@ -6,12 +6,11 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use sql_semantic_protocol::{
-    analyze_inputs, analyze_sql, to_bundle_json, to_json, Error as ProtocolError,
-    InputAnalysisError, SqlInput,
+    analyze_inputs, to_bundle_json, Error as ProtocolError, InputAnalysisError, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [SQL ...]\n\nRepeat --sql and --file to analyze multiple inputs in command-line order.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]\n\nRepeat --sql, --file, and --dir in any mixture. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -33,15 +32,9 @@ fn run() -> Result<(), CliError> {
             let inputs = read_inputs(&options)?;
             let (dialect_name, dialect) = select_dialect(&options.dialect)?;
 
-            if inputs.len() == 1 {
-                let protocol = analyze_sql(inputs[0].sql(), &dialect_name, dialect.as_ref())
-                    .map_err(CliError::Protocol)?;
-                println!("{}", to_json(&protocol));
-            } else {
-                let bundle = analyze_inputs(&inputs, &dialect_name, dialect.as_ref())
-                    .map_err(CliError::InputProtocol)?;
-                println!("{}", to_bundle_json(&bundle));
-            }
+            let bundle = analyze_inputs(&inputs, &dialect_name, dialect.as_ref())
+                .map_err(CliError::InputProtocol)?;
+            println!("{}", to_bundle_json(&bundle));
 
             Ok(())
         }
@@ -273,7 +266,6 @@ fn select_dialect(name: &str) -> Result<(String, Box<dyn Dialect>), CliError> {
 #[derive(Debug)]
 enum CliError {
     Input(String),
-    Protocol(ProtocolError),
     InputProtocol(InputAnalysisError),
 }
 
@@ -281,8 +273,6 @@ impl CliError {
     fn exit_code(&self) -> ExitCode {
         match self {
             Self::Input(_) => ExitCode::from(2),
-            Self::Protocol(ProtocolError::Parse(_)) => ExitCode::from(3),
-            Self::Protocol(_) => ExitCode::from(4),
             Self::InputProtocol(error) => match error.error() {
                 ProtocolError::Parse(_) => ExitCode::from(3),
                 _ => ExitCode::from(4),
@@ -295,10 +285,6 @@ impl fmt::Display for CliError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Input(message) => write!(formatter, "input error: {message}"),
-            Self::Protocol(error) => match error {
-                ProtocolError::Parse(_) => write!(formatter, "{error}"),
-                _ => write!(formatter, "analysis error: {error}"),
-            },
             Self::InputProtocol(error) => match error.error() {
                 ProtocolError::Parse(_) => write!(formatter, "{error}"),
                 _ => write!(formatter, "analysis error: {error}"),
