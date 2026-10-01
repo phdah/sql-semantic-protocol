@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use sql_semantic_protocol::{analyze_sql, to_json, Error as ProtocolError};
-use sqlparser::dialect::{Dialect, GenericDialect, SnowflakeDialect};
+use sqlparser::dialect::{dialect_from_str, Dialect};
 
 const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <generic|snowflake>] [--file <path>] [SQL ...]\n\nIf neither --file nor SQL is supplied, SQL is read from stdin.\nUse -- to pass positional SQL that starts with a dash.";
 
@@ -122,14 +122,15 @@ fn read_sql(options: &Options) -> Result<String, CliError> {
     Ok(sql)
 }
 
-fn select_dialect(name: &str) -> Result<(&'static str, Box<dyn Dialect>), CliError> {
-    match name.to_ascii_lowercase().as_str() {
-        "generic" => Ok(("generic", Box::new(GenericDialect {}))),
-        "snowflake" => Ok(("snowflake", Box::new(SnowflakeDialect {}))),
-        _ => Err(CliError::Input(format!(
-            "unsupported dialect '{name}'; supported dialects: generic, snowflake"
-        ))),
-    }
+fn select_dialect(name: &str) -> Result<(String, Box<dyn Dialect>), CliError> {
+    let normalized_name = name.to_ascii_lowercase();
+    let dialect = dialect_from_str(&normalized_name).ok_or_else(|| {
+        CliError::Input(format!(
+            "unsupported dialect '{name}'; use a built-in dialect recognized by sqlparser"
+        ))
+    })?;
+
+    Ok((normalized_name, dialect))
 }
 
 #[derive(Debug)]
