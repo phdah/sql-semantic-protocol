@@ -5,12 +5,12 @@
 
 use serde_json::{json, Value};
 
-use crate::protocol::{Diagnostic, Protocol, ProtocolStatement, UnsupportedStatement};
+use crate::protocol::{
+    Diagnostic, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
+    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+};
 
 /// Serialize protocol domain values to JSON.
-///
-/// The current analyzer emits only the explicit unsupported-statement form. Later semantic tasks
-/// can extend this module without changing the parsing or analysis boundaries.
 pub fn to_json(protocol: &Protocol) -> String {
     protocol_to_value(protocol).to_string()
 }
@@ -33,8 +33,64 @@ fn protocol_to_value(protocol: &Protocol) -> Value {
 
 fn statement_to_value(statement: &ProtocolStatement) -> Value {
     match statement {
+        ProtocolStatement::Query(statement) => query_statement_to_value(statement),
         ProtocolStatement::Unsupported(statement) => unsupported_statement_to_value(statement),
     }
+}
+
+fn query_statement_to_value(statement: &QueryStatement) -> Value {
+    let diagnostics = statement
+        .diagnostics()
+        .iter()
+        .map(diagnostic_to_value)
+        .collect::<Vec<_>>();
+
+    json!({
+        "kind": "query",
+        "sources": [],
+        "dependencies": [],
+        "joins": [],
+        "predicates": predicates_to_value(statement.predicates()),
+        "column_domains": [],
+        "output": {
+            "columns": []
+        },
+        "diagnostics": diagnostics
+    })
+}
+
+fn predicates_to_value(predicates: &Predicates) -> Value {
+    json!({
+        "where": optional_predicate_to_value(predicates.where_predicate()),
+        "having": optional_predicate_to_value(predicates.having_predicate()),
+        "qualify": optional_predicate_to_value(predicates.qualify_predicate())
+    })
+}
+
+fn optional_predicate_to_value(predicate: Option<&Predicate>) -> Value {
+    predicate.map_or(Value::Null, predicate_to_value)
+}
+
+fn predicate_to_value(predicate: &Predicate) -> Value {
+    match predicate {
+        Predicate::Unknown(semantic) => unknown_semantic_to_value(semantic),
+        Predicate::Unsupported(semantic) => unsupported_semantic_to_value(semantic),
+    }
+}
+
+fn unknown_semantic_to_value(semantic: &UnknownSemantic) -> Value {
+    json!({
+        "kind": "unknown",
+        "reason": semantic.reason()
+    })
+}
+
+fn unsupported_semantic_to_value(semantic: &UnsupportedSemantic) -> Value {
+    json!({
+        "kind": "unsupported",
+        "feature": semantic.feature(),
+        "reason": semantic.reason()
+    })
 }
 
 fn unsupported_statement_to_value(statement: &UnsupportedStatement) -> Value {
