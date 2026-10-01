@@ -153,15 +153,23 @@ fn boolean_predicate_tree_preserves_and_or_not_structure() {
 fn between_in_and_null_predicates_are_typed() {
     let dialect = GenericDialect {};
 
-    let between = analyze_sql("SELECT a FROM t WHERE a BETWEEN 1 AND 3", "generic", &dialect)
-        .expect("BETWEEN should be analyzed");
+    let between = analyze_sql(
+        "SELECT a FROM t WHERE a BETWEEN 1 AND 3",
+        "generic",
+        &dialect,
+    )
+    .expect("BETWEEN should be analyzed");
     assert!(matches!(
         first_query(&between).predicates().where_predicate(),
         Some(Predicate::Between(_))
     ));
 
-    let in_list = analyze_sql("SELECT a FROM t WHERE a NOT IN (1, 2, 3)", "generic", &dialect)
-        .expect("IN should be analyzed");
+    let in_list = analyze_sql(
+        "SELECT a FROM t WHERE a NOT IN (1, 2, 3)",
+        "generic",
+        &dialect,
+    )
+    .expect("IN should be analyzed");
     match first_query(&in_list).predicates().where_predicate() {
         Some(Predicate::In(predicate)) => {
             assert!(predicate.negated());
@@ -282,10 +290,13 @@ fn unsupported_predicate_expression_remains_explicit() {
         other => panic!("expected explicit unsupported expression, got {other:?}"),
     }
 
-    assert!(first_query(&protocol).diagnostics().iter().any(|diagnostic| {
-        diagnostic.area() == DiagnosticArea::Expression
-            && diagnostic.code() == "unsupported_expression"
-    }));
+    assert!(first_query(&protocol)
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| {
+            diagnostic.area() == DiagnosticArea::Expression
+                && diagnostic.code() == "unsupported_expression"
+        }));
 }
 
 #[test]
@@ -369,8 +380,11 @@ fn unsupported_function_shape_is_diagnosed() {
         comparison.left(),
         Expression::Unsupported(semantic) if semantic.feature() == "function"
     ));
-    assert!(first_query(&protocol).diagnostics().iter().any(|diagnostic| {
-        diagnostic.area() == DiagnosticArea::Function
-            && diagnostic.code() == "unsupported_function"
-    }));
+    assert!(first_query(&protocol)
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| {
+            diagnostic.area() == DiagnosticArea::Function
+                && diagnostic.code() == "unsupported_function"
+        }));
 }
