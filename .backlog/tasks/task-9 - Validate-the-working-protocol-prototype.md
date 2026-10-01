@@ -1,7 +1,7 @@
 ---
 id: TASK-9
 title: Validate the working protocol prototype
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -17,11 +17,11 @@ This task is the prototype completion gate.
 
 ## Acceptance Criteria
 
-- [ ] Integration tests exercise the public API only and assert complete protocol output for representative queries.
-- [ ] Coverage includes projections and aliases, joins, nested subqueries, CTEs, WHERE predicates, GROUP BY and HAVING, QUALIFY or window usage where supported, functions, and set operations or an explicit unsupported result.
-- [ ] Tests cover at least two materially different sqlparser dialect selections.
-- [ ] Representative queries verify dependencies, output columns, lineage, predicate structure, and value domains together.
-- [ ] Unsupported but successfully parsed constructs remain visible through diagnostics and do not silently disappear.
-- [ ] Parse failures are tested separately from unsupported semantic analysis.
-- [ ] Repeated analysis of the same query proves deterministic JSON output.
-- [ ] The README contains a minimal example showing SQL input and the corresponding protocol JSON once the prototype behavior is stable.
+- [x] Integration tests exercise the public API only and assert complete protocol output for representative queries.
+- [x] Coverage includes projections and aliases, joins, nested subqueries, CTEs, WHERE predicates, GROUP BY and HAVING, QUALIFY or window usage where supported, functions, and set operations or an explicit unsupported result.
+- [x] Tests cover at least two materially different sqlparser dialect selections.
+- [x] Representative queries verify dependencies, output columns, lineage, predicate structure, and value domains together.
+- [x] Unsupported but successfully parsed constructs remain visible through diagnostics and do not silently disappear.
+- [x] Parse failures are tested separately from unsupported semantic analysis.
+- [x] Repeated analysis of the same query proves deterministic JSON output.
+- [x] The README contains a minimal example showing SQL input and the corresponding protocol JSON once the prototype behavior is stable.
