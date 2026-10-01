@@ -1,0 +1,579 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/phdah/sql-semantic-protocol/blob/main/schema/protocol-v0.2.schema.json",
+  "title": "SQL Semantic Protocol 0.2",
+  "description": "Parser-independent multi-input composition contract for SQL Semantic Protocol 0.2.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "inputs",
+    "layers",
+    "graph"
+  ],
+  "properties": {
+    "protocol_version": {
+      "const": "0.2.0"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/inputUnit"
+      }
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/transformationLayer"
+      }
+    },
+    "graph": {
+      "$ref": "#/$defs/graph"
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relationName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inputSource": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "label"
+          ],
+          "properties": {
+            "kind": {
+              "const": "inline"
+            },
+            "label": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "path"
+          ],
+          "properties": {
+            "kind": {
+              "const": "file"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "inputUnit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "dialect",
+        "statements"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source": {
+          "$ref": "#/$defs/inputSource"
+        },
+        "dialect": {
+          "type": "string",
+          "minLength": 1
+        },
+        "statements": {
+          "type": "array",
+          "items": {
+            "$ref": "protocol-v0.schema.json#/$defs/statement"
+          }
+        }
+      }
+    },
+    "statementPointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_id",
+        "statement_index"
+      ],
+      "properties": {
+        "input_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "statement_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "datasetRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "name"
+          ],
+          "properties": {
+            "kind": {
+              "const": "relation"
+            },
+            "name": {
+              "$ref": "#/$defs/relationName"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "layer_id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "anonymous"
+            },
+            "layer_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        }
+      ]
+    },
+    "compositionDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "severity",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "layer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "relation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "resolvedComposedSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "dependencies",
+        "column_domains",
+        "output",
+        "diagnostics"
+      ],
+      "properties": {
+        "status": {
+          "const": "resolved"
+        },
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "column_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "protocol-v0.schema.json#/$defs/columnDomain"
+          }
+        },
+        "output": {
+          "$ref": "protocol-v0.schema.json#/$defs/output"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/compositionDiagnostic"
+          }
+        }
+      }
+    },
+    "unresolvedComposedSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason",
+        "diagnostics"
+      ],
+      "properties": {
+        "status": {
+          "const": "unresolved"
+        },
+        "reason": {
+          "enum": [
+            "missing_producer",
+            "ambiguous_producer",
+            "cycle",
+            "unsupported"
+          ]
+        },
+        "diagnostics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/compositionDiagnostic"
+          }
+        }
+      }
+    },
+    "composedSemantics": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/resolvedComposedSemantics"
+        },
+        {
+          "$ref": "#/$defs/unresolvedComposedSemantics"
+        }
+      ]
+    },
+    "transformationLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "statement",
+        "produces",
+        "consumes",
+        "composed_semantics"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "statement": {
+          "$ref": "#/$defs/statementPointer"
+        },
+        "produces": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/datasetRef"
+          }
+        },
+        "consumes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "composed_semantics": {
+          "$ref": "#/$defs/composedSemantics"
+        }
+      }
+    },
+    "resolvedEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "resolved"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "externalEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "external"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "missingEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "missing"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "ambiguousEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "ambiguous"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "cycleEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "cycle"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "unsupportedEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "unsupported"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "graphEdge": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/resolvedEdge"
+        },
+        {
+          "$ref": "#/$defs/externalEdge"
+        },
+        {
+          "$ref": "#/$defs/missingEdge"
+        },
+        {
+          "$ref": "#/$defs/ambiguousEdge"
+        },
+        {
+          "$ref": "#/$defs/cycleEdge"
+        },
+        {
+          "$ref": "#/$defs/unsupportedEdge"
+        }
+      ]
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "layer_ids",
+        "final_outcomes",
+        "diagnostics"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "layer_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "final_outcomes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/datasetRef"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/compositionDiagnostic"
+          }
+        }
+      }
+    },
+    "graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "edges",
+        "components",
+        "diagnostics"
+      ],
+      "properties": {
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/graphEdge"
+          }
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/component"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/compositionDiagnostic"
+          }
+        }
+      }
+    }
+  }
+}
