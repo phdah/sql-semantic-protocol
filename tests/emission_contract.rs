@@ -61,7 +61,6 @@ fn simple_query_emission_matches_active_protocol_fixture() {
     assert_eq!(actual, expected);
 }
 
-
 #[test]
 fn single_and_collection_emission_use_the_same_active_contract() {
     let dialect = GenericDialect {};
