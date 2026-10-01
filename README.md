@@ -32,14 +32,14 @@ Protocol version `0.1.0` is the current single-input contract emitted by the lib
 
 Protocol version `0.2.0` defines the next multi-input composition contract. It can represent arbitrarily many related or independent SQL inputs, transformation layers, dependency graph components, composed semantics, and per-component final outcomes. See [`schema/protocol-v0.2.schema.json`](schema/protocol-v0.2.schema.json), [`docs/protocol-v0.2.md`](docs/protocol-v0.2.md), and [`examples/protocol-v0.2.json`](examples/protocol-v0.2.json).
 
-The current analyzer does not emit `0.2.0` yet; the following implementation tasks add multi-input ingestion and graph construction without silently changing existing `0.1.0` behavior.
+Multi-input analysis now emits the `0.2.0` envelope with ordered analyzed inputs. Transformation layers, dependency edges, graph components, and transitive composition are not populated yet; the emitted graph carries an explicit `multi_input_composition_pending` diagnostic until those later tasks are implemented. Existing single-input analysis continues to emit `0.1.0`.
 
 ## CLI
 
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--dialect <name>] [--file <path>] [SQL ...]
+sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [SQL ...]
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
@@ -62,25 +62,36 @@ With `sqlparser` 0.58, the following built-in dialects are available:
 | Snowflake | `snowflake` |
 | SQLite | `sqlite` |
 
-SQL can be supplied directly:
+Legacy single-input SQL can still be supplied positionally:
 
 ```sh
 cargo run -- --dialect postgresql "SELECT a FROM t WHERE a > 10"
 ```
 
-from a file:
+A single file remains unchanged:
 
 ```sh
 cargo run -- --dialect snowflake --file query.sql
 ```
 
-or through standard input:
+For multiple inputs, repeat `--sql` and `--file` in any mixture:
+
+```sh
+cargo run -- \
+  --sql "SELECT id FROM raw.orders" \
+  --file sql/enrich_orders.sql \
+  --sql "SELECT customer_id FROM raw.customers"
+```
+
+Explicit inputs are analyzed in command-line occurrence order and receive deterministic IDs `input-0001`, `input-0002`, and so on. The width expands when necessary, so there is no fixed input-count limit. File paths are retained as source identity, and parse or analysis failures report the generated input ID plus its source.
+
+Positional SQL represents one legacy input and cannot be mixed with `--sql` or `--file`. If neither explicit input nor positional SQL is supplied, the CLI reads one input from standard input:
 
 ```sh
 printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
 ```
 
-If no SQL argument and no `--file` are supplied, the CLI reads SQL from standard input. Use `--` before positional SQL if the SQL text starts with a dash.
+Single-input invocations emit protocol `0.1.0`. Invocations with two or more explicit inputs emit one protocol `0.2.0` document containing all analyzed inputs in deterministic order.
 
 ### Example output
 
