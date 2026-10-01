@@ -5,9 +5,7 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use sql_semantic_protocol::{
-    analyze_sql, to_json, AnalysisError, Error as ProtocolError, ParseError,
-};
+use sql_semantic_protocol::{analyze_sql, to_json, Error as ProtocolError};
 use sqlparser::dialect::{Dialect, GenericDialect, SnowflakeDialect};
 
 const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <generic|snowflake>] [--file <path>] [SQL ...]\n\nIf neither --file nor SQL is supplied, SQL is read from stdin.\nUse -- to pass positional SQL that starts with a dash.";
@@ -32,7 +30,7 @@ fn run() -> Result<(), CliError> {
             let sql = read_sql(&options)?;
             let (dialect_name, dialect) = select_dialect(&options.dialect)?;
             let protocol =
-                analyze_sql(&sql, dialect_name, dialect.as_ref()).map_err(CliError::from)?;
+                analyze_sql(&sql, dialect_name, dialect.as_ref()).map_err(CliError::Protocol)?;
             println!("{}", to_json(&protocol));
             Ok(())
         }
@@ -138,25 +136,15 @@ fn select_dialect(name: &str) -> Result<(&'static str, Box<dyn Dialect>), CliErr
 #[derive(Debug)]
 enum CliError {
     Input(String),
-    Parse(ParseError),
-    Analysis(AnalysisError),
+    Protocol(ProtocolError),
 }
 
 impl CliError {
     fn exit_code(&self) -> ExitCode {
         match self {
             Self::Input(_) => ExitCode::from(2),
-            Self::Parse(_) => ExitCode::from(3),
-            Self::Analysis(_) => ExitCode::from(4),
-        }
-    }
-}
-
-impl From<ProtocolError> for CliError {
-    fn from(error: ProtocolError) -> Self {
-        match error {
-            ProtocolError::Parse(error) => Self::Parse(error),
-            ProtocolError::Analysis(error) => Self::Analysis(error),
+            Self::Protocol(ProtocolError::Parse(_)) => ExitCode::from(3),
+            Self::Protocol(ProtocolError::Analysis(_)) | Self::Protocol(_) => ExitCode::from(4),
         }
     }
 }
@@ -165,8 +153,10 @@ impl fmt::Display for CliError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Input(message) => write!(formatter, "input error: {message}"),
-            Self::Parse(error) => write!(formatter, "{error}"),
-            Self::Analysis(error) => write!(formatter, "analysis error: {error}"),
+            Self::Protocol(error) => match error {
+                ProtocolError::Parse(_) => write!(formatter, "{error}"),
+                ProtocolError::Analysis(_) | _ => write!(formatter, "analysis error: {error}"),
+            },
         }
     }
 }
