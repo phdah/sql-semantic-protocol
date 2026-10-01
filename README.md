@@ -1,15 +1,27 @@
-# sql-semantic-protocol
+# SQL Semantic Protocol
 
-A protocal with a built in SQL parser.
+SQL Semantic Protocol is a dialect-independent semantic representation of SQL queries.
 
-## Core idé
+Its purpose is to translate SQL syntax into a stable, deterministic, machine-readable description of what a query means, rather than how the query was written.
 
-Take any SQL string/file, from any supported dialect from the [sqlparser](https://docs.rs/sqlparser/latest/sqlparser/) crate, and output a opinionated protocal format.
+The project includes a SQL parser and semantic analyzer that accepts SQL from supported dialects, analyzes the parsed query, and emits the SQL Semantic Protocol. The parser is a producer of the protocol. Consumers should depend on the protocol rather than on the parser's AST or the syntax of the original SQL.
 
-It represents the SQL query in a more human/AI readable way, with what's important for the output of the query after execution:
-- What is the allowed interval for a given column?
-    - E.g., column A (integer) must be within interval `10<=A<=20`
-- What are the remaining column after the entire query?
-    - E.g., only column A is kept from query: `select A from (select A, B from table);`
-- What tables/views does the query depend on?
-    - E.g., it depends on table T1 and T2 from query: `select * from T1 join T2 using A`
+The protocol describes semantics such as:
+
+- the relations and columns a query depends on
+- the columns produced by the query and their lineage
+- the constraints placed on values by predicates
+- the allowed value domains of columns, including bounded, unbounded, excluded, or disjoint ranges
+- relationships between columns and relations introduced by joins and predicates
+- other query semantics required to understand the resulting rows and output schema
+- semantics that could not be resolved, represented explicitly as unknown or unsupported
+
+The protocol deliberately separates SQL parsing from applications that need to reason about SQL. A consumer should not need to understand a Snowflake `WHERE` clause, a PostgreSQL AST, or a particular SQL parser. It should instead operate on the normalized semantic representation.
+
+The first consumer is `sql-tdg`, the SQL Test Data Generator. It will use the protocol's value-domain and constraint information to determine which input values can satisfy a query and generate appropriate test data. This replaces the SQL parsing and interval derivation currently implemented inside `sql-tdg`.
+
+The protocol is intentionally broader than test-data generation. Future consumers can use the same semantic representation for query analysis, lineage, validation, rewriting, and compilation. One planned use case is a SQL compiler that consumes the protocol and produces equivalent SQL according to a target dialect, formatting rules, or other output restrictions.
+
+The protocol is therefore the contract between SQL and applications that need to reason about SQL semantics:
+
+`SQL -> parser/analyzer -> SQL Semantic Protocol -> consumers`
