@@ -10,7 +10,6 @@ use sqlparser::dialect::Dialect;
 use crate::protocol::{ProtocolStatement, PROTOCOL_VERSION};
 use crate::{analyze_sql, Error};
 
-
 /// Source identity retained for one SQL input unit.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
