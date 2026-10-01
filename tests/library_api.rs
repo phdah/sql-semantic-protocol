@@ -1,7 +1,16 @@
 use sql_semantic_protocol::{
-    analyze_sql, to_json, AnalysisError, DiagnosticArea, Error, Predicate, ProtocolStatement,
+    analyze_sql, to_json, AnalysisError, BinaryOperator, ComparisonOperator, DiagnosticArea, Error,
+    Expression, LiteralType, LiteralValue, Predicate, Protocol, ProtocolStatement, QueryStatement,
+    UnaryOperator,
 };
 use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
+
+fn first_query(protocol: &Protocol) -> &QueryStatement {
+    match protocol.statements().first() {
+        Some(ProtocolStatement::Query(statement)) => statement,
+        other => panic!("expected query statement, got {other:?}"),
+    }
+}
 
 #[test]
 fn valid_sql_returns_partial_query_for_caller_selected_dialect() {
@@ -12,16 +21,12 @@ fn valid_sql_returns_partial_query_for_caller_selected_dialect() {
     assert_eq!(protocol.protocol_version(), "0.1.0");
     assert_eq!(protocol.source().dialect(), "generic");
 
-    match protocol.statements().first() {
-        Some(ProtocolStatement::Query(statement)) => {
-            assert!(statement.predicates().where_predicate().is_none());
-            assert!(statement
-                .diagnostics()
-                .iter()
-                .any(|diagnostic| diagnostic.area() == DiagnosticArea::Output));
-        }
-        other => panic!("expected a partial query statement, got {other:?}"),
-    }
+    let statement = first_query(&protocol);
+    assert!(statement.predicates().where_predicate().is_none());
+    assert!(statement
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.area() == DiagnosticArea::Output));
 }
 
 #[test]
@@ -69,27 +74,229 @@ fn serialization_is_separate_from_analysis() {
 }
 
 #[test]
-fn parsed_predicate_is_preserved_as_explicitly_unsupported() {
+fn comparison_predicate_is_normalized_and_serialized() {
     let dialect = GenericDialect {};
-    let protocol = analyze_sql("SELECT a FROM t WHERE a > 10", "generic", &dialect)
-        .expect("query should preserve partial semantics");
+    let protocol = analyze_sql("SELECT a FROM t WHERE t.a > 10", "generic", &dialect)
+        .expect("comparison should be analyzed");
 
-    let statement = match protocol.statements().first() {
-        Some(ProtocolStatement::Query(statement)) => statement,
-        other => panic!("expected query statement, got {other:?}"),
+    let predicate = first_query(&protocol)
+        .predicates()
+        .where_predicate()
+        .expect("WHERE predicate should be present");
+
+    let comparison = match predicate {
+        Predicate::Comparison(comparison) => comparison,
+        other => panic!("expected comparison predicate, got {other:?}"),
     };
 
-    match statement.predicates().where_predicate() {
-        Some(Predicate::Unsupported(semantic)) => {
-            assert_eq!(semantic.feature(), "where_predicate");
+    assert_eq!(comparison.operator(), ComparisonOperator::Gt);
+
+    match comparison.left() {
+        Expression::Column(column) => {
+            assert_eq!(column.relation(), Some("t"));
+            assert_eq!(column.name(), "a");
         }
-        other => panic!("expected explicit unsupported WHERE predicate, got {other:?}"),
+        other => panic!("expected column expression, got {other:?}"),
     }
 
-    assert!(statement.diagnostics().iter().any(|diagnostic| {
-        diagnostic.area() == DiagnosticArea::Predicate
-            && diagnostic.code() == "unsupported_where_predicate"
-    }));
+    match comparison.right() {
+        Expression::Literal(literal) => {
+            assert_eq!(literal.literal_type(), LiteralType::Integer);
+            assert_eq!(literal.value(), &LiteralValue::Number("10".to_string()));
+        }
+        other => panic!("expected integer literal, got {other:?}"),
+    }
+
+    let json: serde_json::Value =
+        serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
+    assert_eq!(
+        json["statements"][0]["predicates"]["where"]["operator"],
+        "gt"
+    );
+    assert_eq!(
+        json["statements"][0]["predicates"]["where"]["right"]["value"],
+        10
+    );
+}
+
+#[test]
+fn boolean_predicate_tree_preserves_and_or_not_structure() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT a FROM t WHERE (a = 1 OR b <> 2) AND NOT (c IS NULL)",
+        "generic",
+        &dialect,
+    )
+    .expect("boolean predicate should be analyzed");
+
+    let predicate = first_query(&protocol)
+        .predicates()
+        .where_predicate()
+        .expect("WHERE predicate should be present");
+
+    let operands = match predicate {
+        Predicate::And(predicate) => predicate.operands(),
+        other => panic!("expected AND predicate, got {other:?}"),
+    };
+
+    assert!(matches!(operands.first(), Some(Predicate::Or(_))));
+    assert!(matches!(operands.get(1), Some(Predicate::Not(_))));
+
+    let not = match operands.get(1) {
+        Some(Predicate::Not(predicate)) => predicate,
+        other => panic!("expected NOT predicate, got {other:?}"),
+    };
+    assert!(matches!(not.operand(), Predicate::IsNull(_)));
+}
+
+#[test]
+fn between_in_and_null_predicates_are_typed() {
+    let dialect = GenericDialect {};
+
+    let between = analyze_sql(
+        "SELECT a FROM t WHERE a BETWEEN 1 AND 3",
+        "generic",
+        &dialect,
+    )
+    .expect("BETWEEN should be analyzed");
+    assert!(matches!(
+        first_query(&between).predicates().where_predicate(),
+        Some(Predicate::Between(_))
+    ));
+
+    let in_list = analyze_sql(
+        "SELECT a FROM t WHERE a NOT IN (1, 2, 3)",
+        "generic",
+        &dialect,
+    )
+    .expect("IN should be analyzed");
+    match first_query(&in_list).predicates().where_predicate() {
+        Some(Predicate::In(predicate)) => {
+            assert!(predicate.negated());
+            assert_eq!(predicate.values().len(), 3);
+        }
+        other => panic!("expected IN predicate, got {other:?}"),
+    }
+
+    let is_null = analyze_sql("SELECT a FROM t WHERE a IS NOT NULL", "generic", &dialect)
+        .expect("null predicate should be analyzed");
+    match first_query(&is_null).predicates().where_predicate() {
+        Some(Predicate::IsNull(predicate)) => assert!(predicate.negated()),
+        other => panic!("expected IS NULL predicate, got {other:?}"),
+    }
+}
+
+#[test]
+fn reversed_comparison_normalizes_to_equivalent_semantics() {
+    let dialect = GenericDialect {};
+    let direct = analyze_sql("SELECT a FROM t WHERE a > 10", "generic", &dialect)
+        .expect("direct comparison should be analyzed");
+    let reversed = analyze_sql("SELECT a FROM t WHERE 10 < a", "generic", &dialect)
+        .expect("reversed comparison should be analyzed");
+
+    assert_eq!(
+        first_query(&direct).predicates().where_predicate(),
+        first_query(&reversed).predicates().where_predicate()
+    );
+}
+
+#[test]
+fn function_unary_and_binary_expressions_are_normalized() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT a FROM t WHERE COALESCE(t.a + 1, -2) >= 10",
+        "generic",
+        &dialect,
+    )
+    .expect("supported expression forms should be analyzed");
+
+    let comparison = match first_query(&protocol)
+        .predicates()
+        .where_predicate()
+        .expect("WHERE predicate should be present")
+    {
+        Predicate::Comparison(comparison) => comparison,
+        other => panic!("expected comparison predicate, got {other:?}"),
+    };
+
+    let function = match comparison.left() {
+        Expression::Function(function) => function,
+        other => panic!("expected function expression, got {other:?}"),
+    };
+
+    assert_eq!(function.name(), "COALESCE");
+    assert!(!function.distinct());
+    assert_eq!(function.arguments().len(), 2);
+
+    match function.arguments().first() {
+        Some(Expression::Binary(expression)) => {
+            assert_eq!(expression.operator(), BinaryOperator::Add);
+        }
+        other => panic!("expected binary function argument, got {other:?}"),
+    }
+
+    match function.arguments().get(1) {
+        Some(Expression::Unary(expression)) => {
+            assert_eq!(expression.operator(), UnaryOperator::Minus);
+        }
+        other => panic!("expected unary function argument, got {other:?}"),
+    }
+
+    assert!(!first_query(&protocol)
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_function"));
+}
+
+#[test]
+fn where_having_and_qualify_keep_clause_context() {
+    let dialect = SnowflakeDialect {};
+    let protocol = analyze_sql(
+        "SELECT a FROM t WHERE a > 0 GROUP BY a HAVING a < 10 QUALIFY a IS NOT NULL",
+        "snowflake",
+        &dialect,
+    )
+    .expect("Snowflake predicate clauses should parse");
+
+    let predicates = first_query(&protocol).predicates();
+    assert!(matches!(
+        predicates.where_predicate(),
+        Some(Predicate::Comparison(_))
+    ));
+    assert!(matches!(
+        predicates.having_predicate(),
+        Some(Predicate::Comparison(_))
+    ));
+    assert!(matches!(
+        predicates.qualify_predicate(),
+        Some(Predicate::IsNull(_))
+    ));
+}
+
+#[test]
+fn unsupported_predicate_expression_remains_explicit() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT a FROM t WHERE CASE WHEN a > 0 THEN TRUE ELSE FALSE END",
+        "generic",
+        &dialect,
+    )
+    .expect("CASE predicate should parse");
+
+    match first_query(&protocol).predicates().where_predicate() {
+        Some(Predicate::BooleanExpression(Expression::Unsupported(semantic))) => {
+            assert_eq!(semantic.feature(), "expression");
+        }
+        other => panic!("expected explicit unsupported expression, got {other:?}"),
+    }
+
+    assert!(first_query(&protocol)
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| {
+            diagnostic.area() == DiagnosticArea::Expression
+                && diagnostic.code() == "unsupported_expression"
+        }));
 }
 
 #[test]
@@ -128,10 +335,7 @@ fn unsupported_table_factor_is_diagnosed() {
     let protocol = analyze_sql("SELECT * FROM (SELECT 1) AS derived", "generic", &dialect)
         .expect("derived table should parse");
 
-    let statement = match protocol.statements().first() {
-        Some(ProtocolStatement::Query(statement)) => statement,
-        other => panic!("expected query statement, got {other:?}"),
-    };
+    let statement = first_query(&protocol);
 
     assert!(statement.diagnostics().iter().any(|diagnostic| {
         diagnostic.area() == DiagnosticArea::Source
@@ -149,10 +353,7 @@ fn unsupported_expression_is_diagnosed() {
     )
     .expect("CASE expression should parse");
 
-    let statement = match protocol.statements().first() {
-        Some(ProtocolStatement::Query(statement)) => statement,
-        other => panic!("expected query statement, got {other:?}"),
-    };
+    let statement = first_query(&protocol);
 
     assert!(statement.diagnostics().iter().any(|diagnostic| {
         diagnostic.area() == DiagnosticArea::Expression
@@ -161,17 +362,29 @@ fn unsupported_expression_is_diagnosed() {
 }
 
 #[test]
-fn unsupported_function_is_diagnosed() {
+fn unsupported_function_shape_is_diagnosed() {
     let dialect = GenericDialect {};
-    let protocol = analyze_sql("SELECT COALESCE(a, 0) FROM t", "generic", &dialect)
-        .expect("function expression should parse");
+    let protocol = analyze_sql("SELECT a FROM t WHERE COUNT(*) > 0", "generic", &dialect)
+        .expect("COUNT wildcard should parse");
 
-    let statement = match protocol.statements().first() {
-        Some(ProtocolStatement::Query(statement)) => statement,
-        other => panic!("expected query statement, got {other:?}"),
+    let comparison = match first_query(&protocol)
+        .predicates()
+        .where_predicate()
+        .expect("WHERE predicate should be present")
+    {
+        Predicate::Comparison(comparison) => comparison,
+        other => panic!("expected comparison predicate, got {other:?}"),
     };
 
-    assert!(statement.diagnostics().iter().any(|diagnostic| {
-        diagnostic.area() == DiagnosticArea::Function && diagnostic.code() == "unsupported_function"
-    }));
+    assert!(matches!(
+        comparison.left(),
+        Expression::Unsupported(semantic) if semantic.feature() == "function"
+    ));
+    assert!(first_query(&protocol)
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| {
+            diagnostic.area() == DiagnosticArea::Function
+                && diagnostic.code() == "unsupported_function"
+        }));
 }

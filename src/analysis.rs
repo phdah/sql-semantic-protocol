@@ -3,17 +3,22 @@
 //! This module is the only layer that converts sqlparser AST statements into public protocol
 //! values. Unsupported semantics are retained explicitly rather than silently discarded.
 
-use std::fmt;
+use std::{fmt, str::FromStr};
 
+use serde_json::Number;
 use sqlparser::ast::{
-    Expr, GroupByExpr, Query as SqlQuery, Select, SelectItem, SetExpr, Statement as SqlStatement,
-    TableFactor,
+    BinaryOperator as SqlBinaryOperator, DuplicateTreatment, Expr, Function, FunctionArg,
+    FunctionArgExpr, FunctionArguments, GroupByExpr, Query as SqlQuery, Select, SelectItem,
+    SetExpr, Statement as SqlStatement, TableFactor, UnaryOperator as SqlUnaryOperator, Value,
 };
 
 use crate::parser::ParsedSql;
 use crate::protocol::{
-    Diagnostic, DiagnosticArea, DiagnosticSeverity, Predicate, Predicates, Protocol,
-    ProtocolStatement, QueryStatement, UnsupportedSemantic, UnsupportedStatement,
+    BetweenPredicate, BinaryExpression, BinaryOperator, ColumnExpression, ComparisonOperator,
+    ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity, Expression,
+    FunctionExpression, InPredicate, IsNullPredicate, LiteralExpression, LiteralType, LiteralValue,
+    LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol, ProtocolStatement,
+    QueryStatement, UnaryExpression, UnaryOperator, UnsupportedSemantic, UnsupportedStatement,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -86,26 +91,418 @@ fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predica
     inspect_sources(select, diagnostics);
     inspect_select_features(select, diagnostics);
 
-    let where_predicate = unsupported_predicate(
-        "where_predicate",
-        "WHERE predicate semantics are not implemented yet",
-        select.selection.as_ref(),
-        diagnostics,
-    );
-    let having_predicate = unsupported_predicate(
-        "having_predicate",
-        "HAVING predicate semantics are not implemented yet",
-        select.having.as_ref(),
-        diagnostics,
-    );
-    let qualify_predicate = unsupported_predicate(
-        "qualify_predicate",
-        "QUALIFY predicate semantics are not implemented yet",
-        select.qualify.as_ref(),
-        diagnostics,
-    );
+    Predicates::new(
+        select
+            .selection
+            .as_ref()
+            .map(|expression| analyze_predicate(expression, diagnostics)),
+        select
+            .having
+            .as_ref()
+            .map(|expression| analyze_predicate(expression, diagnostics)),
+        select
+            .qualify
+            .as_ref()
+            .map(|expression| analyze_predicate(expression, diagnostics)),
+    )
+}
 
-    Predicates::new(where_predicate, having_predicate, qualify_predicate)
+fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Predicate {
+    match expression {
+        Expr::Nested(inner) => analyze_predicate(inner, diagnostics),
+        Expr::BinaryOp { left, op, right } => match op {
+            SqlBinaryOperator::And => Predicate::And(LogicalPredicate::pair(
+                analyze_predicate(left, diagnostics),
+                analyze_predicate(right, diagnostics),
+            )),
+            SqlBinaryOperator::Or => Predicate::Or(LogicalPredicate::pair(
+                analyze_predicate(left, diagnostics),
+                analyze_predicate(right, diagnostics),
+            )),
+            _ => match comparison_operator(op) {
+                Some(operator) => normalize_comparison(
+                    analyze_expression(left, diagnostics),
+                    operator,
+                    analyze_expression(right, diagnostics),
+                ),
+                None => Predicate::BooleanExpression(analyze_expression(expression, diagnostics)),
+            },
+        },
+        Expr::IsDistinctFrom(left, right) => normalize_comparison(
+            analyze_expression(left, diagnostics),
+            ComparisonOperator::IsDistinctFrom,
+            analyze_expression(right, diagnostics),
+        ),
+        Expr::IsNotDistinctFrom(left, right) => normalize_comparison(
+            analyze_expression(left, diagnostics),
+            ComparisonOperator::IsNotDistinctFrom,
+            analyze_expression(right, diagnostics),
+        ),
+        Expr::IsNull(inner) => Predicate::IsNull(IsNullPredicate::new(
+            analyze_expression(inner, diagnostics),
+            false,
+        )),
+        Expr::IsNotNull(inner) => Predicate::IsNull(IsNullPredicate::new(
+            analyze_expression(inner, diagnostics),
+            true,
+        )),
+        Expr::InList {
+            expr,
+            list,
+            negated,
+        } => Predicate::In(InPredicate::new(
+            analyze_expression(expr, diagnostics),
+            list.iter()
+                .map(|value| analyze_expression(value, diagnostics))
+                .collect(),
+            *negated,
+        )),
+        Expr::Between {
+            expr,
+            negated,
+            low,
+            high,
+        } => Predicate::Between(BetweenPredicate::new(
+            analyze_expression(expr, diagnostics),
+            analyze_expression(low, diagnostics),
+            analyze_expression(high, diagnostics),
+            *negated,
+        )),
+        Expr::UnaryOp {
+            op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
+            expr,
+        } => Predicate::Not(NotPredicate::new(analyze_predicate(expr, diagnostics))),
+        _ => Predicate::BooleanExpression(analyze_expression(expression, diagnostics)),
+    }
+}
+
+fn normalize_comparison(
+    left: Expression,
+    operator: ComparisonOperator,
+    right: Expression,
+) -> Predicate {
+    if matches!(left, Expression::Literal(_)) && matches!(right, Expression::Column(_)) {
+        Predicate::Comparison(ComparisonPredicate::new(right, operator.reversed(), left))
+    } else {
+        Predicate::Comparison(ComparisonPredicate::new(left, operator, right))
+    }
+}
+
+fn comparison_operator(operator: &SqlBinaryOperator) -> Option<ComparisonOperator> {
+    match operator {
+        SqlBinaryOperator::Eq => Some(ComparisonOperator::Eq),
+        SqlBinaryOperator::NotEq => Some(ComparisonOperator::Neq),
+        SqlBinaryOperator::Lt => Some(ComparisonOperator::Lt),
+        SqlBinaryOperator::LtEq => Some(ComparisonOperator::Lte),
+        SqlBinaryOperator::Gt => Some(ComparisonOperator::Gt),
+        SqlBinaryOperator::GtEq => Some(ComparisonOperator::Gte),
+        _ => None,
+    }
+}
+
+fn analyze_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Expression {
+    match expression {
+        Expr::Identifier(identifier) => {
+            Expression::Column(ColumnExpression::new(None, identifier.value.clone()))
+        }
+        Expr::CompoundIdentifier(identifiers) => analyze_compound_identifier(identifiers),
+        Expr::Value(value) => analyze_value(&value.value, expression, diagnostics),
+        Expr::TypedString { data_type, value } => analyze_typed_string(
+            data_type.to_string().as_str(),
+            &value.value,
+            expression,
+            diagnostics,
+        ),
+        Expr::Function(function) => analyze_function(function, expression, diagnostics),
+        Expr::UnaryOp { op, expr } => analyze_unary_expression(op, expr, expression, diagnostics),
+        Expr::BinaryOp { left, op, right } => {
+            analyze_binary_expression(left, op, right, expression, diagnostics)
+        }
+        Expr::Nested(inner) => analyze_expression(inner, diagnostics),
+        _ => unsupported_expression(
+            "expression",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+        ),
+    }
+}
+
+fn analyze_compound_identifier(identifiers: &[sqlparser::ast::Ident]) -> Expression {
+    match identifiers.split_last() {
+        Some((column, relation_parts)) => {
+            let relation = if relation_parts.is_empty() {
+                None
+            } else {
+                Some(
+                    relation_parts
+                        .iter()
+                        .map(|identifier| identifier.value.as_str())
+                        .collect::<Vec<_>>()
+                        .join("."),
+                )
+            };
+            Expression::Column(ColumnExpression::new(relation, column.value.clone()))
+        }
+        None => Expression::Unsupported(UnsupportedSemantic::new(
+            "column_reference".to_string(),
+            Some("empty compound identifier cannot be resolved".to_string()),
+        )),
+    }
+}
+
+fn analyze_value(
+    value: &Value,
+    expression: &Expr,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    match value {
+        Value::Number(value, _) => analyze_number(value, expression, diagnostics),
+        Value::SingleQuotedString(value)
+        | Value::TripleSingleQuotedString(value)
+        | Value::TripleDoubleQuotedString(value)
+        | Value::EscapedStringLiteral(value)
+        | Value::UnicodeStringLiteral(value)
+        | Value::SingleQuotedRawStringLiteral(value)
+        | Value::DoubleQuotedRawStringLiteral(value)
+        | Value::TripleSingleQuotedRawStringLiteral(value)
+        | Value::TripleDoubleQuotedRawStringLiteral(value)
+        | Value::NationalStringLiteral(value)
+        | Value::DoubleQuotedString(value) => Expression::Literal(LiteralExpression::new(
+            LiteralType::String,
+            LiteralValue::Text(value.clone()),
+        )),
+        Value::Boolean(value) => Expression::Literal(LiteralExpression::new(
+            LiteralType::Boolean,
+            LiteralValue::Boolean(*value),
+        )),
+        Value::Null => Expression::Literal(LiteralExpression::new(
+            LiteralType::Null,
+            LiteralValue::Null,
+        )),
+        _ => unsupported_expression(
+            "literal",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+        ),
+    }
+}
+
+fn analyze_number(value: &str, expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Expression {
+    match Number::from_str(value) {
+        Ok(number) => {
+            let literal_type = if value.contains('.') || value.contains('e') || value.contains('E')
+            {
+                LiteralType::Decimal
+            } else {
+                LiteralType::Integer
+            };
+
+            Expression::Literal(LiteralExpression::new(
+                literal_type,
+                LiteralValue::Number(number.to_string()),
+            ))
+        }
+        Err(_) => unsupported_expression(
+            "numeric_literal",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+        ),
+    }
+}
+
+fn analyze_typed_string(
+    data_type: &str,
+    value: &Value,
+    expression: &Expr,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    let data_type = data_type.to_ascii_uppercase();
+    let literal_type = match data_type.as_str() {
+        "DATE" => Some(LiteralType::Date),
+        data_type if data_type.starts_with("TIMESTAMP") => Some(LiteralType::Timestamp),
+        data_type if data_type.starts_with("TIME") => Some(LiteralType::Time),
+        data_type if data_type.starts_with("INTERVAL") => Some(LiteralType::Interval),
+        _ => None,
+    };
+
+    match (literal_type, string_literal_value(value)) {
+        (Some(literal_type), Some(value)) => Expression::Literal(LiteralExpression::new(
+            literal_type,
+            LiteralValue::Text(value.to_string()),
+        )),
+        _ => unsupported_expression(
+            "typed_literal",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+        ),
+    }
+}
+
+fn string_literal_value(value: &Value) -> Option<&str> {
+    match value {
+        Value::SingleQuotedString(value)
+        | Value::TripleSingleQuotedString(value)
+        | Value::TripleDoubleQuotedString(value)
+        | Value::EscapedStringLiteral(value)
+        | Value::UnicodeStringLiteral(value)
+        | Value::SingleQuotedRawStringLiteral(value)
+        | Value::DoubleQuotedRawStringLiteral(value)
+        | Value::TripleSingleQuotedRawStringLiteral(value)
+        | Value::TripleDoubleQuotedRawStringLiteral(value)
+        | Value::NationalStringLiteral(value)
+        | Value::DoubleQuotedString(value) => Some(value),
+        _ => None,
+    }
+}
+
+fn analyze_function(
+    function: &Function,
+    expression: &Expr,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    if function.uses_odbc_syntax
+        || !matches!(&function.parameters, FunctionArguments::None)
+        || function.filter.is_some()
+        || function.null_treatment.is_some()
+        || function.over.is_some()
+        || !function.within_group.is_empty()
+    {
+        return unsupported_expression(
+            "function",
+            expression,
+            DiagnosticArea::Function,
+            diagnostics,
+        );
+    }
+
+    let (arguments, distinct) = match &function.args {
+        FunctionArguments::None => (Vec::new(), false),
+        FunctionArguments::List(arguments) if arguments.clauses.is_empty() => {
+            let distinct = matches!(
+                arguments.duplicate_treatment,
+                Some(DuplicateTreatment::Distinct)
+            );
+            let mut normalized_arguments = Vec::with_capacity(arguments.args.len());
+
+            for argument in &arguments.args {
+                match argument {
+                    FunctionArg::Unnamed(FunctionArgExpr::Expr(argument)) => {
+                        normalized_arguments.push(analyze_expression(argument, diagnostics));
+                    }
+                    _ => {
+                        return unsupported_expression(
+                            "function",
+                            expression,
+                            DiagnosticArea::Function,
+                            diagnostics,
+                        );
+                    }
+                }
+            }
+
+            (normalized_arguments, distinct)
+        }
+        FunctionArguments::List(_) | FunctionArguments::Subquery(_) => {
+            return unsupported_expression(
+                "function",
+                expression,
+                DiagnosticArea::Function,
+                diagnostics,
+            );
+        }
+    };
+
+    Expression::Function(FunctionExpression::new(
+        function.name.to_string(),
+        arguments,
+        distinct,
+    ))
+}
+
+fn analyze_unary_expression(
+    operator: &SqlUnaryOperator,
+    operand: &Expr,
+    expression: &Expr,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    let operator = match operator {
+        SqlUnaryOperator::Plus => Some(UnaryOperator::Plus),
+        SqlUnaryOperator::Minus => Some(UnaryOperator::Minus),
+        SqlUnaryOperator::PGBitwiseNot => Some(UnaryOperator::BitwiseNot),
+        _ => None,
+    };
+
+    match operator {
+        Some(operator) => Expression::Unary(UnaryExpression::new(
+            operator,
+            analyze_expression(operand, diagnostics),
+        )),
+        None => unsupported_expression(
+            "unary_expression",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+        ),
+    }
+}
+
+fn analyze_binary_expression(
+    left: &Expr,
+    operator: &SqlBinaryOperator,
+    right: &Expr,
+    expression: &Expr,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    let operator = match operator {
+        SqlBinaryOperator::Plus => Some(BinaryOperator::Add),
+        SqlBinaryOperator::Minus => Some(BinaryOperator::Subtract),
+        SqlBinaryOperator::Multiply => Some(BinaryOperator::Multiply),
+        SqlBinaryOperator::Divide => Some(BinaryOperator::Divide),
+        SqlBinaryOperator::Modulo => Some(BinaryOperator::Modulo),
+        SqlBinaryOperator::StringConcat => Some(BinaryOperator::StringConcat),
+        SqlBinaryOperator::BitwiseAnd => Some(BinaryOperator::BitwiseAnd),
+        SqlBinaryOperator::BitwiseOr => Some(BinaryOperator::BitwiseOr),
+        SqlBinaryOperator::BitwiseXor | SqlBinaryOperator::PGBitwiseXor => {
+            Some(BinaryOperator::BitwiseXor)
+        }
+        _ => None,
+    };
+
+    match operator {
+        Some(operator) => Expression::Binary(BinaryExpression::new(
+            operator,
+            analyze_expression(left, diagnostics),
+            analyze_expression(right, diagnostics),
+        )),
+        None => unsupported_expression(
+            "binary_expression",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+        ),
+    }
+}
+
+fn unsupported_expression(
+    feature: &str,
+    expression: &Expr,
+    area: DiagnosticArea,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    let code = if area == DiagnosticArea::Function {
+        "unsupported_function"
+    } else {
+        "unsupported_expression"
+    };
+    let reason = format!("{feature} {expression} is parsed but its semantics are not implemented");
+
+    diagnostics.push(warning(code, area, &reason));
+
+    Expression::Unsupported(UnsupportedSemantic::new(feature.to_string(), Some(reason)))
 }
 
 fn inspect_projection(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
@@ -137,21 +534,7 @@ fn inspect_projection(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
 }
 
 fn inspect_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) {
-    match expression {
-        Expr::Identifier(_) | Expr::CompoundIdentifier(_) | Expr::Value(_) => {}
-        Expr::Function(_) => diagnostics.push(warning(
-            "unsupported_function",
-            DiagnosticArea::Function,
-            &format!(
-                "function expression {expression} is parsed but function semantics are not implemented"
-            ),
-        )),
-        _ => diagnostics.push(warning(
-            "unsupported_expression",
-            DiagnosticArea::Expression,
-            &format!("expression {expression} is parsed but its semantics are not implemented"),
-        )),
-    }
+    let _ = analyze_expression(expression, diagnostics);
 }
 
 fn inspect_sources(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
@@ -348,27 +731,6 @@ fn inspect_query_features(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) {
             "pipe-operator semantics are not implemented yet",
         ));
     }
-}
-
-fn unsupported_predicate(
-    feature: &str,
-    reason: &str,
-    expression: Option<&Expr>,
-    diagnostics: &mut Vec<Diagnostic>,
-) -> Option<Predicate> {
-    expression.map(|expression| {
-        diagnostics.push(warning(
-            &format!("unsupported_{feature}"),
-            DiagnosticArea::Predicate,
-            reason,
-        ));
-        inspect_expression(expression, diagnostics);
-
-        Predicate::Unsupported(UnsupportedSemantic::new(
-            feature.to_string(),
-            Some(reason.to_string()),
-        ))
-    })
 }
 
 fn has_group_by(group_by: &GroupByExpr) -> bool {
