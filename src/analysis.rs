@@ -205,10 +205,9 @@ fn comparison_operator(operator: &SqlBinaryOperator) -> Option<ComparisonOperato
 
 fn analyze_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Expression {
     match expression {
-        Expr::Identifier(identifier) => Expression::Column(ColumnExpression::new(
-            None,
-            identifier.value.clone(),
-        )),
+        Expr::Identifier(identifier) => {
+            Expression::Column(ColumnExpression::new(None, identifier.value.clone()))
+        }
         Expr::CompoundIdentifier(identifiers) => analyze_compound_identifier(identifiers),
         Expr::Value(value) => analyze_value(&value.value, expression, diagnostics),
         Expr::TypedString { data_type, value } => analyze_typed_string(
@@ -292,19 +291,15 @@ fn analyze_value(
     }
 }
 
-fn analyze_number(
-    value: &str,
-    expression: &Expr,
-    diagnostics: &mut Vec<Diagnostic>,
-) -> Expression {
+fn analyze_number(value: &str, expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Expression {
     match Number::from_str(value) {
         Ok(number) => {
-            let literal_type =
-                if value.contains('.') || value.contains('e') || value.contains('E') {
-                    LiteralType::Decimal
-                } else {
-                    LiteralType::Integer
-                };
+            let literal_type = if value.contains('.') || value.contains('e') || value.contains('E')
+            {
+                LiteralType::Decimal
+            } else {
+                LiteralType::Integer
+            };
 
             Expression::Literal(LiteralExpression::new(
                 literal_type,
@@ -517,10 +512,7 @@ fn unsupported_expression(
 
     diagnostics.push(warning(code, area, &reason));
 
-    Expression::Unsupported(UnsupportedSemantic::new(
-        feature.to_string(),
-        Some(reason),
-    ))
+    Expression::Unsupported(UnsupportedSemantic::new(feature.to_string(), Some(reason)))
 }
 
 fn inspect_projection(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
