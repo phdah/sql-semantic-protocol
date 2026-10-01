@@ -28,11 +28,13 @@ The protocol is therefore the contract between SQL and applications that need to
 
 ## Protocol contract
 
-Protocol version `0.1.0` is the current single-input contract emitted by the library and CLI. It is defined by [`schema/protocol-v0.schema.json`](schema/protocol-v0.schema.json), documented in [`docs/protocol-v0.md`](docs/protocol-v0.md), and demonstrated by [`examples/protocol-v0.json`](examples/protocol-v0.json).
+Protocol version `0.2.0` is the single active contract emitted by the library and CLI. It represents one or many SQL inputs with the same root document shape: `inputs`, `layers`, and `graph`. A single SQL string is therefore represented as one element in `inputs`, not by switching to a different protocol version.
 
-Protocol version `0.2.0` defines the next multi-input composition contract. It can represent arbitrarily many related or independent SQL inputs, transformation layers, dependency graph components, composed semantics, and per-component final outcomes. See [`schema/protocol-v0.2.schema.json`](schema/protocol-v0.2.schema.json), [`docs/protocol-v0.2.md`](docs/protocol-v0.2.md), and [`examples/protocol-v0.2.json`](examples/protocol-v0.2.json).
+The active contract is defined by [`schema/protocol-v0.2.schema.json`](schema/protocol-v0.2.schema.json), documented in [`docs/protocol-v0.2.md`](docs/protocol-v0.2.md), and demonstrated by [`examples/protocol-v0.2.json`](examples/protocol-v0.2.json) and [`examples/protocol-v0.2-simple.json`](examples/protocol-v0.2-simple.json).
 
-Multi-input analysis now emits the `0.2.0` envelope with ordered analyzed inputs. Transformation layers, dependency edges, graph components, and transitive composition are not populated yet; the emitted graph carries an explicit `multi_input_composition_pending` diagnostic until those later tasks are implemented. Existing single-input analysis continues to emit `0.1.0`.
+Version `0.1.0` files remain in the repository only as historical references. Current runtime code does not emit `0.1.0`.
+
+TASK-11 populates the active `0.2.0` envelope with ordered analyzed inputs. Transformation layers, dependency edges, graph components, and transitive composition are not populated yet; the emitted graph carries an explicit `multi_input_composition_pending` diagnostic until those later tasks are implemented.
 
 ## CLI
 
@@ -92,7 +94,7 @@ Positional SQL represents one legacy input and cannot be mixed with `--sql`, `--
 printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
 ```
 
-Single-input invocations emit protocol `0.1.0`. Invocations with two or more explicit inputs emit one protocol `0.2.0` document containing all analyzed inputs in deterministic order.
+Every successful invocation emits protocol `0.2.0`. One input produces an `inputs` array with one element; multiple inputs use the same document shape with additional elements.
 
 ### Example output
 
@@ -102,93 +104,112 @@ For:
 SELECT t.b FROM t WHERE t.a > 10
 ```
 
-the protocol output is:
+the protocol still uses the active `0.2.0` envelope even though there is only one input:
 
 ```json
 {
-  "protocol_version": "0.1.0",
-  "source": {
-    "dialect": "generic"
-  },
-  "statements": [
+  "protocol_version": "0.2.0",
+  "inputs": [
     {
-      "kind": "query",
-      "sources": [
-        {
-          "kind": "relation",
-          "name": "t",
-          "alias": null
-        }
-      ],
-      "dependencies": ["t"],
-      "joins": [],
-      "predicates": {
-        "where": {
-          "kind": "comparison",
-          "left": {
-            "kind": "column",
-            "relation": "t",
-            "name": "a"
-          },
-          "operator": "gt",
-          "right": {
-            "kind": "literal",
-            "type": "integer",
-            "value": 10
-          }
-        },
-        "having": null,
-        "qualify": null
+      "id": "input-0001",
+      "source": {
+        "kind": "inline",
+        "label": null
       },
-      "column_domains": [
+      "dialect": "generic",
+      "statements": [
         {
-          "column": {
-            "relation": "t",
-            "name": "a"
-          },
-          "domain": {
-            "kind": "ranges",
-            "ranges": [
-              {
-                "lower": {
-                  "value": {
-                    "kind": "literal",
-                    "type": "integer",
-                    "value": 10
-                  },
-                  "inclusive": false
-                },
-                "upper": null
-              }
-            ]
-          }
-        }
-      ],
-      "output": {
-        "columns": [
-          {
-            "name": "b",
-            "expression": {
-              "kind": "column",
-              "relation": "t",
-              "name": "b"
-            },
-            "lineage": [
-              {
+          "kind": "query",
+          "sources": [
+            {
+              "kind": "relation",
+              "name": "t",
+              "alias": null
+            }
+          ],
+          "dependencies": ["t"],
+          "joins": [],
+          "predicates": {
+            "where": {
+              "kind": "comparison",
+              "left": {
+                "kind": "column",
                 "relation": "t",
-                "column": "b"
+                "name": "a"
+              },
+              "operator": "gt",
+              "right": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 10
+              }
+            },
+            "having": null,
+            "qualify": null
+          },
+          "column_domains": [
+            {
+              "column": {
+                "relation": "t",
+                "name": "a"
+              },
+              "domain": {
+                "kind": "ranges",
+                "ranges": [
+                  {
+                    "lower": {
+                      "value": {
+                        "kind": "literal",
+                        "type": "integer",
+                        "value": 10
+                      },
+                      "inclusive": false
+                    },
+                    "upper": null
+                  }
+                ]
+              }
+            }
+          ],
+          "output": {
+            "columns": [
+              {
+                "name": "b",
+                "expression": {
+                  "kind": "column",
+                  "relation": "t",
+                  "name": "b"
+                },
+                "lineage": [
+                  {
+                    "relation": "t",
+                    "column": "b"
+                  }
+                ]
               }
             ]
-          }
-        ]
-      },
-      "diagnostics": []
+          },
+          "diagnostics": []
+        }
+      ]
     }
-  ]
+  ],
+  "layers": [],
+  "graph": {
+    "edges": [],
+    "components": [],
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "code": "multi_input_composition_pending",
+        "message": "multi-input graph construction and semantic composition are not implemented yet"
+      }
+    ]
+  }
 }
 ```
 
-This is the same schema-valid fixture stored in `examples/protocol-v0-simple.json`.
+This is the fixture stored in `examples/protocol-v0.2-simple.json`.
 
 Successful runs emit protocol JSON only. Input errors, SQL parse errors, and analysis failures are written to standard error and use distinct non-zero exit codes.
 
