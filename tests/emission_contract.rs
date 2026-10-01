@@ -1,4 +1,4 @@
-use sql_semantic_protocol::{analyze_sql, to_json};
+use sql_semantic_protocol::{analyze_inputs, analyze_sql, to_bundle_json, to_json, SqlInput};
 use sqlparser::dialect::GenericDialect;
 
 #[test]
@@ -59,4 +59,24 @@ fn simple_query_emission_matches_active_protocol_fixture() {
             .expect("active protocol fixture should be JSON");
 
     assert_eq!(actual, expected);
+}
+
+
+#[test]
+fn single_and_collection_emission_use_the_same_active_contract() {
+    let dialect = GenericDialect {};
+    let sql = "SELECT a FROM t WHERE a > 10";
+
+    let single =
+        analyze_sql(sql, "generic", &dialect).expect("single input analysis should succeed");
+    let collection = analyze_inputs(&[SqlInput::inline(sql)], "generic", &dialect)
+        .expect("one-element collection analysis should succeed");
+
+    let single_json: serde_json::Value =
+        serde_json::from_str(&to_json(&single)).expect("single input should emit JSON");
+    let collection_json: serde_json::Value =
+        serde_json::from_str(&to_bundle_json(&collection)).expect("collection should emit JSON");
+
+    assert_eq!(single_json["protocol_version"], "0.2.0");
+    assert_eq!(single_json, collection_json);
 }
