@@ -465,7 +465,10 @@ fn using_join_is_normalized_with_relation_identity() {
 
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
-    assert_eq!(json["inputs"][0]["statements"][0]["joins"][0]["kind"], "left");
+    assert_eq!(
+        json["inputs"][0]["statements"][0]["joins"][0]["kind"],
+        "left"
+    );
     assert_eq!(
         json["inputs"][0]["statements"][0]["joins"][0]["condition"]["operator"],
         "eq"
@@ -637,12 +640,13 @@ fn ordered_comparison_derives_open_lower_bound_for_non_output_column() {
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
     assert_eq!(
-        json["inputs"][0]["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["value"]
-            ["value"],
+        json["inputs"][0]["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]
+            ["value"]["value"],
         10
     );
     assert_eq!(
-        json["inputs"][0]["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["inclusive"],
+        json["inputs"][0]["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]
+            ["inclusive"],
         false
     );
 }
