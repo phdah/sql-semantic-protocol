@@ -770,7 +770,7 @@ fn parse_decimal_number(value: &str) -> Option<DecimalNumber> {
         (false, value)
     };
 
-    let exponent_index = unsigned.find(|character| character == 'e' || character == 'E');
+    let exponent_index = unsigned.find(['e', 'E']);
     let (mantissa, exponent) = match exponent_index {
         Some(index) => {
             let (mantissa, exponent_with_marker) = unsigned.split_at(index);
