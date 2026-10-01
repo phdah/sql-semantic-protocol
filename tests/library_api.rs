@@ -393,7 +393,6 @@ fn unsupported_function_shape_is_diagnosed() {
         }));
 }
 
-
 #[test]
 fn relation_sources_preserve_multi_part_names_aliases_and_sorted_dependencies() {
     let dialect = GenericDialect {};
@@ -560,7 +559,10 @@ fn self_join_sources_remain_distinct_by_alias() {
         vec!["users"]
     );
 
-    let join = statement.joins().first().expect("self join should be present");
+    let join = statement
+        .joins()
+        .first()
+        .expect("self join should be present");
     assert_eq!(join.left().alias(), Some("u1"));
     assert_eq!(join.right().alias(), Some("u2"));
 }
