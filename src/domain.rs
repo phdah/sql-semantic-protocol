@@ -95,10 +95,7 @@ fn derive_comparison(predicate: &ComparisonPredicate, sources: &[SourceRelation]
     }
 }
 
-fn comparison_domain(
-    operator: ComparisonOperator,
-    literal: &LiteralExpression,
-) -> ValueDomain {
+fn comparison_domain(operator: ComparisonOperator, literal: &LiteralExpression) -> ValueDomain {
     let literal = literal.clone();
 
     if matches!(literal.value(), LiteralValue::Null) {
@@ -125,25 +122,21 @@ fn comparison_domain(
         ComparisonOperator::Neq => {
             ValueDomain::set(SetMode::Exclude, vec![literal, null_literal()])
         }
-        ComparisonOperator::IsDistinctFrom => {
-            ValueDomain::set(SetMode::Exclude, vec![literal])
-        }
+        ComparisonOperator::IsDistinctFrom => ValueDomain::set(SetMode::Exclude, vec![literal]),
         ComparisonOperator::Lt => ValueDomain::ranges(vec![ValueRange::new(
             None,
             Some(Bound::new(literal, false)),
         )]),
-        ComparisonOperator::Lte => ValueDomain::ranges(vec![ValueRange::new(
-            None,
-            Some(Bound::new(literal, true)),
-        )]),
+        ComparisonOperator::Lte => {
+            ValueDomain::ranges(vec![ValueRange::new(None, Some(Bound::new(literal, true)))])
+        }
         ComparisonOperator::Gt => ValueDomain::ranges(vec![ValueRange::new(
             Some(Bound::new(literal, false)),
             None,
         )]),
-        ComparisonOperator::Gte => ValueDomain::ranges(vec![ValueRange::new(
-            Some(Bound::new(literal, true)),
-            None,
-        )]),
+        ComparisonOperator::Gte => {
+            ValueDomain::ranges(vec![ValueRange::new(Some(Bound::new(literal, true)), None)])
+        }
     }
 }
 
@@ -241,9 +234,7 @@ fn derive_between(predicate: &BetweenPredicate, sources: &[SourceRelation]) -> D
         ValueDomain::Empty
     } else if predicate.negated() {
         match compare_literals(&lower, &upper) {
-            Some(Ordering::Greater) => {
-                ValueDomain::set(SetMode::Exclude, vec![null_literal()])
-            }
+            Some(Ordering::Greater) => ValueDomain::set(SetMode::Exclude, vec![null_literal()]),
             Some(Ordering::Equal) => {
                 ValueDomain::set(SetMode::Exclude, vec![lower, null_literal()])
             }
@@ -309,7 +300,9 @@ fn collect_predicate_columns(
                 collect_predicate_columns(operand, sources, columns);
             }
         }
-        Predicate::Not(predicate) => collect_predicate_columns(predicate.operand(), sources, columns),
+        Predicate::Not(predicate) => {
+            collect_predicate_columns(predicate.operand(), sources, columns)
+        }
         Predicate::IsNull(predicate) => {
             collect_expression_columns(predicate.expression(), sources, columns);
         }
@@ -425,12 +418,9 @@ fn intersect_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
         (ValueDomain::Ranges(left), ValueDomain::Ranges(right)) => {
             intersect_range_domains(left.ranges(), right.ranges())
         }
-        (ValueDomain::Set(left), ValueDomain::Set(right)) => intersect_set_domains(
-            left.mode(),
-            left.values(),
-            right.mode(),
-            right.values(),
-        ),
+        (ValueDomain::Set(left), ValueDomain::Set(right)) => {
+            intersect_set_domains(left.mode(), left.values(), right.mode(), right.values())
+        }
         (ValueDomain::Ranges(ranges), ValueDomain::Set(set))
         | (ValueDomain::Set(set), ValueDomain::Ranges(ranges)) => {
             intersect_ranges_and_set(ranges.ranges(), set.mode(), set.values())
@@ -562,9 +552,9 @@ fn intersect_ranges_and_set(
             values
                 .iter()
                 .filter(|value| {
-                    ranges.iter().any(|range| {
-                        !matches!(literal_in_range(value, range), Some(false))
-                    })
+                    ranges
+                        .iter()
+                        .any(|range| !matches!(literal_in_range(value, range), Some(false)))
                 })
                 .cloned()
                 .collect(),
@@ -573,10 +563,7 @@ fn intersect_ranges_and_set(
     }
 }
 
-fn subtract_excluded_values(
-    ranges: &[ValueRange],
-    values: &[LiteralExpression],
-) -> ValueDomain {
+fn subtract_excluded_values(ranges: &[ValueRange], values: &[LiteralExpression]) -> ValueDomain {
     let mut result = ranges.to_vec();
 
     for value in values {
