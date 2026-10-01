@@ -272,10 +272,7 @@ fn set_operation_remains_explicitly_unsupported_without_losing_dependencies() {
         serde_json::from_str(&to_json(&protocol)).expect("protocol should serialize as JSON");
     let statement = &json["statements"][0];
 
-    assert_eq!(
-        statement["dependencies"],
-        json!(["source_a", "source_b"])
-    );
+    assert_eq!(statement["dependencies"], json!(["source_a", "source_b"]));
     assert_eq!(statement["output"]["columns"], json!([]));
     assert!(statement["diagnostics"]
         .as_array()
