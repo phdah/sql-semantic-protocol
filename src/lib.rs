@@ -22,8 +22,8 @@ pub use protocol::{
     ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity, Expression,
     FunctionExpression, InPredicate, IsNullPredicate, Join, JoinKind, LiteralExpression,
     LiteralType, LiteralValue, LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol,
-    ProtocolSource, ProtocolStatement, QueryStatement, RelationRef, SourceRelation, UnaryExpression,
-    UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ProtocolSource, ProtocolStatement, QueryStatement, RelationRef, SourceRelation,
+    UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.
