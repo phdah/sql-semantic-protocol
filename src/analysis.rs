@@ -75,10 +75,9 @@ fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
             }
             None => unsupported_queryless_create_table(),
         },
-        SqlStatement::CreateView(create_view) => ProtocolStatement::Query(analyze_query(
-            &create_view.query,
-            Some(create_view.name.to_string()),
-        )),
+        SqlStatement::CreateView { name, query, .. } => {
+            ProtocolStatement::Query(analyze_query(query, Some(name.to_string())))
+        }
         _ => unsupported_statement(),
     }
 }
