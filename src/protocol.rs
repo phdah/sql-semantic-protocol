@@ -64,14 +64,15 @@ pub enum ProtocolStatement {
 
 /// Partially analyzed query semantics.
 ///
-/// Sections whose analysis has not been implemented are emitted conservatively as empty protocol
-/// collections and accompanied by diagnostics.
+/// Sections whose analysis has not been implemented are emitted conservatively and accompanied by
+/// diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QueryStatement {
     sources: Vec<SourceRelation>,
     dependencies: Vec<String>,
     joins: Vec<Join>,
     predicates: Box<Predicates>,
+    output: Output,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -81,6 +82,7 @@ impl QueryStatement {
         dependencies: Vec<String>,
         joins: Vec<Join>,
         predicates: Predicates,
+        output: Output,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
         Self {
@@ -88,6 +90,7 @@ impl QueryStatement {
             dependencies,
             joins,
             predicates: Box::new(predicates),
+            output,
             diagnostics,
         }
     }
@@ -112,9 +115,93 @@ impl QueryStatement {
         &self.predicates
     }
 
+    /// Return final query output columns in SELECT-list order.
+    pub fn output(&self) -> &Output {
+        &self.output
+    }
+
     /// Return diagnostics describing incomplete query semantics.
     pub fn diagnostics(&self) -> &[Diagnostic] {
         &self.diagnostics
+    }
+}
+
+/// Final columns produced by a query.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Output {
+    columns: Vec<OutputColumn>,
+}
+
+impl Output {
+    pub(crate) fn new(columns: Vec<OutputColumn>) -> Self {
+        Self { columns }
+    }
+
+    /// Return final output columns in SELECT-list order.
+    pub fn columns(&self) -> &[OutputColumn] {
+        &self.columns
+    }
+}
+
+/// One final query output column.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OutputColumn {
+    name: String,
+    expression: Expression,
+    lineage: Vec<LineageSource>,
+}
+
+impl OutputColumn {
+    pub(crate) fn new(
+        name: String,
+        expression: Expression,
+        mut lineage: Vec<LineageSource>,
+    ) -> Self {
+        lineage.sort();
+        lineage.dedup();
+        Self {
+            name,
+            expression,
+            lineage,
+        }
+    }
+
+    /// Return the final output column name or unresolved projection label.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Return the semantic expression that produces this output column.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Return physical source columns contributing to this output value.
+    pub fn lineage(&self) -> &[LineageSource] {
+        &self.lineage
+    }
+}
+
+/// One physical source column contributing to an output value.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct LineageSource {
+    relation: String,
+    column: String,
+}
+
+impl LineageSource {
+    pub(crate) fn new(relation: String, column: String) -> Self {
+        Self { relation, column }
+    }
+
+    /// Return the physical relation containing the source column.
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
+
+    /// Return the physical source column name.
+    pub fn column(&self) -> &str {
+        &self.column
     }
 }
 
@@ -829,6 +916,10 @@ pub struct UnknownSemantic {
 }
 
 impl UnknownSemantic {
+    pub(crate) fn new(reason: String) -> Self {
+        Self { reason }
+    }
+
     /// Return the reason the semantic value could not be resolved.
     pub fn reason(&self) -> &str {
         &self.reason

@@ -7,10 +7,10 @@ use serde_json::{json, Value};
 
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, ColumnExpression, ComparisonPredicate, Diagnostic,
-    Expression, FunctionExpression, InPredicate, IsNullPredicate, Join, LiteralExpression,
-    LiteralValue, LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol,
-    ProtocolStatement, QueryStatement, RelationRef, SourceRelation, UnaryExpression,
-    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    Expression, FunctionExpression, InPredicate, IsNullPredicate, Join, LineageSource,
+    LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output, OutputColumn,
+    Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
+    SourceRelation, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
 };
 
 /// Serialize protocol domain values to JSON.
@@ -65,10 +65,37 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
         "joins": joins,
         "predicates": predicates_to_value(statement.predicates()),
         "column_domains": [],
-        "output": {
-            "columns": []
-        },
+        "output": output_to_value(statement.output()),
         "diagnostics": diagnostics
+    })
+}
+
+fn output_to_value(output: &Output) -> Value {
+    json!({
+        "columns": output
+            .columns()
+            .iter()
+            .map(output_column_to_value)
+            .collect::<Vec<_>>()
+    })
+}
+
+fn output_column_to_value(column: &OutputColumn) -> Value {
+    json!({
+        "name": column.name(),
+        "expression": expression_to_value(column.expression()),
+        "lineage": column
+            .lineage()
+            .iter()
+            .map(lineage_source_to_value)
+            .collect::<Vec<_>>()
+    })
+}
+
+fn lineage_source_to_value(source: &LineageSource) -> Value {
+    json!({
+        "relation": source.relation(),
+        "column": source.column()
     })
 }
 

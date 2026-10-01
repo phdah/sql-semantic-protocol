@@ -3,7 +3,11 @@
 //! This module is the only layer that converts sqlparser AST statements into public protocol
 //! values. Unsupported semantics are retained explicitly rather than silently discarded.
 
-use std::{collections::BTreeSet, fmt, str::FromStr};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fmt,
+    str::FromStr,
+};
 
 use serde_json::Number;
 use sqlparser::ast::{
@@ -18,9 +22,10 @@ use crate::protocol::{
     BetweenPredicate, BinaryExpression, BinaryOperator, ColumnExpression, ComparisonOperator,
     ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity, Expression,
     FunctionExpression, InPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind,
-    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate, Predicate,
-    Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef, SourceRelation,
-    UnaryExpression, UnaryOperator, UnsupportedSemantic, UnsupportedStatement,
+    LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate,
+    Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
+    RelationRef, SourceRelation, UnaryExpression, UnaryOperator, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -77,6 +82,8 @@ fn analyze_query(query: &SqlQuery) -> QueryStatement {
         &mut derived_index,
     );
 
+    let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics);
+
     let predicates = match query.body.as_ref() {
         SetExpr::Select(select) => analyze_select(select, &mut diagnostics),
         _ => {
@@ -97,12 +104,12 @@ fn analyze_query(query: &SqlQuery) -> QueryStatement {
         relation_analysis.dependencies.into_iter().collect(),
         relation_analysis.joins,
         predicates,
+        output,
         diagnostics,
     )
 }
 
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
-    inspect_projection(select, diagnostics);
     inspect_select_features(select, diagnostics);
 
     Predicates::new(
@@ -1051,36 +1058,334 @@ fn unsupported_expression(
     Expression::Unsupported(UnsupportedSemantic::new(feature.to_string(), Some(reason)))
 }
 
-fn inspect_projection(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
-    if !select.projection.is_empty() {
-        diagnostics.push(warning(
-            "output_analysis_pending",
-            DiagnosticArea::Output,
-            "output-column semantics are not implemented yet",
-        ));
+type LocalOutputMap = BTreeMap<String, BTreeMap<String, Vec<LineageSource>>>;
+
+#[derive(Clone)]
+struct OutputRelation {
+    qualifiers: Vec<String>,
+    source: OutputRelationSource,
+}
+
+#[derive(Clone)]
+enum OutputRelationSource {
+    Physical(String),
+    Local(BTreeMap<String, Vec<LineageSource>>),
+}
+
+fn analyze_query_output(
+    query: &SqlQuery,
+    inherited_local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
+    let mut local_outputs = inherited_local_outputs.clone();
+
+    if let Some(with) = &query.with {
+        for cte in &with.cte_tables {
+            let output = analyze_query_output(&cte.query, &local_outputs, diagnostics);
+            local_outputs.insert(cte.alias.name.to_string(), output_lineage_map(&output));
+        }
     }
 
-    for item in &select.projection {
-        match item {
-            SelectItem::UnnamedExpr(expression)
-            | SelectItem::ExprWithAlias {
-                expr: expression, ..
-            } => {
-                inspect_expression(expression, diagnostics);
+    match query.body.as_ref() {
+        SetExpr::Select(select) => analyze_select_output(select, &local_outputs, diagnostics),
+        SetExpr::Query(query) => analyze_query_output(query, &local_outputs, diagnostics),
+        _ => Output::new(Vec::new()),
+    }
+}
+
+fn analyze_select_output(
+    select: &Select,
+    local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
+    let scope = build_output_scope(select, local_outputs, diagnostics);
+    let columns = select
+        .projection
+        .iter()
+        .map(|item| analyze_output_item(item, &scope, diagnostics))
+        .collect();
+
+    Output::new(columns)
+}
+
+fn analyze_output_item(
+    item: &SelectItem,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> OutputColumn {
+    match item {
+        SelectItem::UnnamedExpr(expression) => OutputColumn::new(
+            output_name_for_expression(expression),
+            analyze_expression(expression, diagnostics),
+            lineage_for_expression(expression, scope, diagnostics),
+        ),
+        SelectItem::ExprWithAlias { expr, alias } => OutputColumn::new(
+            alias.value.clone(),
+            analyze_expression(expr, diagnostics),
+            lineage_for_expression(expr, scope, diagnostics),
+        ),
+        SelectItem::Wildcard(_) => unresolved_wildcard_column("*".to_string(), diagnostics),
+        SelectItem::QualifiedWildcard(prefix, _) => {
+            unresolved_wildcard_column(format!("{prefix}.*"), diagnostics)
+        }
+    }
+}
+
+fn unresolved_wildcard_column(name: String, diagnostics: &mut Vec<Diagnostic>) -> OutputColumn {
+    let reason = "wildcard output cannot be resolved without source schema information";
+    diagnostics.push(warning(
+        "unresolved_wildcard",
+        DiagnosticArea::Output,
+        reason,
+    ));
+    OutputColumn::new(
+        name,
+        Expression::Unknown(UnknownSemantic::new(reason.to_string())),
+        Vec::new(),
+    )
+}
+
+fn output_name_for_expression(expression: &Expr) -> String {
+    match expression {
+        Expr::Identifier(identifier) => identifier.value.clone(),
+        Expr::CompoundIdentifier(identifiers) => identifiers.last().map_or_else(
+            || expression.to_string(),
+            |identifier| identifier.value.clone(),
+        ),
+        Expr::Nested(inner) => output_name_for_expression(inner),
+        _ => expression.to_string(),
+    }
+}
+
+fn output_lineage_map(output: &Output) -> BTreeMap<String, Vec<LineageSource>> {
+    output
+        .columns()
+        .iter()
+        .map(|column| (column.name().to_string(), column.lineage().to_vec()))
+        .collect()
+}
+
+fn build_output_scope(
+    select: &Select,
+    local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<OutputRelation> {
+    let mut scope = Vec::new();
+
+    for source in &select.from {
+        register_output_table_factor(&source.relation, local_outputs, diagnostics, &mut scope);
+        for join in &source.joins {
+            register_output_table_factor(&join.relation, local_outputs, diagnostics, &mut scope);
+        }
+    }
+
+    scope
+}
+
+fn register_output_table_factor(
+    factor: &TableFactor,
+    local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+    scope: &mut Vec<OutputRelation>,
+) {
+    match factor {
+        TableFactor::Table {
+            name,
+            alias,
+            args: None,
+            ..
+        } => {
+            let relation_name = name.to_string();
+            let qualifiers =
+                relation_qualifiers(&relation_name, alias.as_ref().map(|a| a.name.to_string()));
+            let source = match local_outputs.get(&relation_name) {
+                Some(columns) => OutputRelationSource::Local(columns.clone()),
+                None => OutputRelationSource::Physical(relation_name),
+            };
+            scope.push(OutputRelation { qualifiers, source });
+        }
+        TableFactor::Derived {
+            subquery, alias, ..
+        } => {
+            let output = analyze_query_output(subquery, local_outputs, diagnostics);
+            let qualifiers = alias
+                .as_ref()
+                .map(|alias| vec![alias.name.to_string()])
+                .unwrap_or_default();
+            scope.push(OutputRelation {
+                qualifiers,
+                source: OutputRelationSource::Local(output_lineage_map(&output)),
+            });
+        }
+        _ => {}
+    }
+}
+
+fn relation_qualifiers(relation: &str, alias: Option<String>) -> Vec<String> {
+    match alias {
+        Some(alias) => vec![alias],
+        None => {
+            let mut qualifiers = vec![relation.to_string()];
+            if let Some(last) = relation.rsplit('.').next() {
+                if last != relation {
+                    qualifiers.push(last.to_string());
+                }
             }
-            SelectItem::QualifiedWildcard(_, _) | SelectItem::Wildcard(_) => {
-                diagnostics.push(warning(
-                    "unresolved_wildcard",
-                    DiagnosticArea::Output,
-                    "wildcard output cannot be resolved without source schema information",
-                ));
+            qualifiers
+        }
+    }
+}
+
+fn lineage_for_expression(
+    expression: &Expr,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<LineageSource> {
+    let mut lineage = BTreeSet::new();
+    collect_output_lineage(expression, scope, diagnostics, &mut lineage);
+    lineage
+        .into_iter()
+        .map(|(relation, column)| LineageSource::new(relation, column))
+        .collect()
+}
+
+fn collect_output_lineage(
+    expression: &Expr,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+    lineage: &mut BTreeSet<(String, String)>,
+) {
+    match expression {
+        Expr::Identifier(identifier) => {
+            resolve_output_column(None, &identifier.value, scope, diagnostics, lineage);
+        }
+        Expr::CompoundIdentifier(identifiers) => {
+            if let Some((column, relation_parts)) = identifiers.split_last() {
+                let relation = relation_parts
+                    .iter()
+                    .map(|identifier| identifier.value.as_str())
+                    .collect::<Vec<_>>()
+                    .join(".");
+                resolve_output_column(
+                    Some(relation.as_str()),
+                    &column.value,
+                    scope,
+                    diagnostics,
+                    lineage,
+                );
+            }
+        }
+        Expr::Function(function) => {
+            collect_function_argument_lineage(&function.parameters, scope, diagnostics, lineage);
+            collect_function_argument_lineage(&function.args, scope, diagnostics, lineage);
+            if let Some(filter) = &function.filter {
+                collect_output_lineage(filter, scope, diagnostics, lineage);
+            }
+        }
+        Expr::UnaryOp { expr, .. }
+        | Expr::Nested(expr)
+        | Expr::IsNull(expr)
+        | Expr::IsNotNull(expr) => {
+            collect_output_lineage(expr, scope, diagnostics, lineage);
+        }
+        Expr::BinaryOp { left, right, .. }
+        | Expr::AnyOp { left, right, .. }
+        | Expr::AllOp { left, right, .. }
+        | Expr::IsDistinctFrom(left, right)
+        | Expr::IsNotDistinctFrom(left, right) => {
+            collect_output_lineage(left, scope, diagnostics, lineage);
+            collect_output_lineage(right, scope, diagnostics, lineage);
+        }
+        Expr::Between {
+            expr, low, high, ..
+        } => {
+            collect_output_lineage(expr, scope, diagnostics, lineage);
+            collect_output_lineage(low, scope, diagnostics, lineage);
+            collect_output_lineage(high, scope, diagnostics, lineage);
+        }
+        Expr::InList { expr, list, .. } => {
+            collect_output_lineage(expr, scope, diagnostics, lineage);
+            for value in list {
+                collect_output_lineage(value, scope, diagnostics, lineage);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_function_argument_lineage(
+    arguments: &FunctionArguments,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+    lineage: &mut BTreeSet<(String, String)>,
+) {
+    if let FunctionArguments::List(arguments) = arguments {
+        for argument in &arguments.args {
+            if let FunctionArg::Unnamed(FunctionArgExpr::Expr(expression)) = argument {
+                collect_output_lineage(expression, scope, diagnostics, lineage);
             }
         }
     }
 }
 
-fn inspect_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) {
-    let _ = analyze_expression(expression, diagnostics);
+fn resolve_output_column(
+    qualifier: Option<&str>,
+    column: &str,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+    lineage: &mut BTreeSet<(String, String)>,
+) {
+    let candidates = scope
+        .iter()
+        .filter(|relation| {
+            qualifier.is_none_or(|qualifier| {
+                relation
+                    .qualifiers
+                    .iter()
+                    .any(|candidate| candidate == qualifier)
+            })
+        })
+        .filter_map(|relation| match &relation.source {
+            OutputRelationSource::Physical(relation) => Some(vec![LineageSource::new(
+                relation.clone(),
+                column.to_string(),
+            )]),
+            OutputRelationSource::Local(columns) => columns.get(column).cloned(),
+        })
+        .collect::<Vec<_>>();
+
+    match candidates.as_slice() {
+        [candidate] => {
+            lineage.extend(
+                candidate
+                    .iter()
+                    .map(|source| (source.relation().to_string(), source.column().to_string())),
+            );
+        }
+        [] => diagnostics.push(warning(
+            "unresolved_output_lineage",
+            DiagnosticArea::Output,
+            &format!(
+                "source lineage for column {} could not be resolved",
+                qualified_column_name(qualifier, column)
+            ),
+        )),
+        _ => diagnostics.push(warning(
+            "ambiguous_output_lineage",
+            DiagnosticArea::Output,
+            &format!(
+                "source lineage for column {} is ambiguous without source schema information",
+                qualified_column_name(qualifier, column)
+            ),
+        )),
+    }
+}
+
+fn qualified_column_name(qualifier: Option<&str>, column: &str) -> String {
+    qualifier.map_or_else(
+        || column.to_string(),
+        |qualifier| format!("{qualifier}.{column}"),
+    )
 }
 
 fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
