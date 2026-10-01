@@ -148,7 +148,6 @@ fn unsupported_semantics_remain_successful_protocol_output() {
     );
 }
 
-
 #[test]
 fn repeated_sql_inputs_emit_one_ordered_bundle() {
     let output = run_with_stdin(
