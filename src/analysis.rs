@@ -26,7 +26,9 @@ pub enum AnalysisError {
 impl fmt::Display for AnalysisError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::EmptyDialectName => write!(formatter, "analysis requires a non-empty dialect name"),
+            Self::EmptyDialectName => {
+                write!(formatter, "analysis requires a non-empty dialect name")
+            }
             Self::NoStatements => write!(formatter, "analysis requires at least one SQL statement"),
         }
     }
@@ -34,10 +36,7 @@ impl fmt::Display for AnalysisError {
 
 impl std::error::Error for AnalysisError {}
 
-pub(crate) fn analyze(
-    parsed: ParsedSql,
-    dialect_name: &str,
-) -> Result<Protocol, AnalysisError> {
+pub(crate) fn analyze(parsed: ParsedSql, dialect_name: &str) -> Result<Protocol, AnalysisError> {
     if dialect_name.trim().is_empty() {
         return Err(AnalysisError::EmptyDialectName);
     }
