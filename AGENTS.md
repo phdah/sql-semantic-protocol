@@ -135,3 +135,11 @@ test asserting it is reported as unsupported/unknown rather than silently ignore
 **Shared helpers over repetition** When several tests build the same input or expected
 values, extract a helper (in the test module, or `tests/common/mod.rs` for integration
 tests) instead of copy-pasting setup.
+
+## Task tracking
+
+Todos, planned work, and decisions for this project are tracked in a local
+[Backlog.md](https://github.com/MrLesk/Backlog.md) board stored in `.backlog/`. Use the
+`backlog_*` MCP tools or the `backlog` CLI when available; otherwise edit the Markdown
+files under `.backlog/` directly, following the format of existing files. The board is
+versioned with the repo, so commit task changes alongside the work they describe.
