@@ -168,11 +168,10 @@ fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Pr
             analyze_expression(high, diagnostics),
             *negated,
         )),
-        Expr::UnaryOp { op, expr }
-            if matches!(op, SqlUnaryOperator::Not | SqlUnaryOperator::BangNot) =>
-        {
-            Predicate::Not(NotPredicate::new(analyze_predicate(expr, diagnostics)))
-        }
+        Expr::UnaryOp {
+            op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
+            expr,
+        } => Predicate::Not(NotPredicate::new(analyze_predicate(expr, diagnostics))),
         _ => Predicate::BooleanExpression(analyze_expression(expression, diagnostics)),
     }
 }
@@ -231,19 +230,20 @@ fn analyze_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> E
 
 fn analyze_compound_identifier(identifiers: &[sqlparser::ast::Ident]) -> Expression {
     match identifiers.split_last() {
-        Some((column, relation_parts)) if relation_parts.is_empty() => {
-            Expression::Column(ColumnExpression::new(None, column.value.clone()))
+        Some((column, relation_parts)) => {
+            let relation = if relation_parts.is_empty() {
+                None
+            } else {
+                Some(
+                    relation_parts
+                        .iter()
+                        .map(|identifier| identifier.value.as_str())
+                        .collect::<Vec<_>>()
+                        .join("."),
+                )
+            };
+            Expression::Column(ColumnExpression::new(relation, column.value.clone()))
         }
-        Some((column, relation_parts)) => Expression::Column(ColumnExpression::new(
-            Some(
-                relation_parts
-                    .iter()
-                    .map(|identifier| identifier.value.as_str())
-                    .collect::<Vec<_>>()
-                    .join("."),
-            ),
-            column.value.clone(),
-        )),
         None => Expression::Unsupported(UnsupportedSemantic::new(
             "column_reference".to_string(),
             Some("empty compound identifier cannot be resolved".to_string()),
