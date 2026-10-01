@@ -31,7 +31,8 @@ fn run() -> Result<(), CliError> {
         Command::Analyze(options) => {
             let sql = read_sql(&options)?;
             let (dialect_name, dialect) = select_dialect(&options.dialect)?;
-            let protocol = analyze_sql(&sql, dialect_name, dialect.as_ref()).map_err(CliError::from)?;
+            let protocol =
+                analyze_sql(&sql, dialect_name, dialect.as_ref()).map_err(CliError::from)?;
             println!("{}", to_json(&protocol));
             Ok(())
         }
@@ -68,9 +69,9 @@ fn parse_args(arguments: impl Iterator<Item = String>) -> Result<Command, CliErr
             "--" => positional_only = true,
             "-h" | "--help" => return Ok(Command::Help),
             "-d" | "--dialect" => {
-                dialect = arguments.next().ok_or_else(|| {
-                    CliError::Input("missing value for --dialect".to_string())
-                })?;
+                dialect = arguments
+                    .next()
+                    .ok_or_else(|| CliError::Input("missing value for --dialect".to_string()))?;
             }
             "-f" | "--file" => {
                 let path = arguments
