@@ -566,3 +566,44 @@ fn self_join_sources_remain_distinct_by_alias() {
     assert_eq!(join.left().alias(), Some("u1"));
     assert_eq!(join.right().alias(), Some("u2"));
 }
+
+
+#[test]
+fn multiple_joins_preserve_sql_order_and_alias_identity() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT u.id
+         FROM users AS u
+         JOIN managers AS m ON u.manager_id = m.id
+         JOIN departments AS d ON m.department_id = d.id",
+        "generic",
+        &dialect,
+    )
+    .expect("multiple joins should be analyzed");
+
+    let joins = first_query(&protocol).joins();
+    assert_eq!(joins.len(), 2);
+    assert_eq!(joins[0].left().alias(), Some("u"));
+    assert_eq!(joins[0].right().alias(), Some("m"));
+    assert_eq!(joins[1].left().alias(), Some("m"));
+    assert_eq!(joins[1].right().alias(), Some("d"));
+}
+
+#[test]
+fn natural_join_reports_unresolved_condition() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT * FROM users AS u NATURAL JOIN managers AS m",
+        "generic",
+        &dialect,
+    )
+    .expect("NATURAL JOIN should parse");
+
+    let statement = first_query(&protocol);
+    assert_eq!(statement.joins().len(), 1);
+    assert!(statement.joins()[0].condition().is_none());
+    assert!(statement.diagnostics().iter().any(|diagnostic| {
+        diagnostic.area() == DiagnosticArea::Join
+            && diagnostic.code() == "unsupported_natural_join_condition"
+    }));
+}
