@@ -294,3 +294,137 @@ fn file_read_error_identifies_the_input_position_and_path() {
     assert!(stderr.contains("input 2"));
     assert!(stderr.contains(&missing.display().to_string()));
 }
+
+
+#[test]
+fn directory_inputs_are_recursive_sql_only_and_sorted() {
+    let root = std::env::temp_dir().join(format!(
+        "sql-semantic-protocol-cli-{}-directory",
+        std::process::id()
+    ));
+    let nested = root.join("nested");
+    fs::create_dir_all(&nested).expect("nested test directory should be created");
+
+    let root_sql = root.join("02-root.sql");
+    let nested_sql = nested.join("01-nested.SQL");
+    let ignored = root.join("00-ignore.txt");
+    fs::write(&root_sql, "SELECT a FROM root_table").expect("root SQL should be written");
+    fs::write(&nested_sql, "SELECT b FROM nested_table").expect("nested SQL should be written");
+    fs::write(&ignored, "SELECT ignored FROM ignored_table").expect("ignored file should be written");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
+        .arg("--dir")
+        .arg(&root)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .expect("CLI should run");
+
+    fs::remove_dir_all(&root).expect("test directory should be removed");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let json: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("directory input should emit JSON");
+    assert_eq!(json["protocol_version"], "0.2.0");
+    assert_eq!(json["inputs"].as_array().map(Vec::len), Some(2));
+    assert_eq!(
+        json["inputs"][0]["source"]["path"],
+        root_sql.display().to_string()
+    );
+    assert_eq!(
+        json["inputs"][1]["source"]["path"],
+        nested_sql.display().to_string()
+    );
+    assert_eq!(
+        json["inputs"][0]["statements"][0]["dependencies"][0],
+        "root_table"
+    );
+    assert_eq!(
+        json["inputs"][1]["statements"][0]["dependencies"][0],
+        "nested_table"
+    );
+}
+
+#[test]
+fn directory_inputs_expand_in_place_when_mixed_with_other_inputs() {
+    let root = std::env::temp_dir().join(format!(
+        "sql-semantic-protocol-cli-{}-mixed-directory",
+        std::process::id()
+    ));
+    fs::create_dir_all(&root).expect("test directory should be created");
+
+    let first = root.join("a.sql");
+    let second = root.join("b.sql");
+    let tail = std::env::temp_dir().join(format!(
+        "sql-semantic-protocol-cli-{}-mixed-directory-tail.sql",
+        std::process::id()
+    ));
+    fs::write(&first, "SELECT a FROM directory_alpha").expect("first SQL should be written");
+    fs::write(&second, "SELECT b FROM directory_beta").expect("second SQL should be written");
+    fs::write(&tail, "SELECT c FROM tail_gamma").expect("tail SQL should be written");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
+        .arg("--sql")
+        .arg("SELECT i FROM inline_start")
+        .arg("--dir")
+        .arg(&root)
+        .arg("--file")
+        .arg(&tail)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .expect("CLI should run");
+
+    fs::remove_dir_all(&root).expect("test directory should be removed");
+    fs::remove_file(&tail).expect("tail SQL should be removed");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let json: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("mixed directory input should emit JSON");
+    assert_eq!(json["inputs"].as_array().map(Vec::len), Some(4));
+    assert_eq!(
+        json["inputs"][0]["statements"][0]["dependencies"][0],
+        "inline_start"
+    );
+    assert_eq!(
+        json["inputs"][1]["statements"][0]["dependencies"][0],
+        "directory_alpha"
+    );
+    assert_eq!(
+        json["inputs"][2]["statements"][0]["dependencies"][0],
+        "directory_beta"
+    );
+    assert_eq!(
+        json["inputs"][3]["statements"][0]["dependencies"][0],
+        "tail_gamma"
+    );
+}
+
+#[test]
+fn directory_with_no_sql_files_is_an_input_error_when_it_is_the_only_input() {
+    let root = std::env::temp_dir().join(format!(
+        "sql-semantic-protocol-cli-{}-empty-directory",
+        std::process::id()
+    ));
+    fs::create_dir_all(&root).expect("test directory should be created");
+    fs::write(root.join("README.md"), "not SQL").expect("non-SQL file should be written");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
+        .arg("--dir")
+        .arg(&root)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .expect("CLI should run");
+
+    fs::remove_dir_all(&root).expect("test directory should be removed");
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.contains("no SQL inputs found"));
+}
