@@ -2,8 +2,8 @@
 //!
 //! - analyze_sql parses SQL with a caller-supplied dialect and returns protocol domain values.
 //! - to_json serializes protocol domain values without exposing parser AST types.
-//! - protocol contains the parser-independent public protocol model, including explicit unknown
-//!   and unsupported semantic values.
+//! - protocol contains the parser-independent public protocol model, including normalized
+//!   expressions and predicates plus explicit unknown and unsupported semantic values.
 
 mod analysis;
 mod emission;
@@ -18,9 +18,12 @@ pub use analysis::AnalysisError;
 pub use emission::to_json;
 pub use parser::ParseError;
 pub use protocol::{
-    Diagnostic, DiagnosticArea, DiagnosticSeverity, Predicate, Predicates, Protocol,
-    ProtocolSource, ProtocolStatement, QueryStatement, UnknownSemantic, UnsupportedSemantic,
-    UnsupportedStatement,
+    BetweenPredicate, BinaryExpression, BinaryOperator, ColumnExpression, ComparisonOperator,
+    ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity, Expression,
+    FunctionExpression, InPredicate, IsNullPredicate, LiteralExpression, LiteralType, LiteralValue,
+    LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol, ProtocolSource,
+    ProtocolStatement, QueryStatement, UnaryExpression, UnaryOperator, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.
