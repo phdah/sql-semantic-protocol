@@ -39,7 +39,7 @@ Multi-input analysis now emits the `0.2.0` envelope with ordered analyzed inputs
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [SQL ...]
+sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
@@ -74,18 +74,19 @@ A single file remains unchanged:
 cargo run -- --dialect snowflake --file query.sql
 ```
 
-For multiple inputs, repeat `--sql` and `--file` in any mixture:
+For multiple inputs, repeat `--sql`, `--file`, and `--dir` in any mixture. `--dir` recursively discovers regular files whose extension is `.sql` case-insensitively and ignores all other files:
 
 ```sh
 cargo run -- \
   --sql "SELECT id FROM raw.orders" \
   --file sql/enrich_orders.sql \
+  --dir sql/reporting \
   --sql "SELECT customer_id FROM raw.customers"
 ```
 
-Explicit inputs are analyzed in command-line occurrence order and receive deterministic IDs `input-0001`, `input-0002`, and so on. The width expands when necessary, so there is no fixed input-count limit. File paths are retained as source identity, and parse or analysis failures report the generated input ID plus its source.
+Explicit inputs are analyzed in command-line occurrence order and receive deterministic IDs `input-0001`, `input-0002`, and so on. Each `--dir` expands at its command-line position into all recursively discovered SQL files sorted lexicographically by path, so filesystem traversal order cannot affect protocol output. Discovered file paths are retained as source identity. The ID width expands when necessary, so there is no fixed input-count limit. Parse, file, and analysis failures identify the affected input or path.
 
-Positional SQL represents one legacy input and cannot be mixed with `--sql` or `--file`. If neither explicit input nor positional SQL is supplied, the CLI reads one input from standard input:
+Positional SQL represents one legacy input and cannot be mixed with `--sql`, `--file`, or `--dir`. If neither explicit input nor positional SQL is supplied, the CLI reads one input from standard input:
 
 ```sh
 printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
