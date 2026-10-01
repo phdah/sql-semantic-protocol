@@ -1,7 +1,7 @@
 ---
 id: TASK-11
 title: Accept multiple SQL strings and files
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -19,12 +19,12 @@ Dialect handling must continue to delegate to the sqlparser dialect registry rat
 
 ## Acceptance Criteria
 
-- [ ] The public library API accepts a collection of SQL input units rather than requiring exactly one SQL string.
-- [ ] An input unit records its SQL text and stable source identity without leaking sqlparser AST types into the public API.
-- [ ] The CLI accepts repeated string inputs and repeated file inputs in the same invocation.
-- [ ] Input ordering is deterministic and documented.
-- [ ] There is no fixed maximum number of inputs in the API or CLI.
-- [ ] Parse, file, and analysis errors identify the input that caused them.
-- [ ] Every dialect supported through the existing sqlparser dialect resolver remains available.
-- [ ] The existing one-string, one-file, and stdin workflows continue to work or have a documented migration path.
-- [ ] Tests cover multiple strings, multiple files, and mixed string/file input.
+- [x] The public library API accepts a collection of SQL input units rather than requiring exactly one SQL string.
+- [x] An input unit records its SQL text and stable source identity without leaking sqlparser AST types into the public API.
+- [x] The CLI accepts repeated string inputs and repeated file inputs in the same invocation.
+- [x] Input ordering is deterministic and documented.
+- [x] There is no fixed maximum number of inputs in the API or CLI.
+- [x] Parse, file, and analysis errors identify the input that caused them.
+- [x] Every dialect supported through the existing sqlparser dialect resolver remains available.
+- [x] The existing one-string, one-file, and stdin workflows continue to work or have a documented migration path.
+- [x] Tests cover multiple strings, multiple files, and mixed string/file input.
