@@ -119,16 +119,14 @@ fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Pr
                 analyze_predicate(left, diagnostics),
                 analyze_predicate(right, diagnostics),
             )),
-            _ => comparison_operator(op).map_or_else(
-                || Predicate::BooleanExpression(analyze_expression(expression, diagnostics)),
-                |operator| {
-                    normalize_comparison(
-                        analyze_expression(left, diagnostics),
-                        operator,
-                        analyze_expression(right, diagnostics),
-                    )
-                },
-            ),
+            _ => match comparison_operator(op) {
+                Some(operator) => normalize_comparison(
+                    analyze_expression(left, diagnostics),
+                    operator,
+                    analyze_expression(right, diagnostics),
+                ),
+                None => Predicate::BooleanExpression(analyze_expression(expression, diagnostics)),
+            },
         },
         Expr::IsDistinctFrom(left, right) => normalize_comparison(
             analyze_expression(left, diagnostics),
@@ -438,22 +436,18 @@ fn analyze_unary_expression(
         _ => None,
     };
 
-    operator.map_or_else(
-        || {
-            unsupported_expression(
-                "unary_expression",
-                expression,
-                DiagnosticArea::Expression,
-                diagnostics,
-            )
-        },
-        |operator| {
-            Expression::Unary(UnaryExpression::new(
-                operator,
-                analyze_expression(operand, diagnostics),
-            ))
-        },
-    )
+    match operator {
+        Some(operator) => Expression::Unary(UnaryExpression::new(
+            operator,
+            analyze_expression(operand, diagnostics),
+        )),
+        None => unsupported_expression(
+            "unary_expression",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+        ),
+    }
 }
 
 fn analyze_binary_expression(
@@ -478,23 +472,19 @@ fn analyze_binary_expression(
         _ => None,
     };
 
-    operator.map_or_else(
-        || {
-            unsupported_expression(
-                "binary_expression",
-                expression,
-                DiagnosticArea::Expression,
-                diagnostics,
-            )
-        },
-        |operator| {
-            Expression::Binary(BinaryExpression::new(
-                operator,
-                analyze_expression(left, diagnostics),
-                analyze_expression(right, diagnostics),
-            ))
-        },
-    )
+    match operator {
+        Some(operator) => Expression::Binary(BinaryExpression::new(
+            operator,
+            analyze_expression(left, diagnostics),
+            analyze_expression(right, diagnostics),
+        )),
+        None => unsupported_expression(
+            "binary_expression",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+        ),
+    }
 }
 
 fn unsupported_expression(
