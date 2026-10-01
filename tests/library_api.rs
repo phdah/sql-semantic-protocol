@@ -302,15 +302,18 @@ fn unsupported_predicate_expression_remains_explicit() {
 }
 
 #[test]
-fn unsupported_statement_remains_explicit() {
+fn queryless_create_table_remains_explicitly_unsupported() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql("CREATE TABLE t (a INT)", "generic", &dialect)
         .expect("supported parser statement should return protocol output");
 
     match protocol.statements().first() {
         Some(ProtocolStatement::Unsupported(statement)) => {
-            assert_eq!(statement.category(), "statement");
-            assert_eq!(statement.diagnostics()[0].code(), "unsupported_statement");
+            assert_eq!(statement.category(), "create_table");
+            assert_eq!(
+                statement.diagnostics()[0].code(),
+                "unsupported_queryless_create_table"
+            );
         }
         other => panic!("expected unsupported statement, got {other:?}"),
     }
