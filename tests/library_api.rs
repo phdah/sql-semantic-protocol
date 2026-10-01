@@ -1,6 +1,4 @@
-use sql_semantic_protocol::{
-    analyze_sql, to_json, AnalysisError, Error, ProtocolStatement,
-};
+use sql_semantic_protocol::{analyze_sql, to_json, AnalysisError, Error, ProtocolStatement};
 use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
 
 #[test]
@@ -42,8 +40,8 @@ fn parse_failures_are_distinct_library_errors() {
 #[test]
 fn analysis_failures_are_distinct_library_errors() {
     let dialect = GenericDialect {};
-    let error = analyze_sql("", "generic", &dialect)
-        .expect_err("empty SQL should fail during analysis");
+    let error =
+        analyze_sql("", "generic", &dialect).expect_err("empty SQL should fail during analysis");
 
     assert!(matches!(
         error,
