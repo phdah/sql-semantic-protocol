@@ -1,7 +1,7 @@
 ---
 id: TASK-10
 title: Define multi-query composition contract
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -19,12 +19,12 @@ Because this changes the public protocol shape, follow the project's pre-1.0 sem
 
 ## Acceptance Criteria
 
-- [ ] A versioned protocol contract can represent multiple SQL inputs in one document.
-- [ ] Every input unit has a deterministic identity suitable for diagnostics and graph edges.
-- [ ] The contract can represent named produced datasets and anonymous query results.
-- [ ] Related inputs can be represented as a dependency graph while unrelated inputs remain separate graph components in the same document.
-- [ ] The contract defines terminal/final outcomes independently for every graph component.
-- [ ] The contract distinguishes local layer semantics from composed/transitive semantics where both are needed.
-- [ ] Missing producers, ambiguous producers, cycles, and unsupported composition remain explicit rather than guessed.
-- [ ] Ordering rules guarantee byte-deterministic JSON for equivalent inputs and configuration.
-- [ ] JSON Schema, semantic documentation, and representative examples are updated for the new protocol version.
+- [x] A versioned protocol contract can represent multiple SQL inputs in one document.
+- [x] Every input unit has a deterministic identity suitable for diagnostics and graph edges.
+- [x] The contract can represent named produced datasets and anonymous query results.
+- [x] Related inputs can be represented as a dependency graph while unrelated inputs remain separate graph components in the same document.
+- [x] The contract defines terminal/final outcomes independently for every graph component.
+- [x] The contract distinguishes local layer semantics from composed/transitive semantics where both are needed.
+- [x] Missing producers, ambiguous producers, cycles, and unsupported composition remain explicit rather than guessed.
+- [x] Ordering rules guarantee byte-deterministic JSON for equivalent inputs and configuration.
+- [x] JSON Schema, semantic documentation, and representative examples are updated for the new protocol version.

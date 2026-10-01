@@ -1,0 +1,581 @@
+{
+  "protocol_version": "0.2.0",
+  "inputs": [
+    {
+      "id": "input-0001",
+      "source": {
+        "kind": "inline",
+        "label": "stage-orders"
+      },
+      "dialect": "generic",
+      "statements": [
+        {
+          "kind": "query",
+          "sources": [
+            {
+              "kind": "relation",
+              "name": "raw.orders",
+              "alias": null
+            }
+          ],
+          "dependencies": [
+            "raw.orders"
+          ],
+          "joins": [],
+          "predicates": {
+            "where": {
+              "kind": "comparison",
+              "left": {
+                "kind": "column",
+                "relation": "raw.orders",
+                "name": "total_amount"
+              },
+              "operator": "gte",
+              "right": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 100
+              }
+            },
+            "having": null,
+            "qualify": null
+          },
+          "column_domains": [
+            {
+              "column": {
+                "relation": "raw.orders",
+                "name": "total_amount"
+              },
+              "domain": {
+                "kind": "ranges",
+                "ranges": [
+                  {
+                    "lower": {
+                      "value": {
+                        "kind": "literal",
+                        "type": "integer",
+                        "value": 100
+                      },
+                      "inclusive": true
+                    },
+                    "upper": null
+                  }
+                ]
+              }
+            }
+          ],
+          "output": {
+            "columns": [
+              {
+                "name": "id",
+                "expression": {
+                  "kind": "column",
+                  "relation": "raw.orders",
+                  "name": "id"
+                },
+                "lineage": [
+                  {
+                    "relation": "raw.orders",
+                    "column": "id"
+                  }
+                ]
+              },
+              {
+                "name": "total_amount",
+                "expression": {
+                  "kind": "column",
+                  "relation": "raw.orders",
+                  "name": "total_amount"
+                },
+                "lineage": [
+                  {
+                    "relation": "raw.orders",
+                    "column": "total_amount"
+                  }
+                ]
+              }
+            ]
+          },
+          "diagnostics": []
+        }
+      ]
+    },
+    {
+      "id": "input-0002",
+      "source": {
+        "kind": "file",
+        "path": "sql/mart_orders.sql"
+      },
+      "dialect": "generic",
+      "statements": [
+        {
+          "kind": "query",
+          "sources": [
+            {
+              "kind": "relation",
+              "name": "stage.orders",
+              "alias": null
+            }
+          ],
+          "dependencies": [
+            "stage.orders"
+          ],
+          "joins": [],
+          "predicates": {
+            "where": {
+              "kind": "comparison",
+              "left": {
+                "kind": "column",
+                "relation": "stage.orders",
+                "name": "total_amount"
+              },
+              "operator": "lt",
+              "right": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 500
+              }
+            },
+            "having": null,
+            "qualify": null
+          },
+          "column_domains": [
+            {
+              "column": {
+                "relation": "stage.orders",
+                "name": "total_amount"
+              },
+              "domain": {
+                "kind": "ranges",
+                "ranges": [
+                  {
+                    "lower": null,
+                    "upper": {
+                      "value": {
+                        "kind": "literal",
+                        "type": "integer",
+                        "value": 500
+                      },
+                      "inclusive": false
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "output": {
+            "columns": [
+              {
+                "name": "id",
+                "expression": {
+                  "kind": "column",
+                  "relation": "stage.orders",
+                  "name": "id"
+                },
+                "lineage": [
+                  {
+                    "relation": "stage.orders",
+                    "column": "id"
+                  }
+                ]
+              },
+              {
+                "name": "total_amount",
+                "expression": {
+                  "kind": "column",
+                  "relation": "stage.orders",
+                  "name": "total_amount"
+                },
+                "lineage": [
+                  {
+                    "relation": "stage.orders",
+                    "column": "total_amount"
+                  }
+                ]
+              }
+            ]
+          },
+          "diagnostics": []
+        }
+      ]
+    },
+    {
+      "id": "input-0003",
+      "source": {
+        "kind": "inline",
+        "label": "nordic-customers"
+      },
+      "dialect": "generic",
+      "statements": [
+        {
+          "kind": "query",
+          "sources": [
+            {
+              "kind": "relation",
+              "name": "raw.customers",
+              "alias": null
+            }
+          ],
+          "dependencies": [
+            "raw.customers"
+          ],
+          "joins": [],
+          "predicates": {
+            "where": {
+              "kind": "in",
+              "expression": {
+                "kind": "column",
+                "relation": "raw.customers",
+                "name": "country"
+              },
+              "values": [
+                {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "NO"
+                },
+                {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "SE"
+                }
+              ],
+              "negated": false
+            },
+            "having": null,
+            "qualify": null
+          },
+          "column_domains": [
+            {
+              "column": {
+                "relation": "raw.customers",
+                "name": "country"
+              },
+              "domain": {
+                "kind": "set",
+                "mode": "include",
+                "values": [
+                  {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "NO"
+                  },
+                  {
+                    "kind": "literal",
+                    "type": "string",
+                    "value": "SE"
+                  }
+                ]
+              }
+            }
+          ],
+          "output": {
+            "columns": [
+              {
+                "name": "customer_id",
+                "expression": {
+                  "kind": "column",
+                  "relation": "raw.customers",
+                  "name": "customer_id"
+                },
+                "lineage": [
+                  {
+                    "relation": "raw.customers",
+                    "column": "customer_id"
+                  }
+                ]
+              }
+            ]
+          },
+          "diagnostics": []
+        }
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer-0001",
+      "statement": {
+        "input_id": "input-0001",
+        "statement_index": 0
+      },
+      "produces": [
+        {
+          "kind": "relation",
+          "name": "stage.orders"
+        }
+      ],
+      "consumes": [
+        "raw.orders"
+      ],
+      "composed_semantics": {
+        "status": "resolved",
+        "dependencies": [
+          "raw.orders"
+        ],
+        "column_domains": [
+          {
+            "column": {
+              "relation": "raw.orders",
+              "name": "total_amount"
+            },
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 100
+                    },
+                    "inclusive": true
+                  },
+                  "upper": null
+                }
+              ]
+            }
+          }
+        ],
+        "output": {
+          "columns": [
+            {
+              "name": "id",
+              "expression": {
+                "kind": "column",
+                "relation": "raw.orders",
+                "name": "id"
+              },
+              "lineage": [
+                {
+                  "relation": "raw.orders",
+                  "column": "id"
+                }
+              ]
+            },
+            {
+              "name": "total_amount",
+              "expression": {
+                "kind": "column",
+                "relation": "raw.orders",
+                "name": "total_amount"
+              },
+              "lineage": [
+                {
+                  "relation": "raw.orders",
+                  "column": "total_amount"
+                }
+              ]
+            }
+          ]
+        },
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "layer-0002",
+      "statement": {
+        "input_id": "input-0002",
+        "statement_index": 0
+      },
+      "produces": [
+        {
+          "kind": "relation",
+          "name": "mart.orders"
+        }
+      ],
+      "consumes": [
+        "stage.orders"
+      ],
+      "composed_semantics": {
+        "status": "resolved",
+        "dependencies": [
+          "raw.orders"
+        ],
+        "column_domains": [
+          {
+            "column": {
+              "relation": "raw.orders",
+              "name": "total_amount"
+            },
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 100
+                    },
+                    "inclusive": true
+                  },
+                  "upper": {
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 500
+                    },
+                    "inclusive": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "output": {
+          "columns": [
+            {
+              "name": "id",
+              "expression": {
+                "kind": "column",
+                "relation": "raw.orders",
+                "name": "id"
+              },
+              "lineage": [
+                {
+                  "relation": "raw.orders",
+                  "column": "id"
+                }
+              ]
+            },
+            {
+              "name": "total_amount",
+              "expression": {
+                "kind": "column",
+                "relation": "raw.orders",
+                "name": "total_amount"
+              },
+              "lineage": [
+                {
+                  "relation": "raw.orders",
+                  "column": "total_amount"
+                }
+              ]
+            }
+          ]
+        },
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "layer-0003",
+      "statement": {
+        "input_id": "input-0003",
+        "statement_index": 0
+      },
+      "produces": [
+        {
+          "kind": "anonymous",
+          "layer_id": "layer-0003"
+        }
+      ],
+      "consumes": [
+        "raw.customers"
+      ],
+      "composed_semantics": {
+        "status": "resolved",
+        "dependencies": [
+          "raw.customers"
+        ],
+        "column_domains": [
+          {
+            "column": {
+              "relation": "raw.customers",
+              "name": "country"
+            },
+            "domain": {
+              "kind": "set",
+              "mode": "include",
+              "values": [
+                {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "NO"
+                },
+                {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "SE"
+                }
+              ]
+            }
+          }
+        ],
+        "output": {
+          "columns": [
+            {
+              "name": "customer_id",
+              "expression": {
+                "kind": "column",
+                "relation": "raw.customers",
+                "name": "customer_id"
+              },
+              "lineage": [
+                {
+                  "relation": "raw.customers",
+                  "column": "customer_id"
+                }
+              ]
+            }
+          ]
+        },
+        "diagnostics": []
+      }
+    }
+  ],
+  "graph": {
+    "edges": [
+      {
+        "consumer_layer_id": "layer-0001",
+        "relation": "raw.orders",
+        "resolution": "external",
+        "producer_layer_ids": []
+      },
+      {
+        "consumer_layer_id": "layer-0002",
+        "relation": "stage.orders",
+        "resolution": "resolved",
+        "producer_layer_ids": [
+          "layer-0001"
+        ]
+      },
+      {
+        "consumer_layer_id": "layer-0003",
+        "relation": "raw.customers",
+        "resolution": "external",
+        "producer_layer_ids": []
+      }
+    ],
+    "components": [
+      {
+        "id": "component-0001",
+        "layer_ids": [
+          "layer-0001",
+          "layer-0002"
+        ],
+        "final_outcomes": [
+          {
+            "kind": "relation",
+            "name": "mart.orders"
+          }
+        ],
+        "diagnostics": []
+      },
+      {
+        "id": "component-0002",
+        "layer_ids": [
+          "layer-0003"
+        ],
+        "final_outcomes": [
+          {
+            "kind": "anonymous",
+            "layer_id": "layer-0003"
+          }
+        ],
+        "diagnostics": []
+      }
+    ],
+    "diagnostics": []
+  }
+}

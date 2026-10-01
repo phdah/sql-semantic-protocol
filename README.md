@@ -28,7 +28,11 @@ The protocol is therefore the contract between SQL and applications that need to
 
 ## Protocol contract
 
-Protocol version `0.1.0` is defined by [`schema/protocol-v0.schema.json`](schema/protocol-v0.schema.json). See [`docs/protocol-v0.md`](docs/protocol-v0.md) for semantic and deterministic-ordering rules and [`examples/protocol-v0.json`](examples/protocol-v0.json) for a representative document.
+Protocol version `0.1.0` is the current single-input contract emitted by the library and CLI. It is defined by [`schema/protocol-v0.schema.json`](schema/protocol-v0.schema.json), documented in [`docs/protocol-v0.md`](docs/protocol-v0.md), and demonstrated by [`examples/protocol-v0.json`](examples/protocol-v0.json).
+
+Protocol version `0.2.0` defines the next multi-input composition contract. It can represent arbitrarily many related or independent SQL inputs, transformation layers, dependency graph components, composed semantics, and per-component final outcomes. See [`schema/protocol-v0.2.schema.json`](schema/protocol-v0.2.schema.json), [`docs/protocol-v0.2.md`](docs/protocol-v0.2.md), and [`examples/protocol-v0.2.json`](examples/protocol-v0.2.json).
+
+The current analyzer does not emit `0.2.0` yet; the following implementation tasks add multi-input ingestion and graph construction without silently changing existing `0.1.0` behavior.
 
 ## CLI
 
