@@ -7,11 +7,11 @@ use serde_json::{json, Value};
 
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate,
-    IsNullPredicate, Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate,
-    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
-    QueryStatement, RelationRef, SourceRelation, UnaryExpression, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
+    ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate, IsNullPredicate,
+    Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output,
+    OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
+    SourceRelation, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ValueDomain, ValueRange,
 };
 
 /// Serialize protocol domain values to JSON.
