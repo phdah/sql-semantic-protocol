@@ -18,7 +18,7 @@ fn valid_sql_returns_partial_query_for_caller_selected_dialect() {
     let protocol = analyze_sql("SELECT 1", "generic", &dialect)
         .expect("valid SQL should cross the public analysis boundary");
 
-    assert_eq!(protocol.protocol_version(), "0.1.0");
+    assert_eq!(protocol.protocol_version(), "0.2.0");
     assert_eq!(protocol.source().dialect(), "generic");
 
     let statement = first_query(&protocol);
@@ -70,9 +70,9 @@ fn serialization_is_separate_from_analysis() {
     let value: serde_json::Value =
         serde_json::from_str(&json).expect("emitted protocol should be valid JSON");
 
-    assert_eq!(value["protocol_version"], "0.1.0");
-    assert_eq!(value["source"]["dialect"], "generic");
-    assert_eq!(value["statements"][0]["kind"], "query");
+    assert_eq!(value["protocol_version"], "0.2.0");
+    assert_eq!(value["inputs"][0]["dialect"], "generic");
+    assert_eq!(value["inputs"][0]["statements"][0]["kind"], "query");
 }
 
 #[test]
@@ -112,11 +112,11 @@ fn comparison_predicate_is_normalized_and_serialized() {
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
     assert_eq!(
-        json["statements"][0]["predicates"]["where"]["operator"],
+        json["inputs"][0]["statements"][0]["predicates"]["where"]["operator"],
         "gt"
     );
     assert_eq!(
-        json["statements"][0]["predicates"]["where"]["right"]["value"],
+        json["inputs"][0]["statements"][0]["predicates"]["where"]["right"]["value"],
         10
     );
 }
@@ -465,9 +465,9 @@ fn using_join_is_normalized_with_relation_identity() {
 
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
-    assert_eq!(json["statements"][0]["joins"][0]["kind"], "left");
+    assert_eq!(json["inputs"][0]["statements"][0]["joins"][0]["kind"], "left");
     assert_eq!(
-        json["statements"][0]["joins"][0]["condition"]["operator"],
+        json["inputs"][0]["statements"][0]["joins"][0]["condition"]["operator"],
         "eq"
     );
 }
@@ -637,12 +637,12 @@ fn ordered_comparison_derives_open_lower_bound_for_non_output_column() {
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
     assert_eq!(
-        json["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["value"]
+        json["inputs"][0]["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["value"]
             ["value"],
         10
     );
     assert_eq!(
-        json["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["inclusive"],
+        json["inputs"][0]["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["inclusive"],
         false
     );
 }
@@ -978,19 +978,19 @@ fn output_json_contains_projection_expression_and_lineage() {
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
     assert_eq!(
-        json["statements"][0]["output"]["columns"][0]["name"],
+        json["inputs"][0]["statements"][0]["output"]["columns"][0]["name"],
         "order_id"
     );
     assert_eq!(
-        json["statements"][0]["output"]["columns"][0]["expression"]["name"],
+        json["inputs"][0]["statements"][0]["output"]["columns"][0]["expression"]["name"],
         "id"
     );
     assert_eq!(
-        json["statements"][0]["output"]["columns"][0]["lineage"][0]["relation"],
+        json["inputs"][0]["statements"][0]["output"]["columns"][0]["lineage"][0]["relation"],
         "sales.orders"
     );
     assert_eq!(
-        json["statements"][0]["output"]["columns"][0]["lineage"][0]["column"],
+        json["inputs"][0]["statements"][0]["output"]["columns"][0]["lineage"][0]["column"],
         "id"
     );
 }
