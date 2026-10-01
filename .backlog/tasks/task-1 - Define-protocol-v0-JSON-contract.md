@@ -1,7 +1,7 @@
 ---
 id: TASK-1
 title: Define protocol v0 JSON contract
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -63,7 +63,11 @@ A representative shape for a query such as `SELECT b FROM t WHERE a > 10` is:
             "ranges": [
               {
                 "lower": {
-                  "value": 10,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  },
                   "inclusive": false
                 },
                 "upper": null
@@ -100,11 +104,11 @@ The exact field names may change while this task is implemented, but the semanti
 
 ## Acceptance Criteria
 
-- [ ] A versioned JSON Schema for protocol v0 exists in the repository and is treated as the public protocol contract.
-- [ ] The schema contains no sqlparser AST types or parser-specific representation details.
-- [ ] The contract models source relations, physical dependencies, joins, structured predicates, column domains, final output columns, lineage, and diagnostics.
-- [ ] Predicate structure preserves boolean semantics instead of flattening `AND`, `OR`, or `NOT`.
-- [ ] Value domains can represent unbounded values, open and closed bounds, disjoint ranges or sets, an empty domain, and an unknown domain.
-- [ ] Unsupported or unresolved semantics are representable explicitly without inventing precise information.
-- [ ] Ordering rules for serialized collections are defined so equivalent analysis produces deterministic JSON.
-- [ ] At least one representative protocol document validates against the JSON Schema.
+- [x] A versioned JSON Schema for protocol v0 exists in the repository and is treated as the public protocol contract.
+- [x] The schema contains no sqlparser AST types or parser-specific representation details.
+- [x] The contract models source relations, physical dependencies, joins, structured predicates, column domains, final output columns, lineage, and diagnostics.
+- [x] Predicate structure preserves boolean semantics instead of flattening `AND`, `OR`, or `NOT`.
+- [x] Value domains can represent unbounded values, open and closed bounds, disjoint ranges or sets, an empty domain, and an unknown domain.
+- [x] Unsupported or unresolved semantics are representable explicitly without inventing precise information.
+- [x] Ordering rules for serialized collections are defined so equivalent analysis produces deterministic JSON.
+- [x] At least one representative protocol document validates against the JSON Schema.

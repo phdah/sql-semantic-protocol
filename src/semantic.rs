@@ -118,16 +118,14 @@ fn process_optional_filter(
     clause: ClauseKind,
     columns: &mut Vec<ColumnSemantics>,
 ) {
-    match expr {
-        Some(expr) => process_filter_expr(expr, clause, columns),
-        None => {}
+    if let Some(expr) = expr {
+        process_filter_expr(expr, clause, columns);
     }
 }
 
 fn process_optional_qualify(expr: Option<&Expr>, columns: &mut Vec<ColumnSemantics>) {
-    match expr {
-        Some(expr) => process_qualify_expr(expr, columns),
-        None => {}
+    if let Some(expr) = expr {
+        process_qualify_expr(expr, columns);
     }
 }
 
@@ -227,7 +225,7 @@ fn process_qualify_expr(expr: &Expr, columns: &mut Vec<ColumnSemantics>) {
 }
 
 #[inline(never)]
-fn process_group_by(select: &Select, columns: &mut Vec<ColumnSemantics>) {
+fn process_group_by(select: &Select, columns: &mut [ColumnSemantics]) {
     let GroupByExpr::Expressions(exprs, _) = &select.group_by else {
         return;
     };
@@ -346,5 +344,53 @@ fn collect_refs_inner(expr: &Expr, refs: &mut Vec<String>) {
             }
         }
         _ => {}
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::extract_schema;
+    use sqlparser::ast::{SetExpr, Statement};
+    use sqlparser::dialect::GenericDialect;
+    use sqlparser::parser::Parser;
+
+    #[test]
+    fn where_comparison_is_extracted() {
+        let statements = Parser::parse_sql(&GenericDialect {}, "SELECT b FROM t WHERE a > 10")
+            .expect("test SQL must parse");
+
+        let select = match statements.first() {
+            Some(Statement::Query(query)) => match query.body.as_ref() {
+                SetExpr::Select(select) => select,
+                other => panic!("expected SELECT body, got {other:?}"),
+            },
+            other => panic!("expected query statement, got {other:?}"),
+        };
+
+        let schema = extract_schema(select);
+
+        assert_eq!(schema.table, "t");
+
+        let projected = schema
+            .columns
+            .iter()
+            .find(|column| column.name == "b")
+            .expect("projected column b must exist");
+        assert_eq!(
+            projected
+                .projection
+                .as_ref()
+                .map(|projection| projection.expression.as_str()),
+            Some("b")
+        );
+
+        let filtered = schema
+            .columns
+            .iter()
+            .find(|column| column.name == "a")
+            .expect("filtered column a must exist");
+        assert_eq!(filtered.conditions.len(), 1);
+        assert_eq!(filtered.conditions[0].operator, ">");
+        assert_eq!(filtered.conditions[0].operand, "10");
     }
 }

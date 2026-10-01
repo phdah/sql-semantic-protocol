@@ -1,0 +1,237 @@
+{
+  "protocol_version": "0.1.0",
+  "source": {
+    "dialect": "generic"
+  },
+  "statements": [
+    {
+      "kind": "query",
+      "sources": [
+        {
+          "kind": "relation",
+          "name": "orders",
+          "alias": "o"
+        },
+        {
+          "kind": "relation",
+          "name": "customers",
+          "alias": "c"
+        }
+      ],
+      "dependencies": [
+        "customers",
+        "orders"
+      ],
+      "joins": [
+        {
+          "kind": "inner",
+          "left": {
+            "relation": "orders",
+            "alias": "o"
+          },
+          "right": {
+            "relation": "customers",
+            "alias": "c"
+          },
+          "condition": {
+            "kind": "comparison",
+            "left": {
+              "kind": "column",
+              "relation": "orders",
+              "name": "customer_id"
+            },
+            "operator": "eq",
+            "right": {
+              "kind": "column",
+              "relation": "customers",
+              "name": "id"
+            }
+          }
+        }
+      ],
+      "predicates": {
+        "where": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "comparison",
+              "left": {
+                "kind": "column",
+                "relation": "orders",
+                "name": "total_amount"
+              },
+              "operator": "gte",
+              "right": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 100
+              }
+            },
+            {
+              "kind": "comparison",
+              "left": {
+                "kind": "column",
+                "relation": "orders",
+                "name": "created_at"
+              },
+              "operator": "lt",
+              "right": {
+                "kind": "literal",
+                "type": "date",
+                "value": "2026-01-01"
+              }
+            },
+            {
+              "kind": "in",
+              "expression": {
+                "kind": "column",
+                "relation": "customers",
+                "name": "country"
+              },
+              "values": [
+                {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "SE"
+                },
+                {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "NO"
+                },
+                {
+                  "kind": "literal",
+                  "type": "string",
+                  "value": "DK"
+                }
+              ],
+              "negated": false
+            }
+          ]
+        },
+        "having": null,
+        "qualify": null
+      },
+      "column_domains": [
+        {
+          "column": {
+            "relation": "customers",
+            "name": "country"
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "DK"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "NO"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "SE"
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "relation": "orders",
+            "name": "created_at"
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": null,
+                "upper": {
+                  "value": {
+                    "kind": "literal",
+                    "type": "date",
+                    "value": "2026-01-01"
+                  },
+                  "inclusive": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "relation": "orders",
+            "name": "total_amount"
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  },
+                  "inclusive": true
+                },
+                "upper": null
+              }
+            ]
+          }
+        }
+      ],
+      "output": {
+        "columns": [
+          {
+            "name": "id",
+            "expression": {
+              "kind": "column",
+              "relation": "orders",
+              "name": "id"
+            },
+            "lineage": [
+              {
+                "relation": "orders",
+                "column": "id"
+              }
+            ]
+          },
+          {
+            "name": "country",
+            "expression": {
+              "kind": "column",
+              "relation": "customers",
+              "name": "country"
+            },
+            "lineage": [
+              {
+                "relation": "customers",
+                "column": "country"
+              }
+            ]
+          },
+          {
+            "name": "total_amount",
+            "expression": {
+              "kind": "column",
+              "relation": "orders",
+              "name": "total_amount"
+            },
+            "lineage": [
+              {
+                "relation": "orders",
+                "column": "total_amount"
+              }
+            ]
+          }
+        ]
+      },
+      "diagnostics": []
+    }
+  ]
+}

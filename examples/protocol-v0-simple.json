@@ -1,0 +1,81 @@
+{
+  "protocol_version": "0.1.0",
+  "source": {
+    "dialect": "generic"
+  },
+  "statements": [
+    {
+      "kind": "query",
+      "sources": [
+        {
+          "kind": "relation",
+          "name": "t",
+          "alias": null
+        }
+      ],
+      "dependencies": ["t"],
+      "joins": [],
+      "predicates": {
+        "where": {
+          "kind": "comparison",
+          "left": {
+            "kind": "column",
+            "relation": "t",
+            "name": "a"
+          },
+          "operator": "gt",
+          "right": {
+            "kind": "literal",
+            "type": "integer",
+            "value": 10
+          }
+        },
+        "having": null,
+        "qualify": null
+      },
+      "column_domains": [
+        {
+          "column": {
+            "relation": "t",
+            "name": "a"
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  },
+                  "inclusive": false
+                },
+                "upper": null
+              }
+            ]
+          }
+        }
+      ],
+      "output": {
+        "columns": [
+          {
+            "name": "b",
+            "expression": {
+              "kind": "column",
+              "relation": "t",
+              "name": "b"
+            },
+            "lineage": [
+              {
+                "relation": "t",
+                "column": "b"
+              }
+            ]
+          }
+        ]
+      },
+      "diagnostics": []
+    }
+  ]
+}

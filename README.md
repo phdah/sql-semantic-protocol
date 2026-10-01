@@ -25,3 +25,7 @@ The protocol is intentionally broader than test-data generation. Future consumer
 The protocol is therefore the contract between SQL and applications that need to reason about SQL semantics:
 
 `SQL -> parser/analyzer -> SQL Semantic Protocol -> consumers`
+
+## Protocol contract
+
+Protocol version `0.1.0` is defined by [`schema/protocol-v0.schema.json`](schema/protocol-v0.schema.json). See [`docs/protocol-v0.md`](docs/protocol-v0.md) for semantic and deterministic-ordering rules and [`examples/protocol-v0.json`](examples/protocol-v0.json) for a representative document.

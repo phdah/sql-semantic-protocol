@@ -35,15 +35,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Wrote AST to {output_file}");
 
     for stmt in &ast {
-        match stmt {
-            Statement::Query(query) => match query.body.as_ref() {
-                SetExpr::Select(select) => {
-                    let schema = extract_schema(select);
-                    println!("\n{schema}");
-                }
-                _ => {}
-            },
-            _ => {}
+        if let Statement::Query(query) = stmt {
+            if let SetExpr::Select(select) = query.body.as_ref() {
+                let schema = extract_schema(select);
+                println!("\n{schema}");
+            }
         }
     }
 
