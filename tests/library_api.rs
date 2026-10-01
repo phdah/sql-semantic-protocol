@@ -609,7 +609,6 @@ fn natural_join_reports_unresolved_condition() {
     }));
 }
 
-
 #[test]
 fn output_columns_preserve_order_aliases_expressions_and_direct_lineage() {
     let dialect = GenericDialect {};
