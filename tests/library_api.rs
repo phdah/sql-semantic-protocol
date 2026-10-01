@@ -23,10 +23,12 @@ fn valid_sql_returns_partial_query_for_caller_selected_dialect() {
 
     let statement = first_query(&protocol);
     assert!(statement.predicates().where_predicate().is_none());
-    assert!(statement
+    assert_eq!(statement.output().columns().len(), 1);
+    assert_eq!(statement.output().columns()[0].name(), "1");
+    assert!(!statement
         .diagnostics()
         .iter()
-        .any(|diagnostic| diagnostic.area() == DiagnosticArea::Output));
+        .any(|diagnostic| diagnostic.code() == "output_analysis_pending"));
 }
 
 #[test]
@@ -605,4 +607,171 @@ fn natural_join_reports_unresolved_condition() {
         diagnostic.area() == DiagnosticArea::Join
             && diagnostic.code() == "unsupported_natural_join_condition"
     }));
+}
+
+
+#[test]
+fn output_columns_preserve_order_aliases_expressions_and_direct_lineage() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT o.id AS order_id, o.total + 1 AS adjusted_total
+         FROM sales.orders AS o
+         WHERE o.status = 'open'",
+        "generic",
+        &dialect,
+    )
+    .expect("output columns should be analyzed");
+
+    let statement = first_query(&protocol);
+    let columns = statement.output().columns();
+    assert_eq!(columns.len(), 2);
+    assert_eq!(columns[0].name(), "order_id");
+    assert_eq!(columns[1].name(), "adjusted_total");
+    assert!(matches!(columns[0].expression(), Expression::Column(_)));
+    assert!(matches!(columns[1].expression(), Expression::Binary(_)));
+
+    assert_eq!(columns[0].lineage().len(), 1);
+    assert_eq!(columns[0].lineage()[0].relation(), "sales.orders");
+    assert_eq!(columns[0].lineage()[0].column(), "id");
+    assert_eq!(columns[1].lineage().len(), 1);
+    assert_eq!(columns[1].lineage()[0].relation(), "sales.orders");
+    assert_eq!(columns[1].lineage()[0].column(), "total");
+
+    assert!(columns
+        .iter()
+        .flat_map(|column| column.lineage())
+        .all(|source| source.column() != "status"));
+}
+
+#[test]
+fn expression_lineage_contains_every_contributing_source_column() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT o.subtotal + o.tax AS gross FROM sales.orders AS o",
+        "generic",
+        &dialect,
+    )
+    .expect("expression lineage should be analyzed");
+
+    let lineage = first_query(&protocol).output().columns()[0].lineage();
+    assert_eq!(lineage.len(), 2);
+    assert_eq!(lineage[0].relation(), "sales.orders");
+    assert_eq!(lineage[0].column(), "subtotal");
+    assert_eq!(lineage[1].relation(), "sales.orders");
+    assert_eq!(lineage[1].column(), "tax");
+}
+
+#[test]
+fn cte_and_derived_table_lineage_resolve_to_physical_columns() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "WITH recent AS (
+            SELECT o.id AS order_id, o.customer_id
+            FROM raw.orders AS o
+        )
+        SELECT r.order_id, c.name
+        FROM recent AS r
+        JOIN (
+            SELECT customer_id, name
+            FROM raw.customers
+        ) AS c ON r.customer_id = c.customer_id",
+        "generic",
+        &dialect,
+    )
+    .expect("local relation lineage should resolve recursively");
+
+    let columns = first_query(&protocol).output().columns();
+    assert_eq!(columns.len(), 2);
+
+    assert_eq!(columns[0].lineage().len(), 1);
+    assert_eq!(columns[0].lineage()[0].relation(), "raw.orders");
+    assert_eq!(columns[0].lineage()[0].column(), "id");
+
+    assert_eq!(columns[1].lineage().len(), 1);
+    assert_eq!(columns[1].lineage()[0].relation(), "raw.customers");
+    assert_eq!(columns[1].lineage()[0].column(), "name");
+}
+
+#[test]
+fn aggregate_and_window_outputs_retain_argument_lineage() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT SUM(o.amount) AS total_amount,
+                SUM(o.amount) OVER () AS window_total
+         FROM sales.orders AS o",
+        "generic",
+        &dialect,
+    )
+    .expect("aggregate and window expressions should preserve source lineage");
+
+    let columns = first_query(&protocol).output().columns();
+    assert_eq!(columns.len(), 2);
+
+    for column in columns {
+        assert_eq!(column.lineage().len(), 1);
+        assert_eq!(column.lineage()[0].relation(), "sales.orders");
+        assert_eq!(column.lineage()[0].column(), "amount");
+    }
+}
+
+#[test]
+fn wildcard_output_remains_explicitly_unresolved() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql("SELECT * FROM sales.orders", "generic", &dialect)
+        .expect("wildcard query should remain representable");
+
+    let statement = first_query(&protocol);
+    let column = &statement.output().columns()[0];
+    assert_eq!(column.name(), "*");
+    assert!(matches!(column.expression(), Expression::Unknown(_)));
+    assert!(column.lineage().is_empty());
+    assert!(statement.diagnostics().iter().any(|diagnostic| {
+        diagnostic.area() == DiagnosticArea::Output
+            && diagnostic.code() == "unresolved_wildcard"
+    }));
+}
+
+#[test]
+fn ambiguous_unqualified_output_lineage_is_not_guessed() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT id FROM users AS u JOIN orders AS o ON u.id = o.user_id",
+        "generic",
+        &dialect,
+    )
+    .expect("ambiguous output should remain representable");
+
+    let statement = first_query(&protocol);
+    assert!(statement.output().columns()[0].lineage().is_empty());
+    assert!(statement.diagnostics().iter().any(|diagnostic| {
+        diagnostic.area() == DiagnosticArea::Output
+            && diagnostic.code() == "ambiguous_output_lineage"
+    }));
+}
+
+#[test]
+fn output_json_contains_projection_expression_and_lineage() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT o.id AS order_id FROM sales.orders AS o",
+        "generic",
+        &dialect,
+    )
+    .expect("output should serialize");
+
+    let json: serde_json::Value =
+        serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
+    assert_eq!(json["statements"][0]["output"]["columns"][0]["name"], "order_id");
+    assert_eq!(
+        json["statements"][0]["output"]["columns"][0]["expression"]["name"],
+        "id"
+    );
+    assert_eq!(
+        json["statements"][0]["output"]["columns"][0]["lineage"][0]["relation"],
+        "sales.orders"
+    );
+    assert_eq!(
+        json["statements"][0]["output"]["columns"][0]["lineage"][0]["column"],
+        "id"
+    );
 }
