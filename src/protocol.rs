@@ -74,6 +74,7 @@ pub struct QueryStatement {
     predicates: Box<Predicates>,
     column_domains: Vec<ColumnDomain>,
     output: Output,
+    produced_relation: Option<String>,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -85,6 +86,7 @@ impl QueryStatement {
         predicates: Predicates,
         mut column_domains: Vec<ColumnDomain>,
         output: Output,
+        produced_relation: Option<String>,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
         column_domains.sort_by(|left, right| left.column.cmp(&right.column));
@@ -95,6 +97,7 @@ impl QueryStatement {
             predicates: Box::new(predicates),
             column_domains,
             output,
+            produced_relation,
             diagnostics,
         }
     }
@@ -127,6 +130,13 @@ impl QueryStatement {
     /// Return final query output columns in SELECT-list order.
     pub fn output(&self) -> &Output {
         &self.output
+    }
+
+    /// Return the named relation produced by query-backed DDL, if any.
+    ///
+    /// Bare queries produce anonymous results and therefore return `None`.
+    pub fn produced_relation(&self) -> Option<&str> {
+        self.produced_relation.as_deref()
     }
 
     /// Return diagnostics describing incomplete query semantics.
