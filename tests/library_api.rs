@@ -1,7 +1,7 @@
 use sql_semantic_protocol::{
     analyze_sql, to_json, AnalysisError, BinaryOperator, ComparisonOperator, DiagnosticArea, Error,
-    Expression, JoinKind, LiteralType, LiteralValue, Predicate, Protocol, ProtocolStatement,
-    LiteralExpression, QueryStatement, SetMode, UnaryOperator, ValueDomain,
+    Expression, JoinKind, LiteralExpression, LiteralType, LiteralValue, Predicate, Protocol,
+    ProtocolStatement, QueryStatement, SetMode, UnaryOperator, ValueDomain,
 };
 use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
 
@@ -609,8 +609,6 @@ fn natural_join_reports_unresolved_condition() {
     }));
 }
 
-
-
 #[test]
 fn ordered_comparison_derives_open_lower_bound_for_non_output_column() {
     let dialect = GenericDialect {};
@@ -639,7 +637,8 @@ fn ordered_comparison_derives_open_lower_bound_for_non_output_column() {
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
     assert_eq!(
-        json["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["value"]["value"],
+        json["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["value"]
+            ["value"],
         10
     );
     assert_eq!(
@@ -788,12 +787,8 @@ fn between_and_not_between_preserve_closed_and_disjoint_ranges() {
 #[test]
 fn disjunction_preserves_disjoint_ranges() {
     let dialect = GenericDialect {};
-    let protocol = analyze_sql(
-        "SELECT a FROM t WHERE a < 0 OR a > 10",
-        "generic",
-        &dialect,
-    )
-    .expect("OR should preserve both allowed ranges");
+    let protocol = analyze_sql("SELECT a FROM t WHERE a < 0 OR a > 10", "generic", &dialect)
+        .expect("OR should preserve both allowed ranges");
 
     let ranges = match first_query(&protocol).column_domains()[0].domain() {
         ValueDomain::Ranges(domain) => domain.ranges(),
