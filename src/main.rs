@@ -2,7 +2,7 @@ use std::env;
 use std::fmt;
 use std::fs;
 use std::io::{self, Read};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use sql_semantic_protocol::{
@@ -65,6 +65,7 @@ struct Options {
 enum InputArgument {
     Inline(String),
     File(PathBuf),
+    Directory(PathBuf),
 }
 
 fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, CliError> {
@@ -99,6 +100,12 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                     .ok_or_else(|| CliError::Input("missing value for --file".to_string()))?;
                 inputs.push(InputArgument::File(PathBuf::from(path)));
             }
+            "--dir" => {
+                let path = arguments
+                    .next()
+                    .ok_or_else(|| CliError::Input("missing value for --dir".to_string()))?;
+                inputs.push(InputArgument::Directory(PathBuf::from(path)));
+            }
             _ if argument.starts_with('-') => {
                 return Err(CliError::Input(format!("unknown option: {argument}")));
             }
@@ -108,7 +115,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
 
     if !inputs.is_empty() && !positional_sql.is_empty() {
         return Err(CliError::Input(
-            "cannot combine positional SQL with --sql or --file; use --sql for explicit inputs"
+            "cannot combine positional SQL with --sql, --file, or --dir; use --sql for explicit inputs"
                 .to_string(),
         ));
     }
@@ -122,12 +129,35 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
 
 fn read_inputs(options: &Options) -> Result<Vec<SqlInput>, CliError> {
     if !options.inputs.is_empty() {
-        return options
-            .inputs
-            .iter()
-            .enumerate()
-            .map(|(index, input)| read_explicit_input(input, index + 1))
-            .collect();
+        let mut inputs = Vec::new();
+
+        for input in &options.inputs {
+            match input {
+                InputArgument::Inline(sql) => {
+                    let position = inputs.len() + 1;
+                    ensure_non_empty_sql(sql, &format!("input {position} (--sql)"))?;
+                    inputs.push(SqlInput::inline(sql.clone()));
+                }
+                InputArgument::File(path) => {
+                    let position = inputs.len() + 1;
+                    inputs.push(read_file_input(path, position)?);
+                }
+                InputArgument::Directory(path) => {
+                    for discovered_path in discover_sql_files(path)? {
+                        let position = inputs.len() + 1;
+                        inputs.push(read_file_input(&discovered_path, position)?);
+                    }
+                }
+            }
+        }
+
+        if inputs.is_empty() {
+            return Err(CliError::Input(
+                "no SQL inputs found; supplied directories contained no .sql files".to_string(),
+            ));
+        }
+
+        return Ok(inputs);
     }
 
     if !options.positional_sql.is_empty() {
@@ -145,26 +175,76 @@ fn read_inputs(options: &Options) -> Result<Vec<SqlInput>, CliError> {
     Ok(vec![SqlInput::inline(sql)])
 }
 
-fn read_explicit_input(input: &InputArgument, position: usize) -> Result<SqlInput, CliError> {
-    match input {
-        InputArgument::Inline(sql) => {
-            ensure_non_empty_sql(sql, &format!("input {position} (--sql)"))?;
-            Ok(SqlInput::inline(sql.clone()))
-        }
-        InputArgument::File(path) => {
-            let sql = fs::read_to_string(path).map_err(|error| {
-                CliError::Input(format!(
-                    "input {position} (file '{}'): failed to read: {error}",
-                    path.display()
-                ))
-            })?;
-            ensure_non_empty_sql(
-                &sql,
-                &format!("input {position} (file '{}')", path.display()),
-            )?;
-            Ok(SqlInput::file(path.display().to_string(), sql))
+fn read_file_input(path: &Path, position: usize) -> Result<SqlInput, CliError> {
+    let sql = fs::read_to_string(path).map_err(|error| {
+        CliError::Input(format!(
+            "input {position} (file '{}'): failed to read: {error}",
+            path.display()
+        ))
+    })?;
+    ensure_non_empty_sql(
+        &sql,
+        &format!("input {position} (file '{}')", path.display()),
+    )?;
+    Ok(SqlInput::file(path.display().to_string(), sql))
+}
+
+fn discover_sql_files(root: &Path) -> Result<Vec<PathBuf>, CliError> {
+    let metadata = fs::metadata(root).map_err(|error| {
+        CliError::Input(format!(
+            "directory '{}': failed to inspect: {error}",
+            root.display()
+        ))
+    })?;
+    if !metadata.is_dir() {
+        return Err(CliError::Input(format!(
+            "directory '{}': path is not a directory",
+            root.display()
+        )));
+    }
+
+    let mut paths = Vec::new();
+    collect_sql_files(root, &mut paths)?;
+    paths.sort();
+    Ok(paths)
+}
+
+fn collect_sql_files(directory: &Path, paths: &mut Vec<PathBuf>) -> Result<(), CliError> {
+    let entries = fs::read_dir(directory).map_err(|error| {
+        CliError::Input(format!(
+            "directory '{}': failed to read: {error}",
+            directory.display()
+        ))
+    })?;
+
+    for entry in entries {
+        let entry = entry.map_err(|error| {
+            CliError::Input(format!(
+                "directory '{}': failed to read entry: {error}",
+                directory.display()
+            ))
+        })?;
+        let path = entry.path();
+        let file_type = entry.file_type().map_err(|error| {
+            CliError::Input(format!(
+                "path '{}': failed to inspect: {error}",
+                path.display()
+            ))
+        })?;
+
+        if file_type.is_dir() {
+            collect_sql_files(&path, paths)?;
+        } else if file_type.is_file()
+            && path
+                .extension()
+                .and_then(|extension| extension.to_str())
+                .is_some_and(|extension| extension.eq_ignore_ascii_case("sql"))
+        {
+            paths.push(path);
         }
     }
+
+    Ok(())
 }
 
 fn ensure_non_empty_sql(sql: &str, source: &str) -> Result<(), CliError> {
