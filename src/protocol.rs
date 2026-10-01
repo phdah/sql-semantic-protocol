@@ -68,14 +68,14 @@ pub enum ProtocolStatement {
 /// collections and accompanied by diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QueryStatement {
-    predicates: Predicates,
+    predicates: Box<Predicates>,
     diagnostics: Vec<Diagnostic>,
 }
 
 impl QueryStatement {
     pub(crate) fn new(predicates: Predicates, diagnostics: Vec<Diagnostic>) -> Self {
         Self {
-            predicates,
+            predicates: Box::new(predicates),
             diagnostics,
         }
     }
