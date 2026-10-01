@@ -8,9 +8,9 @@ use serde_json::{json, Value};
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, ColumnExpression, ComparisonPredicate, Diagnostic,
     Expression, FunctionExpression, InPredicate, IsNullPredicate, Join, LiteralExpression,
-    LiteralValue, LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol, ProtocolStatement,
-    QueryStatement, RelationRef, SourceRelation, UnaryExpression, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement,
+    LiteralValue, LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol,
+    ProtocolStatement, QueryStatement, RelationRef, SourceRelation, UnaryExpression,
+    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
 };
 
 /// Serialize protocol domain values to JSON.
