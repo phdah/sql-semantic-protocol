@@ -567,7 +567,6 @@ fn self_join_sources_remain_distinct_by_alias() {
     assert_eq!(join.right().alias(), Some("u2"));
 }
 
-
 #[test]
 fn multiple_joins_preserve_sql_order_and_alias_identity() {
     let dialect = GenericDialect {};
