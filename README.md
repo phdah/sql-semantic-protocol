@@ -29,3 +29,38 @@ The protocol is therefore the contract between SQL and applications that need to
 ## Protocol contract
 
 Protocol version `0.1.0` is defined by [`schema/protocol-v0.schema.json`](schema/protocol-v0.schema.json). See [`docs/protocol-v0.md`](docs/protocol-v0.md) for semantic and deterministic-ordering rules and [`examples/protocol-v0.json`](examples/protocol-v0.json) for a representative document.
+
+## CLI
+
+The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
+
+```text
+sql-semantic-protocol [--dialect <name>] [--file <path>] [SQL ...]
+```
+
+The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
+
+With `sqlparser` 0.58, recognized dialect names are `generic`, `mysql`, `postgresql` (or `postgres`), `hive`, `sqlite`, `snowflake`, `redshift`, `mssql`, `clickhouse`, `bigquery`, `ansi`, `duckdb`, and `databricks`.
+
+SQL can be supplied directly:
+
+```sh
+cargo run -- --dialect postgresql "SELECT a FROM t WHERE a > 10"
+```
+
+from a file:
+
+```sh
+cargo run -- --dialect snowflake --file query.sql
+```
+
+or through standard input:
+
+```sh
+printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
+```
+
+If no SQL argument and no `--file` are supplied, the CLI reads SQL from standard input. Use `--` before positional SQL if the SQL text starts with a dash.
+
+Successful runs emit protocol JSON only. Input errors, SQL parse errors, and analysis failures are written to standard error and use distinct non-zero exit codes.
+
