@@ -49,7 +49,7 @@ fn serialized_collections_follow_protocol_ordering_rules() {
 #[test]
 fn simple_query_emission_matches_schema_valid_v0_fixture() {
     let dialect = GenericDialect {};
-    let protocol = analyze_sql("SELECT b FROM t WHERE a > 10", "generic", &dialect)
+    let protocol = analyze_sql("SELECT t.b FROM t WHERE t.a > 10", "generic", &dialect)
         .expect("fixture query should analyze");
 
     let actual: serde_json::Value =
