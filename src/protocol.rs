@@ -72,6 +72,7 @@ pub struct QueryStatement {
     dependencies: Vec<String>,
     joins: Vec<Join>,
     predicates: Box<Predicates>,
+    column_domains: Vec<ColumnDomain>,
     output: Output,
     diagnostics: Vec<Diagnostic>,
 }
@@ -82,14 +83,17 @@ impl QueryStatement {
         dependencies: Vec<String>,
         joins: Vec<Join>,
         predicates: Predicates,
+        mut column_domains: Vec<ColumnDomain>,
         output: Output,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
+        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
         Self {
             sources,
             dependencies,
             joins,
             predicates: Box::new(predicates),
+            column_domains,
             output,
             diagnostics,
         }
@@ -113,6 +117,11 @@ impl QueryStatement {
     /// Return WHERE, HAVING, and QUALIFY semantics known for the query.
     pub fn predicates(&self) -> &Predicates {
         &self.predicates
+    }
+
+    /// Return derived source-column value domains in deterministic column order.
+    pub fn column_domains(&self) -> &[ColumnDomain] {
+        &self.column_domains
     }
 
     /// Return final query output columns in SELECT-list order.
@@ -502,6 +511,220 @@ pub enum LiteralValue {
     Number(String),
     /// String-like literal value.
     Text(String),
+}
+
+/// Reference to a column whose scalar value domain was analyzed.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ColumnRef {
+    relation: Option<String>,
+    name: String,
+}
+
+impl ColumnRef {
+    pub(crate) fn new(relation: Option<String>, name: String) -> Self {
+        Self { relation, name }
+    }
+
+    /// Return the resolved relation name when one is known.
+    pub fn relation(&self) -> Option<&str> {
+        self.relation.as_deref()
+    }
+
+    /// Return the referenced column name.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+/// A derived value domain for one referenced column.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ColumnDomain {
+    column: ColumnRef,
+    domain: ValueDomain,
+}
+
+impl ColumnDomain {
+    pub(crate) fn new(column: ColumnRef, domain: ValueDomain) -> Self {
+        Self { column, domain }
+    }
+
+    /// Return the constrained column.
+    pub fn column(&self) -> &ColumnRef {
+        &self.column
+    }
+
+    /// Return the conservative scalar domain derived for the column.
+    pub fn domain(&self) -> &ValueDomain {
+        &self.domain
+    }
+}
+
+/// Conservative scalar values that may satisfy the analyzed predicates.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum ValueDomain {
+    /// No useful scalar restriction is known.
+    Unbounded,
+    /// One or more ordered ranges constrain the value.
+    Ranges(RangesDomain),
+    /// A finite inclusion or exclusion set constrains the value.
+    Set(SetDomain),
+    /// No value can satisfy the known constraints.
+    Empty,
+    /// A scalar domain cannot be derived safely from the known semantics.
+    Unknown(UnknownDomain),
+}
+
+impl ValueDomain {
+    pub(crate) fn ranges(ranges: Vec<ValueRange>) -> Self {
+        if ranges.is_empty() {
+            Self::Empty
+        } else {
+            Self::Ranges(RangesDomain { ranges })
+        }
+    }
+
+    pub(crate) fn set(mode: SetMode, mut values: Vec<LiteralExpression>) -> Self {
+        values.sort_by_key(literal_sort_key);
+        values.dedup();
+
+        if values.is_empty() {
+            return match mode {
+                SetMode::Include => Self::Empty,
+                SetMode::Exclude => Self::Unbounded,
+            };
+        }
+
+        Self::Set(SetDomain { mode, values })
+    }
+
+    pub(crate) fn unknown(reason: impl Into<String>) -> Self {
+        let reason = reason.into();
+        let reason = if reason.trim().is_empty() {
+            "column domain could not be derived safely".to_string()
+        } else {
+            reason
+        };
+        Self::Unknown(UnknownDomain { reason })
+    }
+}
+
+/// Ordered ranges comprising a value domain.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RangesDomain {
+    ranges: Vec<ValueRange>,
+}
+
+impl RangesDomain {
+    /// Return ranges in deterministic derivation order.
+    pub fn ranges(&self) -> &[ValueRange] {
+        &self.ranges
+    }
+}
+
+/// One interval in an ordered value domain.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ValueRange {
+    lower: Option<Bound>,
+    upper: Option<Bound>,
+}
+
+impl ValueRange {
+    pub(crate) fn new(lower: Option<Bound>, upper: Option<Bound>) -> Self {
+        Self { lower, upper }
+    }
+
+    /// Return the lower bound, or None when the range is unbounded below.
+    pub fn lower(&self) -> Option<&Bound> {
+        self.lower.as_ref()
+    }
+
+    /// Return the upper bound, or None when the range is unbounded above.
+    pub fn upper(&self) -> Option<&Bound> {
+        self.upper.as_ref()
+    }
+}
+
+/// One inclusive or exclusive literal range bound.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Bound {
+    value: LiteralExpression,
+    inclusive: bool,
+}
+
+impl Bound {
+    pub(crate) fn new(value: LiteralExpression, inclusive: bool) -> Self {
+        Self { value, inclusive }
+    }
+
+    /// Return the literal value used by this bound.
+    pub fn value(&self) -> &LiteralExpression {
+        &self.value
+    }
+
+    /// Return whether the bound includes its literal value.
+    pub fn inclusive(&self) -> bool {
+        self.inclusive
+    }
+}
+
+/// Set-domain interpretation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SetMode {
+    /// Only the listed values are allowed.
+    Include,
+    /// Every value except the listed values is allowed.
+    Exclude,
+}
+
+impl SetMode {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Include => "include",
+            Self::Exclude => "exclude",
+        }
+    }
+}
+
+/// A finite inclusion or exclusion domain.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SetDomain {
+    mode: SetMode,
+    values: Vec<LiteralExpression>,
+}
+
+impl SetDomain {
+    /// Return whether values are included or excluded.
+    pub fn mode(&self) -> SetMode {
+        self.mode
+    }
+
+    /// Return deterministically ordered literal values.
+    pub fn values(&self) -> &[LiteralExpression] {
+        &self.values
+    }
+}
+
+/// Reason a safe scalar value domain could not be derived.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnknownDomain {
+    reason: String,
+}
+
+impl UnknownDomain {
+    /// Return why domain derivation could not be completed safely.
+    pub fn reason(&self) -> &str {
+        &self.reason
+    }
+}
+
+fn literal_sort_key(literal: &LiteralExpression) -> (&'static str, String) {
+    let value = match literal.value() {
+        LiteralValue::Null => "null".to_string(),
+        LiteralValue::Boolean(value) => value.to_string(),
+        LiteralValue::Number(value) | LiteralValue::Text(value) => value.clone(),
+    };
+    (literal.literal_type().as_str(), value)
 }
 
 /// A normalized function call.

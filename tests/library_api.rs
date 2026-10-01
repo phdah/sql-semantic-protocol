@@ -1,7 +1,7 @@
 use sql_semantic_protocol::{
     analyze_sql, to_json, AnalysisError, BinaryOperator, ComparisonOperator, DiagnosticArea, Error,
-    Expression, JoinKind, LiteralType, LiteralValue, Predicate, Protocol, ProtocolStatement,
-    QueryStatement, UnaryOperator,
+    Expression, JoinKind, LiteralExpression, LiteralType, LiteralValue, Predicate, Protocol,
+    ProtocolStatement, QueryStatement, SetMode, UnaryOperator, ValueDomain,
 };
 use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
 
@@ -607,6 +607,224 @@ fn natural_join_reports_unresolved_condition() {
         diagnostic.area() == DiagnosticArea::Join
             && diagnostic.code() == "unsupported_natural_join_condition"
     }));
+}
+
+#[test]
+fn ordered_comparison_derives_open_lower_bound_for_non_output_column() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql("SELECT b FROM t WHERE a > 10", "generic", &dialect)
+        .expect("ordered comparison should derive a domain");
+
+    let domains = first_query(&protocol).column_domains();
+    assert_eq!(domains.len(), 1);
+    assert_eq!(domains[0].column().relation(), Some("t"));
+    assert_eq!(domains[0].column().name(), "a");
+
+    let ranges = match domains[0].domain() {
+        ValueDomain::Ranges(domain) => domain.ranges(),
+        other => panic!("expected range domain, got {other:?}"),
+    };
+    assert_eq!(ranges.len(), 1);
+    let lower = ranges[0].lower().expect("lower bound should exist");
+    assert!(!lower.inclusive());
+    assert_eq!(lower.value().literal_type(), LiteralType::Integer);
+    assert_eq!(
+        lower.value().value(),
+        &LiteralValue::Number("10".to_string())
+    );
+    assert!(ranges[0].upper().is_none());
+
+    let json: serde_json::Value =
+        serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
+    assert_eq!(
+        json["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["value"]
+            ["value"],
+        10
+    );
+    assert_eq!(
+        json["statements"][0]["column_domains"][0]["domain"]["ranges"][0]["lower"]["inclusive"],
+        false
+    );
+}
+
+#[test]
+fn conjunction_intersects_compatible_range_bounds() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT a FROM t WHERE a >= 10 AND a < 20",
+        "generic",
+        &dialect,
+    )
+    .expect("conjunction should derive an intersected range");
+
+    let ranges = match first_query(&protocol).column_domains()[0].domain() {
+        ValueDomain::Ranges(domain) => domain.ranges(),
+        other => panic!("expected range domain, got {other:?}"),
+    };
+    assert_eq!(ranges.len(), 1);
+    assert!(ranges[0].lower().expect("lower bound").inclusive());
+    assert!(!ranges[0].upper().expect("upper bound").inclusive());
+}
+
+#[test]
+fn contradictory_predicates_produce_empty_domain() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT a FROM t WHERE a > 10 AND a < 5",
+        "generic",
+        &dialect,
+    )
+    .expect("contradiction should remain representable");
+
+    assert!(matches!(
+        first_query(&protocol).column_domains()[0].domain(),
+        ValueDomain::Empty
+    ));
+}
+
+#[test]
+fn equality_and_in_predicates_produce_inclusion_sets() {
+    let dialect = GenericDialect {};
+
+    let equality = analyze_sql("SELECT a FROM t WHERE a = 10", "generic", &dialect)
+        .expect("equality should derive a finite set");
+    let equality_set = match first_query(&equality).column_domains()[0].domain() {
+        ValueDomain::Set(domain) => domain,
+        other => panic!("expected set domain, got {other:?}"),
+    };
+    assert_eq!(equality_set.mode(), SetMode::Include);
+    assert_eq!(equality_set.values().len(), 1);
+
+    let in_list = analyze_sql(
+        "SELECT a FROM t WHERE a IN (3, 1, 2, 2)",
+        "generic",
+        &dialect,
+    )
+    .expect("IN should derive a finite set");
+    let in_set = match first_query(&in_list).column_domains()[0].domain() {
+        ValueDomain::Set(domain) => domain,
+        other => panic!("expected set domain, got {other:?}"),
+    };
+    assert_eq!(in_set.mode(), SetMode::Include);
+    assert_eq!(
+        in_set
+            .values()
+            .iter()
+            .map(LiteralExpression::value)
+            .collect::<Vec<_>>(),
+        vec![
+            &LiteralValue::Number("1".to_string()),
+            &LiteralValue::Number("2".to_string()),
+            &LiteralValue::Number("3".to_string()),
+        ]
+    );
+}
+
+#[test]
+fn inequality_and_null_predicates_produce_exclusion_sets() {
+    let dialect = GenericDialect {};
+
+    let inequality = analyze_sql("SELECT a FROM t WHERE a <> 10", "generic", &dialect)
+        .expect("inequality should derive an exclusion set");
+    let inequality_set = match first_query(&inequality).column_domains()[0].domain() {
+        ValueDomain::Set(domain) => domain,
+        other => panic!("expected set domain, got {other:?}"),
+    };
+    assert_eq!(inequality_set.mode(), SetMode::Exclude);
+    assert!(inequality_set
+        .values()
+        .iter()
+        .any(|value| value.value() == &LiteralValue::Number("10".to_string())));
+    assert!(inequality_set
+        .values()
+        .iter()
+        .any(|value| value.value() == &LiteralValue::Null));
+
+    let is_not_null = analyze_sql("SELECT a FROM t WHERE a IS NOT NULL", "generic", &dialect)
+        .expect("IS NOT NULL should derive an exclusion set");
+    let null_set = match first_query(&is_not_null).column_domains()[0].domain() {
+        ValueDomain::Set(domain) => domain,
+        other => panic!("expected set domain, got {other:?}"),
+    };
+    assert_eq!(null_set.mode(), SetMode::Exclude);
+    assert_eq!(null_set.values().len(), 1);
+    assert_eq!(null_set.values()[0].value(), &LiteralValue::Null);
+}
+
+#[test]
+fn between_and_not_between_preserve_closed_and_disjoint_ranges() {
+    let dialect = GenericDialect {};
+
+    let between = analyze_sql(
+        "SELECT a FROM t WHERE a BETWEEN 1 AND 3",
+        "generic",
+        &dialect,
+    )
+    .expect("BETWEEN should derive a closed range");
+    let between_ranges = match first_query(&between).column_domains()[0].domain() {
+        ValueDomain::Ranges(domain) => domain.ranges(),
+        other => panic!("expected range domain, got {other:?}"),
+    };
+    assert_eq!(between_ranges.len(), 1);
+    assert!(between_ranges[0].lower().expect("lower bound").inclusive());
+    assert!(between_ranges[0].upper().expect("upper bound").inclusive());
+
+    let not_between = analyze_sql(
+        "SELECT a FROM t WHERE a NOT BETWEEN 1 AND 3",
+        "generic",
+        &dialect,
+    )
+    .expect("NOT BETWEEN should derive disjoint ranges");
+    let not_between_ranges = match first_query(&not_between).column_domains()[0].domain() {
+        ValueDomain::Ranges(domain) => domain.ranges(),
+        other => panic!("expected range domain, got {other:?}"),
+    };
+    assert_eq!(not_between_ranges.len(), 2);
+    assert!(not_between_ranges[0].lower().is_none());
+    assert!(not_between_ranges[1].upper().is_none());
+}
+
+#[test]
+fn disjunction_preserves_disjoint_ranges() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql("SELECT a FROM t WHERE a < 0 OR a > 10", "generic", &dialect)
+        .expect("OR should preserve both allowed ranges");
+
+    let ranges = match first_query(&protocol).column_domains()[0].domain() {
+        ValueDomain::Ranges(domain) => domain.ranges(),
+        other => panic!("expected range domain, got {other:?}"),
+    };
+    assert_eq!(ranges.len(), 2);
+}
+
+#[test]
+fn disjunction_across_different_columns_is_unbounded_per_column() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT a, b FROM t WHERE a = 1 OR b = 2",
+        "generic",
+        &dialect,
+    )
+    .expect("cross-column OR should remain conservative");
+
+    let domains = first_query(&protocol).column_domains();
+    assert_eq!(domains.len(), 2);
+    assert!(domains
+        .iter()
+        .all(|domain| matches!(domain.domain(), ValueDomain::Unbounded)));
+}
+
+#[test]
+fn column_to_column_comparison_has_explicit_unknown_scalar_domains() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql("SELECT a FROM t WHERE a > b", "generic", &dialect)
+        .expect("column comparison should remain representable");
+
+    let domains = first_query(&protocol).column_domains();
+    assert_eq!(domains.len(), 2);
+    assert!(domains
+        .iter()
+        .all(|domain| matches!(domain.domain(), ValueDomain::Unknown(_))));
 }
 
 #[test]

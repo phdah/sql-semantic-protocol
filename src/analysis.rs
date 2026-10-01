@@ -17,6 +17,7 @@ use sqlparser::ast::{
     TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
 };
 
+use crate::domain::derive_column_domains;
 use crate::parser::ParsedSql;
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, BinaryOperator, ColumnExpression, ComparisonOperator,
@@ -96,6 +97,8 @@ fn analyze_query(query: &SqlQuery) -> QueryStatement {
         }
     };
 
+    let column_domains = derive_column_domains(&predicates, &relation_analysis.sources);
+
     inspect_query_features(query, &mut diagnostics);
     sort_diagnostics(&mut diagnostics);
 
@@ -104,6 +107,7 @@ fn analyze_query(query: &SqlQuery) -> QueryStatement {
         relation_analysis.dependencies.into_iter().collect(),
         relation_analysis.joins,
         predicates,
+        column_domains,
         output,
         diagnostics,
     )

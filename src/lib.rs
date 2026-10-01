@@ -6,6 +6,7 @@
 //!   expressions and predicates plus explicit unknown and unsupported semantic values.
 
 mod analysis;
+mod domain;
 mod emission;
 mod parser;
 pub mod protocol;
@@ -18,13 +19,14 @@ pub use analysis::AnalysisError;
 pub use emission::to_json;
 pub use parser::ParseError;
 pub use protocol::{
-    BetweenPredicate, BinaryExpression, BinaryOperator, ColumnExpression, ComparisonOperator,
-    ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity, Expression,
-    FunctionExpression, InPredicate, IsNullPredicate, Join, JoinKind, LineageSource,
-    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate, Output,
-    OutputColumn, Predicate, Predicates, Protocol, ProtocolSource, ProtocolStatement,
-    QueryStatement, RelationRef, SourceRelation, UnaryExpression, UnaryOperator, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement,
+    BetweenPredicate, BinaryExpression, BinaryOperator, Bound, ColumnDomain, ColumnExpression,
+    ColumnRef, ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea,
+    DiagnosticSeverity, Expression, FunctionExpression, InPredicate, IsNullPredicate, Join,
+    JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource,
+    ProtocolStatement, QueryStatement, RangesDomain, RelationRef, SetDomain, SetMode,
+    SourceRelation, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.

@@ -6,11 +6,12 @@
 use serde_json::{json, Value};
 
 use crate::protocol::{
-    BetweenPredicate, BinaryExpression, ColumnExpression, ComparisonPredicate, Diagnostic,
-    Expression, FunctionExpression, InPredicate, IsNullPredicate, Join, LineageSource,
-    LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output, OutputColumn,
-    Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
+    BetweenPredicate, BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef,
+    ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate, IsNullPredicate,
+    Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output,
+    OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
     SourceRelation, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ValueDomain, ValueRange,
 };
 
 /// Serialize protocol domain values to JSON.
@@ -64,7 +65,11 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
         "dependencies": statement.dependencies(),
         "joins": joins,
         "predicates": predicates_to_value(statement.predicates()),
-        "column_domains": [],
+        "column_domains": statement
+            .column_domains()
+            .iter()
+            .map(column_domain_to_value)
+            .collect::<Vec<_>>(),
         "output": output_to_value(statement.output()),
         "diagnostics": diagnostics
     })
@@ -96,6 +101,62 @@ fn lineage_source_to_value(source: &LineageSource) -> Value {
     json!({
         "relation": source.relation(),
         "column": source.column()
+    })
+}
+
+fn column_domain_to_value(column_domain: &ColumnDomain) -> Value {
+    json!({
+        "column": column_ref_to_value(column_domain.column()),
+        "domain": value_domain_to_value(column_domain.domain())
+    })
+}
+
+fn column_ref_to_value(column: &ColumnRef) -> Value {
+    json!({
+        "relation": column.relation(),
+        "name": column.name()
+    })
+}
+
+fn value_domain_to_value(domain: &ValueDomain) -> Value {
+    match domain {
+        ValueDomain::Unbounded => json!({ "kind": "unbounded" }),
+        ValueDomain::Ranges(domain) => json!({
+            "kind": "ranges",
+            "ranges": domain
+                .ranges()
+                .iter()
+                .map(value_range_to_value)
+                .collect::<Vec<_>>()
+        }),
+        ValueDomain::Set(domain) => json!({
+            "kind": "set",
+            "mode": domain.mode().as_str(),
+            "values": domain
+                .values()
+                .iter()
+                .map(literal_expression_to_value)
+                .collect::<Vec<_>>()
+        }),
+        ValueDomain::Empty => json!({ "kind": "empty" }),
+        ValueDomain::Unknown(domain) => json!({
+            "kind": "unknown",
+            "reason": domain.reason()
+        }),
+    }
+}
+
+fn value_range_to_value(range: &ValueRange) -> Value {
+    json!({
+        "lower": range.lower().map_or(Value::Null, bound_to_value),
+        "upper": range.upper().map_or(Value::Null, bound_to_value)
+    })
+}
+
+fn bound_to_value(bound: &Bound) -> Value {
+    json!({
+        "value": literal_expression_to_value(bound.value()),
+        "inclusive": bound.inclusive()
     })
 }
 
