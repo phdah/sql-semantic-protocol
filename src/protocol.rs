@@ -4,7 +4,7 @@
 //! semantics remain explicit so consumers can distinguish incomplete analysis from known values.
 
 /// Current protocol version emitted by this crate.
-pub const PROTOCOL_VERSION: &str = "0.1.0";
+pub const PROTOCOL_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Root SQL Semantic Protocol document.
 #[derive(Debug, Clone, PartialEq, Eq)]

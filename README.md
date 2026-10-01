@@ -28,18 +28,28 @@ The protocol is therefore the contract between SQL and applications that need to
 
 ## Protocol contract
 
-Protocol version `0.1.0` is the current single-input contract emitted by the library and CLI. It is defined by [`schema/protocol-v0.schema.json`](schema/protocol-v0.schema.json), documented in [`docs/protocol-v0.md`](docs/protocol-v0.md), and demonstrated by [`examples/protocol-v0.json`](examples/protocol-v0.json).
+Protocol version `0.2.0` is the single active contract emitted by the library and CLI. It represents one or many SQL inputs with the same root document shape: `inputs`, `layers`, and `graph`. A single SQL string is therefore represented as one element in `inputs`, not by switching to a different protocol version.
 
-Protocol version `0.2.0` defines the next multi-input composition contract. It can represent arbitrarily many related or independent SQL inputs, transformation layers, dependency graph components, composed semantics, and per-component final outcomes. See [`schema/protocol-v0.2.schema.json`](schema/protocol-v0.2.schema.json), [`docs/protocol-v0.2.md`](docs/protocol-v0.2.md), and [`examples/protocol-v0.2.json`](examples/protocol-v0.2.json).
+The active contract is defined by [`schema/protocol-v0.2.schema.json`](schema/protocol-v0.2.schema.json), documented in [`docs/protocol-v0.2.md`](docs/protocol-v0.2.md), and demonstrated by [`examples/protocol-v0.2.json`](examples/protocol-v0.2.json) and [`examples/protocol-v0.2-simple.json`](examples/protocol-v0.2-simple.json).
 
-The current analyzer does not emit `0.2.0` yet; the following implementation tasks add multi-input ingestion and graph construction without silently changing existing `0.1.0` behavior.
+Version `0.1.0` files remain in the repository only as historical references. Current runtime code does not emit `0.1.0`.
+
+TASK-11 populates the active `0.2.0` envelope with ordered analyzed inputs. Transformation layers, dependency edges, graph components, and transitive composition are not populated yet; the emitted graph carries an explicit `multi_input_composition_pending` diagnostic until those later tasks are implemented.
+
+## Versioning
+
+SQL Semantic Protocol uses one version for the application and the protocol. The Cargo package version, emitted `protocol_version`, active protocol contract, Git tag, and GitHub release are the same release identity.
+
+SemVer compatibility is defined primarily by the public protocol contract. A breaking protocol change requires a major version bump. Backward-compatible protocol or application features use a minor bump, while compatible fixes and internal application changes use a patch bump. Non-protocol implementation changes therefore do not require a breaking release, but every release still advances the shared application/protocol version.
+
+The current development version is `0.2.0`. The current roadmap targets the first stable `1.0.0` release, which will bootstrap Release Please for subsequent automated release PRs and GitHub releases.
 
 ## CLI
 
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--dialect <name>] [--file <path>] [SQL ...]
+sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
@@ -62,25 +72,37 @@ With `sqlparser` 0.58, the following built-in dialects are available:
 | Snowflake | `snowflake` |
 | SQLite | `sqlite` |
 
-SQL can be supplied directly:
+Legacy single-input SQL can still be supplied positionally:
 
 ```sh
 cargo run -- --dialect postgresql "SELECT a FROM t WHERE a > 10"
 ```
 
-from a file:
+A single file remains unchanged:
 
 ```sh
 cargo run -- --dialect snowflake --file query.sql
 ```
 
-or through standard input:
+For multiple inputs, repeat `--sql`, `--file`, and `--dir` in any mixture. `--dir` recursively discovers regular files whose extension is `.sql` case-insensitively and ignores all other files:
+
+```sh
+cargo run -- \
+  --sql "SELECT id FROM raw.orders" \
+  --file sql/enrich_orders.sql \
+  --dir sql/reporting \
+  --sql "SELECT customer_id FROM raw.customers"
+```
+
+Explicit inputs are analyzed in command-line occurrence order and receive deterministic IDs `input-0001`, `input-0002`, and so on. Each `--dir` expands at its command-line position into all recursively discovered SQL files sorted lexicographically by path, so filesystem traversal order cannot affect protocol output. Discovered file paths are retained as source identity. The ID width expands when necessary, so there is no fixed input-count limit. Parse, file, and analysis failures identify the affected input or path.
+
+Positional SQL represents one legacy input and cannot be mixed with `--sql`, `--file`, or `--dir`. If neither explicit input nor positional SQL is supplied, the CLI reads one input from standard input:
 
 ```sh
 printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
 ```
 
-If no SQL argument and no `--file` are supplied, the CLI reads SQL from standard input. Use `--` before positional SQL if the SQL text starts with a dash.
+Every successful invocation emits protocol `0.2.0`. One input produces an `inputs` array with one element; multiple inputs use the same document shape with additional elements.
 
 ### Example output
 
@@ -90,93 +112,112 @@ For:
 SELECT t.b FROM t WHERE t.a > 10
 ```
 
-the protocol output is:
+the protocol still uses the active `0.2.0` envelope even though there is only one input:
 
 ```json
 {
-  "protocol_version": "0.1.0",
-  "source": {
-    "dialect": "generic"
-  },
-  "statements": [
+  "protocol_version": "0.2.0",
+  "inputs": [
     {
-      "kind": "query",
-      "sources": [
-        {
-          "kind": "relation",
-          "name": "t",
-          "alias": null
-        }
-      ],
-      "dependencies": ["t"],
-      "joins": [],
-      "predicates": {
-        "where": {
-          "kind": "comparison",
-          "left": {
-            "kind": "column",
-            "relation": "t",
-            "name": "a"
-          },
-          "operator": "gt",
-          "right": {
-            "kind": "literal",
-            "type": "integer",
-            "value": 10
-          }
-        },
-        "having": null,
-        "qualify": null
+      "id": "input-0001",
+      "source": {
+        "kind": "inline",
+        "label": null
       },
-      "column_domains": [
+      "dialect": "generic",
+      "statements": [
         {
-          "column": {
-            "relation": "t",
-            "name": "a"
-          },
-          "domain": {
-            "kind": "ranges",
-            "ranges": [
-              {
-                "lower": {
-                  "value": {
-                    "kind": "literal",
-                    "type": "integer",
-                    "value": 10
-                  },
-                  "inclusive": false
-                },
-                "upper": null
-              }
-            ]
-          }
-        }
-      ],
-      "output": {
-        "columns": [
-          {
-            "name": "b",
-            "expression": {
-              "kind": "column",
-              "relation": "t",
-              "name": "b"
-            },
-            "lineage": [
-              {
+          "kind": "query",
+          "sources": [
+            {
+              "kind": "relation",
+              "name": "t",
+              "alias": null
+            }
+          ],
+          "dependencies": ["t"],
+          "joins": [],
+          "predicates": {
+            "where": {
+              "kind": "comparison",
+              "left": {
+                "kind": "column",
                 "relation": "t",
-                "column": "b"
+                "name": "a"
+              },
+              "operator": "gt",
+              "right": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 10
+              }
+            },
+            "having": null,
+            "qualify": null
+          },
+          "column_domains": [
+            {
+              "column": {
+                "relation": "t",
+                "name": "a"
+              },
+              "domain": {
+                "kind": "ranges",
+                "ranges": [
+                  {
+                    "lower": {
+                      "value": {
+                        "kind": "literal",
+                        "type": "integer",
+                        "value": 10
+                      },
+                      "inclusive": false
+                    },
+                    "upper": null
+                  }
+                ]
+              }
+            }
+          ],
+          "output": {
+            "columns": [
+              {
+                "name": "b",
+                "expression": {
+                  "kind": "column",
+                  "relation": "t",
+                  "name": "b"
+                },
+                "lineage": [
+                  {
+                    "relation": "t",
+                    "column": "b"
+                  }
+                ]
               }
             ]
-          }
-        ]
-      },
-      "diagnostics": []
+          },
+          "diagnostics": []
+        }
+      ]
     }
-  ]
+  ],
+  "layers": [],
+  "graph": {
+    "edges": [],
+    "components": [],
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "code": "multi_input_composition_pending",
+        "message": "multi-input graph construction and semantic composition are not implemented yet"
+      }
+    ]
+  }
 }
 ```
 
-This is the same schema-valid fixture stored in `examples/protocol-v0-simple.json`.
+This is the fixture stored in `examples/protocol-v0.2-simple.json`.
 
 Successful runs emit protocol JSON only. Input errors, SQL parse errors, and analysis failures are written to standard error and use distinct non-zero exit codes.
 

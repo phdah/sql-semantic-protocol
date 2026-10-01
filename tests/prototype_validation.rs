@@ -19,11 +19,16 @@ fn representative_generic_query_matches_complete_protocol_document() {
         serde_json::from_str(&to_json(&protocol)).expect("protocol should serialize as JSON");
 
     let expected = json!({
-        "protocol_version": "0.1.0",
-        "source": {
-            "dialect": "generic"
-        },
-        "statements": [
+        "protocol_version": "0.2.0",
+        "inputs": [
+            {
+                "id": "input-0001",
+                "source": {
+                    "kind": "inline",
+                    "label": null
+                },
+                "dialect": "generic",
+                "statements": [
             {
                 "kind": "query",
                 "sources": [
@@ -171,7 +176,21 @@ fn representative_generic_query_matches_complete_protocol_document() {
                 },
                 "diagnostics": []
             }
-        ]
+                ]
+            }
+        ],
+        "layers": [],
+        "graph": {
+            "edges": [],
+            "components": [],
+            "diagnostics": [
+                {
+                    "severity": "warning",
+                    "code": "multi_input_composition_pending",
+                    "message": "multi-input graph construction and semantic composition are not implemented yet"
+                }
+            ]
+        }
     });
 
     assert_eq!(actual, expected);
@@ -199,7 +218,7 @@ fn corpus_covers_ctes_nested_subqueries_and_functions() {
 
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol should serialize as JSON");
-    let statement = &json["statements"][0];
+    let statement = &json["inputs"][0]["statements"][0];
 
     assert_eq!(
         statement["dependencies"],
@@ -241,9 +260,9 @@ fn snowflake_group_having_and_qualify_keep_known_semantics_and_diagnose_grouping
 
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol should serialize as JSON");
-    let statement = &json["statements"][0];
+    let statement = &json["inputs"][0]["statements"][0];
 
-    assert_eq!(json["source"]["dialect"], "snowflake");
+    assert_eq!(json["inputs"][0]["dialect"], "snowflake");
     assert_eq!(statement["predicates"]["where"]["kind"], "comparison");
     assert_eq!(statement["predicates"]["having"]["kind"], "comparison");
     assert_eq!(statement["predicates"]["qualify"]["kind"], "is_null");
@@ -270,7 +289,7 @@ fn set_operation_remains_explicitly_unsupported_without_losing_dependencies() {
 
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol should serialize as JSON");
-    let statement = &json["statements"][0];
+    let statement = &json["inputs"][0]["statements"][0];
 
     assert_eq!(statement["dependencies"], json!(["source_a", "source_b"]));
     assert_eq!(statement["output"]["columns"], json!([]));

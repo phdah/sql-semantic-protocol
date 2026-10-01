@@ -1,5 +1,7 @@
 # Protocol v0 contract
 
+> Historical contract: version `0.1.0` is retained for reference only. The current application does not emit it; see `docs/protocol-v0.2.md` for the active contract.
+
 `schema/protocol-v0.schema.json` is the public contract for SQL Semantic Protocol version `0.1.0`. The schema models query semantics, not parser syntax, and protocol producers must not expose sqlparser AST types through it.
 
 The contract covers source relations, physical dependencies, joins, structured predicates, column value domains, output columns, lineage, and diagnostics. Unknown and unsupported semantics are explicit values rather than omitted information. Fatal SQL parse failures are outside the protocol document and are reported by the producer as errors.

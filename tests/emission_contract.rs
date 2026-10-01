@@ -1,4 +1,4 @@
-use sql_semantic_protocol::{analyze_sql, to_json};
+use sql_semantic_protocol::{analyze_inputs, analyze_sql, to_bundle_json, to_json, SqlInput};
 use sqlparser::dialect::GenericDialect;
 
 #[test]
@@ -24,7 +24,7 @@ fn serialized_collections_follow_protocol_ordering_rules() {
 
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
-    let statement = &json["statements"][0];
+    let statement = &json["inputs"][0]["statements"][0];
 
     assert_eq!(statement["sources"][0]["name"], "z");
     assert_eq!(statement["sources"][1]["name"], "a");
@@ -47,7 +47,7 @@ fn serialized_collections_follow_protocol_ordering_rules() {
 }
 
 #[test]
-fn simple_query_emission_matches_schema_valid_v0_fixture() {
+fn simple_query_emission_matches_active_protocol_fixture() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql("SELECT t.b FROM t WHERE t.a > 10", "generic", &dialect)
         .expect("fixture query should analyze");
@@ -55,8 +55,27 @@ fn simple_query_emission_matches_schema_valid_v0_fixture() {
     let actual: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("emitted protocol should be JSON");
     let expected: serde_json::Value =
-        serde_json::from_str(include_str!("../examples/protocol-v0-simple.json"))
-            .expect("checked-in protocol fixture should be JSON");
+        serde_json::from_str(include_str!("../examples/protocol-v0.2-simple.json"))
+            .expect("active protocol fixture should be JSON");
 
     assert_eq!(actual, expected);
+}
+
+#[test]
+fn single_and_collection_emission_use_the_same_active_contract() {
+    let dialect = GenericDialect {};
+    let sql = "SELECT a FROM t WHERE a > 10";
+
+    let single =
+        analyze_sql(sql, "generic", &dialect).expect("single input analysis should succeed");
+    let collection = analyze_inputs(&[SqlInput::inline(sql)], "generic", &dialect)
+        .expect("one-element collection analysis should succeed");
+
+    let single_json: serde_json::Value =
+        serde_json::from_str(&to_json(&single)).expect("single input should emit JSON");
+    let collection_json: serde_json::Value =
+        serde_json::from_str(&to_bundle_json(&collection)).expect("collection should emit JSON");
+
+    assert_eq!(single_json["protocol_version"], "0.2.0");
+    assert_eq!(single_json, collection_json);
 }

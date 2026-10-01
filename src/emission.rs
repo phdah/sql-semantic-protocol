@@ -5,6 +5,7 @@
 
 use serde_json::{json, Value};
 
+use crate::bundle::{AnalysisBundle, SqlInputSource};
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate, IsNullPredicate,
@@ -14,12 +15,58 @@ use crate::protocol::{
     ValueDomain, ValueRange,
 };
 
-/// Serialize protocol domain values to JSON.
+/// Serialize single-input analysis using the one active protocol document shape.
 pub fn to_json(protocol: &Protocol) -> String {
-    protocol_to_value(protocol).to_string()
+    single_input_to_value(protocol).to_string()
 }
 
-fn protocol_to_value(protocol: &Protocol) -> Value {
+/// Serialize an analysis bundle using the one active protocol document shape.
+///
+/// TASK-11 populates ordered input analysis only. Cross-input layers and graph composition remain
+/// explicitly pending until the later composition tasks implement them.
+pub fn to_bundle_json(bundle: &AnalysisBundle) -> String {
+    bundle_to_value(bundle).to_string()
+}
+
+fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
+    let inputs = bundle
+        .inputs()
+        .iter()
+        .map(|input| {
+            let source = match input.source() {
+                SqlInputSource::Inline => json!({
+                    "kind": "inline",
+                    "label": Value::Null
+                }),
+                SqlInputSource::File { path } => json!({
+                    "kind": "file",
+                    "path": path
+                }),
+            };
+            let statements = input
+                .statements()
+                .iter()
+                .map(statement_to_value)
+                .collect::<Vec<_>>();
+
+            json!({
+                "id": input.id(),
+                "source": source,
+                "dialect": input.dialect(),
+                "statements": statements
+            })
+        })
+        .collect::<Vec<_>>();
+
+    json!({
+        "protocol_version": bundle.protocol_version(),
+        "inputs": inputs,
+        "layers": [],
+        "graph": pending_graph_value()
+    })
+}
+
+fn single_input_to_value(protocol: &Protocol) -> Value {
     let statements = protocol
         .statements()
         .iter()
@@ -28,10 +75,29 @@ fn protocol_to_value(protocol: &Protocol) -> Value {
 
     json!({
         "protocol_version": protocol.protocol_version(),
-        "source": {
-            "dialect": protocol.source().dialect()
-        },
-        "statements": statements
+        "inputs": [{
+            "id": "input-0001",
+            "source": {
+                "kind": "inline",
+                "label": Value::Null
+            },
+            "dialect": protocol.source().dialect(),
+            "statements": statements
+        }],
+        "layers": [],
+        "graph": pending_graph_value()
+    })
+}
+
+fn pending_graph_value() -> Value {
+    json!({
+        "edges": [],
+        "components": [],
+        "diagnostics": [{
+            "severity": "warning",
+            "code": "multi_input_composition_pending",
+            "message": "multi-input graph construction and semantic composition are not implemented yet"
+        }]
     })
 }
 
