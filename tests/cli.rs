@@ -147,3 +147,154 @@ fn unsupported_semantics_remain_successful_protocol_output() {
         "unsupported_statement"
     );
 }
+
+
+#[test]
+fn repeated_sql_inputs_emit_one_ordered_bundle() {
+    let output = run_with_stdin(
+        &[
+            "--sql",
+            "SELECT a FROM alpha",
+            "--sql",
+            "SELECT b FROM beta",
+        ],
+        "",
+    );
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let json: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("multiple SQL inputs should emit JSON");
+    assert_eq!(json["protocol_version"], "0.2.0");
+    assert_eq!(json["inputs"].as_array().map(Vec::len), Some(2));
+    assert_eq!(json["inputs"][0]["id"], "input-0001");
+    assert_eq!(json["inputs"][1]["id"], "input-0002");
+    assert_eq!(json["inputs"][0]["source"]["kind"], "inline");
+    assert_eq!(json["inputs"][1]["source"]["kind"], "inline");
+    assert_eq!(
+        json["inputs"][0]["statements"][0]["dependencies"][0],
+        "alpha"
+    );
+    assert_eq!(
+        json["inputs"][1]["statements"][0]["dependencies"][0],
+        "beta"
+    );
+}
+
+#[test]
+fn repeated_file_inputs_are_supported() {
+    let base = std::env::temp_dir();
+    let first = base.join(format!(
+        "sql-semantic-protocol-cli-{}-first.sql",
+        std::process::id()
+    ));
+    let second = base.join(format!(
+        "sql-semantic-protocol-cli-{}-second.sql",
+        std::process::id()
+    ));
+    fs::write(&first, "SELECT a FROM alpha").expect("first SQL file should be written");
+    fs::write(&second, "SELECT b FROM beta").expect("second SQL file should be written");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
+        .arg("--file")
+        .arg(&first)
+        .arg("--file")
+        .arg(&second)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .expect("CLI should run");
+
+    fs::remove_file(&first).expect("first SQL file should be removed");
+    fs::remove_file(&second).expect("second SQL file should be removed");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let json: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("multiple files should emit JSON");
+    assert_eq!(json["inputs"].as_array().map(Vec::len), Some(2));
+    assert_eq!(
+        json["inputs"][0]["source"]["path"],
+        first.display().to_string()
+    );
+    assert_eq!(
+        json["inputs"][1]["source"]["path"],
+        second.display().to_string()
+    );
+}
+
+#[test]
+fn mixed_sql_and_file_inputs_preserve_command_line_order() {
+    let path = std::env::temp_dir().join(format!(
+        "sql-semantic-protocol-cli-{}-mixed.sql",
+        std::process::id()
+    ));
+    fs::write(&path, "SELECT b FROM beta").expect("test SQL file should be written");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
+        .arg("--sql")
+        .arg("SELECT a FROM alpha")
+        .arg("--file")
+        .arg(&path)
+        .arg("--sql")
+        .arg("SELECT c FROM gamma")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .expect("CLI should run");
+
+    fs::remove_file(&path).expect("test SQL file should be removed");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let json: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("mixed inputs should emit JSON");
+    assert_eq!(json["inputs"].as_array().map(Vec::len), Some(3));
+    assert_eq!(json["inputs"][0]["source"]["kind"], "inline");
+    assert_eq!(json["inputs"][1]["source"]["kind"], "file");
+    assert_eq!(json["inputs"][2]["source"]["kind"], "inline");
+}
+
+#[test]
+fn multi_input_parse_error_identifies_the_failing_input() {
+    let output = run_with_stdin(
+        &["--sql", "SELECT 1", "--sql", "SELECT ("],
+        "",
+    );
+
+    assert_eq!(output.status.code(), Some(3));
+    assert!(output.stdout.is_empty());
+
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.contains("input-0002"));
+    assert!(stderr.contains("(inline)"));
+    assert!(stderr.contains("SQL parse error"));
+}
+
+#[test]
+fn file_read_error_identifies_the_input_position_and_path() {
+    let missing = std::env::temp_dir().join(format!(
+        "sql-semantic-protocol-cli-{}-missing.sql",
+        std::process::id()
+    ));
+
+    let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
+        .arg("--sql")
+        .arg("SELECT 1")
+        .arg("--file")
+        .arg(&missing)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .expect("CLI should run");
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.contains("input 2"));
+    assert!(stderr.contains(&missing.display().to_string()));
+}
