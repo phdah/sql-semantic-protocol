@@ -149,12 +149,8 @@ fn analyze_query_relations(
         }
 
         for cte in &with.cte_tables {
-            let nested = analyze_query_relations(
-                &cte.query,
-                &local_relations,
-                diagnostics,
-                derived_index,
-            );
+            let nested =
+                analyze_query_relations(&cte.query, &local_relations, diagnostics, derived_index);
             analysis.dependencies.extend(nested.dependencies);
         }
     }
@@ -303,8 +299,7 @@ fn register_table_factor(
     derived_index: &mut usize,
     analysis: &mut RelationAnalysis,
 ) -> Option<RelationRef> {
-    let relation =
-        analyze_table_factor(factor, local_relations, diagnostics, derived_index)?;
+    let relation = analyze_table_factor(factor, local_relations, diagnostics, derived_index)?;
 
     for dependency in relation.dependencies {
         analysis.dependencies.insert(dependency);
@@ -349,12 +344,8 @@ fn analyze_table_factor(
         TableFactor::Derived {
             subquery, alias, ..
         } => {
-            let nested = analyze_query_relations(
-                subquery,
-                local_relations,
-                diagnostics,
-                derived_index,
-            );
+            let nested =
+                analyze_query_relations(subquery, local_relations, diagnostics, derived_index);
             let alias = alias.as_ref().map(|alias| alias.name.to_string());
             let name = match &alias {
                 Some(_) => "subquery".to_string(),
@@ -420,12 +411,8 @@ fn analyze_join(
             (JoinKind::LeftAnti, Some(constraint), true)
         }
         JoinOperator::RightAnti(constraint) => (JoinKind::RightAnti, Some(constraint), true),
-        JoinOperator::StraightJoin(constraint) => {
-            (JoinKind::Unknown, Some(constraint), false)
-        }
-        JoinOperator::AsOf { constraint, .. } => {
-            (JoinKind::Unknown, Some(constraint), false)
-        }
+        JoinOperator::StraightJoin(constraint) => (JoinKind::Unknown, Some(constraint), false),
+        JoinOperator::AsOf { constraint, .. } => (JoinKind::Unknown, Some(constraint), false),
         JoinOperator::CrossApply | JoinOperator::OuterApply => (JoinKind::Unknown, None, false),
     };
 
@@ -447,9 +434,8 @@ fn analyze_join(
         );
     }
 
-    let condition = constraint.and_then(|constraint| {
-        analyze_join_constraint(constraint, left, right, diagnostics)
-    });
+    let condition = constraint
+        .and_then(|constraint| analyze_join_constraint(constraint, left, right, diagnostics));
 
     ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
 }
@@ -492,9 +478,7 @@ fn analyze_join_constraint(
     }
 }
 
-fn combine_conjunction(
-    predicates: impl IntoIterator<Item = Predicate>,
-) -> Option<Predicate> {
+fn combine_conjunction(predicates: impl IntoIterator<Item = Predicate>) -> Option<Predicate> {
     let mut predicates = predicates.into_iter();
     let first = predicates.next()?;
     Some(predicates.fold(first, |left, right| {
@@ -510,16 +494,15 @@ fn collect_expression_dependencies(
     dependencies: &mut BTreeSet<String>,
 ) {
     match expression {
-        Expr::Subquery(query) | Expr::Exists { subquery: query, .. } => {
+        Expr::Subquery(query)
+        | Expr::Exists {
+            subquery: query, ..
+        } => {
             let nested =
                 analyze_query_relations(query, local_relations, diagnostics, derived_index);
             dependencies.extend(nested.dependencies);
         }
-        Expr::InSubquery {
-            expr,
-            subquery,
-            ..
-        } => {
+        Expr::InSubquery { expr, subquery, .. } => {
             collect_expression_dependencies(
                 expr,
                 local_relations,
