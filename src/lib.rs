@@ -1,11 +1,13 @@
 //! Public library entry points for SQL Semantic Protocol.
 //!
-//! - analyze_sql parses SQL with a caller-supplied dialect and returns protocol domain values.
-//! - to_json serializes protocol domain values without exposing parser AST types.
+//! - analyze_sql parses one SQL string with a caller-supplied dialect.
+//! - analyze_inputs analyzes an ordered collection of parser-independent SQL input units.
+//! - to_json and to_bundle_json serialize protocol domain values without exposing parser AST types.
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions and predicates plus explicit unknown and unsupported semantic values.
 
 mod analysis;
+mod bundle;
 mod domain;
 mod emission;
 mod parser;
@@ -16,7 +18,11 @@ use std::fmt;
 use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
-pub use emission::to_json;
+pub use bundle::{
+    analyze_inputs, AnalysisBundle, AnalyzedInput, InputAnalysisError, SqlInput, SqlInputSource,
+    MULTI_INPUT_PROTOCOL_VERSION,
+};
+pub use emission::{to_bundle_json, to_json};
 pub use parser::ParseError;
 pub use protocol::{
     BetweenPredicate, BinaryExpression, BinaryOperator, Bound, ColumnDomain, ColumnExpression,
