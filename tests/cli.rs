@@ -260,10 +260,7 @@ fn mixed_sql_and_file_inputs_preserve_command_line_order() {
 
 #[test]
 fn multi_input_parse_error_identifies_the_failing_input() {
-    let output = run_with_stdin(
-        &["--sql", "SELECT 1", "--sql", "SELECT ("],
-        "",
-    );
+    let output = run_with_stdin(&["--sql", "SELECT 1", "--sql", "SELECT ("], "");
 
     assert_eq!(output.status.code(), Some(3));
     assert!(output.stdout.is_empty());
