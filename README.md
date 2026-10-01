@@ -78,5 +78,101 @@ printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
 
 If no SQL argument and no `--file` are supplied, the CLI reads SQL from standard input. Use `--` before positional SQL if the SQL text starts with a dash.
 
+### Example output
+
+For:
+
+```sql
+SELECT t.b FROM t WHERE t.a > 10
+```
+
+the protocol output is:
+
+```json
+{
+  "protocol_version": "0.1.0",
+  "source": {
+    "dialect": "generic"
+  },
+  "statements": [
+    {
+      "kind": "query",
+      "sources": [
+        {
+          "kind": "relation",
+          "name": "t",
+          "alias": null
+        }
+      ],
+      "dependencies": ["t"],
+      "joins": [],
+      "predicates": {
+        "where": {
+          "kind": "comparison",
+          "left": {
+            "kind": "column",
+            "relation": "t",
+            "name": "a"
+          },
+          "operator": "gt",
+          "right": {
+            "kind": "literal",
+            "type": "integer",
+            "value": 10
+          }
+        },
+        "having": null,
+        "qualify": null
+      },
+      "column_domains": [
+        {
+          "column": {
+            "relation": "t",
+            "name": "a"
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  },
+                  "inclusive": false
+                },
+                "upper": null
+              }
+            ]
+          }
+        }
+      ],
+      "output": {
+        "columns": [
+          {
+            "name": "b",
+            "expression": {
+              "kind": "column",
+              "relation": "t",
+              "name": "b"
+            },
+            "lineage": [
+              {
+                "relation": "t",
+                "column": "b"
+              }
+            ]
+          }
+        ]
+      },
+      "diagnostics": []
+    }
+  ]
+}
+```
+
+This is the same schema-valid fixture stored in `examples/protocol-v0-simple.json`.
+
 Successful runs emit protocol JSON only. Input errors, SQL parse errors, and analysis failures are written to standard error and use distinct non-zero exit codes.
 
