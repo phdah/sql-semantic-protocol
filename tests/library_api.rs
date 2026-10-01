@@ -172,7 +172,6 @@ fn unsupported_function_is_diagnosed() {
     };
 
     assert!(statement.diagnostics().iter().any(|diagnostic| {
-        diagnostic.area() == DiagnosticArea::Function
-            && diagnostic.code() == "unsupported_function"
+        diagnostic.area() == DiagnosticArea::Function && diagnostic.code() == "unsupported_function"
     }));
 }
