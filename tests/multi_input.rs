@@ -12,8 +12,8 @@ fn multiple_inputs_preserve_caller_order_and_generated_identity() {
         SqlInput::inline("SELECT c FROM gamma"),
     ];
 
-    let bundle = analyze_inputs(&inputs, "generic", &dialect)
-        .expect("multiple inputs should be analyzed");
+    let bundle =
+        analyze_inputs(&inputs, "generic", &dialect).expect("multiple inputs should be analyzed");
 
     assert_eq!(bundle.protocol_version(), "0.2.0");
     assert_eq!(bundle.inputs().len(), 3);
@@ -47,8 +47,8 @@ fn multi_input_json_is_one_deterministic_protocol_document() {
         SqlInput::file("queries/beta.sql", "SELECT b FROM beta"),
     ];
 
-    let bundle = analyze_inputs(&inputs, "generic", &dialect)
-        .expect("multiple inputs should be analyzed");
+    let bundle =
+        analyze_inputs(&inputs, "generic", &dialect).expect("multiple inputs should be analyzed");
     let first = to_bundle_json(&bundle);
     let second = to_bundle_json(&bundle);
 
