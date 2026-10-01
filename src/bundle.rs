@@ -143,7 +143,11 @@ impl fmt::Display for InputAnalysisError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.source {
             SqlInputSource::Inline => {
-                write!(formatter, "input {} (inline): {}", self.input_id, self.error)
+                write!(
+                    formatter,
+                    "input {} (inline): {}",
+                    self.input_id, self.error
+                )
             }
             SqlInputSource::File { path } => write!(
                 formatter,
