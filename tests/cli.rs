@@ -295,7 +295,6 @@ fn file_read_error_identifies_the_input_position_and_path() {
     assert!(stderr.contains(&missing.display().to_string()));
 }
 
-
 #[test]
 fn directory_inputs_are_recursive_sql_only_and_sorted() {
     let root = std::env::temp_dir().join(format!(
@@ -310,7 +309,8 @@ fn directory_inputs_are_recursive_sql_only_and_sorted() {
     let ignored = root.join("00-ignore.txt");
     fs::write(&root_sql, "SELECT a FROM root_table").expect("root SQL should be written");
     fs::write(&nested_sql, "SELECT b FROM nested_table").expect("nested SQL should be written");
-    fs::write(&ignored, "SELECT ignored FROM ignored_table").expect("ignored file should be written");
+    fs::write(&ignored, "SELECT ignored FROM ignored_table")
+        .expect("ignored file should be written");
 
     let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
         .arg("--dir")
