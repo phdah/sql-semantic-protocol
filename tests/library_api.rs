@@ -726,8 +726,7 @@ fn wildcard_output_remains_explicitly_unresolved() {
     assert!(matches!(column.expression(), Expression::Unknown(_)));
     assert!(column.lineage().is_empty());
     assert!(statement.diagnostics().iter().any(|diagnostic| {
-        diagnostic.area() == DiagnosticArea::Output
-            && diagnostic.code() == "unresolved_wildcard"
+        diagnostic.area() == DiagnosticArea::Output && diagnostic.code() == "unresolved_wildcard"
     }));
 }
 
@@ -761,7 +760,10 @@ fn output_json_contains_projection_expression_and_lineage() {
 
     let json: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol JSON should parse");
-    assert_eq!(json["statements"][0]["output"]["columns"][0]["name"], "order_id");
+    assert_eq!(
+        json["statements"][0]["output"]["columns"][0]["name"],
+        "order_id"
+    );
     assert_eq!(
         json["statements"][0]["output"]["columns"][0]["expression"]["name"],
         "id"
