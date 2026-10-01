@@ -7,9 +7,10 @@ use serde_json::{json, Value};
 
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, ColumnExpression, ComparisonPredicate, Diagnostic,
-    Expression, FunctionExpression, InPredicate, IsNullPredicate, LiteralExpression, LiteralValue,
-    LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol, ProtocolStatement,
-    QueryStatement, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    Expression, FunctionExpression, InPredicate, IsNullPredicate, Join, LiteralExpression,
+    LiteralValue, LogicalPredicate, NotPredicate, Predicate, Predicates, Protocol, ProtocolStatement,
+    QueryStatement, RelationRef, SourceRelation, UnaryExpression, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement,
 };
 
 /// Serialize protocol domain values to JSON.
@@ -41,6 +42,16 @@ fn statement_to_value(statement: &ProtocolStatement) -> Value {
 }
 
 fn query_statement_to_value(statement: &QueryStatement) -> Value {
+    let sources = statement
+        .sources()
+        .iter()
+        .map(source_relation_to_value)
+        .collect::<Vec<_>>();
+    let joins = statement
+        .joins()
+        .iter()
+        .map(join_to_value)
+        .collect::<Vec<_>>();
     let diagnostics = statement
         .diagnostics()
         .iter()
@@ -49,15 +60,41 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
 
     json!({
         "kind": "query",
-        "sources": [],
-        "dependencies": [],
-        "joins": [],
+        "sources": sources,
+        "dependencies": statement.dependencies(),
+        "joins": joins,
         "predicates": predicates_to_value(statement.predicates()),
         "column_domains": [],
         "output": {
             "columns": []
         },
         "diagnostics": diagnostics
+    })
+}
+
+fn source_relation_to_value(source: &SourceRelation) -> Value {
+    json!({
+        "kind": "relation",
+        "name": source.name(),
+        "alias": source.alias()
+    })
+}
+
+fn join_to_value(join: &Join) -> Value {
+    json!({
+        "kind": join.kind().as_str(),
+        "left": relation_ref_to_value(join.left()),
+        "right": relation_ref_to_value(join.right()),
+        "condition": join
+            .condition()
+            .map_or(Value::Null, predicate_to_value)
+    })
+}
+
+fn relation_ref_to_value(relation: &RelationRef) -> Value {
+    json!({
+        "relation": relation.relation(),
+        "alias": relation.alias()
     })
 }
 
