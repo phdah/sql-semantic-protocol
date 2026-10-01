@@ -58,10 +58,7 @@ fn all_sqlparser_recognized_dialect_names_are_supported() {
     ];
 
     for dialect in DIALECTS {
-        let output = run_with_stdin(
-            &["--dialect", *dialect],
-            "SELECT a FROM t WHERE a > 10",
-        );
+        let output = run_with_stdin(&["--dialect", *dialect], "SELECT a FROM t WHERE a > 10");
 
         assert!(
             output.status.success(),
@@ -78,10 +75,7 @@ fn all_sqlparser_recognized_dialect_names_are_supported() {
 
 #[test]
 fn unknown_dialect_is_an_input_error() {
-    let output = run_with_stdin(
-        &["--dialect", "not-a-real-dialect"],
-        "SELECT a FROM t",
-    );
+    let output = run_with_stdin(&["--dialect", "not-a-real-dialect"], "SELECT a FROM t");
 
     assert_eq!(output.status.code(), Some(2));
     assert!(output.stdout.is_empty());
