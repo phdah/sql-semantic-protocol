@@ -1131,10 +1131,7 @@ fn analyze_output_item(
     }
 }
 
-fn unresolved_wildcard_column(
-    name: String,
-    diagnostics: &mut Vec<Diagnostic>,
-) -> OutputColumn {
+fn unresolved_wildcard_column(name: String, diagnostics: &mut Vec<Diagnostic>) -> OutputColumn {
     let reason = "wildcard output cannot be resolved without source schema information";
     diagnostics.push(warning(
         "unresolved_wildcard",
@@ -1151,9 +1148,10 @@ fn unresolved_wildcard_column(
 fn output_name_for_expression(expression: &Expr) -> String {
     match expression {
         Expr::Identifier(identifier) => identifier.value.clone(),
-        Expr::CompoundIdentifier(identifiers) => identifiers
-            .last()
-            .map_or_else(|| expression.to_string(), |identifier| identifier.value.clone()),
+        Expr::CompoundIdentifier(identifiers) => identifiers.last().map_or_else(
+            || expression.to_string(),
+            |identifier| identifier.value.clone(),
+        ),
         Expr::Nested(inner) => output_name_for_expression(inner),
         _ => expression.to_string(),
     }
@@ -1198,7 +1196,8 @@ fn register_output_table_factor(
             ..
         } => {
             let relation_name = name.to_string();
-            let qualifiers = relation_qualifiers(&relation_name, alias.as_ref().map(|a| a.name.to_string()));
+            let qualifiers =
+                relation_qualifiers(&relation_name, alias.as_ref().map(|a| a.name.to_string()));
             let source = match local_outputs.get(&relation_name) {
                 Some(columns) => OutputRelationSource::Local(columns.clone()),
                 None => OutputRelationSource::Physical(relation_name),
@@ -1283,7 +1282,10 @@ fn collect_output_lineage(
                 collect_output_lineage(filter, scope, diagnostics, lineage);
             }
         }
-        Expr::UnaryOp { expr, .. } | Expr::Nested(expr) | Expr::IsNull(expr) | Expr::IsNotNull(expr) => {
+        Expr::UnaryOp { expr, .. }
+        | Expr::Nested(expr)
+        | Expr::IsNull(expr)
+        | Expr::IsNotNull(expr) => {
             collect_output_lineage(expr, scope, diagnostics, lineage);
         }
         Expr::BinaryOp { left, right, .. }
@@ -1344,9 +1346,10 @@ fn resolve_output_column(
             })
         })
         .filter_map(|relation| match &relation.source {
-            OutputRelationSource::Physical(relation) => {
-                Some(vec![LineageSource::new(relation.clone(), column.to_string())])
-            }
+            OutputRelationSource::Physical(relation) => Some(vec![LineageSource::new(
+                relation.clone(),
+                column.to_string(),
+            )]),
             OutputRelationSource::Local(columns) => columns.get(column).cloned(),
         })
         .collect::<Vec<_>>();
@@ -1379,7 +1382,10 @@ fn resolve_output_column(
 }
 
 fn qualified_column_name(qualifier: Option<&str>, column: &str) -> String {
-    qualifier.map_or_else(|| column.to_string(), |qualifier| format!("{qualifier}.{column}"))
+    qualifier.map_or_else(
+        || column.to_string(),
+        |qualifier| format!("{qualifier}.{column}"),
+    )
 }
 
 fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
