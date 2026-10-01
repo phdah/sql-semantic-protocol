@@ -36,6 +36,14 @@ Version `0.1.0` files remain in the repository only as historical references. Cu
 
 TASK-11 populates the active `0.2.0` envelope with ordered analyzed inputs. Transformation layers, dependency edges, graph components, and transitive composition are not populated yet; the emitted graph carries an explicit `multi_input_composition_pending` diagnostic until those later tasks are implemented.
 
+## Versioning
+
+SQL Semantic Protocol uses one version for the application and the protocol. The Cargo package version, emitted `protocol_version`, active protocol contract, Git tag, and GitHub release are the same release identity.
+
+SemVer compatibility is defined primarily by the public protocol contract. A breaking protocol change requires a major version bump. Backward-compatible protocol or application features use a minor bump, while compatible fixes and internal application changes use a patch bump. Non-protocol implementation changes therefore do not require a breaking release, but every release still advances the shared application/protocol version.
+
+The current development version is `0.2.0`. The current roadmap targets the first stable `1.0.0` release, which will bootstrap Release Please for subsequent automated release PRs and GitHub releases.
+
 ## CLI
 
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.

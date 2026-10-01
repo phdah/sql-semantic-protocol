@@ -65,7 +65,9 @@ changes for consumers. Make them deliberately, cover them with tests that assert
 output for representative queries, and update the README when the documented shape
 changes.
 
-**One active protocol version** Keep exactly one protocol version active at a time. Every supported invocation and public emission path emits the same version and root document shape. Input count or source type must not implicitly select a protocol version. Historical schemas and documentation may remain in the repository, but current runtime code must not emit them. When a new version becomes active, migrate all emission paths together.\n\n**Small, pure functions** Analysis functions take inputs and return values, with no I/O,
+**One application/protocol version** The application/crate version and emitted protocol version are one shared version identity. Every supported invocation and public emission path emits that version and the same root document shape. `PROTOCOL_VERSION` must derive from the Cargo package version rather than being independently hard-coded. Historical schemas and documentation may remain in the repository, but current runtime code must not emit historical versions. When a new version becomes active, migrate all active protocol artifacts together.
+
+**Small, pure functions** Analysis functions take inputs and return values, with no I/O,
 global state, or environment reads. If something is hard to test, the design is wrong.
 
 **Composition over inheritance** Use traits to define contracts, not to share
@@ -97,8 +99,8 @@ authoritative source for edition, dependencies, and profiles. Code is formatted 
 Don't add `#[allow(...)]` attributes or lint ignores without confirmation from the user.
 Fix the underlying warning, or consult the user for explicit guidance.
 
-**Semantic versioning**
-Follow semver. While pre-1.0, a breaking change to the public API or the protocol format bumps the minor version.
+**Semantic versioning and releases**
+The Cargo package version, emitted `protocol_version`, active protocol contract, Git tag, and GitHub release represent the same application version. A breaking change to the emitted protocol contract requires a major SemVer bump. Other externally breaking public API changes also follow normal SemVer and require a major bump. Backward-compatible protocol or application features use a minor bump; backward-compatible fixes and internal changes use a patch bump. An application-only change does not become breaking merely because it creates a release, but the emitted protocol version advances with the application release because they share one version identity. Release Please is the intended release mechanism after the 1.0.0 bootstrap and Conventional Commits are the source for release classification.
 
 **Conventional commits**
 Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/): `<type>(<optional scope>): <description>`, with the description in imperative mood and lowercase, e.g. `feat(analysis): derive intervals from BETWEEN`. Common types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `build`, `ci`, `perf`. Mark breaking changes (public API or protocol format) with `!` after the type/scope, e.g. `feat(protocol)!: rename interval bounds`, and explain them in a `BREAKING CHANGE:` footer.
