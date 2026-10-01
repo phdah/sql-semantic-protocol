@@ -15,12 +15,12 @@ use crate::protocol::{
     ValueDomain, ValueRange,
 };
 
-/// Serialize single-input protocol domain values to JSON.
+/// Serialize single-input analysis using the one active protocol document shape.
 pub fn to_json(protocol: &Protocol) -> String {
-    protocol_to_value(protocol).to_string()
+    single_input_to_value(protocol).to_string()
 }
 
-/// Serialize a multi-input analysis bundle to protocol 0.2 JSON.
+/// Serialize an analysis bundle using the one active protocol document shape.
 ///
 /// TASK-11 populates ordered input analysis only. Cross-input layers and graph composition remain
 /// explicitly pending until the later composition tasks implement them.
@@ -62,19 +62,11 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         "protocol_version": bundle.protocol_version(),
         "inputs": inputs,
         "layers": [],
-        "graph": {
-            "edges": [],
-            "components": [],
-            "diagnostics": [{
-                "severity": "warning",
-                "code": "multi_input_composition_pending",
-                "message": "multi-input graph construction and semantic composition are not implemented yet"
-            }]
-        }
+        "graph": pending_graph_value()
     })
 }
 
-fn protocol_to_value(protocol: &Protocol) -> Value {
+fn single_input_to_value(protocol: &Protocol) -> Value {
     let statements = protocol
         .statements()
         .iter()
@@ -83,10 +75,29 @@ fn protocol_to_value(protocol: &Protocol) -> Value {
 
     json!({
         "protocol_version": protocol.protocol_version(),
-        "source": {
-            "dialect": protocol.source().dialect()
-        },
-        "statements": statements
+        "inputs": [{
+            "id": "input-0001",
+            "source": {
+                "kind": "inline",
+                "label": Value::Null
+            },
+            "dialect": protocol.source().dialect(),
+            "statements": statements
+        }],
+        "layers": [],
+        "graph": pending_graph_value()
+    })
+}
+
+fn pending_graph_value() -> Value {
+    json!({
+        "edges": [],
+        "components": [],
+        "diagnostics": [{
+            "severity": "warning",
+            "code": "multi_input_composition_pending",
+            "message": "multi-input graph construction and semantic composition are not implemented yet"
+        }]
     })
 }
 
