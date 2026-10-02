@@ -7,7 +7,7 @@ created_date: '2026-10-01'
 labels: []
 milestone: m-0
 dependencies:
-  - TASK-25
+  - TASK-27
 ---
 
 ## Description

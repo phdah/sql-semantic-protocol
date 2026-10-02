@@ -145,7 +145,7 @@ fn unsupported_semantics_remain_successful_protocol_output() {
     assert_eq!(json["inputs"][0]["statements"][0]["kind"], "unsupported");
     assert_eq!(
         json["inputs"][0]["statements"][0]["diagnostics"][0]["code"],
-        "unsupported_statement"
+        "unsupported_queryless_create_table"
     );
 }
 

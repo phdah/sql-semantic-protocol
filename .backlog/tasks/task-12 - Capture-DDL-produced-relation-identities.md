@@ -1,7 +1,7 @@
 ---
 id: TASK-12
 title: Capture DDL-produced relation identities
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -20,11 +20,11 @@ A bare SELECT still produces an anonymous result. DDL that defines an object wit
 
 ## Acceptance Criteria
 
-- [ ] CREATE TABLE ... AS SELECT records the created relation as the statement's produced dataset.
-- [ ] CREATE VIEW ... AS SELECT records the created relation as the statement's produced dataset.
-- [ ] Supported CREATE OR REPLACE, temporary, materialized, and qualified-name variants preserve the correct produced relation identity.
-- [ ] Quoted and qualified identifiers are represented deterministically and without unsafe case-folding assumptions.
-- [ ] The query inside supported DDL is analyzed with the same semantic behavior as a standalone query.
-- [ ] Bare SELECT statements remain representable as anonymous outputs.
-- [ ] Non-query DDL and unsupported DDL shapes are reported explicitly instead of being linked incorrectly.
-- [ ] Tests cover at least two materially different dialects for DDL-backed transformations.
+- [x] CREATE TABLE ... AS SELECT records the created relation as the statement's produced dataset.
+- [x] CREATE VIEW ... AS SELECT records the created relation as the statement's produced dataset.
+- [x] Supported CREATE OR REPLACE, temporary, materialized, and qualified-name variants preserve the correct produced relation identity.
+- [x] Quoted and qualified identifiers are represented deterministically and without unsafe case-folding assumptions.
+- [x] The query inside supported DDL is analyzed with the same semantic behavior as a standalone query.
+- [x] Bare SELECT statements remain representable as anonymous outputs.
+- [x] Non-query DDL and unsupported DDL shapes are reported explicitly instead of being linked incorrectly.
+- [x] Shared query-backed DDL and relevant variants (OR REPLACE, temporary, materialized, qualified, and quoted relation names) are checked against every dialect exposed by the project; every variant accepted by sqlparser must produce the same correct protocol semantics.

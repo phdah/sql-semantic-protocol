@@ -28,8 +28,17 @@ Conversion from AST to domain model happens at one explicit boundary, so a sqlpa
 upgrade only touches that boundary.
 
 **Dialect is injected, never hardcoded** The dialect is chosen by the caller and passed
-in. Analysis code must not assume a specific dialect. Dialect-specific behavior, when
-unavoidable, is isolated and named for the dialect it belongs to.
+in. Analysis code must not assume a specific dialect. Every semantic feature is implemented
+for every dialect exposed through sqlparser whenever that dialect parses the construct into a
+supported AST shape. Never gate core semantic behavior on a dialect name. Dialect-specific
+behavior is acceptable only when sqlparser exposes materially different AST semantics that
+cannot be handled generically; isolate and name that behavior explicitly. Tests for new semantic
+features must exercise every dialect name exposed by the project for shared syntax and for
+relevant syntax variants. If sqlparser accepts a variant for a dialect, semantic behavior must be
+identical at the protocol level unless the dialect genuinely changes its meaning. If sqlparser
+rejects that syntax for a dialect, tests should make that parser-boundary limitation explicit
+rather than silently omitting the dialect. Add focused dialect-specific fixtures only for deeper
+coverage of materially different syntax or AST variants.
 
 **Strict types** Model the domain with types, not strings. Use enums for any fixed set of
 values (comparison operators, clause kinds, bound inclusivity), newtypes for identifiers

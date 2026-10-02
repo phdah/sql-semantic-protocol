@@ -19,7 +19,8 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_inputs, AnalysisBundle, AnalyzedInput, InputAnalysisError, SqlInput, SqlInputSource,
+    analyze_inputs, AnalysisBundle, AnalyzedInput, DatasetRef, InputAnalysisError, SqlInput,
+    SqlInputSource, TransformationLayer,
 };
 pub use emission::{to_bundle_json, to_json};
 pub use parser::ParseError;

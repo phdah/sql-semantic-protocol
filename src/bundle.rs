@@ -7,7 +7,7 @@ use std::fmt;
 
 use sqlparser::dialect::Dialect;
 
-use crate::protocol::{ProtocolStatement, PROTOCOL_VERSION};
+use crate::protocol::{Protocol, ProtocolStatement, PROTOCOL_VERSION};
 use crate::{analyze_sql, Error};
 
 /// Source identity retained for one SQL input unit.
@@ -92,11 +92,83 @@ impl AnalyzedInput {
     }
 }
 
+/// Dataset produced by one transformation layer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum DatasetRef {
+    /// A named relation created by query-backed DDL.
+    Relation {
+        /// Deterministic SQL relation identity, preserving qualification and quoting.
+        name: String,
+    },
+    /// An anonymous result produced by a bare query.
+    Anonymous {
+        /// Layer identifier used to address the anonymous result.
+        layer_id: String,
+    },
+}
+
+impl DatasetRef {
+    /// Return the named relation identity when this dataset refers to a relation.
+    pub fn relation_name(&self) -> Option<&str> {
+        match self {
+            Self::Relation { name } => Some(name),
+            Self::Anonymous { .. } => None,
+        }
+    }
+
+    /// Return the owning layer identifier when this dataset is anonymous.
+    pub fn anonymous_layer_id(&self) -> Option<&str> {
+        match self {
+            Self::Relation { .. } => None,
+            Self::Anonymous { layer_id } => Some(layer_id),
+        }
+    }
+}
+
+/// One local transformation layer derived from an analyzed query statement.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TransformationLayer {
+    id: String,
+    input_id: String,
+    statement_index: usize,
+    produces: Vec<DatasetRef>,
+    consumes: Vec<String>,
+}
+
+impl TransformationLayer {
+    /// Return the deterministic layer identifier.
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    /// Return the input containing the statement represented by this layer.
+    pub fn input_id(&self) -> &str {
+        &self.input_id
+    }
+
+    /// Return the zero-based statement index within the input.
+    pub fn statement_index(&self) -> usize {
+        self.statement_index
+    }
+
+    /// Return datasets produced by this layer.
+    pub fn produces(&self) -> &[DatasetRef] {
+        &self.produces
+    }
+
+    /// Return normalized physical relations consumed directly by this layer.
+    pub fn consumes(&self) -> &[String] {
+        &self.consumes
+    }
+}
+
 /// Multi-input analysis result before cross-input graph construction is implemented.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisBundle {
     protocol_version: &'static str,
     inputs: Vec<AnalyzedInput>,
+    layers: Vec<TransformationLayer>,
 }
 
 impl AnalysisBundle {
@@ -109,6 +181,70 @@ impl AnalysisBundle {
     pub fn inputs(&self) -> &[AnalyzedInput] {
         &self.inputs
     }
+
+    /// Return query-backed transformation layers in deterministic statement order.
+    pub fn layers(&self) -> &[TransformationLayer] {
+        &self.layers
+    }
+
+    pub(crate) fn from_protocol(protocol: &Protocol) -> Self {
+        let inputs = vec![AnalyzedInput {
+            id: "input-0001".to_string(),
+            source: SqlInputSource::Inline,
+            dialect: protocol.source().dialect().to_string(),
+            statements: protocol.statements().to_vec(),
+        }];
+
+        Self::from_inputs(inputs)
+    }
+
+    fn from_inputs(inputs: Vec<AnalyzedInput>) -> Self {
+        let layers = build_layers(&inputs);
+        Self {
+            protocol_version: PROTOCOL_VERSION,
+            inputs,
+            layers,
+        }
+    }
+}
+
+fn build_layers(inputs: &[AnalyzedInput]) -> Vec<TransformationLayer> {
+    let layer_count = inputs
+        .iter()
+        .flat_map(|input| input.statements())
+        .filter(|statement| matches!(statement, ProtocolStatement::Query(_)))
+        .count();
+    let width = layer_count.max(1).to_string().len().max(4);
+    let mut layers = Vec::with_capacity(layer_count);
+
+    for input in inputs {
+        for (statement_index, statement) in input.statements().iter().enumerate() {
+            let ProtocolStatement::Query(query) = statement else {
+                continue;
+            };
+
+            let layer_number = layers.len() + 1;
+            let layer_id = format!("layer-{:0width$}", layer_number, width = width);
+            let produces = match query.produced_relation() {
+                Some(name) => vec![DatasetRef::Relation {
+                    name: name.to_string(),
+                }],
+                None => vec![DatasetRef::Anonymous {
+                    layer_id: layer_id.clone(),
+                }],
+            };
+
+            layers.push(TransformationLayer {
+                id: layer_id,
+                input_id: input.id().to_string(),
+                statement_index,
+                produces,
+                consumes: query.dependencies().to_vec(),
+            });
+        }
+    }
+
+    layers
 }
 
 /// Error produced while parsing or analyzing one input in a multi-input invocation.
@@ -191,8 +327,5 @@ pub fn analyze_inputs(
         });
     }
 
-    Ok(AnalysisBundle {
-        protocol_version: PROTOCOL_VERSION,
-        inputs: analyzed_inputs,
-    })
+    Ok(AnalysisBundle::from_inputs(analyzed_inputs))
 }
