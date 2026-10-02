@@ -1,4 +1,4 @@
-.PHONY: build fmt lint test check
+.PHONY: build fmt lint test doc check
 
 build:
 	cargo build
@@ -12,4 +12,7 @@ lint:
 test:
 	cargo test
 
-check: fmt lint test
+doc:
+	cargo doc --no-deps
+
+check: fmt lint test doc
