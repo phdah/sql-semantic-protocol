@@ -32,7 +32,6 @@ pub use bundle::{
 pub use emission::{to_bundle_json, to_bundle_json_with_scope, to_json, to_json_with_scope};
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
-pub use scope::OutputScope;
 pub use protocol::{
     BetweenPredicate, BinaryExpression, BinaryOperator, Bound, ColumnDomain, ColumnExpression,
     ColumnRef, ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea,
@@ -43,6 +42,7 @@ pub use protocol::{
     SourceRelation, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, PROTOCOL_VERSION,
 };
+pub use scope::OutputScope;
 
 /// Error returned when SQL cannot be converted into protocol domain values.
 #[derive(Debug, Clone, PartialEq, Eq)]
