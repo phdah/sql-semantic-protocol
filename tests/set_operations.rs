@@ -39,7 +39,9 @@ fn union_all_merges_positional_lineage_and_keeps_left_output_names() {
     .expect("UNION ALL should analyze");
 
     let query = first_query(&protocol);
-    let operation = query.set_operation().expect("set operation should be present");
+    let operation = query
+        .set_operation()
+        .expect("set operation should be present");
     assert_eq!(operation.operator(), SetOperator::Union);
     assert_eq!(operation.quantifier(), SetQuantifier::All);
 
