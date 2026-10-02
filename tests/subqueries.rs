@@ -142,6 +142,42 @@ fn lateral_derived_table_can_reference_preceding_source() {
 }
 
 #[test]
+fn nested_subquery_correlates_to_immediate_scope() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM line_items li WHERE EXISTS (SELECT 1 FROM adjustments a WHERE a.line_item_id = li.id))",
+        "generic",
+        &dialect,
+    )
+    .expect("nested correlated subquery should analyze");
+
+    let outer_exists = match first_query(&protocol)
+        .predicates()
+        .where_predicate()
+        .expect("outer WHERE predicate should exist")
+    {
+        Predicate::Exists(exists) => exists,
+        other => panic!("expected outer EXISTS predicate, got {other:?}"),
+    };
+    let nested_exists = match outer_exists
+        .subquery()
+        .predicates()
+        .where_predicate()
+        .expect("nested WHERE predicate should exist")
+    {
+        Predicate::Exists(exists) => exists,
+        other => panic!("expected nested EXISTS predicate, got {other:?}"),
+    };
+
+    assert_eq!(nested_exists.subquery().correlations().len(), 1);
+    assert_eq!(
+        nested_exists.subquery().correlations()[0].relation(),
+        "line_items"
+    );
+    assert_eq!(nested_exists.subquery().correlations()[0].column(), "id");
+}
+
+#[test]
 fn local_alias_shadows_outer_scope_in_correlation_analysis() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
