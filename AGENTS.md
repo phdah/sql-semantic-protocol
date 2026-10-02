@@ -34,11 +34,22 @@ supported AST shape. Never gate core semantic behavior on a dialect name. Dialec
 behavior is acceptable only when sqlparser exposes materially different AST semantics that
 cannot be handled generically; isolate and name that behavior explicitly. Tests for new semantic
 features must exercise every dialect name exposed by the project for shared syntax and for
-relevant syntax variants. If sqlparser accepts a variant for a dialect, semantic behavior must be
-identical at the protocol level unless the dialect genuinely changes its meaning. If sqlparser
+relevant syntax variants. Runtime dialect support must delegate to
+`sqlparser::dialect::dialect_from_str`; do not maintain a production dialect whitelist. If
+sqlparser accepts a variant for a dialect, semantic behavior must be identical at the protocol
+level unless the dialect genuinely changes its meaning. If sqlparser
 rejects that syntax for a dialect, tests should make that parser-boundary limitation explicit
 rather than silently omitting the dialect. Add focused dialect-specific fixtures only for deeper
 coverage of materially different syntax or AST variants.
+
+**Single source of truth (DRY)** Before introducing a constant, mapping, collection,
+fixture, configuration value, helper, or piece of logic, check whether the same concept already
+exists elsewhere in the repository. Reuse it directly when ownership is already clear; otherwise
+extract the concept to the narrowest shared module that naturally owns it and have all callers
+depend on that definition. Do not maintain copied representations that must be kept synchronized
+by hand. Duplication is acceptable only when the values or behavior are intentionally independent;
+make that distinction explicit in naming or structure so future changes do not accidentally couple
+them.
 
 **Strict types** Model the domain with types, not strings. Use enums for any fixed set of
 values (comparison operators, clause kinds, bound inclusivity), newtypes for identifiers

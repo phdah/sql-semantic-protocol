@@ -36,9 +36,10 @@ pub use protocol::{
     DiagnosticSeverity, Expression, FunctionExpression, InPredicate, IsNullPredicate, Join,
     JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource,
-    ProtocolStatement, QueryStatement, RangesDomain, RelationRef, SetDomain, SetMode,
-    SourceRelation, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, PROTOCOL_VERSION,
+    ProtocolStatement, QueryStatement, RangesDomain, RelationRef, SetDomain, SetMode, SetOperand,
+    SetOperation, SetOperator, SetQuantifier, SourceRelation, UnaryExpression, UnaryOperator,
+    UnknownDomain, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
+    ValueRange, PROTOCOL_VERSION,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.

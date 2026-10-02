@@ -13,20 +13,22 @@ use serde_json::Number;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, DuplicateTreatment, Expr, Function, FunctionArg,
     FunctionArgExpr, FunctionArguments, GroupByExpr, Join as SqlJoin, JoinConstraint, JoinOperator,
-    Query as SqlQuery, Select, SelectItem, SetExpr, Statement as SqlStatement, TableFactor,
-    TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
+    Query as SqlQuery, Select, SelectItem, SetExpr, SetOperator as SqlSetOperator,
+    SetQuantifier as SqlSetQuantifier, Statement as SqlStatement, TableFactor, TableWithJoins,
+    UnaryOperator as SqlUnaryOperator, Value,
 };
 
 use crate::domain::derive_column_domains;
 use crate::parser::ParsedSql;
 use crate::protocol::{
-    BetweenPredicate, BinaryExpression, BinaryOperator, ColumnExpression, ComparisonOperator,
-    ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity, Expression,
-    FunctionExpression, InPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind,
+    BetweenPredicate, BinaryExpression, BinaryOperator, ColumnDomain, ColumnExpression, ColumnRef,
+    ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
+    Expression, FunctionExpression, InPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind,
     LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate,
     Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
-    RelationRef, SourceRelation, UnaryExpression, UnaryOperator, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement,
+    RelationRef, SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation,
+    UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ValueDomain,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -92,10 +94,13 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         &mut derived_index,
     );
 
+    let set_operation = analyze_set_operation(query.body.as_ref());
     let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics);
 
     let predicates = match query.body.as_ref() {
         SetExpr::Select(select) => analyze_select(select, &mut diagnostics),
+        SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
+        SetExpr::Query(query) => analyze_query_predicates(query, &mut diagnostics),
         _ => {
             diagnostics.push(warning(
                 "unsupported_query_body",
@@ -106,8 +111,17 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         }
     };
 
-    let column_domains = derive_column_domains(&predicates, &relation_analysis.sources);
+    let column_domains = match query.body.as_ref() {
+        SetExpr::Select(_) => derive_column_domains(&predicates, &relation_analysis.sources),
+        SetExpr::SetOperation { .. } | SetExpr::Query(_) => {
+            analyze_query_column_domains(query, &BTreeSet::new())
+        }
+        _ => Vec::new(),
+    };
 
+    if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
+        inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
+    }
     inspect_query_features(query, &mut diagnostics);
     sort_diagnostics(&mut diagnostics);
 
@@ -120,12 +134,25 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         output,
         diagnostics,
     )
+    .with_set_operation(set_operation)
     .with_produced_relation(produced_relation)
+}
+
+fn analyze_query_predicates(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
+    match query.body.as_ref() {
+        SetExpr::Select(select) => analyze_select_predicates(select, diagnostics),
+        SetExpr::Query(query) => analyze_query_predicates(query, diagnostics),
+        SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
+        _ => Predicates::new(None, None, None),
+    }
 }
 
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     inspect_select_features(select, diagnostics);
+    analyze_select_predicates(select, diagnostics)
+}
 
+fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     Predicates::new(
         select
             .selection
@@ -140,6 +167,129 @@ fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predica
             .as_ref()
             .map(|expression| analyze_predicate(expression, diagnostics)),
     )
+}
+
+fn analyze_set_operation(expression: &SetExpr) -> Option<SetOperation> {
+    match expression {
+        SetExpr::SetOperation {
+            left,
+            op,
+            set_quantifier,
+            right,
+        } => Some(SetOperation::new(
+            analyze_set_operator(*op),
+            analyze_set_quantifier(*set_quantifier),
+            analyze_set_operand(left),
+            analyze_set_operand(right),
+        )),
+        SetExpr::Query(query) => analyze_set_operation(query.body.as_ref()),
+        SetExpr::Select(_)
+        | SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => None,
+    }
+}
+
+fn analyze_set_operand(expression: &SetExpr) -> SetOperand {
+    match analyze_set_operation(expression) {
+        Some(operation) => SetOperand::Operation(Box::new(operation)),
+        None => SetOperand::Query,
+    }
+}
+
+fn analyze_set_operator(operator: SqlSetOperator) -> SetOperator {
+    match operator {
+        SqlSetOperator::Union => SetOperator::Union,
+        SqlSetOperator::Except | SqlSetOperator::Minus => SetOperator::Except,
+        SqlSetOperator::Intersect => SetOperator::Intersect,
+    }
+}
+
+fn analyze_set_quantifier(quantifier: SqlSetQuantifier) -> SetQuantifier {
+    match quantifier {
+        SqlSetQuantifier::All => SetQuantifier::All,
+        SqlSetQuantifier::Distinct | SqlSetQuantifier::None => SetQuantifier::Distinct,
+        SqlSetQuantifier::ByName => SetQuantifier::ByName,
+        SqlSetQuantifier::AllByName => SetQuantifier::AllByName,
+        SqlSetQuantifier::DistinctByName => SetQuantifier::DistinctByName,
+    }
+}
+
+fn analyze_query_column_domains(
+    query: &SqlQuery,
+    inherited_local_relations: &BTreeSet<String>,
+) -> Vec<ColumnDomain> {
+    let mut local_relations = inherited_local_relations.clone();
+
+    if let Some(with) = &query.with {
+        for cte in &with.cte_tables {
+            local_relations.insert(cte.alias.name.to_string());
+        }
+    }
+
+    analyze_set_expr_column_domains(query.body.as_ref(), &local_relations)
+}
+
+fn analyze_set_expr_column_domains(
+    expression: &SetExpr,
+    local_relations: &BTreeSet<String>,
+) -> Vec<ColumnDomain> {
+    match expression {
+        SetExpr::Select(select) => {
+            let mut predicate_diagnostics = Vec::new();
+            let predicates = analyze_select_predicates(select, &mut predicate_diagnostics);
+            let mut relation_diagnostics = Vec::new();
+            let mut derived_index = 0;
+            let relations = analyze_select_relations(
+                select,
+                local_relations,
+                &mut relation_diagnostics,
+                &mut derived_index,
+            );
+            derive_column_domains(&predicates, &relations.sources)
+        }
+        SetExpr::Query(query) => analyze_query_column_domains(query, local_relations),
+        SetExpr::SetOperation { left, right, .. } => merge_set_operation_domains(
+            analyze_set_expr_column_domains(left, local_relations),
+            analyze_set_expr_column_domains(right, local_relations),
+        ),
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => Vec::new(),
+    }
+}
+
+fn merge_set_operation_domains(
+    left: Vec<ColumnDomain>,
+    right: Vec<ColumnDomain>,
+) -> Vec<ColumnDomain> {
+    let mut domains = BTreeMap::<ColumnRef, ValueDomain>::new();
+
+    for column_domain in left.into_iter().chain(right) {
+        let column = column_domain.column().clone();
+        let domain = column_domain.domain().clone();
+
+        match domains.get_mut(&column) {
+            Some(existing) if *existing != domain => {
+                *existing = ValueDomain::unknown(
+                    "set-operation branches impose different constraints on the same source column",
+                );
+            }
+            Some(_) => {}
+            None => {
+                domains.insert(column, domain);
+            }
+        }
+    }
+
+    domains
+        .into_iter()
+        .map(|(column, domain)| ColumnDomain::new(column, domain))
+        .collect()
 }
 
 #[derive(Default)]
@@ -1100,11 +1250,92 @@ fn analyze_query_output(
         }
     }
 
-    match query.body.as_ref() {
-        SetExpr::Select(select) => analyze_select_output(select, &local_outputs, diagnostics),
-        SetExpr::Query(query) => analyze_query_output(query, &local_outputs, diagnostics),
-        _ => Output::new(Vec::new()),
+    analyze_set_expr_output(query.body.as_ref(), &local_outputs, diagnostics)
+}
+
+fn analyze_set_expr_output(
+    expression: &SetExpr,
+    local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
+    match expression {
+        SetExpr::Select(select) => analyze_select_output(select, local_outputs, diagnostics),
+        SetExpr::Query(query) => analyze_query_output(query, local_outputs, diagnostics),
+        SetExpr::SetOperation {
+            left,
+            set_quantifier,
+            right,
+            ..
+        } => {
+            let quantifier = analyze_set_quantifier(*set_quantifier);
+            if quantifier.uses_name_alignment() {
+                diagnostics.push(warning(
+                    "unsupported_set_operation_alignment",
+                    DiagnosticArea::Output,
+                    "BY NAME set-operation alignment is represented but output-column composition is not implemented",
+                ));
+                return Output::new(Vec::new());
+            }
+
+            let left_output = analyze_set_expr_output(left, local_outputs, diagnostics);
+            let right_output = analyze_set_expr_output(right, local_outputs, diagnostics);
+            merge_set_operation_output(left_output, right_output, diagnostics)
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => Output::new(Vec::new()),
     }
+}
+
+fn merge_set_operation_output(
+    left: Output,
+    right: Output,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
+    if left.columns().is_empty() || right.columns().is_empty() {
+        diagnostics.push(warning(
+            "unresolved_set_operation_output",
+            DiagnosticArea::Output,
+            "set-operation output cannot be resolved because at least one branch has no resolved output columns",
+        ));
+        return Output::new(Vec::new());
+    }
+
+    if left.columns().len() != right.columns().len() {
+        diagnostics.push(warning(
+            "set_operation_arity_mismatch",
+            DiagnosticArea::Output,
+            &format!(
+                "set-operation branches expose different column counts: left has {}, right has {}",
+                left.columns().len(),
+                right.columns().len()
+            ),
+        ));
+        return Output::new(Vec::new());
+    }
+
+    let columns = left
+        .columns()
+        .iter()
+        .zip(right.columns())
+        .map(|(left_column, right_column)| {
+            let mut lineage = left_column.lineage().to_vec();
+            lineage.extend_from_slice(right_column.lineage());
+
+            OutputColumn::new(
+                left_column.name().to_string(),
+                Expression::Unknown(UnknownSemantic::new(
+                    "set-operation output value is determined positionally by multiple query branches"
+                        .to_string(),
+                )),
+                lineage,
+            )
+        })
+        .collect();
+
+    Output::new(columns)
 }
 
 fn analyze_select_output(
@@ -1493,6 +1724,25 @@ fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
             DiagnosticArea::Other,
             "CONNECT BY semantics are not implemented yet",
         ));
+    }
+}
+
+fn inspect_set_expr_features(expression: &SetExpr, diagnostics: &mut Vec<Diagnostic>) {
+    match expression {
+        SetExpr::Select(select) => inspect_select_features(select, diagnostics),
+        SetExpr::Query(query) => {
+            inspect_set_expr_features(query.body.as_ref(), diagnostics);
+            inspect_query_features(query, diagnostics);
+        }
+        SetExpr::SetOperation { left, right, .. } => {
+            inspect_set_expr_features(left, diagnostics);
+            inspect_set_expr_features(right, diagnostics);
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => {}
     }
 }
 

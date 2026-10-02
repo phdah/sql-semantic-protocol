@@ -1,25 +1,11 @@
+mod common;
+
+use common::DIALECTS;
 use sql_semantic_protocol::{
     analyze_inputs, to_bundle_json, DatasetRef, ProtocolStatement, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 use sqlparser::parser::Parser;
-
-const DIALECTS: &[&str] = &[
-    "generic",
-    "mysql",
-    "postgresql",
-    "postgres",
-    "hive",
-    "sqlite",
-    "snowflake",
-    "redshift",
-    "mssql",
-    "clickhouse",
-    "bigquery",
-    "ansi",
-    "duckdb",
-    "databricks",
-];
 
 #[test]
 fn query_backed_ddl_is_supported_across_all_exposed_dialects() {

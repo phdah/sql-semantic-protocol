@@ -1,0 +1,16 @@
+pub const DIALECTS: &[&str] = &[
+    "generic",
+    "mysql",
+    "postgresql",
+    "postgres",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
+];

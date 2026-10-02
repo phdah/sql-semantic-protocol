@@ -15,8 +15,8 @@ use crate::protocol::{
     ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate, IsNullPredicate,
     Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output,
     OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
-    SourceRelation, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
-    ValueDomain, ValueRange,
+    SetOperand, SetOperation, SourceRelation, UnaryExpression, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
@@ -235,7 +235,7 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
         .map(diagnostic_to_value)
         .collect::<Vec<_>>();
 
-    json!({
+    let mut value = json!({
         "kind": "query",
         "sources": sources,
         "dependencies": statement.dependencies(),
@@ -248,7 +248,33 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
             .collect::<Vec<_>>(),
         "output": output_to_value(statement.output()),
         "diagnostics": diagnostics
+    });
+
+    if let Some(set_operation) = statement.set_operation() {
+        value["set_operation"] = set_operation_to_value(set_operation);
+    }
+
+    value
+}
+
+fn set_operation_to_value(operation: &SetOperation) -> Value {
+    json!({
+        "operator": operation.operator().as_str(),
+        "quantifier": operation.quantifier().as_str(),
+        "left": set_operand_to_value(operation.left()),
+        "right": set_operand_to_value(operation.right())
     })
+}
+
+fn set_operand_to_value(operand: &SetOperand) -> Value {
+    match operand {
+        SetOperand::Query => json!({ "kind": "query" }),
+        SetOperand::Operation(operation) => {
+            let mut value = set_operation_to_value(operation);
+            value["kind"] = json!("set_operation");
+            value
+        }
+    }
 }
 
 fn output_to_value(output: &Output) -> Value {

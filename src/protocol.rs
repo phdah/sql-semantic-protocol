@@ -74,6 +74,7 @@ pub struct QueryStatement {
     predicates: Box<Predicates>,
     column_domains: Vec<ColumnDomain>,
     output: Output,
+    set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     diagnostics: Vec<Diagnostic>,
 }
@@ -96,9 +97,15 @@ impl QueryStatement {
             predicates: Box::new(predicates),
             column_domains,
             output,
+            set_operation: None,
             produced_relation: None,
             diagnostics,
         }
+    }
+
+    pub(crate) fn with_set_operation(mut self, set_operation: Option<SetOperation>) -> Self {
+        self.set_operation = set_operation;
+        self
     }
 
     pub(crate) fn with_produced_relation(mut self, produced_relation: Option<String>) -> Self {
@@ -136,6 +143,11 @@ impl QueryStatement {
         &self.output
     }
 
+    /// Return the set-operation tree when this query combines multiple query operands.
+    pub fn set_operation(&self) -> Option<&SetOperation> {
+        self.set_operation.as_ref()
+    }
+
     /// Return the named relation produced by query-backed DDL, if any.
     ///
     /// Bare queries produce anonymous results and therefore return `None`.
@@ -146,6 +158,112 @@ impl QueryStatement {
     /// Return diagnostics describing incomplete query semantics.
     pub fn diagnostics(&self) -> &[Diagnostic] {
         &self.diagnostics
+    }
+}
+
+/// A semantic SQL set operator.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SetOperator {
+    /// UNION.
+    Union,
+    /// INTERSECT.
+    Intersect,
+    /// EXCEPT.
+    Except,
+}
+
+impl SetOperator {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Union => "union",
+            Self::Intersect => "intersect",
+            Self::Except => "except",
+        }
+    }
+}
+
+/// Quantifier and alignment semantics for a SQL set operation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SetQuantifier {
+    /// DISTINCT semantics, including an omitted SQL quantifier.
+    Distinct,
+    /// ALL semantics.
+    All,
+    /// BY NAME with the dialect-defined default duplicate treatment.
+    ByName,
+    /// ALL BY NAME.
+    AllByName,
+    /// DISTINCT BY NAME.
+    DistinctByName,
+}
+
+impl SetQuantifier {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Distinct => "distinct",
+            Self::All => "all",
+            Self::ByName => "by_name",
+            Self::AllByName => "all_by_name",
+            Self::DistinctByName => "distinct_by_name",
+        }
+    }
+
+    pub(crate) fn uses_name_alignment(self) -> bool {
+        matches!(self, Self::ByName | Self::AllByName | Self::DistinctByName)
+    }
+}
+
+/// One operand in a recursive SQL set-operation tree.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SetOperand {
+    /// A query operand whose local semantics are represented by the surrounding query analysis.
+    Query,
+    /// A nested set operation.
+    Operation(Box<SetOperation>),
+}
+
+/// One UNION, INTERSECT, or EXCEPT operation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SetOperation {
+    operator: SetOperator,
+    quantifier: SetQuantifier,
+    left: SetOperand,
+    right: SetOperand,
+}
+
+impl SetOperation {
+    pub(crate) fn new(
+        operator: SetOperator,
+        quantifier: SetQuantifier,
+        left: SetOperand,
+        right: SetOperand,
+    ) -> Self {
+        Self {
+            operator,
+            quantifier,
+            left,
+            right,
+        }
+    }
+
+    /// Return the set operator.
+    pub fn operator(&self) -> SetOperator {
+        self.operator
+    }
+
+    /// Return duplicate-treatment and alignment semantics.
+    pub fn quantifier(&self) -> SetQuantifier {
+        self.quantifier
+    }
+
+    /// Return the left operand.
+    pub fn left(&self) -> &SetOperand {
+        &self.left
+    }
+
+    /// Return the right operand.
+    pub fn right(&self) -> &SetOperand {
+        &self.right
     }
 }
 

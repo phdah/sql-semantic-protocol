@@ -1,3 +1,6 @@
+mod common;
+
+use common::DIALECTS;
 use std::fs;
 use std::io::Write;
 use std::process::{Command, Output, Stdio};
@@ -40,23 +43,6 @@ fn stdin_input_and_selected_dialect_emit_only_protocol_json() {
 
 #[test]
 fn all_sqlparser_recognized_dialect_names_are_supported() {
-    const DIALECTS: &[&str] = &[
-        "generic",
-        "mysql",
-        "postgresql",
-        "postgres",
-        "hive",
-        "sqlite",
-        "snowflake",
-        "redshift",
-        "mssql",
-        "clickhouse",
-        "bigquery",
-        "ansi",
-        "duckdb",
-        "databricks",
-    ];
-
     for dialect in DIALECTS {
         let output = run_with_stdin(&["--dialect", *dialect], "SELECT a FROM t WHERE a > 10");
 
