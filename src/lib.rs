@@ -37,7 +37,8 @@ pub use protocol::{
     JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource,
     ProtocolStatement, QueryStatement, RangesDomain, RelationRef, SetDomain, SetMode,
-    SourceRelation, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
+    SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation, UnaryExpression,
+    UnaryOperator, UnknownDomain, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, PROTOCOL_VERSION,
 };
 
