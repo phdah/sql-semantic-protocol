@@ -7,12 +7,12 @@ use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
-    analyze_inputs, to_bundle_json_with_scope, to_openlineage_json, Error as ProtocolError,
-    InputAnalysisError, OpenLineageExportError, OutputScope, SqlInput,
+    analyze_inputs, to_bundle_json, to_openlineage_json, Error as ProtocolError,
+    InputAnalysisError, OpenLineageExportError, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--format <protocol|openlineage>] [--scope <final|all>] [--namespace <name>] [--event-time <RFC3339>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]\n\nRepeat --sql, --file, and --dir in any mixture. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nProtocol output scope defaults to all. final emits only terminal transformation results while retaining the complete dependency graph. --scope applies only to protocol output.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]\n\nRepeat --sql, --file, and --dir in any mixture. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -37,7 +37,7 @@ fn run() -> Result<(), CliError> {
             let bundle = analyze_inputs(&inputs, &dialect_name, dialect.as_ref())
                 .map_err(CliError::InputProtocol)?;
             let output = match options.format {
-                OutputFormat::Protocol => to_bundle_json_with_scope(&bundle, options.scope),
+                OutputFormat::Protocol => to_bundle_json(&bundle),
                 OutputFormat::OpenLineage => {
                     let namespace = options.namespace.as_deref().ok_or_else(|| {
                         CliError::Input(
@@ -69,7 +69,6 @@ enum Command {
 struct Options {
     dialect: String,
     format: OutputFormat,
-    scope: OutputScope,
     namespace: Option<String>,
     event_time: Option<String>,
     inputs: Vec<InputArgument>,
@@ -92,8 +91,6 @@ enum InputArgument {
 fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, CliError> {
     let mut dialect = "generic".to_string();
     let mut format = OutputFormat::Protocol;
-    let mut scope = OutputScope::AllLayers;
-    let mut scope_was_set = false;
     let mut namespace = None;
     let mut event_time = None;
     let mut inputs = Vec::new();
@@ -127,21 +124,6 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                         )));
                     }
                 };
-            }
-            "--scope" => {
-                let value = arguments
-                    .next()
-                    .ok_or_else(|| CliError::Input("missing value for --scope".to_string()))?;
-                scope = match value.as_str() {
-                    "final" => OutputScope::Final,
-                    "all" => OutputScope::AllLayers,
-                    _ => {
-                        return Err(CliError::Input(format!(
-                            "unsupported output scope '{value}'; expected final or all"
-                        )));
-                    }
-                };
-                scope_was_set = true;
             }
             "--namespace" => {
                 namespace =
@@ -200,11 +182,6 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
             }
         }
         OutputFormat::OpenLineage => {
-            if scope_was_set {
-                return Err(CliError::Input(
-                    "--scope is only supported with --format protocol".to_string(),
-                ));
-            }
             if namespace.as_deref().map(str::trim).unwrap_or("").is_empty() {
                 return Err(CliError::Input(
                     "--namespace is required with --format openlineage".to_string(),
@@ -222,7 +199,6 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
     Ok(Command::Analyze(Options {
         dialect,
         format,
-        scope,
         namespace,
         event_time,
         inputs,
