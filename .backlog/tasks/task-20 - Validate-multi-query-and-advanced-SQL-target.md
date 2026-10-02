@@ -12,6 +12,7 @@ dependencies:
   - TASK-17
   - TASK-18
   - TASK-19
+  - TASK-28
 ---
 
 ## Description
@@ -29,6 +30,7 @@ The representative corpus must prove that one invocation can combine related and
 - [ ] All-layer mode emits every intermediate transformation in deterministic graph order.
 - [ ] Set operations and window functions appear inside composed multi-query fixtures.
 - [ ] Advanced grouping and nested subquery constructs are covered by representative fixtures.
+- [ ] Derived output-domain semantics are covered by representative fixtures, including CASE-derived boolean output and a constrained ROW_NUMBER outcome.
 - [ ] Tests exercise multiple sqlparser dialects and confirm that dialect selection remains delegated rather than hardcoded.
 - [ ] A high-input-count test proves there is no artificial fixed query-count limit in the public API.
 - [ ] Repeated analysis of the same bundle produces byte-identical JSON.
