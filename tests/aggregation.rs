@@ -56,7 +56,8 @@ fn aggregate_filter_and_lineage_are_preserved() {
         "SELECT SUM(amount) FILTER (WHERE status = 'paid') AS paid_total FROM sales",
         "postgresql",
         &dialect,
-    ).expect("aggregate FILTER should analyze");
+    )
+    .expect("aggregate FILTER should analyze");
     let query = first_query(&protocol);
     let aggregate = match query.output().columns()[0].expression() {
         Expression::AggregateFunction(function) => function,
@@ -64,7 +65,11 @@ fn aggregate_filter_and_lineage_are_preserved() {
     };
     assert!(matches!(aggregate.filter(), Some(Predicate::Comparison(_))));
     assert_eq!(
-        query.output().columns()[0].lineage().iter().map(|source| source.column()).collect::<Vec<_>>(),
+        query.output().columns()[0]
+            .lineage()
+            .iter()
+            .map(|source| source.column())
+            .collect::<Vec<_>>(),
         vec!["amount", "status"]
     );
 }
@@ -74,13 +79,17 @@ fn distinct_and_rollup_are_typed() {
     let dialect = GenericDialect {};
     let distinct = analyze_sql("SELECT DISTINCT category FROM sales", "generic", &dialect)
         .expect("DISTINCT should analyze");
-    assert!(first_query(&distinct).aggregation().expect("aggregation").distinct());
+    assert!(first_query(&distinct)
+        .aggregation()
+        .expect("aggregation")
+        .distinct());
 
     let rollup = analyze_sql(
         "SELECT region, category, SUM(amount) FROM sales GROUP BY ROLLUP(region, category)",
         "generic",
         &dialect,
-    ).expect("ROLLUP should analyze");
+    )
+    .expect("ROLLUP should analyze");
     assert!(matches!(
         first_query(&rollup).aggregation().and_then(|aggregation| aggregation.group_by()),
         Some(GroupBy::Expressions(expressions))
@@ -103,6 +112,7 @@ fn count_wildcard_is_typed_and_having_is_conservative() {
         "SELECT category, SUM(amount) FROM sales GROUP BY category HAVING SUM(amount) > 10",
         "generic",
         &dialect,
-    ).expect("HAVING should analyze");
+    )
+    .expect("HAVING should analyze");
     assert!(first_query(&having).column_domains().is_empty());
 }
