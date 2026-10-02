@@ -147,9 +147,24 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
 }
 
 fn analyze_query_predicates(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
+    analyze_query_predicates_with_outer_scope(query, &[], diagnostics)
+}
+
+fn analyze_query_predicates_with_outer_scope(
+    query: &SqlQuery,
+    outer_scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Predicates {
     match query.body.as_ref() {
-        SetExpr::Select(select) => analyze_select_predicates(select, diagnostics),
-        SetExpr::Query(query) => analyze_query_predicates(query, diagnostics),
+        SetExpr::Select(select) => {
+            let mut scope_diagnostics = Vec::new();
+            let scope =
+                build_output_scope(select, &BTreeMap::new(), outer_scope, &mut scope_diagnostics);
+            analyze_select_predicates_with_scope(select, &scope, diagnostics)
+        }
+        SetExpr::Query(query) => {
+            analyze_query_predicates_with_outer_scope(query, outer_scope, diagnostics)
+        }
         SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
         _ => Predicates::new(None, None, None),
     }
@@ -2329,7 +2344,8 @@ fn analyze_subquery_semantics(
         outer_scope,
         &mut diagnostics,
     );
-    let predicates = analyze_query_predicates(query, &mut diagnostics);
+    let predicates =
+        analyze_query_predicates_with_outer_scope(query, outer_scope, &mut diagnostics);
     let correlations = collect_query_correlations(query, outer_scope);
 
     inspect_query_features(query, &mut diagnostics);
@@ -2597,7 +2613,22 @@ fn build_output_scope(
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<OutputRelation> {
-    let mut scope = outer_scope.to_vec();
+    let local_qualifiers = select_local_qualifiers(select);
+    let mut scope = outer_scope
+        .iter()
+        .filter_map(|relation| {
+            let qualifiers = relation
+                .qualifiers
+                .iter()
+                .filter(|qualifier| !local_qualifiers.contains(*qualifier))
+                .cloned()
+                .collect::<Vec<_>>();
+            (!qualifiers.is_empty()).then(|| OutputRelation {
+                qualifiers,
+                source: relation.source.clone(),
+            })
+        })
+        .collect::<Vec<_>>();
 
     for source in &select.from {
         register_output_table_factor(&source.relation, local_outputs, diagnostics, &mut scope);
