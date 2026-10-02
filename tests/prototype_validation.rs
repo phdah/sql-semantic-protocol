@@ -212,15 +212,36 @@ fn representative_generic_query_matches_complete_protocol_document() {
             }
         ],
         "graph": {
-            "edges": [],
-            "components": [],
-            "diagnostics": [
+            "edges": [
                 {
-                    "severity": "warning",
-                    "code": "multi_input_composition_pending",
-                    "message": "multi-input graph construction and semantic composition are not implemented yet"
+                    "consumer_layer_id": "layer-0001",
+                    "relation": "crm.customers",
+                    "resolution": "external",
+                    "producer_layer_ids": []
+                },
+                {
+                    "consumer_layer_id": "layer-0001",
+                    "relation": "sales.orders",
+                    "resolution": "external",
+                    "producer_layer_ids": []
                 }
-            ]
+            ],
+            "components": [
+                {
+                    "id": "component-0001",
+                    "layer_ids": [
+                        "layer-0001"
+                    ],
+                    "final_outcomes": [
+                        {
+                            "kind": "anonymous",
+                            "layer_id": "layer-0001"
+                        }
+                    ],
+                    "diagnostics": []
+                }
+            ],
+            "diagnostics": []
         }
     });
 
