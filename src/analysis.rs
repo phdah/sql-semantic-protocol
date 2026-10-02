@@ -1176,11 +1176,93 @@ fn analyze_query_output(
         }
     }
 
-    match query.body.as_ref() {
-        SetExpr::Select(select) => analyze_select_output(select, &local_outputs, diagnostics),
-        SetExpr::Query(query) => analyze_query_output(query, &local_outputs, diagnostics),
-        _ => Output::new(Vec::new()),
+    analyze_set_expr_output(query.body.as_ref(), &local_outputs, diagnostics)
+}
+
+fn analyze_set_expr_output(
+    expression: &SetExpr,
+    local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
+    match expression {
+        SetExpr::Select(select) => analyze_select_output(select, local_outputs, diagnostics),
+        SetExpr::Query(query) => analyze_query_output(query, local_outputs, diagnostics),
+        SetExpr::SetOperation {
+            left,
+            set_quantifier,
+            right,
+            ..
+        } => {
+            let quantifier = analyze_set_quantifier(*set_quantifier);
+            if quantifier.uses_name_alignment() {
+                diagnostics.push(warning(
+                    "unsupported_set_operation_alignment",
+                    DiagnosticArea::Output,
+                    "BY NAME set-operation alignment is represented but output-column composition is not implemented",
+                ));
+                return Output::new(Vec::new());
+            }
+
+            let left_output = analyze_set_expr_output(left, local_outputs, diagnostics);
+            let right_output = analyze_set_expr_output(right, local_outputs, diagnostics);
+            merge_set_operation_output(left_output, right_output, diagnostics)
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Merge(_)
+        | SetExpr::Table(_) => Output::new(Vec::new()),
     }
+}
+
+fn merge_set_operation_output(
+    left: Output,
+    right: Output,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
+    if left.columns().is_empty() || right.columns().is_empty() {
+        diagnostics.push(warning(
+            "unresolved_set_operation_output",
+            DiagnosticArea::Output,
+            "set-operation output cannot be resolved because at least one branch has no resolved output columns",
+        ));
+        return Output::new(Vec::new());
+    }
+
+    if left.columns().len() != right.columns().len() {
+        diagnostics.push(warning(
+            "set_operation_arity_mismatch",
+            DiagnosticArea::Output,
+            &format!(
+                "set-operation branches expose different column counts: left has {}, right has {}",
+                left.columns().len(),
+                right.columns().len()
+            ),
+        ));
+        return Output::new(Vec::new());
+    }
+
+    let columns = left
+        .columns()
+        .iter()
+        .zip(right.columns())
+        .map(|(left_column, right_column)| {
+            let mut lineage = left_column.lineage().to_vec();
+            lineage.extend_from_slice(right_column.lineage());
+
+            OutputColumn::new(
+                left_column.name().to_string(),
+                Expression::Unknown(UnknownSemantic::new(
+                    "set-operation output value is determined positionally by multiple query branches"
+                        .to_string(),
+                )),
+                lineage,
+            )
+        })
+        .collect();
+
+    Output::new(columns)
 }
 
 fn analyze_select_output(
