@@ -36,6 +36,12 @@ Version `0.1.0` files remain in the repository only as historical references. Cu
 
 TASK-13 resolves transformation layers into a deterministic relation dependency graph. TASK-14 composes semantics through that graph: final outputs expose transitive physical lineage, value domains propagate through safe direct projections and renames, and ambiguous, cyclic, or non-invertible paths remain explicit instead of being guessed. Disconnected pipelines compose independently.
 
+### Outcome selection
+
+The protocol always contains every analyzed transformation outcome. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.
+
+Protocol generation does not have a final-only or all-layer mode. Choosing whether to consume every layer, only terminal outcomes, or a particular named outcome is a consumer concern. This keeps one complete protocol document as the source of truth and lets downstream applications, including test-data generators, choose the outcomes they need without re-analysis.
+
 ## OpenLineage export
 
 The SQL Semantic Protocol remains the authoritative semantic representation. The library function `to_openlineage_json` maps resolved named layers to OpenLineage 2.0.2 DatasetEvents using the current Lineage Dataset Facet for dataset-level and field-level lineage. OpenLineage types do not appear in the core protocol model.
@@ -79,7 +85,7 @@ The current development version is `0.2.0`. The current roadmap targets the firs
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--dialect <name>] [--scope <final|all>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]
+sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
@@ -133,22 +139,6 @@ printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
 ```
 
 Every successful invocation emits protocol `0.2.0`. One input produces an `inputs` array with one element; multiple inputs use the same document shape with additional elements.
-
-### Output scope
-
-Protocol output defaults to `--scope all`, which renders every transformation layer. Use `--scope final` to render only layers that produce terminal outcomes from each dependency-graph component:
-
-```sh
-cargo run -- \
-  --scope final \
-  --file sql/stage.sql \
-  --file sql/core.sql \
-  --file sql/mart.sql
-```
-
-Scope selection happens after complete analysis and composition. Final output therefore retains transitive physical dependencies, value domains, and column lineage from omitted intermediate layers. The `inputs` and `graph` sections remain complete under both scopes so graph relationships and diagnostics are not lost. A standalone anonymous query remains a final outcome. For a bundle with only one transformation layer, `final` and `all` are byte-identical.
-
-`--scope` applies to protocol output only. OpenLineage has its own dataset-event export semantics and rejects an explicit scope flag rather than silently ignoring it.
 
 Query-backed DDL is analyzed through its defining query and records the created relation as the layer output. For example, `CREATE TABLE mart.orders AS SELECT ...` produces `mart.orders`, while a bare `SELECT` produces an anonymous layer result.
 
