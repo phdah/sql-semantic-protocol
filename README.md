@@ -44,6 +44,14 @@ Set outputs align columns positionally. Output names come from the left branch, 
 
 If branches expose incompatible arity, output semantics remain unresolved and an explicit diagnostic is emitted. Branch-local value constraints are retained when compatible; conflicting constraints on the same source column degrade to an explicit unknown domain rather than being guessed. BY NAME alignment is represented in the operation tree but output composition remains explicitly unsupported.
 
+### Aggregation and grouping
+
+Grouped aggregates are represented separately from ordinary scalar functions. Aggregate expressions preserve the function name, argument forms including `COUNT(*)`, `DISTINCT` arguments, and a normalized `FILTER (WHERE ...)` predicate when present.
+
+SELECT-level duplicate elimination and grouping are emitted under `aggregation` when they affect the query. The object records ordinary `DISTINCT`, PostgreSQL-style `DISTINCT ON`, `GROUP BY ALL`, ordinary grouping expressions, and parser-supported `GROUPING SETS`, `ROLLUP`, and `CUBE` forms. Dialect-specific GROUP BY modifiers that are not modeled safely remain explicit diagnostics.
+
+HAVING is analyzed with projected aliases available in grouped scope. Aggregate comparisons remain aggregate-result semantics and do not get rewritten into scalar constraints on their source columns.
+
 ### Window functions
 
 Window calls are emitted as `window_function` expressions, distinct from ordinary function calls. The function arguments remain normalized expressions, while the resolved window specification records an optional local window name, `PARTITION BY` expressions, ordered `ORDER BY` expressions, and an explicit `ROWS`, `RANGE`, or `GROUPS` frame when present.

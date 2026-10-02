@@ -371,7 +371,7 @@ fn unsupported_expression_is_diagnosed() {
 }
 
 #[test]
-fn unsupported_function_shape_is_diagnosed() {
+fn aggregate_wildcard_is_typed() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql("SELECT a FROM t WHERE COUNT(*) > 0", "generic", &dialect)
         .expect("COUNT wildcard should parse");
@@ -387,17 +387,14 @@ fn unsupported_function_shape_is_diagnosed() {
 
     assert!(matches!(
         comparison.left(),
-        Expression::Unsupported(semantic) if semantic.feature() == "function"
+        Expression::AggregateFunction(function)
+            if function.name() == "COUNT"
+                && matches!(
+                    function.arguments(),
+                    [sql_semantic_protocol::AggregateArgument::Wildcard]
+                )
     ));
-    assert!(first_query(&protocol)
-        .diagnostics()
-        .iter()
-        .any(|diagnostic| {
-            diagnostic.area() == DiagnosticArea::Function
-                && diagnostic.code() == "unsupported_function"
-        }));
 }
-
 #[test]
 fn relation_sources_preserve_multi_part_names_aliases_and_sorted_dependencies() {
     let dialect = GenericDialect {};

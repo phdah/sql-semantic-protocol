@@ -354,7 +354,7 @@ fn corpus_covers_ctes_nested_subqueries_and_functions() {
 }
 
 #[test]
-fn snowflake_group_having_and_qualify_keep_known_semantics_and_diagnose_grouping() {
+fn snowflake_group_having_and_qualify_keep_known_grouping_semantics() {
     let dialect = SnowflakeDialect {};
     let protocol = analyze_sql(
         "SELECT a
@@ -380,7 +380,13 @@ fn snowflake_group_having_and_qualify_keep_known_semantics_and_diagnose_grouping
         statement["output"]["columns"][0]["lineage"],
         json!([{"relation": "t", "column": "a"}])
     );
-    assert!(statement["diagnostics"]
+    assert_eq!(statement["aggregation"]["distinct"], false);
+    assert_eq!(statement["aggregation"]["group_by"]["kind"], "expressions");
+    assert_eq!(
+        statement["aggregation"]["group_by"]["expressions"][0]["expression"]["name"],
+        "a"
+    );
+    assert!(!statement["diagnostics"]
         .as_array()
         .expect("diagnostics should be an array")
         .iter()

@@ -11,13 +11,15 @@ use crate::bundle::{
     UnresolvedComposedSemantics,
 };
 use crate::protocol::{
-    BetweenPredicate, BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate, IsNullPredicate,
-    Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output,
-    OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
-    SetOperand, SetOperation, SourceRelation, UnaryExpression, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
-    WindowFrameBound, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
+    AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
+    BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef, ComparisonPredicate,
+    Diagnostic, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
+    IsNullPredicate, Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate,
+    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
+    QueryStatement, RelationRef, SetOperand, SetOperation, SourceRelation, UnaryExpression,
+    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
+    WindowFrame, WindowFrameBound, WindowFunctionExpression, WindowOrderExpression,
+    WindowSpecification,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
@@ -251,11 +253,54 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
         "diagnostics": diagnostics
     });
 
+    if let Some(aggregation) = statement.aggregation() {
+        value["aggregation"] = aggregation_to_value(aggregation);
+    }
+
     if let Some(set_operation) = statement.set_operation() {
         value["set_operation"] = set_operation_to_value(set_operation);
     }
 
     value
+}
+
+fn aggregation_to_value(aggregation: &Aggregation) -> Value {
+    json!({
+        "distinct": aggregation.distinct(),
+        "distinct_on": aggregation.distinct_on().iter().map(expression_to_value).collect::<Vec<_>>(),
+        "group_by": aggregation.group_by().map_or(Value::Null, group_by_to_value)
+    })
+}
+
+fn group_by_to_value(group_by: &GroupBy) -> Value {
+    match group_by {
+        GroupBy::All => json!({ "kind": "all" }),
+        GroupBy::Expressions(expressions) => json!({
+            "kind": "expressions",
+            "expressions": expressions.iter().map(grouping_expression_to_value).collect::<Vec<_>>()
+        }),
+    }
+}
+
+fn grouping_expression_to_value(expression: &GroupingExpression) -> Value {
+    match expression {
+        GroupingExpression::Expression(expression) => json!({
+            "kind": "expression",
+            "expression": expression_to_value(expression)
+        }),
+        GroupingExpression::GroupingSets(sets) => grouping_sets_to_value("grouping_sets", sets),
+        GroupingExpression::Rollup(sets) => grouping_sets_to_value("rollup", sets),
+        GroupingExpression::Cube(sets) => grouping_sets_to_value("cube", sets),
+    }
+}
+
+fn grouping_sets_to_value(kind: &str, sets: &[Vec<crate::protocol::Expression>]) -> Value {
+    json!({
+        "kind": kind,
+        "sets": sets.iter()
+            .map(|set| set.iter().map(expression_to_value).collect::<Vec<_>>())
+            .collect::<Vec<_>>()
+    })
 }
 
 fn set_operation_to_value(operation: &SetOperation) -> Value {
@@ -482,6 +527,9 @@ fn expression_to_value(expression: &Expression) -> Value {
         Expression::Column(expression) => column_expression_to_value(expression),
         Expression::Literal(expression) => literal_expression_to_value(expression),
         Expression::Function(expression) => function_expression_to_value(expression),
+        Expression::AggregateFunction(expression) => {
+            aggregate_function_expression_to_value(expression)
+        }
         Expression::WindowFunction(expression) => window_function_expression_to_value(expression),
         Expression::Unary(expression) => unary_expression_to_value(expression),
         Expression::Binary(expression) => binary_expression_to_value(expression),
@@ -527,6 +575,30 @@ fn function_expression_to_value(expression: &FunctionExpression) -> Value {
             .collect::<Vec<_>>(),
         "distinct": expression.distinct()
     })
+}
+
+fn aggregate_function_expression_to_value(expression: &AggregateFunctionExpression) -> Value {
+    json!({
+        "kind": "aggregate_function",
+        "name": expression.name(),
+        "arguments": expression.arguments().iter().map(aggregate_argument_to_value).collect::<Vec<_>>(),
+        "distinct": expression.distinct(),
+        "filter": expression.filter().map_or(Value::Null, predicate_to_value)
+    })
+}
+
+fn aggregate_argument_to_value(argument: &AggregateArgument) -> Value {
+    match argument {
+        AggregateArgument::Expression(expression) => json!({
+            "kind": "expression",
+            "expression": expression_to_value(expression)
+        }),
+        AggregateArgument::Wildcard => json!({ "kind": "wildcard" }),
+        AggregateArgument::QualifiedWildcard(qualifier) => json!({
+            "kind": "qualified_wildcard",
+            "qualifier": qualifier
+        }),
+    }
 }
 
 fn window_function_expression_to_value(expression: &WindowFunctionExpression) -> Value {

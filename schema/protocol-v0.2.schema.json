@@ -641,6 +641,9 @@
           "items": {
             "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/diagnostic"
           }
+        },
+        "aggregation": {
+          "$ref": "#/$defs/aggregation"
         }
       }
     },
@@ -997,6 +1000,9 @@
         },
         {
           "$ref": "#/$defs/functionExpression"
+        },
+        {
+          "$ref": "#/$defs/aggregateFunctionExpression"
         },
         {
           "$ref": "#/$defs/windowFunctionExpression"
@@ -1440,6 +1446,245 @@
             },
             "offset": {
               "$ref": "#/$defs/expression"
+            }
+          }
+        }
+      ]
+    },
+    "aggregation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "distinct",
+        "distinct_on",
+        "group_by"
+      ],
+      "properties": {
+        "distinct": {
+          "type": "boolean"
+        },
+        "distinct_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "group_by": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/groupBy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "groupBy": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "all"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "expressions"
+          ],
+          "properties": {
+            "kind": {
+              "const": "expressions"
+            },
+            "expressions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/groupingExpression"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "groupingExpression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "expression"
+          ],
+          "properties": {
+            "kind": {
+              "const": "expression"
+            },
+            "expression": {
+              "$ref": "#/$defs/expression"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "sets"
+          ],
+          "properties": {
+            "kind": {
+              "const": "grouping_sets"
+            },
+            "sets": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "sets"
+          ],
+          "properties": {
+            "kind": {
+              "const": "rollup"
+            },
+            "sets": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "sets"
+          ],
+          "properties": {
+            "kind": {
+              "const": "cube"
+            },
+            "sets": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "aggregateFunctionExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name",
+        "arguments",
+        "distinct",
+        "filter"
+      ],
+      "properties": {
+        "kind": {
+          "const": "aggregate_function"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/aggregateArgument"
+          }
+        },
+        "distinct": {
+          "type": "boolean"
+        },
+        "filter": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "aggregateArgument": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "expression"
+          ],
+          "properties": {
+            "kind": {
+              "const": "expression"
+            },
+            "expression": {
+              "$ref": "#/$defs/expression"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "wildcard"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "qualifier"
+          ],
+          "properties": {
+            "kind": {
+              "const": "qualified_wildcard"
+            },
+            "qualifier": {
+              "type": "string",
+              "minLength": 1
             }
           }
         }
