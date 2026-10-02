@@ -47,6 +47,10 @@ Unrelated SQL inputs remain separate connected components in the same protocol d
 
 The protocol does not define a single global "final query". This allows one invocation to describe multiple independent transformation chains and multiple terminal datasets.
 
+All transformation outcomes are always present in `layers`; terminal outcomes are not emitted as a separate reduced protocol. `final_outcomes` classifies which of those already-present outcomes terminate each component. A consumer can therefore operate on every layer, resolve only the referenced terminal layers, or select an individual outcome without asking the producer to regenerate or filter the protocol.
+
+Each terminal layer uses the same `composed_semantics` representation as any other layer, including transitive physical dependencies, value domains, and output lineage. Outcome selection changes only what a consumer chooses to use, never what the protocol producer analyzes or emits.
+
 ## OpenLineage interoperability
 
 The SQL Semantic Protocol is the source of truth for semantic composition. OpenLineage is an export target, not part of the core model.

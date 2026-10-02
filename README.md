@@ -36,6 +36,12 @@ Version `0.1.0` files remain in the repository only as historical references. Cu
 
 TASK-13 resolves transformation layers into a deterministic relation dependency graph. TASK-14 composes semantics through that graph: final outputs expose transitive physical lineage, value domains propagate through safe direct projections and renames, and ambiguous, cyclic, or non-invertible paths remain explicit instead of being guessed. Disconnected pipelines compose independently.
 
+### Outcome selection
+
+The protocol always contains every analyzed transformation outcome. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.
+
+Protocol generation does not have a final-only or all-layer mode. Choosing whether to consume every layer, only terminal outcomes, or a particular named outcome is a consumer concern. This keeps one complete protocol document as the source of truth and lets downstream applications, including test-data generators, choose the outcomes they need without re-analysis.
+
 ## OpenLineage export
 
 The SQL Semantic Protocol remains the authoritative semantic representation. The library function `to_openlineage_json` maps resolved named layers to OpenLineage 2.0.2 DatasetEvents using the current Lineage Dataset Facet for dataset-level and field-level lineage. OpenLineage types do not appear in the core protocol model.
