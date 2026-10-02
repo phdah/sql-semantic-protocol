@@ -388,7 +388,7 @@ fn snowflake_group_having_and_qualify_keep_known_semantics_and_diagnose_grouping
 }
 
 #[test]
-fn set_operation_remains_explicitly_unsupported_without_losing_dependencies() {
+fn set_operation_preserves_dependencies_output_and_typed_semantics() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
         "SELECT id FROM source_a UNION SELECT id FROM source_b",
@@ -402,8 +402,17 @@ fn set_operation_remains_explicitly_unsupported_without_losing_dependencies() {
     let statement = &json["inputs"][0]["statements"][0];
 
     assert_eq!(statement["dependencies"], json!(["source_a", "source_b"]));
-    assert_eq!(statement["output"]["columns"], json!([]));
-    assert!(statement["diagnostics"]
+    assert_eq!(statement["set_operation"]["operator"], "union");
+    assert_eq!(statement["set_operation"]["quantifier"], "distinct");
+    assert_eq!(statement["output"]["columns"][0]["name"], "id");
+    assert_eq!(
+        statement["output"]["columns"][0]["lineage"],
+        json!([
+            {"relation": "source_a", "column": "id"},
+            {"relation": "source_b", "column": "id"}
+        ])
+    );
+    assert!(!statement["diagnostics"]
         .as_array()
         .expect("diagnostics should be an array")
         .iter()
