@@ -13,11 +13,12 @@ use crate::bundle::{
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef, ComparisonPredicate,
-    Diagnostic, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
-    IsNullPredicate, Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate,
-    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
-    QueryStatement, RelationRef, SetOperand, SetOperation, SourceRelation, UnaryExpression,
-    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
+    Diagnostic, ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression,
+    InPredicate, InSubqueryPredicate, IsNullPredicate, Join, LineageSource, LiteralExpression,
+    LiteralValue, LogicalPredicate, NotPredicate, Output, OutputColumn, Predicate, Predicates,
+    Protocol, ProtocolStatement, QueryStatement, RelationRef, ScalarSubqueryExpression, SetOperand,
+    SetOperation, SourceRelation, SubquerySemantics, UnaryExpression, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
     WindowFrame, WindowFrameBound, WindowFunctionExpression, WindowOrderExpression,
     WindowSpecification,
 };
@@ -454,6 +455,8 @@ fn predicate_to_value(predicate: &Predicate) -> Value {
         Predicate::Not(predicate) => not_predicate_to_value(predicate),
         Predicate::IsNull(predicate) => is_null_predicate_to_value(predicate),
         Predicate::In(predicate) => in_predicate_to_value(predicate),
+        Predicate::Exists(predicate) => exists_predicate_to_value(predicate),
+        Predicate::InSubquery(predicate) => in_subquery_predicate_to_value(predicate),
         Predicate::Between(predicate) => between_predicate_to_value(predicate),
         Predicate::BooleanExpression(expression) => json!({
             "kind": "boolean_expression",
@@ -512,6 +515,23 @@ fn in_predicate_to_value(predicate: &InPredicate) -> Value {
     })
 }
 
+fn exists_predicate_to_value(predicate: &ExistsPredicate) -> Value {
+    json!({
+        "kind": "exists",
+        "subquery": subquery_semantics_to_value(predicate.subquery()),
+        "negated": predicate.negated()
+    })
+}
+
+fn in_subquery_predicate_to_value(predicate: &InSubqueryPredicate) -> Value {
+    json!({
+        "kind": "in_subquery",
+        "expression": expression_to_value(predicate.expression()),
+        "subquery": subquery_semantics_to_value(predicate.subquery()),
+        "negated": predicate.negated()
+    })
+}
+
 fn between_predicate_to_value(predicate: &BetweenPredicate) -> Value {
     json!({
         "kind": "between",
@@ -533,9 +553,35 @@ fn expression_to_value(expression: &Expression) -> Value {
         Expression::WindowFunction(expression) => window_function_expression_to_value(expression),
         Expression::Unary(expression) => unary_expression_to_value(expression),
         Expression::Binary(expression) => binary_expression_to_value(expression),
+        Expression::ScalarSubquery(expression) => scalar_subquery_expression_to_value(expression),
         Expression::Unknown(semantic) => unknown_semantic_to_value(semantic),
         Expression::Unsupported(semantic) => unsupported_semantic_to_value(semantic),
     }
+}
+
+fn scalar_subquery_expression_to_value(expression: &ScalarSubqueryExpression) -> Value {
+    json!({
+        "kind": "scalar_subquery",
+        "subquery": subquery_semantics_to_value(expression.subquery())
+    })
+}
+
+fn subquery_semantics_to_value(subquery: &SubquerySemantics) -> Value {
+    json!({
+        "dependencies": subquery.dependencies(),
+        "correlations": subquery
+            .correlations()
+            .iter()
+            .map(lineage_source_to_value)
+            .collect::<Vec<_>>(),
+        "output": output_to_value(subquery.output()),
+        "predicates": predicates_to_value(subquery.predicates()),
+        "diagnostics": subquery
+            .diagnostics()
+            .iter()
+            .map(diagnostic_to_value)
+            .collect::<Vec<_>>()
+    })
 }
 
 fn column_expression_to_value(expression: &ColumnExpression) -> Value {
