@@ -54,9 +54,15 @@ impl<'a> Composer<'a> {
     }
 
     fn compose_all(mut self) -> Vec<ComposedSemantics> {
-        self.layers
+        let layer_ids = self
+            .layers
             .iter()
-            .map(|layer| self.compose_layer(layer.id()))
+            .map(|layer| layer.id().to_string())
+            .collect::<Vec<_>>();
+
+        layer_ids
+            .iter()
+            .map(|layer_id| self.compose_layer(layer_id))
             .collect()
     }
 
@@ -169,11 +175,7 @@ impl<'a> Composer<'a> {
                         Some(source.relation().to_string()),
                         source.column().to_string(),
                     );
-                    merge_domain(
-                        &mut domain_map,
-                        column,
-                        column_domain.domain().clone(),
-                    );
+                    merge_domain(&mut domain_map, column, column_domain.domain().clone());
                 }
                 Err(diagnostic) => diagnostics.push(diagnostic),
             }
@@ -447,19 +449,17 @@ impl<'a> Composer<'a> {
                         };
                         Ok(column.lineage().to_vec())
                     }
-                    ComposedSemantics::Unresolved(_) => Err(
-                        CompositionDiagnostic::layer_warning(
-                            consumer.input_id(),
-                            consumer.id(),
-                            "upstream_lineage_unresolved",
-                            format!(
-                                "source column '{}.{}' belongs to an unresolved producer",
-                                source.relation(),
-                                source.column()
-                            ),
-                            Some(source.relation().to_string()),
+                    ComposedSemantics::Unresolved(_) => Err(CompositionDiagnostic::layer_warning(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "upstream_lineage_unresolved",
+                        format!(
+                            "source column '{}.{}' belongs to an unresolved producer",
+                            source.relation(),
+                            source.column()
                         ),
-                    ),
+                        Some(source.relation().to_string()),
+                    )),
                 }
             }
             RelationResolution::Missing
@@ -562,16 +562,9 @@ fn graph_failure_diagnostics(
         .collect()
 }
 
-fn merge_column_domains(
-    target: &mut BTreeMap<ColumnRef, ValueDomain>,
-    domains: &[ColumnDomain],
-) {
+fn merge_column_domains(target: &mut BTreeMap<ColumnRef, ValueDomain>, domains: &[ColumnDomain]) {
     for domain in domains {
-        merge_domain(
-            target,
-            domain.column().clone(),
-            domain.domain().clone(),
-        );
+        merge_domain(target, domain.column().clone(), domain.domain().clone());
     }
 }
 
