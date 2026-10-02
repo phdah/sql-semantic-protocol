@@ -13,20 +13,22 @@ use serde_json::Number;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, DuplicateTreatment, Expr, Function, FunctionArg,
     FunctionArgExpr, FunctionArguments, GroupByExpr, Join as SqlJoin, JoinConstraint, JoinOperator,
-    Query as SqlQuery, Select, SelectItem, SetExpr, Statement as SqlStatement, TableFactor,
-    TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
+    Query as SqlQuery, Select, SelectItem, SetExpr, SetOperator as SqlSetOperator,
+    SetQuantifier as SqlSetQuantifier, Statement as SqlStatement, TableFactor, TableWithJoins,
+    UnaryOperator as SqlUnaryOperator, Value,
 };
 
 use crate::domain::derive_column_domains;
 use crate::parser::ParsedSql;
 use crate::protocol::{
-    BetweenPredicate, BinaryExpression, BinaryOperator, ColumnExpression, ComparisonOperator,
-    ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity, Expression,
-    FunctionExpression, InPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind,
+    BetweenPredicate, BinaryExpression, BinaryOperator, ColumnDomain, ColumnExpression, ColumnRef,
+    ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
+    Expression, FunctionExpression, InPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind,
     LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate,
     Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
-    RelationRef, SourceRelation, UnaryExpression, UnaryOperator, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement,
+    RelationRef, SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation,
+    UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ValueDomain,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -92,10 +94,13 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         &mut derived_index,
     );
 
+    let set_operation = analyze_set_operation(query.body.as_ref());
     let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics);
 
     let predicates = match query.body.as_ref() {
         SetExpr::Select(select) => analyze_select(select, &mut diagnostics),
+        SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
+        SetExpr::Query(query) => analyze_query_predicates(query, &mut diagnostics),
         _ => {
             diagnostics.push(warning(
                 "unsupported_query_body",
@@ -106,8 +111,17 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         }
     };
 
-    let column_domains = derive_column_domains(&predicates, &relation_analysis.sources);
+    let column_domains = match query.body.as_ref() {
+        SetExpr::Select(_) => derive_column_domains(&predicates, &relation_analysis.sources),
+        SetExpr::SetOperation { .. } | SetExpr::Query(_) => {
+            analyze_query_column_domains(query, &BTreeSet::new())
+        }
+        _ => Vec::new(),
+    };
 
+    if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
+        inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
+    }
     inspect_query_features(query, &mut diagnostics);
     sort_diagnostics(&mut diagnostics);
 
@@ -120,12 +134,25 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         output,
         diagnostics,
     )
+    .with_set_operation(set_operation)
     .with_produced_relation(produced_relation)
+}
+
+fn analyze_query_predicates(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
+    match query.body.as_ref() {
+        SetExpr::Select(select) => analyze_select_predicates(select, diagnostics),
+        SetExpr::Query(query) => analyze_query_predicates(query, diagnostics),
+        SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
+        _ => Predicates::new(None, None, None),
+    }
 }
 
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     inspect_select_features(select, diagnostics);
+    analyze_select_predicates(select, diagnostics)
+}
 
+fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     Predicates::new(
         select
             .selection
@@ -140,6 +167,55 @@ fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predica
             .as_ref()
             .map(|expression| analyze_predicate(expression, diagnostics)),
     )
+}
+
+fn analyze_set_operation(expression: &SetExpr) -> Option<SetOperation> {
+    match expression {
+        SetExpr::SetOperation {
+            left,
+            op,
+            set_quantifier,
+            right,
+        } => Some(SetOperation::new(
+            analyze_set_operator(*op),
+            analyze_set_quantifier(*set_quantifier),
+            analyze_set_operand(left),
+            analyze_set_operand(right),
+        )),
+        SetExpr::Query(query) => analyze_set_operation(query.body.as_ref()),
+        SetExpr::Select(_)
+        | SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Merge(_)
+        | SetExpr::Table(_) => None,
+    }
+}
+
+fn analyze_set_operand(expression: &SetExpr) -> SetOperand {
+    match analyze_set_operation(expression) {
+        Some(operation) => SetOperand::Operation(Box::new(operation)),
+        None => SetOperand::Query,
+    }
+}
+
+fn analyze_set_operator(operator: SqlSetOperator) -> SetOperator {
+    match operator {
+        SqlSetOperator::Union => SetOperator::Union,
+        SqlSetOperator::Except => SetOperator::Except,
+        SqlSetOperator::Intersect => SetOperator::Intersect,
+    }
+}
+
+fn analyze_set_quantifier(quantifier: SqlSetQuantifier) -> SetQuantifier {
+    match quantifier {
+        SqlSetQuantifier::All => SetQuantifier::All,
+        SqlSetQuantifier::Distinct | SqlSetQuantifier::None => SetQuantifier::Distinct,
+        SqlSetQuantifier::ByName => SetQuantifier::ByName,
+        SqlSetQuantifier::AllByName => SetQuantifier::AllByName,
+        SqlSetQuantifier::DistinctByName => SetQuantifier::DistinctByName,
+    }
 }
 
 #[derive(Default)]
