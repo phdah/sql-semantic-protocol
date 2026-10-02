@@ -18,37 +18,21 @@ use crate::protocol::{
     SourceRelation, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
     ValueDomain, ValueRange,
 };
-use crate::scope::{layers_for_scope, OutputScope};
 
 /// Serialize single-input analysis using the one active protocol document shape.
-///
-/// This compatibility entry point exposes all transformation layers.
 pub fn to_json(protocol: &Protocol) -> String {
-    to_json_with_scope(protocol, OutputScope::AllLayers)
-}
-
-/// Serialize single-input analysis with the selected output scope.
-pub fn to_json_with_scope(protocol: &Protocol, scope: OutputScope) -> String {
-    bundle_to_value(&AnalysisBundle::from_protocol(protocol), scope).to_string()
+    bundle_to_value(&AnalysisBundle::from_protocol(protocol)).to_string()
 }
 
 /// Serialize an analysis bundle using the one active protocol document shape.
 ///
-/// This compatibility entry point exposes all transformation layers.
+/// Local transformation layers, transitive composed semantics, and the relation dependency graph
+/// are serialized without exposing parser-specific values.
 pub fn to_bundle_json(bundle: &AnalysisBundle) -> String {
-    to_bundle_json_with_scope(bundle, OutputScope::AllLayers)
+    bundle_to_value(bundle).to_string()
 }
 
-/// Serialize an analysis bundle with the selected output scope.
-///
-/// Analysis is never filtered. Final scope only removes non-terminal transformation layers from
-/// the rendered \`layers\` array; inputs, graph relationships, and composed terminal semantics
-/// remain complete.
-pub fn to_bundle_json_with_scope(bundle: &AnalysisBundle, scope: OutputScope) -> String {
-    bundle_to_value(bundle, scope).to_string()
-}
-
-fn bundle_to_value(bundle: &AnalysisBundle, scope: OutputScope) -> Value {
+fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
     let inputs = bundle
         .inputs()
         .iter()
@@ -78,8 +62,9 @@ fn bundle_to_value(bundle: &AnalysisBundle, scope: OutputScope) -> Value {
         })
         .collect::<Vec<_>>();
 
-    let layers = layers_for_scope(bundle, scope)
-        .into_iter()
+    let layers = bundle
+        .layers()
+        .iter()
         .map(transformation_layer_to_value)
         .collect::<Vec<_>>();
 
