@@ -47,6 +47,17 @@ Unrelated SQL inputs remain separate connected components in the same protocol d
 
 The protocol does not define a single global "final query". This allows one invocation to describe multiple independent transformation chains and multiple terminal datasets.
 
+## Output scopes
+
+Output scope is a rendering option, not an analysis option. Producers must build the complete bundle, dependency graph, and composed semantics before applying a scope.
+
+- `all` renders every transformation layer and is the compatibility default.
+- `final` renders only layers whose produced dataset appears in a component's `final_outcomes`.
+
+The `inputs` and `graph` sections remain complete under both scopes. A final-scope document can therefore contain graph references to intermediate layer IDs whose full layer result is intentionally omitted from `layers`. Terminal layers keep their already-composed physical dependencies, value domains, and transitive column lineage. Standalone anonymous query results are terminal outcomes and remain visible in final scope.
+
+When a bundle contains one transformation layer, final and all-layer rendering are identical.
+
 ## OpenLineage interoperability
 
 The SQL Semantic Protocol is the source of truth for semantic composition. OpenLineage is an export target, not part of the core model.
