@@ -67,7 +67,10 @@ fn multi_input_json_is_one_deterministic_protocol_document() {
     assert_eq!(json["graph"]["edges"][0]["resolution"], "external");
     assert_eq!(json["graph"]["edges"][1]["relation"], "beta");
     assert_eq!(json["graph"]["edges"][1]["resolution"], "external");
-    assert_eq!(json["graph"]["components"].as_array().map(Vec::len), Some(2));
+    assert_eq!(
+        json["graph"]["components"].as_array().map(Vec::len),
+        Some(2)
+    );
 }
 
 #[test]
