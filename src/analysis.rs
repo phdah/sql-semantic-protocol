@@ -203,7 +203,7 @@ fn analyze_set_operand(expression: &SetExpr) -> SetOperand {
 fn analyze_set_operator(operator: SqlSetOperator) -> SetOperator {
     match operator {
         SqlSetOperator::Union => SetOperator::Union,
-        SqlSetOperator::Except => SetOperator::Except,
+        SqlSetOperator::Except | SqlSetOperator::Minus => SetOperator::Except,
         SqlSetOperator::Intersect => SetOperator::Intersect,
     }
 }
