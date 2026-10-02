@@ -26,8 +26,8 @@ pub(crate) fn layers_for_scope(
                 .graph()
                 .components()
                 .iter()
-                .flat_map(|component| component.final_outcomes())
-                .collect::<BTreeSet<&DatasetRef>>();
+                .flat_map(|component| component.final_outcomes().iter().cloned())
+                .collect::<BTreeSet<DatasetRef>>();
 
             bundle
                 .layers()
