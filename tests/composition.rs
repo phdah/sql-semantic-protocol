@@ -1,25 +1,11 @@
+mod common;
+
+use common::DIALECTS;
 use sql_semantic_protocol::{
     analyze_inputs, AnalysisBundle, ComposedSemantics, CompositionFailureReason, DatasetRef,
     LiteralValue, ResolvedComposedSemantics, SqlInput, TransformationLayer, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
-
-const DIALECTS: &[&str] = &[
-    "generic",
-    "mysql",
-    "postgresql",
-    "postgres",
-    "hive",
-    "sqlite",
-    "snowflake",
-    "redshift",
-    "mssql",
-    "clickhouse",
-    "bigquery",
-    "ansi",
-    "duckdb",
-    "databricks",
-];
 
 fn layer_for_relation<'a>(bundle: &'a AnalysisBundle, relation: &str) -> &'a TransformationLayer {
     bundle

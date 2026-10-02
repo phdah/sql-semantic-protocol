@@ -34,8 +34,12 @@ supported AST shape. Never gate core semantic behavior on a dialect name. Dialec
 behavior is acceptable only when sqlparser exposes materially different AST semantics that
 cannot be handled generically; isolate and name that behavior explicitly. Tests for new semantic
 features must exercise every dialect name exposed by the project for shared syntax and for
-relevant syntax variants. If sqlparser accepts a variant for a dialect, semantic behavior must be
-identical at the protocol level unless the dialect genuinely changes its meaning. If sqlparser
+relevant syntax variants. Runtime dialect support must delegate to
+`sqlparser::dialect::dialect_from_str`; do not maintain a production dialect whitelist. When
+integration tests need to enumerate dialect names, use the single shared matrix in
+`tests/common/mod.rs`; never duplicate dialect-name lists across test files. If sqlparser accepts
+a variant for a dialect, semantic behavior must be identical at the protocol level unless the
+dialect genuinely changes its meaning. If sqlparser
 rejects that syntax for a dialect, tests should make that parser-boundary limitation explicit
 rather than silently omitting the dialect. Add focused dialect-specific fixtures only for deeper
 coverage of materially different syntax or AST variants.

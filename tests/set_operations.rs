@@ -1,25 +1,11 @@
+mod common;
+
+use common::DIALECTS;
 use sql_semantic_protocol::{
     analyze_sql, to_json, DiagnosticArea, Expression, Protocol, ProtocolStatement, QueryStatement,
     SetOperand, SetOperator, SetQuantifier, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
-
-const DIALECTS: &[&str] = &[
-    "generic",
-    "mysql",
-    "postgresql",
-    "postgres",
-    "hive",
-    "sqlite",
-    "snowflake",
-    "redshift",
-    "mssql",
-    "clickhouse",
-    "bigquery",
-    "ansi",
-    "duckdb",
-    "databricks",
-];
 
 fn first_query(protocol: &Protocol) -> &QueryStatement {
     match protocol.statements().first() {
