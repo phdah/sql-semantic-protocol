@@ -158,8 +158,12 @@ fn analyze_query_predicates_with_outer_scope(
     match query.body.as_ref() {
         SetExpr::Select(select) => {
             let mut scope_diagnostics = Vec::new();
-            let scope =
-                build_output_scope(select, &BTreeMap::new(), outer_scope, &mut scope_diagnostics);
+            let scope = build_output_scope(
+                select,
+                &BTreeMap::new(),
+                outer_scope,
+                &mut scope_diagnostics,
+            );
             analyze_select_predicates_with_scope(select, &scope, diagnostics)
         }
         SetExpr::Query(query) => {
