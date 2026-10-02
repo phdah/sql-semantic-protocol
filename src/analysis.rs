@@ -795,30 +795,7 @@ fn analyze_join(
         ));
     }
 
-    let (kind, constraint, exact_kind) = match &join.join_operator {
-        JoinOperator::Join(constraint) | JoinOperator::Inner(constraint) => {
-            (JoinKind::Inner, Some(constraint), true)
-        }
-        JoinOperator::Left(constraint) | JoinOperator::LeftOuter(constraint) => {
-            (JoinKind::Left, Some(constraint), true)
-        }
-        JoinOperator::Right(constraint) | JoinOperator::RightOuter(constraint) => {
-            (JoinKind::Right, Some(constraint), true)
-        }
-        JoinOperator::FullOuter(constraint) => (JoinKind::Full, Some(constraint), true),
-        JoinOperator::CrossJoin => (JoinKind::Cross, None, true),
-        JoinOperator::Semi(constraint) | JoinOperator::LeftSemi(constraint) => {
-            (JoinKind::LeftSemi, Some(constraint), true)
-        }
-        JoinOperator::RightSemi(constraint) => (JoinKind::RightSemi, Some(constraint), true),
-        JoinOperator::Anti(constraint) | JoinOperator::LeftAnti(constraint) => {
-            (JoinKind::LeftAnti, Some(constraint), true)
-        }
-        JoinOperator::RightAnti(constraint) => (JoinKind::RightAnti, Some(constraint), true),
-        JoinOperator::StraightJoin(constraint) => (JoinKind::Unknown, Some(constraint), false),
-        JoinOperator::AsOf { constraint, .. } => (JoinKind::Unknown, Some(constraint), false),
-        JoinOperator::CrossApply | JoinOperator::OuterApply => (JoinKind::Unknown, None, false),
-    };
+    let (kind, constraint, exact_kind) = analyze_join_operator(&join.join_operator);
 
     if !exact_kind {
         diagnostics.push(warning(
@@ -842,6 +819,35 @@ fn analyze_join(
         .and_then(|constraint| analyze_join_constraint(constraint, left, right, diagnostics));
 
     ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
+}
+
+fn analyze_join_operator(
+    operator: &JoinOperator,
+) -> (JoinKind, Option<&JoinConstraint>, bool) {
+    match operator {
+        JoinOperator::Join(constraint) | JoinOperator::Inner(constraint) => {
+            (JoinKind::Inner, Some(constraint), true)
+        }
+        JoinOperator::Left(constraint) | JoinOperator::LeftOuter(constraint) => {
+            (JoinKind::Left, Some(constraint), true)
+        }
+        JoinOperator::Right(constraint) | JoinOperator::RightOuter(constraint) => {
+            (JoinKind::Right, Some(constraint), true)
+        }
+        JoinOperator::FullOuter(constraint) => (JoinKind::Full, Some(constraint), true),
+        JoinOperator::CrossJoin => (JoinKind::Cross, None, true),
+        JoinOperator::Semi(constraint) | JoinOperator::LeftSemi(constraint) => {
+            (JoinKind::LeftSemi, Some(constraint), true)
+        }
+        JoinOperator::RightSemi(constraint) => (JoinKind::RightSemi, Some(constraint), true),
+        JoinOperator::Anti(constraint) | JoinOperator::LeftAnti(constraint) => {
+            (JoinKind::LeftAnti, Some(constraint), true)
+        }
+        JoinOperator::RightAnti(constraint) => (JoinKind::RightAnti, Some(constraint), true),
+        JoinOperator::StraightJoin(constraint) => (JoinKind::Unknown, Some(constraint), false),
+        JoinOperator::AsOf { constraint, .. } => (JoinKind::Unknown, Some(constraint), false),
+        JoinOperator::CrossApply | JoinOperator::OuterApply => (JoinKind::Unknown, None, false),
+    }
 }
 
 fn analyze_join_constraint(
@@ -2411,7 +2417,9 @@ fn collect_select_correlations(
 
     for source in &select.from {
         for join in &source.joins {
-            if let JoinConstraint::On(expression) = join_constraint(&join.join_operator) {
+            if let (_, Some(JoinConstraint::On(expression)), _) =
+                analyze_join_operator(&join.join_operator)
+            {
                 collect_expression_correlations(
                     expression,
                     outer_scope,
@@ -2419,30 +2427,6 @@ fn collect_select_correlations(
                     correlations,
                 );
             }
-        }
-    }
-}
-
-fn join_constraint(operator: &JoinOperator) -> &JoinConstraint {
-    match operator {
-        JoinOperator::Join(constraint)
-        | JoinOperator::Inner(constraint)
-        | JoinOperator::Left(constraint)
-        | JoinOperator::LeftOuter(constraint)
-        | JoinOperator::Right(constraint)
-        | JoinOperator::RightOuter(constraint)
-        | JoinOperator::FullOuter(constraint)
-        | JoinOperator::Semi(constraint)
-        | JoinOperator::LeftSemi(constraint)
-        | JoinOperator::RightSemi(constraint)
-        | JoinOperator::Anti(constraint)
-        | JoinOperator::LeftAnti(constraint)
-        | JoinOperator::RightAnti(constraint)
-        | JoinOperator::StraightJoin(constraint) => constraint,
-        JoinOperator::AsOf { constraint, .. } => constraint,
-        JoinOperator::CrossJoin | JoinOperator::CrossApply | JoinOperator::OuterApply => {
-            static NONE: JoinConstraint = JoinConstraint::None;
-            &NONE
         }
     }
 }
