@@ -529,6 +529,8 @@ pub enum Expression {
     Literal(LiteralExpression),
     /// A function call whose argument semantics are understood.
     Function(FunctionExpression),
+    /// A window function call with a resolved parser-independent window specification.
+    WindowFunction(WindowFunctionExpression),
     /// A supported unary operation.
     Unary(UnaryExpression),
     /// A supported binary operation.
@@ -890,6 +892,184 @@ impl FunctionExpression {
     pub fn distinct(&self) -> bool {
         self.distinct
     }
+}
+
+/// A normalized window function call.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WindowFunctionExpression {
+    function: FunctionExpression,
+    window: WindowSpecification,
+}
+
+impl WindowFunctionExpression {
+    pub(crate) fn new(function: FunctionExpression, window: WindowSpecification) -> Self {
+        Self { function, window }
+    }
+
+    /// Return the normalized function call.
+    pub fn function(&self) -> &FunctionExpression {
+        &self.function
+    }
+
+    /// Return the resolved window specification.
+    pub fn window(&self) -> &WindowSpecification {
+        &self.window
+    }
+}
+
+/// A resolved parser-independent window specification.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WindowSpecification {
+    name: Option<String>,
+    partition_by: Vec<Expression>,
+    order_by: Vec<WindowOrderExpression>,
+    frame: Option<WindowFrame>,
+}
+
+impl WindowSpecification {
+    pub(crate) fn new(
+        name: Option<String>,
+        partition_by: Vec<Expression>,
+        order_by: Vec<WindowOrderExpression>,
+        frame: Option<WindowFrame>,
+    ) -> Self {
+        Self {
+            name,
+            partition_by,
+            order_by,
+            frame,
+        }
+    }
+
+    /// Return the referenced named window, if the function used one.
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
+
+    /// Return normalized PARTITION BY expressions in SQL order.
+    pub fn partition_by(&self) -> &[Expression] {
+        &self.partition_by
+    }
+
+    /// Return normalized ORDER BY expressions in SQL order.
+    pub fn order_by(&self) -> &[WindowOrderExpression] {
+        &self.order_by
+    }
+
+    /// Return the explicit frame, if one was specified.
+    pub fn frame(&self) -> Option<&WindowFrame> {
+        self.frame.as_ref()
+    }
+}
+
+/// One expression in a window ORDER BY clause.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WindowOrderExpression {
+    expression: Expression,
+    ascending: Option<bool>,
+    nulls_first: Option<bool>,
+}
+
+impl WindowOrderExpression {
+    pub(crate) fn new(
+        expression: Expression,
+        ascending: Option<bool>,
+        nulls_first: Option<bool>,
+    ) -> Self {
+        Self {
+            expression,
+            ascending,
+            nulls_first,
+        }
+    }
+
+    /// Return the ordering expression.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Return explicit ascending or descending ordering, if specified.
+    pub fn ascending(&self) -> Option<bool> {
+        self.ascending
+    }
+
+    /// Return explicit NULLS FIRST or NULLS LAST ordering, if specified.
+    pub fn nulls_first(&self) -> Option<bool> {
+        self.nulls_first
+    }
+}
+
+/// Units used by an explicit window frame.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WindowFrameUnits {
+    /// ROWS frame semantics.
+    Rows,
+    /// RANGE frame semantics.
+    Range,
+    /// GROUPS frame semantics.
+    Groups,
+}
+
+impl WindowFrameUnits {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Rows => "rows",
+            Self::Range => "range",
+            Self::Groups => "groups",
+        }
+    }
+}
+
+/// One explicit window frame.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WindowFrame {
+    units: WindowFrameUnits,
+    start_bound: WindowFrameBound,
+    end_bound: WindowFrameBound,
+}
+
+impl WindowFrame {
+    pub(crate) fn new(
+        units: WindowFrameUnits,
+        start_bound: WindowFrameBound,
+        end_bound: WindowFrameBound,
+    ) -> Self {
+        Self {
+            units,
+            start_bound,
+            end_bound,
+        }
+    }
+
+    /// Return the frame units.
+    pub fn units(&self) -> WindowFrameUnits {
+        self.units
+    }
+
+    /// Return the starting frame bound.
+    pub fn start_bound(&self) -> &WindowFrameBound {
+        &self.start_bound
+    }
+
+    /// Return the ending frame bound.
+    pub fn end_bound(&self) -> &WindowFrameBound {
+        &self.end_bound
+    }
+}
+
+/// One normalized window-frame boundary.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WindowFrameBound {
+    /// CURRENT ROW.
+    CurrentRow,
+    /// UNBOUNDED PRECEDING.
+    UnboundedPreceding,
+    /// A bounded PRECEDING offset.
+    Preceding(Box<Expression>),
+    /// UNBOUNDED FOLLOWING.
+    UnboundedFollowing,
+    /// A bounded FOLLOWING offset.
+    Following(Box<Expression>),
 }
 
 /// A normalized unary operation.
