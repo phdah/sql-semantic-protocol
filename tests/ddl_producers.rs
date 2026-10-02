@@ -2,6 +2,7 @@ use sql_semantic_protocol::{
     analyze_inputs, to_bundle_json, DatasetRef, ProtocolStatement, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
+use sqlparser::parser::Parser;
 
 const DIALECTS: &[&str] = &[
     "generic",
@@ -62,6 +63,107 @@ fn query_backed_ddl_is_supported_across_all_exposed_dialects() {
                 Some(expected_relation),
                 "dialect {dialect_name} should preserve the produced relation for {sql}"
             );
+        }
+    }
+}
+
+#[test]
+fn ddl_variants_are_checked_across_all_exposed_dialects() {
+    const VARIANTS: &[(&str, &str, &str)] = &[
+        (
+            "create or replace table",
+            "CREATE OR REPLACE TABLE target_table AS SELECT id FROM source_table",
+            "target_table",
+        ),
+        (
+            "temporary table",
+            "CREATE TEMPORARY TABLE target_table AS SELECT id FROM source_table",
+            "target_table",
+        ),
+        (
+            "qualified table",
+            "CREATE TABLE analytics.target_table AS SELECT id FROM source_table",
+            "analytics.target_table",
+        ),
+        (
+            "quoted table",
+            r#"CREATE TABLE "Target Table" AS SELECT id FROM source_table"#,
+            r#""Target Table""#,
+        ),
+        (
+            "create or replace view",
+            "CREATE OR REPLACE VIEW target_view AS SELECT id FROM source_table",
+            "target_view",
+        ),
+        (
+            "materialized view",
+            "CREATE MATERIALIZED VIEW target_view AS SELECT id FROM source_table",
+            "target_view",
+        ),
+        (
+            "qualified view",
+            "CREATE VIEW analytics.target_view AS SELECT id FROM source_table",
+            "analytics.target_view",
+        ),
+        (
+            "quoted view",
+            r#"CREATE VIEW "Target View" AS SELECT id FROM source_table"#,
+            r#""Target View""#,
+        ),
+    ];
+
+    for dialect_name in DIALECTS {
+        let dialect =
+            dialect_from_str(dialect_name).expect("documented dialect should be recognized");
+
+        for (variant, sql, expected_relation) in VARIANTS {
+            match Parser::parse_sql(dialect.as_ref(), sql) {
+                Ok(_) => {
+                    let bundle =
+                        analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref())
+                            .unwrap_or_else(|error| {
+                                panic!(
+                                    "dialect {dialect_name} parses {variant}, but semantic analysis failed for {sql}: {error}"
+                                )
+                            });
+
+                    assert_eq!(
+                        bundle.layers().len(),
+                        1,
+                        "dialect {dialect_name} should produce one layer for parsed {variant}"
+                    );
+                    assert!(
+                        matches!(
+                            bundle.layers()[0].produces(),
+                            [DatasetRef::Relation { name }] if name == expected_relation
+                        ),
+                        "dialect {dialect_name} produced the wrong relation for parsed {variant}: {sql}"
+                    );
+
+                    let ProtocolStatement::Query(query) = &bundle.inputs()[0].statements()[0]
+                    else {
+                        panic!(
+                            "dialect {dialect_name} should expose query semantics for parsed {variant}: {sql}"
+                        );
+                    };
+                    assert_eq!(
+                        query.produced_relation(),
+                        Some(*expected_relation),
+                        "dialect {dialect_name} should preserve relation identity for parsed {variant}"
+                    );
+                }
+                Err(parse_error) => {
+                    let analysis = analyze_inputs(
+                        &[SqlInput::inline(sql)],
+                        dialect_name,
+                        dialect.as_ref(),
+                    );
+                    assert!(
+                        analysis.is_err(),
+                        "dialect {dialect_name} parser rejects {variant}, but analysis unexpectedly accepted it: {parse_error}"
+                    );
+                }
+            }
         }
     }
 }
