@@ -74,7 +74,7 @@ pub struct QueryStatement {
     predicates: Box<Predicates>,
     column_domains: Vec<ColumnDomain>,
     output: Output,
-    aggregation: Option<Aggregation>,
+    aggregation: Option<Box<Aggregation>>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     diagnostics: Vec<Diagnostic>,
@@ -106,7 +106,7 @@ impl QueryStatement {
     }
 
     pub(crate) fn with_aggregation(mut self, aggregation: Option<Aggregation>) -> Self {
-        self.aggregation = aggregation;
+        self.aggregation = aggregation.map(Box::new);
         self
     }
 
@@ -152,7 +152,7 @@ impl QueryStatement {
 
     /// Return SELECT DISTINCT and GROUP BY semantics when they affect this query.
     pub fn aggregation(&self) -> Option<&Aggregation> {
-        self.aggregation.as_ref()
+        self.aggregation.as_deref()
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.
