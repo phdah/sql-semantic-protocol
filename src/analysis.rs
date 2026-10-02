@@ -1157,10 +1157,6 @@ fn comparison_operator(operator: &SqlBinaryOperator) -> Option<ComparisonOperato
     }
 }
 
-fn analyze_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Expression {
-    analyze_expression_with_windows(expression, &[], diagnostics)
-}
-
 fn analyze_expression_with_windows(
     expression: &Expr,
     named_windows: &[NamedWindowDefinition],
