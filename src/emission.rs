@@ -15,9 +15,8 @@ use crate::protocol::{
     ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate, IsNullPredicate,
     Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output,
     OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
-    SetOperand, SetOperation, SourceRelation, UnaryExpression, UnknownSemantic, UnsupportedSemantic,
-    UnsupportedStatement,
-    ValueDomain, ValueRange,
+    SetOperand, SetOperation, SourceRelation, UnaryExpression, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
