@@ -74,6 +74,7 @@ pub struct QueryStatement {
     predicates: Box<Predicates>,
     column_domains: Vec<ColumnDomain>,
     output: Output,
+    aggregation: Option<Aggregation>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     diagnostics: Vec<Diagnostic>,
@@ -97,10 +98,16 @@ impl QueryStatement {
             predicates: Box::new(predicates),
             column_domains,
             output,
+            aggregation: None,
             set_operation: None,
             produced_relation: None,
             diagnostics,
         }
+    }
+
+    pub(crate) fn with_aggregation(mut self, aggregation: Option<Aggregation>) -> Self {
+        self.aggregation = aggregation;
+        self
     }
 
     pub(crate) fn with_set_operation(mut self, set_operation: Option<SetOperation>) -> Self {
@@ -141,6 +148,11 @@ impl QueryStatement {
     /// Return final query output columns in SELECT-list order.
     pub fn output(&self) -> &Output {
         &self.output
+    }
+
+    /// Return SELECT DISTINCT and GROUP BY semantics when they affect this query.
+    pub fn aggregation(&self) -> Option<&Aggregation> {
+        self.aggregation.as_ref()
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.
@@ -265,6 +277,65 @@ impl SetOperation {
     pub fn right(&self) -> &SetOperand {
         &self.right
     }
+}
+
+/// SELECT-level duplicate elimination and grouping semantics.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Aggregation {
+    distinct: bool,
+    distinct_on: Vec<Expression>,
+    group_by: Option<GroupBy>,
+}
+
+impl Aggregation {
+    pub(crate) fn new(
+        distinct: bool,
+        distinct_on: Vec<Expression>,
+        group_by: Option<GroupBy>,
+    ) -> Self {
+        Self {
+            distinct,
+            distinct_on,
+            group_by,
+        }
+    }
+
+    /// Return whether the SELECT eliminates duplicate output rows.
+    pub fn distinct(&self) -> bool {
+        self.distinct
+    }
+
+    /// Return DISTINCT ON expressions in SQL order.
+    pub fn distinct_on(&self) -> &[Expression] {
+        &self.distinct_on
+    }
+
+    /// Return GROUP BY semantics when grouping is present.
+    pub fn group_by(&self) -> Option<&GroupBy> {
+        self.group_by.as_ref()
+    }
+}
+
+/// Normalized GROUP BY form.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GroupBy {
+    /// GROUP BY ALL.
+    All,
+    /// Explicit grouping expressions in SQL order.
+    Expressions(Vec<GroupingExpression>),
+}
+
+/// One parser-independent grouping element.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GroupingExpression {
+    /// An ordinary GROUP BY expression.
+    Expression(Expression),
+    /// GROUPING SETS, with one vector per set.
+    GroupingSets(Vec<Vec<Expression>>),
+    /// ROLLUP, preserving parser-provided grouping levels.
+    Rollup(Vec<Vec<Expression>>),
+    /// CUBE, preserving parser-provided grouping levels.
+    Cube(Vec<Vec<Expression>>),
 }
 
 /// Final columns produced by a query.
@@ -529,6 +600,8 @@ pub enum Expression {
     Literal(LiteralExpression),
     /// A function call whose argument semantics are understood.
     Function(FunctionExpression),
+    /// A grouped aggregate function call.
+    AggregateFunction(AggregateFunctionExpression),
     /// A window function call with a resolved parser-independent window specification.
     WindowFunction(WindowFunctionExpression),
     /// A supported unary operation.
@@ -859,6 +932,62 @@ fn literal_sort_key(literal: &LiteralExpression) -> (&'static str, String) {
         LiteralValue::Number(value) | LiteralValue::Text(value) => value.clone(),
     };
     (literal.literal_type().as_str(), value)
+}
+
+/// One argument to an aggregate function.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AggregateArgument {
+    /// A scalar expression argument.
+    Expression(Expression),
+    /// An unqualified wildcard such as COUNT(*).
+    Wildcard,
+    /// A qualified wildcard such as COUNT(table.*).
+    QualifiedWildcard(String),
+}
+
+/// A normalized grouped aggregate function call.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AggregateFunctionExpression {
+    name: String,
+    arguments: Vec<AggregateArgument>,
+    distinct: bool,
+    filter: Option<Box<Predicate>>,
+}
+
+impl AggregateFunctionExpression {
+    pub(crate) fn new(
+        name: String,
+        arguments: Vec<AggregateArgument>,
+        distinct: bool,
+        filter: Option<Predicate>,
+    ) -> Self {
+        Self {
+            name,
+            arguments,
+            distinct,
+            filter: filter.map(Box::new),
+        }
+    }
+
+    /// Return the aggregate function name.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Return normalized aggregate arguments in SQL order.
+    pub fn arguments(&self) -> &[AggregateArgument] {
+        &self.arguments
+    }
+
+    /// Return whether the aggregate argument list uses DISTINCT.
+    pub fn distinct(&self) -> bool {
+        self.distinct
+    }
+
+    /// Return the aggregate FILTER predicate, if present.
+    pub fn filter(&self) -> Option<&Predicate> {
+        self.filter.as_deref()
+    }
 }
 
 /// A normalized function call.

@@ -11,8 +11,9 @@ use std::{
 
 use serde_json::Number;
 use sqlparser::ast::{
-    BinaryOperator as SqlBinaryOperator, DuplicateTreatment, Expr, Function, FunctionArg,
-    FunctionArgExpr, FunctionArguments, GroupByExpr, Join as SqlJoin, JoinConstraint, JoinOperator,
+    BinaryOperator as SqlBinaryOperator, Distinct as SqlDistinct, DuplicateTreatment, Expr,
+    Function, FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
+    GroupByWithModifier as SqlGroupByWithModifier, Join as SqlJoin, JoinConstraint, JoinOperator,
     NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
     SetOperator as SqlSetOperator, SetQuantifier as SqlSetQuantifier, Statement as SqlStatement,
     TableFactor, TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
@@ -23,9 +24,11 @@ use sqlparser::ast::{
 use crate::domain::derive_column_domains;
 use crate::parser::ParsedSql;
 use crate::protocol::{
-    BetweenPredicate, BinaryExpression, BinaryOperator, ColumnDomain, ColumnExpression, ColumnRef,
+    AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
+    BinaryExpression, BinaryOperator, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
-    Expression, FunctionExpression, InPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind,
+    Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate, IsNullPredicate,
+    Join as ProtocolJoin, JoinKind,
     LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate,
     Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
     RelationRef, SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation,
@@ -98,6 +101,7 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
     );
 
     let set_operation = analyze_set_operation(query.body.as_ref());
+    let aggregation = analyze_query_aggregation(query, &mut diagnostics);
     let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics);
 
     let predicates = match query.body.as_ref() {
@@ -137,6 +141,7 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         output,
         diagnostics,
     )
+    .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_produced_relation(produced_relation)
 }
@@ -178,7 +183,7 @@ fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>)
         analyze_predicate_with_windows(
             expression,
             &select.named_window,
-            &empty_aliases,
+            &output_aliases,
             diagnostics,
         )
     });
@@ -192,6 +197,116 @@ fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>)
     });
 
     Predicates::new(where_predicate, having_predicate, qualify_predicate)
+}
+
+fn analyze_query_aggregation(
+    query: &SqlQuery,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<Aggregation> {
+    match query.body.as_ref() {
+        SetExpr::Select(select) => analyze_select_aggregation(select, diagnostics),
+        SetExpr::Query(query) => analyze_query_aggregation(query, diagnostics),
+        _ => None,
+    }
+}
+
+fn analyze_select_aggregation(
+    select: &Select,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<Aggregation> {
+    let (distinct, distinct_on) = match &select.distinct {
+        None | Some(SqlDistinct::All) => (false, Vec::new()),
+        Some(SqlDistinct::Distinct) => (true, Vec::new()),
+        Some(SqlDistinct::On(expressions)) => (
+            true,
+            expressions
+                .iter()
+                .map(|expression| {
+                    analyze_expression_with_windows(expression, &select.named_window, diagnostics)
+                })
+                .collect(),
+        ),
+    };
+
+    let group_by = match &select.group_by {
+        GroupByExpr::All(modifiers) => {
+            diagnose_group_by_modifiers(modifiers, diagnostics);
+            Some(GroupBy::All)
+        }
+        GroupByExpr::Expressions(expressions, modifiers) => {
+            diagnose_group_by_modifiers(modifiers, diagnostics);
+            if expressions.is_empty() {
+                None
+            } else {
+                Some(GroupBy::Expressions(
+                    expressions
+                        .iter()
+                        .map(|expression| {
+                            analyze_grouping_expression(expression, &select.named_window, diagnostics)
+                        })
+                        .collect(),
+                ))
+            }
+        }
+    };
+
+    if !distinct && group_by.is_none() {
+        None
+    } else {
+        Some(Aggregation::new(distinct, distinct_on, group_by))
+    }
+}
+
+fn analyze_grouping_expression(
+    expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> GroupingExpression {
+    match expression {
+        Expr::GroupingSets(sets) => {
+            GroupingExpression::GroupingSets(analyze_grouping_sets(sets, named_windows, diagnostics))
+        }
+        Expr::Rollup(sets) => {
+            GroupingExpression::Rollup(analyze_grouping_sets(sets, named_windows, diagnostics))
+        }
+        Expr::Cube(sets) => {
+            GroupingExpression::Cube(analyze_grouping_sets(sets, named_windows, diagnostics))
+        }
+        _ => GroupingExpression::Expression(analyze_expression_with_windows(
+            expression,
+            named_windows,
+            diagnostics,
+        )),
+    }
+}
+
+fn analyze_grouping_sets(
+    sets: &[Vec<Expr>],
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<Vec<Expression>> {
+    sets.iter()
+        .map(|set| {
+            set.iter()
+                .map(|expression| {
+                    analyze_expression_with_windows(expression, named_windows, diagnostics)
+                })
+                .collect()
+        })
+        .collect()
+}
+
+fn diagnose_group_by_modifiers(
+    modifiers: &[SqlGroupByWithModifier],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for modifier in modifiers {
+        diagnostics.push(warning(
+            "unsupported_group_by_modifier",
+            DiagnosticArea::Other,
+            &format!("GROUP BY modifier {modifier} is not represented safely"),
+        ));
+    }
 }
 
 fn analyze_set_operation(expression: &SetExpr) -> Option<SetOperation> {
@@ -421,6 +536,44 @@ fn analyze_select_relations(
         }
     }
 
+    if let Some(SqlDistinct::On(expressions)) = &select.distinct {
+        for expression in expressions {
+            collect_expression_dependencies_with_windows(
+                expression,
+                &select.named_window,
+                local_relations,
+                diagnostics,
+                derived_index,
+                &mut analysis.dependencies,
+            );
+        }
+    }
+
+    if let GroupByExpr::Expressions(expressions, modifiers) = &select.group_by {
+        for expression in expressions {
+            collect_grouping_dependencies(
+                expression,
+                &select.named_window,
+                local_relations,
+                diagnostics,
+                derived_index,
+                &mut analysis.dependencies,
+            );
+        }
+        for modifier in modifiers {
+            if let SqlGroupByWithModifier::GroupingSets(expression) = modifier {
+                collect_grouping_dependencies(
+                    expression,
+                    &select.named_window,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    &mut analysis.dependencies,
+                );
+            }
+        }
+    }
+
     for expression in [
         select.selection.as_ref(),
         select.having.as_ref(),
@@ -440,6 +593,40 @@ fn analyze_select_relations(
     }
 
     analysis
+}
+
+fn collect_grouping_dependencies(
+    expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) {
+    match expression {
+        Expr::GroupingSets(sets) | Expr::Rollup(sets) | Expr::Cube(sets) => {
+            for set in sets {
+                for expression in set {
+                    collect_grouping_dependencies(
+                        expression,
+                        named_windows,
+                        local_relations,
+                        diagnostics,
+                        derived_index,
+                        dependencies,
+                    );
+                }
+            }
+        }
+        _ => collect_expression_dependencies_with_windows(
+            expression,
+            named_windows,
+            local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        ),
+    }
 }
 
 fn analyze_table_with_joins(
@@ -1330,69 +1517,49 @@ fn analyze_function(
     named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
+    if function.over.is_none() && is_aggregate_function(function) {
+        return analyze_aggregate_function(function, expression, named_windows, diagnostics);
+    }
+
     if function.uses_odbc_syntax
         || !matches!(&function.parameters, FunctionArguments::None)
         || function.filter.is_some()
         || function.null_treatment.is_some()
         || !function.within_group.is_empty()
     {
-        return unsupported_expression(
-            "function",
-            expression,
-            DiagnosticArea::Function,
-            diagnostics,
-        );
+        return unsupported_expression("function", expression, DiagnosticArea::Function, diagnostics);
     }
 
     let (arguments, distinct) = match &function.args {
         FunctionArguments::None => (Vec::new(), false),
         FunctionArguments::List(arguments) if arguments.clauses.is_empty() => {
-            let distinct = matches!(
-                arguments.duplicate_treatment,
-                Some(DuplicateTreatment::Distinct)
-            );
+            let distinct = matches!(arguments.duplicate_treatment, Some(DuplicateTreatment::Distinct));
             let mut normalized_arguments = Vec::with_capacity(arguments.args.len());
-
             for argument in &arguments.args {
                 match argument {
                     FunctionArg::Unnamed(FunctionArgExpr::Expr(argument)) => {
                         normalized_arguments.push(analyze_expression_with_windows(
-                            argument,
-                            named_windows,
-                            diagnostics,
+                            argument, named_windows, diagnostics,
                         ));
                     }
-                    _ => {
-                        return unsupported_expression(
-                            "function",
-                            expression,
-                            DiagnosticArea::Function,
-                            diagnostics,
-                        );
-                    }
+                    _ => return unsupported_expression(
+                        "function", expression, DiagnosticArea::Function, diagnostics,
+                    ),
                 }
             }
-
             (normalized_arguments, distinct)
         }
         FunctionArguments::List(_) | FunctionArguments::Subquery(_) => {
-            return unsupported_expression(
-                "function",
-                expression,
-                DiagnosticArea::Function,
-                diagnostics,
-            );
+            return unsupported_expression("function", expression, DiagnosticArea::Function, diagnostics);
         }
     };
 
     let function_expression =
         FunctionExpression::new(function.name.to_string(), arguments, distinct);
-
     match &function.over {
         Some(window) => match analyze_window_type(window, named_windows, diagnostics) {
             Some(window) => Expression::WindowFunction(WindowFunctionExpression::new(
-                function_expression,
-                window,
+                function_expression, window,
             )),
             None => Expression::Unsupported(UnsupportedSemantic::new(
                 "window_function".to_string(),
@@ -1401,6 +1568,80 @@ fn analyze_function(
         },
         None => Expression::Function(function_expression),
     }
+}
+
+fn analyze_aggregate_function(
+    function: &Function,
+    expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    if function.uses_odbc_syntax
+        || !matches!(&function.parameters, FunctionArguments::None)
+        || function.null_treatment.is_some()
+        || !function.within_group.is_empty()
+    {
+        return unsupported_expression(
+            "aggregate_function", expression, DiagnosticArea::Function, diagnostics,
+        );
+    }
+
+    let (arguments, distinct) = match &function.args {
+        FunctionArguments::None => (Vec::new(), false),
+        FunctionArguments::List(arguments) if arguments.clauses.is_empty() => {
+            let distinct = matches!(arguments.duplicate_treatment, Some(DuplicateTreatment::Distinct));
+            let mut normalized_arguments = Vec::with_capacity(arguments.args.len());
+            for argument in &arguments.args {
+                match argument {
+                    FunctionArg::Unnamed(FunctionArgExpr::Expr(argument)) => {
+                        normalized_arguments.push(AggregateArgument::Expression(
+                            analyze_expression_with_windows(argument, named_windows, diagnostics),
+                        ));
+                    }
+                    FunctionArg::Unnamed(FunctionArgExpr::Wildcard) => {
+                        normalized_arguments.push(AggregateArgument::Wildcard);
+                    }
+                    FunctionArg::Unnamed(FunctionArgExpr::QualifiedWildcard(qualifier)) => {
+                        normalized_arguments.push(AggregateArgument::QualifiedWildcard(qualifier.to_string()));
+                    }
+                    _ => return unsupported_expression(
+                        "aggregate_function", expression, DiagnosticArea::Function, diagnostics,
+                    ),
+                }
+            }
+            (normalized_arguments, distinct)
+        }
+        FunctionArguments::List(_) | FunctionArguments::Subquery(_) => {
+            return unsupported_expression(
+                "aggregate_function", expression, DiagnosticArea::Function, diagnostics,
+            );
+        }
+    };
+
+    let empty_aliases = BTreeMap::new();
+    let filter = function.filter.as_ref().map(|filter| {
+        analyze_predicate_with_windows(filter, named_windows, &empty_aliases, diagnostics)
+    });
+
+    Expression::AggregateFunction(AggregateFunctionExpression::new(
+        function.name.to_string(), arguments, distinct, filter,
+    ))
+}
+
+fn is_aggregate_function(function: &Function) -> bool {
+    let name = function.name.to_string();
+    let unqualified = name.rsplit('.').next().unwrap_or(name.as_str());
+    let normalized = unqualified
+        .trim_matches(|character| matches!(character, '"' | '\`' | '[' | ']'))
+        .to_ascii_uppercase();
+
+    matches!(
+        normalized.as_str(),
+        "ANY_VALUE" | "ARRAY_AGG" | "AVG" | "BIT_AND" | "BIT_OR" | "BIT_XOR"
+            | "BOOL_AND" | "BOOL_OR" | "CORR" | "COUNT" | "COVAR_POP" | "COVAR_SAMP"
+            | "EVERY" | "MAX" | "MIN" | "STDDEV" | "STDDEV_POP" | "STDDEV_SAMP"
+            | "STRING_AGG" | "SUM" | "VAR_POP" | "VAR_SAMP" | "VARIANCE"
+    )
 }
 
 fn analyze_window_type(
@@ -2342,13 +2583,6 @@ fn qualified_column_name(qualifier: Option<&str>, column: &str) -> String {
 }
 
 fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
-    if select.distinct.is_some() {
-        diagnostics.push(warning(
-            "unsupported_distinct",
-            DiagnosticArea::Output,
-            "DISTINCT semantics are not implemented yet",
-        ));
-    }
     if select.top.is_some() {
         diagnostics.push(warning(
             "unsupported_top",
@@ -2382,13 +2616,6 @@ fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
             "unsupported_prewhere",
             DiagnosticArea::Predicate,
             "PREWHERE semantics are not represented by protocol v0",
-        ));
-    }
-    if has_group_by(&select.group_by) {
-        diagnostics.push(warning(
-            "unsupported_group_by",
-            DiagnosticArea::Other,
-            "GROUP BY semantics are not implemented yet",
         ));
     }
     if !select.cluster_by.is_empty() {
@@ -2503,15 +2730,6 @@ fn inspect_query_features(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) {
             DiagnosticArea::Other,
             "pipe-operator semantics are not implemented yet",
         ));
-    }
-}
-
-fn has_group_by(group_by: &GroupByExpr) -> bool {
-    match group_by {
-        GroupByExpr::All(_) => true,
-        GroupByExpr::Expressions(expressions, modifiers) => {
-            !expressions.is_empty() || !modifiers.is_empty()
-        }
     }
 }
 
