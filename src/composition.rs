@@ -241,7 +241,7 @@ impl<'a> Composer<'a> {
         &self,
         consumer: &TransformationLayer,
         source: &LineageSource,
-    ) -> Result<LineageSource, CompositionDiagnostic> {
+    ) -> Result<LineageSource, Box<CompositionDiagnostic>> {
         let Some(edge) = self.edge_for_source(consumer.id(), source.relation()) else {
             return Err(composition_error(
                 consumer.input_id(),
