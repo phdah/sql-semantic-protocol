@@ -104,7 +104,7 @@
         "statements": {
           "type": "array",
           "items": {
-            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/statement"
+            "$ref": "#/$defs/statement"
           }
         }
       }
@@ -574,6 +574,163 @@
           }
         }
       }
+    },
+    "statement": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/queryStatement"
+        },
+        {
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/unsupportedStatement"
+        }
+      ]
+    },
+    "queryStatement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "sources",
+        "dependencies",
+        "joins",
+        "predicates",
+        "column_domains",
+        "output",
+        "diagnostics"
+      ],
+      "properties": {
+        "kind": {
+          "const": "query"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/sourceRelation"
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "joins": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/join"
+          }
+        },
+        "predicates": {
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/predicates"
+        },
+        "column_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
+        },
+        "output": {
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/output"
+        },
+        "set_operation": {
+          "$ref": "#/$defs/setOperation"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "setOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operator",
+        "quantifier",
+        "left",
+        "right"
+      ],
+      "properties": {
+        "operator": {
+          "enum": [
+            "union",
+            "intersect",
+            "except"
+          ]
+        },
+        "quantifier": {
+          "enum": [
+            "distinct",
+            "all",
+            "by_name",
+            "all_by_name",
+            "distinct_by_name"
+          ]
+        },
+        "left": {
+          "$ref": "#/$defs/setOperand"
+        },
+        "right": {
+          "$ref": "#/$defs/setOperand"
+        }
+      }
+    },
+    "setOperand": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "query"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "quantifier",
+            "left",
+            "right"
+          ],
+          "properties": {
+            "kind": {
+              "const": "set_operation"
+            },
+            "operator": {
+              "enum": [
+                "union",
+                "intersect",
+                "except"
+              ]
+            },
+            "quantifier": {
+              "enum": [
+                "distinct",
+                "all",
+                "by_name",
+                "all_by_name",
+                "distinct_by_name"
+              ]
+            },
+            "left": {
+              "$ref": "#/$defs/setOperand"
+            },
+            "right": {
+              "$ref": "#/$defs/setOperand"
+            }
+          }
+        }
+      ]
     }
   }
 }
