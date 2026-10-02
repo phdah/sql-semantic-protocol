@@ -487,7 +487,6 @@ impl<'a> Composer<'a> {
     }
 }
 
-
 fn composition_error(
     input_id: impl Into<String>,
     layer_id: impl Into<String>,
