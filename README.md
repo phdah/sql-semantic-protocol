@@ -34,7 +34,23 @@ The active contract is defined by [`schema/protocol-v0.2.schema.json`](schema/pr
 
 Version `0.1.0` files remain in the repository only as historical references. Current runtime code does not emit `0.1.0`.
 
-TASK-13 resolves transformation layers into a deterministic relation dependency graph. Consumed relations link to unique in-bundle producers, remain explicit external dependencies when no producer exists, and report ambiguity or cycles without guessing. Disconnected pipelines remain separate graph components with terminal outcomes. Transitive semantic composition across those linked layers remains pending for TASK-14.
+TASK-13 resolves transformation layers into a deterministic relation dependency graph. TASK-14 composes semantics through that graph: final outputs expose transitive physical lineage, value domains propagate through safe direct projections and renames, and ambiguous, cyclic, or non-invertible paths remain explicit instead of being guessed. Disconnected pipelines compose independently.
+
+## OpenLineage export
+
+The SQL Semantic Protocol remains the authoritative semantic representation. The library function `to_openlineage_json` maps resolved named layers to OpenLineage 2.0.2 DatasetEvents using the current Lineage Dataset Facet for dataset-level and field-level lineage. OpenLineage types do not appear in the core protocol model.
+
+The caller supplies one OpenLineage namespace and event timestamp:
+
+```rust
+let json = sql_semantic_protocol::to_openlineage_json(
+    &bundle,
+    "postgresql://warehouse",
+    "2026-10-02T07:00:00Z",
+)?;
+```
+
+Only semantics OpenLineage can represent are exported. Predicate trees, value domains, and other richer outcome semantics remain in the SQL Semantic Protocol. Anonymous outputs and unresolved layers are omitted rather than assigned invented dataset identity or lineage.
 
 ## Versioning
 
@@ -219,17 +235,51 @@ the protocol still uses the active `0.2.0` envelope even though there is only on
       ],
       "consumes": ["t"],
       "composed_semantics": {
-        "status": "unresolved",
-        "reason": "unsupported",
-        "diagnostics": [
+        "status": "resolved",
+        "dependencies": ["t"],
+        "column_domains": [
           {
-            "severity": "warning",
-            "code": "semantic_composition_pending",
-            "message": "cross-input semantic composition is not implemented yet",
-            "input_id": "input-0001",
-            "layer_id": "layer-0001"
+            "column": {
+              "relation": "t",
+              "name": "a"
+            },
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    },
+                    "inclusive": false
+                  },
+                  "upper": null
+                }
+              ]
+            }
           }
-        ]
+        ],
+        "output": {
+          "columns": [
+            {
+              "name": "b",
+              "expression": {
+                "kind": "column",
+                "relation": "t",
+                "name": "b"
+              },
+              "lineage": [
+                {
+                  "relation": "t",
+                  "column": "b"
+                }
+              ]
+            }
+          ]
+        },
+        "diagnostics": []
       }
     }
   ],
