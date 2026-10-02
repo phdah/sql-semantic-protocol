@@ -1,15 +1,18 @@
 //! Public library entry points for SQL Semantic Protocol.
 //!
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
-//! - analyze_inputs analyzes SQL input units and builds their deterministic relation dependency graph.
+//! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
+//! - to_openlineage_json exports representable dataset and field lineage as OpenLineage DatasetEvents.
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions and predicates plus explicit unknown and unsupported semantic values.
 
 mod analysis;
 mod bundle;
+mod composition;
 mod domain;
 mod emission;
+mod openlineage;
 mod parser;
 pub mod protocol;
 
@@ -19,11 +22,13 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_inputs, AnalysisBundle, AnalysisGraph, AnalyzedInput, CompositionDiagnostic,
-    DatasetRef, GraphComponent, GraphEdge, InputAnalysisError, RelationResolution, SqlInput,
-    SqlInputSource, TransformationLayer,
+    analyze_inputs, AnalysisBundle, AnalysisGraph, AnalyzedInput, ComposedSemantics,
+    CompositionDiagnostic, CompositionFailureReason, DatasetRef, GraphComponent, GraphEdge,
+    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
+    TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use emission::{to_bundle_json, to_json};
+pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
 pub use protocol::{
     BetweenPredicate, BinaryExpression, BinaryOperator, Bound, ColumnDomain, ColumnExpression,

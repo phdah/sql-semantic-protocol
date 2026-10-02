@@ -1,0 +1,609 @@
+//! Transitive semantic composition across linked transformation layers.
+//!
+//! Composition operates only on parser-independent protocol values and the deterministic relation
+//! graph. It follows proven producer links, resolves lineage back to physical leaves, and propagates
+//! value domains only through direct column identity transformations.
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use crate::bundle::{
+    AnalysisGraph, AnalyzedInput, ComposedSemantics, CompositionDiagnostic,
+    CompositionFailureReason, GraphEdge, RelationResolution, TransformationLayer,
+};
+use crate::domain::intersect_domains;
+use crate::protocol::{
+    ColumnDomain, ColumnRef, Expression, LineageSource, Output, OutputColumn, ProtocolStatement,
+    QueryStatement, ValueDomain,
+};
+
+pub(crate) fn compose_layers(
+    inputs: &[AnalyzedInput],
+    layers: &[TransformationLayer],
+    graph: &AnalysisGraph,
+) -> Vec<ComposedSemantics> {
+    Composer::new(inputs, layers, graph).compose_all()
+}
+
+struct Composer<'a> {
+    inputs: &'a [AnalyzedInput],
+    layers: &'a [TransformationLayer],
+    graph: &'a AnalysisGraph,
+    layer_indices: BTreeMap<String, usize>,
+    memo: BTreeMap<String, ComposedSemantics>,
+}
+
+impl<'a> Composer<'a> {
+    fn new(
+        inputs: &'a [AnalyzedInput],
+        layers: &'a [TransformationLayer],
+        graph: &'a AnalysisGraph,
+    ) -> Self {
+        let layer_indices = layers
+            .iter()
+            .enumerate()
+            .map(|(index, layer)| (layer.id().to_string(), index))
+            .collect();
+
+        Self {
+            inputs,
+            layers,
+            graph,
+            layer_indices,
+            memo: BTreeMap::new(),
+        }
+    }
+
+    fn compose_all(mut self) -> Vec<ComposedSemantics> {
+        let layer_ids = self
+            .layers
+            .iter()
+            .map(|layer| layer.id().to_string())
+            .collect::<Vec<_>>();
+
+        layer_ids
+            .iter()
+            .map(|layer_id| self.compose_layer(layer_id))
+            .collect()
+    }
+
+    fn compose_layer(&mut self, layer_id: &str) -> ComposedSemantics {
+        if let Some(composed) = self.memo.get(layer_id) {
+            return composed.clone();
+        }
+
+        let Some(layer) = self.layer_by_id(layer_id).cloned() else {
+            return unresolved_internal_layer(layer_id);
+        };
+        let Some(query) = self.query_for_layer(&layer).cloned() else {
+            let composed = ComposedSemantics::unresolved(
+                CompositionFailureReason::Unsupported,
+                vec![CompositionDiagnostic::layer_warning(
+                    layer.input_id(),
+                    layer.id(),
+                    "missing_layer_query",
+                    "transformation layer does not reference an analyzable query statement",
+                    None,
+                )],
+            );
+            self.memo.insert(layer_id.to_string(), composed.clone());
+            return composed;
+        };
+
+        let edges = self
+            .graph
+            .edges()
+            .iter()
+            .filter(|edge| edge.consumer_layer_id() == layer.id())
+            .cloned()
+            .collect::<Vec<_>>();
+
+        if let Some(reason) = graph_failure_reason(&edges) {
+            let diagnostics = graph_failure_diagnostics(&layer, &edges);
+            let composed = ComposedSemantics::unresolved(reason, diagnostics);
+            self.memo.insert(layer_id.to_string(), composed.clone());
+            return composed;
+        }
+
+        let mut dependencies = BTreeSet::<String>::new();
+        let mut domain_map = BTreeMap::<ColumnRef, ValueDomain>::new();
+        let mut diagnostics = Vec::<CompositionDiagnostic>::new();
+
+        for edge in &edges {
+            match edge.resolution() {
+                RelationResolution::External => {
+                    dependencies.insert(edge.relation().to_string());
+                }
+                RelationResolution::Resolved => {
+                    let Some(producer_id) = edge.producer_layer_ids().first() else {
+                        let composed = ComposedSemantics::unresolved(
+                            CompositionFailureReason::MissingProducer,
+                            vec![CompositionDiagnostic::layer_warning(
+                                layer.input_id(),
+                                layer.id(),
+                                "missing_relation_producer",
+                                format!(
+                                    "relation '{}' is marked resolved without a producer",
+                                    edge.relation()
+                                ),
+                                Some(edge.relation().to_string()),
+                            )],
+                        );
+                        self.memo.insert(layer_id.to_string(), composed.clone());
+                        return composed;
+                    };
+
+                    match self.compose_layer(producer_id) {
+                        ComposedSemantics::Resolved(upstream) => {
+                            dependencies.extend(upstream.dependencies().iter().cloned());
+                            merge_column_domains(&mut domain_map, upstream.column_domains());
+                        }
+                        ComposedSemantics::Unresolved(upstream) => {
+                            let mut upstream_diagnostics = upstream.diagnostics().to_vec();
+                            upstream_diagnostics.push(CompositionDiagnostic::layer_warning(
+                                layer.input_id(),
+                                layer.id(),
+                                "upstream_composition_unresolved",
+                                format!(
+                                    "relation '{}' depends on unresolved producer '{}'",
+                                    edge.relation(),
+                                    producer_id
+                                ),
+                                Some(edge.relation().to_string()),
+                            ));
+                            let composed = ComposedSemantics::unresolved(
+                                upstream.reason(),
+                                upstream_diagnostics,
+                            );
+                            self.memo.insert(layer_id.to_string(), composed.clone());
+                            return composed;
+                        }
+                    }
+                }
+                RelationResolution::Missing
+                | RelationResolution::Ambiguous
+                | RelationResolution::Cycle
+                | RelationResolution::Unsupported => {
+                    // These states are handled before upstream traversal.
+                }
+            }
+        }
+
+        for column_domain in query.column_domains() {
+            match self.resolve_column_identity(&layer, column_domain.column()) {
+                Ok(source) => {
+                    let column = ColumnRef::new(
+                        Some(source.relation().to_string()),
+                        source.column().to_string(),
+                    );
+                    merge_domain(&mut domain_map, column, column_domain.domain().clone());
+                }
+                Err(diagnostic) => diagnostics.push(*diagnostic),
+            }
+        }
+
+        let output = self.compose_output(&layer, &query, &mut diagnostics);
+        let column_domains = domain_map
+            .into_iter()
+            .map(|(column, domain)| ColumnDomain::new(column, domain))
+            .collect::<Vec<_>>();
+        let composed = ComposedSemantics::resolved(
+            dependencies.into_iter().collect(),
+            column_domains,
+            output,
+            diagnostics,
+        );
+        self.memo.insert(layer_id.to_string(), composed.clone());
+        composed
+    }
+
+    fn layer_by_id(&self, layer_id: &str) -> Option<&TransformationLayer> {
+        self.layer_indices
+            .get(layer_id)
+            .and_then(|index| self.layers.get(*index))
+    }
+
+    fn query_for_layer(&self, layer: &TransformationLayer) -> Option<&QueryStatement> {
+        let input = self
+            .inputs
+            .iter()
+            .find(|input| input.id() == layer.input_id())?;
+        match input.statements().get(layer.statement_index())? {
+            ProtocolStatement::Query(query) => Some(query),
+            ProtocolStatement::Unsupported(_) => None,
+        }
+    }
+
+    fn resolve_column_identity(
+        &self,
+        layer: &TransformationLayer,
+        column: &ColumnRef,
+    ) -> Result<LineageSource, Box<CompositionDiagnostic>> {
+        let Some(relation) = column.relation() else {
+            return Err(composition_error(
+                layer.input_id(),
+                layer.id(),
+                "unresolved_domain_column_relation",
+                format!(
+                    "column '{}' cannot be mapped to one source relation",
+                    column.name()
+                ),
+                None,
+            ));
+        };
+
+        self.resolve_source_identity(
+            layer,
+            &LineageSource::new(relation.to_string(), column.name().to_string()),
+        )
+    }
+
+    fn resolve_source_identity(
+        &self,
+        consumer: &TransformationLayer,
+        source: &LineageSource,
+    ) -> Result<LineageSource, Box<CompositionDiagnostic>> {
+        let Some(edge) = self.edge_for_source(consumer.id(), source.relation()) else {
+            return Err(composition_error(
+                consumer.input_id(),
+                consumer.id(),
+                "missing_lineage_edge",
+                format!(
+                    "source column '{}.{}' has no dependency edge",
+                    source.relation(),
+                    source.column()
+                ),
+                Some(source.relation().to_string()),
+            ));
+        };
+
+        match edge.resolution() {
+            RelationResolution::External => Ok(source.clone()),
+            RelationResolution::Resolved => {
+                let Some(producer_id) = edge.producer_layer_ids().first() else {
+                    return Err(composition_error(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "missing_relation_producer",
+                        format!(
+                            "source column '{}.{}' has no resolved producer",
+                            source.relation(),
+                            source.column()
+                        ),
+                        Some(source.relation().to_string()),
+                    ));
+                };
+                let Some(producer) = self.layer_by_id(producer_id) else {
+                    return Err(composition_error(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "missing_relation_producer",
+                        format!("producer layer '{}' does not exist", producer_id),
+                        Some(source.relation().to_string()),
+                    ));
+                };
+                let Some(query) = self.query_for_layer(producer) else {
+                    return Err(composition_error(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "missing_producer_query",
+                        format!("producer layer '{}' has no analyzable query", producer_id),
+                        Some(source.relation().to_string()),
+                    ));
+                };
+
+                let matches = query
+                    .output()
+                    .columns()
+                    .iter()
+                    .filter(|column| column.name() == source.column())
+                    .collect::<Vec<_>>();
+                let [column] = matches.as_slice() else {
+                    return Err(composition_error(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "unresolved_producer_column",
+                        format!(
+                            "producer '{}' does not expose one unambiguous column named '{}'",
+                            producer_id,
+                            source.column()
+                        ),
+                        Some(source.relation().to_string()),
+                    ));
+                };
+
+                if !matches!(column.expression(), Expression::Column(_)) {
+                    return Err(composition_error(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "non_invertible_column_transform",
+                        format!(
+                            "column '{}.{}' is produced by a non-identity expression",
+                            source.relation(),
+                            source.column()
+                        ),
+                        Some(source.relation().to_string()),
+                    ));
+                }
+
+                let [upstream] = column.lineage() else {
+                    return Err(composition_error(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "unresolved_column_identity",
+                        format!(
+                            "column '{}.{}' does not have exactly one identity source",
+                            source.relation(),
+                            source.column()
+                        ),
+                        Some(source.relation().to_string()),
+                    ));
+                };
+
+                self.resolve_source_identity(producer, upstream)
+            }
+            RelationResolution::Missing
+            | RelationResolution::Ambiguous
+            | RelationResolution::Cycle
+            | RelationResolution::Unsupported => Err(composition_error(
+                consumer.input_id(),
+                consumer.id(),
+                "unresolved_column_identity",
+                format!(
+                    "column '{}.{}' depends on relation resolution '{}'",
+                    source.relation(),
+                    source.column(),
+                    edge.resolution().as_str()
+                ),
+                Some(source.relation().to_string()),
+            )),
+        }
+    }
+
+    fn compose_output(
+        &mut self,
+        layer: &TransformationLayer,
+        query: &QueryStatement,
+        diagnostics: &mut Vec<CompositionDiagnostic>,
+    ) -> Output {
+        let mut columns = Vec::with_capacity(query.output().columns().len());
+
+        for column in query.output().columns() {
+            let mut lineage = BTreeSet::<LineageSource>::new();
+
+            for source in column.lineage() {
+                match self.expand_lineage_source(layer, source) {
+                    Ok(sources) => lineage.extend(sources),
+                    Err(diagnostic) => diagnostics.push(*diagnostic),
+                }
+            }
+
+            columns.push(OutputColumn::new(
+                column.name().to_string(),
+                column.expression().clone(),
+                lineage.into_iter().collect(),
+            ));
+        }
+
+        Output::new(columns)
+    }
+
+    fn expand_lineage_source(
+        &mut self,
+        consumer: &TransformationLayer,
+        source: &LineageSource,
+    ) -> Result<Vec<LineageSource>, Box<CompositionDiagnostic>> {
+        let Some(edge) = self
+            .edge_for_source(consumer.id(), source.relation())
+            .cloned()
+        else {
+            return Err(composition_error(
+                consumer.input_id(),
+                consumer.id(),
+                "missing_lineage_edge",
+                format!(
+                    "source column '{}.{}' has no dependency edge",
+                    source.relation(),
+                    source.column()
+                ),
+                Some(source.relation().to_string()),
+            ));
+        };
+
+        match edge.resolution() {
+            RelationResolution::External => Ok(vec![source.clone()]),
+            RelationResolution::Resolved => {
+                let Some(producer_id) = edge.producer_layer_ids().first() else {
+                    return Err(composition_error(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "missing_relation_producer",
+                        format!(
+                            "source column '{}.{}' has no resolved producer",
+                            source.relation(),
+                            source.column()
+                        ),
+                        Some(source.relation().to_string()),
+                    ));
+                };
+
+                match self.compose_layer(producer_id) {
+                    ComposedSemantics::Resolved(producer) => {
+                        let matches = producer
+                            .output()
+                            .columns()
+                            .iter()
+                            .filter(|column| column.name() == source.column())
+                            .collect::<Vec<_>>();
+                        let [column] = matches.as_slice() else {
+                            return Err(composition_error(
+                                consumer.input_id(),
+                                consumer.id(),
+                                "unresolved_producer_column",
+                                format!(
+                                    "producer '{}' does not expose one unambiguous column named '{}'",
+                                    producer_id,
+                                    source.column()
+                                ),
+                                Some(source.relation().to_string()),
+                            ));
+                        };
+                        Ok(column.lineage().to_vec())
+                    }
+                    ComposedSemantics::Unresolved(_) => Err(composition_error(
+                        consumer.input_id(),
+                        consumer.id(),
+                        "upstream_lineage_unresolved",
+                        format!(
+                            "source column '{}.{}' belongs to an unresolved producer",
+                            source.relation(),
+                            source.column()
+                        ),
+                        Some(source.relation().to_string()),
+                    )),
+                }
+            }
+            RelationResolution::Missing
+            | RelationResolution::Ambiguous
+            | RelationResolution::Cycle
+            | RelationResolution::Unsupported => Err(composition_error(
+                consumer.input_id(),
+                consumer.id(),
+                "unresolved_lineage_relation",
+                format!(
+                    "source column '{}.{}' depends on relation resolution '{}'",
+                    source.relation(),
+                    source.column(),
+                    edge.resolution().as_str()
+                ),
+                Some(source.relation().to_string()),
+            )),
+        }
+    }
+
+    fn edge_for_source(&self, consumer_layer_id: &str, relation: &str) -> Option<&GraphEdge> {
+        self.graph.edges().iter().find(|edge| {
+            edge.consumer_layer_id() == consumer_layer_id && edge.relation() == relation
+        })
+    }
+}
+
+fn composition_error(
+    input_id: impl Into<String>,
+    layer_id: impl Into<String>,
+    code: impl Into<String>,
+    message: impl Into<String>,
+    relation: Option<String>,
+) -> Box<CompositionDiagnostic> {
+    Box::new(CompositionDiagnostic::layer_warning(
+        input_id, layer_id, code, message, relation,
+    ))
+}
+
+fn graph_failure_reason(edges: &[GraphEdge]) -> Option<CompositionFailureReason> {
+    if edges
+        .iter()
+        .any(|edge| edge.resolution() == RelationResolution::Cycle)
+    {
+        return Some(CompositionFailureReason::Cycle);
+    }
+    if edges
+        .iter()
+        .any(|edge| edge.resolution() == RelationResolution::Ambiguous)
+    {
+        return Some(CompositionFailureReason::AmbiguousProducer);
+    }
+    if edges
+        .iter()
+        .any(|edge| edge.resolution() == RelationResolution::Missing)
+    {
+        return Some(CompositionFailureReason::MissingProducer);
+    }
+    if edges
+        .iter()
+        .any(|edge| edge.resolution() == RelationResolution::Unsupported)
+    {
+        return Some(CompositionFailureReason::Unsupported);
+    }
+    None
+}
+
+fn graph_failure_diagnostics(
+    layer: &TransformationLayer,
+    edges: &[GraphEdge],
+) -> Vec<CompositionDiagnostic> {
+    edges
+        .iter()
+        .filter_map(|edge| {
+            let (code, message) = match edge.resolution() {
+                RelationResolution::Ambiguous => (
+                    "ambiguous_relation_producer",
+                    format!(
+                        "relation '{}' has multiple in-bundle producers: {}",
+                        edge.relation(),
+                        edge.producer_layer_ids().join(", ")
+                    ),
+                ),
+                RelationResolution::Cycle => (
+                    "dependency_cycle",
+                    format!(
+                        "relation '{}' participates in a dependency cycle",
+                        edge.relation()
+                    ),
+                ),
+                RelationResolution::Missing => (
+                    "missing_relation_producer",
+                    format!(
+                        "relation '{}' requires a producer that is unavailable",
+                        edge.relation()
+                    ),
+                ),
+                RelationResolution::Unsupported => (
+                    "unsupported_relation_composition",
+                    format!("relation '{}' cannot be composed safely", edge.relation()),
+                ),
+                RelationResolution::Resolved | RelationResolution::External => return None,
+            };
+            Some(CompositionDiagnostic::layer_warning(
+                layer.input_id(),
+                layer.id(),
+                code,
+                message,
+                Some(edge.relation().to_string()),
+            ))
+        })
+        .collect()
+}
+
+fn merge_column_domains(target: &mut BTreeMap<ColumnRef, ValueDomain>, domains: &[ColumnDomain]) {
+    for domain in domains {
+        merge_domain(target, domain.column().clone(), domain.domain().clone());
+    }
+}
+
+fn merge_domain(
+    target: &mut BTreeMap<ColumnRef, ValueDomain>,
+    column: ColumnRef,
+    domain: ValueDomain,
+) {
+    match target.remove(&column) {
+        Some(existing) => {
+            target.insert(column, intersect_domains(&existing, &domain));
+        }
+        None => {
+            target.insert(column, domain);
+        }
+    }
+}
+
+fn unresolved_internal_layer(layer_id: &str) -> ComposedSemantics {
+    ComposedSemantics::unresolved(
+        CompositionFailureReason::Unsupported,
+        vec![CompositionDiagnostic::layer_warning(
+            "unknown-input",
+            layer_id,
+            "missing_layer",
+            format!("transformation layer '{}' does not exist", layer_id),
+            None,
+        )],
+    )
+}

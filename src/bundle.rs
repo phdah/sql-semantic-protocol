@@ -8,7 +8,9 @@ use std::fmt;
 
 use sqlparser::dialect::Dialect;
 
-use crate::protocol::{DiagnosticSeverity, Protocol, ProtocolStatement, PROTOCOL_VERSION};
+use crate::protocol::{
+    ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, PROTOCOL_VERSION,
+};
 use crate::{analyze_sql, Error};
 
 /// Source identity retained for one SQL input unit.
@@ -217,6 +219,23 @@ impl CompositionDiagnostic {
         }
     }
 
+    pub(crate) fn layer_warning(
+        input_id: impl Into<String>,
+        layer_id: impl Into<String>,
+        code: impl Into<String>,
+        message: impl Into<String>,
+        relation: Option<String>,
+    ) -> Self {
+        Self {
+            severity: DiagnosticSeverity::Warning,
+            code: code.into(),
+            message: message.into(),
+            input_id: Some(input_id.into()),
+            layer_id: Some(layer_id.into()),
+            relation,
+        }
+    }
+
     /// Return the diagnostic severity.
     pub fn severity(&self) -> DiagnosticSeverity {
         self.severity
@@ -245,6 +264,134 @@ impl CompositionDiagnostic {
     /// Return the affected relation when the diagnostic is relation-specific.
     pub fn relation(&self) -> Option<&str> {
         self.relation.as_deref()
+    }
+}
+
+/// Why transitive semantic composition could not be completed safely.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum CompositionFailureReason {
+    /// A required producer is unavailable.
+    MissingProducer,
+    /// More than one producer could satisfy a consumed relation.
+    AmbiguousProducer,
+    /// The dependency graph contains a cycle.
+    Cycle,
+    /// Known semantics cannot be propagated safely.
+    Unsupported,
+}
+
+impl CompositionFailureReason {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::MissingProducer => "missing_producer",
+            Self::AmbiguousProducer => "ambiguous_producer",
+            Self::Cycle => "cycle",
+            Self::Unsupported => "unsupported",
+        }
+    }
+}
+
+/// Transitive semantics for one transformation layer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum ComposedSemantics {
+    /// Transitive dependencies, domains, and output lineage were composed safely.
+    Resolved(ResolvedComposedSemantics),
+    /// Composition stopped rather than inventing semantics that cannot be proven.
+    Unresolved(UnresolvedComposedSemantics),
+}
+
+impl ComposedSemantics {
+    pub(crate) fn pending(input_id: &str, layer_id: &str) -> Self {
+        Self::Unresolved(UnresolvedComposedSemantics {
+            reason: CompositionFailureReason::Unsupported,
+            diagnostics: vec![CompositionDiagnostic::layer_warning(
+                input_id,
+                layer_id,
+                "semantic_composition_pending",
+                "cross-input semantic composition has not been evaluated",
+                None,
+            )],
+        })
+    }
+
+    pub(crate) fn resolved(
+        dependencies: Vec<String>,
+        column_domains: Vec<ColumnDomain>,
+        output: Output,
+        mut diagnostics: Vec<CompositionDiagnostic>,
+    ) -> Self {
+        diagnostics.sort_by(diagnostic_cmp);
+        diagnostics.dedup();
+        Self::Resolved(ResolvedComposedSemantics {
+            dependencies,
+            column_domains,
+            output,
+            diagnostics,
+        })
+    }
+
+    pub(crate) fn unresolved(
+        reason: CompositionFailureReason,
+        mut diagnostics: Vec<CompositionDiagnostic>,
+    ) -> Self {
+        diagnostics.sort_by(diagnostic_cmp);
+        diagnostics.dedup();
+        Self::Unresolved(UnresolvedComposedSemantics {
+            reason,
+            diagnostics,
+        })
+    }
+}
+
+/// Successfully composed transitive semantics for a transformation layer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResolvedComposedSemantics {
+    dependencies: Vec<String>,
+    column_domains: Vec<ColumnDomain>,
+    output: Output,
+    diagnostics: Vec<CompositionDiagnostic>,
+}
+
+impl ResolvedComposedSemantics {
+    /// Return physical leaf dependencies in deterministic relation order.
+    pub fn dependencies(&self) -> &[String] {
+        &self.dependencies
+    }
+
+    /// Return value domains mapped back to physical source columns.
+    pub fn column_domains(&self) -> &[ColumnDomain] {
+        &self.column_domains
+    }
+
+    /// Return final output columns with transitive physical lineage.
+    pub fn output(&self) -> &Output {
+        &self.output
+    }
+
+    /// Return diagnostics for semantics that could not be propagated precisely.
+    pub fn diagnostics(&self) -> &[CompositionDiagnostic] {
+        &self.diagnostics
+    }
+}
+
+/// Explicit failure to compose one transformation layer safely.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnresolvedComposedSemantics {
+    reason: CompositionFailureReason,
+    diagnostics: Vec<CompositionDiagnostic>,
+}
+
+impl UnresolvedComposedSemantics {
+    /// Return why composition stopped.
+    pub fn reason(&self) -> CompositionFailureReason {
+        self.reason
+    }
+
+    /// Return diagnostics explaining the unresolved composition.
+    pub fn diagnostics(&self) -> &[CompositionDiagnostic] {
+        &self.diagnostics
     }
 }
 
@@ -312,6 +459,7 @@ pub struct TransformationLayer {
     statement_index: usize,
     produces: Vec<DatasetRef>,
     consumes: Vec<String>,
+    composed_semantics: ComposedSemantics,
 }
 
 impl TransformationLayer {
@@ -338,6 +486,11 @@ impl TransformationLayer {
     /// Return normalized physical relations consumed directly by this layer.
     pub fn consumes(&self) -> &[String] {
         &self.consumes
+    }
+
+    /// Return transitive semantics composed through in-bundle producers.
+    pub fn composed_semantics(&self) -> &ComposedSemantics {
+        &self.composed_semantics
     }
 }
 
@@ -383,8 +536,13 @@ impl AnalysisBundle {
     }
 
     fn from_inputs(inputs: Vec<AnalyzedInput>) -> Self {
-        let layers = build_layers(&inputs);
+        let mut layers = build_layers(&inputs);
         let graph = build_graph(&layers);
+        let composed = crate::composition::compose_layers(&inputs, &layers, &graph);
+        for (layer, semantics) in layers.iter_mut().zip(composed) {
+            layer.composed_semantics = semantics;
+        }
+
         Self {
             protocol_version: PROTOCOL_VERSION,
             inputs,
@@ -420,12 +578,14 @@ fn build_layers(inputs: &[AnalyzedInput]) -> Vec<TransformationLayer> {
                 }],
             };
 
+            let composed_semantics = ComposedSemantics::pending(input.id(), &layer_id);
             layers.push(TransformationLayer {
                 id: layer_id,
                 input_id: input.id().to_string(),
                 statement_index,
                 produces,
                 consumes: query.dependencies().to_vec(),
+                composed_semantics,
             });
         }
     }

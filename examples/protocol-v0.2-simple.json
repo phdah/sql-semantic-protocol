@@ -18,7 +18,9 @@
               "alias": null
             }
           ],
-          "dependencies": ["t"],
+          "dependencies": [
+            "t"
+          ],
           "joins": [],
           "predicates": {
             "where": {
@@ -98,19 +100,57 @@
           "layer_id": "layer-0001"
         }
       ],
-      "consumes": ["t"],
+      "consumes": [
+        "t"
+      ],
       "composed_semantics": {
-        "status": "unresolved",
-        "reason": "unsupported",
-        "diagnostics": [
+        "status": "resolved",
+        "dependencies": [
+          "t"
+        ],
+        "column_domains": [
           {
-            "severity": "warning",
-            "code": "semantic_composition_pending",
-            "message": "cross-input semantic composition is not implemented yet",
-            "input_id": "input-0001",
-            "layer_id": "layer-0001"
+            "column": {
+              "relation": "t",
+              "name": "a"
+            },
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    },
+                    "inclusive": false
+                  },
+                  "upper": null
+                }
+              ]
+            }
           }
-        ]
+        ],
+        "output": {
+          "columns": [
+            {
+              "name": "b",
+              "expression": {
+                "kind": "column",
+                "relation": "t",
+                "name": "b"
+              },
+              "lineage": [
+                {
+                  "relation": "t",
+                  "column": "b"
+                }
+              ]
+            }
+          ]
+        },
+        "diagnostics": []
       }
     }
   ],

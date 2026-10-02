@@ -409,7 +409,7 @@ fn union_maps(left: DomainMap, right: DomainMap) -> DomainMap {
         .collect()
 }
 
-fn intersect_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
+pub(crate) fn intersect_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
     match (left, right) {
         (ValueDomain::Empty, _) | (_, ValueDomain::Empty) => ValueDomain::Empty,
         (ValueDomain::Unbounded, domain) | (domain, ValueDomain::Unbounded) => domain.clone(),

@@ -47,6 +47,14 @@ Unrelated SQL inputs remain separate connected components in the same protocol d
 
 The protocol does not define a single global "final query". This allows one invocation to describe multiple independent transformation chains and multiple terminal datasets.
 
+## OpenLineage interoperability
+
+The SQL Semantic Protocol is the source of truth for semantic composition. OpenLineage is an export target, not part of the core model.
+
+The library adapter emits resolved named layers as OpenLineage `DatasetEvent` objects using schema `2-0-2` and the `LineageDatasetFacet` schema `1-0-0`. The caller provides the dataset namespace and event timestamp because neither can be inferred reliably from SQL text. Composed physical dependencies become dataset-level lineage inputs, while transitive output-column lineage becomes field-level lineage inputs.
+
+The adapter deliberately omits protocol semantics that OpenLineage does not represent directly, including predicate trees and value domains. Those values remain present in the original protocol document. Anonymous outputs and unresolved layers are not exported as datasets because doing so would require inventing identity or precision.
+
 ## Deterministic ordering
 
 For equivalent inputs and configuration, producers must serialize arrays deterministically:

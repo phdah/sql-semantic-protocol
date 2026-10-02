@@ -6,8 +6,9 @@
 use serde_json::{json, Value};
 
 use crate::bundle::{
-    AnalysisBundle, AnalysisGraph, CompositionDiagnostic, DatasetRef, GraphComponent, GraphEdge,
-    SqlInputSource, TransformationLayer,
+    AnalysisBundle, AnalysisGraph, ComposedSemantics, CompositionDiagnostic, DatasetRef,
+    GraphComponent, GraphEdge, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
+    UnresolvedComposedSemantics,
 };
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef,
@@ -25,8 +26,8 @@ pub fn to_json(protocol: &Protocol) -> String {
 
 /// Serialize an analysis bundle using the one active protocol document shape.
 ///
-/// Local transformation layers and the relation dependency graph are populated. Transitive
-/// semantic composition remains explicitly pending.
+/// Local transformation layers, transitive composed semantics, and the relation dependency graph
+/// are serialized without exposing parser-specific values.
 pub fn to_bundle_json(bundle: &AnalysisBundle) -> String {
     bundle_to_value(bundle).to_string()
 }
@@ -88,17 +89,46 @@ fn transformation_layer_to_value(layer: &TransformationLayer) -> Value {
             .map(dataset_ref_to_value)
             .collect::<Vec<_>>(),
         "consumes": layer.consumes(),
-        "composed_semantics": {
-            "status": "unresolved",
-            "reason": "unsupported",
-            "diagnostics": [{
-                "severity": "warning",
-                "code": "semantic_composition_pending",
-                "message": "cross-input semantic composition is not implemented yet",
-                "input_id": layer.input_id(),
-                "layer_id": layer.id()
-            }]
+        "composed_semantics": composed_semantics_to_value(layer.composed_semantics())
+    })
+}
+
+fn composed_semantics_to_value(semantics: &ComposedSemantics) -> Value {
+    match semantics {
+        ComposedSemantics::Resolved(semantics) => resolved_composed_semantics_to_value(semantics),
+        ComposedSemantics::Unresolved(semantics) => {
+            unresolved_composed_semantics_to_value(semantics)
         }
+    }
+}
+
+fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -> Value {
+    json!({
+        "status": "resolved",
+        "dependencies": semantics.dependencies(),
+        "column_domains": semantics
+            .column_domains()
+            .iter()
+            .map(column_domain_to_value)
+            .collect::<Vec<_>>(),
+        "output": output_to_value(semantics.output()),
+        "diagnostics": semantics
+            .diagnostics()
+            .iter()
+            .map(composition_diagnostic_to_value)
+            .collect::<Vec<_>>()
+    })
+}
+
+fn unresolved_composed_semantics_to_value(semantics: &UnresolvedComposedSemantics) -> Value {
+    json!({
+        "status": "unresolved",
+        "reason": semantics.reason().as_str(),
+        "diagnostics": semantics
+            .diagnostics()
+            .iter()
+            .map(composition_diagnostic_to_value)
+            .collect::<Vec<_>>()
     })
 }
 

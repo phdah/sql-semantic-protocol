@@ -4,13 +4,15 @@ use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
-    analyze_inputs, to_bundle_json, Error as ProtocolError, InputAnalysisError, SqlInput,
+    analyze_inputs, to_bundle_json, to_openlineage_json, Error as ProtocolError,
+    InputAnalysisError, OpenLineageExportError, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]\n\nRepeat --sql, --file, and --dir in any mixture. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]\n\nRepeat --sql, --file, and --dir in any mixture. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -34,7 +36,23 @@ fn run() -> Result<(), CliError> {
 
             let bundle = analyze_inputs(&inputs, &dialect_name, dialect.as_ref())
                 .map_err(CliError::InputProtocol)?;
-            println!("{}", to_bundle_json(&bundle));
+            let output = match options.format {
+                OutputFormat::Protocol => to_bundle_json(&bundle),
+                OutputFormat::OpenLineage => {
+                    let namespace = options.namespace.as_deref().ok_or_else(|| {
+                        CliError::Input(
+                            "--namespace is required with --format openlineage".to_string(),
+                        )
+                    })?;
+                    let event_time = match options.event_time {
+                        Some(event_time) => event_time,
+                        None => current_event_time()?,
+                    };
+                    to_openlineage_json(&bundle, namespace, &event_time)
+                        .map_err(CliError::OpenLineageExport)?
+                }
+            };
+            println!("{output}");
 
             Ok(())
         }
@@ -50,8 +68,17 @@ enum Command {
 #[derive(Debug)]
 struct Options {
     dialect: String,
+    format: OutputFormat,
+    namespace: Option<String>,
+    event_time: Option<String>,
     inputs: Vec<InputArgument>,
     positional_sql: Vec<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum OutputFormat {
+    Protocol,
+    OpenLineage,
 }
 
 #[derive(Debug)]
@@ -63,6 +90,9 @@ enum InputArgument {
 
 fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, CliError> {
     let mut dialect = "generic".to_string();
+    let mut format = OutputFormat::Protocol;
+    let mut namespace = None;
+    let mut event_time = None;
     let mut inputs = Vec::new();
     let mut positional_sql = Vec::new();
     let mut positional_only = false;
@@ -80,6 +110,31 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                 dialect = arguments
                     .next()
                     .ok_or_else(|| CliError::Input("missing value for --dialect".to_string()))?;
+            }
+            "--format" => {
+                let value = arguments
+                    .next()
+                    .ok_or_else(|| CliError::Input("missing value for --format".to_string()))?;
+                format = match value.as_str() {
+                    "protocol" => OutputFormat::Protocol,
+                    "openlineage" => OutputFormat::OpenLineage,
+                    _ => {
+                        return Err(CliError::Input(format!(
+                            "unsupported output format '{value}'; expected protocol or openlineage"
+                        )));
+                    }
+                };
+            }
+            "--namespace" => {
+                namespace =
+                    Some(arguments.next().ok_or_else(|| {
+                        CliError::Input("missing value for --namespace".to_string())
+                    })?);
+            }
+            "--event-time" => {
+                event_time = Some(arguments.next().ok_or_else(|| {
+                    CliError::Input("missing value for --event-time".to_string())
+                })?);
             }
             "-s" | "--sql" => {
                 let sql = arguments
@@ -113,8 +168,39 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         ));
     }
 
+    match format {
+        OutputFormat::Protocol => {
+            if namespace.is_some() {
+                return Err(CliError::Input(
+                    "--namespace requires --format openlineage".to_string(),
+                ));
+            }
+            if event_time.is_some() {
+                return Err(CliError::Input(
+                    "--event-time requires --format openlineage".to_string(),
+                ));
+            }
+        }
+        OutputFormat::OpenLineage => {
+            if namespace.as_deref().map(str::trim).unwrap_or("").is_empty() {
+                return Err(CliError::Input(
+                    "--namespace is required with --format openlineage".to_string(),
+                ));
+            }
+            if event_time
+                .as_deref()
+                .is_some_and(|value| value.trim().is_empty())
+            {
+                return Err(CliError::Input("--event-time cannot be empty".to_string()));
+            }
+        }
+    }
+
     Ok(Command::Analyze(Options {
         dialect,
+        format,
+        namespace,
+        event_time,
         inputs,
         positional_sql,
     }))
@@ -252,6 +338,45 @@ fn ensure_non_empty_sql(sql: &str, source: &str) -> Result<(), CliError> {
     Ok(())
 }
 
+fn current_event_time() -> Result<String, CliError> {
+    let elapsed = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|error| CliError::Input(format!("system clock is before Unix epoch: {error}")))?;
+    format_utc_event_time(elapsed.as_secs())
+}
+
+fn format_utc_event_time(seconds_since_epoch: u64) -> Result<String, CliError> {
+    let days = i64::try_from(seconds_since_epoch / 86_400)
+        .map_err(|_| CliError::Input("current time is outside the supported range".to_string()))?;
+    let seconds_of_day = seconds_since_epoch % 86_400;
+    let hour = seconds_of_day / 3_600;
+    let minute = (seconds_of_day % 3_600) / 60;
+    let second = seconds_of_day % 60;
+    let (year, month, day) = civil_date_from_unix_days(days);
+
+    Ok(format!(
+        "{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}Z"
+    ))
+}
+
+fn civil_date_from_unix_days(days_since_epoch: i64) -> (i64, i64, i64) {
+    let shifted_days = days_since_epoch + 719_468;
+    let era = shifted_days / 146_097;
+    let day_of_era = shifted_days - era * 146_097;
+    let year_of_era =
+        (day_of_era - day_of_era / 1_460 + day_of_era / 36_524 - day_of_era / 146_096) / 365;
+    let mut year = year_of_era + era * 400;
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let month_prime = (5 * day_of_year + 2) / 153;
+    let day = day_of_year - (153 * month_prime + 2) / 5 + 1;
+    let month = month_prime + if month_prime < 10 { 3 } else { -9 };
+    if month <= 2 {
+        year += 1;
+    }
+
+    (year, month, day)
+}
+
 fn select_dialect(name: &str) -> Result<(String, Box<dyn Dialect>), CliError> {
     let normalized_name = name.to_ascii_lowercase();
     let dialect = dialect_from_str(&normalized_name).ok_or_else(|| {
@@ -267,6 +392,7 @@ fn select_dialect(name: &str) -> Result<(String, Box<dyn Dialect>), CliError> {
 enum CliError {
     Input(String),
     InputProtocol(InputAnalysisError),
+    OpenLineageExport(OpenLineageExportError),
 }
 
 impl CliError {
@@ -277,6 +403,7 @@ impl CliError {
                 ProtocolError::Parse(_) => ExitCode::from(3),
                 _ => ExitCode::from(4),
             },
+            Self::OpenLineageExport(_) => ExitCode::from(4),
         }
     }
 }
@@ -289,6 +416,89 @@ impl fmt::Display for CliError {
                 ProtocolError::Parse(_) => write!(formatter, "{error}"),
                 _ => write!(formatter, "analysis error: {error}"),
             },
+            Self::OpenLineageExport(error) => {
+                write!(formatter, "OpenLineage export error: {error}")
+            }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_openlineage_output_options() {
+        let command = parse_args(
+            [
+                "--format",
+                "openlineage",
+                "--namespace",
+                "postgresql://warehouse",
+                "--event-time",
+                "2026-10-02T07:00:00Z",
+                "--sql",
+                "SELECT id FROM raw.orders",
+            ]
+            .into_iter()
+            .map(str::to_string),
+        )
+        .expect("OpenLineage CLI options should parse");
+
+        match command {
+            Command::Analyze(options) => {
+                assert_eq!(options.format, OutputFormat::OpenLineage);
+                assert_eq!(options.namespace.as_deref(), Some("postgresql://warehouse"));
+                assert_eq!(options.event_time.as_deref(), Some("2026-10-02T07:00:00Z"));
+            }
+            Command::Help => panic!("expected analyze command"),
+        }
+    }
+
+    #[test]
+    fn openlineage_output_requires_namespace() {
+        let error = parse_args(
+            [
+                "--format",
+                "openlineage",
+                "--sql",
+                "SELECT id FROM raw.orders",
+            ]
+            .into_iter()
+            .map(str::to_string),
+        )
+        .expect_err("OpenLineage output without a namespace should fail");
+
+        assert_eq!(
+            error.to_string(),
+            "input error: --namespace is required with --format openlineage"
+        );
+    }
+
+    #[test]
+    fn protocol_output_rejects_openlineage_only_options() {
+        let error = parse_args(
+            ["--namespace", "postgresql://warehouse", "--sql", "SELECT 1"]
+                .into_iter()
+                .map(str::to_string),
+        )
+        .expect_err("namespace should not be silently ignored for protocol output");
+
+        assert_eq!(
+            error.to_string(),
+            "input error: --namespace requires --format openlineage"
+        );
+    }
+
+    #[test]
+    fn formats_current_time_as_utc_rfc3339() {
+        assert_eq!(
+            format_utc_event_time(0).expect("Unix epoch should format"),
+            "1970-01-01T00:00:00Z"
+        );
+        assert_eq!(
+            format_utc_event_time(1_790_924_400).expect("representative timestamp should format"),
+            "2026-10-02T07:00:00Z"
+        );
     }
 }
