@@ -197,17 +197,75 @@ fn representative_generic_query_matches_complete_protocol_document() {
                     "sales.orders"
                 ],
                 "composed_semantics": {
-                    "status": "unresolved",
-                    "reason": "unsupported",
-                    "diagnostics": [
+                    "status": "resolved",
+                    "dependencies": [
+                        "crm.customers",
+                        "sales.orders"
+                    ],
+                    "column_domains": [
                         {
-                            "severity": "warning",
-                            "code": "semantic_composition_pending",
-                            "message": "cross-input semantic composition is not implemented yet",
-                            "input_id": "input-0001",
-                            "layer_id": "layer-0001"
+                            "column": {
+                                "relation": "sales.orders",
+                                "name": "total"
+                            },
+                            "domain": {
+                                "kind": "ranges",
+                                "ranges": [
+                                    {
+                                        "lower": {
+                                            "value": {
+                                                "kind": "literal",
+                                                "type": "integer",
+                                                "value": 10
+                                            },
+                                            "inclusive": true
+                                        },
+                                        "upper": {
+                                            "value": {
+                                                "kind": "literal",
+                                                "type": "integer",
+                                                "value": 20
+                                            },
+                                            "inclusive": false
+                                        }
+                                    }
+                                ]
+                            }
                         }
-                    ]
+                    ],
+                    "output": {
+                        "columns": [
+                            {
+                                "name": "order_id",
+                                "expression": {
+                                    "kind": "column",
+                                    "relation": "o",
+                                    "name": "id"
+                                },
+                                "lineage": [
+                                    {
+                                        "relation": "sales.orders",
+                                        "column": "id"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "customer_name",
+                                "expression": {
+                                    "kind": "column",
+                                    "relation": "c",
+                                    "name": "name"
+                                },
+                                "lineage": [
+                                    {
+                                        "relation": "crm.customers",
+                                        "column": "name"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "diagnostics": []
                 }
             }
         ],
