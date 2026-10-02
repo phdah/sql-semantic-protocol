@@ -1,7 +1,7 @@
 ---
 id: TASK-13
 title: Link inputs into a relation dependency graph
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -20,12 +20,12 @@ Local SQL scopes such as CTEs, aliases, and derived tables must never be mistake
 
 ## Acceptance Criteria
 
-- [ ] Consumed relations are linked to matching produced relations from other supplied inputs when resolution is unambiguous.
-- [ ] Linking is independent of input order.
-- [ ] Multiple disconnected transformation chains coexist in one graph.
-- [ ] Relations without an in-bundle producer remain explicit external dependencies.
-- [ ] CTE names, aliases, and derived-table names remain local to their query scope and do not create cross-input edges.
-- [ ] Multiple supplied producers for the same relation generate an explicit ambiguity diagnostic rather than arbitrary selection.
-- [ ] Cycles are detected and represented explicitly rather than causing recursion or incorrect ordering.
-- [ ] Graph nodes and edges serialize deterministically.
-- [ ] Tests cover a multi-stage chain, independent chains, external leaves, duplicate producers, and cycles.
+- [x] Consumed relations are linked to matching produced relations from other supplied inputs when resolution is unambiguous.
+- [x] Linking is independent of input order.
+- [x] Multiple disconnected transformation chains coexist in one graph.
+- [x] Relations without an in-bundle producer remain explicit external dependencies.
+- [x] CTE names, aliases, and derived-table names remain local to their query scope and do not create cross-input edges.
+- [x] Multiple supplied producers for the same relation generate an explicit ambiguity diagnostic rather than arbitrary selection.
+- [x] Cycles are detected and represented explicitly rather than causing recursion or incorrect ordering.
+- [x] Graph nodes and edges serialize deterministically.
+- [x] Tests cover a multi-stage chain, independent chains, external leaves, duplicate producers, and cycles.
