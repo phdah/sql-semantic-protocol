@@ -44,6 +44,14 @@ Set outputs align columns positionally. Output names come from the left branch, 
 
 If branches expose incompatible arity, output semantics remain unresolved and an explicit diagnostic is emitted. Branch-local value constraints are retained when compatible; conflicting constraints on the same source column degrade to an explicit unknown domain rather than being guessed. BY NAME alignment is represented in the operation tree but output composition remains explicitly unsupported.
 
+### Window functions
+
+Window calls are emitted as `window_function` expressions, distinct from ordinary function calls. The function arguments remain normalized expressions, while the resolved window specification records an optional local window name, `PARTITION BY` expressions, ordered `ORDER BY` expressions, and an explicit `ROWS`, `RANGE`, or `GROUPS` frame when present.
+
+Function arguments, partition keys, ordering expressions, and frame-bound expressions all contribute to dependency and output-lineage analysis. Named windows are resolved within the local SELECT scope, including safe inheritance from another named window. Conflicting overrides, missing or cyclic names, and window options the protocol does not model remain explicit diagnostics.
+
+Snowflake-style `QUALIFY` can reference a projected window alias. That alias is resolved back to the window expression for predicate semantics, while scalar value-domain derivation deliberately does not infer source-column constraints from a window result.
+
 ### Outcome selection
 
 The protocol always contains every analyzed transformation outcome. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.

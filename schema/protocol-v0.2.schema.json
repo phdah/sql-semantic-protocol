@@ -237,7 +237,7 @@
           }
         },
         "output": {
-          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/output"
+          "$ref": "#/$defs/output"
         },
         "diagnostics": {
           "type": "array",
@@ -622,7 +622,7 @@
           }
         },
         "predicates": {
-          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/predicates"
+          "$ref": "#/$defs/predicates"
         },
         "column_domains": {
           "type": "array",
@@ -631,7 +631,7 @@
           }
         },
         "output": {
-          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/output"
+          "$ref": "#/$defs/output"
         },
         "set_operation": {
           "$ref": "#/$defs/setOperation"
@@ -727,6 +727,719 @@
             },
             "right": {
               "$ref": "#/$defs/setOperand"
+            }
+          }
+        }
+      ]
+    },
+    "predicates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "where",
+        "having",
+        "qualify"
+      ],
+      "properties": {
+        "where": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "having": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualify": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "predicate": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/comparisonPredicate"
+        },
+        {
+          "$ref": "#/$defs/andPredicate"
+        },
+        {
+          "$ref": "#/$defs/orPredicate"
+        },
+        {
+          "$ref": "#/$defs/notPredicate"
+        },
+        {
+          "$ref": "#/$defs/isNullPredicate"
+        },
+        {
+          "$ref": "#/$defs/inPredicate"
+        },
+        {
+          "$ref": "#/$defs/betweenPredicate"
+        },
+        {
+          "$ref": "#/$defs/booleanExpressionPredicate"
+        },
+        {
+          "$ref": "#/$defs/unknownSemantic"
+        },
+        {
+          "$ref": "#/$defs/unsupportedSemantic"
+        }
+      ]
+    },
+    "comparisonPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "left",
+        "operator",
+        "right"
+      ],
+      "properties": {
+        "kind": {
+          "const": "comparison"
+        },
+        "left": {
+          "$ref": "#/$defs/expression"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "neq",
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+            "is_distinct_from",
+            "is_not_distinct_from"
+          ]
+        },
+        "right": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "andPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operands"
+      ],
+      "properties": {
+        "kind": {
+          "const": "and"
+        },
+        "operands": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/predicate"
+          }
+        }
+      }
+    },
+    "orPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operands"
+      ],
+      "properties": {
+        "kind": {
+          "const": "or"
+        },
+        "operands": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/predicate"
+          }
+        }
+      }
+    },
+    "notPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operand"
+      ],
+      "properties": {
+        "kind": {
+          "const": "not"
+        },
+        "operand": {
+          "$ref": "#/$defs/predicate"
+        }
+      }
+    },
+    "isNullPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "is_null"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "inPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "values",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "in"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "betweenPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "lower",
+        "upper",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "between"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "lower": {
+          "$ref": "#/$defs/expression"
+        },
+        "upper": {
+          "$ref": "#/$defs/expression"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "booleanExpressionPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression"
+      ],
+      "properties": {
+        "kind": {
+          "const": "boolean_expression"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "expression": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/columnExpression"
+        },
+        {
+          "$ref": "#/$defs/literalExpression"
+        },
+        {
+          "$ref": "#/$defs/functionExpression"
+        },
+        {
+          "$ref": "#/$defs/windowFunctionExpression"
+        },
+        {
+          "$ref": "#/$defs/unaryExpression"
+        },
+        {
+          "$ref": "#/$defs/binaryExpression"
+        },
+        {
+          "$ref": "#/$defs/unknownSemantic"
+        },
+        {
+          "$ref": "#/$defs/unsupportedSemantic"
+        }
+      ]
+    },
+    "columnExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "relation",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "const": "column"
+        },
+        "relation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/relationName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "literalExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "type",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "const": "literal"
+        },
+        "type": {
+          "enum": [
+            "null",
+            "boolean",
+            "integer",
+            "decimal",
+            "string",
+            "date",
+            "time",
+            "timestamp",
+            "interval"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "functionExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name",
+        "arguments",
+        "distinct"
+      ],
+      "properties": {
+        "kind": {
+          "const": "function"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "distinct": {
+          "type": "boolean"
+        }
+      }
+    },
+    "unaryExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operator",
+        "operand"
+      ],
+      "properties": {
+        "kind": {
+          "const": "unary"
+        },
+        "operator": {
+          "enum": [
+            "plus",
+            "minus",
+            "bitwise_not"
+          ]
+        },
+        "operand": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "binaryExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operator",
+        "left",
+        "right"
+      ],
+      "properties": {
+        "kind": {
+          "const": "binary"
+        },
+        "operator": {
+          "enum": [
+            "add",
+            "subtract",
+            "multiply",
+            "divide",
+            "modulo",
+            "string_concat",
+            "bitwise_and",
+            "bitwise_or",
+            "bitwise_xor"
+          ]
+        },
+        "left": {
+          "$ref": "#/$defs/expression"
+        },
+        "right": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "columns"
+      ],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/outputColumn"
+          }
+        }
+      }
+    },
+    "outputColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "expression",
+        "lineage"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "lineage": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/lineageSource"
+          }
+        }
+      }
+    },
+    "lineageSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "column"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "column": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "unknownSemantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reason"
+      ],
+      "properties": {
+        "kind": {
+          "const": "unknown"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "unsupportedSemantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "feature",
+        "reason"
+      ],
+      "properties": {
+        "kind": {
+          "const": "unsupported"
+        },
+        "feature": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "windowFunctionExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "function",
+        "window"
+      ],
+      "properties": {
+        "kind": {
+          "const": "window_function"
+        },
+        "function": {
+          "$ref": "#/$defs/functionExpression"
+        },
+        "window": {
+          "$ref": "#/$defs/windowSpecification"
+        }
+      }
+    },
+    "windowSpecification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "partition_by",
+        "order_by",
+        "frame"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "partition_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "order_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/windowOrderExpression"
+          }
+        },
+        "frame": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/windowFrame"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "windowOrderExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "ascending",
+        "nulls_first"
+      ],
+      "properties": {
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "ascending": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "nulls_first": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "windowFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "units",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "units": {
+          "enum": [
+            "rows",
+            "range",
+            "groups"
+          ]
+        },
+        "start": {
+          "$ref": "#/$defs/windowFrameBound"
+        },
+        "end": {
+          "$ref": "#/$defs/windowFrameBound"
+        }
+      }
+    },
+    "windowFrameBound": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "current_row"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unbounded_preceding"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "offset"
+          ],
+          "properties": {
+            "kind": {
+              "const": "preceding"
+            },
+            "offset": {
+              "$ref": "#/$defs/expression"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unbounded_following"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "offset"
+          ],
+          "properties": {
+            "kind": {
+              "const": "following"
+            },
+            "offset": {
+              "$ref": "#/$defs/expression"
             }
           }
         }

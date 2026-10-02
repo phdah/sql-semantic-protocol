@@ -63,6 +63,23 @@ Column domains remain source-column constraints. Equal constraints from multiple
 
 Set-level ORDER BY and LIMIT remain query-level semantics, so their existing explicit unsupported diagnostics attach to the combined set result rather than to an arbitrary branch.
 
+## Window functions
+
+Window calls use the expression kind `window_function`. The value contains the normalized underlying function plus a resolved parser-independent window specification:
+
+- `name`: the local named window referenced by the call, or null for an inline specification
+- `partition_by`: normalized expressions in SQL order
+- `order_by`: normalized expressions plus explicit ascending/descending and NULL ordering when supplied
+- `frame`: null when no frame was written, otherwise one `rows`, `range`, or `groups` frame with normalized start and end bounds
+
+Frame shorthand such as `ROWS 2 PRECEDING` normalizes its semantic end bound to `CURRENT ROW`. Bounded offsets remain ordinary protocol expressions. Named windows are resolved only inside the SELECT that defines them. A named specification may safely extend inherited parts that are absent; attempts to replace an already inherited PARTITION BY, ORDER BY, or frame are left unsupported rather than guessed.
+
+Window function arguments, PARTITION BY expressions, ORDER BY expressions, and frame offsets participate in dependency and output-lineage traversal. Ranking functions therefore derive lineage from their partitioning and ordering inputs even when they have no ordinary function arguments.
+
+A QUALIFY predicate may resolve a direct projected alias back to its window expression. Window results do not create scalar source-column domains: comparisons such as `QUALIFY row_number_alias = 1` constrain the computed window result, not the underlying partition or ordering columns.
+
+Unsupported function modifiers and window-ordering options remain explicit diagnostics instead of being silently dropped.
+
 ## OpenLineage interoperability
 
 The SQL Semantic Protocol is the source of truth for semantic composition. OpenLineage is an export target, not part of the core model.

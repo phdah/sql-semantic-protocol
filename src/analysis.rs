@@ -13,9 +13,11 @@ use serde_json::Number;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, DuplicateTreatment, Expr, Function, FunctionArg,
     FunctionArgExpr, FunctionArguments, GroupByExpr, Join as SqlJoin, JoinConstraint, JoinOperator,
-    Query as SqlQuery, Select, SelectItem, SetExpr, SetOperator as SqlSetOperator,
-    SetQuantifier as SqlSetQuantifier, Statement as SqlStatement, TableFactor, TableWithJoins,
-    UnaryOperator as SqlUnaryOperator, Value,
+    NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
+    SetOperator as SqlSetOperator, SetQuantifier as SqlSetQuantifier, Statement as SqlStatement,
+    TableFactor, TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
+    WindowFrame as SqlWindowFrame, WindowFrameBound as SqlWindowFrameBound,
+    WindowFrameUnits as SqlWindowFrameUnits, WindowSpec as SqlWindowSpec, WindowType,
 };
 
 use crate::domain::derive_column_domains;
@@ -28,7 +30,8 @@ use crate::protocol::{
     Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
     RelationRef, SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation,
     UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
-    ValueDomain,
+    ValueDomain, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
+    WindowOrderExpression, WindowSpecification,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -153,20 +156,42 @@ fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predica
 }
 
 fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
-    Predicates::new(
-        select
-            .selection
-            .as_ref()
-            .map(|expression| analyze_predicate(expression, diagnostics)),
-        select
-            .having
-            .as_ref()
-            .map(|expression| analyze_predicate(expression, diagnostics)),
-        select
-            .qualify
-            .as_ref()
-            .map(|expression| analyze_predicate(expression, diagnostics)),
-    )
+    let empty_aliases = BTreeMap::new();
+    let output_aliases = select
+        .projection
+        .iter()
+        .filter_map(|item| match item {
+            SelectItem::ExprWithAlias { expr, alias } => Some((alias.value.clone(), expr)),
+            _ => None,
+        })
+        .collect::<BTreeMap<_, _>>();
+
+    let where_predicate = select.selection.as_ref().map(|expression| {
+        analyze_predicate_with_windows(
+            expression,
+            &select.named_window,
+            &empty_aliases,
+            diagnostics,
+        )
+    });
+    let having_predicate = select.having.as_ref().map(|expression| {
+        analyze_predicate_with_windows(
+            expression,
+            &select.named_window,
+            &empty_aliases,
+            diagnostics,
+        )
+    });
+    let qualify_predicate = select.qualify.as_ref().map(|expression| {
+        analyze_predicate_with_windows(
+            expression,
+            &select.named_window,
+            &output_aliases,
+            diagnostics,
+        )
+    });
+
+    Predicates::new(where_predicate, having_predicate, qualify_predicate)
 }
 
 fn analyze_set_operation(expression: &SetExpr) -> Option<SetOperation> {
@@ -384,8 +409,9 @@ fn analyze_select_relations(
             SelectItem::UnnamedExpr(expression)
             | SelectItem::ExprWithAlias {
                 expr: expression, ..
-            } => collect_expression_dependencies(
+            } => collect_expression_dependencies_with_windows(
                 expression,
+                &select.named_window,
                 local_relations,
                 diagnostics,
                 derived_index,
@@ -403,8 +429,9 @@ fn analyze_select_relations(
     .into_iter()
     .flatten()
     {
-        collect_expression_dependencies(
+        collect_expression_dependencies_with_windows(
             expression,
+            &select.named_window,
             local_relations,
             diagnostics,
             derived_index,
@@ -664,6 +691,24 @@ fn collect_expression_dependencies(
     derived_index: &mut usize,
     dependencies: &mut BTreeSet<String>,
 ) {
+    collect_expression_dependencies_with_windows(
+        expression,
+        &[],
+        local_relations,
+        diagnostics,
+        derived_index,
+        dependencies,
+    );
+}
+
+fn collect_expression_dependencies_with_windows(
+    expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) {
     match expression {
         Expr::Subquery(query)
         | Expr::Exists {
@@ -674,8 +719,9 @@ fn collect_expression_dependencies(
             dependencies.extend(nested.dependencies);
         }
         Expr::InSubquery { expr, subquery, .. } => {
-            collect_expression_dependencies(
+            collect_expression_dependencies_with_windows(
                 expr,
+                named_windows,
                 local_relations,
                 diagnostics,
                 derived_index,
@@ -688,64 +734,60 @@ fn collect_expression_dependencies(
         Expr::BinaryOp { left, right, .. }
         | Expr::AnyOp { left, right, .. }
         | Expr::AllOp { left, right, .. } => {
-            collect_expression_dependencies(
+            collect_expression_dependencies_with_windows(
                 left,
+                named_windows,
                 local_relations,
                 diagnostics,
                 derived_index,
                 dependencies,
             );
-            collect_expression_dependencies(
+            collect_expression_dependencies_with_windows(
                 right,
+                named_windows,
                 local_relations,
                 diagnostics,
                 derived_index,
                 dependencies,
             );
         }
-        Expr::UnaryOp { expr, .. } | Expr::Nested(expr) => collect_expression_dependencies(
-            expr,
-            local_relations,
-            diagnostics,
-            derived_index,
-            dependencies,
-        ),
+        Expr::UnaryOp { expr, .. } | Expr::Nested(expr) => {
+            collect_expression_dependencies_with_windows(
+                expr,
+                named_windows,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            );
+        }
         Expr::Between {
             expr, low, high, ..
         } => {
-            collect_expression_dependencies(
-                expr,
-                local_relations,
-                diagnostics,
-                derived_index,
-                dependencies,
-            );
-            collect_expression_dependencies(
-                low,
-                local_relations,
-                diagnostics,
-                derived_index,
-                dependencies,
-            );
-            collect_expression_dependencies(
-                high,
-                local_relations,
-                diagnostics,
-                derived_index,
-                dependencies,
-            );
+            for expression in [expr.as_ref(), low.as_ref(), high.as_ref()] {
+                collect_expression_dependencies_with_windows(
+                    expression,
+                    named_windows,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    dependencies,
+                );
+            }
         }
         Expr::InList { expr, list, .. } => {
-            collect_expression_dependencies(
+            collect_expression_dependencies_with_windows(
                 expr,
+                named_windows,
                 local_relations,
                 diagnostics,
                 derived_index,
                 dependencies,
             );
             for value in list {
-                collect_expression_dependencies(
+                collect_expression_dependencies_with_windows(
                     value,
+                    named_windows,
                     local_relations,
                     diagnostics,
                     derived_index,
@@ -756,6 +798,7 @@ fn collect_expression_dependencies(
         Expr::Function(function) => {
             collect_function_argument_dependencies(
                 &function.parameters,
+                named_windows,
                 local_relations,
                 diagnostics,
                 derived_index,
@@ -763,14 +806,27 @@ fn collect_expression_dependencies(
             );
             collect_function_argument_dependencies(
                 &function.args,
+                named_windows,
                 local_relations,
                 diagnostics,
                 derived_index,
                 dependencies,
             );
             if let Some(filter) = &function.filter {
-                collect_expression_dependencies(
+                collect_expression_dependencies_with_windows(
                     filter,
+                    named_windows,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    dependencies,
+                );
+            }
+            if let Some(window) = &function.over {
+                collect_window_dependencies(
+                    window,
+                    named_windows,
+                    &mut BTreeSet::new(),
                     local_relations,
                     diagnostics,
                     derived_index,
@@ -784,6 +840,7 @@ fn collect_expression_dependencies(
 
 fn collect_function_argument_dependencies(
     arguments: &FunctionArguments,
+    named_windows: &[NamedWindowDefinition],
     local_relations: &BTreeSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
@@ -799,14 +856,155 @@ fn collect_function_argument_dependencies(
         FunctionArguments::List(arguments) => {
             for argument in &arguments.args {
                 if let FunctionArg::Unnamed(FunctionArgExpr::Expr(expression)) = argument {
-                    collect_expression_dependencies(
+                    collect_expression_dependencies_with_windows(
                         expression,
+                        named_windows,
                         local_relations,
                         diagnostics,
                         derived_index,
                         dependencies,
                     );
                 }
+            }
+        }
+    }
+}
+
+fn collect_window_dependencies(
+    window: &WindowType,
+    named_windows: &[NamedWindowDefinition],
+    visited: &mut BTreeSet<String>,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) {
+    match window {
+        WindowType::WindowSpec(spec) => collect_window_spec_dependencies(
+            spec,
+            named_windows,
+            visited,
+            local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        ),
+        WindowType::NamedWindow(name) => collect_named_window_dependencies(
+            &name.value,
+            named_windows,
+            visited,
+            local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        ),
+    }
+}
+
+fn collect_named_window_dependencies(
+    name: &str,
+    named_windows: &[NamedWindowDefinition],
+    visited: &mut BTreeSet<String>,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) {
+    if !visited.insert(name.to_string()) {
+        return;
+    }
+
+    if let Some(NamedWindowDefinition(_, definition)) = named_windows
+        .iter()
+        .find(|definition| definition.0.value == name)
+    {
+        match definition {
+            NamedWindowExpr::NamedWindow(base) => collect_named_window_dependencies(
+                &base.value,
+                named_windows,
+                visited,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            ),
+            NamedWindowExpr::WindowSpec(spec) => collect_window_spec_dependencies(
+                spec,
+                named_windows,
+                visited,
+                local_relations,
+                diagnostics,
+                derived_index,
+                dependencies,
+            ),
+        }
+    }
+
+    visited.remove(name);
+}
+
+fn collect_window_spec_dependencies(
+    spec: &SqlWindowSpec,
+    named_windows: &[NamedWindowDefinition],
+    visited: &mut BTreeSet<String>,
+    local_relations: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) {
+    if let Some(name) = &spec.window_name {
+        collect_named_window_dependencies(
+            &name.value,
+            named_windows,
+            visited,
+            local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        );
+    }
+
+    for expression in &spec.partition_by {
+        collect_expression_dependencies_with_windows(
+            expression,
+            named_windows,
+            local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        );
+    }
+    for order in &spec.order_by {
+        collect_expression_dependencies_with_windows(
+            &order.expr,
+            named_windows,
+            local_relations,
+            diagnostics,
+            derived_index,
+            dependencies,
+        );
+    }
+    if let Some(frame) = &spec.window_frame {
+        for bound in [
+            &frame.start_bound,
+            frame
+                .end_bound
+                .as_ref()
+                .unwrap_or(&SqlWindowFrameBound::CurrentRow),
+        ] {
+            match bound {
+                SqlWindowFrameBound::Preceding(Some(expression))
+                | SqlWindowFrameBound::Following(Some(expression)) => {
+                    collect_expression_dependencies_with_windows(
+                        expression,
+                        named_windows,
+                        local_relations,
+                        diagnostics,
+                        derived_index,
+                        dependencies,
+                    );
+                }
+                _ => {}
             }
         }
     }
@@ -825,42 +1023,57 @@ fn merge_relation_analysis(target: &mut RelationAnalysis, source: RelationAnalys
 }
 
 fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Predicate {
+    analyze_predicate_with_windows(expression, &[], &BTreeMap::new(), diagnostics)
+}
+
+fn analyze_predicate_with_windows(
+    expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
+    output_aliases: &BTreeMap<String, &Expr>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Predicate {
     match expression {
-        Expr::Nested(inner) => analyze_predicate(inner, diagnostics),
+        Expr::Nested(inner) => {
+            analyze_predicate_with_windows(inner, named_windows, output_aliases, diagnostics)
+        }
         Expr::BinaryOp { left, op, right } => match op {
             SqlBinaryOperator::And => Predicate::And(LogicalPredicate::pair(
-                analyze_predicate(left, diagnostics),
-                analyze_predicate(right, diagnostics),
+                analyze_predicate_with_windows(left, named_windows, output_aliases, diagnostics),
+                analyze_predicate_with_windows(right, named_windows, output_aliases, diagnostics),
             )),
             SqlBinaryOperator::Or => Predicate::Or(LogicalPredicate::pair(
-                analyze_predicate(left, diagnostics),
-                analyze_predicate(right, diagnostics),
+                analyze_predicate_with_windows(left, named_windows, output_aliases, diagnostics),
+                analyze_predicate_with_windows(right, named_windows, output_aliases, diagnostics),
             )),
             _ => match comparison_operator(op) {
                 Some(operator) => normalize_comparison(
-                    analyze_expression(left, diagnostics),
+                    analyze_predicate_expression(left, named_windows, output_aliases, diagnostics),
                     operator,
-                    analyze_expression(right, diagnostics),
+                    analyze_predicate_expression(right, named_windows, output_aliases, diagnostics),
                 ),
-                None => Predicate::BooleanExpression(analyze_expression(expression, diagnostics)),
+                None => Predicate::BooleanExpression(analyze_expression_with_windows(
+                    expression,
+                    named_windows,
+                    diagnostics,
+                )),
             },
         },
         Expr::IsDistinctFrom(left, right) => normalize_comparison(
-            analyze_expression(left, diagnostics),
+            analyze_predicate_expression(left, named_windows, output_aliases, diagnostics),
             ComparisonOperator::IsDistinctFrom,
-            analyze_expression(right, diagnostics),
+            analyze_predicate_expression(right, named_windows, output_aliases, diagnostics),
         ),
         Expr::IsNotDistinctFrom(left, right) => normalize_comparison(
-            analyze_expression(left, diagnostics),
+            analyze_predicate_expression(left, named_windows, output_aliases, diagnostics),
             ComparisonOperator::IsNotDistinctFrom,
-            analyze_expression(right, diagnostics),
+            analyze_predicate_expression(right, named_windows, output_aliases, diagnostics),
         ),
         Expr::IsNull(inner) => Predicate::IsNull(IsNullPredicate::new(
-            analyze_expression(inner, diagnostics),
+            analyze_predicate_expression(inner, named_windows, output_aliases, diagnostics),
             false,
         )),
         Expr::IsNotNull(inner) => Predicate::IsNull(IsNullPredicate::new(
-            analyze_expression(inner, diagnostics),
+            analyze_predicate_expression(inner, named_windows, output_aliases, diagnostics),
             true,
         )),
         Expr::InList {
@@ -868,9 +1081,11 @@ fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Pr
             list,
             negated,
         } => Predicate::In(InPredicate::new(
-            analyze_expression(expr, diagnostics),
+            analyze_predicate_expression(expr, named_windows, output_aliases, diagnostics),
             list.iter()
-                .map(|value| analyze_expression(value, diagnostics))
+                .map(|value| {
+                    analyze_predicate_expression(value, named_windows, output_aliases, diagnostics)
+                })
                 .collect(),
             *negated,
         )),
@@ -880,17 +1095,42 @@ fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Pr
             low,
             high,
         } => Predicate::Between(BetweenPredicate::new(
-            analyze_expression(expr, diagnostics),
-            analyze_expression(low, diagnostics),
-            analyze_expression(high, diagnostics),
+            analyze_predicate_expression(expr, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(low, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(high, named_windows, output_aliases, diagnostics),
             *negated,
         )),
         Expr::UnaryOp {
             op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
             expr,
-        } => Predicate::Not(NotPredicate::new(analyze_predicate(expr, diagnostics))),
-        _ => Predicate::BooleanExpression(analyze_expression(expression, diagnostics)),
+        } => Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
+            expr,
+            named_windows,
+            output_aliases,
+            diagnostics,
+        ))),
+        _ => Predicate::BooleanExpression(analyze_predicate_expression(
+            expression,
+            named_windows,
+            output_aliases,
+            diagnostics,
+        )),
     }
+}
+
+fn analyze_predicate_expression(
+    expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
+    output_aliases: &BTreeMap<String, &Expr>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    if let Expr::Identifier(identifier) = expression {
+        if let Some(aliased_expression) = output_aliases.get(&identifier.value) {
+            return analyze_expression_with_windows(aliased_expression, named_windows, diagnostics);
+        }
+    }
+
+    analyze_expression_with_windows(expression, named_windows, diagnostics)
 }
 
 fn normalize_comparison(
@@ -917,7 +1157,11 @@ fn comparison_operator(operator: &SqlBinaryOperator) -> Option<ComparisonOperato
     }
 }
 
-fn analyze_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Expression {
+fn analyze_expression_with_windows(
+    expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
     match expression {
         Expr::Identifier(identifier) => {
             Expression::Column(ColumnExpression::new(None, identifier.value.clone()))
@@ -930,12 +1174,16 @@ fn analyze_expression(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> E
             expression,
             diagnostics,
         ),
-        Expr::Function(function) => analyze_function(function, expression, diagnostics),
-        Expr::UnaryOp { op, expr } => analyze_unary_expression(op, expr, expression, diagnostics),
-        Expr::BinaryOp { left, op, right } => {
-            analyze_binary_expression(left, op, right, expression, diagnostics)
+        Expr::Function(function) => {
+            analyze_function(function, expression, named_windows, diagnostics)
         }
-        Expr::Nested(inner) => analyze_expression(inner, diagnostics),
+        Expr::UnaryOp { op, expr } => {
+            analyze_unary_expression(op, expr, expression, named_windows, diagnostics)
+        }
+        Expr::BinaryOp { left, op, right } => {
+            analyze_binary_expression(left, op, right, expression, named_windows, diagnostics)
+        }
+        Expr::Nested(inner) => analyze_expression_with_windows(inner, named_windows, diagnostics),
         _ => unsupported_expression(
             "expression",
             expression,
@@ -1079,13 +1327,13 @@ fn string_literal_value(value: &Value) -> Option<&str> {
 fn analyze_function(
     function: &Function,
     expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
     if function.uses_odbc_syntax
         || !matches!(&function.parameters, FunctionArguments::None)
         || function.filter.is_some()
         || function.null_treatment.is_some()
-        || function.over.is_some()
         || !function.within_group.is_empty()
     {
         return unsupported_expression(
@@ -1108,7 +1356,11 @@ fn analyze_function(
             for argument in &arguments.args {
                 match argument {
                     FunctionArg::Unnamed(FunctionArgExpr::Expr(argument)) => {
-                        normalized_arguments.push(analyze_expression(argument, diagnostics));
+                        normalized_arguments.push(analyze_expression_with_windows(
+                            argument,
+                            named_windows,
+                            diagnostics,
+                        ));
                     }
                     _ => {
                         return unsupported_expression(
@@ -1133,17 +1385,244 @@ fn analyze_function(
         }
     };
 
-    Expression::Function(FunctionExpression::new(
-        function.name.to_string(),
-        arguments,
-        distinct,
+    let function_expression =
+        FunctionExpression::new(function.name.to_string(), arguments, distinct);
+
+    match &function.over {
+        Some(window) => match analyze_window_type(window, named_windows, diagnostics) {
+            Some(window) => Expression::WindowFunction(WindowFunctionExpression::new(
+                function_expression,
+                window,
+            )),
+            None => Expression::Unsupported(UnsupportedSemantic::new(
+                "window_function".to_string(),
+                Some("window specification could not be resolved safely".to_string()),
+            )),
+        },
+        None => Expression::Function(function_expression),
+    }
+}
+
+fn analyze_window_type(
+    window: &WindowType,
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<WindowSpecification> {
+    match window {
+        WindowType::WindowSpec(spec) => {
+            analyze_window_spec(spec, named_windows, &mut BTreeSet::new(), diagnostics)
+        }
+        WindowType::NamedWindow(name) => {
+            let resolved = resolve_named_window(
+                &name.value,
+                named_windows,
+                &mut BTreeSet::new(),
+                diagnostics,
+            )?;
+            Some(WindowSpecification::new(
+                Some(name.value.clone()),
+                resolved.partition_by().to_vec(),
+                resolved.order_by().to_vec(),
+                resolved.frame().cloned(),
+            ))
+        }
+    }
+}
+
+fn resolve_named_window(
+    name: &str,
+    named_windows: &[NamedWindowDefinition],
+    resolving: &mut BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<WindowSpecification> {
+    let matches = named_windows
+        .iter()
+        .filter(|definition| definition.0.value == name)
+        .collect::<Vec<_>>();
+
+    let definition = match matches.as_slice() {
+        [definition] => *definition,
+        [] => {
+            diagnostics.push(warning(
+                "unresolved_named_window",
+                DiagnosticArea::Function,
+                &format!("named window {name} is not defined in the local query scope"),
+            ));
+            return None;
+        }
+        _ => {
+            diagnostics.push(warning(
+                "ambiguous_named_window",
+                DiagnosticArea::Function,
+                &format!("named window {name} is defined more than once in the local query scope"),
+            ));
+            return None;
+        }
+    };
+
+    if !resolving.insert(name.to_string()) {
+        diagnostics.push(warning(
+            "cyclic_named_window",
+            DiagnosticArea::Function,
+            &format!("named window {name} participates in a reference cycle"),
+        ));
+        return None;
+    }
+
+    let resolved = match &definition.1 {
+        NamedWindowExpr::NamedWindow(base) => {
+            resolve_named_window(&base.value, named_windows, resolving, diagnostics)
+        }
+        NamedWindowExpr::WindowSpec(spec) => {
+            analyze_window_spec(spec, named_windows, resolving, diagnostics)
+        }
+    };
+    resolving.remove(name);
+
+    resolved.map(|resolved| {
+        WindowSpecification::new(
+            Some(name.to_string()),
+            resolved.partition_by().to_vec(),
+            resolved.order_by().to_vec(),
+            resolved.frame().cloned(),
+        )
+    })
+}
+
+fn analyze_window_spec(
+    spec: &SqlWindowSpec,
+    named_windows: &[NamedWindowDefinition],
+    resolving: &mut BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<WindowSpecification> {
+    let mut name = None;
+    let mut partition_by = Vec::new();
+    let mut order_by = Vec::new();
+    let mut frame = None;
+
+    if let Some(base_name) = &spec.window_name {
+        let base = resolve_named_window(&base_name.value, named_windows, resolving, diagnostics)?;
+        name = Some(base_name.value.clone());
+        partition_by = base.partition_by().to_vec();
+        order_by = base.order_by().to_vec();
+        frame = base.frame().cloned();
+    }
+
+    if !spec.partition_by.is_empty() {
+        if !partition_by.is_empty() {
+            diagnostics.push(warning(
+                "unsupported_window_override",
+                DiagnosticArea::Function,
+                "window PARTITION BY cannot safely override an inherited PARTITION BY clause",
+            ));
+            return None;
+        }
+        partition_by = spec
+            .partition_by
+            .iter()
+            .map(|expression| {
+                analyze_expression_with_windows(expression, named_windows, diagnostics)
+            })
+            .collect();
+    }
+
+    if !spec.order_by.is_empty() {
+        if !order_by.is_empty() {
+            diagnostics.push(warning(
+                "unsupported_window_override",
+                DiagnosticArea::Function,
+                "window ORDER BY cannot safely override an inherited ORDER BY clause",
+            ));
+            return None;
+        }
+        order_by = spec
+            .order_by
+            .iter()
+            .map(|order| {
+                if order.with_fill.is_some() {
+                    diagnostics.push(warning(
+                        "unsupported_window_order_option",
+                        DiagnosticArea::Function,
+                        "window ORDER BY WITH FILL semantics are not represented",
+                    ));
+                }
+                WindowOrderExpression::new(
+                    analyze_expression_with_windows(&order.expr, named_windows, diagnostics),
+                    order.options.asc,
+                    order.options.nulls_first,
+                )
+            })
+            .collect();
+    }
+
+    if let Some(window_frame) = &spec.window_frame {
+        if frame.is_some() {
+            diagnostics.push(warning(
+                "unsupported_window_override",
+                DiagnosticArea::Function,
+                "window frame cannot safely override an inherited frame",
+            ));
+            return None;
+        }
+        frame = Some(analyze_window_frame(
+            window_frame,
+            named_windows,
+            diagnostics,
+        ));
+    }
+
+    Some(WindowSpecification::new(
+        name,
+        partition_by,
+        order_by,
+        frame,
     ))
+}
+
+fn analyze_window_frame(
+    frame: &SqlWindowFrame,
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> WindowFrame {
+    WindowFrame::new(
+        match frame.units {
+            SqlWindowFrameUnits::Rows => WindowFrameUnits::Rows,
+            SqlWindowFrameUnits::Range => WindowFrameUnits::Range,
+            SqlWindowFrameUnits::Groups => WindowFrameUnits::Groups,
+        },
+        analyze_window_frame_bound(&frame.start_bound, named_windows, diagnostics),
+        frame
+            .end_bound
+            .as_ref()
+            .map_or(WindowFrameBound::CurrentRow, |bound| {
+                analyze_window_frame_bound(bound, named_windows, diagnostics)
+            }),
+    )
+}
+
+fn analyze_window_frame_bound(
+    bound: &SqlWindowFrameBound,
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> WindowFrameBound {
+    match bound {
+        SqlWindowFrameBound::CurrentRow => WindowFrameBound::CurrentRow,
+        SqlWindowFrameBound::Preceding(None) => WindowFrameBound::UnboundedPreceding,
+        SqlWindowFrameBound::Following(None) => WindowFrameBound::UnboundedFollowing,
+        SqlWindowFrameBound::Preceding(Some(expression)) => WindowFrameBound::Preceding(Box::new(
+            analyze_expression_with_windows(expression, named_windows, diagnostics),
+        )),
+        SqlWindowFrameBound::Following(Some(expression)) => WindowFrameBound::Following(Box::new(
+            analyze_expression_with_windows(expression, named_windows, diagnostics),
+        )),
+    }
 }
 
 fn analyze_unary_expression(
     operator: &SqlUnaryOperator,
     operand: &Expr,
     expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
     let operator = match operator {
@@ -1156,7 +1635,7 @@ fn analyze_unary_expression(
     match operator {
         Some(operator) => Expression::Unary(UnaryExpression::new(
             operator,
-            analyze_expression(operand, diagnostics),
+            analyze_expression_with_windows(operand, named_windows, diagnostics),
         )),
         None => unsupported_expression(
             "unary_expression",
@@ -1172,6 +1651,7 @@ fn analyze_binary_expression(
     operator: &SqlBinaryOperator,
     right: &Expr,
     expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
     let operator = match operator {
@@ -1192,8 +1672,8 @@ fn analyze_binary_expression(
     match operator {
         Some(operator) => Expression::Binary(BinaryExpression::new(
             operator,
-            analyze_expression(left, diagnostics),
-            analyze_expression(right, diagnostics),
+            analyze_expression_with_windows(left, named_windows, diagnostics),
+            analyze_expression_with_windows(right, named_windows, diagnostics),
         )),
         None => unsupported_expression(
             "binary_expression",
@@ -1347,7 +1827,7 @@ fn analyze_select_output(
     let columns = select
         .projection
         .iter()
-        .map(|item| analyze_output_item(item, &scope, diagnostics))
+        .map(|item| analyze_output_item(item, &scope, &select.named_window, diagnostics))
         .collect();
 
     Output::new(columns)
@@ -1356,18 +1836,19 @@ fn analyze_select_output(
 fn analyze_output_item(
     item: &SelectItem,
     scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> OutputColumn {
     match item {
         SelectItem::UnnamedExpr(expression) => OutputColumn::new(
             output_name_for_expression(expression),
-            analyze_expression(expression, diagnostics),
-            lineage_for_expression(expression, scope, diagnostics),
+            analyze_expression_with_windows(expression, named_windows, diagnostics),
+            lineage_for_expression(expression, scope, named_windows, diagnostics),
         ),
         SelectItem::ExprWithAlias { expr, alias } => OutputColumn::new(
             alias.value.clone(),
-            analyze_expression(expr, diagnostics),
-            lineage_for_expression(expr, scope, diagnostics),
+            analyze_expression_with_windows(expr, named_windows, diagnostics),
+            lineage_for_expression(expr, scope, named_windows, diagnostics),
         ),
         SelectItem::Wildcard(_) => unresolved_wildcard_column("*".to_string(), diagnostics),
         SelectItem::QualifiedWildcard(prefix, _) => {
@@ -1484,10 +1965,18 @@ fn relation_qualifiers(relation: &str, alias: Option<String>) -> Vec<String> {
 fn lineage_for_expression(
     expression: &Expr,
     scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<LineageSource> {
     let mut lineage = BTreeSet::new();
-    collect_output_lineage(expression, scope, diagnostics, &mut lineage);
+    collect_output_lineage(
+        expression,
+        scope,
+        named_windows,
+        &mut BTreeSet::new(),
+        diagnostics,
+        &mut lineage,
+    );
     lineage
         .into_iter()
         .map(|(relation, column)| LineageSource::new(relation, column))
@@ -1497,6 +1986,8 @@ fn lineage_for_expression(
 fn collect_output_lineage(
     expression: &Expr,
     scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
+    visited_windows: &mut BTreeSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
     lineage: &mut BTreeSet<(String, String)>,
 ) {
@@ -1521,37 +2012,110 @@ fn collect_output_lineage(
             }
         }
         Expr::Function(function) => {
-            collect_function_argument_lineage(&function.parameters, scope, diagnostics, lineage);
-            collect_function_argument_lineage(&function.args, scope, diagnostics, lineage);
+            collect_function_argument_lineage(
+                &function.parameters,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            );
+            collect_function_argument_lineage(
+                &function.args,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            );
             if let Some(filter) = &function.filter {
-                collect_output_lineage(filter, scope, diagnostics, lineage);
+                collect_output_lineage(
+                    filter,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
+                );
+            }
+            if let Some(window) = &function.over {
+                collect_window_lineage(
+                    window,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
+                );
             }
         }
         Expr::UnaryOp { expr, .. }
         | Expr::Nested(expr)
         | Expr::IsNull(expr)
         | Expr::IsNotNull(expr) => {
-            collect_output_lineage(expr, scope, diagnostics, lineage);
+            collect_output_lineage(
+                expr,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            );
         }
         Expr::BinaryOp { left, right, .. }
         | Expr::AnyOp { left, right, .. }
         | Expr::AllOp { left, right, .. }
         | Expr::IsDistinctFrom(left, right)
         | Expr::IsNotDistinctFrom(left, right) => {
-            collect_output_lineage(left, scope, diagnostics, lineage);
-            collect_output_lineage(right, scope, diagnostics, lineage);
+            collect_output_lineage(
+                left,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            );
+            collect_output_lineage(
+                right,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            );
         }
         Expr::Between {
             expr, low, high, ..
         } => {
-            collect_output_lineage(expr, scope, diagnostics, lineage);
-            collect_output_lineage(low, scope, diagnostics, lineage);
-            collect_output_lineage(high, scope, diagnostics, lineage);
+            for expression in [expr.as_ref(), low.as_ref(), high.as_ref()] {
+                collect_output_lineage(
+                    expression,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
+                );
+            }
         }
         Expr::InList { expr, list, .. } => {
-            collect_output_lineage(expr, scope, diagnostics, lineage);
+            collect_output_lineage(
+                expr,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            );
             for value in list {
-                collect_output_lineage(value, scope, diagnostics, lineage);
+                collect_output_lineage(
+                    value,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
+                );
             }
         }
         _ => {}
@@ -1561,14 +2125,158 @@ fn collect_output_lineage(
 fn collect_function_argument_lineage(
     arguments: &FunctionArguments,
     scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
+    visited_windows: &mut BTreeSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
     lineage: &mut BTreeSet<(String, String)>,
 ) {
     if let FunctionArguments::List(arguments) = arguments {
         for argument in &arguments.args {
             if let FunctionArg::Unnamed(FunctionArgExpr::Expr(expression)) = argument {
-                collect_output_lineage(expression, scope, diagnostics, lineage);
+                collect_output_lineage(
+                    expression,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
+                );
             }
+        }
+    }
+}
+
+fn collect_window_lineage(
+    window: &WindowType,
+    scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
+    visited_windows: &mut BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    lineage: &mut BTreeSet<(String, String)>,
+) {
+    match window {
+        WindowType::WindowSpec(spec) => collect_window_spec_lineage(
+            spec,
+            scope,
+            named_windows,
+            visited_windows,
+            diagnostics,
+            lineage,
+        ),
+        WindowType::NamedWindow(name) => collect_named_window_lineage(
+            &name.value,
+            scope,
+            named_windows,
+            visited_windows,
+            diagnostics,
+            lineage,
+        ),
+    }
+}
+
+fn collect_named_window_lineage(
+    name: &str,
+    scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
+    visited_windows: &mut BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    lineage: &mut BTreeSet<(String, String)>,
+) {
+    if !visited_windows.insert(name.to_string()) {
+        return;
+    }
+
+    if let Some(NamedWindowDefinition(_, definition)) = named_windows
+        .iter()
+        .find(|definition| definition.0.value == name)
+    {
+        match definition {
+            NamedWindowExpr::NamedWindow(base) => collect_named_window_lineage(
+                &base.value,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            ),
+            NamedWindowExpr::WindowSpec(spec) => collect_window_spec_lineage(
+                spec,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            ),
+        }
+    }
+
+    visited_windows.remove(name);
+}
+
+fn collect_window_spec_lineage(
+    spec: &SqlWindowSpec,
+    scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
+    visited_windows: &mut BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+    lineage: &mut BTreeSet<(String, String)>,
+) {
+    if let Some(name) = &spec.window_name {
+        collect_named_window_lineage(
+            &name.value,
+            scope,
+            named_windows,
+            visited_windows,
+            diagnostics,
+            lineage,
+        );
+    }
+    for expression in &spec.partition_by {
+        collect_output_lineage(
+            expression,
+            scope,
+            named_windows,
+            visited_windows,
+            diagnostics,
+            lineage,
+        );
+    }
+    for order in &spec.order_by {
+        collect_output_lineage(
+            &order.expr,
+            scope,
+            named_windows,
+            visited_windows,
+            diagnostics,
+            lineage,
+        );
+    }
+    if let Some(frame) = &spec.window_frame {
+        if let SqlWindowFrameBound::Preceding(Some(expression))
+        | SqlWindowFrameBound::Following(Some(expression)) = &frame.start_bound
+        {
+            collect_output_lineage(
+                expression,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            );
+        }
+        if let Some(
+            SqlWindowFrameBound::Preceding(Some(expression))
+            | SqlWindowFrameBound::Following(Some(expression)),
+        ) = &frame.end_bound
+        {
+            collect_output_lineage(
+                expression,
+                scope,
+                named_windows,
+                visited_windows,
+                diagnostics,
+                lineage,
+            );
         }
     }
 }
@@ -1702,13 +2410,6 @@ fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
             "unsupported_sort_by",
             DiagnosticArea::Other,
             "SORT BY semantics are not implemented yet",
-        ));
-    }
-    if !select.named_window.is_empty() {
-        diagnostics.push(warning(
-            "unsupported_named_window",
-            DiagnosticArea::Other,
-            "named WINDOW semantics are not implemented yet",
         ));
     }
     if select.value_table_mode.is_some() {

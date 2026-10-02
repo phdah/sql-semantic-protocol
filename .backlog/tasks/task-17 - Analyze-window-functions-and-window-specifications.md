@@ -1,7 +1,7 @@
 ---
 id: TASK-17
 title: Analyze window functions and window specifications
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -18,12 +18,12 @@ The protocol should preserve the function arguments, PARTITION BY dependencies, 
 
 ## Acceptance Criteria
 
-- [ ] Window-function expressions are distinguishable from ordinary scalar or aggregate functions in the semantic model.
-- [ ] Function arguments contribute to output lineage.
-- [ ] PARTITION BY expressions and ORDER BY expressions are represented and contribute dependencies/lineage.
-- [ ] Supported ROWS, RANGE, and GROUPS frame definitions are represented without parser-specific types.
-- [ ] Named windows are resolved deterministically within their local query scope.
-- [ ] QUALIFY predicates can reference window outputs without losing lineage or dependencies.
-- [ ] Window functions do not imply value-domain constraints unless those constraints can be proven safely.
-- [ ] Unsupported window options remain explicit diagnostics rather than being silently dropped.
-- [ ] Tests cover ranking, aggregate windows, named windows, frames, and QUALIFY where supported.
+- [x] Window-function expressions are distinguishable from ordinary scalar or aggregate functions in the semantic model.
+- [x] Function arguments contribute to output lineage.
+- [x] PARTITION BY expressions and ORDER BY expressions are represented and contribute dependencies/lineage.
+- [x] Supported ROWS, RANGE, and GROUPS frame definitions are represented without parser-specific types.
+- [x] Named windows are resolved deterministically within their local query scope.
+- [x] QUALIFY predicates can reference window outputs without losing lineage or dependencies.
+- [x] Window functions do not imply value-domain constraints unless those constraints can be proven safely.
+- [x] Unsupported window options remain explicit diagnostics rather than being silently dropped.
+- [x] Tests cover ranking, aggregate windows, named windows, frames, and QUALIFY where supported.
