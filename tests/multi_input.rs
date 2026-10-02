@@ -62,10 +62,12 @@ fn multi_input_json_is_one_deterministic_protocol_document() {
     assert_eq!(json["inputs"][1]["id"], "input-0002");
     assert_eq!(json["inputs"][1]["source"]["kind"], "file");
     assert_eq!(json["inputs"][1]["source"]["path"], "queries/beta.sql");
-    assert_eq!(
-        json["graph"]["diagnostics"][0]["code"],
-        "multi_input_composition_pending"
-    );
+    assert_eq!(json["graph"]["diagnostics"], serde_json::json!([]));
+    assert_eq!(json["graph"]["edges"][0]["relation"], "alpha");
+    assert_eq!(json["graph"]["edges"][0]["resolution"], "external");
+    assert_eq!(json["graph"]["edges"][1]["relation"], "beta");
+    assert_eq!(json["graph"]["edges"][1]["resolution"], "external");
+    assert_eq!(json["graph"]["components"].as_array().map(Vec::len), Some(2));
 }
 
 #[test]
