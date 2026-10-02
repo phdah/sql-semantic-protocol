@@ -3,6 +3,73 @@ use sql_semantic_protocol::{
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
+const DIALECTS: &[&str] = &[
+    "generic",
+    "mysql",
+    "postgresql",
+    "postgres",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
+];
+
+#[test]
+fn query_backed_ddl_is_supported_across_all_exposed_dialects() {
+    for dialect_name in DIALECTS {
+        let dialect =
+            dialect_from_str(dialect_name).expect("documented dialect should be recognized");
+
+        for (sql, expected_relation) in [
+            (
+                "CREATE TABLE target_table AS SELECT id FROM source_table",
+                "target_table",
+            ),
+            (
+                "CREATE VIEW target_view AS SELECT id FROM source_table",
+                "target_view",
+            ),
+        ] {
+            let bundle = analyze_inputs(
+                &[SqlInput::inline(sql)],
+                dialect_name,
+                dialect.as_ref(),
+            )
+            .unwrap_or_else(|error| {
+                panic!("dialect {dialect_name} failed to analyze {sql}: {error}")
+            });
+
+            assert_eq!(
+                bundle.layers().len(),
+                1,
+                "dialect {dialect_name} should produce one transformation layer for {sql}"
+            );
+            assert!(
+                matches!(
+                    bundle.layers()[0].produces(),
+                    [DatasetRef::Relation { name }] if name == expected_relation
+                ),
+                "dialect {dialect_name} produced the wrong relation for {sql}"
+            );
+
+            let ProtocolStatement::Query(query) = &bundle.inputs()[0].statements()[0] else {
+                panic!("dialect {dialect_name} should expose query semantics for {sql}");
+            };
+            assert_eq!(
+                query.produced_relation(),
+                Some(expected_relation),
+                "dialect {dialect_name} should preserve the produced relation for {sql}"
+            );
+        }
+    }
+}
+
 #[test]
 fn snowflake_ctas_records_qualified_quoted_relation_and_query_semantics() {
     let dialect = dialect_from_str("snowflake").expect("snowflake dialect should exist");
