@@ -32,11 +32,10 @@ pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
-    BinaryExpression, BinaryOperator, Bound, ColumnDomain, ColumnExpression,
-    ColumnRef, ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea,
-    DiagnosticSeverity, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
-    IsNullPredicate, Join,
-    JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    BinaryExpression, BinaryOperator, Bound, ColumnDomain, ColumnExpression, ColumnRef,
+    ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
+    Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate, IsNullPredicate,
+    Join, JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource,
     ProtocolStatement, QueryStatement, RangesDomain, RelationRef, SetDomain, SetMode, SetOperand,
     SetOperation, SetOperator, SetQuantifier, SourceRelation, UnaryExpression, UnaryOperator,
