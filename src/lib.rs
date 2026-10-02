@@ -3,7 +3,6 @@
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
-//! - OutputScope plus scoped serializers select final outcomes or all transformation layers without re-analyzing SQL.
 //! - to_openlineage_json exports representable dataset and field lineage as OpenLineage DatasetEvents.
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions and predicates plus explicit unknown and unsupported semantic values.
@@ -16,7 +15,6 @@ mod emission;
 mod openlineage;
 mod parser;
 pub mod protocol;
-mod scope;
 
 use std::fmt;
 
@@ -29,7 +27,7 @@ pub use bundle::{
     InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
     TransformationLayer, UnresolvedComposedSemantics,
 };
-pub use emission::{to_bundle_json, to_bundle_json_with_scope, to_json, to_json_with_scope};
+pub use emission::{to_bundle_json, to_json};
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
 pub use protocol::{
@@ -42,7 +40,6 @@ pub use protocol::{
     SourceRelation, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, PROTOCOL_VERSION,
 };
-pub use scope::OutputScope;
 
 /// Error returned when SQL cannot be converted into protocol domain values.
 #[derive(Debug, Clone, PartialEq, Eq)]
