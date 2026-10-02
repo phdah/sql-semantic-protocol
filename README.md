@@ -36,6 +36,14 @@ Version `0.1.0` files remain in the repository only as historical references. Cu
 
 TASK-13 resolves transformation layers into a deterministic relation dependency graph. TASK-14 composes semantics through that graph: final outputs expose transitive physical lineage, value domains propagate through safe direct projections and renames, and ambiguous, cyclic, or non-invertible paths remain explicit instead of being guessed. Disconnected pipelines compose independently.
 
+### Set operations
+
+UNION, UNION ALL, INTERSECT, and EXCEPT are analyzed as parser-independent set-operation semantics. Non-standard SQL MINUS syntax is normalized to EXCEPT when the selected sqlparser dialect accepts it.
+
+Set outputs align columns positionally. Output names come from the left branch, while field lineage includes the corresponding columns from every contributing branch. Nested and chained operations retain their recursive operator tree in the optional `set_operation` field. Omitted set quantifiers normalize to DISTINCT semantics.
+
+If branches expose incompatible arity, output semantics remain unresolved and an explicit diagnostic is emitted. Branch-local value constraints are retained when compatible; conflicting constraints on the same source column degrade to an explicit unknown domain rather than being guessed. BY NAME alignment is represented in the operation tree but output composition remains explicitly unsupported.
+
 ### Outcome selection
 
 The protocol always contains every analyzed transformation outcome. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.
