@@ -28,13 +28,12 @@ use crate::protocol::{
     BinaryExpression, BinaryOperator, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate, IsNullPredicate,
-    Join as ProtocolJoin, JoinKind,
-    LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate,
-    Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
-    RelationRef, SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation,
-    UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
-    ValueDomain, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification,
+    Join as ProtocolJoin, JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue,
+    LogicalPredicate, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
+    ProtocolStatement, QueryStatement, RelationRef, SetOperand, SetOperation, SetOperator,
+    SetQuantifier, SourceRelation, UnaryExpression, UnaryOperator, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, WindowFrame, WindowFrameBound,
+    WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -242,7 +241,11 @@ fn analyze_select_aggregation(
                     expressions
                         .iter()
                         .map(|expression| {
-                            analyze_grouping_expression(expression, &select.named_window, diagnostics)
+                            analyze_grouping_expression(
+                                expression,
+                                &select.named_window,
+                                diagnostics,
+                            )
                         })
                         .collect(),
                 ))
@@ -263,9 +266,11 @@ fn analyze_grouping_expression(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> GroupingExpression {
     match expression {
-        Expr::GroupingSets(sets) => {
-            GroupingExpression::GroupingSets(analyze_grouping_sets(sets, named_windows, diagnostics))
-        }
+        Expr::GroupingSets(sets) => GroupingExpression::GroupingSets(analyze_grouping_sets(
+            sets,
+            named_windows,
+            diagnostics,
+        )),
         Expr::Rollup(sets) => {
             GroupingExpression::Rollup(analyze_grouping_sets(sets, named_windows, diagnostics))
         }
@@ -1527,39 +1532,63 @@ fn analyze_function(
         || function.null_treatment.is_some()
         || !function.within_group.is_empty()
     {
-        return unsupported_expression("function", expression, DiagnosticArea::Function, diagnostics);
+        return unsupported_expression(
+            "function",
+            expression,
+            DiagnosticArea::Function,
+            diagnostics,
+        );
     }
 
     let (arguments, distinct) = match &function.args {
         FunctionArguments::None => (Vec::new(), false),
         FunctionArguments::List(arguments) if arguments.clauses.is_empty() => {
-            let distinct = matches!(arguments.duplicate_treatment, Some(DuplicateTreatment::Distinct));
+            let distinct = matches!(
+                arguments.duplicate_treatment,
+                Some(DuplicateTreatment::Distinct)
+            );
             let mut normalized_arguments = Vec::with_capacity(arguments.args.len());
+
             for argument in &arguments.args {
                 match argument {
                     FunctionArg::Unnamed(FunctionArgExpr::Expr(argument)) => {
                         normalized_arguments.push(analyze_expression_with_windows(
-                            argument, named_windows, diagnostics,
+                            argument,
+                            named_windows,
+                            diagnostics,
                         ));
                     }
-                    _ => return unsupported_expression(
-                        "function", expression, DiagnosticArea::Function, diagnostics,
-                    ),
+                    _ => {
+                        return unsupported_expression(
+                            "function",
+                            expression,
+                            DiagnosticArea::Function,
+                            diagnostics,
+                        )
+                    }
                 }
             }
+
             (normalized_arguments, distinct)
         }
         FunctionArguments::List(_) | FunctionArguments::Subquery(_) => {
-            return unsupported_expression("function", expression, DiagnosticArea::Function, diagnostics);
+            return unsupported_expression(
+                "function",
+                expression,
+                DiagnosticArea::Function,
+                diagnostics,
+            );
         }
     };
 
     let function_expression =
         FunctionExpression::new(function.name.to_string(), arguments, distinct);
+
     match &function.over {
         Some(window) => match analyze_window_type(window, named_windows, diagnostics) {
             Some(window) => Expression::WindowFunction(WindowFunctionExpression::new(
-                function_expression, window,
+                function_expression,
+                window,
             )),
             None => Expression::Unsupported(UnsupportedSemantic::new(
                 "window_function".to_string(),
@@ -1582,15 +1611,22 @@ fn analyze_aggregate_function(
         || !function.within_group.is_empty()
     {
         return unsupported_expression(
-            "aggregate_function", expression, DiagnosticArea::Function, diagnostics,
+            "aggregate_function",
+            expression,
+            DiagnosticArea::Function,
+            diagnostics,
         );
     }
 
     let (arguments, distinct) = match &function.args {
         FunctionArguments::None => (Vec::new(), false),
         FunctionArguments::List(arguments) if arguments.clauses.is_empty() => {
-            let distinct = matches!(arguments.duplicate_treatment, Some(DuplicateTreatment::Distinct));
+            let distinct = matches!(
+                arguments.duplicate_treatment,
+                Some(DuplicateTreatment::Distinct)
+            );
             let mut normalized_arguments = Vec::with_capacity(arguments.args.len());
+
             for argument in &arguments.args {
                 match argument {
                     FunctionArg::Unnamed(FunctionArgExpr::Expr(argument)) => {
@@ -1602,18 +1638,28 @@ fn analyze_aggregate_function(
                         normalized_arguments.push(AggregateArgument::Wildcard);
                     }
                     FunctionArg::Unnamed(FunctionArgExpr::QualifiedWildcard(qualifier)) => {
-                        normalized_arguments.push(AggregateArgument::QualifiedWildcard(qualifier.to_string()));
+                        normalized_arguments
+                            .push(AggregateArgument::QualifiedWildcard(qualifier.to_string()));
                     }
-                    _ => return unsupported_expression(
-                        "aggregate_function", expression, DiagnosticArea::Function, diagnostics,
-                    ),
+                    _ => {
+                        return unsupported_expression(
+                            "aggregate_function",
+                            expression,
+                            DiagnosticArea::Function,
+                            diagnostics,
+                        )
+                    }
                 }
             }
+
             (normalized_arguments, distinct)
         }
         FunctionArguments::List(_) | FunctionArguments::Subquery(_) => {
             return unsupported_expression(
-                "aggregate_function", expression, DiagnosticArea::Function, diagnostics,
+                "aggregate_function",
+                expression,
+                DiagnosticArea::Function,
+                diagnostics,
             );
         }
     };
@@ -1624,7 +1670,10 @@ fn analyze_aggregate_function(
     });
 
     Expression::AggregateFunction(AggregateFunctionExpression::new(
-        function.name.to_string(), arguments, distinct, filter,
+        function.name.to_string(),
+        arguments,
+        distinct,
+        filter,
     ))
 }
 
@@ -1637,10 +1686,29 @@ fn is_aggregate_function(function: &Function) -> bool {
 
     matches!(
         normalized.as_str(),
-        "ANY_VALUE" | "ARRAY_AGG" | "AVG" | "BIT_AND" | "BIT_OR" | "BIT_XOR"
-            | "BOOL_AND" | "BOOL_OR" | "CORR" | "COUNT" | "COVAR_POP" | "COVAR_SAMP"
-            | "EVERY" | "MAX" | "MIN" | "STDDEV" | "STDDEV_POP" | "STDDEV_SAMP"
-            | "STRING_AGG" | "SUM" | "VAR_POP" | "VAR_SAMP" | "VARIANCE"
+        "ANY_VALUE"
+            | "ARRAY_AGG"
+            | "AVG"
+            | "BIT_AND"
+            | "BIT_OR"
+            | "BIT_XOR"
+            | "BOOL_AND"
+            | "BOOL_OR"
+            | "CORR"
+            | "COUNT"
+            | "COVAR_POP"
+            | "COVAR_SAMP"
+            | "EVERY"
+            | "MAX"
+            | "MIN"
+            | "STDDEV"
+            | "STDDEV_POP"
+            | "STDDEV_SAMP"
+            | "STRING_AGG"
+            | "SUM"
+            | "VAR_POP"
+            | "VAR_SAMP"
+            | "VARIANCE"
     )
 }
 
