@@ -79,7 +79,7 @@ The current development version is `0.2.0`. The current roadmap targets the firs
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]
+sql-semantic-protocol [--dialect <name>] [--scope <final|all>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
@@ -133,6 +133,22 @@ printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
 ```
 
 Every successful invocation emits protocol `0.2.0`. One input produces an `inputs` array with one element; multiple inputs use the same document shape with additional elements.
+
+### Output scope
+
+Protocol output defaults to `--scope all`, which renders every transformation layer. Use `--scope final` to render only layers that produce terminal outcomes from each dependency-graph component:
+
+```sh
+cargo run -- \
+  --scope final \
+  --file sql/stage.sql \
+  --file sql/core.sql \
+  --file sql/mart.sql
+```
+
+Scope selection happens after complete analysis and composition. Final output therefore retains transitive physical dependencies, value domains, and column lineage from omitted intermediate layers. The `inputs` and `graph` sections remain complete under both scopes so graph relationships and diagnostics are not lost. A standalone anonymous query remains a final outcome. For a bundle with only one transformation layer, `final` and `all` are byte-identical.
+
+`--scope` applies to protocol output only. OpenLineage has its own dataset-event export semantics and rejects an explicit scope flag rather than silently ignoring it.
 
 Query-backed DDL is analyzed through its defining query and records the created relation as the layer output. For example, `CREATE TABLE mart.orders AS SELECT ...` produces `mart.orders`, while a bare `SELECT` produces an anonymous layer result.
 
