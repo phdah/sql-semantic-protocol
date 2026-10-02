@@ -11,14 +11,15 @@ use crate::bundle::{
     UnresolvedComposedSemantics,
 };
 use crate::protocol::{
-    AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate, BinaryExpression,
-    Bound, ColumnDomain, ColumnExpression, ColumnRef, ComparisonPredicate, Diagnostic, Expression,
-    FunctionExpression, GroupBy, GroupingExpression, InPredicate, IsNullPredicate, Join,
-    LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output,
-    OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
-    SetOperand, SetOperation, SourceRelation, UnaryExpression, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
-    WindowFrameBound, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
+    AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
+    BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef, ComparisonPredicate,
+    Diagnostic, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
+    IsNullPredicate, Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate,
+    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
+    QueryStatement, RelationRef, SetOperand, SetOperation, SourceRelation, UnaryExpression,
+    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
+    WindowFrame, WindowFrameBound, WindowFunctionExpression, WindowOrderExpression,
+    WindowSpecification,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
@@ -526,7 +527,9 @@ fn expression_to_value(expression: &Expression) -> Value {
         Expression::Column(expression) => column_expression_to_value(expression),
         Expression::Literal(expression) => literal_expression_to_value(expression),
         Expression::Function(expression) => function_expression_to_value(expression),
-        Expression::AggregateFunction(expression) => aggregate_function_expression_to_value(expression),
+        Expression::AggregateFunction(expression) => {
+            aggregate_function_expression_to_value(expression)
+        }
         Expression::WindowFunction(expression) => window_function_expression_to_value(expression),
         Expression::Unary(expression) => unary_expression_to_value(expression),
         Expression::Binary(expression) => binary_expression_to_value(expression),
