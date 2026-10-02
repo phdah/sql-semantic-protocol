@@ -1644,11 +1644,7 @@ pub struct InSubqueryPredicate {
 }
 
 impl InSubqueryPredicate {
-    pub(crate) fn new(
-        expression: Expression,
-        subquery: SubquerySemantics,
-        negated: bool,
-    ) -> Self {
+    pub(crate) fn new(expression: Expression, subquery: SubquerySemantics, negated: bool) -> Self {
         Self {
             expression,
             subquery,
