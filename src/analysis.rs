@@ -218,6 +218,82 @@ fn analyze_set_quantifier(quantifier: SqlSetQuantifier) -> SetQuantifier {
     }
 }
 
+fn analyze_query_column_domains(
+    query: &SqlQuery,
+    inherited_local_relations: &BTreeSet<String>,
+) -> Vec<ColumnDomain> {
+    let mut local_relations = inherited_local_relations.clone();
+
+    if let Some(with) = &query.with {
+        for cte in &with.cte_tables {
+            local_relations.insert(cte.alias.name.to_string());
+        }
+    }
+
+    analyze_set_expr_column_domains(query.body.as_ref(), &local_relations)
+}
+
+fn analyze_set_expr_column_domains(
+    expression: &SetExpr,
+    local_relations: &BTreeSet<String>,
+) -> Vec<ColumnDomain> {
+    match expression {
+        SetExpr::Select(select) => {
+            let mut predicate_diagnostics = Vec::new();
+            let predicates = analyze_select_predicates(select, &mut predicate_diagnostics);
+            let mut relation_diagnostics = Vec::new();
+            let mut derived_index = 0;
+            let relations = analyze_select_relations(
+                select,
+                local_relations,
+                &mut relation_diagnostics,
+                &mut derived_index,
+            );
+            derive_column_domains(&predicates, &relations.sources)
+        }
+        SetExpr::Query(query) => analyze_query_column_domains(query, local_relations),
+        SetExpr::SetOperation { left, right, .. } => merge_set_operation_domains(
+            analyze_set_expr_column_domains(left, local_relations),
+            analyze_set_expr_column_domains(right, local_relations),
+        ),
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Merge(_)
+        | SetExpr::Table(_) => Vec::new(),
+    }
+}
+
+fn merge_set_operation_domains(
+    left: Vec<ColumnDomain>,
+    right: Vec<ColumnDomain>,
+) -> Vec<ColumnDomain> {
+    let mut domains = BTreeMap::<ColumnRef, ValueDomain>::new();
+
+    for column_domain in left.into_iter().chain(right) {
+        let column = column_domain.column().clone();
+        let domain = column_domain.domain().clone();
+
+        match domains.get_mut(&column) {
+            Some(existing) if *existing != domain => {
+                *existing = ValueDomain::unknown(
+                    "set-operation branches impose different constraints on the same source column",
+                );
+            }
+            Some(_) => {}
+            None => {
+                domains.insert(column, domain);
+            }
+        }
+    }
+
+    domains
+        .into_iter()
+        .map(|(column, domain)| ColumnDomain::new(column, domain))
+        .collect()
+}
+
 #[derive(Default)]
 struct RelationAnalysis {
     sources: Vec<SourceRelation>,
@@ -1651,6 +1727,26 @@ fn inspect_select_features(select: &Select, diagnostics: &mut Vec<Diagnostic>) {
             DiagnosticArea::Other,
             "CONNECT BY semantics are not implemented yet",
         ));
+    }
+}
+
+fn inspect_set_expr_features(expression: &SetExpr, diagnostics: &mut Vec<Diagnostic>) {
+    match expression {
+        SetExpr::Select(select) => inspect_select_features(select, diagnostics),
+        SetExpr::Query(query) => {
+            inspect_set_expr_features(query.body.as_ref(), diagnostics);
+            inspect_query_features(query, diagnostics);
+        }
+        SetExpr::SetOperation { left, right, .. } => {
+            inspect_set_expr_features(left, diagnostics);
+            inspect_set_expr_features(right, diagnostics);
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Merge(_)
+        | SetExpr::Table(_) => {}
     }
 }
 
