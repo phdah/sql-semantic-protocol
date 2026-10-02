@@ -5,7 +5,10 @@
 
 use serde_json::{json, Value};
 
-use crate::bundle::{AnalysisBundle, DatasetRef, SqlInputSource, TransformationLayer};
+use crate::bundle::{
+    AnalysisBundle, AnalysisGraph, CompositionDiagnostic, DatasetRef, GraphComponent, GraphEdge,
+    SqlInputSource, TransformationLayer,
+};
 use crate::protocol::{
     BetweenPredicate, BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonPredicate, Diagnostic, Expression, FunctionExpression, InPredicate, IsNullPredicate,
@@ -22,8 +25,8 @@ pub fn to_json(protocol: &Protocol) -> String {
 
 /// Serialize an analysis bundle using the one active protocol document shape.
 ///
-/// Local transformation layers and produced relation identities are populated. Cross-input graph
-/// resolution and transitive semantic composition remain explicitly pending.
+/// Local transformation layers and the relation dependency graph are populated. Transitive
+/// semantic composition remains explicitly pending.
 pub fn to_bundle_json(bundle: &AnalysisBundle) -> String {
     bundle_to_value(bundle).to_string()
 }
@@ -68,7 +71,7 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         "protocol_version": bundle.protocol_version(),
         "inputs": inputs,
         "layers": layers,
-        "graph": pending_graph_value()
+        "graph": analysis_graph_to_value(bundle.graph())
     })
 }
 
@@ -112,16 +115,70 @@ fn dataset_ref_to_value(dataset: &DatasetRef) -> Value {
     }
 }
 
-fn pending_graph_value() -> Value {
+fn analysis_graph_to_value(graph: &AnalysisGraph) -> Value {
     json!({
-        "edges": [],
-        "components": [],
-        "diagnostics": [{
-            "severity": "warning",
-            "code": "multi_input_composition_pending",
-            "message": "multi-input graph construction and semantic composition are not implemented yet"
-        }]
+        "edges": graph
+            .edges()
+            .iter()
+            .map(graph_edge_to_value)
+            .collect::<Vec<_>>(),
+        "components": graph
+            .components()
+            .iter()
+            .map(graph_component_to_value)
+            .collect::<Vec<_>>(),
+        "diagnostics": graph
+            .diagnostics()
+            .iter()
+            .map(composition_diagnostic_to_value)
+            .collect::<Vec<_>>()
     })
+}
+
+fn graph_edge_to_value(edge: &GraphEdge) -> Value {
+    json!({
+        "consumer_layer_id": edge.consumer_layer_id(),
+        "relation": edge.relation(),
+        "resolution": edge.resolution().as_str(),
+        "producer_layer_ids": edge.producer_layer_ids()
+    })
+}
+
+fn graph_component_to_value(component: &GraphComponent) -> Value {
+    json!({
+        "id": component.id(),
+        "layer_ids": component.layer_ids(),
+        "final_outcomes": component
+            .final_outcomes()
+            .iter()
+            .map(dataset_ref_to_value)
+            .collect::<Vec<_>>(),
+        "diagnostics": component
+            .diagnostics()
+            .iter()
+            .map(composition_diagnostic_to_value)
+            .collect::<Vec<_>>()
+    })
+}
+
+fn composition_diagnostic_to_value(diagnostic: &CompositionDiagnostic) -> Value {
+    let mut value = json!({
+        "severity": diagnostic.severity().as_str(),
+        "code": diagnostic.code(),
+        "message": diagnostic.message()
+    });
+
+    if let Some(input_id) = diagnostic.input_id() {
+        value["input_id"] = json!(input_id);
+    }
+    if let Some(layer_id) = diagnostic.layer_id() {
+        value["layer_id"] = json!(layer_id);
+    }
+    if let Some(relation) = diagnostic.relation() {
+        value["relation"] = json!(relation);
+    }
+
+    value
 }
 
 fn statement_to_value(statement: &ProtocolStatement) -> Value {
