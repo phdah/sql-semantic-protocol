@@ -34,12 +34,8 @@ fn composed_chain() -> sql_semantic_protocol::AnalysisBundle {
 #[test]
 fn export_maps_composed_dataset_and_field_lineage_to_openlineage() {
     let bundle = composed_chain();
-    let exported = to_openlineage_json(
-        &bundle,
-        "postgresql://warehouse",
-        "2026-10-02T07:00:00Z",
-    )
-    .expect("resolved named layers should export");
+    let exported = to_openlineage_json(&bundle, "postgresql://warehouse", "2026-10-02T07:00:00Z")
+        .expect("resolved named layers should export");
     let events: serde_json::Value =
         serde_json::from_str(&exported).expect("OpenLineage export should be JSON");
 
@@ -126,12 +122,8 @@ fn export_skips_anonymous_and_unresolved_layers_instead_of_inventing_dataset_ide
     )
     .expect("ambiguous and anonymous layers should remain analyzable");
 
-    let exported = to_openlineage_json(
-        &bundle,
-        "postgresql://warehouse",
-        "2026-10-02T07:00:00Z",
-    )
-    .expect("representable layers should still export");
+    let exported = to_openlineage_json(&bundle, "postgresql://warehouse", "2026-10-02T07:00:00Z")
+        .expect("representable layers should still export");
     let events: serde_json::Value =
         serde_json::from_str(&exported).expect("OpenLineage export should be JSON");
     let names = events
