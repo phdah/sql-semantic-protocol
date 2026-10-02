@@ -157,7 +157,8 @@ fn analyze_query_predicates(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>)
 
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     inspect_select_features(select, diagnostics);
-    let scope = build_output_scope(select, &BTreeMap::new(), &[], diagnostics);
+    let mut scope_diagnostics = Vec::new();
+    let scope = build_output_scope(select, &BTreeMap::new(), &[], &mut scope_diagnostics);
     analyze_select_predicates_with_scope(select, &scope, diagnostics)
 }
 
@@ -2152,14 +2153,6 @@ fn analyze_query_output_with_outer_scope(
     )
 }
 
-fn analyze_set_expr_output(
-    expression: &SetExpr,
-    local_outputs: &LocalOutputMap,
-    diagnostics: &mut Vec<Diagnostic>,
-) -> Output {
-    analyze_set_expr_output_with_outer_scope(expression, local_outputs, &[], diagnostics)
-}
-
 fn analyze_set_expr_output_with_outer_scope(
     expression: &SetExpr,
     local_outputs: &LocalOutputMap,
@@ -2258,14 +2251,6 @@ fn merge_set_operation_output(
         .collect();
 
     Output::new(columns)
-}
-
-fn analyze_select_output(
-    select: &Select,
-    local_outputs: &LocalOutputMap,
-    diagnostics: &mut Vec<Diagnostic>,
-) -> Output {
-    analyze_select_output_with_outer_scope(select, local_outputs, &[], diagnostics)
 }
 
 fn analyze_select_output_with_outer_scope(
