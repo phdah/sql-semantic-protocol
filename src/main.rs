@@ -451,7 +451,7 @@ mod tests {
                 assert_eq!(options.namespace.as_deref(), Some("postgresql://warehouse"));
                 assert_eq!(options.event_time.as_deref(), Some("2026-10-02T07:00:00Z"));
             }
-            Command::Help => assert!(false, "expected analyze command"),
+            Command::Help => panic!("expected analyze command"),
         }
     }
 
