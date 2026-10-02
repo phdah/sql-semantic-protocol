@@ -27,4 +27,4 @@ A bare SELECT still produces an anonymous result. DDL that defines an object wit
 - [x] The query inside supported DDL is analyzed with the same semantic behavior as a standalone query.
 - [x] Bare SELECT statements remain representable as anonymous outputs.
 - [x] Non-query DDL and unsupported DDL shapes are reported explicitly instead of being linked incorrectly.
-- [x] Shared query-backed DDL semantics are verified across every dialect name exposed by the project, with additional dialect-specific coverage for materially different DDL variants.
+- [x] Shared query-backed DDL and relevant variants (OR REPLACE, temporary, materialized, qualified, and quoted relation names) are checked against every dialect exposed by the project; every variant accepted by sqlparser must produce the same correct protocol semantics.
