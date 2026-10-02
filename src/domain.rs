@@ -338,6 +338,7 @@ fn collect_expression_columns(
                 collect_expression_columns(argument, sources, columns);
             }
         }
+        Expression::WindowFunction(_) => {}
         Expression::Unary(expression) => {
             collect_expression_columns(expression.operand(), sources, columns);
         }
