@@ -1,7 +1,7 @@
 //! Public library entry points for SQL Semantic Protocol.
 //!
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
-//! - analyze_inputs analyzes an ordered collection of parser-independent SQL input units.
+//! - analyze_inputs analyzes SQL input units and builds their deterministic relation dependency graph.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions and predicates plus explicit unknown and unsupported semantic values.
@@ -19,7 +19,8 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_inputs, AnalysisBundle, AnalyzedInput, DatasetRef, InputAnalysisError, SqlInput,
+    analyze_inputs, AnalysisBundle, AnalysisGraph, AnalyzedInput, CompositionDiagnostic,
+    DatasetRef, GraphComponent, GraphEdge, InputAnalysisError, RelationResolution, SqlInput,
     SqlInputSource, TransformationLayer,
 };
 pub use emission::{to_bundle_json, to_json};

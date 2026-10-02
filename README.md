@@ -34,7 +34,7 @@ The active contract is defined by [`schema/protocol-v0.2.schema.json`](schema/pr
 
 Version `0.1.0` files remain in the repository only as historical references. Current runtime code does not emit `0.1.0`.
 
-TASK-12 populates transformation layers for analyzed query statements. Query-backed `CREATE TABLE ... AS SELECT` and `CREATE VIEW ... AS SELECT` statements produce named relations, while bare queries produce anonymous layer outputs. Cross-input dependency edges, graph components, and transitive composition remain pending; the emitted graph carries an explicit `multi_input_composition_pending` diagnostic until those later tasks are implemented.
+TASK-13 resolves transformation layers into a deterministic relation dependency graph. Consumed relations link to unique in-bundle producers, remain explicit external dependencies when no producer exists, and report ambiguity or cycles without guessing. Disconnected pipelines remain separate graph components with terminal outcomes. Transitive semantic composition across those linked layers remains pending for TASK-14.
 
 ## Versioning
 
@@ -234,15 +234,30 @@ the protocol still uses the active `0.2.0` envelope even though there is only on
     }
   ],
   "graph": {
-    "edges": [],
-    "components": [],
-    "diagnostics": [
+    "edges": [
       {
-        "severity": "warning",
-        "code": "multi_input_composition_pending",
-        "message": "multi-input graph construction and semantic composition are not implemented yet"
+        "consumer_layer_id": "layer-0001",
+        "relation": "t",
+        "resolution": "external",
+        "producer_layer_ids": []
       }
-    ]
+    ],
+    "components": [
+      {
+        "id": "component-0001",
+        "layer_ids": [
+          "layer-0001"
+        ],
+        "final_outcomes": [
+          {
+            "kind": "anonymous",
+            "layer_id": "layer-0001"
+          }
+        ],
+        "diagnostics": []
+      }
+    ],
+    "diagnostics": []
   }
 }
 ```
