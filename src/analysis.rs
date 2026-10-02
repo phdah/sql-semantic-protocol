@@ -821,9 +821,7 @@ fn analyze_join(
     ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
 }
 
-fn analyze_join_operator(
-    operator: &JoinOperator,
-) -> (JoinKind, Option<&JoinConstraint>, bool) {
+fn analyze_join_operator(operator: &JoinOperator) -> (JoinKind, Option<&JoinConstraint>, bool) {
     match operator {
         JoinOperator::Join(constraint) | JoinOperator::Inner(constraint) => {
             (JoinKind::Inner, Some(constraint), true)
