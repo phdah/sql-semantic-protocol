@@ -153,11 +153,8 @@ fn ddl_variants_are_checked_across_all_exposed_dialects() {
                     );
                 }
                 Err(parse_error) => {
-                    let analysis = analyze_inputs(
-                        &[SqlInput::inline(sql)],
-                        dialect_name,
-                        dialect.as_ref(),
-                    );
+                    let analysis =
+                        analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref());
                     assert!(
                         analysis.is_err(),
                         "dialect {dialect_name} parser rejects {variant}, but analysis unexpectedly accepted it: {parse_error}"
