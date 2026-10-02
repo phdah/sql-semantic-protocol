@@ -33,8 +33,8 @@ use crate::protocol::{
     OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
     ScalarSubqueryExpression, SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation,
     SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
-    UnsupportedStatement, ValueDomain, WindowFrame, WindowFrameBound,
-    WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
+    UnsupportedStatement, ValueDomain, WindowFrame, WindowFrameBound, WindowFrameUnits,
+    WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -1239,13 +1239,9 @@ fn analyze_predicate_with_windows(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Predicate {
     match expression {
-        Expr::Nested(inner) => analyze_predicate_with_windows(
-            inner,
-            named_windows,
-            output_aliases,
-            scope,
-            diagnostics,
-        ),
+        Expr::Nested(inner) => {
+            analyze_predicate_with_windows(inner, named_windows, output_aliases, scope, diagnostics)
+        }
         Expr::BinaryOp { left, op, right } => match op {
             SqlBinaryOperator::And => Predicate::And(LogicalPredicate::pair(
                 analyze_predicate_with_windows(
@@ -2142,12 +2138,8 @@ fn analyze_query_output_with_outer_scope(
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
-            let output = analyze_query_output_with_outer_scope(
-                &cte.query,
-                &local_outputs,
-                &[],
-                diagnostics,
-            );
+            let output =
+                analyze_query_output_with_outer_scope(&cte.query, &local_outputs, &[], diagnostics);
             local_outputs.insert(cte.alias.name.to_string(), output_lineage_map(&output));
         }
     }
@@ -2429,12 +2421,7 @@ fn collect_select_correlations(
     .into_iter()
     .flatten()
     {
-        collect_expression_correlations(
-            expression,
-            outer_scope,
-            &local_qualifiers,
-            correlations,
-        );
+        collect_expression_correlations(expression, outer_scope, &local_qualifiers, correlations);
     }
 
     for source in &select.from {
@@ -2499,7 +2486,9 @@ fn collect_table_factor_qualifiers(factor: &TableFactor, qualifiers: &mut BTreeS
                 }
             }
         }
-        TableFactor::Derived { alias: Some(alias), .. } => {
+        TableFactor::Derived {
+            alias: Some(alias), ..
+        } => {
             qualifiers.insert(alias.name.to_string());
         }
         _ => {}
@@ -2521,12 +2510,7 @@ fn collect_expression_correlations(
                     .collect::<Vec<_>>()
                     .join(".");
                 if !local_qualifiers.contains(&qualifier) {
-                    collect_outer_column(
-                        &qualifier,
-                        &column.value,
-                        outer_scope,
-                        correlations,
-                    );
+                    collect_outer_column(&qualifier, &column.value, outer_scope, correlations);
                 }
             }
         }
@@ -2771,12 +2755,8 @@ fn collect_output_lineage(
             }
         }
         Expr::Subquery(query) => {
-            let output = analyze_query_output_with_outer_scope(
-                query,
-                &BTreeMap::new(),
-                scope,
-                diagnostics,
-            );
+            let output =
+                analyze_query_output_with_outer_scope(query, &BTreeMap::new(), scope, diagnostics);
             for column in output.columns() {
                 lineage.extend(
                     column
