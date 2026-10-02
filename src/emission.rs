@@ -16,7 +16,8 @@ use crate::protocol::{
     Join, LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output,
     OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
     SetOperand, SetOperation, SourceRelation, UnaryExpression, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
+    WindowFrameBound, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
@@ -481,6 +482,7 @@ fn expression_to_value(expression: &Expression) -> Value {
         Expression::Column(expression) => column_expression_to_value(expression),
         Expression::Literal(expression) => literal_expression_to_value(expression),
         Expression::Function(expression) => function_expression_to_value(expression),
+        Expression::WindowFunction(expression) => window_function_expression_to_value(expression),
         Expression::Unary(expression) => unary_expression_to_value(expression),
         Expression::Binary(expression) => binary_expression_to_value(expression),
         Expression::Unknown(semantic) => unknown_semantic_to_value(semantic),
@@ -525,6 +527,63 @@ fn function_expression_to_value(expression: &FunctionExpression) -> Value {
             .collect::<Vec<_>>(),
         "distinct": expression.distinct()
     })
+}
+
+fn window_function_expression_to_value(expression: &WindowFunctionExpression) -> Value {
+    json!({
+        "kind": "window_function",
+        "function": function_expression_to_value(expression.function()),
+        "window": window_specification_to_value(expression.window())
+    })
+}
+
+fn window_specification_to_value(window: &WindowSpecification) -> Value {
+    json!({
+        "name": window.name(),
+        "partition_by": window
+            .partition_by()
+            .iter()
+            .map(expression_to_value)
+            .collect::<Vec<_>>(),
+        "order_by": window
+            .order_by()
+            .iter()
+            .map(window_order_expression_to_value)
+            .collect::<Vec<_>>(),
+        "frame": window.frame().map_or(Value::Null, window_frame_to_value)
+    })
+}
+
+fn window_order_expression_to_value(order: &WindowOrderExpression) -> Value {
+    json!({
+        "expression": expression_to_value(order.expression()),
+        "ascending": order.ascending(),
+        "nulls_first": order.nulls_first()
+    })
+}
+
+fn window_frame_to_value(frame: &WindowFrame) -> Value {
+    json!({
+        "units": frame.units().as_str(),
+        "start": window_frame_bound_to_value(frame.start_bound()),
+        "end": window_frame_bound_to_value(frame.end_bound())
+    })
+}
+
+fn window_frame_bound_to_value(bound: &WindowFrameBound) -> Value {
+    match bound {
+        WindowFrameBound::CurrentRow => json!({ "kind": "current_row" }),
+        WindowFrameBound::UnboundedPreceding => json!({ "kind": "unbounded_preceding" }),
+        WindowFrameBound::Preceding(offset) => json!({
+            "kind": "preceding",
+            "offset": expression_to_value(offset)
+        }),
+        WindowFrameBound::UnboundedFollowing => json!({ "kind": "unbounded_following" }),
+        WindowFrameBound::Following(offset) => json!({
+            "kind": "following",
+            "offset": expression_to_value(offset)
+        }),
+    }
 }
 
 fn unary_expression_to_value(expression: &UnaryExpression) -> Value {
