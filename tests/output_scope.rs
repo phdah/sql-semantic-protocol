@@ -1,5 +1,6 @@
 use sql_semantic_protocol::{
-    analyze_inputs, to_bundle_json, to_bundle_json_with_scope, AnalysisBundle, OutputScope, SqlInput,
+    analyze_inputs, to_bundle_json, to_bundle_json_with_scope, AnalysisBundle, OutputScope,
+    SqlInput,
 };
 use sqlparser::dialect::GenericDialect;
 
@@ -7,20 +8,14 @@ fn analyze_fixture() -> AnalysisBundle {
     let dialect = GenericDialect {};
     analyze_inputs(
         &[
-            SqlInput::inline(
-                "CREATE TABLE stage.orders AS SELECT id, amount FROM raw.orders",
-            ),
+            SqlInput::inline("CREATE TABLE stage.orders AS SELECT id, amount FROM raw.orders"),
             SqlInput::inline(
                 "CREATE TABLE mart.orders AS
                  SELECT id, amount FROM stage.orders WHERE amount > 10",
             ),
             SqlInput::inline("SELECT id FROM raw.audit"),
-            SqlInput::inline(
-                "CREATE TABLE stage.customers AS SELECT id FROM raw.customers",
-            ),
-            SqlInput::inline(
-                "CREATE TABLE mart.customers AS SELECT id FROM stage.customers",
-            ),
+            SqlInput::inline("CREATE TABLE stage.customers AS SELECT id FROM raw.customers"),
+            SqlInput::inline("CREATE TABLE mart.customers AS SELECT id FROM stage.customers"),
         ],
         "generic",
         &dialect,
