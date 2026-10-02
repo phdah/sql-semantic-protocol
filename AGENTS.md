@@ -33,8 +33,12 @@ for every dialect exposed through sqlparser whenever that dialect parses the con
 supported AST shape. Never gate core semantic behavior on a dialect name. Dialect-specific
 behavior is acceptable only when sqlparser exposes materially different AST semantics that
 cannot be handled generically; isolate and name that behavior explicitly. Tests for new semantic
-features must cover all dialect names exposed by the project for the shared syntax they support,
-with additional dialect-specific fixtures for materially different syntax or AST variants.
+features must exercise every dialect name exposed by the project for shared syntax and for
+relevant syntax variants. If sqlparser accepts a variant for a dialect, semantic behavior must be
+identical at the protocol level unless the dialect genuinely changes its meaning. If sqlparser
+rejects that syntax for a dialect, tests should make that parser-boundary limitation explicit
+rather than silently omitting the dialect. Add focused dialect-specific fixtures only for deeper
+coverage of materially different syntax or AST variants.
 
 **Strict types** Model the domain with types, not strings. Use enums for any fixed set of
 values (comparison operators, clause kinds, bound inclusivity), newtypes for identifiers
