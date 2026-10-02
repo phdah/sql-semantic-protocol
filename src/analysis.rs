@@ -27,12 +27,13 @@ use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
-    Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate, IsNullPredicate,
-    Join as ProtocolJoin, JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue,
-    LogicalPredicate, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
-    ProtocolStatement, QueryStatement, RelationRef, SetOperand, SetOperation, SetOperator,
-    SetQuantifier, SourceRelation, UnaryExpression, UnaryOperator, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement, ValueDomain, WindowFrame, WindowFrameBound,
+    ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
+    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate, Output,
+    OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
+    ScalarSubqueryExpression, SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation,
+    SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
+    UnsupportedStatement, ValueDomain, WindowFrame, WindowFrameBound,
     WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
 };
 
@@ -156,10 +157,19 @@ fn analyze_query_predicates(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>)
 
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     inspect_select_features(select, diagnostics);
-    analyze_select_predicates(select, diagnostics)
+    let scope = build_output_scope(select, &BTreeMap::new(), &[], diagnostics);
+    analyze_select_predicates_with_scope(select, &scope, diagnostics)
 }
 
 fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
+    analyze_select_predicates_with_scope(select, &[], diagnostics)
+}
+
+fn analyze_select_predicates_with_scope(
+    select: &Select,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Predicates {
     let empty_aliases = BTreeMap::new();
     let output_aliases = select
         .projection
@@ -175,6 +185,7 @@ fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>)
             expression,
             &select.named_window,
             &empty_aliases,
+            scope,
             diagnostics,
         )
     });
@@ -183,6 +194,7 @@ fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>)
             expression,
             &select.named_window,
             &output_aliases,
+            scope,
             diagnostics,
         )
     });
@@ -191,6 +203,7 @@ fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>)
             expression,
             &select.named_window,
             &output_aliases,
+            scope,
             diagnostics,
         )
     });
@@ -1215,57 +1228,99 @@ fn merge_relation_analysis(target: &mut RelationAnalysis, source: RelationAnalys
 }
 
 fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Predicate {
-    analyze_predicate_with_windows(expression, &[], &BTreeMap::new(), diagnostics)
+    analyze_predicate_with_windows(expression, &[], &BTreeMap::new(), &[], diagnostics)
 }
 
 fn analyze_predicate_with_windows(
     expression: &Expr,
     named_windows: &[NamedWindowDefinition],
     output_aliases: &BTreeMap<String, &Expr>,
+    scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Predicate {
     match expression {
-        Expr::Nested(inner) => {
-            analyze_predicate_with_windows(inner, named_windows, output_aliases, diagnostics)
-        }
+        Expr::Nested(inner) => analyze_predicate_with_windows(
+            inner,
+            named_windows,
+            output_aliases,
+            scope,
+            diagnostics,
+        ),
         Expr::BinaryOp { left, op, right } => match op {
             SqlBinaryOperator::And => Predicate::And(LogicalPredicate::pair(
-                analyze_predicate_with_windows(left, named_windows, output_aliases, diagnostics),
-                analyze_predicate_with_windows(right, named_windows, output_aliases, diagnostics),
+                analyze_predicate_with_windows(
+                    left,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                analyze_predicate_with_windows(
+                    right,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
             )),
             SqlBinaryOperator::Or => Predicate::Or(LogicalPredicate::pair(
-                analyze_predicate_with_windows(left, named_windows, output_aliases, diagnostics),
-                analyze_predicate_with_windows(right, named_windows, output_aliases, diagnostics),
+                analyze_predicate_with_windows(
+                    left,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                analyze_predicate_with_windows(
+                    right,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
             )),
             _ => match comparison_operator(op) {
                 Some(operator) => normalize_comparison(
-                    analyze_predicate_expression(left, named_windows, output_aliases, diagnostics),
+                    analyze_predicate_expression(
+                        left,
+                        named_windows,
+                        output_aliases,
+                        scope,
+                        diagnostics,
+                    ),
                     operator,
-                    analyze_predicate_expression(right, named_windows, output_aliases, diagnostics),
+                    analyze_predicate_expression(
+                        right,
+                        named_windows,
+                        output_aliases,
+                        scope,
+                        diagnostics,
+                    ),
                 ),
-                None => Predicate::BooleanExpression(analyze_expression_with_windows(
+                None => Predicate::BooleanExpression(analyze_expression_with_scope(
                     expression,
+                    scope,
                     named_windows,
                     diagnostics,
                 )),
             },
         },
         Expr::IsDistinctFrom(left, right) => normalize_comparison(
-            analyze_predicate_expression(left, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(left, named_windows, output_aliases, scope, diagnostics),
             ComparisonOperator::IsDistinctFrom,
-            analyze_predicate_expression(right, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(right, named_windows, output_aliases, scope, diagnostics),
         ),
         Expr::IsNotDistinctFrom(left, right) => normalize_comparison(
-            analyze_predicate_expression(left, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(left, named_windows, output_aliases, scope, diagnostics),
             ComparisonOperator::IsNotDistinctFrom,
-            analyze_predicate_expression(right, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(right, named_windows, output_aliases, scope, diagnostics),
         ),
         Expr::IsNull(inner) => Predicate::IsNull(IsNullPredicate::new(
-            analyze_predicate_expression(inner, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             false,
         )),
         Expr::IsNotNull(inner) => Predicate::IsNull(IsNullPredicate::new(
-            analyze_predicate_expression(inner, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             true,
         )),
         Expr::InList {
@@ -1273,12 +1328,31 @@ fn analyze_predicate_with_windows(
             list,
             negated,
         } => Predicate::In(InPredicate::new(
-            analyze_predicate_expression(expr, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(expr, named_windows, output_aliases, scope, diagnostics),
             list.iter()
                 .map(|value| {
-                    analyze_predicate_expression(value, named_windows, output_aliases, diagnostics)
+                    analyze_predicate_expression(
+                        value,
+                        named_windows,
+                        output_aliases,
+                        scope,
+                        diagnostics,
+                    )
                 })
                 .collect(),
+            *negated,
+        )),
+        Expr::Exists { subquery, negated } => Predicate::Exists(ExistsPredicate::new(
+            analyze_subquery_semantics(subquery, scope),
+            *negated,
+        )),
+        Expr::InSubquery {
+            expr,
+            subquery,
+            negated,
+        } => Predicate::InSubquery(InSubqueryPredicate::new(
+            analyze_predicate_expression(expr, named_windows, output_aliases, scope, diagnostics),
+            analyze_subquery_semantics(subquery, scope),
             *negated,
         )),
         Expr::Between {
@@ -1287,9 +1361,9 @@ fn analyze_predicate_with_windows(
             low,
             high,
         } => Predicate::Between(BetweenPredicate::new(
-            analyze_predicate_expression(expr, named_windows, output_aliases, diagnostics),
-            analyze_predicate_expression(low, named_windows, output_aliases, diagnostics),
-            analyze_predicate_expression(high, named_windows, output_aliases, diagnostics),
+            analyze_predicate_expression(expr, named_windows, output_aliases, scope, diagnostics),
+            analyze_predicate_expression(low, named_windows, output_aliases, scope, diagnostics),
+            analyze_predicate_expression(high, named_windows, output_aliases, scope, diagnostics),
             *negated,
         )),
         Expr::UnaryOp {
@@ -1299,12 +1373,14 @@ fn analyze_predicate_with_windows(
             expr,
             named_windows,
             output_aliases,
+            scope,
             diagnostics,
         ))),
         _ => Predicate::BooleanExpression(analyze_predicate_expression(
             expression,
             named_windows,
             output_aliases,
+            scope,
             diagnostics,
         )),
     }
@@ -1314,15 +1390,21 @@ fn analyze_predicate_expression(
     expression: &Expr,
     named_windows: &[NamedWindowDefinition],
     output_aliases: &BTreeMap<String, &Expr>,
+    scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
     if let Expr::Identifier(identifier) = expression {
         if let Some(aliased_expression) = output_aliases.get(&identifier.value) {
-            return analyze_expression_with_windows(aliased_expression, named_windows, diagnostics);
+            return analyze_expression_with_scope(
+                aliased_expression,
+                scope,
+                named_windows,
+                diagnostics,
+            );
         }
     }
 
-    analyze_expression_with_windows(expression, named_windows, diagnostics)
+    analyze_expression_with_scope(expression, scope, named_windows, diagnostics)
 }
 
 fn normalize_comparison(
@@ -1346,6 +1428,20 @@ fn comparison_operator(operator: &SqlBinaryOperator) -> Option<ComparisonOperato
         SqlBinaryOperator::Gt => Some(ComparisonOperator::Gt),
         SqlBinaryOperator::GtEq => Some(ComparisonOperator::Gte),
         _ => None,
+    }
+}
+
+fn analyze_expression_with_scope(
+    expression: &Expr,
+    scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    match expression {
+        Expr::Subquery(query) => Expression::ScalarSubquery(Box::new(
+            ScalarSubqueryExpression::new(analyze_subquery_semantics(query, scope)),
+        )),
+        _ => analyze_expression_with_windows(expression, named_windows, diagnostics),
     }
 }
 
@@ -1376,6 +1472,9 @@ fn analyze_expression_with_windows(
             analyze_binary_expression(left, op, right, expression, named_windows, diagnostics)
         }
         Expr::Nested(inner) => analyze_expression_with_windows(inner, named_windows, diagnostics),
+        Expr::Subquery(query) => Expression::ScalarSubquery(Box::new(
+            ScalarSubqueryExpression::new(analyze_subquery_semantics(query, &[])),
+        )),
         _ => unsupported_expression(
             "expression",
             expression,
@@ -1666,7 +1765,7 @@ fn analyze_aggregate_function(
 
     let empty_aliases = BTreeMap::new();
     let filter = function.filter.as_ref().map(|filter| {
-        analyze_predicate_with_windows(filter, named_windows, &empty_aliases, diagnostics)
+        analyze_predicate_with_windows(filter, named_windows, &empty_aliases, &[], diagnostics)
     });
 
     Expression::AggregateFunction(AggregateFunctionExpression::new(
@@ -2030,16 +2129,35 @@ fn analyze_query_output(
     inherited_local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Output {
+    analyze_query_output_with_outer_scope(query, inherited_local_outputs, &[], diagnostics)
+}
+
+fn analyze_query_output_with_outer_scope(
+    query: &SqlQuery,
+    inherited_local_outputs: &LocalOutputMap,
+    outer_scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
     let mut local_outputs = inherited_local_outputs.clone();
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
-            let output = analyze_query_output(&cte.query, &local_outputs, diagnostics);
+            let output = analyze_query_output_with_outer_scope(
+                &cte.query,
+                &local_outputs,
+                &[],
+                diagnostics,
+            );
             local_outputs.insert(cte.alias.name.to_string(), output_lineage_map(&output));
         }
     }
 
-    analyze_set_expr_output(query.body.as_ref(), &local_outputs, diagnostics)
+    analyze_set_expr_output_with_outer_scope(
+        query.body.as_ref(),
+        &local_outputs,
+        outer_scope,
+        diagnostics,
+    )
 }
 
 fn analyze_set_expr_output(
@@ -2047,9 +2165,22 @@ fn analyze_set_expr_output(
     local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Output {
+    analyze_set_expr_output_with_outer_scope(expression, local_outputs, &[], diagnostics)
+}
+
+fn analyze_set_expr_output_with_outer_scope(
+    expression: &SetExpr,
+    local_outputs: &LocalOutputMap,
+    outer_scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
     match expression {
-        SetExpr::Select(select) => analyze_select_output(select, local_outputs, diagnostics),
-        SetExpr::Query(query) => analyze_query_output(query, local_outputs, diagnostics),
+        SetExpr::Select(select) => {
+            analyze_select_output_with_outer_scope(select, local_outputs, outer_scope, diagnostics)
+        }
+        SetExpr::Query(query) => {
+            analyze_query_output_with_outer_scope(query, local_outputs, outer_scope, diagnostics)
+        }
         SetExpr::SetOperation {
             left,
             set_quantifier,
@@ -2066,8 +2197,18 @@ fn analyze_set_expr_output(
                 return Output::new(Vec::new());
             }
 
-            let left_output = analyze_set_expr_output(left, local_outputs, diagnostics);
-            let right_output = analyze_set_expr_output(right, local_outputs, diagnostics);
+            let left_output = analyze_set_expr_output_with_outer_scope(
+                left,
+                local_outputs,
+                outer_scope,
+                diagnostics,
+            );
+            let right_output = analyze_set_expr_output_with_outer_scope(
+                right,
+                local_outputs,
+                outer_scope,
+                diagnostics,
+            );
             merge_set_operation_output(left_output, right_output, diagnostics)
         }
         SetExpr::Values(_)
@@ -2132,7 +2273,16 @@ fn analyze_select_output(
     local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Output {
-    let scope = build_output_scope(select, local_outputs, diagnostics);
+    analyze_select_output_with_outer_scope(select, local_outputs, &[], diagnostics)
+}
+
+fn analyze_select_output_with_outer_scope(
+    select: &Select,
+    local_outputs: &LocalOutputMap,
+    outer_scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Output {
+    let scope = build_output_scope(select, local_outputs, outer_scope, diagnostics);
     let columns = select
         .projection
         .iter()
@@ -2151,12 +2301,12 @@ fn analyze_output_item(
     match item {
         SelectItem::UnnamedExpr(expression) => OutputColumn::new(
             output_name_for_expression(expression),
-            analyze_expression_with_windows(expression, named_windows, diagnostics),
+            analyze_expression_with_scope(expression, scope, named_windows, diagnostics),
             lineage_for_expression(expression, scope, named_windows, diagnostics),
         ),
         SelectItem::ExprWithAlias { expr, alias } => OutputColumn::new(
             alias.value.clone(),
-            analyze_expression_with_windows(expr, named_windows, diagnostics),
+            analyze_expression_with_scope(expr, scope, named_windows, diagnostics),
             lineage_for_expression(expr, scope, named_windows, diagnostics),
         ),
         SelectItem::Wildcard(_) => unresolved_wildcard_column("*".to_string(), diagnostics),
@@ -2178,6 +2328,296 @@ fn unresolved_wildcard_column(name: String, diagnostics: &mut Vec<Diagnostic>) -
         Expression::Unknown(UnknownSemantic::new(reason.to_string())),
         Vec::new(),
     )
+}
+
+fn analyze_subquery_semantics(
+    query: &SqlQuery,
+    outer_scope: &[OutputRelation],
+) -> SubquerySemantics {
+    let mut diagnostics = Vec::new();
+    let mut derived_index = 0;
+    let relations = analyze_query_relations(
+        query,
+        &BTreeSet::new(),
+        &mut diagnostics,
+        &mut derived_index,
+    );
+    let output = analyze_query_output_with_outer_scope(
+        query,
+        &BTreeMap::new(),
+        outer_scope,
+        &mut diagnostics,
+    );
+    let predicates = analyze_query_predicates(query, &mut diagnostics);
+    let correlations = collect_query_correlations(query, outer_scope);
+
+    inspect_query_features(query, &mut diagnostics);
+    sort_diagnostics(&mut diagnostics);
+
+    SubquerySemantics::new(
+        relations.dependencies.into_iter().collect(),
+        correlations,
+        output,
+        predicates,
+        diagnostics,
+    )
+}
+
+fn collect_query_correlations(
+    query: &SqlQuery,
+    outer_scope: &[OutputRelation],
+) -> Vec<LineageSource> {
+    let mut correlations = BTreeSet::new();
+    collect_set_expr_correlations(query.body.as_ref(), outer_scope, &mut correlations);
+    correlations
+        .into_iter()
+        .map(|(relation, column)| LineageSource::new(relation, column))
+        .collect()
+}
+
+fn collect_set_expr_correlations(
+    expression: &SetExpr,
+    outer_scope: &[OutputRelation],
+    correlations: &mut BTreeSet<(String, String)>,
+) {
+    match expression {
+        SetExpr::Select(select) => {
+            collect_select_correlations(select, outer_scope, correlations);
+        }
+        SetExpr::Query(query) => {
+            collect_set_expr_correlations(query.body.as_ref(), outer_scope, correlations);
+        }
+        SetExpr::SetOperation { left, right, .. } => {
+            collect_set_expr_correlations(left, outer_scope, correlations);
+            collect_set_expr_correlations(right, outer_scope, correlations);
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => {}
+    }
+}
+
+fn collect_select_correlations(
+    select: &Select,
+    outer_scope: &[OutputRelation],
+    correlations: &mut BTreeSet<(String, String)>,
+) {
+    let local_qualifiers = select_local_qualifiers(select);
+
+    for item in &select.projection {
+        match item {
+            SelectItem::UnnamedExpr(expression)
+            | SelectItem::ExprWithAlias {
+                expr: expression, ..
+            } => collect_expression_correlations(
+                expression,
+                outer_scope,
+                &local_qualifiers,
+                correlations,
+            ),
+            SelectItem::QualifiedWildcard(_, _) | SelectItem::Wildcard(_) => {}
+        }
+    }
+
+    for expression in [
+        select.selection.as_ref(),
+        select.having.as_ref(),
+        select.qualify.as_ref(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        collect_expression_correlations(
+            expression,
+            outer_scope,
+            &local_qualifiers,
+            correlations,
+        );
+    }
+
+    for source in &select.from {
+        for join in &source.joins {
+            if let JoinConstraint::On(expression) = join_constraint(&join.join_operator) {
+                collect_expression_correlations(
+                    expression,
+                    outer_scope,
+                    &local_qualifiers,
+                    correlations,
+                );
+            }
+        }
+    }
+}
+
+fn join_constraint(operator: &JoinOperator) -> &JoinConstraint {
+    match operator {
+        JoinOperator::Join(constraint)
+        | JoinOperator::Inner(constraint)
+        | JoinOperator::Left(constraint)
+        | JoinOperator::LeftOuter(constraint)
+        | JoinOperator::Right(constraint)
+        | JoinOperator::RightOuter(constraint)
+        | JoinOperator::FullOuter(constraint)
+        | JoinOperator::Semi(constraint)
+        | JoinOperator::LeftSemi(constraint)
+        | JoinOperator::RightSemi(constraint)
+        | JoinOperator::Anti(constraint)
+        | JoinOperator::LeftAnti(constraint)
+        | JoinOperator::RightAnti(constraint)
+        | JoinOperator::StraightJoin(constraint) => constraint,
+        JoinOperator::AsOf { constraint, .. } => constraint,
+        JoinOperator::CrossJoin | JoinOperator::CrossApply | JoinOperator::OuterApply => {
+            static NONE: JoinConstraint = JoinConstraint::None;
+            &NONE
+        }
+    }
+}
+
+fn select_local_qualifiers(select: &Select) -> BTreeSet<String> {
+    let mut qualifiers = BTreeSet::new();
+    for source in &select.from {
+        collect_table_factor_qualifiers(&source.relation, &mut qualifiers);
+        for join in &source.joins {
+            collect_table_factor_qualifiers(&join.relation, &mut qualifiers);
+        }
+    }
+    qualifiers
+}
+
+fn collect_table_factor_qualifiers(factor: &TableFactor, qualifiers: &mut BTreeSet<String>) {
+    match factor {
+        TableFactor::Table { name, alias, .. } => {
+            if let Some(alias) = alias {
+                qualifiers.insert(alias.name.to_string());
+            } else {
+                let relation = name.to_string();
+                qualifiers.insert(relation.clone());
+                if let Some(short) = relation.rsplit('.').next() {
+                    qualifiers.insert(short.to_string());
+                }
+            }
+        }
+        TableFactor::Derived { alias: Some(alias), .. } => {
+            qualifiers.insert(alias.name.to_string());
+        }
+        _ => {}
+    }
+}
+
+fn collect_expression_correlations(
+    expression: &Expr,
+    outer_scope: &[OutputRelation],
+    local_qualifiers: &BTreeSet<String>,
+    correlations: &mut BTreeSet<(String, String)>,
+) {
+    match expression {
+        Expr::CompoundIdentifier(identifiers) => {
+            if let Some((column, relation_parts)) = identifiers.split_last() {
+                let qualifier = relation_parts
+                    .iter()
+                    .map(|identifier| identifier.value.as_str())
+                    .collect::<Vec<_>>()
+                    .join(".");
+                if !local_qualifiers.contains(&qualifier) {
+                    collect_outer_column(
+                        &qualifier,
+                        &column.value,
+                        outer_scope,
+                        correlations,
+                    );
+                }
+            }
+        }
+        Expr::BinaryOp { left, right, .. }
+        | Expr::AnyOp { left, right, .. }
+        | Expr::AllOp { left, right, .. }
+        | Expr::IsDistinctFrom(left, right)
+        | Expr::IsNotDistinctFrom(left, right) => {
+            collect_expression_correlations(left, outer_scope, local_qualifiers, correlations);
+            collect_expression_correlations(right, outer_scope, local_qualifiers, correlations);
+        }
+        Expr::UnaryOp { expr, .. }
+        | Expr::Nested(expr)
+        | Expr::IsNull(expr)
+        | Expr::IsNotNull(expr) => {
+            collect_expression_correlations(expr, outer_scope, local_qualifiers, correlations);
+        }
+        Expr::Between {
+            expr, low, high, ..
+        } => {
+            for value in [expr.as_ref(), low.as_ref(), high.as_ref()] {
+                collect_expression_correlations(value, outer_scope, local_qualifiers, correlations);
+            }
+        }
+        Expr::InList { expr, list, .. } => {
+            collect_expression_correlations(expr, outer_scope, local_qualifiers, correlations);
+            for value in list {
+                collect_expression_correlations(value, outer_scope, local_qualifiers, correlations);
+            }
+        }
+        Expr::Function(function) => {
+            collect_function_argument_correlations(
+                &function.parameters,
+                outer_scope,
+                local_qualifiers,
+                correlations,
+            );
+            collect_function_argument_correlations(
+                &function.args,
+                outer_scope,
+                local_qualifiers,
+                correlations,
+            );
+            if let Some(filter) = &function.filter {
+                collect_expression_correlations(
+                    filter,
+                    outer_scope,
+                    local_qualifiers,
+                    correlations,
+                );
+            }
+        }
+        Expr::Subquery(_) | Expr::Exists { .. } | Expr::InSubquery { .. } => {}
+        _ => {}
+    }
+}
+
+fn collect_function_argument_correlations(
+    arguments: &FunctionArguments,
+    outer_scope: &[OutputRelation],
+    local_qualifiers: &BTreeSet<String>,
+    correlations: &mut BTreeSet<(String, String)>,
+) {
+    if let FunctionArguments::List(arguments) = arguments {
+        for argument in &arguments.args {
+            if let FunctionArg::Unnamed(FunctionArgExpr::Expr(expression)) = argument {
+                collect_expression_correlations(
+                    expression,
+                    outer_scope,
+                    local_qualifiers,
+                    correlations,
+                );
+            }
+        }
+    }
+}
+
+fn collect_outer_column(
+    qualifier: &str,
+    column: &str,
+    outer_scope: &[OutputRelation],
+    correlations: &mut BTreeSet<(String, String)>,
+) {
+    let candidates = output_column_candidates(Some(qualifier), column, outer_scope);
+    if let [candidate] = candidates.as_slice() {
+        correlations.extend(
+            candidate
+                .iter()
+                .map(|source| (source.relation().to_string(), source.column().to_string())),
+        );
+    }
 }
 
 fn output_name_for_expression(expression: &Expr) -> String {
@@ -2203,9 +2643,10 @@ fn output_lineage_map(output: &Output) -> BTreeMap<String, Vec<LineageSource>> {
 fn build_output_scope(
     select: &Select,
     local_outputs: &LocalOutputMap,
+    outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<OutputRelation> {
-    let mut scope = Vec::new();
+    let mut scope = outer_scope.to_vec();
 
     for source in &select.from {
         register_output_table_factor(&source.relation, local_outputs, diagnostics, &mut scope);
@@ -2240,9 +2681,18 @@ fn register_output_table_factor(
             scope.push(OutputRelation { qualifiers, source });
         }
         TableFactor::Derived {
-            subquery, alias, ..
+            lateral,
+            subquery,
+            alias,
+            ..
         } => {
-            let output = analyze_query_output(subquery, local_outputs, diagnostics);
+            let visible_outer_scope = if *lateral { scope.clone() } else { Vec::new() };
+            let output = analyze_query_output_with_outer_scope(
+                subquery,
+                local_outputs,
+                &visible_outer_scope,
+                diagnostics,
+            );
             let qualifiers = alias
                 .as_ref()
                 .map(|alias| vec![alias.name.to_string()])
@@ -2317,6 +2767,22 @@ fn collect_output_lineage(
                     scope,
                     diagnostics,
                     lineage,
+                );
+            }
+        }
+        Expr::Subquery(query) => {
+            let output = analyze_query_output_with_outer_scope(
+                query,
+                &BTreeMap::new(),
+                scope,
+                diagnostics,
+            );
+            for column in output.columns() {
+                lineage.extend(
+                    column
+                        .lineage()
+                        .iter()
+                        .map(|source| (source.relation().to_string(), source.column().to_string())),
                 );
             }
         }
@@ -2590,14 +3056,12 @@ fn collect_window_spec_lineage(
     }
 }
 
-fn resolve_output_column(
+fn output_column_candidates(
     qualifier: Option<&str>,
     column: &str,
     scope: &[OutputRelation],
-    diagnostics: &mut Vec<Diagnostic>,
-    lineage: &mut BTreeSet<(String, String)>,
-) {
-    let candidates = scope
+) -> Vec<Vec<LineageSource>> {
+    scope
         .iter()
         .filter(|relation| {
             qualifier.is_none_or(|qualifier| {
@@ -2614,7 +3078,17 @@ fn resolve_output_column(
             )]),
             OutputRelationSource::Local(columns) => columns.get(column).cloned(),
         })
-        .collect::<Vec<_>>();
+        .collect()
+}
+
+fn resolve_output_column(
+    qualifier: Option<&str>,
+    column: &str,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+    lineage: &mut BTreeSet<(String, String)>,
+) {
+    let candidates = output_column_candidates(qualifier, column, scope);
 
     match candidates.as_slice() {
         [candidate] => {
