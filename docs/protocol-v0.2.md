@@ -51,6 +51,18 @@ All transformation outcomes are always present in `layers`; terminal outcomes ar
 
 Each terminal layer uses the same `composed_semantics` representation as any other layer, including transitive physical dependencies, value domains, and output lineage. Outcome selection changes only what a consumer chooses to use, never what the protocol producer analyzes or emits.
 
+## Set operations
+
+A query that contains UNION, INTERSECT, or EXCEPT carries an optional `set_operation` tree alongside the existing query semantics. The tree is parser-independent and records `operator`, normalized `quantifier`, and recursive left/right operands. A leaf operand is `{"kind":"query"}`; nested operations use `{"kind":"set_operation", ...}`.
+
+UNION ALL keeps `all`; an omitted quantifier normalizes to `distinct`. Dialect-specific MINUS syntax normalizes to `except`. BY NAME quantifiers are retained so the parsed meaning is not lost, but output-column composition for name-based alignment remains explicitly unsupported.
+
+Set-operation outputs align positionally. Column names follow the left branch. Lineage combines the corresponding branch columns deterministically. An arity mismatch or an unresolved branch prevents the producer from inventing output columns and is reported with a diagnostic.
+
+Column domains remain source-column constraints. Equal constraints from multiple branches can be retained. Different constraints on the same source column degrade to an explicit unknown domain because flattening branch-local alternatives into one scalar restriction would over-claim.
+
+Set-level ORDER BY and LIMIT remain query-level semantics, so their existing explicit unsupported diagnostics attach to the combined set result rather than to an arbitrary branch.
+
 ## OpenLineage interoperability
 
 The SQL Semantic Protocol is the source of truth for semantic composition. OpenLineage is an export target, not part of the core model.
