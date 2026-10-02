@@ -177,7 +177,7 @@ impl<'a> Composer<'a> {
                     );
                     merge_domain(&mut domain_map, column, column_domain.domain().clone());
                 }
-                Err(diagnostic) => diagnostics.push(diagnostic),
+                Err(diagnostic) => diagnostics.push(*diagnostic),
             }
         }
 
@@ -217,9 +217,9 @@ impl<'a> Composer<'a> {
         &self,
         layer: &TransformationLayer,
         column: &ColumnRef,
-    ) -> Result<LineageSource, CompositionDiagnostic> {
+    ) -> Result<LineageSource, Box<CompositionDiagnostic>> {
         let Some(relation) = column.relation() else {
-            return Err(CompositionDiagnostic::layer_warning(
+            return Err(composition_error(
                 layer.input_id(),
                 layer.id(),
                 "unresolved_domain_column_relation",
@@ -243,7 +243,7 @@ impl<'a> Composer<'a> {
         source: &LineageSource,
     ) -> Result<LineageSource, CompositionDiagnostic> {
         let Some(edge) = self.edge_for_source(consumer.id(), source.relation()) else {
-            return Err(CompositionDiagnostic::layer_warning(
+            return Err(composition_error(
                 consumer.input_id(),
                 consumer.id(),
                 "missing_lineage_edge",
@@ -260,7 +260,7 @@ impl<'a> Composer<'a> {
             RelationResolution::External => Ok(source.clone()),
             RelationResolution::Resolved => {
                 let Some(producer_id) = edge.producer_layer_ids().first() else {
-                    return Err(CompositionDiagnostic::layer_warning(
+                    return Err(composition_error(
                         consumer.input_id(),
                         consumer.id(),
                         "missing_relation_producer",
@@ -273,7 +273,7 @@ impl<'a> Composer<'a> {
                     ));
                 };
                 let Some(producer) = self.layer_by_id(producer_id) else {
-                    return Err(CompositionDiagnostic::layer_warning(
+                    return Err(composition_error(
                         consumer.input_id(),
                         consumer.id(),
                         "missing_relation_producer",
@@ -282,7 +282,7 @@ impl<'a> Composer<'a> {
                     ));
                 };
                 let Some(query) = self.query_for_layer(producer) else {
-                    return Err(CompositionDiagnostic::layer_warning(
+                    return Err(composition_error(
                         consumer.input_id(),
                         consumer.id(),
                         "missing_producer_query",
@@ -298,7 +298,7 @@ impl<'a> Composer<'a> {
                     .filter(|column| column.name() == source.column())
                     .collect::<Vec<_>>();
                 let [column] = matches.as_slice() else {
-                    return Err(CompositionDiagnostic::layer_warning(
+                    return Err(composition_error(
                         consumer.input_id(),
                         consumer.id(),
                         "unresolved_producer_column",
@@ -312,7 +312,7 @@ impl<'a> Composer<'a> {
                 };
 
                 if !matches!(column.expression(), Expression::Column(_)) {
-                    return Err(CompositionDiagnostic::layer_warning(
+                    return Err(composition_error(
                         consumer.input_id(),
                         consumer.id(),
                         "non_invertible_column_transform",
@@ -326,7 +326,7 @@ impl<'a> Composer<'a> {
                 }
 
                 let [upstream] = column.lineage() else {
-                    return Err(CompositionDiagnostic::layer_warning(
+                    return Err(composition_error(
                         consumer.input_id(),
                         consumer.id(),
                         "unresolved_column_identity",
@@ -344,7 +344,7 @@ impl<'a> Composer<'a> {
             RelationResolution::Missing
             | RelationResolution::Ambiguous
             | RelationResolution::Cycle
-            | RelationResolution::Unsupported => Err(CompositionDiagnostic::layer_warning(
+            | RelationResolution::Unsupported => Err(composition_error(
                 consumer.input_id(),
                 consumer.id(),
                 "unresolved_column_identity",
@@ -373,7 +373,7 @@ impl<'a> Composer<'a> {
             for source in column.lineage() {
                 match self.expand_lineage_source(layer, source) {
                     Ok(sources) => lineage.extend(sources),
-                    Err(diagnostic) => diagnostics.push(diagnostic),
+                    Err(diagnostic) => diagnostics.push(*diagnostic),
                 }
             }
 
@@ -391,12 +391,12 @@ impl<'a> Composer<'a> {
         &mut self,
         consumer: &TransformationLayer,
         source: &LineageSource,
-    ) -> Result<Vec<LineageSource>, CompositionDiagnostic> {
+    ) -> Result<Vec<LineageSource>, Box<CompositionDiagnostic>> {
         let Some(edge) = self
             .edge_for_source(consumer.id(), source.relation())
             .cloned()
         else {
-            return Err(CompositionDiagnostic::layer_warning(
+            return Err(composition_error(
                 consumer.input_id(),
                 consumer.id(),
                 "missing_lineage_edge",
@@ -413,7 +413,7 @@ impl<'a> Composer<'a> {
             RelationResolution::External => Ok(vec![source.clone()]),
             RelationResolution::Resolved => {
                 let Some(producer_id) = edge.producer_layer_ids().first() else {
-                    return Err(CompositionDiagnostic::layer_warning(
+                    return Err(composition_error(
                         consumer.input_id(),
                         consumer.id(),
                         "missing_relation_producer",
@@ -435,7 +435,7 @@ impl<'a> Composer<'a> {
                             .filter(|column| column.name() == source.column())
                             .collect::<Vec<_>>();
                         let [column] = matches.as_slice() else {
-                            return Err(CompositionDiagnostic::layer_warning(
+                            return Err(composition_error(
                                 consumer.input_id(),
                                 consumer.id(),
                                 "unresolved_producer_column",
@@ -449,7 +449,7 @@ impl<'a> Composer<'a> {
                         };
                         Ok(column.lineage().to_vec())
                     }
-                    ComposedSemantics::Unresolved(_) => Err(CompositionDiagnostic::layer_warning(
+                    ComposedSemantics::Unresolved(_) => Err(composition_error(
                         consumer.input_id(),
                         consumer.id(),
                         "upstream_lineage_unresolved",
@@ -465,7 +465,7 @@ impl<'a> Composer<'a> {
             RelationResolution::Missing
             | RelationResolution::Ambiguous
             | RelationResolution::Cycle
-            | RelationResolution::Unsupported => Err(CompositionDiagnostic::layer_warning(
+            | RelationResolution::Unsupported => Err(composition_error(
                 consumer.input_id(),
                 consumer.id(),
                 "unresolved_lineage_relation",
@@ -485,6 +485,19 @@ impl<'a> Composer<'a> {
             edge.consumer_layer_id() == consumer_layer_id && edge.relation() == relation
         })
     }
+}
+
+
+fn composition_error(
+    input_id: impl Into<String>,
+    layer_id: impl Into<String>,
+    code: impl Into<String>,
+    message: impl Into<String>,
+    relation: Option<String>,
+) -> Box<CompositionDiagnostic> {
+    Box::new(CompositionDiagnostic::layer_warning(
+        input_id, layer_id, code, message, relation,
+    ))
 }
 
 fn graph_failure_reason(edges: &[GraphEdge]) -> Option<CompositionFailureReason> {
