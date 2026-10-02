@@ -43,7 +43,6 @@ fn stdin_input_and_selected_dialect_emit_only_protocol_json() {
 
 #[test]
 fn all_sqlparser_recognized_dialect_names_are_supported() {
-
     for dialect in DIALECTS {
         let output = run_with_stdin(&["--dialect", *dialect], "SELECT a FROM t WHERE a > 10");
 
