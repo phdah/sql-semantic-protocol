@@ -73,7 +73,10 @@ pub fn to_openlineage_json(
     let mut events = Vec::new();
 
     for layer in bundle.layers() {
-        let Some(dataset_name) = layer.produces().iter().find_map(|dataset| dataset.relation_name())
+        let Some(dataset_name) = layer
+            .produces()
+            .iter()
+            .find_map(|dataset| dataset.relation_name())
         else {
             continue;
         };
