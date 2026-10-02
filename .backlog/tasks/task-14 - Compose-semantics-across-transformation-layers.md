@@ -1,7 +1,7 @@
 ---
 id: TASK-14
 title: Compose semantics across transformation layers
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -20,16 +20,16 @@ The SQL Semantic Protocol remains the authoritative representation. Its lineage 
 
 ## Acceptance Criteria
 
-- [ ] Final columns can expose transitive lineage through any number of linked intermediate datasets.
-- [ ] Transitive physical dependencies resolve back to external/base relations where possible.
-- [ ] Safe column renames and direct projections preserve column identity through multiple layers.
-- [ ] Predicate/value-domain information is propagated across layers only when the transformation preserves the required semantics.
-- [ ] Non-invertible or unsupported expressions stop precise propagation and produce explicit unknown/diagnostic information.
-- [ ] Join-derived and multi-source lineage remains correctly multi-valued after composition.
-- [ ] Dataset and column identities used by the lineage model can be mapped deterministically to OpenLineage dataset and field-level lineage concepts.
-- [ ] An OpenLineage export adapter can emit the lineage information representable by OpenLineage without making OpenLineage types part of the core protocol model.
-- [ ] OpenLineage export does not discard, weaken, or replace richer outcome semantics in the SQL Semantic Protocol.
-- [ ] Composition works independently for every disconnected graph component.
-- [ ] Composition does not depend on the order of supplied SQL inputs.
-- [ ] Tests cover at least three consecutive transformations and verify final transitive lineage and constraints.
-- [ ] Tests verify representative dataset-level and column-level lineage can be exported to OpenLineage while the original protocol retains its richer semantic information.
+- [x] Final columns can expose transitive lineage through any number of linked intermediate datasets.
+- [x] Transitive physical dependencies resolve back to external/base relations where possible.
+- [x] Safe column renames and direct projections preserve column identity through multiple layers.
+- [x] Predicate/value-domain information is propagated across layers only when the transformation preserves the required semantics.
+- [x] Non-invertible or unsupported expressions stop precise propagation and produce explicit unknown/diagnostic information.
+- [x] Join-derived and multi-source lineage remains correctly multi-valued after composition.
+- [x] Dataset and column identities used by the lineage model can be mapped deterministically to OpenLineage dataset and field-level lineage concepts.
+- [x] An OpenLineage export adapter can emit the lineage information representable by OpenLineage without making OpenLineage types part of the core protocol model.
+- [x] OpenLineage export does not discard, weaken, or replace richer outcome semantics in the SQL Semantic Protocol.
+- [x] Composition works independently for every disconnected graph component.
+- [x] Composition does not depend on the order of supplied SQL inputs.
+- [x] Tests cover at least three consecutive transformations and verify final transitive lineage and constraints.
+- [x] Tests verify representative dataset-level and column-level lineage can be exported to OpenLineage while the original protocol retains its richer semantic information.
