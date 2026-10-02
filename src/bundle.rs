@@ -1,13 +1,14 @@
 //! Multi-input analysis orchestration.
 //!
 //! This module owns parser-independent input identities and bundles. It deliberately reuses the
-//! existing single-input analyzer for each unit and does not build cross-input graph semantics.
+//! existing single-input analyzer for each unit and builds deterministic relation dependency graphs.
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
 use sqlparser::dialect::Dialect;
 
-use crate::protocol::{Protocol, ProtocolStatement, PROTOCOL_VERSION};
+use crate::protocol::{DiagnosticSeverity, Protocol, ProtocolStatement, PROTOCOL_VERSION};
 use crate::{analyze_sql, Error};
 
 /// Source identity retained for one SQL input unit.
@@ -93,7 +94,7 @@ impl AnalyzedInput {
 }
 
 /// Dataset produced by one transformation layer.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[non_exhaustive]
 pub enum DatasetRef {
     /// A named relation created by query-backed DDL.
@@ -123,6 +124,183 @@ impl DatasetRef {
             Self::Relation { .. } => None,
             Self::Anonymous { layer_id } => Some(layer_id),
         }
+    }
+}
+
+/// Resolution state for one consumed relation in the bundle dependency graph.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum RelationResolution {
+    /// Exactly one in-bundle producer matches the consumed relation.
+    Resolved,
+    /// No in-bundle producer exists, so the relation is an external dependency.
+    External,
+    /// A required producer is unavailable.
+    Missing,
+    /// Multiple in-bundle producers match and no producer can be selected safely.
+    Ambiguous,
+    /// The resolved producer relationship participates in a dependency cycle.
+    Cycle,
+    /// Resolution could not be represented safely for another explicit reason.
+    Unsupported,
+}
+
+impl RelationResolution {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Resolved => "resolved",
+            Self::External => "external",
+            Self::Missing => "missing",
+            Self::Ambiguous => "ambiguous",
+            Self::Cycle => "cycle",
+            Self::Unsupported => "unsupported",
+        }
+    }
+}
+
+/// One relation dependency edge from a consumer layer to zero or more candidate producers.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GraphEdge {
+    consumer_layer_id: String,
+    relation: String,
+    resolution: RelationResolution,
+    producer_layer_ids: Vec<String>,
+}
+
+impl GraphEdge {
+    /// Return the layer consuming this relation.
+    pub fn consumer_layer_id(&self) -> &str {
+        &self.consumer_layer_id
+    }
+
+    /// Return the normalized consumed relation identity.
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
+
+    /// Return how this relation was resolved.
+    pub fn resolution(&self) -> RelationResolution {
+        self.resolution
+    }
+
+    /// Return matching producer layer IDs in deterministic order.
+    pub fn producer_layer_ids(&self) -> &[String] {
+        &self.producer_layer_ids
+    }
+}
+
+/// Diagnostic attached to graph construction or one graph component.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CompositionDiagnostic {
+    severity: DiagnosticSeverity,
+    code: String,
+    message: String,
+    input_id: Option<String>,
+    layer_id: Option<String>,
+    relation: Option<String>,
+}
+
+impl CompositionDiagnostic {
+    fn warning(
+        code: impl Into<String>,
+        message: impl Into<String>,
+        layer_id: Option<String>,
+        relation: Option<String>,
+    ) -> Self {
+        Self {
+            severity: DiagnosticSeverity::Warning,
+            code: code.into(),
+            message: message.into(),
+            input_id: None,
+            layer_id,
+            relation,
+        }
+    }
+
+    /// Return the diagnostic severity.
+    pub fn severity(&self) -> DiagnosticSeverity {
+        self.severity
+    }
+
+    /// Return the stable diagnostic code.
+    pub fn code(&self) -> &str {
+        &self.code
+    }
+
+    /// Return the human-readable diagnostic message.
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    /// Return the affected input ID when the diagnostic is input-specific.
+    pub fn input_id(&self) -> Option<&str> {
+        self.input_id.as_deref()
+    }
+
+    /// Return the affected layer ID when the diagnostic is layer-specific.
+    pub fn layer_id(&self) -> Option<&str> {
+        self.layer_id.as_deref()
+    }
+
+    /// Return the affected relation when the diagnostic is relation-specific.
+    pub fn relation(&self) -> Option<&str> {
+        self.relation.as_deref()
+    }
+}
+
+/// One connected component of transformation layers.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GraphComponent {
+    id: String,
+    layer_ids: Vec<String>,
+    final_outcomes: Vec<DatasetRef>,
+    diagnostics: Vec<CompositionDiagnostic>,
+}
+
+impl GraphComponent {
+    /// Return the deterministic component identifier.
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    /// Return component layers in deterministic dependency order when acyclic.
+    pub fn layer_ids(&self) -> &[String] {
+        &self.layer_ids
+    }
+
+    /// Return terminal datasets when the component has an unambiguous acyclic outcome.
+    pub fn final_outcomes(&self) -> &[DatasetRef] {
+        &self.final_outcomes
+    }
+
+    /// Return diagnostics affecting this component.
+    pub fn diagnostics(&self) -> &[CompositionDiagnostic] {
+        &self.diagnostics
+    }
+}
+
+/// Deterministic dependency graph across all transformation layers in an analysis bundle.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AnalysisGraph {
+    edges: Vec<GraphEdge>,
+    components: Vec<GraphComponent>,
+    diagnostics: Vec<CompositionDiagnostic>,
+}
+
+impl AnalysisGraph {
+    /// Return dependency edges in deterministic consumer/relation order.
+    pub fn edges(&self) -> &[GraphEdge] {
+        &self.edges
+    }
+
+    /// Return disconnected graph components ordered by their earliest layer.
+    pub fn components(&self) -> &[GraphComponent] {
+        &self.components
+    }
+
+    /// Return graph-level ambiguity and cycle diagnostics.
+    pub fn diagnostics(&self) -> &[CompositionDiagnostic] {
+        &self.diagnostics
     }
 }
 
@@ -163,12 +341,13 @@ impl TransformationLayer {
     }
 }
 
-/// Multi-input analysis result before cross-input graph construction is implemented.
+/// Multi-input analysis result with deterministic local layers and relation dependency graph.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisBundle {
     protocol_version: &'static str,
     inputs: Vec<AnalyzedInput>,
     layers: Vec<TransformationLayer>,
+    graph: AnalysisGraph,
 }
 
 impl AnalysisBundle {
@@ -187,6 +366,11 @@ impl AnalysisBundle {
         &self.layers
     }
 
+    /// Return the deterministic relation dependency graph across all layers.
+    pub fn graph(&self) -> &AnalysisGraph {
+        &self.graph
+    }
+
     pub(crate) fn from_protocol(protocol: &Protocol) -> Self {
         let inputs = vec![AnalyzedInput {
             id: "input-0001".to_string(),
@@ -200,10 +384,12 @@ impl AnalysisBundle {
 
     fn from_inputs(inputs: Vec<AnalyzedInput>) -> Self {
         let layers = build_layers(&inputs);
+        let graph = build_graph(&layers);
         Self {
             protocol_version: PROTOCOL_VERSION,
             inputs,
             layers,
+            graph,
         }
     }
 }
@@ -245,6 +431,399 @@ fn build_layers(inputs: &[AnalyzedInput]) -> Vec<TransformationLayer> {
     }
 
     layers
+}
+
+fn build_graph(layers: &[TransformationLayer]) -> AnalysisGraph {
+    let producers = collect_producers(layers);
+    let mut edges = build_edges(layers, &producers);
+    mark_cycle_edges(&mut edges);
+    let components = build_components(layers, &edges);
+    let mut diagnostics = components
+        .iter()
+        .flat_map(|component| component.diagnostics().iter().cloned())
+        .collect::<Vec<_>>();
+    diagnostics.sort_by(diagnostic_cmp);
+
+    AnalysisGraph {
+        edges,
+        components,
+        diagnostics,
+    }
+}
+
+fn collect_producers(layers: &[TransformationLayer]) -> BTreeMap<String, Vec<String>> {
+    let mut producers = BTreeMap::<String, Vec<String>>::new();
+
+    for layer in layers {
+        for dataset in layer.produces() {
+            let Some(relation) = dataset.relation_name() else {
+                continue;
+            };
+            producers
+                .entry(relation.to_string())
+                .or_default()
+                .push(layer.id().to_string());
+        }
+    }
+
+    for producer_ids in producers.values_mut() {
+        producer_ids.sort();
+        producer_ids.dedup();
+    }
+
+    producers
+}
+
+fn build_edges(
+    layers: &[TransformationLayer],
+    producers: &BTreeMap<String, Vec<String>>,
+) -> Vec<GraphEdge> {
+    let mut edges = Vec::new();
+
+    for layer in layers {
+        for relation in layer.consumes() {
+            let producer_layer_ids = producers.get(relation).cloned().unwrap_or_default();
+            let resolution = match producer_layer_ids.len() {
+                0 => RelationResolution::External,
+                1 => RelationResolution::Resolved,
+                _ => RelationResolution::Ambiguous,
+            };
+
+            edges.push(GraphEdge {
+                consumer_layer_id: layer.id().to_string(),
+                relation: relation.clone(),
+                resolution,
+                producer_layer_ids,
+            });
+        }
+    }
+
+    edges.sort_by(|left, right| {
+        (
+            left.consumer_layer_id.as_str(),
+            left.relation.as_str(),
+            left.producer_layer_ids.as_slice(),
+        )
+            .cmp(&(
+                right.consumer_layer_id.as_str(),
+                right.relation.as_str(),
+                right.producer_layer_ids.as_slice(),
+            ))
+    });
+    edges
+}
+
+fn mark_cycle_edges(edges: &mut [GraphEdge]) {
+    let mut adjacency = BTreeMap::<String, Vec<String>>::new();
+
+    for edge in edges.iter() {
+        if edge.resolution != RelationResolution::Resolved {
+            continue;
+        }
+        if let Some(producer_id) = edge.producer_layer_ids.first() {
+            adjacency
+                .entry(edge.consumer_layer_id.clone())
+                .or_default()
+                .push(producer_id.clone());
+        }
+    }
+
+    for neighbors in adjacency.values_mut() {
+        neighbors.sort();
+        neighbors.dedup();
+    }
+
+    let cycle_edges = edges
+        .iter()
+        .filter(|edge| edge.resolution == RelationResolution::Resolved)
+        .filter_map(|edge| {
+            let producer_id = edge.producer_layer_ids.first()?;
+            path_exists(producer_id, &edge.consumer_layer_id, &adjacency).then(|| {
+                (
+                    edge.consumer_layer_id.clone(),
+                    edge.relation.clone(),
+                    producer_id.clone(),
+                )
+            })
+        })
+        .collect::<BTreeSet<_>>();
+
+    for edge in edges {
+        let Some(producer_id) = edge.producer_layer_ids.first() else {
+            continue;
+        };
+        if cycle_edges.contains(&(
+            edge.consumer_layer_id.clone(),
+            edge.relation.clone(),
+            producer_id.clone(),
+        )) {
+            edge.resolution = RelationResolution::Cycle;
+        }
+    }
+}
+
+fn path_exists(
+    start: &str,
+    target: &str,
+    adjacency: &BTreeMap<String, Vec<String>>,
+) -> bool {
+    if start == target {
+        return true;
+    }
+
+    let mut pending = vec![start.to_string()];
+    let mut visited = BTreeSet::new();
+
+    while let Some(layer_id) = pending.pop() {
+        if !visited.insert(layer_id.clone()) {
+            continue;
+        }
+        let Some(neighbors) = adjacency.get(&layer_id) else {
+            continue;
+        };
+        for neighbor in neighbors {
+            if neighbor == target {
+                return true;
+            }
+            if !visited.contains(neighbor) {
+                pending.push(neighbor.clone());
+            }
+        }
+    }
+
+    false
+}
+
+fn build_components(
+    layers: &[TransformationLayer],
+    edges: &[GraphEdge],
+) -> Vec<GraphComponent> {
+    let mut neighbors = layers
+        .iter()
+        .map(|layer| (layer.id().to_string(), BTreeSet::<String>::new()))
+        .collect::<BTreeMap<_, _>>();
+
+    for edge in edges {
+        for producer_id in edge.producer_layer_ids() {
+            if let Some(consumer_neighbors) = neighbors.get_mut(edge.consumer_layer_id()) {
+                consumer_neighbors.insert(producer_id.clone());
+            }
+            if let Some(producer_neighbors) = neighbors.get_mut(producer_id) {
+                producer_neighbors.insert(edge.consumer_layer_id().to_string());
+            }
+        }
+    }
+
+    let mut groups = Vec::<BTreeSet<String>>::new();
+    let mut visited = BTreeSet::<String>::new();
+
+    for layer in layers {
+        if visited.contains(layer.id()) {
+            continue;
+        }
+
+        let mut group = BTreeSet::new();
+        let mut pending = vec![layer.id().to_string()];
+        while let Some(layer_id) = pending.pop() {
+            if !visited.insert(layer_id.clone()) {
+                continue;
+            }
+            group.insert(layer_id.clone());
+            if let Some(layer_neighbors) = neighbors.get(&layer_id) {
+                for neighbor in layer_neighbors.iter().rev() {
+                    if !visited.contains(neighbor) {
+                        pending.push(neighbor.clone());
+                    }
+                }
+            }
+        }
+        groups.push(group);
+    }
+
+    let width = groups.len().max(1).to_string().len().max(4);
+    groups
+        .into_iter()
+        .enumerate()
+        .map(|(index, group)| build_component(index + 1, width, &group, layers, edges))
+        .collect()
+}
+
+fn build_component(
+    component_number: usize,
+    width: usize,
+    layer_ids: &BTreeSet<String>,
+    layers: &[TransformationLayer],
+    edges: &[GraphEdge],
+) -> GraphComponent {
+    let relevant_edges = edges
+        .iter()
+        .filter(|edge| layer_ids.contains(edge.consumer_layer_id()))
+        .collect::<Vec<_>>();
+    let has_cycle = relevant_edges
+        .iter()
+        .any(|edge| edge.resolution() == RelationResolution::Cycle);
+    let has_ambiguity = relevant_edges
+        .iter()
+        .any(|edge| edge.resolution() == RelationResolution::Ambiguous);
+
+    let mut diagnostics = relevant_edges
+        .iter()
+        .filter_map(|edge| match edge.resolution() {
+            RelationResolution::Ambiguous => Some(CompositionDiagnostic::warning(
+                "ambiguous_relation_producer",
+                format!(
+                    "relation '{}' has multiple in-bundle producers: {}",
+                    edge.relation(),
+                    edge.producer_layer_ids().join(", ")
+                ),
+                Some(edge.consumer_layer_id().to_string()),
+                Some(edge.relation().to_string()),
+            )),
+            RelationResolution::Cycle => Some(CompositionDiagnostic::warning(
+                "dependency_cycle",
+                format!(
+                    "relation '{}' participates in a dependency cycle",
+                    edge.relation()
+                ),
+                Some(edge.consumer_layer_id().to_string()),
+                Some(edge.relation().to_string()),
+            )),
+            RelationResolution::Resolved
+            | RelationResolution::External
+            | RelationResolution::Missing
+            | RelationResolution::Unsupported => None,
+        })
+        .collect::<Vec<_>>();
+    diagnostics.sort_by(diagnostic_cmp);
+    diagnostics.dedup();
+
+    let ordered_layer_ids = if has_cycle {
+        layer_ids.iter().cloned().collect()
+    } else {
+        topological_layer_order(layer_ids, edges)
+    };
+
+    let final_outcomes = if has_cycle || has_ambiguity {
+        Vec::new()
+    } else {
+        component_final_outcomes(layer_ids, layers, edges)
+    };
+
+    GraphComponent {
+        id: format!(
+            "component-{:0width$}",
+            component_number,
+            width = width
+        ),
+        layer_ids: ordered_layer_ids,
+        final_outcomes,
+        diagnostics,
+    }
+}
+
+fn topological_layer_order(
+    layer_ids: &BTreeSet<String>,
+    edges: &[GraphEdge],
+) -> Vec<String> {
+    let mut indegree = layer_ids
+        .iter()
+        .map(|layer_id| (layer_id.clone(), 0_usize))
+        .collect::<BTreeMap<_, _>>();
+    let mut consumers = BTreeMap::<String, BTreeSet<String>>::new();
+
+    for edge in edges {
+        if edge.resolution() != RelationResolution::Resolved {
+            continue;
+        }
+        let Some(producer_id) = edge.producer_layer_ids().first() else {
+            continue;
+        };
+        if !layer_ids.contains(edge.consumer_layer_id()) || !layer_ids.contains(producer_id) {
+            continue;
+        }
+
+        consumers
+            .entry(producer_id.clone())
+            .or_default()
+            .insert(edge.consumer_layer_id().to_string());
+        if let Some(value) = indegree.get_mut(edge.consumer_layer_id()) {
+            *value += 1;
+        }
+    }
+
+    let mut ready = indegree
+        .iter()
+        .filter(|(_, degree)| **degree == 0)
+        .map(|(layer_id, _)| layer_id.clone())
+        .collect::<BTreeSet<_>>();
+    let mut ordered = Vec::with_capacity(layer_ids.len());
+
+    while let Some(layer_id) = ready.pop_first() {
+        ordered.push(layer_id.clone());
+        let Some(layer_consumers) = consumers.get(&layer_id) else {
+            continue;
+        };
+        for consumer_id in layer_consumers {
+            let Some(degree) = indegree.get_mut(consumer_id) else {
+                continue;
+            };
+            *degree -= 1;
+            if *degree == 0 {
+                ready.insert(consumer_id.clone());
+            }
+        }
+    }
+
+    if ordered.len() == layer_ids.len() {
+        ordered
+    } else {
+        layer_ids.iter().cloned().collect()
+    }
+}
+
+fn component_final_outcomes(
+    layer_ids: &BTreeSet<String>,
+    layers: &[TransformationLayer],
+    edges: &[GraphEdge],
+) -> Vec<DatasetRef> {
+    let consumed_producer_ids = edges
+        .iter()
+        .filter(|edge| edge.resolution() == RelationResolution::Resolved)
+        .flat_map(|edge| edge.producer_layer_ids().iter().cloned())
+        .collect::<BTreeSet<_>>();
+
+    let mut outcomes = layers
+        .iter()
+        .filter(|layer| {
+            layer_ids.contains(layer.id()) && !consumed_producer_ids.contains(layer.id())
+        })
+        .flat_map(|layer| layer.produces().iter().cloned())
+        .collect::<Vec<_>>();
+    outcomes.sort();
+    outcomes.dedup();
+    outcomes
+}
+
+fn diagnostic_cmp(
+    left: &CompositionDiagnostic,
+    right: &CompositionDiagnostic,
+) -> std::cmp::Ordering {
+    (
+        left.severity().as_str(),
+        left.code(),
+        left.input_id(),
+        left.layer_id(),
+        left.relation(),
+        left.message(),
+    )
+        .cmp(&(
+            right.severity().as_str(),
+            right.code(),
+            right.input_id(),
+            right.layer_id(),
+            right.relation(),
+            right.message(),
+        ))
 }
 
 /// Error produced while parsing or analyzing one input in a multi-input invocation.
