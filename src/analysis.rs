@@ -214,7 +214,7 @@ fn analyze_select_aggregation(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Option<Aggregation> {
     let (distinct, distinct_on) = match &select.distinct {
-        None | Some(SqlDistinct::All) => (false, Vec::new()),
+        None => (false, Vec::new()),
         Some(SqlDistinct::Distinct) => (true, Vec::new()),
         Some(SqlDistinct::On(expressions)) => (
             true,
