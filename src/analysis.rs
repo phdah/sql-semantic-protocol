@@ -1632,7 +1632,7 @@ fn is_aggregate_function(function: &Function) -> bool {
     let name = function.name.to_string();
     let unqualified = name.rsplit('.').next().unwrap_or(name.as_str());
     let normalized = unqualified
-        .trim_matches(|character| matches!(character, '"' | '\`' | '[' | ']'))
+        .trim_matches(|character| matches!(character, '"' | '`' | '[' | ']'))
         .to_ascii_uppercase();
 
     matches!(
