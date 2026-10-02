@@ -163,7 +163,8 @@ fn dependency_cycles_are_detected_without_recursion() {
         SqlInput::inline("CREATE TABLE model.b AS SELECT id FROM model.a"),
     ];
 
-    let bundle = analyze_inputs(&inputs, "generic", &dialect).expect("cycle should remain analyzable");
+    let bundle =
+        analyze_inputs(&inputs, "generic", &dialect).expect("cycle should remain analyzable");
 
     assert_eq!(bundle.graph().edges().len(), 2);
     assert!(bundle
@@ -185,9 +186,7 @@ fn local_cte_names_do_not_link_to_global_producers() {
     let dialect = GenericDialect {};
     let inputs = [
         SqlInput::inline("CREATE TABLE recent AS SELECT id FROM raw.one"),
-        SqlInput::inline(
-            "WITH recent AS (SELECT id FROM raw.two) SELECT id FROM recent",
-        ),
+        SqlInput::inline("WITH recent AS (SELECT id FROM raw.two) SELECT id FROM recent"),
     ];
 
     let bundle =
