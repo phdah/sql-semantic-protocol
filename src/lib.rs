@@ -8,6 +8,7 @@
 
 mod analysis;
 mod bundle;
+mod composition;
 mod domain;
 mod emission;
 mod parser;
@@ -19,9 +20,10 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_inputs, AnalysisBundle, AnalysisGraph, AnalyzedInput, CompositionDiagnostic,
-    DatasetRef, GraphComponent, GraphEdge, InputAnalysisError, RelationResolution, SqlInput,
-    SqlInputSource, TransformationLayer,
+    analyze_inputs, AnalysisBundle, AnalysisGraph, AnalyzedInput, ComposedSemantics,
+    CompositionDiagnostic, CompositionFailureReason, DatasetRef, GraphComponent, GraphEdge,
+    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
+    TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use emission::{to_bundle_json, to_json};
 pub use parser::ParseError;
