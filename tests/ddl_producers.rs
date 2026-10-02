@@ -37,7 +37,7 @@ fn query_backed_ddl_is_supported_across_all_exposed_dialects() {
                 "target_view",
             ),
         ] {
-            let bundle = analyze_inputs(&[SqlInput::inline(*sql)], dialect_name, dialect.as_ref())
+            let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref())
                 .unwrap_or_else(|error| {
                     panic!("dialect {dialect_name} failed to analyze {sql}: {error}")
                 });
@@ -116,11 +116,11 @@ fn ddl_variants_are_checked_across_all_exposed_dialects() {
         let dialect =
             dialect_from_str(dialect_name).expect("documented dialect should be recognized");
 
-        for (variant, sql, expected_relation) in VARIANTS {
+        for &(variant, sql, expected_relation) in VARIANTS {
             match Parser::parse_sql(dialect.as_ref(), sql) {
                 Ok(_) => {
                     let bundle =
-                        analyze_inputs(&[SqlInput::inline(*sql)], dialect_name, dialect.as_ref())
+                        analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref())
                             .unwrap_or_else(|error| {
                                 panic!(
                                     "dialect {dialect_name} parses {variant}, but semantic analysis failed for {sql}: {error}"
@@ -148,13 +148,13 @@ fn ddl_variants_are_checked_across_all_exposed_dialects() {
                     };
                     assert_eq!(
                         query.produced_relation(),
-                        Some(*expected_relation),
+                        Some(expected_relation),
                         "dialect {dialect_name} should preserve relation identity for parsed {variant}"
                     );
                 }
                 Err(parse_error) => {
                     let analysis =
-                        analyze_inputs(&[SqlInput::inline(*sql)], dialect_name, dialect.as_ref());
+                        analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref());
                     assert!(
                         analysis.is_err(),
                         "dialect {dialect_name} parser rejects {variant}, but analysis unexpectedly accepted it: {parse_error}"
@@ -170,7 +170,7 @@ fn snowflake_ctas_records_qualified_quoted_relation_and_query_semantics() {
     let dialect = dialect_from_str("snowflake").expect("snowflake dialect should exist");
     let sql = r#"CREATE OR REPLACE TEMPORARY TABLE analytics."Daily Orders" AS
                  SELECT id FROM raw.orders WHERE total_amount >= 100"#;
-    let inputs = [SqlInput::inline(*sql)];
+    let inputs = [SqlInput::inline(sql)];
 
     let bundle = analyze_inputs(&inputs, "snowflake", dialect.as_ref())
         .expect("snowflake CTAS should analyze");
@@ -226,7 +226,7 @@ fn postgresql_materialized_view_records_produced_relation() {
     let sql = r#"CREATE MATERIALIZED VIEW reporting."Order Summary" AS
                  SELECT customer_id FROM raw.orders"#;
 
-    let bundle = analyze_inputs(&[SqlInput::inline(*sql)], "postgresql", dialect.as_ref())
+    let bundle = analyze_inputs(&[SqlInput::inline(sql)], "postgresql", dialect.as_ref())
         .expect("postgresql materialized view should analyze");
 
     assert_eq!(bundle.layers().len(), 1);
