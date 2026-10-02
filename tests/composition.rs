@@ -41,7 +41,6 @@ fn resolved(layer: &TransformationLayer) -> &ResolvedComposedSemantics {
     }
 }
 
-
 #[test]
 fn transitive_composition_is_consistent_across_all_exposed_dialects() {
     for dialect_name in DIALECTS {
