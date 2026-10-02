@@ -914,8 +914,9 @@ fn collect_named_window_dependencies(
         return;
     }
 
-    if let Some(NamedWindowDefinition(_, definition)) =
-        named_windows.iter().find(|definition| definition.0.value == name)
+    if let Some(NamedWindowDefinition(_, definition)) = named_windows
+        .iter()
+        .find(|definition| definition.0.value == name)
     {
         match definition {
             NamedWindowExpr::NamedWindow(base) => collect_named_window_dependencies(
@@ -984,7 +985,13 @@ fn collect_window_spec_dependencies(
         );
     }
     if let Some(frame) = &spec.window_frame {
-        for bound in [&frame.start_bound, frame.end_bound.as_ref().unwrap_or(&SqlWindowFrameBound::CurrentRow)] {
+        for bound in [
+            &frame.start_bound,
+            frame
+                .end_bound
+                .as_ref()
+                .unwrap_or(&SqlWindowFrameBound::CurrentRow),
+        ] {
             match bound {
                 SqlWindowFrameBound::Preceding(Some(expression))
                 | SqlWindowFrameBound::Following(Some(expression)) => {
@@ -1077,12 +1084,7 @@ fn analyze_predicate_with_windows(
             analyze_predicate_expression(expr, named_windows, output_aliases, diagnostics),
             list.iter()
                 .map(|value| {
-                    analyze_predicate_expression(
-                        value,
-                        named_windows,
-                        output_aliases,
-                        diagnostics,
-                    )
+                    analyze_predicate_expression(value, named_windows, output_aliases, diagnostics)
                 })
                 .collect(),
             *negated,
@@ -1124,11 +1126,7 @@ fn analyze_predicate_expression(
 ) -> Expression {
     if let Expr::Identifier(identifier) = expression {
         if let Some(aliased_expression) = output_aliases.get(&identifier.value) {
-            return analyze_expression_with_windows(
-                aliased_expression,
-                named_windows,
-                diagnostics,
-            );
+            return analyze_expression_with_windows(aliased_expression, named_windows, diagnostics);
         }
     }
 
@@ -1415,12 +1413,9 @@ fn analyze_window_type(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Option<WindowSpecification> {
     match window {
-        WindowType::WindowSpec(spec) => analyze_window_spec(
-            spec,
-            named_windows,
-            &mut BTreeSet::new(),
-            diagnostics,
-        ),
+        WindowType::WindowSpec(spec) => {
+            analyze_window_spec(spec, named_windows, &mut BTreeSet::new(), diagnostics)
+        }
         WindowType::NamedWindow(name) => {
             let resolved = resolve_named_window(
                 &name.value,
@@ -1510,8 +1505,7 @@ fn analyze_window_spec(
     let mut frame = None;
 
     if let Some(base_name) = &spec.window_name {
-        let base =
-            resolve_named_window(&base_name.value, named_windows, resolving, diagnostics)?;
+        let base = resolve_named_window(&base_name.value, named_windows, resolving, diagnostics)?;
         name = Some(base_name.value.clone());
         partition_by = base.partition_by().to_vec();
         order_by = base.order_by().to_vec();
@@ -1581,7 +1575,12 @@ fn analyze_window_spec(
         ));
     }
 
-    Some(WindowSpecification::new(name, partition_by, order_by, frame))
+    Some(WindowSpecification::new(
+        name,
+        partition_by,
+        order_by,
+        frame,
+    ))
 }
 
 fn analyze_window_frame(
@@ -1596,9 +1595,12 @@ fn analyze_window_frame(
             SqlWindowFrameUnits::Groups => WindowFrameUnits::Groups,
         },
         analyze_window_frame_bound(&frame.start_bound, named_windows, diagnostics),
-        frame.end_bound.as_ref().map_or(WindowFrameBound::CurrentRow, |bound| {
-            analyze_window_frame_bound(bound, named_windows, diagnostics)
-        }),
+        frame
+            .end_bound
+            .as_ref()
+            .map_or(WindowFrameBound::CurrentRow, |bound| {
+                analyze_window_frame_bound(bound, named_windows, diagnostics)
+            }),
     )
 }
 
@@ -2188,8 +2190,9 @@ fn collect_named_window_lineage(
         return;
     }
 
-    if let Some(NamedWindowDefinition(_, definition)) =
-        named_windows.iter().find(|definition| definition.0.value == name)
+    if let Some(NamedWindowDefinition(_, definition)) = named_windows
+        .iter()
+        .find(|definition| definition.0.value == name)
     {
         match definition {
             NamedWindowExpr::NamedWindow(base) => collect_named_window_lineage(
