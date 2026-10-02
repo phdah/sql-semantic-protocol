@@ -4,10 +4,7 @@ use sql_semantic_protocol::{
 };
 use sqlparser::dialect::GenericDialect;
 
-fn layer_for_relation<'a>(
-    bundle: &'a AnalysisBundle,
-    relation: &str,
-) -> &'a TransformationLayer {
+fn layer_for_relation<'a>(bundle: &'a AnalysisBundle, relation: &str) -> &'a TransformationLayer {
     bundle
         .layers()
         .iter()
@@ -72,8 +69,7 @@ fn three_stage_chain_composes_base_lineage_dependencies_and_domains() {
         .column_domains()
         .iter()
         .find(|domain| {
-            domain.column().relation() == Some("raw.orders")
-                && domain.column().name() == "amount"
+            domain.column().relation() == Some("raw.orders") && domain.column().name() == "amount"
         })
         .expect("amount domain should propagate to the base column");
     let amount_ranges = match amount.domain() {
@@ -246,12 +242,8 @@ fn disconnected_components_compose_independently() {
         &[
             SqlInput::inline("CREATE TABLE stage.orders AS SELECT id FROM raw.orders"),
             SqlInput::inline("CREATE TABLE mart.orders AS SELECT id FROM stage.orders"),
-            SqlInput::inline(
-                "CREATE TABLE stage.customers AS SELECT id FROM raw.customers",
-            ),
-            SqlInput::inline(
-                "CREATE TABLE mart.customers AS SELECT id FROM stage.customers",
-            ),
+            SqlInput::inline("CREATE TABLE stage.customers AS SELECT id FROM raw.customers"),
+            SqlInput::inline("CREATE TABLE mart.customers AS SELECT id FROM stage.customers"),
         ],
         "generic",
         &dialect,
