@@ -14,7 +14,9 @@ fn first_query(protocol: &Protocol) -> &QueryStatement {
     }
 }
 
-fn first_window_expression(protocol: &Protocol) -> &sql_semantic_protocol::WindowFunctionExpression {
+fn first_window_expression(
+    protocol: &Protocol,
+) -> &sql_semantic_protocol::WindowFunctionExpression {
     match first_query(protocol).output().columns()[0].expression() {
         Expression::WindowFunction(window) => window,
         other => panic!("expected window function expression, got {other:?}"),
@@ -116,7 +118,10 @@ fn explicit_rows_range_and_groups_frames_are_typed() {
             .expect("frame should be represented");
 
         assert_eq!(frame.units(), expected);
-        assert!(matches!(frame.start_bound(), WindowFrameBound::Preceding(_)));
+        assert!(matches!(
+            frame.start_bound(),
+            WindowFrameBound::Preceding(_)
+        ));
         assert!(matches!(frame.end_bound(), WindowFrameBound::CurrentRow));
     }
 }
@@ -141,7 +146,10 @@ fn qualify_alias_resolves_to_window_expression_without_scalar_domain_claims() {
     };
     assert!(matches!(comparison.left(), Expression::WindowFunction(_)));
     assert!(first_query(&protocol).column_domains().is_empty());
-    assert_eq!(first_query(&protocol).output().columns()[0].lineage().len(), 2);
+    assert_eq!(
+        first_query(&protocol).output().columns()[0].lineage().len(),
+        2
+    );
 }
 
 #[test]
@@ -158,10 +166,13 @@ fn unsupported_window_options_remain_explicit() {
         first_query(&protocol).output().columns()[0].expression(),
         Expression::Unsupported(_)
     ));
-    assert!(first_query(&protocol).diagnostics().iter().any(|diagnostic| {
-        diagnostic.area() == DiagnosticArea::Function
-            && diagnostic.code() == "unsupported_function"
-    }));
+    assert!(first_query(&protocol)
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| {
+            diagnostic.area() == DiagnosticArea::Function
+                && diagnostic.code() == "unsupported_function"
+        }));
 }
 
 #[test]
