@@ -2,7 +2,24 @@ use sql_semantic_protocol::{
     analyze_inputs, AnalysisBundle, ComposedSemantics, CompositionFailureReason, DatasetRef,
     LiteralValue, ResolvedComposedSemantics, SqlInput, TransformationLayer, ValueDomain,
 };
-use sqlparser::dialect::GenericDialect;
+use sqlparser::dialect::{dialect_from_str, GenericDialect};
+
+const DIALECTS: &[&str] = &[
+    "generic",
+    "mysql",
+    "postgresql",
+    "postgres",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
+];
 
 fn layer_for_relation<'a>(bundle: &'a AnalysisBundle, relation: &str) -> &'a TransformationLayer {
     bundle
@@ -21,6 +38,63 @@ fn resolved(layer: &TransformationLayer) -> &ResolvedComposedSemantics {
     match layer.composed_semantics() {
         ComposedSemantics::Resolved(semantics) => semantics,
         other => panic!("expected resolved composed semantics, got {other:?}"),
+    }
+}
+
+
+#[test]
+fn transitive_composition_is_consistent_across_all_exposed_dialects() {
+    for dialect_name in DIALECTS {
+        let dialect =
+            dialect_from_str(dialect_name).expect("documented dialect should be recognized");
+        let bundle = analyze_inputs(
+            &[
+                SqlInput::inline(
+                    "CREATE TABLE stage_orders AS
+                     SELECT id AS order_id, amount
+                     FROM raw_orders
+                     WHERE amount > 10",
+                ),
+                SqlInput::inline(
+                    "CREATE TABLE core_orders AS
+                     SELECT order_id AS final_id, amount
+                     FROM stage_orders",
+                ),
+                SqlInput::inline(
+                    "CREATE TABLE mart_orders AS
+                     SELECT final_id, amount
+                     FROM core_orders
+                     WHERE amount < 100",
+                ),
+            ],
+            dialect_name,
+            dialect.as_ref(),
+        )
+        .unwrap_or_else(|error| {
+            panic!("dialect {dialect_name} failed transitive composition: {error}")
+        });
+
+        let semantics = resolved(layer_for_relation(&bundle, "mart_orders"));
+        assert_eq!(
+            semantics.dependencies(),
+            &["raw_orders".to_string()],
+            "dialect {dialect_name} should resolve the same physical dependency"
+        );
+        assert_eq!(
+            semantics.output().columns()[0].lineage()[0].relation(),
+            "raw_orders",
+            "dialect {dialect_name} should compose field lineage"
+        );
+        assert_eq!(
+            semantics.output().columns()[0].lineage()[0].column(),
+            "id",
+            "dialect {dialect_name} should preserve rename identity"
+        );
+        assert_eq!(
+            semantics.column_domains().len(),
+            1,
+            "dialect {dialect_name} should compose the same amount domain"
+        );
     }
 }
 
