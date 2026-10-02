@@ -1,7 +1,7 @@
 ---
 id: TASK-18
 title: Expand aggregation and grouping semantics
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -18,12 +18,12 @@ The implementation should cover common portable constructs first and preserve ex
 
 ## Acceptance Criteria
 
-- [ ] Aggregate functions are represented as aggregate semantics rather than only generic function calls.
-- [ ] GROUP BY expressions are represented and linked to output lineage.
-- [ ] HAVING semantics are evaluated in the grouped-query scope.
-- [ ] DISTINCT output semantics are represented explicitly.
-- [ ] Aggregate FILTER clauses are represented where supported.
-- [ ] GROUPING SETS, ROLLUP, and CUBE are supported where the selected dialect/sqlparser representation permits it, or remain explicitly unsupported.
-- [ ] Grouped queries preserve correct physical dependencies and output-column lineage.
-- [ ] Value-domain derivation remains conservative across aggregation.
-- [ ] Tests cover grouped aggregates, DISTINCT, HAVING, and at least one advanced grouping construct.
+- [x] Aggregate functions are represented as aggregate semantics rather than only generic function calls.
+- [x] GROUP BY expressions are represented and linked to output lineage.
+- [x] HAVING semantics are evaluated in the grouped-query scope.
+- [x] DISTINCT output semantics are represented explicitly.
+- [x] Aggregate FILTER clauses are represented where supported.
+- [x] GROUPING SETS, ROLLUP, and CUBE are supported where the selected dialect/sqlparser representation permits it, or remain explicitly unsupported.
+- [x] Grouped queries preserve correct physical dependencies and output-column lineage.
+- [x] Value-domain derivation remains conservative across aggregation.
+- [x] Tests cover grouped aggregates, DISTINCT, HAVING, and at least one advanced grouping construct.

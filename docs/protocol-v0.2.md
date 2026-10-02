@@ -63,6 +63,16 @@ Column domains remain source-column constraints. Equal constraints from multiple
 
 Set-level ORDER BY and LIMIT remain query-level semantics, so their existing explicit unsupported diagnostics attach to the combined set result rather than to an arbitrary branch.
 
+## Aggregation and grouping
+
+Non-window aggregate calls use expression kind `aggregate_function`, distinct from ordinary scalar `function` and `window_function` expressions. Aggregate arguments preserve scalar expressions, `*`, and qualified wildcards. The `distinct` flag belongs to the aggregate argument list, while `filter` contains a normalized predicate or null.
+
+A SELECT carries an optional `aggregation` object when DISTINCT or GROUP BY changes row semantics. `distinct` records duplicate elimination, `distinct_on` preserves PostgreSQL-style DISTINCT ON expressions, and `group_by` is null, `all`, or an ordered list of grouping elements. Grouping elements distinguish ordinary expressions from GROUPING SETS, ROLLUP, and CUBE without exposing sqlparser AST types.
+
+Grouping expressions and aggregate arguments participate in physical dependencies and output lineage. HAVING is analyzed in the grouped SELECT scope, including projected aliases. Aggregate result predicates do not constrain their physical input columns: for example, `HAVING SUM(amount) > 10` is not emitted as a source-column domain for `amount`.
+
+Parser-supported GROUP BY modifiers that do not have a safe protocol representation remain explicit diagnostics rather than being dropped.
+
 ## Window functions
 
 Window calls use the expression kind `window_function`. The value contains the normalized underlying function plus a resolved parser-independent window specification:
