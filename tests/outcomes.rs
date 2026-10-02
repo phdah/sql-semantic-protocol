@@ -70,9 +70,9 @@ fn one_protocol_contains_all_outcomes_and_terminal_classification() {
             .collect::<Vec<_>>(),
         vec!["mart.orders", "mart.customers"]
     );
-    assert!(terminal_outcomes.iter().any(|dataset| {
-        dataset["kind"] == "anonymous" && dataset["layer_id"] == "layer-0003"
-    }));
+    assert!(terminal_outcomes
+        .iter()
+        .any(|dataset| { dataset["kind"] == "anonymous" && dataset["layer_id"] == "layer-0003" }));
 
     for terminal_outcome in &terminal_outcomes {
         assert!(layers.iter().any(|layer| {
