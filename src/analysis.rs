@@ -188,7 +188,6 @@ fn analyze_set_operation(expression: &SetExpr) -> Option<SetOperation> {
         | SetExpr::Insert(_)
         | SetExpr::Update(_)
         | SetExpr::Delete(_)
-        | SetExpr::Merge(_)
         | SetExpr::Table(_) => None,
     }
 }
@@ -260,7 +259,6 @@ fn analyze_set_expr_column_domains(
         | SetExpr::Insert(_)
         | SetExpr::Update(_)
         | SetExpr::Delete(_)
-        | SetExpr::Merge(_)
         | SetExpr::Table(_) => Vec::new(),
     }
 }
@@ -1287,7 +1285,6 @@ fn analyze_set_expr_output(
         | SetExpr::Insert(_)
         | SetExpr::Update(_)
         | SetExpr::Delete(_)
-        | SetExpr::Merge(_)
         | SetExpr::Table(_) => Output::new(Vec::new()),
     }
 }
@@ -1745,7 +1742,6 @@ fn inspect_set_expr_features(expression: &SetExpr, diagnostics: &mut Vec<Diagnos
         | SetExpr::Insert(_)
         | SetExpr::Update(_)
         | SetExpr::Delete(_)
-        | SetExpr::Merge(_)
         | SetExpr::Table(_) => {}
     }
 }
