@@ -126,18 +126,15 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                 };
             }
             "--namespace" => {
-                namespace = Some(
-                    arguments
-                        .next()
-                        .ok_or_else(|| CliError::Input("missing value for --namespace".to_string()))?,
-                );
+                namespace =
+                    Some(arguments.next().ok_or_else(|| {
+                        CliError::Input("missing value for --namespace".to_string())
+                    })?);
             }
             "--event-time" => {
-                event_time = Some(
-                    arguments
-                        .next()
-                        .ok_or_else(|| CliError::Input("missing value for --event-time".to_string()))?,
-                );
+                event_time = Some(arguments.next().ok_or_else(|| {
+                    CliError::Input("missing value for --event-time".to_string())
+                })?);
             }
             "-s" | "--sql" => {
                 let sql = arguments
@@ -194,9 +191,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                 .as_deref()
                 .is_some_and(|value| value.trim().is_empty())
             {
-                return Err(CliError::Input(
-                    "--event-time cannot be empty".to_string(),
-                ));
+                return Err(CliError::Input("--event-time cannot be empty".to_string()));
             }
         }
     }
@@ -371,8 +366,7 @@ fn civil_date_from_unix_days(days_since_epoch: i64) -> (i64, i64, i64) {
     let year_of_era =
         (day_of_era - day_of_era / 1_460 + day_of_era / 36_524 - day_of_era / 146_096) / 365;
     let mut year = year_of_era + era * 400;
-    let day_of_year =
-        day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
     let month_prime = (5 * day_of_year + 2) / 153;
     let day = day_of_year - (153 * month_prime + 2) / 5 + 1;
     let month = month_prime + if month_prime < 10 { 3 } else { -9 };
@@ -422,7 +416,9 @@ impl fmt::Display for CliError {
                 ProtocolError::Parse(_) => write!(formatter, "{error}"),
                 _ => write!(formatter, "analysis error: {error}"),
             },
-            Self::OpenLineageExport(error) => write!(formatter, "OpenLineage export error: {error}"),
+            Self::OpenLineageExport(error) => {
+                write!(formatter, "OpenLineage export error: {error}")
+            }
         }
     }
 }
@@ -452,14 +448,8 @@ mod tests {
         match command {
             Command::Analyze(options) => {
                 assert_eq!(options.format, OutputFormat::OpenLineage);
-                assert_eq!(
-                    options.namespace.as_deref(),
-                    Some("postgresql://warehouse")
-                );
-                assert_eq!(
-                    options.event_time.as_deref(),
-                    Some("2026-10-02T07:00:00Z")
-                );
+                assert_eq!(options.namespace.as_deref(), Some("postgresql://warehouse"));
+                assert_eq!(options.event_time.as_deref(), Some("2026-10-02T07:00:00Z"));
             }
             Command::Help => assert!(false, "expected analyze command"),
         }
@@ -468,9 +458,14 @@ mod tests {
     #[test]
     fn openlineage_output_requires_namespace() {
         let error = parse_args(
-            ["--format", "openlineage", "--sql", "SELECT id FROM raw.orders"]
-                .into_iter()
-                .map(str::to_string),
+            [
+                "--format",
+                "openlineage",
+                "--sql",
+                "SELECT id FROM raw.orders",
+            ]
+            .into_iter()
+            .map(str::to_string),
         )
         .expect_err("OpenLineage output without a namespace should fail");
 
