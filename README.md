@@ -52,6 +52,20 @@ let json = sql_semantic_protocol::to_openlineage_json(
 
 Only semantics OpenLineage can represent are exported. Predicate trees, value domains, and other richer outcome semantics remain in the SQL Semantic Protocol. Anonymous outputs and unresolved layers are omitted rather than assigned invented dataset identity or lineage.
 
+The CLI can select the same adapter with `--format openlineage`. A namespace is required because SQL alone cannot determine an OpenLineage dataset namespace. The event time may be supplied explicitly for reproducible output; otherwise the CLI uses the current UTC time:
+
+```sh
+cargo run -- \
+  --dialect postgresql \
+  --format openlineage \
+  --namespace postgresql://warehouse \
+  --file sql/stage.sql \
+  --file sql/core.sql \
+  --file sql/mart.sql
+```
+
+For byte-reproducible output, add `--event-time 2026-10-02T07:00:00Z`.
+
 ## Versioning
 
 SQL Semantic Protocol uses one version for the application and the protocol. The Cargo package version, emitted `protocol_version`, active protocol contract, Git tag, and GitHub release are the same release identity.
