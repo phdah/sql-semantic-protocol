@@ -36,14 +36,10 @@ fn query_backed_ddl_is_supported_across_all_exposed_dialects() {
                 "target_view",
             ),
         ] {
-            let bundle = analyze_inputs(
-                &[SqlInput::inline(sql)],
-                dialect_name,
-                dialect.as_ref(),
-            )
-            .unwrap_or_else(|error| {
-                panic!("dialect {dialect_name} failed to analyze {sql}: {error}")
-            });
+            let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref())
+                .unwrap_or_else(|error| {
+                    panic!("dialect {dialect_name} failed to analyze {sql}: {error}")
+                });
 
             assert_eq!(
                 bundle.layers().len(),
