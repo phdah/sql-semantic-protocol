@@ -2,12 +2,9 @@ mod common;
 
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_sql, DiagnosticArea, Expression, Predicate, Protocol, ProtocolStatement,
-    QueryStatement,
+    analyze_sql, DiagnosticArea, Expression, Predicate, Protocol, ProtocolStatement, QueryStatement,
 };
-use sqlparser::dialect::{
-    dialect_from_str, BigQueryDialect, GenericDialect, PostgreSqlDialect,
-};
+use sqlparser::dialect::{dialect_from_str, BigQueryDialect, GenericDialect, PostgreSqlDialect};
 
 fn first_query(protocol: &Protocol) -> &QueryStatement {
     match protocol.statements().first() {
@@ -82,8 +79,7 @@ fn in_and_not_in_subqueries_preserve_membership_semantics() {
         let sql = format!(
             "SELECT o.id FROM orders o WHERE o.customer_id {keyword} (SELECT c.id FROM customers c)"
         );
-        let protocol =
-            analyze_sql(&sql, "generic", &dialect).expect("IN subquery should analyze");
+        let protocol = analyze_sql(&sql, "generic", &dialect).expect("IN subquery should analyze");
 
         let predicate = first_query(&protocol)
             .predicates()
@@ -226,8 +222,9 @@ fn shared_in_subquery_syntax_is_analyzed_across_all_exposed_dialects() {
     for dialect_name in DIALECTS {
         let dialect =
             dialect_from_str(dialect_name).expect("documented dialect should be recognized");
-        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
-            .unwrap_or_else(|error| panic!("dialect {dialect_name} failed subquery syntax: {error}"));
+        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref()).unwrap_or_else(|error| {
+            panic!("dialect {dialect_name} failed subquery syntax: {error}")
+        });
 
         assert!(
             matches!(
