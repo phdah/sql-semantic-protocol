@@ -179,7 +179,9 @@ fn validate_schema(
             .filter(|option| validate_schema(schemas, root, instance, option, path).is_ok())
             .count();
         if matches != 1 {
-            return Err(format!("{path}: expected exactly one oneOf branch, matched {matches}"));
+            return Err(format!(
+                "{path}: expected exactly one oneOf branch, matched {matches}"
+            ));
         }
     }
 
@@ -200,7 +202,9 @@ fn validate_schema(
 
     if let Some(values) = schema.get("enum").and_then(Value::as_array) {
         if !values.iter().any(|expected| expected == instance) {
-            return Err(format!("{path}: value {instance} is outside enum {values:?}"));
+            return Err(format!(
+                "{path}: value {instance} is outside enum {values:?}"
+            ));
         }
     }
 
@@ -211,7 +215,11 @@ fn validate_schema(
                 .iter()
                 .filter_map(Value::as_str)
                 .any(|kind| instance_has_type(instance, kind)),
-            other => return Err(format!("{path}: unsupported schema type declaration {other}")),
+            other => {
+                return Err(format!(
+                    "{path}: unsupported schema type declaration {other}"
+                ))
+            }
         };
         if !valid {
             return Err(format!("{path}: instance {instance} has unexpected type"));
@@ -333,7 +341,10 @@ fn representative_bundle_validates_the_complete_advanced_target() {
     let summary = resolved(layer_for_relation(&bundle, "mart.customer_summary"));
     assert_eq!(
         summary.dependencies(),
-        &["raw.allowed_customers".to_string(), "raw.orders".to_string()]
+        &[
+            "raw.allowed_customers".to_string(),
+            "raw.orders".to_string()
+        ]
     );
 
     let document: Value = serde_json::from_str(&to_bundle_json(&bundle))
@@ -414,14 +425,10 @@ fn representative_shared_semantics_use_sqlparser_dialect_delegation() {
     for dialect_name in DIALECTS {
         let dialect =
             dialect_from_str(dialect_name).expect("documented dialect should resolve in sqlparser");
-        let bundle = analyze_inputs(
-            &[SqlInput::inline(sql)],
-            dialect_name,
-            dialect.as_ref(),
-        )
-        .unwrap_or_else(|error| {
-            panic!("dialect {dialect_name} should analyze shared semantics: {error}")
-        });
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref())
+            .unwrap_or_else(|error| {
+                panic!("dialect {dialect_name} should analyze shared semantics: {error}")
+            });
 
         assert_eq!(bundle.inputs()[0].dialect(), *dialect_name);
         assert_eq!(
