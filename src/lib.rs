@@ -25,7 +25,7 @@ mod relation;
 
 use std::fmt;
 
-use sqlparser::dialect::{Dialect, dialect_from_str};
+use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
 pub use bundle::{
@@ -109,7 +109,6 @@ pub fn analyze_sql(
     let parsed = parser::parse_sql(sql, dialect).map_err(Error::Parse)?;
     analysis::analyze(parsed, dialect_name).map_err(Error::Analysis)
 }
-
 
 /// Resolve a built-in sqlparser dialect by name for library consumers.
 ///
