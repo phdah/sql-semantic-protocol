@@ -100,10 +100,7 @@ fn unknown_target_is_an_explicit_error() {
         .expect_err("unqualified target should not match a qualified producer");
 
     assert_eq!(error.target(), "orders");
-    assert!(matches!(
-        &error,
-        TargetSelectionError::UnknownTarget { .. }
-    ));
+    assert!(matches!(&error, TargetSelectionError::UnknownTarget { .. }));
     assert_eq!(
         error.to_string(),
         "target relation 'orders' is not produced by any supplied transformation"
