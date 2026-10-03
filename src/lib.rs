@@ -3,6 +3,7 @@
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
 //! - analyze_configured_inputs_with_catalog adds optional catalog/schema-aware relation resolution.
+//! - parse_dbt_manifest and analyze_dbt_manifest adapt dbt artifacts into the same core analysis path.
 //! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
 //! - parse_analysis_manifest validates the versioned declarative analysis-manifest contract.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
@@ -14,6 +15,7 @@ mod analysis;
 mod bundle;
 mod composition;
 mod domain;
+mod dbt;
 mod emission;
 mod manifest;
 mod openlineage;
@@ -34,6 +36,10 @@ pub use bundle::{
     GraphComponent, GraphEdge, InputAnalysisError, RelationResolution, ResolvedComposedSemantics,
     SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
     UnresolvedComposedSemantics,
+};
+pub use dbt::{
+    analyze_dbt_manifest, parse_dbt_manifest, DbtManifest, DbtManifestError,
+    SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
 pub use emission::{to_bundle_json, to_json};
 pub use manifest::{
