@@ -72,9 +72,11 @@ Table-producing sources whose output schema cannot yet be modeled safely, includ
 
 ## Outcome selection
 
-The protocol always contains every analyzed transformation outcome. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.
+`analyze_inputs` always analyzes and composes the complete supplied bundle. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.
 
-Protocol generation does not have a final-only or all-layer mode. Choosing whether to consume every layer, only terminal outcomes, or a particular named outcome is a consumer concern. This keeps one complete protocol document as the source of truth and lets downstream applications, including test-data generators, choose the outcomes they need without re-analysis.
+Protocol generation does not have a final-only or all-layer analysis mode. Callers that need specific named outcomes can apply the public `select_targets` projection after analysis, or use repeatable CLI `--target <relation>` options. The projection keeps each selected producer plus every in-bundle ancestor needed to describe it, while unrelated graph components are omitted. The complete analyzed `inputs` remain present as source evidence. With no explicit targets, the complete bundle is emitted unchanged.
+
+Target identifiers use the same exact qualified relation identities as cross-input linking. Unknown targets and relations with multiple in-bundle producers fail explicitly instead of producing an empty or arbitrarily selected result.
 
 ## Output value domains
 
@@ -185,7 +187,7 @@ A single file remains unchanged:
 cargo run -- --dialect snowflake --file query.sql
 ```
 
-For multiple inputs, repeat `--sql`, `--file`, and `--dir` in any mixture. `--dir` recursively discovers regular files whose extension is `.sql` case-insensitively and ignores all other files:
+For multiple inputs, repeat `--sql`, `--file`, and `--dir` in any mixture. `--dir` recursively discovers regular files whose extension is `.sql` case-insensitively and ignores all other files. Repeat `--target` to project the completed analysis onto one or more named output relations:
 
 ```sh
 cargo run -- \
@@ -193,6 +195,17 @@ cargo run -- \
   --file sql/enrich_orders.sql \
   --dir sql/reporting \
   --sql "SELECT customer_id FROM raw.customers"
+```
+
+For example, to expose only `mart.customer_summary` and its required in-bundle ancestors while still analyzing every supplied input:
+
+```sh
+cargo run -- \
+  --target mart.customer_summary \
+  --file sql/stage_orders.sql \
+  --file sql/core_orders.sql \
+  --file sql/customer_summary.sql \
+  --file sql/unrelated_pipeline.sql
 ```
 
 Explicit inputs are analyzed in command-line occurrence order and receive deterministic IDs `input-0001`, `input-0002`, and so on. Each `--dir` expands at its command-line position into all recursively discovered SQL files sorted lexicographically by path, so filesystem traversal order cannot affect protocol output. Discovered file paths are retained as source identity. The ID width expands when necessary, so there is no fixed input-count limit. Parse, file, and analysis failures identify the affected input or path.

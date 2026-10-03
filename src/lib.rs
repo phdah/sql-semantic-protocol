@@ -2,6 +2,7 @@
 //!
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
+//! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
 //! - to_openlineage_json exports representable dataset and field lineage as OpenLineage DatasetEvents.
 //! - protocol contains the parser-independent public protocol model, including normalized
@@ -22,10 +23,10 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_inputs, AnalysisBundle, AnalysisGraph, AnalyzedInput, ComposedSemantics,
-    CompositionDiagnostic, CompositionFailureReason, DatasetRef, GraphComponent, GraphEdge,
-    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
-    TransformationLayer, UnresolvedComposedSemantics,
+    analyze_inputs, select_targets, AnalysisBundle, AnalysisGraph, AnalyzedInput,
+    ComposedSemantics, CompositionDiagnostic, CompositionFailureReason, DatasetRef, GraphComponent,
+    GraphEdge, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
+    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use emission::{to_bundle_json, to_json};
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
