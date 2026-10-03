@@ -1,6 +1,6 @@
 use sql_semantic_protocol::{
     analyze_inputs, ComposedSemantics, CompositionFailureReason, MergeAction, MergeMatchKind,
-    ProtocolStatement, RelationResolution, SqlInput, WriteKind,
+    LiteralValue, ProtocolStatement, RelationResolution, SqlInput, ValueDomain, WriteKind,
 };
 use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
 
@@ -85,7 +85,7 @@ fn merge_records_condition_actions_and_source_dependencies() {
                  USING stage.customers AS s
                  ON t.id = s.id
                  WHEN MATCHED AND s.active = FALSE THEN DELETE
-                 WHEN MATCHED THEN UPDATE SET name = s.name
+                 WHEN MATCHED AND s.id BETWEEN 10 AND 20 THEN UPDATE SET id = t.id
                  WHEN NOT MATCHED THEN INSERT (id, name) VALUES (s.id, s.name)",
             ),
             SqlInput::inline("CREATE TABLE mart.customers AS SELECT id FROM dim.customers"),
@@ -128,6 +128,21 @@ fn merge_records_condition_actions_and_source_dependencies() {
         write.merge_clauses()[1].action(),
         MergeAction::Update { assignments } if assignments.len() == 1
     ));
+    let MergeAction::Update { assignments } = write.merge_clauses()[1].action() else {
+        panic!("second MERGE clause should update");
+    };
+    let ValueDomain::Ranges(ranges) = assignments[0].value().domain() else {
+        panic!("matched write should expose the interval implied by MERGE conditions");
+    };
+    let [range] = ranges.ranges() else {
+        panic!("expected one matched write interval");
+    };
+    let lower = range.lower().expect("matched interval lower bound");
+    let upper = range.upper().expect("matched interval upper bound");
+    assert_eq!(lower.value().value(), &LiteralValue::Number("10".to_string()));
+    assert!(lower.inclusive());
+    assert_eq!(upper.value().value(), &LiteralValue::Number("20".to_string()));
+    assert!(upper.inclusive());
     assert!(matches!(
         write.merge_clauses()[2].action(),
         MergeAction::Insert { columns, values }
