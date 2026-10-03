@@ -15,9 +15,7 @@ fn insert_select_records_append_semantics_and_partial_downstream_link() {
                 "INSERT INTO stage.orders (id, amount)
                  SELECT id, amount FROM raw.orders WHERE amount > 10",
             ),
-            SqlInput::inline(
-                "CREATE TABLE mart.orders AS SELECT id, amount FROM stage.orders",
-            ),
+            SqlInput::inline("CREATE TABLE mart.orders AS SELECT id, amount FROM stage.orders"),
         ],
         "generic",
         &dialect,
@@ -38,7 +36,10 @@ fn insert_select_records_append_semantics_and_partial_downstream_link() {
     let write = insert.write().expect("INSERT should carry write semantics");
     assert_eq!(write.kind(), WriteKind::Append);
     assert_eq!(write.target(), "stage.orders");
-    assert_eq!(write.target_columns(), &["id".to_string(), "amount".to_string()]);
+    assert_eq!(
+        write.target_columns(),
+        &["id".to_string(), "amount".to_string()]
+    );
     assert_eq!(insert.dependencies(), &["raw.orders".to_string()]);
     assert_eq!(insert.output().columns().len(), 2);
 
@@ -89,9 +90,7 @@ fn merge_records_condition_actions_and_source_dependencies() {
                  WHEN MATCHED THEN UPDATE SET name = s.name
                  WHEN NOT MATCHED THEN INSERT (id, name) VALUES (s.id, s.name)",
             ),
-            SqlInput::inline(
-                "CREATE TABLE mart.customers AS SELECT id FROM dim.customers",
-            ),
+            SqlInput::inline("CREATE TABLE mart.customers AS SELECT id FROM dim.customers"),
         ],
         "snowflake",
         &dialect,
