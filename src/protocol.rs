@@ -608,10 +608,90 @@ pub enum Expression {
     Unary(UnaryExpression),
     /// A supported binary operation.
     Binary(BinaryExpression),
+    /// A scalar subquery evaluated as one expression value.
+    ScalarSubquery(Box<ScalarSubqueryExpression>),
     /// Semantics exist but cannot be resolved precisely from available information.
     Unknown(UnknownSemantic),
     /// The producer recognizes the expression but does not support its semantics.
     Unsupported(UnsupportedSemantic),
+}
+
+/// Query semantics retained when a subquery appears inside an expression or predicate.
+///
+/// The summary is intentionally parser-independent and local to the nested query. Physical
+/// dependencies remain explicit, correlated outer references are resolved to physical lineage
+/// where possible, and nested diagnostics stay attached instead of disappearing.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SubquerySemantics {
+    dependencies: Vec<String>,
+    correlations: Vec<LineageSource>,
+    output: Output,
+    predicates: Box<Predicates>,
+    diagnostics: Vec<Diagnostic>,
+}
+
+impl SubquerySemantics {
+    pub(crate) fn new(
+        mut dependencies: Vec<String>,
+        mut correlations: Vec<LineageSource>,
+        output: Output,
+        predicates: Predicates,
+        diagnostics: Vec<Diagnostic>,
+    ) -> Self {
+        dependencies.sort();
+        dependencies.dedup();
+        correlations.sort();
+        correlations.dedup();
+        Self {
+            dependencies,
+            correlations,
+            output,
+            predicates: Box::new(predicates),
+            diagnostics,
+        }
+    }
+
+    /// Return physical relations read by the nested query.
+    pub fn dependencies(&self) -> &[String] {
+        &self.dependencies
+    }
+
+    /// Return physical outer-scope columns referenced by the nested query.
+    pub fn correlations(&self) -> &[LineageSource] {
+        &self.correlations
+    }
+
+    /// Return projected nested-query output semantics.
+    pub fn output(&self) -> &Output {
+        &self.output
+    }
+
+    /// Return WHERE, HAVING, and QUALIFY semantics inside the nested query.
+    pub fn predicates(&self) -> &Predicates {
+        &self.predicates
+    }
+
+    /// Return diagnostics scoped to the nested query.
+    pub fn diagnostics(&self) -> &[Diagnostic] {
+        &self.diagnostics
+    }
+}
+
+/// A scalar subquery used as an expression value.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScalarSubqueryExpression {
+    subquery: SubquerySemantics,
+}
+
+impl ScalarSubqueryExpression {
+    pub(crate) fn new(subquery: SubquerySemantics) -> Self {
+        Self { subquery }
+    }
+
+    /// Return the nested query semantics.
+    pub fn subquery(&self) -> &SubquerySemantics {
+        &self.subquery
+    }
 }
 
 /// A column expression with an optional relation qualifier.
@@ -1334,8 +1414,12 @@ pub enum Predicate {
     Not(NotPredicate),
     /// SQL IS NULL or IS NOT NULL.
     IsNull(IsNullPredicate),
-    /// SQL IN or NOT IN.
+    /// SQL IN or NOT IN with an explicit value list.
     In(InPredicate),
+    /// SQL EXISTS or NOT EXISTS with nested query semantics.
+    Exists(ExistsPredicate),
+    /// SQL IN or NOT IN whose values come from a subquery.
+    InSubquery(InSubqueryPredicate),
     /// SQL BETWEEN or NOT BETWEEN.
     Between(BetweenPredicate),
     /// An expression interpreted in boolean predicate context.
@@ -1520,6 +1604,62 @@ impl InPredicate {
     /// Return IN-list values in SQL order.
     pub fn values(&self) -> &[Expression] {
         &self.values
+    }
+
+    /// Return whether the SQL form is NOT IN.
+    pub fn negated(&self) -> bool {
+        self.negated
+    }
+}
+
+/// An EXISTS or NOT EXISTS predicate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExistsPredicate {
+    subquery: SubquerySemantics,
+    negated: bool,
+}
+
+impl ExistsPredicate {
+    pub(crate) fn new(subquery: SubquerySemantics, negated: bool) -> Self {
+        Self { subquery, negated }
+    }
+
+    /// Return the nested query semantics.
+    pub fn subquery(&self) -> &SubquerySemantics {
+        &self.subquery
+    }
+
+    /// Return whether the SQL form is NOT EXISTS.
+    pub fn negated(&self) -> bool {
+        self.negated
+    }
+}
+
+/// An IN or NOT IN predicate whose candidate values come from a subquery.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InSubqueryPredicate {
+    expression: Expression,
+    subquery: SubquerySemantics,
+    negated: bool,
+}
+
+impl InSubqueryPredicate {
+    pub(crate) fn new(expression: Expression, subquery: SubquerySemantics, negated: bool) -> Self {
+        Self {
+            expression,
+            subquery,
+            negated,
+        }
+    }
+
+    /// Return the expression tested for membership.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Return the nested query that supplies candidate values.
+    pub fn subquery(&self) -> &SubquerySemantics {
+        &self.subquery
     }
 
     /// Return whether the SQL form is NOT IN.

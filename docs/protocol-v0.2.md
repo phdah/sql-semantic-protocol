@@ -90,6 +90,24 @@ A QUALIFY predicate may resolve a direct projected alias back to its window expr
 
 Unsupported function modifiers and window-ordering options remain explicit diagnostics instead of being silently dropped.
 
+## Subqueries and table sources
+
+Expression and predicate subqueries retain nested semantics rather than becoming parser-shaped or disappearing behind a generic unsupported value.
+
+A scalar subquery is an expression with `kind: "scalar_subquery"`. EXISTS and IN/NOT IN use predicate kinds `exists` and `in_subquery`. All three contain a `subquery` object with:
+
+- `dependencies`: deterministic physical relations read by the nested query
+- `correlations`: physical outer-scope columns resolved from qualified correlated references
+- `output`: the nested projected output and physical lineage
+- `predicates`: nested WHERE, HAVING, and QUALIFY semantics
+- `diagnostics`: unsupported or unresolved semantics scoped to the nested query
+
+Correlation resolution is lexical and conservative. A relation alias declared inside the nested SELECT shadows an outer alias with the same name. Ambiguous or unqualified references are not promoted to correlations without enough information to prove the binding.
+
+A derived table is a local relation whose visible columns are exactly its projected output. Parent references cannot reach hidden columns from the derived query. For LATERAL derived tables, preceding visible FROM/JOIN sources are available while computing the derived output lineage, allowing qualified outer references to resolve without treating them as independent physical inputs.
+
+Table-producing factors that do not yet have a trustworthy output-schema representation, including unresolved table functions and UNNEST-like sources, emit explicit `unsupported_table_factor` diagnostics. The analyzer does not invent columns or silently drop those factors.
+
 ## OpenLineage interoperability
 
 The SQL Semantic Protocol is the source of truth for semantic composition. OpenLineage is an export target, not part of the core model.

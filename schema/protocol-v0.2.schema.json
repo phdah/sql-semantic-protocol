@@ -797,6 +797,12 @@
           "$ref": "#/$defs/inPredicate"
         },
         {
+          "$ref": "#/$defs/existsPredicate"
+        },
+        {
+          "$ref": "#/$defs/inSubqueryPredicate"
+        },
+        {
           "$ref": "#/$defs/betweenPredicate"
         },
         {
@@ -1012,6 +1018,9 @@
         },
         {
           "$ref": "#/$defs/binaryExpression"
+        },
+        {
+          "$ref": "#/$defs/scalarSubqueryExpression"
         },
         {
           "$ref": "#/$defs/unknownSemantic"
@@ -1689,6 +1698,105 @@
           }
         }
       ]
+    },
+    "subquerySemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dependencies",
+        "correlations",
+        "output",
+        "predicates",
+        "diagnostics"
+      ],
+      "properties": {
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "correlations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/lineageSource"
+          }
+        },
+        "output": {
+          "$ref": "#/$defs/output"
+        },
+        "predicates": {
+          "$ref": "#/$defs/predicates"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "scalarSubqueryExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "subquery"
+      ],
+      "properties": {
+        "kind": {
+          "const": "scalar_subquery"
+        },
+        "subquery": {
+          "$ref": "#/$defs/subquerySemantics"
+        }
+      }
+    },
+    "existsPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "subquery",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "exists"
+        },
+        "subquery": {
+          "$ref": "#/$defs/subquerySemantics"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "inSubqueryPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "subquery",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "in_subquery"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "subquery": {
+          "$ref": "#/$defs/subquerySemantics"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

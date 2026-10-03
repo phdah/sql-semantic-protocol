@@ -67,6 +67,12 @@ fn derive_predicate_domains(predicate: &Predicate, sources: &[SourceRelation]) -
         ),
         Predicate::IsNull(predicate) => derive_is_null(predicate, sources),
         Predicate::In(predicate) => derive_in(predicate, sources),
+        Predicate::Exists(_) => DomainMap::new(),
+        Predicate::InSubquery(predicate) => unknown_for_expressions(
+            [predicate.expression()],
+            sources,
+            "IN subquery cannot be reduced safely to a scalar domain",
+        ),
         Predicate::Between(predicate) => derive_between(predicate, sources),
         Predicate::BooleanExpression(expression) => unknown_for_expressions(
             [expression],
@@ -312,6 +318,10 @@ fn collect_predicate_columns(
                 collect_expression_columns(value, sources, columns);
             }
         }
+        Predicate::Exists(_) => {}
+        Predicate::InSubquery(predicate) => {
+            collect_expression_columns(predicate.expression(), sources, columns);
+        }
         Predicate::Between(predicate) => {
             collect_expression_columns(predicate.expression(), sources, columns);
             collect_expression_columns(predicate.lower(), sources, columns);
@@ -346,7 +356,10 @@ fn collect_expression_columns(
             collect_expression_columns(expression.left(), sources, columns);
             collect_expression_columns(expression.right(), sources, columns);
         }
-        Expression::Literal(_) | Expression::Unknown(_) | Expression::Unsupported(_) => {}
+        Expression::Literal(_)
+        | Expression::ScalarSubquery(_)
+        | Expression::Unknown(_)
+        | Expression::Unsupported(_) => {}
     }
 }
 
