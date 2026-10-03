@@ -132,7 +132,9 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                     return Err(CliError::Input("--manifest cannot be empty".to_string()));
                 }
                 if manifest.replace(PathBuf::from(path)).is_some() {
-                    return Err(CliError::Input("--manifest may be supplied only once".to_string()));
+                    return Err(CliError::Input(
+                        "--manifest may be supplied only once".to_string(),
+                    ));
                 }
             }
             "--format" => {
@@ -202,7 +204,10 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
     }
 
     if manifest.is_some()
-        && (dialect_supplied || !targets.is_empty() || !inputs.is_empty() || !positional_sql.is_empty())
+        && (dialect_supplied
+            || !targets.is_empty()
+            || !inputs.is_empty()
+            || !positional_sql.is_empty())
     {
         return Err(CliError::Input(
             "--manifest cannot be combined with --dialect, --target, --sql, --file, --dir, or positional SQL"
