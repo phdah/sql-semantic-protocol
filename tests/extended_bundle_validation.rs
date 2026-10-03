@@ -206,14 +206,12 @@ fn target_manifest_matches_post_analysis_target_projection() {
         to_bundle_json(&selected)
     );
     assert_eq!(selected.layers().len(), 2);
-    assert!(selected
-        .layers()
-        .iter()
-        .any(|layer| layer.produces()[0].relation_name() == Some("warehouse.analytics.stage_orders")));
-    assert!(selected
-        .layers()
-        .iter()
-        .any(|layer| layer.produces()[0].relation_name() == Some("warehouse.analytics.final_orders")));
+    assert!(selected.layers().iter().any(
+        |layer| layer.produces()[0].relation_name() == Some("warehouse.analytics.stage_orders")
+    ));
+    assert!(selected.layers().iter().any(
+        |layer| layer.produces()[0].relation_name() == Some("warehouse.analytics.final_orders")
+    ));
 }
 
 #[test]
