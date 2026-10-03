@@ -24,18 +24,18 @@ use sqlparser::ast::{
 use crate::domain::{derive_column_domains, intersect_domains, union_domains};
 use crate::parser::ParsedSql;
 use crate::protocol::{
-    AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate, Bound,
-    BinaryExpression, BinaryOperator, CaseBranch, CaseExpression, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
-    ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
-    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
-    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate, Output,
-    OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
-    ScalarSubqueryExpression, SetMode, SetOperand, SetOperation, SetOperator, SetQuantifier,
-    SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
-    WindowFrameBound, WindowFrameUnits,
-    WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
+    AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
+    BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression, ColumnDomain,
+    ColumnExpression, ColumnRef, ComparisonOperator, ComparisonPredicate, Diagnostic,
+    DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
+    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin,
+    JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
+    QueryStatement, RelationRef, ScalarSubqueryExpression, SetMode, SetOperand, SetOperation,
+    SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
+    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
+    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
+    WindowOrderExpression, WindowSpecification,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -1520,15 +1520,15 @@ fn analyze_expression_with_scope(
             named_windows,
             diagnostics,
         ),
-        _ if is_boolean_value_expression(expression) => Expression::BooleanPredicate(Box::new(
-            analyze_predicate_with_windows(
+        _ if is_boolean_value_expression(expression) => {
+            Expression::BooleanPredicate(Box::new(analyze_predicate_with_windows(
                 expression,
                 named_windows,
                 &BTreeMap::new(),
                 scope,
                 diagnostics,
-            ),
-        )),
+            )))
+        }
         _ => analyze_expression_with_windows(expression, named_windows, diagnostics),
     }
 }
@@ -1560,18 +1560,13 @@ fn analyze_case_expression(
     named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
-    let normalized_operand =
-        operand.map(|value| analyze_expression_with_scope(value, scope, named_windows, diagnostics));
+    let normalized_operand = operand
+        .map(|value| analyze_expression_with_scope(value, scope, named_windows, diagnostics));
     let branches = conditions
         .iter()
         .map(|branch| {
             let condition = if operand.is_some() {
-                analyze_expression_with_scope(
-                    &branch.condition,
-                    scope,
-                    named_windows,
-                    diagnostics,
-                )
+                analyze_expression_with_scope(&branch.condition, scope, named_windows, diagnostics)
             } else {
                 Expression::BooleanPredicate(Box::new(analyze_predicate_with_windows(
                     &branch.condition,
@@ -2491,7 +2486,6 @@ fn unresolved_wildcard_column(name: String, diagnostics: &mut Vec<Diagnostic>) -
     )
 }
 
-
 fn derive_output_domain(expression: &Expression) -> ValueDomain {
     match expression {
         Expression::Column(_) => ValueDomain::Unbounded,
@@ -2522,7 +2516,10 @@ fn derive_output_domain(expression: &Expression) -> ValueDomain {
                 || {
                     ValueDomain::set(
                         SetMode::Include,
-                        vec![LiteralExpression::new(LiteralType::Null, LiteralValue::Null)],
+                        vec![LiteralExpression::new(
+                            LiteralType::Null,
+                            LiteralValue::Null,
+                        )],
                     )
                 },
                 derive_output_domain,
@@ -2568,7 +2565,10 @@ fn integer_lower_bound_domain(value: i128) -> ValueDomain {
 }
 
 fn integer_literal(value: i128) -> LiteralExpression {
-    LiteralExpression::new(LiteralType::Integer, LiteralValue::Number(value.to_string()))
+    LiteralExpression::new(
+        LiteralType::Integer,
+        LiteralValue::Number(value.to_string()),
+    )
 }
 
 fn singleton_integer(domain: &ValueDomain) -> Option<i128> {
