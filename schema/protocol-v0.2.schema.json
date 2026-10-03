@@ -2028,7 +2028,7 @@
               "items": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/$defs/expression"
+                  "$ref": "#/$defs/writeValue"
                 }
               }
             }
@@ -2083,6 +2083,22 @@
         }
       ]
     },
+    "writeValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "domain"
+      ],
+      "properties": {
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "domain": {
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/valueDomain"
+        }
+      }
+    },
     "mergeAssignment": {
       "type": "object",
       "additionalProperties": false,
@@ -2095,7 +2111,7 @@
           "$ref": "#/$defs/nonEmptyString"
         },
         "value": {
-          "$ref": "#/$defs/expression"
+          "$ref": "#/$defs/writeValue"
         }
       }
     }
