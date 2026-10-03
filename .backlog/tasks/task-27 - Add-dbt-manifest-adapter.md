@@ -1,7 +1,7 @@
 ---
 id: TASK-27
 title: Add dbt manifest adapter
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-02'
 labels: []
@@ -22,13 +22,13 @@ This task is intentionally scheduled after the complete generic bundle workflow 
 
 ## Acceptance Criteria
 
-- [ ] A documented adapter accepts a dbt manifest artifact and produces one deterministic SQL Semantic Protocol document.
-- [ ] dbt model identity and relation identity come from dbt artifact metadata when available, not from filename inference.
-- [ ] dbt dependency metadata is translated into the protocol's existing dependency/layer graph without introducing dbt-specific graph semantics into the core protocol.
-- [ ] SQL available through dbt artifacts is analyzed through the same core analyzer as non-dbt SQL inputs rather than through a separate semantic implementation.
-- [ ] The adapter preserves explicit unknown/unsupported semantics when required dbt metadata or analyzable SQL is unavailable.
-- [ ] dbt-specific types and schema details remain contained at the adapter boundary and do not leak into public core protocol domain types.
-- [ ] Supported dbt artifact/schema versions and compatibility expectations are documented explicitly.
-- [ ] Tests cover multiple dbt models, model dependencies, configured relation names, at least one source/external dependency, and deterministic repeated emission.
-- [ ] An equivalent workload supplied through the dbt adapter and through the generic analysis inputs produces equivalent protocol semantics where the available information is equivalent.
-- [ ] README documentation shows how to generate protocol output from a dbt project artifact and clearly describes the adapter's scope and non-goals.
+- [x] A documented adapter accepts a dbt manifest artifact and produces one deterministic SQL Semantic Protocol document.
+- [x] dbt model identity and relation identity come from dbt artifact metadata when available, not from filename inference.
+- [x] dbt dependency metadata is translated into the protocol's existing dependency/layer graph without introducing dbt-specific graph semantics into the core protocol.
+- [x] SQL available through dbt artifacts is analyzed through the same core analyzer as non-dbt SQL inputs rather than through a separate semantic implementation.
+- [x] The adapter preserves explicit unknown/unsupported semantics when required dbt metadata or analyzable SQL is unavailable.
+- [x] dbt-specific types and schema details remain contained at the adapter boundary and do not leak into public core protocol domain types.
+- [x] Supported dbt artifact/schema versions and compatibility expectations are documented explicitly.
+- [x] Tests cover multiple dbt models, model dependencies, configured relation names, at least one source/external dependency, and deterministic repeated emission.
+- [x] An equivalent workload supplied through the dbt adapter and through the generic analysis inputs produces equivalent protocol semantics where the available information is equivalent.
+- [x] README documentation shows how to generate protocol output from a dbt project artifact and clearly describes the adapter's scope and non-goals.
