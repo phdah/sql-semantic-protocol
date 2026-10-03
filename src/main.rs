@@ -7,12 +7,12 @@ use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
-    analyze_inputs, to_bundle_json, to_openlineage_json, Error as ProtocolError,
-    InputAnalysisError, OpenLineageExportError, SqlInput,
+    analyze_inputs, select_targets, to_bundle_json, to_openlineage_json, Error as ProtocolError,
+    InputAnalysisError, OpenLineageExportError, SqlInput, TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]\n\nRepeat --sql, --file, and --dir in any mixture. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]\n\nRepeat --sql, --file, --dir, and --target as needed. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -36,6 +36,8 @@ fn run() -> Result<(), CliError> {
 
             let bundle = analyze_inputs(&inputs, &dialect_name, dialect.as_ref())
                 .map_err(CliError::InputProtocol)?;
+            let bundle =
+                select_targets(&bundle, &options.targets).map_err(CliError::TargetSelection)?;
             let output = match options.format {
                 OutputFormat::Protocol => to_bundle_json(&bundle),
                 OutputFormat::OpenLineage => {
@@ -71,6 +73,7 @@ struct Options {
     format: OutputFormat,
     namespace: Option<String>,
     event_time: Option<String>,
+    targets: Vec<String>,
     inputs: Vec<InputArgument>,
     positional_sql: Vec<String>,
 }
@@ -93,6 +96,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
     let mut format = OutputFormat::Protocol;
     let mut namespace = None;
     let mut event_time = None;
+    let mut targets = Vec::new();
     let mut inputs = Vec::new();
     let mut positional_sql = Vec::new();
     let mut positional_only = false;
@@ -135,6 +139,15 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                 event_time = Some(arguments.next().ok_or_else(|| {
                     CliError::Input("missing value for --event-time".to_string())
                 })?);
+            }
+            "--target" => {
+                let target = arguments
+                    .next()
+                    .ok_or_else(|| CliError::Input("missing value for --target".to_string()))?;
+                if target.trim().is_empty() {
+                    return Err(CliError::Input("--target cannot be empty".to_string()));
+                }
+                targets.push(target);
             }
             "-s" | "--sql" => {
                 let sql = arguments
@@ -201,6 +214,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         format,
         namespace,
         event_time,
+        targets,
         inputs,
         positional_sql,
     }))
@@ -392,6 +406,7 @@ fn select_dialect(name: &str) -> Result<(String, Box<dyn Dialect>), CliError> {
 enum CliError {
     Input(String),
     InputProtocol(InputAnalysisError),
+    TargetSelection(TargetSelectionError),
     OpenLineageExport(OpenLineageExportError),
 }
 
@@ -403,6 +418,7 @@ impl CliError {
                 ProtocolError::Parse(_) => ExitCode::from(3),
                 _ => ExitCode::from(4),
             },
+            Self::TargetSelection(_) => ExitCode::from(2),
             Self::OpenLineageExport(_) => ExitCode::from(4),
         }
     }
@@ -416,6 +432,7 @@ impl fmt::Display for CliError {
                 ProtocolError::Parse(_) => write!(formatter, "{error}"),
                 _ => write!(formatter, "analysis error: {error}"),
             },
+            Self::TargetSelection(error) => write!(formatter, "input error: {error}"),
             Self::OpenLineageExport(error) => {
                 write!(formatter, "OpenLineage export error: {error}")
             }
