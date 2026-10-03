@@ -117,7 +117,10 @@ impl AnalysisManifest {
     /// Return the effective relation context for one input.
     ///
     /// An input-specific context replaces the bundle-level context for that input.
-    pub fn relation_context_for(&self, input: &ManifestInput) -> Option<&ManifestRelationContext> {
+    pub fn relation_context_for<'a>(
+        &'a self,
+        input: &'a ManifestInput,
+    ) -> Option<&'a ManifestRelationContext> {
         input.relation_context().or_else(|| self.relation_context())
     }
 
