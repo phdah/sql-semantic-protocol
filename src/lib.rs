@@ -47,10 +47,10 @@ pub use protocol::{
     LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, MergeAction,
     MergeAssignment, MergeClause, MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate,
     Predicates, Protocol, ProtocolSource, ProtocolStatement, QueryStatement, RangesDomain,
-    RelationRef, ScalarSubqueryExpression, SetDomain, SetMode, SetOperand, SetOperation, SetOperator,
-    SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator, UnknownDomain,
-    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
-    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
+    RelationRef, ScalarSubqueryExpression, SetDomain, SetMode, SetOperand, SetOperation,
+    SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
+    UnknownDomain, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
+    ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
     WindowOrderExpression, WindowSpecification, WriteKind, WriteOperation, PROTOCOL_VERSION,
 };
 
