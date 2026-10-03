@@ -1,6 +1,6 @@
 use sql_semantic_protocol::{
-    analyze_inputs, ComposedSemantics, CompositionFailureReason, MergeAction, MergeMatchKind,
-    LiteralValue, ProtocolStatement, RelationResolution, SqlInput, ValueDomain, WriteKind,
+    analyze_inputs, ComposedSemantics, CompositionFailureReason, LiteralValue, MergeAction,
+    MergeMatchKind, ProtocolStatement, RelationResolution, SqlInput, ValueDomain, WriteKind,
 };
 use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
 
@@ -139,9 +139,15 @@ fn merge_records_condition_actions_and_source_dependencies() {
     };
     let lower = range.lower().expect("matched interval lower bound");
     let upper = range.upper().expect("matched interval upper bound");
-    assert_eq!(lower.value().value(), &LiteralValue::Number("10".to_string()));
+    assert_eq!(
+        lower.value().value(),
+        &LiteralValue::Number("10".to_string())
+    );
     assert!(lower.inclusive());
-    assert_eq!(upper.value().value(), &LiteralValue::Number("20".to_string()));
+    assert_eq!(
+        upper.value().value(),
+        &LiteralValue::Number("20".to_string())
+    );
     assert!(upper.inclusive());
     assert!(matches!(
         write.merge_clauses()[2].action(),
