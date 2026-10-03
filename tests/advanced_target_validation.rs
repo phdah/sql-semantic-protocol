@@ -124,7 +124,7 @@ struct Schemas {
 impl Schemas {
     fn load() -> Self {
         Self {
-            active: serde_json::from_str(include_str!("../schema/protocol-v0.2.schema.json"))
+            active: serde_json::from_str(include_str!("../schema/protocol.schema.json"))
                 .expect("active schema should be valid JSON"),
             legacy: serde_json::from_str(include_str!("../schema/protocol-v0.schema.json"))
                 .expect("legacy referenced schema should be valid JSON"),

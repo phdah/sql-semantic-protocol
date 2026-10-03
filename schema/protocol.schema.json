@@ -1,0 +1,2119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/phdah/sql-semantic-protocol/blob/main/schema/protocol.schema.json",
+  "title": "SQL Semantic Protocol",
+  "description": "Parser-independent active multi-input composition contract for SQL Semantic Protocol.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "inputs",
+    "layers",
+    "graph"
+  ],
+  "properties": {
+    "protocol_version": {
+      "const": "0.2.0"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/inputUnit"
+      }
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/transformationLayer"
+      }
+    },
+    "graph": {
+      "$ref": "#/$defs/graph"
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relationName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inputSource": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "label"
+          ],
+          "properties": {
+            "kind": {
+              "const": "inline"
+            },
+            "label": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "path"
+          ],
+          "properties": {
+            "kind": {
+              "const": "file"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "inputUnit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "dialect",
+        "statements"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source": {
+          "$ref": "#/$defs/inputSource"
+        },
+        "dialect": {
+          "type": "string",
+          "minLength": 1
+        },
+        "statements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/statement"
+          }
+        }
+      }
+    },
+    "statementPointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_id",
+        "statement_index"
+      ],
+      "properties": {
+        "input_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "statement_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "datasetRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "name"
+          ],
+          "properties": {
+            "kind": {
+              "const": "relation"
+            },
+            "name": {
+              "$ref": "#/$defs/relationName"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "layer_id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "anonymous"
+            },
+            "layer_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        }
+      ]
+    },
+    "compositionDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "severity",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "layer_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "relation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "resolvedComposedSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "dependencies",
+        "column_domains",
+        "output",
+        "diagnostics"
+      ],
+      "properties": {
+        "status": {
+          "const": "resolved"
+        },
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "column_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
+        },
+        "output": {
+          "$ref": "#/$defs/output"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/compositionDiagnostic"
+          }
+        }
+      }
+    },
+    "unresolvedComposedSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason",
+        "diagnostics"
+      ],
+      "properties": {
+        "status": {
+          "const": "unresolved"
+        },
+        "reason": {
+          "enum": [
+            "missing_producer",
+            "ambiguous_producer",
+            "cycle",
+            "partial_producer",
+            "unsupported"
+          ]
+        },
+        "diagnostics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/compositionDiagnostic"
+          }
+        }
+      }
+    },
+    "composedSemantics": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/resolvedComposedSemantics"
+        },
+        {
+          "$ref": "#/$defs/unresolvedComposedSemantics"
+        }
+      ]
+    },
+    "transformationLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "statement",
+        "produces",
+        "consumes",
+        "composed_semantics"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "statement": {
+          "$ref": "#/$defs/statementPointer"
+        },
+        "produces": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/datasetRef"
+          }
+        },
+        "consumes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "composed_semantics": {
+          "$ref": "#/$defs/composedSemantics"
+        },
+        "write_kind": {
+          "enum": [
+            "definition",
+            "append",
+            "conditional_mutation"
+          ]
+        }
+      }
+    },
+    "resolvedEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "resolved"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "externalEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "external"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "missingEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "missing"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "ambiguousEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "ambiguous"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "cycleEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "cycle"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "unsupportedEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "unsupported"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "graphEdge": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/resolvedEdge"
+        },
+        {
+          "$ref": "#/$defs/externalEdge"
+        },
+        {
+          "$ref": "#/$defs/missingEdge"
+        },
+        {
+          "$ref": "#/$defs/ambiguousEdge"
+        },
+        {
+          "$ref": "#/$defs/cycleEdge"
+        },
+        {
+          "$ref": "#/$defs/partialEdge"
+        },
+        {
+          "$ref": "#/$defs/unsupportedEdge"
+        }
+      ]
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "layer_ids",
+        "final_outcomes",
+        "diagnostics"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "layer_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "final_outcomes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/datasetRef"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/compositionDiagnostic"
+          }
+        }
+      }
+    },
+    "graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "edges",
+        "components",
+        "diagnostics"
+      ],
+      "properties": {
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/graphEdge"
+          }
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/component"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/compositionDiagnostic"
+          }
+        }
+      }
+    },
+    "statement": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/queryStatement"
+        },
+        {
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/unsupportedStatement"
+        }
+      ]
+    },
+    "queryStatement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "sources",
+        "dependencies",
+        "joins",
+        "predicates",
+        "column_domains",
+        "output",
+        "diagnostics"
+      ],
+      "properties": {
+        "kind": {
+          "const": "query"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/sourceRelation"
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "joins": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/join"
+          }
+        },
+        "predicates": {
+          "$ref": "#/$defs/predicates"
+        },
+        "column_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
+        },
+        "output": {
+          "$ref": "#/$defs/output"
+        },
+        "set_operation": {
+          "$ref": "#/$defs/setOperation"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/diagnostic"
+          }
+        },
+        "aggregation": {
+          "$ref": "#/$defs/aggregation"
+        },
+        "write": {
+          "$ref": "#/$defs/writeOperation"
+        }
+      }
+    },
+    "setOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operator",
+        "quantifier",
+        "left",
+        "right"
+      ],
+      "properties": {
+        "operator": {
+          "enum": [
+            "union",
+            "intersect",
+            "except"
+          ]
+        },
+        "quantifier": {
+          "enum": [
+            "distinct",
+            "all",
+            "by_name",
+            "all_by_name",
+            "distinct_by_name"
+          ]
+        },
+        "left": {
+          "$ref": "#/$defs/setOperand"
+        },
+        "right": {
+          "$ref": "#/$defs/setOperand"
+        }
+      }
+    },
+    "setOperand": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "query"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "quantifier",
+            "left",
+            "right"
+          ],
+          "properties": {
+            "kind": {
+              "const": "set_operation"
+            },
+            "operator": {
+              "enum": [
+                "union",
+                "intersect",
+                "except"
+              ]
+            },
+            "quantifier": {
+              "enum": [
+                "distinct",
+                "all",
+                "by_name",
+                "all_by_name",
+                "distinct_by_name"
+              ]
+            },
+            "left": {
+              "$ref": "#/$defs/setOperand"
+            },
+            "right": {
+              "$ref": "#/$defs/setOperand"
+            }
+          }
+        }
+      ]
+    },
+    "predicates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "where",
+        "having",
+        "qualify"
+      ],
+      "properties": {
+        "where": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "having": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualify": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "predicate": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/comparisonPredicate"
+        },
+        {
+          "$ref": "#/$defs/andPredicate"
+        },
+        {
+          "$ref": "#/$defs/orPredicate"
+        },
+        {
+          "$ref": "#/$defs/notPredicate"
+        },
+        {
+          "$ref": "#/$defs/isNullPredicate"
+        },
+        {
+          "$ref": "#/$defs/inPredicate"
+        },
+        {
+          "$ref": "#/$defs/existsPredicate"
+        },
+        {
+          "$ref": "#/$defs/inSubqueryPredicate"
+        },
+        {
+          "$ref": "#/$defs/betweenPredicate"
+        },
+        {
+          "$ref": "#/$defs/booleanExpressionPredicate"
+        },
+        {
+          "$ref": "#/$defs/unknownSemantic"
+        },
+        {
+          "$ref": "#/$defs/unsupportedSemantic"
+        }
+      ]
+    },
+    "comparisonPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "left",
+        "operator",
+        "right"
+      ],
+      "properties": {
+        "kind": {
+          "const": "comparison"
+        },
+        "left": {
+          "$ref": "#/$defs/expression"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "neq",
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+            "is_distinct_from",
+            "is_not_distinct_from"
+          ]
+        },
+        "right": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "andPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operands"
+      ],
+      "properties": {
+        "kind": {
+          "const": "and"
+        },
+        "operands": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/predicate"
+          }
+        }
+      }
+    },
+    "orPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operands"
+      ],
+      "properties": {
+        "kind": {
+          "const": "or"
+        },
+        "operands": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/predicate"
+          }
+        }
+      }
+    },
+    "notPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operand"
+      ],
+      "properties": {
+        "kind": {
+          "const": "not"
+        },
+        "operand": {
+          "$ref": "#/$defs/predicate"
+        }
+      }
+    },
+    "isNullPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "is_null"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "inPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "values",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "in"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "betweenPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "lower",
+        "upper",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "between"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "lower": {
+          "$ref": "#/$defs/expression"
+        },
+        "upper": {
+          "$ref": "#/$defs/expression"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "booleanExpressionPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression"
+      ],
+      "properties": {
+        "kind": {
+          "const": "boolean_expression"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "expression": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/columnExpression"
+        },
+        {
+          "$ref": "#/$defs/literalExpression"
+        },
+        {
+          "$ref": "#/$defs/functionExpression"
+        },
+        {
+          "$ref": "#/$defs/aggregateFunctionExpression"
+        },
+        {
+          "$ref": "#/$defs/windowFunctionExpression"
+        },
+        {
+          "$ref": "#/$defs/unaryExpression"
+        },
+        {
+          "$ref": "#/$defs/binaryExpression"
+        },
+        {
+          "$ref": "#/$defs/caseExpression"
+        },
+        {
+          "$ref": "#/$defs/booleanPredicateExpression"
+        },
+        {
+          "$ref": "#/$defs/scalarSubqueryExpression"
+        },
+        {
+          "$ref": "#/$defs/unknownSemantic"
+        },
+        {
+          "$ref": "#/$defs/unsupportedSemantic"
+        }
+      ]
+    },
+    "columnExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "relation",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "const": "column"
+        },
+        "relation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/relationName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "literalExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "type",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "const": "literal"
+        },
+        "type": {
+          "enum": [
+            "null",
+            "boolean",
+            "integer",
+            "decimal",
+            "string",
+            "date",
+            "time",
+            "timestamp",
+            "interval"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "functionExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name",
+        "arguments",
+        "distinct"
+      ],
+      "properties": {
+        "kind": {
+          "const": "function"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "distinct": {
+          "type": "boolean"
+        }
+      }
+    },
+    "unaryExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operator",
+        "operand"
+      ],
+      "properties": {
+        "kind": {
+          "const": "unary"
+        },
+        "operator": {
+          "enum": [
+            "plus",
+            "minus",
+            "bitwise_not"
+          ]
+        },
+        "operand": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "binaryExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operator",
+        "left",
+        "right"
+      ],
+      "properties": {
+        "kind": {
+          "const": "binary"
+        },
+        "operator": {
+          "enum": [
+            "add",
+            "subtract",
+            "multiply",
+            "divide",
+            "modulo",
+            "string_concat",
+            "bitwise_and",
+            "bitwise_or",
+            "bitwise_xor"
+          ]
+        },
+        "left": {
+          "$ref": "#/$defs/expression"
+        },
+        "right": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "columns"
+      ],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/outputColumn"
+          }
+        }
+      }
+    },
+    "outputColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "expression",
+        "domain",
+        "lineage"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "lineage": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/lineageSource"
+          }
+        },
+        "domain": {
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/valueDomain"
+        }
+      }
+    },
+    "lineageSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "column"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "column": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "unknownSemantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reason"
+      ],
+      "properties": {
+        "kind": {
+          "const": "unknown"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "unsupportedSemantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "feature",
+        "reason"
+      ],
+      "properties": {
+        "kind": {
+          "const": "unsupported"
+        },
+        "feature": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "windowFunctionExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "function",
+        "window"
+      ],
+      "properties": {
+        "kind": {
+          "const": "window_function"
+        },
+        "function": {
+          "$ref": "#/$defs/functionExpression"
+        },
+        "window": {
+          "$ref": "#/$defs/windowSpecification"
+        }
+      }
+    },
+    "windowSpecification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "partition_by",
+        "order_by",
+        "frame"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "partition_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "order_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/windowOrderExpression"
+          }
+        },
+        "frame": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/windowFrame"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "windowOrderExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "ascending",
+        "nulls_first"
+      ],
+      "properties": {
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "ascending": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "nulls_first": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "windowFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "units",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "units": {
+          "enum": [
+            "rows",
+            "range",
+            "groups"
+          ]
+        },
+        "start": {
+          "$ref": "#/$defs/windowFrameBound"
+        },
+        "end": {
+          "$ref": "#/$defs/windowFrameBound"
+        }
+      }
+    },
+    "windowFrameBound": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "current_row"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unbounded_preceding"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "offset"
+          ],
+          "properties": {
+            "kind": {
+              "const": "preceding"
+            },
+            "offset": {
+              "$ref": "#/$defs/expression"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unbounded_following"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "offset"
+          ],
+          "properties": {
+            "kind": {
+              "const": "following"
+            },
+            "offset": {
+              "$ref": "#/$defs/expression"
+            }
+          }
+        }
+      ]
+    },
+    "aggregation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "distinct",
+        "distinct_on",
+        "group_by"
+      ],
+      "properties": {
+        "distinct": {
+          "type": "boolean"
+        },
+        "distinct_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expression"
+          }
+        },
+        "group_by": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/groupBy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "groupBy": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "all"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "expressions"
+          ],
+          "properties": {
+            "kind": {
+              "const": "expressions"
+            },
+            "expressions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/groupingExpression"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "groupingExpression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "expression"
+          ],
+          "properties": {
+            "kind": {
+              "const": "expression"
+            },
+            "expression": {
+              "$ref": "#/$defs/expression"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "sets"
+          ],
+          "properties": {
+            "kind": {
+              "const": "grouping_sets"
+            },
+            "sets": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "sets"
+          ],
+          "properties": {
+            "kind": {
+              "const": "rollup"
+            },
+            "sets": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "sets"
+          ],
+          "properties": {
+            "kind": {
+              "const": "cube"
+            },
+            "sets": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/expression"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "aggregateFunctionExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name",
+        "arguments",
+        "distinct",
+        "filter"
+      ],
+      "properties": {
+        "kind": {
+          "const": "aggregate_function"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/aggregateArgument"
+          }
+        },
+        "distinct": {
+          "type": "boolean"
+        },
+        "filter": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "aggregateArgument": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "expression"
+          ],
+          "properties": {
+            "kind": {
+              "const": "expression"
+            },
+            "expression": {
+              "$ref": "#/$defs/expression"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "wildcard"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "qualifier"
+          ],
+          "properties": {
+            "kind": {
+              "const": "qualified_wildcard"
+            },
+            "qualifier": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "subquerySemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dependencies",
+        "correlations",
+        "output",
+        "predicates",
+        "diagnostics"
+      ],
+      "properties": {
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "correlations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/lineageSource"
+          }
+        },
+        "output": {
+          "$ref": "#/$defs/output"
+        },
+        "predicates": {
+          "$ref": "#/$defs/predicates"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "scalarSubqueryExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "subquery"
+      ],
+      "properties": {
+        "kind": {
+          "const": "scalar_subquery"
+        },
+        "subquery": {
+          "$ref": "#/$defs/subquerySemantics"
+        }
+      }
+    },
+    "existsPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "subquery",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "exists"
+        },
+        "subquery": {
+          "$ref": "#/$defs/subquerySemantics"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "inSubqueryPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "subquery",
+        "negated"
+      ],
+      "properties": {
+        "kind": {
+          "const": "in_subquery"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "subquery": {
+          "$ref": "#/$defs/subquerySemantics"
+        },
+        "negated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "caseExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operand",
+        "branches",
+        "else_result"
+      ],
+      "properties": {
+        "kind": {
+          "const": "case"
+        },
+        "operand": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/expression"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "branches": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/caseBranch"
+          }
+        },
+        "else_result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/expression"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "caseBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "condition",
+        "result"
+      ],
+      "properties": {
+        "condition": {
+          "$ref": "#/$defs/expression"
+        },
+        "result": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "booleanPredicateExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "predicate"
+      ],
+      "properties": {
+        "kind": {
+          "const": "boolean_predicate"
+        },
+        "predicate": {
+          "$ref": "#/$defs/predicate"
+        }
+      }
+    },
+    "partialEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_layer_id",
+        "relation",
+        "resolution",
+        "producer_layer_ids"
+      ],
+      "properties": {
+        "consumer_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "resolution": {
+          "const": "partial"
+        },
+        "producer_layer_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
+    },
+    "writeOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "kind",
+        "target_columns",
+        "match_condition",
+        "merge_clauses"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/relationName"
+        },
+        "kind": {
+          "enum": [
+            "definition",
+            "append",
+            "conditional_mutation"
+          ]
+        },
+        "target_columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "match_condition": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "merge_clauses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mergeClause"
+          }
+        }
+      }
+    },
+    "mergeClause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "match_kind",
+        "predicate",
+        "action"
+      ],
+      "properties": {
+        "match_kind": {
+          "enum": [
+            "matched",
+            "not_matched",
+            "not_matched_by_target",
+            "not_matched_by_source"
+          ]
+        },
+        "predicate": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action": {
+          "$ref": "#/$defs/mergeAction"
+        }
+      }
+    },
+    "mergeAction": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "columns",
+            "values"
+          ],
+          "properties": {
+            "kind": {
+              "const": "insert"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/nonEmptyString"
+              }
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/writeValue"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "assignments"
+          ],
+          "properties": {
+            "kind": {
+              "const": "update"
+            },
+            "assignments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/mergeAssignment"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "delete"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "semantic"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unsupported"
+            },
+            "semantic": {
+              "$ref": "#/$defs/unsupportedSemantic"
+            }
+          }
+        }
+      ]
+    },
+    "writeValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "domain"
+      ],
+      "properties": {
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "domain": {
+          "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/valueDomain"
+        }
+      }
+    },
+    "mergeAssignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "value"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "$ref": "#/$defs/writeValue"
+        }
+      }
+    }
+  }
+}

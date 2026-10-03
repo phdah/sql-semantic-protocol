@@ -28,11 +28,11 @@ The protocol is therefore the contract between SQL and applications that need to
 
 ## Protocol contract
 
-Protocol version `0.2.0` is the single active contract emitted by the library and CLI. It represents one or many SQL inputs with the same root document shape: `inputs`, `layers`, and `graph`. A single SQL string is therefore represented as one element in `inputs`, not by switching to a different protocol version.
+The Cargo package version is the single active protocol version emitted by the library and CLI. It represents one or many SQL inputs with the same root document shape: `inputs`, `layers`, and `graph`. A single SQL string is therefore represented as one element in `inputs`, not by switching to a different protocol version.
 
-The active contract is defined by [`schema/protocol-v0.2.schema.json`](schema/protocol-v0.2.schema.json), documented in [`docs/protocol-v0.2.md`](docs/protocol-v0.2.md), and demonstrated by [`examples/protocol-v0.2.json`](examples/protocol-v0.2.json) and [`examples/protocol-v0.2-simple.json`](examples/protocol-v0.2-simple.json).
+The active contract is defined by [`schema/protocol.schema.json`](schema/protocol.schema.json), documented in [`docs/protocol.md`](docs/protocol.md), and demonstrated by [`examples/protocol.json`](examples/protocol.json) and [`examples/protocol-simple.json`](examples/protocol-simple.json).
 
-Version `0.1.0` files remain in the repository only as historical references. Current runtime code does not emit `0.1.0`.
+Versioned protocol artifacts such as `protocol-v0.1*` and `protocol-v0.2*` remain in the repository as immutable historical references. Current runtime code and tests use the unversioned active contract paths above.
 
 TASK-13 resolves transformation layers into a deterministic relation dependency graph. TASK-14 composes semantics through that graph: final outputs expose transitive physical lineage, value domains propagate through safe direct projections and renames, and ambiguous, cyclic, or non-invertible paths remain explicit instead of being guessed. Disconnected pipelines compose independently.
 
@@ -305,7 +305,22 @@ SQL Semantic Protocol uses one version for the application and the protocol. The
 
 SemVer compatibility is defined primarily by the public protocol contract. A breaking protocol change requires a major version bump. Backward-compatible protocol or application features use a minor bump, while compatible fixes and internal application changes use a patch bump. Non-protocol implementation changes therefore do not require a breaking release, but every release still advances the shared application/protocol version.
 
-The current development version is `0.2.0`. The current roadmap targets the first stable `1.0.0` release, which will bootstrap Release Please for subsequent automated release PRs and GitHub releases.
+Release Please manages the shared application/protocol version from Conventional Commits. The first stable bootstrap release is `1.0.0`; after that, breaking changes use major releases, backward-compatible features use minor releases, and compatible fixes or internal changes use patch releases.
+
+The release workflow opens or updates a release PR from `main`. The generated release branch is checked with `cargo publish --dry-run --locked`. Merging the release PR creates the matching `vX.Y.Z` tag and GitHub release, then publishes the same package version to crates.io. Publishing uses the repository secret `CARGO_REGISTRY_TOKEN`. The one-time `release-as: 1.0.0` bootstrap override is removed after `v1.0.0` has been produced.
+
+After publication, the binary can be installed with:
+
+```sh
+cargo install sql-semantic-protocol
+```
+
+The library can be consumed from crates.io with:
+
+```toml
+[dependencies]
+sql-semantic-protocol = "1"
+```
 
 ## CLI
 
@@ -378,7 +393,7 @@ Positional SQL represents one legacy input and cannot be mixed with `--sql`, `--
 printf '%s\n' 'SELECT a FROM t WHERE a > 10' | cargo run -- --dialect duckdb
 ```
 
-Every successful invocation emits protocol `0.2.0`. One input produces an `inputs` array with one element; multiple inputs use the same document shape with additional elements.
+Every successful invocation emits the current Cargo package version as `protocol_version`. One input produces an `inputs` array with one element; multiple inputs use the same document shape with additional elements.
 
 Query-backed DDL is analyzed through its defining query and records the created relation as the layer output. For example, `CREATE TABLE mart.orders AS SELECT ...` produces `mart.orders`, while a bare `SELECT` produces an anonymous layer result.
 
@@ -390,11 +405,11 @@ For:
 SELECT t.b FROM t WHERE t.a > 10
 ```
 
-the protocol still uses the active `0.2.0` envelope even though there is only one input:
+the protocol still uses the active version envelope even though there is only one input:
 
 ```json
 {
-  "protocol_version": "0.2.0",
+  "protocol_version": "<package-version>",
   "inputs": [
     {
       "id": "input-0001",
@@ -575,7 +590,7 @@ the protocol still uses the active `0.2.0` envelope even though there is only on
 }
 ```
 
-This is the fixture stored in `examples/protocol-v0.2-simple.json`.
+This shape is locked by the active fixture stored in `examples/protocol-simple.json`.
 
 Successful runs emit protocol JSON only. Input errors, SQL parse errors, and analysis failures are written to standard error and use distinct non-zero exit codes.
 

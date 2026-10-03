@@ -19,7 +19,7 @@ fn representative_generic_query_matches_complete_protocol_document() {
         serde_json::from_str(&to_json(&protocol)).expect("protocol should serialize as JSON");
 
     let expected = json!({
-        "protocol_version": "0.2.0",
+        "protocol_version": env!("CARGO_PKG_VERSION"),
         "inputs": [
             {
                 "id": "input-0001",

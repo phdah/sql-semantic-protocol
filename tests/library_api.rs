@@ -18,7 +18,7 @@ fn valid_sql_returns_partial_query_for_caller_selected_dialect() {
     let protocol = analyze_sql("SELECT 1", "generic", &dialect)
         .expect("valid SQL should cross the public analysis boundary");
 
-    assert_eq!(protocol.protocol_version(), "0.2.0");
+    assert_eq!(protocol.protocol_version(), env!("CARGO_PKG_VERSION"));
     assert_eq!(protocol.source().dialect(), "generic");
 
     let statement = first_query(&protocol);
@@ -70,7 +70,7 @@ fn serialization_is_separate_from_analysis() {
     let value: serde_json::Value =
         serde_json::from_str(&json).expect("emitted protocol should be valid JSON");
 
-    assert_eq!(value["protocol_version"], "0.2.0");
+    assert_eq!(value["protocol_version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(value["inputs"][0]["dialect"], "generic");
     assert_eq!(value["inputs"][0]["statements"][0]["kind"], "query");
 }

@@ -35,7 +35,7 @@ fn stdin_input_and_selected_dialect_emit_only_protocol_json() {
     let json: serde_json::Value =
         serde_json::from_str(stdout.trim()).expect("stdout should contain protocol JSON only");
 
-    assert_eq!(json["protocol_version"], "0.2.0");
+    assert_eq!(json["protocol_version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(json["inputs"][0]["dialect"], "snowflake");
     assert_eq!(json["inputs"][0]["statements"][0]["kind"], "query");
     assert!(!stdout.contains("sqlparser"));
@@ -152,7 +152,7 @@ fn repeated_sql_inputs_emit_one_ordered_bundle() {
 
     let json: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("multiple SQL inputs should emit JSON");
-    assert_eq!(json["protocol_version"], "0.2.0");
+    assert_eq!(json["protocol_version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(json["inputs"].as_array().map(Vec::len), Some(2));
     assert_eq!(json["inputs"][0]["id"], "input-0001");
     assert_eq!(json["inputs"][1]["id"], "input-0002");
@@ -314,7 +314,7 @@ fn directory_inputs_are_recursive_sql_only_and_sorted() {
 
     let json: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("directory input should emit JSON");
-    assert_eq!(json["protocol_version"], "0.2.0");
+    assert_eq!(json["protocol_version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(json["inputs"].as_array().map(Vec::len), Some(2));
     assert_eq!(
         json["inputs"][0]["source"]["path"],
