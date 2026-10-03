@@ -39,15 +39,9 @@ fn catalog_source_schema_is_preserved_in_bundle_and_emission() {
         serde_json::from_str(&emitted).expect("emitted protocol should be valid JSON");
     assert_eq!(value["source_schemas"][0]["relation"], "raw.orders");
     assert_eq!(value["source_schemas"][0]["columns"][0]["name"], "id");
-    assert_eq!(
-        value["source_schemas"][0]["columns"][0]["type"],
-        "integer"
-    );
+    assert_eq!(value["source_schemas"][0]["columns"][0]["type"], "integer");
     assert_eq!(value["source_schemas"][0]["columns"][1]["name"], "active");
-    assert_eq!(
-        value["source_schemas"][0]["columns"][1]["type"],
-        "boolean"
-    );
+    assert_eq!(value["source_schemas"][0]["columns"][1]["type"], "boolean");
     assert_eq!(
         value["source_schemas"][0]["columns"][2]["name"],
         "created_at"
