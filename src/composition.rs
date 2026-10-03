@@ -557,7 +557,7 @@ impl<'a> Composer<'a> {
         let canonical_relation = consumer.canonical_relation(relation);
         self.graph.edges().iter().find(|edge| {
             edge.consumer_layer_id() == consumer_layer_id
-                && edge.relation() == canonical_relation
+                && edge.relation() == canonical_relation.as_str()
         })
     }
 }
