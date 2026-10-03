@@ -679,12 +679,7 @@ fn build_layers(
             let layer_id = format!("layer-{:0width$}", layer_number, width = width);
             let produces = match query.produced_relation() {
                 Some(name) => vec![DatasetRef::Relation {
-                    name: catalog
-                        .resolve(name, input.dialect(), input.relation_context())
-                        .map_err(|error| LayerBuildError {
-                            input_id: input.id().to_string(),
-                            error,
-                        })?,
+                    name: resolve_relation(catalog, input, name)?,
                 }],
                 None => vec![DatasetRef::Anonymous {
                     layer_id: layer_id.clone(),
@@ -694,12 +689,7 @@ fn build_layers(
             let mut relation_identities = BTreeMap::new();
             let mut consumes = BTreeSet::new();
             for relation in query.dependencies() {
-                let canonical = catalog
-                    .resolve(relation, input.dialect(), input.relation_context())
-                    .map_err(|error| LayerBuildError {
-                        input_id: input.id().to_string(),
-                        error,
-                    })?;
+                let canonical = resolve_relation(catalog, input, relation)?;
                 relation_identities.insert(relation.clone(), canonical.clone());
                 consumes.insert(canonical);
             }
@@ -719,6 +709,23 @@ fn build_layers(
     }
 
     Ok(layers)
+}
+
+fn resolve_relation(
+    catalog: &RelationCatalog,
+    input: &AnalyzedInput,
+    relation: &str,
+) -> Result<String, LayerBuildError> {
+    if catalog.is_empty() && input.relation_context().is_none() {
+        return Ok(relation.to_string());
+    }
+
+    catalog
+        .resolve(relation, input.dialect(), input.relation_context())
+        .map_err(|error| LayerBuildError {
+            input_id: input.id().to_string(),
+            error,
+        })
 }
 
 fn build_graph(layers: &[TransformationLayer]) -> AnalysisGraph {
