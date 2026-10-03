@@ -1,5 +1,3 @@
-mod common;
-
 use sql_semantic_protocol::{
     analyze_inputs, ComposedSemantics, CompositionFailureReason, MergeAction, MergeMatchKind,
     ProtocolStatement, RelationResolution, SqlInput, WriteKind,
