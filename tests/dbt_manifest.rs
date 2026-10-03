@@ -132,8 +132,13 @@ fn dbt_adapter_matches_equivalent_generic_analysis() {
         ),
     ];
     let configured = [
-        ConfiguredSqlInput::new("model.demo.stg_orders", &inputs[0], "postgres", dialect.as_ref())
-            .with_relation_context(&context),
+        ConfiguredSqlInput::new(
+            "model.demo.stg_orders",
+            &inputs[0],
+            "postgres",
+            dialect.as_ref(),
+        )
+        .with_relation_context(&context),
         ConfiguredSqlInput::new(
             "model.demo.final_orders",
             &inputs[1],
