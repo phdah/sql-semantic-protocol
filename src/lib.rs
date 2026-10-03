@@ -25,7 +25,7 @@ mod relation;
 
 use std::fmt;
 
-use sqlparser::dialect::Dialect;
+use sqlparser::dialect::{Dialect, dialect_from_str};
 
 pub use analysis::AnalysisError;
 pub use bundle::{
@@ -66,7 +66,7 @@ pub use protocol::{
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
-    RelationResolver,
+    RelationResolver, RelationSchema, ScalarType, SchemaColumn,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.
@@ -108,4 +108,13 @@ pub fn analyze_sql(
 ) -> Result<Protocol, Error> {
     let parsed = parser::parse_sql(sql, dialect).map_err(Error::Parse)?;
     analysis::analyze(parsed, dialect_name).map_err(Error::Analysis)
+}
+
+
+/// Resolve a built-in sqlparser dialect by name for library consumers.
+///
+/// This keeps consumers from depending directly on sqlparser only to select a dialect before
+/// calling the protocol analyzer.
+pub fn dialect_from_name(name: &str) -> Option<Box<dyn Dialect>> {
+    dialect_from_str(&name.to_ascii_lowercase())
 }
