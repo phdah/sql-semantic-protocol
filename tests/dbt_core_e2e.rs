@@ -362,7 +362,9 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         .as_array()
         .expect("diagnostics should be an array")
         .is_empty());
-    assert!(contains_string(lateral, "binary"));
+    let lateral_output =
+        output_column(layer_for_model(&protocol, "lateral_orders"), "adjusted_amount");
+    assert!(contains_string(&lateral_output["lineage"], "amount"));
 
     let constants = layer_for_model(&protocol, "constant_domains");
     let answer_domain = &output_column(constants, "answer")["domain"];
