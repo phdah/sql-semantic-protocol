@@ -12,6 +12,19 @@ yet handled), represent it explicitly as unknown or unsupported in the output, o
 an error. Never silently drop it, and never guess. A conservative answer (e.g. "interval
 unbounded") is always preferable to a wrong precise one.
 
+**Outcome-first definition of done** This project exists to derive trustworthy outcome
+constraints, especially allowed value domains and their lower/upper interval bounds. This
+project-wide Definition of Done applies to every existing and future backlog task; task-specific
+acceptance criteria are additive to it. Any task that adds or changes supported SQL semantics is
+not done when parsing, normalization, dependency discovery, or lineage alone works. The strongest
+safely provable outcome value domain must also be represented in the protocol and preserved through
+composition. If a precise domain cannot be proven, emit an explicit unbounded, unknown, or
+unsupported outcome rather than omitting the outcome or guessing. Tests for semantic features must
+assert the resulting outcome domains, including bounds and inclusivity where applicable, in
+addition to any parser, graph, or lineage assertions. Infrastructure-only tasks must preserve the
+existing outcome-domain contract and its tests. When creating future tasks, treat this rule as an
+inherited Definition of Done rather than copying the same checklist into every task.
+
 **Separation of concerns** Keep three layers apart: parsing (sqlparser produces the AST),
 analysis (walks the AST and builds the semantic model), and emission (serializes the model
 into the protocol format). The CLI in `main.rs` only reads input, calls the library, and
