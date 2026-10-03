@@ -14,7 +14,9 @@ fn first_query(protocol: &Protocol) -> &QueryStatement {
     }
 }
 
-fn integer_bounds(domain: &ValueDomain) -> (Option<(String, bool)>, Option<(String, bool)>) {
+type IntegerBound = Option<(String, bool)>;
+
+fn integer_bounds(domain: &ValueDomain) -> (IntegerBound, IntegerBound) {
     let ValueDomain::Ranges(ranges) = domain else {
         panic!("expected ranges domain, got {domain:?}");
     };
