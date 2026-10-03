@@ -350,8 +350,8 @@ pub enum MergeAction {
     Insert {
         /// Explicit target columns in SQL order.
         columns: Vec<String>,
-        /// Inserted value rows with normalized expressions.
-        values: Vec<Vec<Expression>>,
+        /// Inserted value rows with normalized expressions and conservative outcome domains.
+        values: Vec<Vec<WriteValue>>,
     },
     /// UPDATE assignments.
     Update {
@@ -364,15 +364,38 @@ pub enum MergeAction {
     Unsupported(UnsupportedSemantic),
 }
 
+/// One value written by a DML action together with its conservative outcome domain.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WriteValue {
+    expression: Expression,
+    domain: ValueDomain,
+}
+
+impl WriteValue {
+    pub(crate) fn new(expression: Expression, domain: ValueDomain) -> Self {
+        Self { expression, domain }
+    }
+
+    /// Return the normalized expression that produces the written value.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Return the strongest safely derivable value domain for the written value.
+    pub fn domain(&self) -> &ValueDomain {
+        &self.domain
+    }
+}
+
 /// One normalized MERGE UPDATE assignment.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MergeAssignment {
     target: String,
-    value: Expression,
+    value: WriteValue,
 }
 
 impl MergeAssignment {
-    pub(crate) fn new(target: String, value: Expression) -> Self {
+    pub(crate) fn new(target: String, value: WriteValue) -> Self {
         Self { target, value }
     }
 
@@ -381,8 +404,8 @@ impl MergeAssignment {
         &self.target
     }
 
-    /// Return the assigned value expression.
-    pub fn value(&self) -> &Expression {
+    /// Return the value expression and conservative domain assigned to the target.
+    pub fn value(&self) -> &WriteValue {
         &self.value
     }
 }
