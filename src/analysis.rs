@@ -21,19 +21,20 @@ use sqlparser::ast::{
     WindowFrameUnits as SqlWindowFrameUnits, WindowSpec as SqlWindowSpec, WindowType,
 };
 
-use crate::domain::derive_column_domains;
+use crate::domain::{derive_column_domains, intersect_domains, union_domains};
 use crate::parser::ParsedSql;
 use crate::protocol::{
-    AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
-    BinaryExpression, BinaryOperator, ColumnDomain, ColumnExpression, ColumnRef,
+    AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate, Bound,
+    BinaryExpression, BinaryOperator, CaseBranch, CaseExpression, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
     InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
     LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate, Output,
     OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
-    ScalarSubqueryExpression, SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation,
-    SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
-    UnsupportedStatement, ValueDomain, WindowFrame, WindowFrameBound, WindowFrameUnits,
+    ScalarSubqueryExpression, SetMode, SetOperand, SetOperation, SetOperator, SetQuantifier,
+    SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
+    WindowFrameBound, WindowFrameUnits,
     WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
 };
 
@@ -1024,6 +1025,51 @@ fn collect_expression_dependencies_with_windows(
                 );
             }
         }
+        Expr::Case {
+            operand,
+            conditions,
+            else_result,
+            ..
+        } => {
+            if let Some(operand) = operand {
+                collect_expression_dependencies_with_windows(
+                    operand,
+                    named_windows,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    dependencies,
+                );
+            }
+            for branch in conditions {
+                collect_expression_dependencies_with_windows(
+                    &branch.condition,
+                    named_windows,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    dependencies,
+                );
+                collect_expression_dependencies_with_windows(
+                    &branch.result,
+                    named_windows,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    dependencies,
+                );
+            }
+            if let Some(else_result) = else_result {
+                collect_expression_dependencies_with_windows(
+                    else_result,
+                    named_windows,
+                    local_relations,
+                    diagnostics,
+                    derived_index,
+                    dependencies,
+                );
+            }
+        }
         Expr::Function(function) => {
             collect_function_argument_dependencies(
                 &function.parameters,
@@ -1461,8 +1507,93 @@ fn analyze_expression_with_scope(
         Expr::Subquery(query) => Expression::ScalarSubquery(Box::new(
             ScalarSubqueryExpression::new(analyze_subquery_semantics(query, scope)),
         )),
+        Expr::Case {
+            operand,
+            conditions,
+            else_result,
+            ..
+        } => analyze_case_expression(
+            operand.as_deref(),
+            conditions,
+            else_result.as_deref(),
+            scope,
+            named_windows,
+            diagnostics,
+        ),
+        _ if is_boolean_value_expression(expression) => Expression::BooleanPredicate(Box::new(
+            analyze_predicate_with_windows(
+                expression,
+                named_windows,
+                &BTreeMap::new(),
+                scope,
+                diagnostics,
+            ),
+        )),
         _ => analyze_expression_with_windows(expression, named_windows, diagnostics),
     }
+}
+
+fn is_boolean_value_expression(expression: &Expr) -> bool {
+    match expression {
+        Expr::BinaryOp { op, .. } => {
+            comparison_operator(op).is_some()
+                || matches!(op, SqlBinaryOperator::And | SqlBinaryOperator::Or)
+        }
+        Expr::IsDistinctFrom(_, _)
+        | Expr::IsNotDistinctFrom(_, _)
+        | Expr::IsNull(_)
+        | Expr::IsNotNull(_)
+        | Expr::InList { .. }
+        | Expr::Exists { .. }
+        | Expr::InSubquery { .. }
+        | Expr::Between { .. } => true,
+        Expr::Nested(inner) => is_boolean_value_expression(inner),
+        _ => false,
+    }
+}
+
+fn analyze_case_expression(
+    operand: Option<&Expr>,
+    conditions: &[sqlparser::ast::CaseWhen],
+    else_result: Option<&Expr>,
+    scope: &[OutputRelation],
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
+    let normalized_operand =
+        operand.map(|value| analyze_expression_with_scope(value, scope, named_windows, diagnostics));
+    let branches = conditions
+        .iter()
+        .map(|branch| {
+            let condition = if operand.is_some() {
+                analyze_expression_with_scope(
+                    &branch.condition,
+                    scope,
+                    named_windows,
+                    diagnostics,
+                )
+            } else {
+                Expression::BooleanPredicate(Box::new(analyze_predicate_with_windows(
+                    &branch.condition,
+                    named_windows,
+                    &BTreeMap::new(),
+                    scope,
+                    diagnostics,
+                )))
+            };
+            let result =
+                analyze_expression_with_scope(&branch.result, scope, named_windows, diagnostics);
+            CaseBranch::new(condition, result)
+        })
+        .collect();
+    let normalized_else = else_result
+        .map(|value| analyze_expression_with_scope(value, scope, named_windows, diagnostics));
+
+    Expression::Case(CaseExpression::new(
+        normalized_operand,
+        branches,
+        normalized_else,
+    ))
 }
 
 fn analyze_expression_with_windows(
@@ -1492,6 +1623,19 @@ fn analyze_expression_with_windows(
             analyze_binary_expression(left, op, right, expression, named_windows, diagnostics)
         }
         Expr::Nested(inner) => analyze_expression_with_windows(inner, named_windows, diagnostics),
+        Expr::Case {
+            operand,
+            conditions,
+            else_result,
+            ..
+        } => analyze_case_expression(
+            operand.as_deref(),
+            conditions,
+            else_result.as_deref(),
+            &[],
+            named_windows,
+            diagnostics,
+        ),
         Expr::Subquery(query) => Expression::ScalarSubquery(Box::new(
             ScalarSubqueryExpression::new(analyze_subquery_semantics(query, &[])),
         )),
@@ -2268,6 +2412,7 @@ fn merge_set_operation_output(
                     "set-operation output value is determined positionally by multiple query branches"
                         .to_string(),
                 )),
+                union_domains(left_column.domain(), right_column.domain()),
                 lineage,
             )
         })
@@ -2283,11 +2428,15 @@ fn analyze_select_output_with_outer_scope(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Output {
     let scope = build_output_scope(select, local_outputs, outer_scope, diagnostics);
-    let columns = select
+    let mut columns = select
         .projection
         .iter()
         .map(|item| analyze_output_item(item, &scope, &select.named_window, diagnostics))
-        .collect();
+        .collect::<Vec<_>>();
+
+    if let Some(qualify) = &select.qualify {
+        refine_output_domains_from_predicate(&mut columns, qualify);
+    }
 
     Output::new(columns)
 }
@@ -2299,16 +2448,27 @@ fn analyze_output_item(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> OutputColumn {
     match item {
-        SelectItem::UnnamedExpr(expression) => OutputColumn::new(
-            output_name_for_expression(expression),
-            analyze_expression_with_scope(expression, scope, named_windows, diagnostics),
-            lineage_for_expression(expression, scope, named_windows, diagnostics),
-        ),
-        SelectItem::ExprWithAlias { expr, alias } => OutputColumn::new(
-            alias.value.clone(),
-            analyze_expression_with_scope(expr, scope, named_windows, diagnostics),
-            lineage_for_expression(expr, scope, named_windows, diagnostics),
-        ),
+        SelectItem::UnnamedExpr(expression) => {
+            let normalized =
+                analyze_expression_with_scope(expression, scope, named_windows, diagnostics);
+            let domain = derive_output_domain(&normalized);
+            OutputColumn::new(
+                output_name_for_expression(expression),
+                normalized,
+                domain,
+                lineage_for_expression(expression, scope, named_windows, diagnostics),
+            )
+        }
+        SelectItem::ExprWithAlias { expr, alias } => {
+            let normalized = analyze_expression_with_scope(expr, scope, named_windows, diagnostics);
+            let domain = derive_output_domain(&normalized);
+            OutputColumn::new(
+                alias.value.clone(),
+                normalized,
+                domain,
+                lineage_for_expression(expr, scope, named_windows, diagnostics),
+            )
+        }
         SelectItem::Wildcard(_) => unresolved_wildcard_column("*".to_string(), diagnostics),
         SelectItem::QualifiedWildcard(prefix, _) => {
             unresolved_wildcard_column(format!("{prefix}.*"), diagnostics)
@@ -2326,8 +2486,281 @@ fn unresolved_wildcard_column(name: String, diagnostics: &mut Vec<Diagnostic>) -
     OutputColumn::new(
         name,
         Expression::Unknown(UnknownSemantic::new(reason.to_string())),
+        ValueDomain::unknown(reason),
         Vec::new(),
     )
+}
+
+
+fn derive_output_domain(expression: &Expression) -> ValueDomain {
+    match expression {
+        Expression::Column(_) => ValueDomain::Unbounded,
+        Expression::Literal(literal) => ValueDomain::set(SetMode::Include, vec![literal.clone()]),
+        Expression::BooleanPredicate(_) => boolean_domain(),
+        Expression::WindowFunction(window)
+            if window.function().name().eq_ignore_ascii_case("row_number") =>
+        {
+            integer_lower_bound_domain(1)
+        }
+        Expression::WindowFunction(_) => {
+            ValueDomain::unknown("window-function output domain is not known safely")
+        }
+        Expression::AggregateFunction(function)
+            if function.name().eq_ignore_ascii_case("count") =>
+        {
+            integer_lower_bound_domain(0)
+        }
+        Expression::AggregateFunction(_) => {
+            ValueDomain::unknown("aggregate output domain is not known safely")
+        }
+        Expression::Case(case_expression) => {
+            let mut domain = ValueDomain::Empty;
+            for branch in case_expression.branches() {
+                domain = union_domains(&domain, &derive_output_domain(branch.result()));
+            }
+            let else_domain = case_expression.else_result().map_or_else(
+                || {
+                    ValueDomain::set(
+                        SetMode::Include,
+                        vec![LiteralExpression::new(LiteralType::Null, LiteralValue::Null)],
+                    )
+                },
+                derive_output_domain,
+            );
+            union_domains(&domain, &else_domain)
+        }
+        Expression::Unary(unary) => derive_unary_output_domain(unary),
+        Expression::Binary(binary) => derive_binary_output_domain(binary),
+        Expression::ScalarSubquery(subquery) => {
+            let columns = subquery.subquery().output().columns();
+            match columns {
+                [column] => column.domain().clone(),
+                _ => ValueDomain::unknown(
+                    "scalar-subquery output domain requires exactly one resolved column",
+                ),
+            }
+        }
+        Expression::Function(_) => {
+            ValueDomain::unknown("scalar-function output domain is not known safely")
+        }
+        Expression::Unknown(semantic) => ValueDomain::unknown(semantic.reason()),
+        Expression::Unsupported(_) => {
+            ValueDomain::unknown("unsupported expression has no safely known output domain")
+        }
+    }
+}
+
+fn boolean_domain() -> ValueDomain {
+    ValueDomain::set(
+        SetMode::Include,
+        vec![
+            LiteralExpression::new(LiteralType::Boolean, LiteralValue::Boolean(false)),
+            LiteralExpression::new(LiteralType::Boolean, LiteralValue::Boolean(true)),
+        ],
+    )
+}
+
+fn integer_lower_bound_domain(value: i128) -> ValueDomain {
+    ValueDomain::ranges(vec![ValueRange::new(
+        Some(Bound::new(integer_literal(value), true)),
+        None,
+    )])
+}
+
+fn integer_literal(value: i128) -> LiteralExpression {
+    LiteralExpression::new(LiteralType::Integer, LiteralValue::Number(value.to_string()))
+}
+
+fn singleton_integer(domain: &ValueDomain) -> Option<i128> {
+    let ValueDomain::Set(set) = domain else {
+        return None;
+    };
+    if set.mode() != SetMode::Include {
+        return None;
+    }
+    let [literal] = set.values() else {
+        return None;
+    };
+    if literal.literal_type() != LiteralType::Integer {
+        return None;
+    }
+    let LiteralValue::Number(value) = literal.value() else {
+        return None;
+    };
+    value.parse().ok()
+}
+
+fn derive_unary_output_domain(unary: &UnaryExpression) -> ValueDomain {
+    let operand = derive_output_domain(unary.operand());
+    match unary.operator() {
+        UnaryOperator::Plus => operand,
+        UnaryOperator::Minus => singleton_integer(&operand)
+            .and_then(i128::checked_neg)
+            .map_or_else(
+                || ValueDomain::unknown("unary minus cannot be bounded safely"),
+                |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
+            ),
+        UnaryOperator::BitwiseNot => {
+            ValueDomain::unknown("bitwise output domain is not bounded safely")
+        }
+    }
+}
+
+fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDomain {
+    let left = singleton_integer(&derive_output_domain(binary.left()));
+    let right = singleton_integer(&derive_output_domain(binary.right()));
+    let (Some(left), Some(right)) = (left, right) else {
+        return ValueDomain::unknown("arithmetic output domain requires safely bounded operands");
+    };
+
+    let value = match binary.operator() {
+        BinaryOperator::Add => left.checked_add(right),
+        BinaryOperator::Subtract => left.checked_sub(right),
+        BinaryOperator::Multiply => left.checked_mul(right),
+        BinaryOperator::Division => {
+            if right == 0 {
+                None
+            } else {
+                left.checked_div(right)
+            }
+        }
+        BinaryOperator::Modulo => {
+            if right == 0 {
+                None
+            } else {
+                left.checked_rem(right)
+            }
+        }
+        BinaryOperator::StringConcat
+        | BinaryOperator::BitwiseAnd
+        | BinaryOperator::BitwiseOr
+        | BinaryOperator::BitwiseXor => None,
+    };
+
+    value.map_or_else(
+        || ValueDomain::unknown("arithmetic output domain cannot be computed safely"),
+        |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
+    )
+}
+
+fn refine_output_domains_from_predicate(columns: &mut [OutputColumn], predicate: &Expr) {
+    for column in columns {
+        if let Some(refinement) = output_alias_domain(predicate, column.name()) {
+            let domain = intersect_domains(column.domain(), &refinement);
+            *column = column.clone().with_domain(domain);
+        }
+    }
+}
+
+fn output_alias_domain(expression: &Expr, alias: &str) -> Option<ValueDomain> {
+    match expression {
+        Expr::Nested(inner) => output_alias_domain(inner, alias),
+        Expr::BinaryOp {
+            left,
+            op: SqlBinaryOperator::And,
+            right,
+        } => match (
+            output_alias_domain(left, alias),
+            output_alias_domain(right, alias),
+        ) {
+            (Some(left), Some(right)) => Some(intersect_domains(&left, &right)),
+            (Some(domain), None) | (None, Some(domain)) => Some(domain),
+            (None, None) => None,
+        },
+        Expr::BinaryOp {
+            left,
+            op: SqlBinaryOperator::Or,
+            right,
+        } => match (
+            output_alias_domain(left, alias),
+            output_alias_domain(right, alias),
+        ) {
+            (Some(left), Some(right)) => Some(union_domains(&left, &right)),
+            _ => None,
+        },
+        Expr::BinaryOp { left, op, right } => {
+            let operator = comparison_operator(op)?;
+            if expression_is_alias(left, alias) {
+                literal_domain_for_comparison(right, operator)
+            } else if expression_is_alias(right, alias) {
+                literal_domain_for_comparison(left, operator.reversed())
+            } else {
+                None
+            }
+        }
+        Expr::Between {
+            expr,
+            negated: false,
+            low,
+            high,
+        } if expression_is_alias(expr, alias) => {
+            let low = literal_expression(low)?;
+            let high = literal_expression(high)?;
+            Some(ValueDomain::ranges(vec![ValueRange::new(
+                Some(Bound::new(low, true)),
+                Some(Bound::new(high, true)),
+            )]))
+        }
+        Expr::InList {
+            expr,
+            list,
+            negated,
+        } if expression_is_alias(expr, alias) => {
+            let values = list
+                .iter()
+                .map(literal_expression)
+                .collect::<Option<Vec<_>>>()?;
+            Some(ValueDomain::set(
+                if *negated {
+                    SetMode::Exclude
+                } else {
+                    SetMode::Include
+                },
+                values,
+            ))
+        }
+        _ => None,
+    }
+}
+
+fn expression_is_alias(expression: &Expr, alias: &str) -> bool {
+    matches!(expression, Expr::Identifier(identifier) if identifier.value == alias)
+}
+
+fn literal_expression(expression: &Expr) -> Option<LiteralExpression> {
+    let mut diagnostics = Vec::new();
+    match analyze_expression_with_windows(expression, &[], &mut diagnostics) {
+        Expression::Literal(literal) => Some(literal),
+        _ => None,
+    }
+}
+
+fn literal_domain_for_comparison(
+    expression: &Expr,
+    operator: ComparisonOperator,
+) -> Option<ValueDomain> {
+    let literal = literal_expression(expression)?;
+    match operator {
+        ComparisonOperator::Eq => Some(ValueDomain::set(SetMode::Include, vec![literal])),
+        ComparisonOperator::Neq => Some(ValueDomain::set(SetMode::Exclude, vec![literal])),
+        ComparisonOperator::Gt => Some(ValueDomain::ranges(vec![ValueRange::new(
+            Some(Bound::new(literal, false)),
+            None,
+        )])),
+        ComparisonOperator::Gte => Some(ValueDomain::ranges(vec![ValueRange::new(
+            Some(Bound::new(literal, true)),
+            None,
+        )])),
+        ComparisonOperator::Lt => Some(ValueDomain::ranges(vec![ValueRange::new(
+            None,
+            Some(Bound::new(literal, false)),
+        )])),
+        ComparisonOperator::Lte => Some(ValueDomain::ranges(vec![ValueRange::new(
+            None,
+            Some(Bound::new(literal, true)),
+        )])),
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => None,
+    }
 }
 
 fn analyze_subquery_semantics(
@@ -2526,6 +2959,43 @@ fn collect_expression_correlations(
             collect_expression_correlations(expr, outer_scope, local_qualifiers, correlations);
             for value in list {
                 collect_expression_correlations(value, outer_scope, local_qualifiers, correlations);
+            }
+        }
+        Expr::Case {
+            operand,
+            conditions,
+            else_result,
+            ..
+        } => {
+            if let Some(operand) = operand {
+                collect_expression_correlations(
+                    operand,
+                    outer_scope,
+                    local_qualifiers,
+                    correlations,
+                );
+            }
+            for branch in conditions {
+                collect_expression_correlations(
+                    &branch.condition,
+                    outer_scope,
+                    local_qualifiers,
+                    correlations,
+                );
+                collect_expression_correlations(
+                    &branch.result,
+                    outer_scope,
+                    local_qualifiers,
+                    correlations,
+                );
+            }
+            if let Some(else_result) = else_result {
+                collect_expression_correlations(
+                    else_result,
+                    outer_scope,
+                    local_qualifiers,
+                    correlations,
+                );
             }
         }
         Expr::Function(function) => {
@@ -2765,6 +3235,51 @@ fn collect_output_lineage(
                         .lineage()
                         .iter()
                         .map(|source| (source.relation().to_string(), source.column().to_string())),
+                );
+            }
+        }
+        Expr::Case {
+            operand,
+            conditions,
+            else_result,
+            ..
+        } => {
+            if let Some(operand) = operand {
+                collect_output_lineage(
+                    operand,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
+                );
+            }
+            for branch in conditions {
+                collect_output_lineage(
+                    &branch.condition,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
+                );
+                collect_output_lineage(
+                    &branch.result,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
+                );
+            }
+            if let Some(else_result) = else_result {
+                collect_output_lineage(
+                    else_result,
+                    scope,
+                    named_windows,
+                    visited_windows,
+                    diagnostics,
+                    lineage,
                 );
             }
         }
