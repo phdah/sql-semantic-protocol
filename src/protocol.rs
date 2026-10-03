@@ -77,7 +77,7 @@ pub struct QueryStatement {
     aggregation: Option<Box<Aggregation>>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
-    write: Option<WriteOperation>,
+    write: Option<Box<WriteOperation>>,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -123,7 +123,7 @@ impl QueryStatement {
     }
 
     pub(crate) fn with_write(mut self, write: Option<WriteOperation>) -> Self {
-        self.write = write;
+        self.write = write.map(Box::new);
         self
     }
 
@@ -176,7 +176,7 @@ impl QueryStatement {
 
     /// Return relation-write semantics when this transformation writes a named relation.
     pub fn write(&self) -> Option<&WriteOperation> {
-        self.write.as_ref()
+        self.write.as_deref()
     }
 
     /// Return diagnostics describing incomplete query semantics.
