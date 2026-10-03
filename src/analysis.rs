@@ -2813,7 +2813,8 @@ fn refine_output_domains_from_column_domains(
                     column_domains,
                     sources,
                 );
-                column.with_domain(intersect_domains(column.domain(), &derived))
+                let domain = intersect_domains(column.domain(), &derived);
+                column.with_domain(domain)
             })
             .collect(),
     )
