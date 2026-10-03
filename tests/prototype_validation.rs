@@ -151,6 +151,9 @@ fn representative_generic_query_matches_complete_protocol_document() {
                                 "relation": "o",
                                 "name": "id"
                             },
+                            "domain": {
+                                "kind": "unbounded"
+                            },
                             "lineage": [
                                 {
                                     "relation": "sales.orders",
@@ -164,6 +167,9 @@ fn representative_generic_query_matches_complete_protocol_document() {
                                 "kind": "column",
                                 "relation": "c",
                                 "name": "name"
+                            },
+                            "domain": {
+                                "kind": "unbounded"
                             },
                             "lineage": [
                                 {
