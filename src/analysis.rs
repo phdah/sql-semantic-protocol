@@ -13,10 +13,12 @@ use serde_json::Number;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, Distinct as SqlDistinct, DuplicateTreatment, Expr,
     Function, FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
-    GroupByWithModifier as SqlGroupByWithModifier, Join as SqlJoin, JoinConstraint, JoinOperator,
-    NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
-    SetOperator as SqlSetOperator, SetQuantifier as SqlSetQuantifier, Statement as SqlStatement,
-    TableFactor, TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
+    GroupByWithModifier as SqlGroupByWithModifier, Insert as SqlInsert, Join as SqlJoin,
+    JoinConstraint, JoinOperator, MergeAction as SqlMergeAction, MergeClause as SqlMergeClause,
+    MergeClauseKind as SqlMergeClauseKind, MergeInsertKind, NamedWindowDefinition, NamedWindowExpr,
+    Query as SqlQuery, Select, SelectItem, SetExpr, SetOperator as SqlSetOperator,
+    SetQuantifier as SqlSetQuantifier, Statement as SqlStatement, TableFactor, TableObject,
+    TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
     WindowFrame as SqlWindowFrame, WindowFrameBound as SqlWindowFrameBound,
     WindowFrameUnits as SqlWindowFrameUnits, WindowSpec as SqlWindowSpec, WindowType,
 };
@@ -30,12 +32,13 @@ use crate::protocol::{
     DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
     GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin,
     JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
-    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
-    QueryStatement, RelationRef, ScalarSubqueryExpression, SetMode, SetOperand, SetOperation,
-    SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
-    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
-    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification,
+    MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
+    MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
+    ProtocolStatement, QueryStatement, RelationRef, ScalarSubqueryExpression, SetMode, SetOperand,
+    SetOperation, SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression,
+    UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
+    ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
+    WindowOrderExpression, WindowSpecification, WriteOperation,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -80,15 +83,254 @@ fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
         SqlStatement::Query(query) => ProtocolStatement::Query(analyze_query(query, None)),
         SqlStatement::CreateTable(create_table) => match &create_table.query {
             Some(query) => {
-                ProtocolStatement::Query(analyze_query(query, Some(create_table.name.to_string())))
+                let target = create_table.name.to_string();
+                ProtocolStatement::Query(
+                    analyze_query(query, Some(target.clone()))
+                        .with_write(Some(WriteOperation::definition(target))),
+                )
             }
             None => unsupported_queryless_create_table(),
         },
         SqlStatement::CreateView { name, query, .. } => {
-            ProtocolStatement::Query(analyze_query(query, Some(name.to_string())))
+            let target = name.to_string();
+            ProtocolStatement::Query(
+                analyze_query(query, Some(target.clone()))
+                    .with_write(Some(WriteOperation::definition(target))),
+            )
         }
+        SqlStatement::Insert(insert) => analyze_insert(insert),
+        SqlStatement::Merge {
+            table,
+            source,
+            on,
+            clauses,
+            output,
+            ..
+        } => analyze_merge(table, source, on, clauses, output.is_some()),
         _ => unsupported_statement(),
     }
+}
+
+fn analyze_insert(insert: &SqlInsert) -> ProtocolStatement {
+    let target = match &insert.table {
+        TableObject::TableName(name) => name.to_string(),
+        TableObject::TableFunction(_) => {
+            return unsupported_write_statement(
+                "insert",
+                "unsupported_insert_target",
+                "INSERT into a table function cannot be represented as a relation write",
+            );
+        }
+    };
+
+    let Some(source) = &insert.source else {
+        return unsupported_write_statement(
+            "insert",
+            "unsupported_insert_source",
+            "only INSERT INTO ... SELECT source semantics are supported",
+        );
+    };
+
+    if insert.overwrite
+        || insert.replace_into
+        || insert.ignore
+        || insert.or.is_some()
+        || !insert.assignments.is_empty()
+        || insert.partitioned.is_some()
+        || !insert.after_columns.is_empty()
+        || insert.on.is_some()
+        || insert.returning.is_some()
+        || insert.priority.is_some()
+        || insert.insert_alias.is_some()
+        || insert.settings.is_some()
+        || insert.format_clause.is_some()
+    {
+        return unsupported_write_statement(
+            "insert",
+            "unsupported_insert_write_semantics",
+            "INSERT modifiers that can change append semantics are not supported",
+        );
+    }
+
+    let target_columns = insert.columns.iter().map(ToString::to_string).collect();
+    let query = analyze_query(source, Some(target.clone()))
+        .with_write(Some(WriteOperation::append(target, target_columns)));
+    ProtocolStatement::Query(query)
+}
+
+fn analyze_merge(
+    table: &TableFactor,
+    source: &TableFactor,
+    on: &Expr,
+    clauses: &[SqlMergeClause],
+    has_output: bool,
+) -> ProtocolStatement {
+    let Some(target) = merge_target_relation(table) else {
+        return unsupported_write_statement(
+            "merge",
+            "unsupported_merge_target",
+            "MERGE target must be a named relation",
+        );
+    };
+
+    let mut diagnostics = Vec::new();
+    if has_output {
+        diagnostics.push(warning(
+            "unsupported_merge_output",
+            DiagnosticArea::Output,
+            "MERGE OUTPUT semantics are not represented",
+        ));
+    }
+
+    let mut derived_index = 0;
+    let Some(source_relation) = analyze_table_factor(
+        source,
+        &BTreeSet::new(),
+        &mut diagnostics,
+        &mut derived_index,
+    ) else {
+        return unsupported_write_statement(
+            "merge",
+            "unsupported_merge_source",
+            "MERGE source could not be represented safely",
+        );
+    };
+
+    let mut dependencies = source_relation.dependencies.clone();
+    collect_expression_dependencies(
+        on,
+        &BTreeSet::new(),
+        &mut diagnostics,
+        &mut derived_index,
+        &mut dependencies,
+    );
+    let match_condition = analyze_predicate(on, &mut diagnostics);
+    let merge_clauses = clauses
+        .iter()
+        .map(|clause| {
+            analyze_merge_clause(
+                clause,
+                &mut diagnostics,
+                &mut derived_index,
+                &mut dependencies,
+            )
+        })
+        .collect();
+
+    sort_diagnostics(&mut diagnostics);
+    let query = QueryStatement::new(
+        vec![source_relation.source],
+        dependencies.into_iter().collect(),
+        Vec::new(),
+        Predicates::new(None, None, None),
+        Vec::new(),
+        Output::new(Vec::new()),
+        diagnostics,
+    )
+    .with_produced_relation(Some(target.clone()))
+    .with_write(Some(WriteOperation::conditional_mutation(
+        target,
+        match_condition,
+        merge_clauses,
+    )));
+
+    ProtocolStatement::Query(query)
+}
+
+fn merge_target_relation(table: &TableFactor) -> Option<String> {
+    match table {
+        TableFactor::Table {
+            name, args: None, ..
+        } => Some(name.to_string()),
+        _ => None,
+    }
+}
+
+fn analyze_merge_clause(
+    clause: &SqlMergeClause,
+    diagnostics: &mut Vec<Diagnostic>,
+    derived_index: &mut usize,
+    dependencies: &mut BTreeSet<String>,
+) -> ProtocolMergeClause {
+    let match_kind = match clause.clause_kind {
+        SqlMergeClauseKind::Matched => MergeMatchKind::Matched,
+        SqlMergeClauseKind::NotMatched => MergeMatchKind::NotMatched,
+        SqlMergeClauseKind::NotMatchedByTarget => MergeMatchKind::NotMatchedByTarget,
+        SqlMergeClauseKind::NotMatchedBySource => MergeMatchKind::NotMatchedBySource,
+    };
+
+    let predicate = clause.predicate.as_ref().map(|predicate| {
+        collect_expression_dependencies(
+            predicate,
+            &BTreeSet::new(),
+            diagnostics,
+            derived_index,
+            dependencies,
+        );
+        analyze_predicate(predicate, diagnostics)
+    });
+
+    let action = match &clause.action {
+        SqlMergeAction::Delete => ProtocolMergeAction::Delete,
+        SqlMergeAction::Update { assignments } => {
+            let assignments = assignments
+                .iter()
+                .map(|assignment| {
+                    collect_expression_dependencies(
+                        &assignment.value,
+                        &BTreeSet::new(),
+                        diagnostics,
+                        derived_index,
+                        dependencies,
+                    );
+                    MergeAssignment::new(
+                        assignment.target.to_string(),
+                        analyze_expression_with_scope(&assignment.value, &[], &[], diagnostics),
+                    )
+                })
+                .collect();
+            ProtocolMergeAction::Update { assignments }
+        }
+        SqlMergeAction::Insert(insert) => match &insert.kind {
+            MergeInsertKind::Values(values) => {
+                let rows = values
+                    .rows
+                    .iter()
+                    .map(|row| {
+                        row.iter()
+                            .map(|expression| {
+                                collect_expression_dependencies(
+                                    expression,
+                                    &BTreeSet::new(),
+                                    diagnostics,
+                                    derived_index,
+                                    dependencies,
+                                );
+                                analyze_expression_with_scope(expression, &[], &[], diagnostics)
+                            })
+                            .collect()
+                    })
+                    .collect();
+                ProtocolMergeAction::Insert {
+                    columns: insert.columns.iter().map(ToString::to_string).collect(),
+                    values: rows,
+                }
+            }
+            MergeInsertKind::Row => {
+                diagnostics.push(warning(
+                    "unsupported_merge_insert_row",
+                    DiagnosticArea::Statement,
+                    "MERGE INSERT ROW cannot be expanded without target schema information",
+                ));
+                ProtocolMergeAction::Unsupported(UnsupportedSemantic::new(
+                    "merge_insert_row".to_string(),
+                    Some("target schema is required to expand ROW".to_string()),
+                ))
+            }
+        },
+    };
+
+    ProtocolMergeClause::new(match_kind, predicate, action)
 }
 
 fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QueryStatement {
@@ -3782,6 +4024,17 @@ fn unsupported_queryless_create_table() -> ProtocolStatement {
     ProtocolStatement::Unsupported(UnsupportedStatement::new(
         "create_table".to_string(),
         vec![diagnostic],
+    ))
+}
+
+fn unsupported_write_statement(
+    category: &str,
+    code: &str,
+    message: &str,
+) -> ProtocolStatement {
+    ProtocolStatement::Unsupported(UnsupportedStatement::new(
+        category.to_string(),
+        vec![warning(code, DiagnosticArea::Statement, message)],
     ))
 }
 
