@@ -109,6 +109,8 @@ If `stage_orders.sql` produces `stage.orders`, the next statement consumes that 
 
 For a three-layer chain such as `raw.orders -> stage.orders -> core.ranked_orders -> mart.customer_summary`, the final layer retains transitive physical lineage and domains that can be propagated safely. For example, a `ROW_NUMBER()` output constrained by `QUALIFY rn <= 10` keeps the derived output domain `[1, 10]` while source-column constraints remain separate. CASE, grouping, nested subqueries, and set operations are represented in the same document when they occur in the supplied workload.
 
+DML writes participate in the same graph without being mistaken for full relation definitions. `INSERT INTO ... SELECT` is modeled as an append: its source query semantics and inserted-row lineage are retained, while a downstream reader links to that writer through a `partial` edge. `MERGE` records its target, source dependencies, match condition, and supported insert/update/delete clauses as a conditional mutation. Downstream composition stops explicitly at append and conditional-mutation writes because pre-existing target rows are outside the DML statement's semantics.
+
 ## Analysis manifests
 
 Large bundles can be declared in a versioned JSON manifest instead of repeating every analysis input and option on the command line. Manifest v1 is defined by [`schema/analysis-manifest-v1.schema.json`](schema/analysis-manifest-v1.schema.json) and documented in [`docs/analysis-manifest-v1.md`](docs/analysis-manifest-v1.md).
