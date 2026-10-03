@@ -35,9 +35,27 @@ fn catalog_source_schema_is_preserved_in_bundle_and_emission() {
     assert_eq!(bundle.source_schemas(), std::slice::from_ref(&schema));
 
     let emitted = to_bundle_json(&bundle);
-    assert!(emitted.contains(
-        r#""source_schemas":[{"relation":"raw.orders","columns":[{"name":"id","type":"integer"},{"name":"active","type":"boolean"},{"name":"created_at","type":"timestamp"}]}]"#
-    ));
+    let value: serde_json::Value =
+        serde_json::from_str(&emitted).expect("emitted protocol should be valid JSON");
+    assert_eq!(value["source_schemas"][0]["relation"], "raw.orders");
+    assert_eq!(value["source_schemas"][0]["columns"][0]["name"], "id");
+    assert_eq!(
+        value["source_schemas"][0]["columns"][0]["type"],
+        "integer"
+    );
+    assert_eq!(value["source_schemas"][0]["columns"][1]["name"], "active");
+    assert_eq!(
+        value["source_schemas"][0]["columns"][1]["type"],
+        "boolean"
+    );
+    assert_eq!(
+        value["source_schemas"][0]["columns"][2]["name"],
+        "created_at"
+    );
+    assert_eq!(
+        value["source_schemas"][0]["columns"][2]["type"],
+        "timestamp"
+    );
 }
 
 #[test]
