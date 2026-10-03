@@ -295,7 +295,9 @@ fn parse_input(value: &Value, position: usize) -> Result<ManifestInput, Manifest
             ))
         }
         (None, None) => {
-            return invalid(format!("{context} must specify exactly one of 'sql' or 'file'"))
+            return invalid(format!(
+                "{context} must specify exactly one of 'sql' or 'file'"
+            ))
         }
     };
 
