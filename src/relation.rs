@@ -302,7 +302,7 @@ impl ParsedIdentifier {
                 format!("\"{}\"", self.value.replace('"', "\"\""))
             }
             Some(QuoteStyle::Backtick) => {
-                format!("\`{}\`", self.value.replace('`', "\`\`"))
+                format!("`{}`", self.value.replace('`', "``"))
             }
             Some(QuoteStyle::Bracket) => {
                 format!("[{}]", self.value.replace(']', "]]"))
