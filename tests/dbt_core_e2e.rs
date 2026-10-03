@@ -137,7 +137,10 @@ fn assert_successful_dbt_result(run_results: &Value, name: &str) {
         .iter()
         .find(|result| result["unique_id"] == id)
         .unwrap_or_else(|| panic!("missing dbt run result for {id}"));
-    assert_eq!(result["status"], "success", "{id} did not execute successfully");
+    assert_eq!(
+        result["status"], "success",
+        "{id} did not execute successfully"
+    );
 }
 
 #[test]
@@ -150,12 +153,10 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     );
 
     let manifest_json = read_json(&manifest_path);
-    assert!(
-        manifest_json["metadata"]["dbt_schema_version"]
-            .as_str()
-            .expect("dbt schema version should be a string")
-            .ends_with("/manifest/v12.json")
-    );
+    assert!(manifest_json["metadata"]["dbt_schema_version"]
+        .as_str()
+        .expect("dbt schema version should be a string")
+        .ends_with("/manifest/v12.json"));
     assert_eq!(manifest_json["metadata"]["adapter_type"], "duckdb");
 
     let expected_models = [
@@ -284,11 +285,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert!(contains_string(stage, "boolean_predicate"));
     assert!(contains_string(stage, "binary"));
     let stage_layer = layer_for_model(&protocol, "stg_orders");
-    assert_closed_number_range(
-        &output_column(stage_layer, "amount")["domain"],
-        "10",
-        "100",
-    );
+    assert_closed_number_range(&output_column(stage_layer, "amount")["domain"], "10", "100");
     let bucket_domain = &output_column(stage_layer, "amount_bucket")["domain"];
     assert_eq!(bucket_domain["kind"], "set");
     for expected in ["high", "medium", "standard"] {
@@ -380,11 +377,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert!(contains_string(ordered_union, "unsupported_limit"));
 
     let final_layer = layer_for_model(&protocol, "final_orders");
-    assert_closed_number_range(
-        &output_column(final_layer, "amount")["domain"],
-        "10",
-        "50",
-    );
+    assert_closed_number_range(&output_column(final_layer, "amount")["domain"], "10", "50");
 
     let graph_components = protocol["graph"]["components"]
         .as_array()
