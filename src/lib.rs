@@ -51,7 +51,8 @@ pub use protocol::{
     SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
     UnknownDomain, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
     ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteKind, WriteOperation, PROTOCOL_VERSION,
+    WindowOrderExpression, WindowSpecification, WriteKind, WriteOperation, WriteValue,
+    PROTOCOL_VERSION,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.
