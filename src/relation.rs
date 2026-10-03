@@ -91,6 +91,10 @@ impl RelationCatalog {
             .collect()
     }
 
+    pub(crate) fn is_empty(&self) -> bool {
+        self.relations.is_empty()
+    }
+
     /// Resolve one textual relation reference to a canonical identity.
     ///
     /// The resolver first applies explicit input defaults where they supply missing qualification.
