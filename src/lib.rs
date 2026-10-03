@@ -38,7 +38,7 @@ pub use bundle::{
 pub use emission::{to_bundle_json, to_json};
 pub use manifest::{
     parse_analysis_manifest, AnalysisManifest, ManifestError, ManifestInput, ManifestInputSource,
-    ManifestOutputScope, ANALYSIS_MANIFEST_VERSION,
+    ManifestOutputScope, ManifestRelationContext, ANALYSIS_MANIFEST_VERSION,
 };
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;

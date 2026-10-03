@@ -7,14 +7,15 @@ use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
-    analyze_configured_inputs, analyze_inputs, parse_analysis_manifest, select_targets,
-    to_bundle_json, to_openlineage_json, AnalysisBundle, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, Error as ProtocolError, InputAnalysisError, ManifestInputSource,
-    ManifestOutputScope, OpenLineageExportError, SqlInput, TargetSelectionError,
+    analyze_configured_inputs_with_catalog, analyze_inputs, parse_analysis_manifest,
+    select_targets, to_bundle_json, to_openlineage_json, AnalysisBundle,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error as ProtocolError, InputAnalysisError,
+    ManifestInputSource, ManifestOutputScope, OpenLineageExportError, RelationCatalog,
+    RelationContext, SqlInput, TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--manifest <path> | [--dialect <name>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>]\n\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, and --target as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no direct input or manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>]\n\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, optional catalog metadata, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, --target, and --catalog-relation as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nUse --default-catalog and --default-schema to qualify otherwise partial direct-input relation identities before graph linking.\nLegacy positional SQL remains one input. If no direct input or manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -38,8 +39,8 @@ fn run() -> Result<(), CliError> {
                 None => {
                     let inputs = read_inputs(&options)?;
                     let (dialect_name, dialect) = select_dialect(&options.dialect)?;
-                    let bundle = analyze_inputs(&inputs, &dialect_name, dialect.as_ref())
-                        .map_err(CliError::InputProtocol)?;
+                    let bundle =
+                        analyze_direct_inputs(&inputs, &options, &dialect_name, dialect.as_ref())?;
                     select_targets(&bundle, &options.targets).map_err(CliError::TargetSelection)?
                 }
             };
@@ -68,7 +69,7 @@ fn run() -> Result<(), CliError> {
 
 #[derive(Debug)]
 enum Command {
-    Analyze(Options),
+    Analyze(Box<Options>),
     Help,
 }
 
@@ -79,6 +80,9 @@ struct Options {
     format: OutputFormat,
     namespace: Option<String>,
     event_time: Option<String>,
+    catalog_relations: Vec<String>,
+    default_catalog: Option<String>,
+    default_schema: Option<String>,
     targets: Vec<String>,
     inputs: Vec<InputArgument>,
     positional_sql: Vec<String>,
@@ -104,6 +108,9 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
     let mut format = OutputFormat::Protocol;
     let mut namespace = None;
     let mut event_time = None;
+    let mut catalog_relations = Vec::new();
+    let mut default_catalog = None;
+    let mut default_schema = None;
     let mut targets = Vec::new();
     let mut inputs = Vec::new();
     let mut positional_sql = Vec::new();
@@ -162,6 +169,39 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                     CliError::Input("missing value for --event-time".to_string())
                 })?);
             }
+            "--catalog-relation" => {
+                let relation = arguments.next().ok_or_else(|| {
+                    CliError::Input("missing value for --catalog-relation".to_string())
+                })?;
+                if relation.trim().is_empty() {
+                    return Err(CliError::Input(
+                        "--catalog-relation cannot be empty".to_string(),
+                    ));
+                }
+                catalog_relations.push(relation);
+            }
+            "--default-catalog" => {
+                let value = arguments.next().ok_or_else(|| {
+                    CliError::Input("missing value for --default-catalog".to_string())
+                })?;
+                if value.trim().is_empty() {
+                    return Err(CliError::Input(
+                        "--default-catalog cannot be empty".to_string(),
+                    ));
+                }
+                default_catalog = Some(value);
+            }
+            "--default-schema" => {
+                let value = arguments.next().ok_or_else(|| {
+                    CliError::Input("missing value for --default-schema".to_string())
+                })?;
+                if value.trim().is_empty() {
+                    return Err(CliError::Input(
+                        "--default-schema cannot be empty".to_string(),
+                    ));
+                }
+                default_schema = Some(value);
+            }
             "--target" => {
                 let target = arguments
                     .next()
@@ -205,12 +245,15 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
 
     if manifest.is_some()
         && (dialect_supplied
+            || !catalog_relations.is_empty()
+            || default_catalog.is_some()
+            || default_schema.is_some()
             || !targets.is_empty()
             || !inputs.is_empty()
             || !positional_sql.is_empty())
     {
         return Err(CliError::Input(
-            "--manifest cannot be combined with --dialect, --target, --sql, --file, --dir, or positional SQL"
+            "--manifest cannot be combined with --dialect, --catalog-relation, --default-catalog, --default-schema, --target, --sql, --file, --dir, or positional SQL"
                 .to_string(),
         ));
     }
@@ -243,16 +286,19 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         }
     }
 
-    Ok(Command::Analyze(Options {
+    Ok(Command::Analyze(Box::new(Options {
         dialect,
         manifest,
         format,
         namespace,
         event_time,
+        catalog_relations,
+        default_catalog,
+        default_schema,
         targets,
         inputs,
         positional_sql,
-    }))
+    })))
 }
 
 struct LoadedManifestInput {
@@ -260,6 +306,7 @@ struct LoadedManifestInput {
     input: SqlInput,
     dialect_name: String,
     dialect: Box<dyn Dialect>,
+    relation_context: Option<RelationContext>,
 }
 
 fn analyze_manifest(path: &Path) -> Result<AnalysisBundle, CliError> {
@@ -314,27 +361,54 @@ fn analyze_manifest(path: &Path) -> Result<AnalysisBundle, CliError> {
             }
         };
 
+        let relation_context = manifest
+            .relation_context_for(manifest_input)
+            .map(|context| {
+                RelationContext::new(context.default_catalog(), context.default_schema()).map_err(
+                    |error| {
+                        CliError::Input(format!(
+                            "manifest input {} ('{}'): {error}",
+                            index + 1,
+                            manifest_input.id()
+                        ))
+                    },
+                )
+            })
+            .transpose()?;
+
         loaded.push(LoadedManifestInput {
             id: manifest_input.id().to_string(),
             input,
             dialect_name,
             dialect,
+            relation_context,
         });
     }
 
     let configured = loaded
         .iter()
         .map(|input| {
-            ConfiguredSqlInput::new(
+            let configured = ConfiguredSqlInput::new(
                 &input.id,
                 &input.input,
                 &input.dialect_name,
                 input.dialect.as_ref(),
-            )
+            );
+            match input.relation_context.as_ref() {
+                Some(context) => configured.with_relation_context(context),
+                None => configured,
+            }
         })
         .collect::<Vec<_>>();
-    let bundle =
-        analyze_configured_inputs(&configured).map_err(CliError::ConfiguredInputProtocol)?;
+    let catalog_relations = manifest
+        .catalog_relations()
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::new(&catalog_relations)
+        .map_err(|error| CliError::Input(format!("manifest catalog metadata: {error}")))?;
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+        .map_err(CliError::ConfiguredInputProtocol)?;
 
     match manifest.output_scope() {
         ManifestOutputScope::All => Ok(bundle),
@@ -345,6 +419,60 @@ fn analyze_manifest(path: &Path) -> Result<AnalysisBundle, CliError> {
             "manifest uses an unsupported output scope".to_string(),
         )),
     }
+}
+
+fn analyze_direct_inputs(
+    inputs: &[SqlInput],
+    options: &Options,
+    dialect_name: &str,
+    dialect: &dyn Dialect,
+) -> Result<AnalysisBundle, CliError> {
+    if options.catalog_relations.is_empty()
+        && options.default_catalog.is_none()
+        && options.default_schema.is_none()
+    {
+        return analyze_inputs(inputs, dialect_name, dialect).map_err(CliError::InputProtocol);
+    }
+
+    let relation_context = if options.default_catalog.is_some() || options.default_schema.is_some()
+    {
+        Some(
+            RelationContext::new(
+                options.default_catalog.as_deref(),
+                options.default_schema.as_deref(),
+            )
+            .map_err(|error| CliError::Input(format!("relation context: {error}")))?,
+        )
+    } else {
+        None
+    };
+    let catalog_relations = options
+        .catalog_relations
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::new(&catalog_relations)
+        .map_err(|error| CliError::Input(format!("catalog metadata: {error}")))?;
+
+    let width = inputs.len().max(1).to_string().len().max(4);
+    let identified = inputs
+        .iter()
+        .enumerate()
+        .map(|(index, input)| (format!("input-{:0width$}", index + 1, width = width), input))
+        .collect::<Vec<_>>();
+    let configured = identified
+        .iter()
+        .map(|(id, input)| {
+            let configured = ConfiguredSqlInput::new(id, input, dialect_name, dialect);
+            match relation_context.as_ref() {
+                Some(context) => configured.with_relation_context(context),
+                None => configured,
+            }
+        })
+        .collect::<Vec<_>>();
+
+    analyze_configured_inputs_with_catalog(&configured, &catalog)
+        .map_err(CliError::ConfiguredInputProtocol)
 }
 
 fn read_inputs(options: &Options) -> Result<Vec<SqlInput>, CliError> {

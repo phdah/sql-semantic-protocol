@@ -1,0 +1,51 @@
+{
+  "manifest_version": "1",
+  "dialect": "generic",
+  "catalog_relations": [
+    "warehouse.analytics.audit_report",
+    "warehouse.analytics.final_orders",
+    "warehouse.analytics.order_audit",
+    "warehouse.analytics.stage_orders",
+    "warehouse.finance.snapshot",
+    "warehouse.raw.customers",
+    "warehouse.raw.orders"
+  ],
+  "relation_context": {
+    "default_catalog": "warehouse",
+    "default_schema": "analytics"
+  },
+  "inputs": [
+    {
+      "id": "stage-orders",
+      "file": "sql/stage_orders.sql",
+      "dialect": "postgresql"
+    },
+    {
+      "id": "append-order-audit",
+      "file": "sql/append_order_audit.sql"
+    },
+    {
+      "id": "audit-report",
+      "file": "sql/audit_report.sql",
+      "dialect": "postgresql"
+    },
+    {
+      "id": "final-orders",
+      "file": "sql/final_orders.sql",
+      "dialect": "snowflake"
+    },
+    {
+      "id": "finance-snapshot",
+      "file": "sql/finance_snapshot.sql",
+      "dialect": "mysql",
+      "relation_context": {
+        "default_catalog": "warehouse",
+        "default_schema": "finance"
+      }
+    }
+  ],
+  "output_scope": "targets",
+  "targets": [
+    "warehouse.analytics.final_orders"
+  ]
+}
