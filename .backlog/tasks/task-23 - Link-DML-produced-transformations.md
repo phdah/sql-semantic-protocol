@@ -21,11 +21,12 @@ Unlike CREATE TABLE/VIEW, these statements mutate an existing target. The protoc
 
 ## Acceptance Criteria
 
-- [ ] INSERT INTO ... SELECT records both the written target relation and the source-query semantics.
-- [ ] MERGE records the target relation, source dependencies, match condition, and supported update/insert/delete actions.
-- [ ] The semantic model distinguishes replacement/definition writes from append and conditional mutation semantics.
-- [ ] Cross-query graph edges can link downstream readers to DML-written relations without claiming the DML fully defines the target when it does not.
-- [ ] Transitive lineage is composed only where write semantics justify it; otherwise the result degrades explicitly to partial/unknown lineage.
-- [ ] Dialect-specific DML syntax remains isolated at the AST-to-domain boundary.
-- [ ] Unsupported write operations remain explicit diagnostics.
-- [ ] Tests cover INSERT-select and MERGE in supported dialects, including downstream readers.
+- [x] INSERT INTO ... SELECT records both the written target relation and the source-query semantics.
+- [x] MERGE records the target relation, source dependencies, match condition, and supported update/insert/delete actions.
+- [x] Every MERGE UPDATE/INSERT value exposes the strongest safe outcome value domain; MATCHED branch predicates and equality conditions refine interval bounds when provable, while the full target remains explicitly partial.
+- [x] The semantic model distinguishes replacement/definition writes from append and conditional mutation semantics.
+- [x] Cross-query graph edges can link downstream readers to DML-written relations without claiming the DML fully defines the target when it does not.
+- [x] Transitive lineage is composed only where write semantics justify it; otherwise the result degrades explicitly to partial/unknown lineage.
+- [x] Dialect-specific DML syntax remains isolated at the AST-to-domain boundary.
+- [x] Unsupported write operations remain explicit diagnostics.
+- [x] Tests cover INSERT-select and MERGE in supported dialects, including downstream readers.
