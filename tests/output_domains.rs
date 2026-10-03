@@ -33,6 +33,25 @@ fn integer_bounds(domain: &ValueDomain) -> (IntegerBound, IntegerBound) {
 }
 
 #[test]
+fn filtered_projected_column_exposes_its_outcome_interval() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT amount FROM orders WHERE amount > 10 AND amount <= 100",
+        "generic",
+        &dialect,
+    )
+    .expect("filtered projection should analyze");
+
+    assert_eq!(
+        integer_bounds(first_query(&protocol).output().columns()[0].domain()),
+        (
+            Some(("10".to_string(), false)),
+            Some(("100".to_string(), true))
+        )
+    );
+}
+
+#[test]
 fn case_boolean_output_has_explicit_expression_domain_and_lineage() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
