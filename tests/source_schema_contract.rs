@@ -1,6 +1,6 @@
 use sql_semantic_protocol::{
-    ConfiguredSqlInput, RelationCatalog, RelationSchema, ScalarType, SchemaColumn, SqlInput,
-    analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json,
+    analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, ConfiguredSqlInput,
+    RelationCatalog, RelationSchema, ScalarType, SchemaColumn, SqlInput,
 };
 
 #[test]
