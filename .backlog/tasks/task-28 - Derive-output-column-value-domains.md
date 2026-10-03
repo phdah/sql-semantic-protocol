@@ -23,6 +23,7 @@ Output-domain reasoning must remain separate from source-column predicate reason
 ## Acceptance Criteria
 
 - [x] Output columns can represent a parser-independent value domain separately from source-column domains.
+- [x] Directly projected columns inherit safe predicate-derived constraints into their output domains, so filtered outputs expose their actual lower/upper interval bounds rather than only source-column metadata.
 - [x] CASE expressions are represented explicitly rather than as unsupported expressions, including searched and simple CASE forms where sqlparser exposes sufficient semantics.
 - [x] CASE conditions and result branches contribute complete output-column lineage.
 - [x] CASE result domains are combined conservatively from reachable result branches; for example, a CASE whose results are only TRUE and FALSE has the output domain {true, false}.
