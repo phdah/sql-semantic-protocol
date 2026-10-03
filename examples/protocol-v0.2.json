@@ -78,7 +78,10 @@
                     "relation": "raw.orders",
                     "column": "id"
                   }
-                ]
+                ],
+                "domain": {
+                  "kind": "unbounded"
+                }
               },
               {
                 "name": "total_amount",
@@ -92,7 +95,10 @@
                     "relation": "raw.orders",
                     "column": "total_amount"
                   }
-                ]
+                ],
+                "domain": {
+                  "kind": "unbounded"
+                }
               }
             ]
           },
@@ -177,7 +183,10 @@
                     "relation": "stage.orders",
                     "column": "id"
                   }
-                ]
+                ],
+                "domain": {
+                  "kind": "unbounded"
+                }
               },
               {
                 "name": "total_amount",
@@ -191,7 +200,10 @@
                     "relation": "stage.orders",
                     "column": "total_amount"
                   }
-                ]
+                ],
+                "domain": {
+                  "kind": "unbounded"
+                }
               }
             ]
           },
@@ -283,7 +295,10 @@
                     "relation": "raw.customers",
                     "column": "customer_id"
                   }
-                ]
+                ],
+                "domain": {
+                  "kind": "unbounded"
+                }
               }
             ]
           },
@@ -351,7 +366,10 @@
                   "relation": "raw.orders",
                   "column": "id"
                 }
-              ]
+              ],
+              "domain": {
+                "kind": "unbounded"
+              }
             },
             {
               "name": "total_amount",
@@ -365,7 +383,10 @@
                   "relation": "raw.orders",
                   "column": "total_amount"
                 }
-              ]
+              ],
+              "domain": {
+                "kind": "unbounded"
+              }
             }
           ]
         },
@@ -437,7 +458,10 @@
                   "relation": "raw.orders",
                   "column": "id"
                 }
-              ]
+              ],
+              "domain": {
+                "kind": "unbounded"
+              }
             },
             {
               "name": "total_amount",
@@ -451,7 +475,10 @@
                   "relation": "raw.orders",
                   "column": "total_amount"
                 }
-              ]
+              ],
+              "domain": {
+                "kind": "unbounded"
+              }
             }
           ]
         },
@@ -516,7 +543,10 @@
                   "relation": "raw.customers",
                   "column": "customer_id"
                 }
-              ]
+              ],
+              "domain": {
+                "kind": "unbounded"
+              }
             }
           ]
         },

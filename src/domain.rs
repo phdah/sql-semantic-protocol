@@ -349,6 +349,21 @@ fn collect_expression_columns(
             }
         }
         Expression::AggregateFunction(_) | Expression::WindowFunction(_) => {}
+        Expression::Case(expression) => {
+            if let Some(operand) = expression.operand() {
+                collect_expression_columns(operand, sources, columns);
+            }
+            for branch in expression.branches() {
+                collect_expression_columns(branch.condition(), sources, columns);
+                collect_expression_columns(branch.result(), sources, columns);
+            }
+            if let Some(else_result) = expression.else_result() {
+                collect_expression_columns(else_result, sources, columns);
+            }
+        }
+        Expression::BooleanPredicate(predicate) => {
+            collect_predicate_columns(predicate, sources, columns);
+        }
         Expression::Unary(expression) => {
             collect_expression_columns(expression.operand(), sources, columns);
         }
@@ -442,7 +457,7 @@ pub(crate) fn intersect_domains(left: &ValueDomain, right: &ValueDomain) -> Valu
     }
 }
 
-fn union_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
+pub(crate) fn union_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
     match (left, right) {
         (ValueDomain::Unbounded, _) | (_, ValueDomain::Unbounded) => ValueDomain::Unbounded,
         (ValueDomain::Empty, domain) | (domain, ValueDomain::Empty) => domain.clone(),

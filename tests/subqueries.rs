@@ -231,21 +231,25 @@ fn unnest_and_table_functions_remain_explicit_when_schema_is_unresolved() {
 }
 
 #[test]
-fn unsupported_nested_expression_stays_visible_inside_subquery() {
+fn case_semantics_are_preserved_inside_scalar_subqueries() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
         "SELECT (SELECT CASE WHEN p.price > 0 THEN 1 ELSE 0 END FROM prices p) AS flag FROM orders",
         "generic",
         &dialect,
     )
-    .expect("unsupported nested expression should remain analyzable");
+    .expect("nested CASE expression should remain analyzable");
 
     let subquery = match first_query(&protocol).output().columns()[0].expression() {
         Expression::ScalarSubquery(expression) => expression.subquery(),
         other => panic!("expected scalar subquery expression, got {other:?}"),
     };
 
-    assert!(subquery
+    assert!(matches!(
+        subquery.output().columns()[0].expression(),
+        Expression::Case(_)
+    ));
+    assert!(!subquery
         .diagnostics()
         .iter()
         .any(|diagnostic| diagnostic.code() == "unsupported_expression"));

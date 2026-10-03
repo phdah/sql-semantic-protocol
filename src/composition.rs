@@ -377,14 +377,58 @@ impl<'a> Composer<'a> {
                 }
             }
 
+            let domain = self.compose_output_domain(layer, column);
             columns.push(OutputColumn::new(
                 column.name().to_string(),
                 column.expression().clone(),
+                domain,
                 lineage.into_iter().collect(),
             ));
         }
 
         Output::new(columns)
+    }
+
+    fn compose_output_domain(
+        &mut self,
+        consumer: &TransformationLayer,
+        column: &OutputColumn,
+    ) -> ValueDomain {
+        let domain = column.domain().clone();
+        if !matches!(column.expression(), Expression::Column(_)) {
+            return domain;
+        }
+
+        let [source] = column.lineage() else {
+            return domain;
+        };
+        let Some(edge) = self
+            .edge_for_source(consumer.id(), source.relation())
+            .cloned()
+        else {
+            return domain;
+        };
+        if edge.resolution() != RelationResolution::Resolved {
+            return domain;
+        }
+        let Some(producer_id) = edge.producer_layer_ids().first() else {
+            return domain;
+        };
+
+        let ComposedSemantics::Resolved(producer) = self.compose_layer(producer_id) else {
+            return domain;
+        };
+        let matches = producer
+            .output()
+            .columns()
+            .iter()
+            .filter(|producer_column| producer_column.name() == source.column())
+            .collect::<Vec<_>>();
+        let [producer_column] = matches.as_slice() else {
+            return domain;
+        };
+
+        intersect_domains(&domain, producer_column.domain())
     }
 
     fn expand_lineage_source(
