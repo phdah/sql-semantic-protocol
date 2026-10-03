@@ -14,8 +14,8 @@
 mod analysis;
 mod bundle;
 mod composition;
-mod domain;
 mod dbt;
+mod domain;
 mod emission;
 mod manifest;
 mod openlineage;
