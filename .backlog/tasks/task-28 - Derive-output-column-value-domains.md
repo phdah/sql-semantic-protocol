@@ -1,7 +1,7 @@
 ---
 id: TASK-28
 title: Derive output-column value domains
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-02'
 labels: []
@@ -22,16 +22,16 @@ Output-domain reasoning must remain separate from source-column predicate reason
 
 ## Acceptance Criteria
 
-- [ ] Output columns can represent a parser-independent value domain separately from source-column domains.
-- [ ] CASE expressions are represented explicitly rather than as unsupported expressions, including searched and simple CASE forms where sqlparser exposes sufficient semantics.
-- [ ] CASE conditions and result branches contribute complete output-column lineage.
-- [ ] CASE result domains are combined conservatively from reachable result branches; for example, a CASE whose results are only TRUE and FALSE has the output domain {true, false}.
-- [ ] Boolean-producing derived expressions that can be modeled safely expose a boolean output domain rather than losing their semantics.
-- [ ] Supported window functions expose intrinsic output domains where SQL semantics guarantee one; at minimum ROW_NUMBER has an integer lower bound of 1.
-- [ ] Predicates on derived aliases refine the derived output domain without being misapplied to physical source-column domains; for example, QUALIFY rn <= 10 combined with ROW_NUMBER yields rn in [1, 10].
-- [ ] Supported aggregate functions expose intrinsic output domains only where guaranteed by SQL semantics, building on TASK-18; unknown aggregate result bounds remain unknown.
-- [ ] Safe scalar domain propagation is supported for common derived expressions such as literal-preserving unary or arithmetic expressions where bounds can be computed without guessing.
-- [ ] Output domains survive multi-layer composition so a final outcome retains safely derivable constraints from intermediate derived columns.
-- [ ] Unsupported, non-deterministic, overflow-sensitive, dialect-specific, or otherwise unsafe domain transformations remain explicitly unknown/unsupported rather than over-claimed.
-- [ ] JSON Schema, protocol documentation, and public API documentation are updated for output-column domains.
-- [ ] Tests cover CASE-to-boolean output, direct boolean derived expressions, ROW_NUMBER, QUALIFY refinement, aggregate intrinsic domains, arithmetic propagation, unknown fallback, lineage, and deterministic JSON emission across relevant dialects.
+- [x] Output columns can represent a parser-independent value domain separately from source-column domains.
+- [x] CASE expressions are represented explicitly rather than as unsupported expressions, including searched and simple CASE forms where sqlparser exposes sufficient semantics.
+- [x] CASE conditions and result branches contribute complete output-column lineage.
+- [x] CASE result domains are combined conservatively from reachable result branches; for example, a CASE whose results are only TRUE and FALSE has the output domain {true, false}.
+- [x] Boolean-producing derived expressions that can be modeled safely expose a boolean output domain rather than losing their semantics.
+- [x] Supported window functions expose intrinsic output domains where SQL semantics guarantee one; at minimum ROW_NUMBER has an integer lower bound of 1.
+- [x] Predicates on derived aliases refine the derived output domain without being misapplied to physical source-column domains; for example, QUALIFY rn <= 10 combined with ROW_NUMBER yields rn in [1, 10].
+- [x] Supported aggregate functions expose intrinsic output domains only where guaranteed by SQL semantics, building on TASK-18; unknown aggregate result bounds remain unknown.
+- [x] Safe scalar domain propagation is supported for common derived expressions such as literal-preserving unary or arithmetic expressions where bounds can be computed without guessing.
+- [x] Output domains survive multi-layer composition so a final outcome retains safely derivable constraints from intermediate derived columns.
+- [x] Unsupported, non-deterministic, overflow-sensitive, dialect-specific, or otherwise unsafe domain transformations remain explicitly unknown/unsupported rather than over-claimed.
+- [x] JSON Schema, protocol documentation, and public API documentation are updated for output-column domains.
+- [x] Tests cover CASE-to-boolean output, direct boolean derived expressions, ROW_NUMBER, QUALIFY refinement, aggregate intrinsic domains, arithmetic propagation, unknown fallback, lineage, and deterministic JSON emission across relevant dialects.
