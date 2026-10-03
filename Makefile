@@ -25,5 +25,5 @@ dbt-e2e:
 	mkdir -p target
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) dbt seed --project-dir $(DBT_E2E_PROJECT) --profiles-dir $(DBT_E2E_PROJECT)
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) dbt run --project-dir $(DBT_E2E_PROJECT) --profiles-dir $(DBT_E2E_PROJECT)
-	cargo run --quiet -- --dbt-manifest $(DBT_E2E_PROJECT)/target/manifest.json > $(DBT_E2E_PROJECT)/target/protocol.json
-	python3 tests/dbt_core_e2e.py $(DBT_E2E_PROJECT)/target/manifest.json $(DBT_E2E_PROJECT)/target/protocol.json
+	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) dbt run --project-dir $(DBT_E2E_PROJECT) --profiles-dir $(DBT_E2E_PROJECT)
+	cargo test --test dbt_core_e2e -- --ignored --nocapture
