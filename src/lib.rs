@@ -115,5 +115,5 @@ pub fn analyze_sql(
 /// This keeps consumers from depending directly on sqlparser only to select a dialect before
 /// calling the protocol analyzer.
 pub fn dialect_from_name(name: &str) -> Option<Box<dyn Dialect>> {
-    dialect_from_str(&name.to_ascii_lowercase())
+    dialect_from_str(name.to_ascii_lowercase())
 }
