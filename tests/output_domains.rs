@@ -2,8 +2,8 @@ mod common;
 
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_inputs, analyze_sql, Expression, LiteralType, LiteralValue, Protocol, ProtocolStatement,
-    QueryStatement, SetMode, SqlInput, ValueDomain,
+    analyze_inputs, analyze_sql, Expression, LiteralType, LiteralValue, Protocol,
+    ProtocolStatement, QueryStatement, SetMode, SqlInput, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect, SnowflakeDialect};
 
@@ -68,7 +68,10 @@ fn boolean_derived_expression_has_boolean_domain() {
     .expect("boolean expression should analyze");
 
     let column = &first_query(&protocol).output().columns()[0];
-    assert!(matches!(column.expression(), Expression::BooleanPredicate(_)));
+    assert!(matches!(
+        column.expression(),
+        Expression::BooleanPredicate(_)
+    ));
     let ValueDomain::Set(domain) = column.domain() else {
         panic!("expected boolean set domain");
     };
@@ -89,7 +92,10 @@ fn row_number_qualify_refines_intrinsic_domain_without_source_domain_claim() {
     assert!(query.column_domains().is_empty());
     assert_eq!(
         integer_bounds(query.output().columns()[0].domain()),
-        (Some(("1".to_string(), true)), Some(("10".to_string(), true)))
+        (
+            Some(("1".to_string(), true)),
+            Some(("10".to_string(), true))
+        )
     );
 }
 
