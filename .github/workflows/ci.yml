@@ -22,5 +22,16 @@ jobs:
           rustup toolchain install stable --profile minimal --component rustfmt,clippy
           rustup default stable
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dbt Core test dependencies
+        run: python -m pip install -r tests/requirements-dbt-e2e.txt
+
       - name: Run checks
         run: make check
+
+      - name: Run dbt Core end-to-end test
+        run: make dbt-e2e

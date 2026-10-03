@@ -7,15 +7,16 @@ use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, parse_analysis_manifest,
-    select_targets, to_bundle_json, to_openlineage_json, AnalysisBundle,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error as ProtocolError, InputAnalysisError,
-    ManifestInputSource, ManifestOutputScope, OpenLineageExportError, RelationCatalog,
-    RelationContext, SqlInput, TargetSelectionError,
+    analyze_configured_inputs_with_catalog, analyze_dbt_manifest, analyze_inputs,
+    parse_analysis_manifest, parse_dbt_manifest, select_targets, to_bundle_json,
+    to_openlineage_json, AnalysisBundle, ConfiguredInputAnalysisError, ConfiguredSqlInput,
+    DbtManifestError, Error as ProtocolError, InputAnalysisError, ManifestInputSource,
+    ManifestOutputScope, OpenLineageExportError, RelationCatalog, RelationContext, SqlInput,
+    TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>]\n\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, optional catalog metadata, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, --target, and --catalog-relation as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nUse --default-catalog and --default-schema to qualify otherwise partial direct-input relation identities before graph linking.\nLegacy positional SQL remains one input. If no direct input or manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--dbt-manifest <path> | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]... [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>]\n\nUse --dbt-manifest for a dbt manifest.json artifact. SQL models use dbt unique IDs, relation metadata, dependency metadata, and compiled SQL while the core analyzer remains unchanged.\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, optional catalog metadata, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, --target, and --catalog-relation as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nUse --default-catalog and --default-schema to qualify otherwise partial direct-input relation identities before graph linking.\nLegacy positional SQL remains one input. If no direct input, dbt manifest, or analysis manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser. dbt analysis uses the artifact adapter_type as the sqlparser dialect name.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -34,15 +35,26 @@ fn run() -> Result<(), CliError> {
             Ok(())
         }
         Command::Analyze(options) => {
-            let bundle = match options.manifest.as_deref() {
-                Some(path) => analyze_manifest(path)?,
-                None => {
-                    let inputs = read_inputs(&options)?;
-                    let (dialect_name, dialect) = select_dialect(&options.dialect)?;
-                    let bundle =
-                        analyze_direct_inputs(&inputs, &options, &dialect_name, dialect.as_ref())?;
+            let bundle = match options.dbt_manifest.as_deref() {
+                Some(path) => {
+                    let bundle = analyze_dbt_artifact(path)?;
                     select_targets(&bundle, &options.targets).map_err(CliError::TargetSelection)?
                 }
+                None => match options.manifest.as_deref() {
+                    Some(path) => analyze_manifest(path)?,
+                    None => {
+                        let inputs = read_inputs(&options)?;
+                        let (dialect_name, dialect) = select_dialect(&options.dialect)?;
+                        let bundle = analyze_direct_inputs(
+                            &inputs,
+                            &options,
+                            &dialect_name,
+                            dialect.as_ref(),
+                        )?;
+                        select_targets(&bundle, &options.targets)
+                            .map_err(CliError::TargetSelection)?
+                    }
+                },
             };
             let output = match options.format {
                 OutputFormat::Protocol => to_bundle_json(&bundle),
@@ -76,6 +88,7 @@ enum Command {
 #[derive(Debug)]
 struct Options {
     dialect: String,
+    dbt_manifest: Option<PathBuf>,
     manifest: Option<PathBuf>,
     format: OutputFormat,
     namespace: Option<String>,
@@ -104,6 +117,7 @@ enum InputArgument {
 fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, CliError> {
     let mut dialect = "generic".to_string();
     let mut dialect_supplied = false;
+    let mut dbt_manifest = None;
     let mut manifest = None;
     let mut format = OutputFormat::Protocol;
     let mut namespace = None;
@@ -130,6 +144,21 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                     .next()
                     .ok_or_else(|| CliError::Input("missing value for --dialect".to_string()))?;
                 dialect_supplied = true;
+            }
+            "--dbt-manifest" => {
+                let path = arguments.next().ok_or_else(|| {
+                    CliError::Input("missing value for --dbt-manifest".to_string())
+                })?;
+                if path.trim().is_empty() {
+                    return Err(CliError::Input(
+                        "--dbt-manifest cannot be empty".to_string(),
+                    ));
+                }
+                if dbt_manifest.replace(PathBuf::from(path)).is_some() {
+                    return Err(CliError::Input(
+                        "--dbt-manifest may be supplied only once".to_string(),
+                    ));
+                }
             }
             "--manifest" => {
                 let path = arguments
@@ -243,6 +272,12 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         ));
     }
 
+    if manifest.is_some() && dbt_manifest.is_some() {
+        return Err(CliError::Input(
+            "--manifest cannot be combined with --dbt-manifest".to_string(),
+        ));
+    }
+
     if manifest.is_some()
         && (dialect_supplied
             || !catalog_relations.is_empty()
@@ -254,6 +289,20 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
     {
         return Err(CliError::Input(
             "--manifest cannot be combined with --dialect, --catalog-relation, --default-catalog, --default-schema, --target, --sql, --file, --dir, or positional SQL"
+                .to_string(),
+        ));
+    }
+
+    if dbt_manifest.is_some()
+        && (dialect_supplied
+            || !catalog_relations.is_empty()
+            || default_catalog.is_some()
+            || default_schema.is_some()
+            || !inputs.is_empty()
+            || !positional_sql.is_empty())
+    {
+        return Err(CliError::Input(
+            "--dbt-manifest cannot be combined with --dialect, --catalog-relation, --default-catalog, --default-schema, --sql, --file, --dir, or positional SQL"
                 .to_string(),
         ));
     }
@@ -288,6 +337,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
 
     Ok(Command::Analyze(Box::new(Options {
         dialect,
+        dbt_manifest,
         manifest,
         format,
         namespace,
@@ -299,6 +349,25 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         inputs,
         positional_sql,
     })))
+}
+
+fn analyze_dbt_artifact(path: &Path) -> Result<AnalysisBundle, CliError> {
+    let manifest_json = fs::read_to_string(path).map_err(|error| {
+        CliError::Input(format!(
+            "dbt manifest '{}': failed to read: {error}",
+            path.display()
+        ))
+    })?;
+    let manifest = parse_dbt_manifest(&manifest_json).map_err(CliError::DbtManifest)?;
+    let (dialect_name, dialect) = select_dialect(manifest.adapter_type()).map_err(|error| {
+        CliError::Input(format!(
+            "dbt manifest '{}': adapter_type '{}': {error}",
+            path.display(),
+            manifest.adapter_type()
+        ))
+    })?;
+
+    analyze_dbt_manifest(&manifest, &dialect_name, dialect.as_ref()).map_err(CliError::DbtManifest)
 }
 
 struct LoadedManifestInput {
@@ -662,6 +731,7 @@ enum CliError {
     Input(String),
     InputProtocol(InputAnalysisError),
     ConfiguredInputProtocol(ConfiguredInputAnalysisError),
+    DbtManifest(DbtManifestError),
     TargetSelection(TargetSelectionError),
     OpenLineageExport(OpenLineageExportError),
 }
@@ -678,6 +748,16 @@ impl CliError {
                 Some(error) => match error.error() {
                     ProtocolError::Parse(_) => ExitCode::from(3),
                     _ => ExitCode::from(4),
+                },
+                None => ExitCode::from(2),
+            },
+            Self::DbtManifest(error) => match error.analysis_error() {
+                Some(error) => match error.input_error() {
+                    Some(error) => match error.error() {
+                        ProtocolError::Parse(_) => ExitCode::from(3),
+                        _ => ExitCode::from(4),
+                    },
+                    None => ExitCode::from(2),
                 },
                 None => ExitCode::from(2),
             },
@@ -699,6 +779,16 @@ impl fmt::Display for CliError {
                 Some(input_error) => match input_error.error() {
                     ProtocolError::Parse(_) => write!(formatter, "{error}"),
                     _ => write!(formatter, "analysis error: {error}"),
+                },
+                None => write!(formatter, "input error: {error}"),
+            },
+            Self::DbtManifest(error) => match error.analysis_error() {
+                Some(analysis_error) => match analysis_error.input_error() {
+                    Some(input_error) => match input_error.error() {
+                        ProtocolError::Parse(_) => write!(formatter, "{error}"),
+                        _ => write!(formatter, "analysis error: {error}"),
+                    },
+                    None => write!(formatter, "input error: {error}"),
                 },
                 None => write!(formatter, "input error: {error}"),
             },

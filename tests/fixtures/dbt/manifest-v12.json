@@ -1,0 +1,51 @@
+{
+  "metadata": {
+    "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+    "dbt_version": "1.11.8",
+    "adapter_type": "postgres"
+  },
+  "nodes": {
+    "model.demo.final_orders": {
+      "unique_id": "model.demo.final_orders",
+      "resource_type": "model",
+      "relation_name": "warehouse.analytics.final_orders",
+      "database": "warehouse",
+      "schema": "analytics",
+      "original_file_path": "models/final_orders.sql",
+      "language": "sql",
+      "raw_code": "select id, amount from {{ ref('stg_orders') }} where amount <= 50",
+      "compiled_code": "SELECT id, amount FROM warehouse.analytics.stg_orders WHERE amount <= 50",
+      "depends_on": {
+        "nodes": [
+          "model.demo.stg_orders"
+        ]
+      }
+    },
+    "model.demo.stg_orders": {
+      "unique_id": "model.demo.stg_orders",
+      "resource_type": "model",
+      "relation_name": "warehouse.analytics.stg_orders",
+      "database": "warehouse",
+      "schema": "analytics",
+      "original_file_path": "models/stg_orders.sql",
+      "language": "sql",
+      "raw_code": "select id, amount from {{ source('raw', 'orders') }} where amount >= 10 and amount <= 100",
+      "compiled_code": "SELECT id, amount FROM warehouse.raw.orders WHERE amount >= 10 AND amount <= 100",
+      "depends_on": {
+        "nodes": [
+          "source.demo.orders"
+        ]
+      }
+    }
+  },
+  "sources": {
+    "source.demo.orders": {
+      "unique_id": "source.demo.orders",
+      "resource_type": "source",
+      "relation_name": "warehouse.raw.orders",
+      "database": "warehouse",
+      "schema": "raw",
+      "name": "orders"
+    }
+  }
+}
