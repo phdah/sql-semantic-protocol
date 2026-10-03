@@ -422,15 +422,9 @@ pub(crate) fn refine_column_domains_from_equalities(
         .collect()
 }
 
-fn refine_equalities(
-    predicate: &Predicate,
-    sources: &[SourceRelation],
-    domains: &mut DomainMap,
-) {
+fn refine_equalities(predicate: &Predicate, sources: &[SourceRelation], domains: &mut DomainMap) {
     match predicate {
-        Predicate::Comparison(comparison)
-            if comparison.operator() == ComparisonOperator::Eq =>
-        {
+        Predicate::Comparison(comparison) if comparison.operator() == ComparisonOperator::Eq => {
             let (Expression::Column(left), Expression::Column(right)) =
                 (comparison.left(), comparison.right())
             else {
