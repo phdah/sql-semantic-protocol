@@ -195,7 +195,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         .collect::<BTreeSet<_>>();
     assert_eq!(
         actual_models,
-        expected_models.into_iter().collect::<BTreeSet<_>>()
+        expected_models.iter().copied().collect::<BTreeSet<_>>()
     );
 
     for model in &expected_models {
