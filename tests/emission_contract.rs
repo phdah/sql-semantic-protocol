@@ -55,7 +55,7 @@ fn simple_query_emission_matches_active_protocol_fixture() {
     let actual: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("emitted protocol should be JSON");
     let expected: serde_json::Value =
-        serde_json::from_str(include_str!("../examples/protocol-v0.2-simple.json"))
+        serde_json::from_str(include_str!("../examples/protocol-simple.json"))
             .expect("active protocol fixture should be JSON");
 
     assert_eq!(actual, expected);
@@ -76,6 +76,6 @@ fn single_and_collection_emission_use_the_same_active_contract() {
     let collection_json: serde_json::Value =
         serde_json::from_str(&to_bundle_json(&collection)).expect("collection should emit JSON");
 
-    assert_eq!(single_json["protocol_version"], "0.2.0");
+    assert_eq!(single_json["protocol_version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(single_json, collection_json);
 }

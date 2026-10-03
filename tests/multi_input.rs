@@ -15,7 +15,7 @@ fn multiple_inputs_preserve_caller_order_and_generated_identity() {
     let bundle =
         analyze_inputs(&inputs, "generic", &dialect).expect("multiple inputs should be analyzed");
 
-    assert_eq!(bundle.protocol_version(), "0.2.0");
+    assert_eq!(bundle.protocol_version(), env!("CARGO_PKG_VERSION"));
     assert_eq!(bundle.inputs().len(), 3);
     assert_eq!(bundle.inputs()[0].id(), "input-0001");
     assert_eq!(bundle.inputs()[1].id(), "input-0002");
@@ -56,7 +56,7 @@ fn multi_input_json_is_one_deterministic_protocol_document() {
 
     let json: serde_json::Value =
         serde_json::from_str(&first).expect("bundle output should be valid JSON");
-    assert_eq!(json["protocol_version"], "0.2.0");
+    assert_eq!(json["protocol_version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(json["inputs"][0]["id"], "input-0001");
     assert_eq!(json["inputs"][0]["source"]["kind"], "inline");
     assert_eq!(json["inputs"][1]["id"], "input-0002");

@@ -1,0 +1,189 @@
+{
+  "protocol_version": "0.2.0",
+  "inputs": [
+    {
+      "id": "input-0001",
+      "source": {
+        "kind": "inline",
+        "label": null
+      },
+      "dialect": "generic",
+      "statements": [
+        {
+          "kind": "query",
+          "sources": [
+            {
+              "kind": "relation",
+              "name": "t",
+              "alias": null
+            }
+          ],
+          "dependencies": [
+            "t"
+          ],
+          "joins": [],
+          "predicates": {
+            "where": {
+              "kind": "comparison",
+              "left": {
+                "kind": "column",
+                "relation": "t",
+                "name": "a"
+              },
+              "operator": "gt",
+              "right": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 10
+              }
+            },
+            "having": null,
+            "qualify": null
+          },
+          "column_domains": [
+            {
+              "column": {
+                "relation": "t",
+                "name": "a"
+              },
+              "domain": {
+                "kind": "ranges",
+                "ranges": [
+                  {
+                    "lower": {
+                      "value": {
+                        "kind": "literal",
+                        "type": "integer",
+                        "value": 10
+                      },
+                      "inclusive": false
+                    },
+                    "upper": null
+                  }
+                ]
+              }
+            }
+          ],
+          "output": {
+            "columns": [
+              {
+                "name": "b",
+                "expression": {
+                  "kind": "column",
+                  "relation": "t",
+                  "name": "b"
+                },
+                "lineage": [
+                  {
+                    "relation": "t",
+                    "column": "b"
+                  }
+                ],
+                "domain": {
+                  "kind": "unbounded"
+                }
+              }
+            ]
+          },
+          "diagnostics": []
+        }
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer-0001",
+      "statement": {
+        "input_id": "input-0001",
+        "statement_index": 0
+      },
+      "produces": [
+        {
+          "kind": "anonymous",
+          "layer_id": "layer-0001"
+        }
+      ],
+      "consumes": [
+        "t"
+      ],
+      "composed_semantics": {
+        "status": "resolved",
+        "dependencies": [
+          "t"
+        ],
+        "column_domains": [
+          {
+            "column": {
+              "relation": "t",
+              "name": "a"
+            },
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    },
+                    "inclusive": false
+                  },
+                  "upper": null
+                }
+              ]
+            }
+          }
+        ],
+        "output": {
+          "columns": [
+            {
+              "name": "b",
+              "expression": {
+                "kind": "column",
+                "relation": "t",
+                "name": "b"
+              },
+              "lineage": [
+                {
+                  "relation": "t",
+                  "column": "b"
+                }
+              ],
+              "domain": {
+                "kind": "unbounded"
+              }
+            }
+          ]
+        },
+        "diagnostics": []
+      }
+    }
+  ],
+  "graph": {
+    "edges": [
+      {
+        "consumer_layer_id": "layer-0001",
+        "relation": "t",
+        "resolution": "external",
+        "producer_layer_ids": []
+      }
+    ],
+    "components": [
+      {
+        "id": "component-0001",
+        "layer_ids": [
+          "layer-0001"
+        ],
+        "final_outcomes": [
+          {
+            "kind": "anonymous",
+            "layer_id": "layer-0001"
+          }
+        ],
+        "diagnostics": []
+      }
+    ],
+    "diagnostics": []
+  }
+}
