@@ -27,7 +27,8 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_configured_inputs, analyze_configured_inputs_with_catalog, analyze_inputs,
+    analyze_configured_inputs, analyze_configured_inputs_with_catalog,
+    analyze_configured_inputs_with_resolver, analyze_inputs,
     select_targets, AnalysisBundle, AnalysisGraph,
     AnalyzedInput, ComposedSemantics, CompositionDiagnostic, CompositionFailureReason,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
@@ -43,6 +44,7 @@ pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
+    RelationResolver,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
