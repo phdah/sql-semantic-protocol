@@ -1,1 +1,2026 @@
-[]
+[
+  {
+    "composed_semantics": {
+      "column_domains": [],
+      "dependencies": [],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "set",
+              "mode": "include",
+              "values": [
+                {
+                  "kind": "literal",
+                  "type": "integer",
+                  "value": 42
+                }
+              ]
+            },
+            "expression": {
+              "kind": "binary",
+              "left": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 40
+              },
+              "operator": "add",
+              "right": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 2
+              }
+            },
+            "lineage": [],
+            "name": "answer"
+          },
+          {
+            "domain": {
+              "kind": "set",
+              "mode": "include",
+              "values": [
+                {
+                  "kind": "literal",
+                  "type": "boolean",
+                  "value": true
+                }
+              ]
+            },
+            "expression": {
+              "kind": "literal",
+              "type": "boolean",
+              "value": true
+            },
+            "lineage": [],
+            "name": "enabled"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.constant_domains",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"constant_domains\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"orders\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "order_id",
+              "relation": "derived"
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          },
+          {
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    }
+                  },
+                  "upper": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 100
+                    }
+                  }
+                }
+              ]
+            },
+            "expression": {
+              "kind": "column",
+              "name": "amount",
+              "relation": "derived"
+            },
+            "lineage": [
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "amount"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.derived_orders",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"derived_orders\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "active",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "boolean",
+                "value": true
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "score",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 0
+                  }
+                },
+                "upper": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 20
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 80
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"customers\"",
+        "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"returns\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "set-operation output value is determined positionally by multiple query branches"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "region",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "region",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+              },
+              {
+                "column": "region",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "region"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.distinct_regions",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"distinct_regions\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "active",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "boolean",
+                "value": true
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "score",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 0
+                  }
+                },
+                "upper": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 20
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 80
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"customers\"",
+        "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"returns\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "set-operation output value is determined positionally by multiple query branches"
+            },
+            "expression": {
+              "kind": "unknown",
+              "reason": "set-operation output value is determined positionally by multiple query branches"
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+              },
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              },
+              {
+                "column": "order_id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+              }
+            ],
+            "name": "order_id"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.excluded_order_ids",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"excluded_order_ids\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 50
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"orders\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "order_id",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          },
+          {
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    }
+                  },
+                  "upper": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 50
+                    }
+                  }
+                }
+              ]
+            },
+            "expression": {
+              "kind": "column",
+              "name": "amount",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "amount"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.final_orders",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"final_orders\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"orders\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "order_id",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          },
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "customer_id",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "customer_id"
+          },
+          {
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    }
+                  },
+                  "upper": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 100
+                    }
+                  }
+                }
+              ]
+            },
+            "expression": {
+              "kind": "column",
+              "name": "amount",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "amount"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.incremental_append_orders",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"incremental_append_orders\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"orders\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "order_id",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          },
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "customer_id",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "customer_id"
+          },
+          {
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    }
+                  },
+                  "upper": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 100
+                    }
+                  }
+                }
+              ]
+            },
+            "expression": {
+              "kind": "column",
+              "name": "amount",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "amount"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.incremental_merge_orders",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"incremental_merge_orders\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"returns\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "reason",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "reason",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+              }
+            ],
+            "name": "reason"
+          },
+          {
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 0
+                    }
+                  },
+                  "upper": null
+                }
+              ]
+            },
+            "expression": {
+              "arguments": [
+                {
+                  "kind": "wildcard"
+                }
+              ],
+              "distinct": false,
+              "filter": null,
+              "kind": "aggregate_function",
+              "name": "count"
+            },
+            "lineage": [],
+            "name": "return_count"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.independent_return_summary",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"independent_return_summary\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "active",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "boolean",
+                "value": true
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "score",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 0
+                  }
+                },
+                "upper": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 20
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 80
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"customers\"",
+        "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"returns\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "set-operation output value is determined positionally by multiple query branches"
+            },
+            "expression": {
+              "kind": "unknown",
+              "reason": "set-operation output value is determined positionally by multiple query branches"
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+              },
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.intersected_order_ids",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"intersected_order_ids\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"orders\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "order_id",
+              "relation": "o"
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          },
+          {
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    }
+                  },
+                  "upper": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 100
+                    }
+                  }
+                }
+              ]
+            },
+            "expression": {
+              "kind": "column",
+              "name": "adjusted_amount",
+              "relation": "derived"
+            },
+            "lineage": [
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "adjusted_amount"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.lateral_orders",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"lateral_orders\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"orders\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "order_id",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          },
+          {
+            "domain": {
+              "kind": "unbounded"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "customer_id",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "customer_id"
+          },
+          {
+            "domain": {
+              "kind": "ranges",
+              "ranges": [
+                {
+                  "lower": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 10
+                    }
+                  },
+                  "upper": {
+                    "inclusive": true,
+                    "value": {
+                      "kind": "literal",
+                      "type": "integer",
+                      "value": 100
+                    }
+                  }
+                }
+              ]
+            },
+            "expression": {
+              "kind": "column",
+              "name": "amount",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "amount"
+          },
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "window-function output domain is not known safely"
+            },
+            "expression": {
+              "function": {
+                "arguments": [
+                  {
+                    "kind": "column",
+                    "name": "amount",
+                    "relation": null
+                  }
+                ],
+                "distinct": false,
+                "kind": "function",
+                "name": "sum"
+              },
+              "kind": "window_function",
+              "window": {
+                "frame": {
+                  "end": {
+                    "kind": "current_row"
+                  },
+                  "start": {
+                    "kind": "unbounded_preceding"
+                  },
+                  "units": "rows"
+                },
+                "name": "customer_window",
+                "order_by": [
+                  {
+                    "ascending": null,
+                    "expression": {
+                      "kind": "column",
+                      "name": "created_at",
+                      "relation": null
+                    },
+                    "nulls_first": null
+                  }
+                ],
+                "partition_by": [
+                  {
+                    "kind": "column",
+                    "name": "customer_id",
+                    "relation": null
+                  }
+                ]
+              }
+            },
+            "lineage": [
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              },
+              {
+                "column": "created_at",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              },
+              {
+                "column": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "running_amount"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.named_window_orders",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"named_window_orders\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"orders\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "set-operation output value is determined positionally by multiple query branches"
+            },
+            "expression": {
+              "kind": "unknown",
+              "reason": "set-operation output value is determined positionally by multiple query branches"
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+              },
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.ordered_limited_union",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ordered_limited_union\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "active",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "boolean",
+                "value": true
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "score",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 0
+                  }
+                },
+                "upper": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 20
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 80
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"customers\"",
+        "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"returns\""
+      ],
+      "diagnostics": [],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "set-operation output value is determined positionally by multiple query branches"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "region",
+              "relation": null
+            },
+            "lineage": [
+              {
+                "column": "region",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+              },
+              {
+                "column": "region",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "region"
+          },
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "aggregate output domain is not known safely"
+            },
+            "expression": {
+              "arguments": [
+                {
+                  "expression": {
+                    "kind": "column",
+                    "name": "amount",
+                    "relation": null
+                  },
+                  "kind": "expression"
+                }
+              ],
+              "distinct": false,
+              "filter": null,
+              "kind": "aggregate_function",
+              "name": "sum"
+            },
+            "lineage": [
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+              },
+              {
+                "column": "amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "total_amount"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.rollup_orders",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"rollup_orders\""
+  },
+  {
+    "composed_semantics": {
+      "column_domains": [
+        {
+          "column": {
+            "name": "active",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "boolean",
+                "value": true
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "score",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 0
+                  }
+                },
+                "upper": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 20
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 80
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "amount",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "ranges",
+            "ranges": [
+              {
+                "lower": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 10
+                  }
+                },
+                "upper": {
+                  "inclusive": true,
+                  "value": {
+                    "kind": "literal",
+                    "type": "integer",
+                    "value": 100
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "status",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
+          }
+        }
+      ],
+      "dependencies": [
+        "\"dbt-core-e2e\".\"raw\".\"customers\"",
+        "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"orders\"",
+        "\"dbt-core-e2e\".\"raw\".\"returns\""
+      ],
+      "diagnostics": [
+        {
+          "code": "non_invertible_column_transform",
+          "input_id": "model.sql_semantic_protocol_e2e.subquery_orders",
+          "layer_id": "layer-0020",
+          "message": "column '\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\".customer_id' is produced by a non-identity expression",
+          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+          "severity": "warning"
+        },
+        {
+          "code": "non_invertible_column_transform",
+          "input_id": "model.sql_semantic_protocol_e2e.subquery_orders",
+          "layer_id": "layer-0020",
+          "message": "column '\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\".order_id' is produced by a non-identity expression",
+          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+          "severity": "warning"
+        }
+      ],
+      "output": {
+        "columns": [
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "IN subquery cannot be reduced safely to a scalar domain"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "order_id",
+              "relation": "o"
+            },
+            "lineage": [
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+              },
+              {
+                "column": "id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "order_id"
+          },
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "IN subquery cannot be reduced safely to a scalar domain"
+            },
+            "expression": {
+              "kind": "column",
+              "name": "customer_id",
+              "relation": "o"
+            },
+            "lineage": [
+              {
+                "column": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+              },
+              {
+                "column": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+              }
+            ],
+            "name": "customer_id"
+          },
+          {
+            "domain": {
+              "kind": "unknown",
+              "reason": "aggregate output domain is not known safely"
+            },
+            "expression": {
+              "kind": "scalar_subquery",
+              "subquery": {
+                "correlations": [
+                  {
+                    "column": "order_id",
+                    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                  }
+                ],
+                "dependencies": [
+                  "\"dbt-core-e2e\".\"raw\".\"returns\""
+                ],
+                "diagnostics": [],
+                "output": {
+                  "columns": [
+                    {
+                      "domain": {
+                        "kind": "unknown",
+                        "reason": "aggregate output domain is not known safely"
+                      },
+                      "expression": {
+                        "arguments": [
+                          {
+                            "expression": {
+                              "kind": "column",
+                              "name": "refund_amount",
+                              "relation": "r"
+                            },
+                            "kind": "expression"
+                          }
+                        ],
+                        "distinct": false,
+                        "filter": null,
+                        "kind": "aggregate_function",
+                        "name": "max"
+                      },
+                      "lineage": [
+                        {
+                          "column": "refund_amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                        }
+                      ],
+                      "name": "max(r.refund_amount)"
+                    }
+                  ]
+                },
+                "predicates": {
+                  "having": null,
+                  "qualify": null,
+                  "where": {
+                    "kind": "comparison",
+                    "left": {
+                      "kind": "column",
+                      "name": "order_id",
+                      "relation": "r"
+                    },
+                    "operator": "eq",
+                    "right": {
+                      "kind": "column",
+                      "name": "order_id",
+                      "relation": "o"
+                    }
+                  }
+                }
+              }
+            },
+            "lineage": [
+              {
+                "column": "refund_amount",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+              }
+            ],
+            "name": "max_refund"
+          }
+        ]
+      },
+      "status": "resolved"
+    },
+    "model_id": "model.sql_semantic_protocol_e2e.subquery_orders",
+    "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"subquery_orders\""
+  }
+]
