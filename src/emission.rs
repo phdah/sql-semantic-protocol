@@ -12,7 +12,8 @@ use crate::bundle::{
 };
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
-    BinaryExpression, Bound, ColumnDomain, ColumnExpression, ColumnRef, ComparisonPredicate,
+    BinaryExpression, Bound, CaseExpression, ColumnDomain, ColumnExpression, ColumnRef,
+    ComparisonPredicate,
     Diagnostic, ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression,
     InPredicate, InSubqueryPredicate, IsNullPredicate, Join, LineageSource, LiteralExpression,
     LiteralValue, LogicalPredicate, NotPredicate, Output, OutputColumn, Predicate, Predicates,
@@ -337,6 +338,7 @@ fn output_column_to_value(column: &OutputColumn) -> Value {
     json!({
         "name": column.name(),
         "expression": expression_to_value(column.expression()),
+        "domain": value_domain_to_value(column.domain()),
         "lineage": column
             .lineage()
             .iter()
@@ -550,12 +552,37 @@ fn expression_to_value(expression: &Expression) -> Value {
             aggregate_function_expression_to_value(expression)
         }
         Expression::WindowFunction(expression) => window_function_expression_to_value(expression),
+        Expression::Case(expression) => case_expression_to_value(expression),
+        Expression::BooleanPredicate(predicate) => json!({
+            "kind": "boolean_predicate",
+            "predicate": predicate_to_value(predicate)
+        }),
         Expression::Unary(expression) => unary_expression_to_value(expression),
         Expression::Binary(expression) => binary_expression_to_value(expression),
         Expression::ScalarSubquery(expression) => scalar_subquery_expression_to_value(expression),
         Expression::Unknown(semantic) => unknown_semantic_to_value(semantic),
         Expression::Unsupported(semantic) => unsupported_semantic_to_value(semantic),
     }
+}
+
+fn case_expression_to_value(expression: &CaseExpression) -> Value {
+    json!({
+        "kind": "case",
+        "operand": expression
+            .operand()
+            .map_or(Value::Null, expression_to_value),
+        "branches": expression
+            .branches()
+            .iter()
+            .map(|branch| json!({
+                "condition": expression_to_value(branch.condition()),
+                "result": expression_to_value(branch.result())
+            }))
+            .collect::<Vec<_>>(),
+        "else_result": expression
+            .else_result()
+            .map_or(Value::Null, expression_to_value)
+    })
 }
 
 fn scalar_subquery_expression_to_value(expression: &ScalarSubqueryExpression) -> Value {
