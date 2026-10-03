@@ -101,7 +101,7 @@ fn unknown_target_is_an_explicit_error() {
 
     assert_eq!(error.target(), "orders");
     assert!(matches!(
-        error,
+        &error,
         TargetSelectionError::UnknownTarget { .. }
     ));
     assert_eq!(
