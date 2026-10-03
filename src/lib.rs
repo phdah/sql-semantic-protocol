@@ -28,12 +28,12 @@ use sqlparser::dialect::Dialect;
 pub use analysis::AnalysisError;
 pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
-    analyze_configured_inputs_with_resolver, analyze_inputs,
-    select_targets, AnalysisBundle, AnalysisGraph,
-    AnalyzedInput, ComposedSemantics, CompositionDiagnostic, CompositionFailureReason,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
-    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
-    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
+    AnalysisGraph, AnalyzedInput, ComposedSemantics, CompositionDiagnostic,
+    CompositionFailureReason, ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef,
+    GraphComponent, GraphEdge, InputAnalysisError, RelationResolution, ResolvedComposedSemantics,
+    SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
+    UnresolvedComposedSemantics,
 };
 pub use emission::{to_bundle_json, to_json};
 pub use manifest::{
@@ -42,10 +42,6 @@ pub use manifest::{
 };
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
-pub use relation::{
-    RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
-    RelationResolver,
-};
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression, ColumnDomain,
@@ -61,6 +57,10 @@ pub use protocol::{
     ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
     WindowOrderExpression, WindowSpecification, WriteKind, WriteOperation, WriteValue,
     PROTOCOL_VERSION,
+};
+pub use relation::{
+    RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
+    RelationResolver,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.
