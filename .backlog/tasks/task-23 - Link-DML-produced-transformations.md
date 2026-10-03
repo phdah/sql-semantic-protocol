@@ -1,7 +1,7 @@
 ---
 id: TASK-23
 title: Link DML-produced transformations
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
