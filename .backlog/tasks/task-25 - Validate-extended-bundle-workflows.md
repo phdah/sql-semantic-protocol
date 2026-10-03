@@ -29,5 +29,6 @@ This task is the completion gate for the broader project target: callers can des
 - [ ] Both final and all-layer modes work with explicit targets.
 - [ ] Direct API/CLI inputs and equivalent manifest inputs produce equivalent semantics.
 - [ ] Unsupported or partially knowable DML semantics remain visible rather than being overstated.
+- [ ] End-to-end validation asserts outcome value domains and interval bounds for final outputs and DML-written values, not only parsing, graph connectivity, or lineage.
 - [ ] Repeated analysis produces byte-identical protocol JSON.
 - [ ] README documentation shows the complete large-bundle workflow including manifest, targets, mixed dialects, and optional catalog context.
