@@ -76,6 +76,18 @@ The protocol always contains every analyzed transformation outcome. Each entry i
 
 Protocol generation does not have a final-only or all-layer mode. Choosing whether to consume every layer, only terminal outcomes, or a particular named outcome is a consumer concern. This keeps one complete protocol document as the source of truth and lets downstream applications, including test-data generators, choose the outcomes they need without re-analysis.
 
+## Output value domains
+
+Every projected output column carries a `domain` independently from the query's source-column `column_domains`. Source-column domains describe values required to satisfy predicates. Output domains describe values the produced expression can return.
+
+The analyzer derives output domains only when SQL semantics make them safe. Literals produce singleton domains, boolean-valued expressions produce `{false, true}`, `COUNT` is bounded below by zero, and `ROW_NUMBER` is bounded below by one. A `QUALIFY` predicate on a projected alias can further refine that derived domain without incorrectly constraining the physical columns used by the expression.
+
+CASE expressions use expression kind `case` and preserve an optional simple-CASE operand, ordered WHEN/THEN branches, and the optional ELSE expression. Their output domains are the conservative union of branch result domains. A CASE without ELSE includes SQL NULL as a possible result.
+
+Safe constant integer unary and arithmetic expressions are evaluated with checked arithmetic. Functions, transforms, or bounds that cannot be proven safely remain explicit `unknown` output domains rather than guessed.
+
+Output domains are preserved through multi-layer composition. A direct projection or rename of an upstream derived column retains the producer's domain in the composed final outcome.
+
 ## OpenLineage export
 
 The SQL Semantic Protocol remains the authoritative semantic representation. The library function `to_openlineage_json` maps resolved named layers to OpenLineage 2.0.2 DatasetEvents using the current Lineage Dataset Facet for dataset-level and field-level lineage. OpenLineage types do not appear in the core protocol model.
@@ -323,6 +335,9 @@ the protocol still uses the active `0.2.0` envelope even though there is only on
                 "kind": "column",
                 "relation": "t",
                 "name": "b"
+              },
+              "domain": {
+                "kind": "unbounded"
               },
               "lineage": [
                 {
