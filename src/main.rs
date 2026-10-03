@@ -7,11 +7,11 @@ use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, parse_analysis_manifest, select_targets,
-    to_bundle_json, to_openlineage_json, AnalysisBundle, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, Error as ProtocolError, InputAnalysisError, ManifestInputSource,
-    ManifestOutputScope, OpenLineageExportError, RelationCatalog, RelationContext, SqlInput,
-    TargetSelectionError,
+    analyze_configured_inputs_with_catalog, analyze_inputs, parse_analysis_manifest,
+    select_targets, to_bundle_json, to_openlineage_json, AnalysisBundle,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error as ProtocolError, InputAnalysisError,
+    ManifestInputSource, ManifestOutputScope, OpenLineageExportError, RelationCatalog,
+    RelationContext, SqlInput, TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
@@ -434,7 +434,8 @@ fn analyze_direct_inputs(
         return analyze_inputs(inputs, dialect_name, dialect).map_err(CliError::InputProtocol);
     }
 
-    let relation_context = if options.default_catalog.is_some() || options.default_schema.is_some() {
+    let relation_context = if options.default_catalog.is_some() || options.default_schema.is_some()
+    {
         Some(
             RelationContext::new(
                 options.default_catalog.as_deref(),
@@ -457,12 +458,7 @@ fn analyze_direct_inputs(
     let identified = inputs
         .iter()
         .enumerate()
-        .map(|(index, input)| {
-            (
-                format!("input-{:0width$}", index + 1, width = width),
-                input,
-            )
-        })
+        .map(|(index, input)| (format!("input-{:0width$}", index + 1, width = width), input))
         .collect::<Vec<_>>();
     let configured = identified
         .iter()
