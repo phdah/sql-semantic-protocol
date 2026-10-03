@@ -409,7 +409,11 @@ pub fn analyze_dbt_manifest(
 
     let mut prepared = Vec::with_capacity(manifest.models.len());
     for model in &manifest.models {
-        let sql = format!("CREATE VIEW {} AS\n{}", model.relation_name, model.sql.trim());
+        let sql = format!(
+            "CREATE VIEW {} AS\n{}",
+            model.relation_name,
+            model.sql.trim()
+        );
         let input = match &model.original_file_path {
             Some(path) => SqlInput::file(path.clone(), sql),
             None => SqlInput::inline(sql),
@@ -651,10 +655,7 @@ fn parse_schema_version(schema_url: &str) -> Result<u32, DbtManifestError> {
         })
 }
 
-fn as_object<'a>(
-    value: &'a Value,
-    path: &str,
-) -> Result<&'a Map<String, Value>, DbtManifestError> {
+fn as_object<'a>(value: &'a Value, path: &str) -> Result<&'a Map<String, Value>, DbtManifestError> {
     value
         .as_object()
         .ok_or_else(|| invalid_field(path, "expected an object"))
