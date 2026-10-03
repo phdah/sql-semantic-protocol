@@ -55,6 +55,7 @@ pub trait RelationResolver {
 
 /// Scalar source-column types carried by catalog schema metadata.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[non_exhaustive]
 pub enum ScalarType {
     /// Signed integer values.
     Integer,
