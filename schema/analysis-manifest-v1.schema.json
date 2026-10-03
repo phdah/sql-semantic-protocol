@@ -5,7 +5,10 @@
   "description": "Declarative, parser-independent analysis request for SQL Semantic Protocol.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["manifest_version", "inputs"],
+  "required": [
+    "manifest_version",
+    "inputs"
+  ],
   "properties": {
     "manifest_version": {
       "const": "1"
@@ -15,7 +18,10 @@
       "default": "generic"
     },
     "output_scope": {
-      "enum": ["all", "targets"],
+      "enum": [
+        "all",
+        "targets"
+      ],
       "default": "all"
     },
     "targets": {
@@ -32,12 +38,25 @@
       "items": {
         "$ref": "#/$defs/input"
       }
+    },
+    "catalog_relations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": []
+    },
+    "relation_context": {
+      "$ref": "#/$defs/relationContext"
     }
   },
   "allOf": [
     {
       "if": {
-        "required": ["output_scope"],
+        "required": [
+          "output_scope"
+        ],
         "properties": {
           "output_scope": {
             "const": "targets"
@@ -45,7 +64,9 @@
         }
       },
       "then": {
-        "required": ["targets"],
+        "required": [
+          "targets"
+        ],
         "properties": {
           "targets": {
             "minItems": 1
@@ -71,7 +92,10 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "sql"],
+          "required": [
+            "id",
+            "sql"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/nonEmptyString"
@@ -81,13 +105,19 @@
             },
             "sql": {
               "$ref": "#/$defs/nonEmptyString"
+            },
+            "relation_context": {
+              "$ref": "#/$defs/relationContext"
             }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "file"],
+          "required": [
+            "id",
+            "file"
+          ],
           "properties": {
             "id": {
               "$ref": "#/$defs/nonEmptyString"
@@ -97,10 +127,26 @@
             },
             "file": {
               "$ref": "#/$defs/nonEmptyString"
+            },
+            "relation_context": {
+              "$ref": "#/$defs/relationContext"
             }
           }
         }
       ]
+    },
+    "relationContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "default_catalog": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "default_schema": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
     }
   }
 }
