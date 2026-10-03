@@ -69,7 +69,7 @@ fn run() -> Result<(), CliError> {
 
 #[derive(Debug)]
 enum Command {
-    Analyze(Options),
+    Analyze(Box<Options>),
     Help,
 }
 
@@ -286,7 +286,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         }
     }
 
-    Ok(Command::Analyze(Options {
+    Ok(Command::Analyze(Box::new(Options {
         dialect,
         manifest,
         format,
@@ -298,7 +298,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         targets,
         inputs,
         positional_sql,
-    }))
+    })))
 }
 
 struct LoadedManifestInput {
