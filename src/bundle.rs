@@ -12,6 +12,9 @@ use crate::protocol::{
     ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, WriteKind,
     PROTOCOL_VERSION,
 };
+use crate::relation::{
+    RelationCatalog, RelationContext, RelationResolutionError, RelationResolver,
+};
 use crate::{analyze_sql, Error};
 
 /// Source identity retained for one SQL input unit.
@@ -43,6 +46,7 @@ pub struct ConfiguredSqlInput<'a> {
     input: &'a SqlInput,
     dialect_name: &'a str,
     dialect: &'a dyn Dialect,
+    relation_context: Option<&'a RelationContext>,
 }
 
 impl<'a> ConfiguredSqlInput<'a> {
@@ -58,6 +62,7 @@ impl<'a> ConfiguredSqlInput<'a> {
             input,
             dialect_name,
             dialect,
+            relation_context: None,
         }
     }
 
@@ -79,6 +84,17 @@ impl<'a> ConfiguredSqlInput<'a> {
     /// Return the sqlparser dialect implementation used at the parsing boundary.
     pub fn dialect(&self) -> &dyn Dialect {
         self.dialect
+    }
+
+    /// Attach default catalog and schema context to this input.
+    pub fn with_relation_context(mut self, context: &'a RelationContext) -> Self {
+        self.relation_context = Some(context);
+        self
+    }
+
+    /// Return optional default catalog and schema context for this input.
+    pub fn relation_context(&self) -> Option<&RelationContext> {
+        self.relation_context
     }
 }
 
@@ -119,6 +135,7 @@ pub struct AnalyzedInput {
     id: String,
     source: SqlInputSource,
     dialect: String,
+    relation_context: Option<RelationContext>,
     statements: Vec<ProtocolStatement>,
 }
 
@@ -136,6 +153,11 @@ impl AnalyzedInput {
     /// Return the normalized dialect name supplied by the caller.
     pub fn dialect(&self) -> &str {
         &self.dialect
+    }
+
+    /// Return optional relation-resolution context supplied for this input.
+    pub fn relation_context(&self) -> Option<&RelationContext> {
+        self.relation_context.as_ref()
     }
 
     /// Return analyzed statements in source statement order.
@@ -514,6 +536,7 @@ pub struct TransformationLayer {
     statement_index: usize,
     produces: Vec<DatasetRef>,
     consumes: Vec<String>,
+    relation_identities: BTreeMap<String, String>,
     write_kind: Option<WriteKind>,
     composed_semantics: ComposedSemantics,
 }
@@ -553,6 +576,13 @@ impl TransformationLayer {
     pub fn composed_semantics(&self) -> &ComposedSemantics {
         &self.composed_semantics
     }
+
+    pub(crate) fn canonical_relation(&self, relation: &str) -> String {
+        self.relation_identities
+            .get(relation)
+            .cloned()
+            .unwrap_or_else(|| relation.to_string())
+    }
 }
 
 /// Multi-input analysis result with deterministic local layers and relation dependency graph.
@@ -590,6 +620,7 @@ impl AnalysisBundle {
             id: "input-0001".to_string(),
             source: SqlInputSource::Inline,
             dialect: protocol.source().dialect().to_string(),
+            relation_context: None,
             statements: protocol.statements().to_vec(),
         }];
 
@@ -597,23 +628,41 @@ impl AnalysisBundle {
     }
 
     fn from_inputs(inputs: Vec<AnalyzedInput>) -> Self {
-        let mut layers = build_layers(&inputs);
+        let catalog = RelationCatalog::default();
+        Self::from_inputs_with_resolver(inputs, &catalog)
+            .expect("empty resolver metadata preserves textual relation identities")
+    }
+
+    fn from_inputs_with_resolver(
+        inputs: Vec<AnalyzedInput>,
+        resolver: &dyn RelationResolver,
+    ) -> Result<Self, LayerBuildError> {
+        let mut layers = build_layers(&inputs, resolver)?;
         let graph = build_graph(&layers);
         let composed = crate::composition::compose_layers(&inputs, &layers, &graph);
         for (layer, semantics) in layers.iter_mut().zip(composed) {
             layer.composed_semantics = semantics;
         }
 
-        Self {
+        Ok(Self {
             protocol_version: PROTOCOL_VERSION,
             inputs,
             layers,
             graph,
-        }
+        })
     }
 }
 
-fn build_layers(inputs: &[AnalyzedInput]) -> Vec<TransformationLayer> {
+#[derive(Debug)]
+struct LayerBuildError {
+    input_id: String,
+    error: RelationResolutionError,
+}
+
+fn build_layers(
+    inputs: &[AnalyzedInput],
+    resolver: &dyn RelationResolver,
+) -> Result<Vec<TransformationLayer>, LayerBuildError> {
     let layer_count = inputs
         .iter()
         .flat_map(|input| input.statements())
@@ -632,12 +681,20 @@ fn build_layers(inputs: &[AnalyzedInput]) -> Vec<TransformationLayer> {
             let layer_id = format!("layer-{:0width$}", layer_number, width = width);
             let produces = match query.produced_relation() {
                 Some(name) => vec![DatasetRef::Relation {
-                    name: name.to_string(),
+                    name: resolve_relation(resolver, input, name)?,
                 }],
                 None => vec![DatasetRef::Anonymous {
                     layer_id: layer_id.clone(),
                 }],
             };
+
+            let mut relation_identities = BTreeMap::new();
+            let mut consumes = BTreeSet::new();
+            for relation in query.dependencies() {
+                let canonical = resolve_relation(resolver, input, relation)?;
+                relation_identities.insert(relation.clone(), canonical.clone());
+                consumes.insert(canonical);
+            }
 
             let composed_semantics = ComposedSemantics::pending(input.id(), &layer_id);
             layers.push(TransformationLayer {
@@ -645,14 +702,28 @@ fn build_layers(inputs: &[AnalyzedInput]) -> Vec<TransformationLayer> {
                 input_id: input.id().to_string(),
                 statement_index,
                 produces,
-                consumes: query.dependencies().to_vec(),
+                consumes: consumes.into_iter().collect(),
+                relation_identities,
                 write_kind: query.write().map(|write| write.kind()),
                 composed_semantics,
             });
         }
     }
 
-    layers
+    Ok(layers)
+}
+
+fn resolve_relation(
+    resolver: &dyn RelationResolver,
+    input: &AnalyzedInput,
+    relation: &str,
+) -> Result<String, LayerBuildError> {
+    resolver
+        .resolve_relation(relation, input.dialect(), input.relation_context())
+        .map_err(|error| LayerBuildError {
+            input_id: input.id().to_string(),
+            error,
+        })
 }
 
 fn build_graph(layers: &[TransformationLayer]) -> AnalysisGraph {
@@ -1256,6 +1327,13 @@ pub enum ConfiguredInputAnalysisError {
     },
     /// SQL parsing or semantic analysis failed for one configured input.
     Input(InputAnalysisError),
+    /// Caller-supplied relation metadata could not resolve one relation safely.
+    RelationResolution {
+        /// Stable input identifier whose relation could not be resolved.
+        input_id: String,
+        /// Relation-resolution failure.
+        error: RelationResolutionError,
+    },
 }
 
 impl ConfiguredInputAnalysisError {
@@ -1263,7 +1341,9 @@ impl ConfiguredInputAnalysisError {
     pub fn input_error(&self) -> Option<&InputAnalysisError> {
         match self {
             Self::Input(error) => Some(error),
-            Self::InvalidInputId { .. } | Self::DuplicateInputId { .. } => None,
+            Self::InvalidInputId { .. }
+            | Self::DuplicateInputId { .. }
+            | Self::RelationResolution { .. } => None,
         }
     }
 }
@@ -1278,6 +1358,9 @@ impl fmt::Display for ConfiguredInputAnalysisError {
                 write!(formatter, "configured input id '{id}' is duplicated")
             }
             Self::Input(error) => write!(formatter, "{error}"),
+            Self::RelationResolution { input_id, error } => {
+                write!(formatter, "configured input '{input_id}': {error}")
+            }
         }
     }
 }
@@ -1286,6 +1369,7 @@ impl std::error::Error for ConfiguredInputAnalysisError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Input(error) => Some(error),
+            Self::RelationResolution { error, .. } => Some(error),
             Self::InvalidInputId { .. } | Self::DuplicateInputId { .. } => None,
         }
     }
@@ -1296,6 +1380,7 @@ fn analyze_input(
     input: &SqlInput,
     dialect_name: &str,
     dialect: &dyn Dialect,
+    relation_context: Option<RelationContext>,
 ) -> Result<AnalyzedInput, InputAnalysisError> {
     let protocol =
         analyze_sql(input.sql(), dialect_name, dialect).map_err(|error| InputAnalysisError {
@@ -1308,6 +1393,7 @@ fn analyze_input(
         id: input_id,
         source: input.source().clone(),
         dialect: dialect_name.to_string(),
+        relation_context,
         statements: protocol.statements().to_vec(),
     })
 }
@@ -1326,7 +1412,7 @@ pub fn analyze_inputs(
 
     for (index, input) in inputs.iter().enumerate() {
         let input_id = format!("input-{:0width$}", index + 1, width = width);
-        analyzed_inputs.push(analyze_input(input_id, input, dialect_name, dialect)?);
+        analyzed_inputs.push(analyze_input(input_id, input, dialect_name, dialect, None)?);
     }
 
     Ok(AnalysisBundle::from_inputs(analyzed_inputs))
@@ -1339,6 +1425,30 @@ pub fn analyze_inputs(
 /// the parsing boundary.
 pub fn analyze_configured_inputs(
     inputs: &[ConfiguredSqlInput<'_>],
+) -> Result<AnalysisBundle, ConfiguredInputAnalysisError> {
+    let catalog = RelationCatalog::default();
+    analyze_configured_inputs_with_catalog(inputs, &catalog)
+}
+
+/// Analyze configured inputs with optional canonical catalog metadata.
+///
+/// Per-input default catalog/schema context is taken from each `ConfiguredSqlInput`. The catalog
+/// can additionally resolve unique partially qualified names and detect ambiguous identities.
+pub fn analyze_configured_inputs_with_catalog(
+    inputs: &[ConfiguredSqlInput<'_>],
+    catalog: &RelationCatalog,
+) -> Result<AnalysisBundle, ConfiguredInputAnalysisError> {
+    analyze_configured_inputs_with_resolver(inputs, catalog)
+}
+
+/// Analyze configured inputs with a caller-supplied relation resolver implementation.
+///
+/// This is the integration boundary for database catalogs or other metadata providers. Resolver
+/// implementations remain independent of sqlparser AST types and may canonicalize relation
+/// identity only from the textual SQL reference plus explicitly supplied metadata.
+pub fn analyze_configured_inputs_with_resolver(
+    inputs: &[ConfiguredSqlInput<'_>],
+    resolver: &dyn RelationResolver,
 ) -> Result<AnalysisBundle, ConfiguredInputAnalysisError> {
     let mut seen_ids = BTreeSet::new();
     let mut analyzed_inputs = Vec::with_capacity(inputs.len());
@@ -1359,10 +1469,16 @@ pub fn analyze_configured_inputs(
             configured.input(),
             configured.dialect_name(),
             configured.dialect(),
+            configured.relation_context().cloned(),
         )
         .map_err(ConfiguredInputAnalysisError::Input)?;
         analyzed_inputs.push(analyzed);
     }
 
-    Ok(AnalysisBundle::from_inputs(analyzed_inputs))
+    AnalysisBundle::from_inputs_with_resolver(analyzed_inputs, resolver).map_err(|failure| {
+        ConfiguredInputAnalysisError::RelationResolution {
+            input_id: failure.input_id,
+            error: failure.error,
+        }
+    })
 }

@@ -2,6 +2,7 @@
 //!
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
+//! - analyze_configured_inputs_with_catalog adds optional catalog/schema-aware relation resolution.
 //! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
 //! - parse_analysis_manifest validates the versioned declarative analysis-manifest contract.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
@@ -18,6 +19,7 @@ mod manifest;
 mod openlineage;
 mod parser;
 pub mod protocol;
+mod relation;
 
 use std::fmt;
 
@@ -25,11 +27,13 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_configured_inputs, analyze_inputs, select_targets, AnalysisBundle, AnalysisGraph,
-    AnalyzedInput, ComposedSemantics, CompositionDiagnostic, CompositionFailureReason,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
-    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
-    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    analyze_configured_inputs, analyze_configured_inputs_with_catalog,
+    analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
+    AnalysisGraph, AnalyzedInput, ComposedSemantics, CompositionDiagnostic,
+    CompositionFailureReason, ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef,
+    GraphComponent, GraphEdge, InputAnalysisError, RelationResolution, ResolvedComposedSemantics,
+    SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
+    UnresolvedComposedSemantics,
 };
 pub use emission::{to_bundle_json, to_json};
 pub use manifest::{
@@ -53,6 +57,10 @@ pub use protocol::{
     ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
     WindowOrderExpression, WindowSpecification, WriteKind, WriteOperation, WriteValue,
     PROTOCOL_VERSION,
+};
+pub use relation::{
+    RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
+    RelationResolver,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.

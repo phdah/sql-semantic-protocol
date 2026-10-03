@@ -277,7 +277,10 @@ impl<'a> Composer<'a> {
         };
 
         match edge.resolution() {
-            RelationResolution::External => Ok(source.clone()),
+            RelationResolution::External => Ok(LineageSource::new(
+                edge.relation().to_string(),
+                source.column().to_string(),
+            )),
             RelationResolution::Resolved => {
                 let Some(producer_id) = edge.producer_layer_ids().first() else {
                     return Err(composition_error(
@@ -475,7 +478,10 @@ impl<'a> Composer<'a> {
         };
 
         match edge.resolution() {
-            RelationResolution::External => Ok(vec![source.clone()]),
+            RelationResolution::External => Ok(vec![LineageSource::new(
+                edge.relation().to_string(),
+                source.column().to_string(),
+            )]),
             RelationResolution::Resolved => {
                 let Some(producer_id) = edge.producer_layer_ids().first() else {
                     return Err(composition_error(
@@ -547,8 +553,11 @@ impl<'a> Composer<'a> {
     }
 
     fn edge_for_source(&self, consumer_layer_id: &str, relation: &str) -> Option<&GraphEdge> {
+        let consumer = self.layer_by_id(consumer_layer_id)?;
+        let canonical_relation = consumer.canonical_relation(relation);
         self.graph.edges().iter().find(|edge| {
-            edge.consumer_layer_id() == consumer_layer_id && edge.relation() == relation
+            edge.consumer_layer_id() == consumer_layer_id
+                && edge.relation() == canonical_relation.as_str()
         })
     }
 }
