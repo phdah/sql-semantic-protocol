@@ -33,3 +33,5 @@ This task is intentionally scheduled after the complete generic bundle workflow 
 - [x] An equivalent workload supplied through the dbt adapter and through the generic analysis inputs produces equivalent protocol semantics where the available information is equivalent.
 - [x] README documentation shows how to generate protocol output from a dbt project artifact and clearly describes the adapter's scope and non-goals.
 - [x] CI runs a complete dbt Core project end to end, generates a real manifest artifact, consumes it through the CLI, and verifies graph and outcome-domain semantics.
+- [x] The dbt Core end-to-end fixture covers every currently supported semantic feature class that can appear in dbt model `compiled_code`, with representative outcome-domain assertions; dbt-generated INSERT/MERGE materialization SQL is exercised by real incremental runs and its statement semantics remain covered by the direct Rust DML suite because dbt does not store that generated DML as model `compiled_code`.
+- [x] End-to-end dbt assertions are implemented in Rust; no project-owned Python test harness is required.
