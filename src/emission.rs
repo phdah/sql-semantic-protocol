@@ -13,14 +13,14 @@ use crate::bundle::{
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, Bound, CaseExpression, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonPredicate,
-    Diagnostic, ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression,
-    InPredicate, InSubqueryPredicate, IsNullPredicate, Join, LineageSource, LiteralExpression,
-    LiteralValue, LogicalPredicate, NotPredicate, Output, OutputColumn, Predicate, Predicates,
-    Protocol, ProtocolStatement, QueryStatement, RelationRef, ScalarSubqueryExpression, SetOperand,
-    SetOperation, SourceRelation, SubquerySemantics, UnaryExpression, UnknownSemantic,
-    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
-    WindowFrameBound, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
+    ComparisonPredicate, Diagnostic, ExistsPredicate, Expression, FunctionExpression, GroupBy,
+    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, LineageSource,
+    LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output, OutputColumn,
+    Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
+    ScalarSubqueryExpression, SetOperand, SetOperation, SourceRelation, SubquerySemantics,
+    UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
+    ValueRange, WindowFrame, WindowFrameBound, WindowFunctionExpression, WindowOrderExpression,
+    WindowSpecification,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
