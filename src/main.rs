@@ -300,6 +300,13 @@ fn analyze_manifest(path: &Path) -> Result<AnalysisBundle, CliError> {
                 )?;
                 SqlInput::file(source_path.clone(), sql)
             }
+            _ => {
+                return Err(CliError::Input(format!(
+                    "manifest input {} ('{}') uses an unsupported source kind",
+                    index + 1,
+                    manifest_input.id()
+                )))
+            }
         };
 
         loaded.push(LoadedManifestInput {
@@ -329,6 +336,9 @@ fn analyze_manifest(path: &Path) -> Result<AnalysisBundle, CliError> {
         ManifestOutputScope::Targets => {
             select_targets(&bundle, manifest.targets()).map_err(CliError::TargetSelection)
         }
+        _ => Err(CliError::Input(
+            "manifest uses an unsupported output scope".to_string(),
+        )),
     }
 }
 
