@@ -42,7 +42,6 @@ fn cli_has_no_producer_side_output_scope() {
     assert!(String::from_utf8_lossy(&output.stderr).contains("unknown option: --scope"));
 }
 
-
 fn produced_relation_names(json: &serde_json::Value) -> Vec<&str> {
     json["layers"]
         .as_array()
@@ -82,7 +81,10 @@ fn cli_target_keeps_target_and_required_ancestors() {
         vec!["stage.orders", "mart.orders"]
     );
     assert_eq!(json["inputs"].as_array().map(Vec::len), Some(3));
-    assert_eq!(json["graph"]["components"].as_array().map(Vec::len), Some(1));
+    assert_eq!(
+        json["graph"]["components"].as_array().map(Vec::len),
+        Some(1)
+    );
     assert_eq!(
         json["graph"]["components"][0]["final_outcomes"][0]["name"],
         "mart.orders"
@@ -118,7 +120,10 @@ fn cli_accepts_multiple_targets() {
         produced_relation_names(&json),
         vec!["stage.orders", "mart.orders", "mart.audit"]
     );
-    assert_eq!(json["graph"]["components"].as_array().map(Vec::len), Some(2));
+    assert_eq!(
+        json["graph"]["components"].as_array().map(Vec::len),
+        Some(2)
+    );
 }
 
 #[test]
