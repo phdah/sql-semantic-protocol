@@ -130,6 +130,16 @@ fn analyze_insert(insert: &SqlInsert) -> ProtocolStatement {
             "only INSERT INTO ... SELECT source semantics are supported",
         );
     };
+    if !matches!(
+        source.body.as_ref(),
+        SetExpr::Select(_) | SetExpr::Query(_) | SetExpr::SetOperation { .. }
+    ) {
+        return unsupported_write_statement(
+            "insert",
+            "unsupported_insert_source",
+            "only INSERT INTO ... SELECT source semantics are supported",
+        );
+    }
 
     if insert.overwrite
         || insert.replace_into
