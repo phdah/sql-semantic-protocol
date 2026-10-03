@@ -3,6 +3,7 @@
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
 //! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
+//! - parse_analysis_manifest validates the versioned declarative analysis-manifest contract.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
 //! - to_openlineage_json exports representable dataset and field lineage as OpenLineage DatasetEvents.
 //! - protocol contains the parser-independent public protocol model, including normalized
@@ -13,6 +14,7 @@ mod bundle;
 mod composition;
 mod domain;
 mod emission;
+mod manifest;
 mod openlineage;
 mod parser;
 pub mod protocol;
@@ -23,12 +25,17 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_inputs, select_targets, AnalysisBundle, AnalysisGraph, AnalyzedInput,
-    ComposedSemantics, CompositionDiagnostic, CompositionFailureReason, DatasetRef, GraphComponent,
-    GraphEdge, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
-    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    analyze_configured_inputs, analyze_inputs, select_targets, AnalysisBundle, AnalysisGraph,
+    AnalyzedInput, ComposedSemantics, CompositionDiagnostic, CompositionFailureReason,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
+    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
+    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use emission::{to_bundle_json, to_json};
+pub use manifest::{
+    parse_analysis_manifest, AnalysisManifest, ManifestError, ManifestInput, ManifestInputSource,
+    ManifestOutputScope, ANALYSIS_MANIFEST_VERSION,
+};
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
 pub use protocol::{

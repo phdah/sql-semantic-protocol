@@ -33,6 +33,54 @@ pub struct SqlInput {
     sql: String,
 }
 
+/// One SQL input with an explicit stable identity and caller-selected dialect.
+///
+/// This configured form is useful when input identity and dialect vary per unit, such as when an
+/// analysis request is loaded from a manifest. The dialect implementation remains caller-owned.
+pub struct ConfiguredSqlInput<'a> {
+    id: &'a str,
+    input: &'a SqlInput,
+    dialect_name: &'a str,
+    dialect: &'a dyn Dialect,
+}
+
+impl<'a> ConfiguredSqlInput<'a> {
+    /// Construct one configured SQL input.
+    pub fn new(
+        id: &'a str,
+        input: &'a SqlInput,
+        dialect_name: &'a str,
+        dialect: &'a dyn Dialect,
+    ) -> Self {
+        Self {
+            id,
+            input,
+            dialect_name,
+            dialect,
+        }
+    }
+
+    /// Return the stable input identifier supplied by the caller.
+    pub fn id(&self) -> &str {
+        self.id
+    }
+
+    /// Return the SQL input and source identity.
+    pub fn input(&self) -> &SqlInput {
+        self.input
+    }
+
+    /// Return the caller-visible dialect name.
+    pub fn dialect_name(&self) -> &str {
+        self.dialect_name
+    }
+
+    /// Return the sqlparser dialect implementation used at the parsing boundary.
+    pub fn dialect(&self) -> &dyn Dialect {
+        self.dialect
+    }
+}
+
 impl SqlInput {
     /// Construct an inline SQL input.
     pub fn inline(sql: impl Into<String>) -> Self {
@@ -1152,6 +1200,78 @@ impl std::error::Error for InputAnalysisError {
     }
 }
 
+/// Error produced before or during configured multi-input analysis.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum ConfiguredInputAnalysisError {
+    /// A configured input identifier is empty or whitespace-only.
+    InvalidInputId {
+        /// One-based input position in caller order.
+        position: usize,
+    },
+    /// More than one configured input uses the same stable identity.
+    DuplicateInputId {
+        /// Duplicated stable input identifier.
+        id: String,
+    },
+    /// SQL parsing or semantic analysis failed for one configured input.
+    Input(InputAnalysisError),
+}
+
+impl ConfiguredInputAnalysisError {
+    /// Return the underlying per-input analysis error when SQL processing failed.
+    pub fn input_error(&self) -> Option<&InputAnalysisError> {
+        match self {
+            Self::Input(error) => Some(error),
+            Self::InvalidInputId { .. } | Self::DuplicateInputId { .. } => None,
+        }
+    }
+}
+
+impl fmt::Display for ConfiguredInputAnalysisError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidInputId { position } => {
+                write!(formatter, "configured input {position} has an empty id")
+            }
+            Self::DuplicateInputId { id } => {
+                write!(formatter, "configured input id '{id}' is duplicated")
+            }
+            Self::Input(error) => write!(formatter, "{error}"),
+        }
+    }
+}
+
+impl std::error::Error for ConfiguredInputAnalysisError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Input(error) => Some(error),
+            Self::InvalidInputId { .. } | Self::DuplicateInputId { .. } => None,
+        }
+    }
+}
+
+fn analyze_input(
+    input_id: String,
+    input: &SqlInput,
+    dialect_name: &str,
+    dialect: &dyn Dialect,
+) -> Result<AnalyzedInput, InputAnalysisError> {
+    let protocol =
+        analyze_sql(input.sql(), dialect_name, dialect).map_err(|error| InputAnalysisError {
+            input_id: input_id.clone(),
+            source: input.source().clone(),
+            error,
+        })?;
+
+    Ok(AnalyzedInput {
+        id: input_id,
+        source: input.source().clone(),
+        dialect: dialect_name.to_string(),
+        statements: protocol.statements().to_vec(),
+    })
+}
+
 /// Parse and analyze an arbitrary number of SQL inputs using one caller-selected dialect.
 ///
 /// Inputs are analyzed in caller order. Generated IDs start at `input-0001`; the numeric width
@@ -1166,20 +1286,42 @@ pub fn analyze_inputs(
 
     for (index, input) in inputs.iter().enumerate() {
         let input_id = format!("input-{:0width$}", index + 1, width = width);
-        let protocol = analyze_sql(input.sql(), dialect_name, dialect).map_err(|error| {
-            InputAnalysisError {
-                input_id: input_id.clone(),
-                source: input.source().clone(),
-                error,
-            }
-        })?;
+        analyzed_inputs.push(analyze_input(input_id, input, dialect_name, dialect)?);
+    }
 
-        analyzed_inputs.push(AnalyzedInput {
-            id: input_id,
-            source: input.source().clone(),
-            dialect: dialect_name.to_string(),
-            statements: protocol.statements().to_vec(),
-        });
+    Ok(AnalysisBundle::from_inputs(analyzed_inputs))
+}
+
+/// Analyze inputs that each carry an explicit stable identity and dialect.
+///
+/// Input order remains significant for deterministic layer ordering. Identifiers must be non-empty
+/// and unique. Dialect implementations are supplied by the caller so sqlparser remains confined to
+/// the parsing boundary.
+pub fn analyze_configured_inputs(
+    inputs: &[ConfiguredSqlInput<'_>],
+) -> Result<AnalysisBundle, ConfiguredInputAnalysisError> {
+    let mut seen_ids = BTreeSet::new();
+    let mut analyzed_inputs = Vec::with_capacity(inputs.len());
+
+    for (index, configured) in inputs.iter().enumerate() {
+        let id = configured.id().trim();
+        if id.is_empty() {
+            return Err(ConfiguredInputAnalysisError::InvalidInputId {
+                position: index + 1,
+            });
+        }
+        if !seen_ids.insert(id.to_string()) {
+            return Err(ConfiguredInputAnalysisError::DuplicateInputId { id: id.to_string() });
+        }
+
+        let analyzed = analyze_input(
+            id.to_string(),
+            configured.input(),
+            configured.dialect_name(),
+            configured.dialect(),
+        )
+        .map_err(ConfiguredInputAnalysisError::Input)?;
+        analyzed_inputs.push(analyzed);
     }
 
     Ok(AnalysisBundle::from_inputs(analyzed_inputs))

@@ -7,12 +7,14 @@ use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
-    analyze_inputs, select_targets, to_bundle_json, to_openlineage_json, Error as ProtocolError,
-    InputAnalysisError, OpenLineageExportError, SqlInput, TargetSelectionError,
+    analyze_configured_inputs, analyze_inputs, parse_analysis_manifest, select_targets,
+    to_bundle_json, to_openlineage_json, AnalysisBundle, ConfiguredInputAnalysisError,
+    ConfiguredSqlInput, Error as ProtocolError, InputAnalysisError, ManifestInputSource,
+    ManifestOutputScope, OpenLineageExportError, SqlInput, TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dialect <name>] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]\n\nRepeat --sql, --file, --dir, and --target as needed. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no input is supplied, SQL is read from stdin.\nThe dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--manifest <path> | [--dialect <name>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>]\n\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, and --target as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nLegacy positional SQL remains one input. If no direct input or manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -31,13 +33,16 @@ fn run() -> Result<(), CliError> {
             Ok(())
         }
         Command::Analyze(options) => {
-            let inputs = read_inputs(&options)?;
-            let (dialect_name, dialect) = select_dialect(&options.dialect)?;
-
-            let bundle = analyze_inputs(&inputs, &dialect_name, dialect.as_ref())
-                .map_err(CliError::InputProtocol)?;
-            let bundle =
-                select_targets(&bundle, &options.targets).map_err(CliError::TargetSelection)?;
+            let bundle = match options.manifest.as_deref() {
+                Some(path) => analyze_manifest(path)?,
+                None => {
+                    let inputs = read_inputs(&options)?;
+                    let (dialect_name, dialect) = select_dialect(&options.dialect)?;
+                    let bundle = analyze_inputs(&inputs, &dialect_name, dialect.as_ref())
+                        .map_err(CliError::InputProtocol)?;
+                    select_targets(&bundle, &options.targets).map_err(CliError::TargetSelection)?
+                }
+            };
             let output = match options.format {
                 OutputFormat::Protocol => to_bundle_json(&bundle),
                 OutputFormat::OpenLineage => {
@@ -70,6 +75,7 @@ enum Command {
 #[derive(Debug)]
 struct Options {
     dialect: String,
+    manifest: Option<PathBuf>,
     format: OutputFormat,
     namespace: Option<String>,
     event_time: Option<String>,
@@ -93,6 +99,8 @@ enum InputArgument {
 
 fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, CliError> {
     let mut dialect = "generic".to_string();
+    let mut dialect_supplied = false;
+    let mut manifest = None;
     let mut format = OutputFormat::Protocol;
     let mut namespace = None;
     let mut event_time = None;
@@ -114,6 +122,20 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                 dialect = arguments
                     .next()
                     .ok_or_else(|| CliError::Input("missing value for --dialect".to_string()))?;
+                dialect_supplied = true;
+            }
+            "--manifest" => {
+                let path = arguments
+                    .next()
+                    .ok_or_else(|| CliError::Input("missing value for --manifest".to_string()))?;
+                if path.trim().is_empty() {
+                    return Err(CliError::Input("--manifest cannot be empty".to_string()));
+                }
+                if manifest.replace(PathBuf::from(path)).is_some() {
+                    return Err(CliError::Input(
+                        "--manifest may be supplied only once".to_string(),
+                    ));
+                }
             }
             "--format" => {
                 let value = arguments
@@ -181,6 +203,18 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         ));
     }
 
+    if manifest.is_some()
+        && (dialect_supplied
+            || !targets.is_empty()
+            || !inputs.is_empty()
+            || !positional_sql.is_empty())
+    {
+        return Err(CliError::Input(
+            "--manifest cannot be combined with --dialect, --target, --sql, --file, --dir, or positional SQL"
+                .to_string(),
+        ));
+    }
+
     match format {
         OutputFormat::Protocol => {
             if namespace.is_some() {
@@ -211,6 +245,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
 
     Ok(Command::Analyze(Options {
         dialect,
+        manifest,
         format,
         namespace,
         event_time,
@@ -218,6 +253,98 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         inputs,
         positional_sql,
     }))
+}
+
+struct LoadedManifestInput {
+    id: String,
+    input: SqlInput,
+    dialect_name: String,
+    dialect: Box<dyn Dialect>,
+}
+
+fn analyze_manifest(path: &Path) -> Result<AnalysisBundle, CliError> {
+    let manifest_json = fs::read_to_string(path).map_err(|error| {
+        CliError::Input(format!(
+            "manifest '{}': failed to read: {error}",
+            path.display()
+        ))
+    })?;
+    let manifest = parse_analysis_manifest(&manifest_json)
+        .map_err(|error| CliError::Input(format!("manifest '{}': {error}", path.display())))?;
+    let manifest_directory = path.parent().unwrap_or_else(|| Path::new("."));
+
+    let mut loaded = Vec::with_capacity(manifest.inputs().len());
+    for (index, manifest_input) in manifest.inputs().iter().enumerate() {
+        let (dialect_name, dialect) = select_dialect(manifest.dialect_for(manifest_input))?;
+        let input = match manifest_input.source() {
+            ManifestInputSource::Inline { sql } => SqlInput::inline(sql.clone()),
+            ManifestInputSource::File { path: source_path } => {
+                let declared_path = Path::new(source_path);
+                let resolved_path = if declared_path.is_absolute() {
+                    declared_path.to_path_buf()
+                } else {
+                    manifest_directory.join(declared_path)
+                };
+                let sql = fs::read_to_string(&resolved_path).map_err(|error| {
+                    CliError::Input(format!(
+                        "manifest input {} ('{}', file '{}'): failed to read '{}': {error}",
+                        index + 1,
+                        manifest_input.id(),
+                        source_path,
+                        resolved_path.display()
+                    ))
+                })?;
+                ensure_non_empty_sql(
+                    &sql,
+                    &format!(
+                        "manifest input {} ('{}', file '{}')",
+                        index + 1,
+                        manifest_input.id(),
+                        source_path
+                    ),
+                )?;
+                SqlInput::file(source_path.clone(), sql)
+            }
+            _ => {
+                return Err(CliError::Input(format!(
+                    "manifest input {} ('{}') uses an unsupported source kind",
+                    index + 1,
+                    manifest_input.id()
+                )))
+            }
+        };
+
+        loaded.push(LoadedManifestInput {
+            id: manifest_input.id().to_string(),
+            input,
+            dialect_name,
+            dialect,
+        });
+    }
+
+    let configured = loaded
+        .iter()
+        .map(|input| {
+            ConfiguredSqlInput::new(
+                &input.id,
+                &input.input,
+                &input.dialect_name,
+                input.dialect.as_ref(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let bundle =
+        analyze_configured_inputs(&configured).map_err(CliError::ConfiguredInputProtocol)?;
+
+    match manifest.output_scope() {
+        ManifestOutputScope::All => Ok(bundle),
+        ManifestOutputScope::Targets => {
+            select_targets(&bundle, manifest.targets()).map_err(CliError::TargetSelection)
+        }
+        _ => Err(CliError::Input(
+            "manifest uses an unsupported output scope".to_string(),
+        )),
+    }
 }
 
 fn read_inputs(options: &Options) -> Result<Vec<SqlInput>, CliError> {
@@ -406,6 +533,7 @@ fn select_dialect(name: &str) -> Result<(String, Box<dyn Dialect>), CliError> {
 enum CliError {
     Input(String),
     InputProtocol(InputAnalysisError),
+    ConfiguredInputProtocol(ConfiguredInputAnalysisError),
     TargetSelection(TargetSelectionError),
     OpenLineageExport(OpenLineageExportError),
 }
@@ -417,6 +545,13 @@ impl CliError {
             Self::InputProtocol(error) => match error.error() {
                 ProtocolError::Parse(_) => ExitCode::from(3),
                 _ => ExitCode::from(4),
+            },
+            Self::ConfiguredInputProtocol(error) => match error.input_error() {
+                Some(error) => match error.error() {
+                    ProtocolError::Parse(_) => ExitCode::from(3),
+                    _ => ExitCode::from(4),
+                },
+                None => ExitCode::from(2),
             },
             Self::TargetSelection(_) => ExitCode::from(2),
             Self::OpenLineageExport(_) => ExitCode::from(4),
@@ -431,6 +566,13 @@ impl fmt::Display for CliError {
             Self::InputProtocol(error) => match error.error() {
                 ProtocolError::Parse(_) => write!(formatter, "{error}"),
                 _ => write!(formatter, "analysis error: {error}"),
+            },
+            Self::ConfiguredInputProtocol(error) => match error.input_error() {
+                Some(input_error) => match input_error.error() {
+                    ProtocolError::Parse(_) => write!(formatter, "{error}"),
+                    _ => write!(formatter, "analysis error: {error}"),
+                },
+                None => write!(formatter, "input error: {error}"),
             },
             Self::TargetSelection(error) => write!(formatter, "input error: {error}"),
             Self::OpenLineageExport(error) => {
