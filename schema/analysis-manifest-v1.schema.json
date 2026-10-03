@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/phdah/sql-semantic-protocol/blob/main/schema/analysis-manifest-v1.schema.json",
+  "title": "SQL Semantic Protocol Analysis Manifest v1",
+  "description": "Declarative, parser-independent analysis request for SQL Semantic Protocol.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "inputs"],
+  "properties": {
+    "manifest_version": {
+      "const": "1"
+    },
+    "dialect": {
+      "$ref": "#/$defs/nonEmptyString",
+      "default": "generic"
+    },
+    "output_scope": {
+      "enum": ["all", "targets"],
+      "default": "all"
+    },
+    "targets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": []
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/input"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["output_scope"],
+        "properties": {
+          "output_scope": {
+            "const": "targets"
+          }
+        }
+      },
+      "then": {
+        "required": ["targets"],
+        "properties": {
+          "targets": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "targets": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "sql"],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "dialect": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "sql": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "file"],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "dialect": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "file": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
