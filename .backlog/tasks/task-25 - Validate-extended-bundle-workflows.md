@@ -25,10 +25,12 @@ This task is the completion gate for the broader project target: callers can des
 - [ ] A manifest-driven fixture contains multiple independent pipelines with mixed per-input dialects.
 - [ ] At least one pipeline combines CREATE TABLE/VIEW transformations with INSERT-select or MERGE semantics.
 - [ ] Catalog/schema context resolves otherwise ambiguous relation references deterministically.
+- [ ] Catalog/schema context is representable in the analysis manifest and accepted by the CLI, so catalog-aware relation resolution is available without calling the Rust library API directly.
+- [ ] CLI/manifest catalog context produces the same canonical relation identities, graph links, lineage, and composed output domains as equivalent direct Rust API configuration.
 - [ ] Explicit target selection returns only the requested target graphs while preserving all required upstream semantic composition.
 - [ ] Both final and all-layer modes work with explicit targets.
 - [ ] Direct API/CLI inputs and equivalent manifest inputs produce equivalent semantics.
 - [ ] Unsupported or partially knowable DML semantics remain visible rather than being overstated.
 - [ ] End-to-end validation asserts outcome value domains and interval bounds for final outputs and DML-written values, not only parsing, graph connectivity, or lineage.
 - [ ] Repeated analysis produces byte-identical protocol JSON.
-- [ ] README documentation shows the complete large-bundle workflow including manifest, targets, mixed dialects, and optional catalog context.
+- [ ] README documentation shows the complete large-bundle workflow including manifest, targets, mixed dialects, and optional catalog context, with a CLI example that supplies catalog/schema context.
