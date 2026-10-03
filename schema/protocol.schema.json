@@ -29,6 +29,13 @@
     },
     "graph": {
       "$ref": "#/$defs/graph"
+    },
+    "source_schemas": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/sourceSchema"
+      }
     }
   },
   "$defs": {
@@ -2112,6 +2119,46 @@
         },
         "value": {
           "$ref": "#/$defs/writeValue"
+        }
+      }
+    },
+    "schemaColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "type": {
+          "enum": [
+            "integer",
+            "boolean",
+            "timestamp",
+            "string"
+          ]
+        }
+      }
+    },
+    "sourceSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "columns"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/schemaColumn"
+          }
         }
       }
     }

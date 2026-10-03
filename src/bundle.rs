@@ -13,7 +13,7 @@ use crate::protocol::{
     PROTOCOL_VERSION,
 };
 use crate::relation::{
-    RelationCatalog, RelationContext, RelationResolutionError, RelationResolver,
+    RelationCatalog, RelationContext, RelationResolutionError, RelationResolver, RelationSchema,
 };
 use crate::{analyze_sql, Error};
 
@@ -592,6 +592,7 @@ pub struct AnalysisBundle {
     inputs: Vec<AnalyzedInput>,
     layers: Vec<TransformationLayer>,
     graph: AnalysisGraph,
+    source_schemas: Vec<RelationSchema>,
 }
 
 impl AnalysisBundle {
@@ -613,6 +614,11 @@ impl AnalysisBundle {
     /// Return the deterministic relation dependency graph across all layers.
     pub fn graph(&self) -> &AnalysisGraph {
         &self.graph
+    }
+
+    /// Return caller-supplied typed schemas for source relations.
+    pub fn source_schemas(&self) -> &[RelationSchema] {
+        &self.source_schemas
     }
 
     pub(crate) fn from_protocol(protocol: &Protocol) -> Self {
@@ -649,6 +655,7 @@ impl AnalysisBundle {
             inputs,
             layers,
             graph,
+            source_schemas: Vec::new(),
         })
     }
 }
@@ -1236,6 +1243,7 @@ pub fn select_targets(
         inputs: bundle.inputs.clone(),
         layers,
         graph,
+        source_schemas: bundle.source_schemas.clone(),
     })
 }
 
@@ -1438,7 +1446,9 @@ pub fn analyze_configured_inputs_with_catalog(
     inputs: &[ConfiguredSqlInput<'_>],
     catalog: &RelationCatalog,
 ) -> Result<AnalysisBundle, ConfiguredInputAnalysisError> {
-    analyze_configured_inputs_with_resolver(inputs, catalog)
+    let mut bundle = analyze_configured_inputs_with_resolver(inputs, catalog)?;
+    bundle.source_schemas = catalog.schemas().to_vec();
+    Ok(bundle)
 }
 
 /// Analyze configured inputs with a caller-supplied relation resolver implementation.

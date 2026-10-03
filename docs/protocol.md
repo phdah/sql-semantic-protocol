@@ -12,6 +12,21 @@ Implementations should preserve caller order and generate deterministic IDs when
 
 Inline source labels are optional. File sources retain their path. Raw SQL text is intentionally not part of the semantic protocol.
 
+## Source schemas
+
+Optional `source_schemas` metadata carries declared scalar types for physical source relations when
+the caller supplies catalog schema information. Each entry has a canonical relation identity and
+its columns in declared order. Scalar types are `integer`, `boolean`, `timestamp`, or `string`.
+
+This metadata is intentionally parser-independent. It exists so consumers such as test-data
+generators can interpret unbounded or literal-constrained source columns without maintaining a
+second SQL parser or private schema contract. When no typed schema metadata is supplied,
+`source_schemas` is omitted rather than inferred.
+
+Source schemas are evidence supplied by the caller; they do not weaken or replace analyzed value
+domains. Consumers combine the declared type with `composed_semantics.column_domains` and must
+still treat unknown, empty, or unresolved semantics explicitly.
+
 ## Transformation layers
 
 A `layer` points to exactly one statement through `input_id` plus zero-based `statement_index`. The layer records:

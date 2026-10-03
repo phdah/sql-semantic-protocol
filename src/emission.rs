@@ -72,12 +72,32 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         .map(transformation_layer_to_value)
         .collect::<Vec<_>>();
 
-    json!({
+    let mut value = json!({
         "protocol_version": bundle.protocol_version(),
         "inputs": inputs,
         "layers": layers,
         "graph": analysis_graph_to_value(bundle.graph())
-    })
+    });
+
+    if !bundle.source_schemas().is_empty() {
+        value["source_schemas"] = json!(bundle
+            .source_schemas()
+            .iter()
+            .map(|schema| {
+                json!({
+                    "relation": schema.relation(),
+                    "columns": schema.columns().iter().map(|column| {
+                        json!({
+                            "name": column.name(),
+                            "type": column.data_type().as_str()
+                        })
+                    }).collect::<Vec<_>>()
+                })
+            })
+            .collect::<Vec<_>>());
+    }
+
+    value
 }
 
 fn transformation_layer_to_value(layer: &TransformationLayer) -> Value {
