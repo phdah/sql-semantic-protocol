@@ -102,7 +102,14 @@
               }
             ]
           },
-          "diagnostics": []
+          "diagnostics": [],
+          "write": {
+            "target": "stage.orders",
+            "kind": "definition",
+            "target_columns": [],
+            "match_condition": null,
+            "merge_clauses": []
+          }
         }
       ]
     },
@@ -207,7 +214,14 @@
               }
             ]
           },
-          "diagnostics": []
+          "diagnostics": [],
+          "write": {
+            "target": "mart.orders",
+            "kind": "definition",
+            "target_columns": [],
+            "match_condition": null,
+            "merge_clauses": []
+          }
         }
       ]
     },
@@ -391,7 +405,8 @@
           ]
         },
         "diagnostics": []
-      }
+      },
+      "write_kind": "definition"
     },
     {
       "id": "layer-0002",
@@ -483,7 +498,8 @@
           ]
         },
         "diagnostics": []
-      }
+      },
+      "write_kind": "definition"
     },
     {
       "id": "layer-0003",
