@@ -70,6 +70,17 @@ Derived tables expose only their projected columns to the parent query while pre
 
 Table-producing sources whose output schema cannot yet be modeled safely, including unresolved table functions and UNNEST-like factors, remain explicit `unsupported_table_factor` diagnostics rather than being omitted or assigned invented columns.
 
+## Typed source schemas
+
+Consumers that need declared source datatypes can supply typed relation schemas through
+`RelationCatalog::from_schemas`. The resulting analysis bundle preserves those schemas under
+`source_schemas`, alongside the analyzed value domains. This allows consumers such as
+`sql-tdg` to generate unconstrained source columns without reparsing SQL or maintaining a
+separate datatype contract.
+
+The public `dialect_from_name` helper delegates dialect lookup to sqlparser while keeping simple
+consumers from adding a direct sqlparser dependency only to select a dialect.
+
 ## Outcome selection
 
 `analyze_inputs` always analyzes and composes the complete supplied bundle. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.
