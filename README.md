@@ -88,6 +88,25 @@ Safe constant integer unary and arithmetic expressions are evaluated with checke
 
 Output domains are preserved through multi-layer composition. A direct projection or rename of an upstream derived column retains the producer's domain in the composed final outcome.
 
+## Composed multi-input workflow
+
+One invocation can analyze related and unrelated transformations together. Query-backed DDL gives named layers that can be linked across inputs, while bare queries remain anonymous outcomes. The emitted protocol always contains every layer; terminal datasets are identified by `graph.components[].final_outcomes`, so consumers choose which outcomes to use without asking the producer to re-run analysis in a different scope.
+
+Inputs can mix inline SQL and files:
+
+```sh
+cargo run -- \
+  --dialect generic \
+  --file sql/stage_orders.sql \
+  --sql "CREATE TABLE core.ranked_orders AS SELECT order_id, customer_id, amount, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY created_at) AS rn FROM stage.orders QUALIFY rn <= 10" \
+  --file sql/customer_summary.sql \
+  --sql "CREATE TABLE mart.active_ids AS SELECT id FROM raw.active_accounts UNION ALL SELECT id FROM raw.legacy_accounts"
+```
+
+If `stage_orders.sql` produces `stage.orders`, the next statement consumes that exact relation, and a later `mart.customer_summary` layer composes through it to the physical leaf dependencies. The unrelated `mart.active_ids` transformation remains a separate graph component. Both components and all intermediate layers stay in the same deterministic protocol document.
+
+For a three-layer chain such as `raw.orders -> stage.orders -> core.ranked_orders -> mart.customer_summary`, the final layer retains transitive physical lineage and domains that can be propagated safely. For example, a `ROW_NUMBER()` output constrained by `QUALIFY rn <= 10` keeps the derived output domain `[1, 10]` while source-column constraints remain separate. CASE, grouping, nested subqueries, and set operations are represented in the same document when they occur in the supplied workload.
+
 ## OpenLineage export
 
 The SQL Semantic Protocol remains the authoritative semantic representation. The library function `to_openlineage_json` maps resolved named layers to OpenLineage 2.0.2 DatasetEvents using the current Lineage Dataset Facet for dataset-level and field-level lineage. OpenLineage types do not appear in the core protocol model.
