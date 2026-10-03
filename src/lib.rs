@@ -23,10 +23,10 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_inputs, AnalysisBundle, AnalysisGraph, AnalyzedInput, ComposedSemantics,
-    CompositionDiagnostic, CompositionFailureReason, DatasetRef, GraphComponent, GraphEdge,
-    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
-    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics, select_targets,
+    analyze_inputs, select_targets, AnalysisBundle, AnalysisGraph, AnalyzedInput,
+    ComposedSemantics, CompositionDiagnostic, CompositionFailureReason, DatasetRef, GraphComponent,
+    GraphEdge, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
+    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use emission::{to_bundle_json, to_json};
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
