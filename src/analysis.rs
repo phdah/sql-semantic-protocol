@@ -24,8 +24,8 @@ use sqlparser::ast::{
 };
 
 use crate::domain::{
-    derive_column_domains, intersect_domains, refine_column_domains_from_equalities, resolve_column,
-    union_domains,
+    derive_column_domains, intersect_domains, refine_column_domains_from_equalities,
+    resolve_column, union_domains,
 };
 use crate::parser::ParsedSql;
 use crate::protocol::{
@@ -296,13 +296,15 @@ fn analyze_merge_clause(
     });
 
     let branch_predicate = merge_branch_predicate(match_kind, match_condition, predicate.as_ref());
-    let branch_domains = branch_predicate.as_ref().map_or_else(Vec::new, |predicate| {
-        let domains = derive_column_domains(
-            &Predicates::new(Some(predicate.clone()), None, None),
-            sources,
-        );
-        refine_column_domains_from_equalities(domains, predicate, sources)
-    });
+    let branch_domains = branch_predicate
+        .as_ref()
+        .map_or_else(Vec::new, |predicate| {
+            let domains = derive_column_domains(
+                &Predicates::new(Some(predicate.clone()), None, None),
+                sources,
+            );
+            refine_column_domains_from_equalities(domains, predicate, sources)
+        });
 
     let action = match &clause.action {
         SqlMergeAction::Delete => ProtocolMergeAction::Delete,
@@ -319,8 +321,11 @@ fn analyze_merge_clause(
                     );
                     let expression =
                         analyze_expression_with_scope(&assignment.value, &[], &[], diagnostics);
-                    let domain =
-                        derive_expression_domain_with_column_domains(&expression, &branch_domains, sources);
+                    let domain = derive_expression_domain_with_column_domains(
+                        &expression,
+                        &branch_domains,
+                        sources,
+                    );
                     MergeAssignment::new(
                         assignment.target.to_string(),
                         WriteValue::new(expression, domain),
@@ -344,8 +349,12 @@ fn analyze_merge_clause(
                                     derived_index,
                                     dependencies,
                                 );
-                                let expression =
-                                    analyze_expression_with_scope(expression, &[], &[], diagnostics);
+                                let expression = analyze_expression_with_scope(
+                                    expression,
+                                    &[],
+                                    &[],
+                                    diagnostics,
+                                );
                                 let domain = derive_expression_domain_with_column_domains(
                                     &expression,
                                     &branch_domains,
