@@ -111,6 +111,41 @@ For a three-layer chain such as `raw.orders -> stage.orders -> core.ranked_order
 
 DML writes participate in the same graph without being mistaken for full relation definitions. `INSERT INTO ... SELECT` is modeled as an append: its source query output domains describe the values appended to the target, while a downstream reader links to that writer through a `partial` edge. `MERGE` records its target, source dependencies, match condition, and supported insert/update/delete clauses as a conditional mutation. Every MERGE value written by an UPDATE or INSERT carries its own conservative outcome domain. MATCHED branch predicates and equality conditions can therefore narrow written values to intervals when that is provable. The complete post-MERGE relation remains partial because untouched pre-existing rows are outside the statement's semantics.
 
+## Catalog-aware relation resolution
+
+Catalog metadata is optional. Without it, multi-input analysis keeps the existing conservative textual relation identities unchanged.
+
+For workloads where partially qualified names are not sufficient, configured inputs can carry a default catalog/schema context and analysis can use a parser-independent relation resolver. `RelationCatalog` is the built-in metadata implementation, while `RelationResolver` is the small integration contract for caller-owned catalog providers.
+
+```rust
+use sql_semantic_protocol::{
+    analyze_configured_inputs_with_catalog, ConfiguredSqlInput, RelationCatalog,
+    RelationContext, SqlInput,
+};
+use sqlparser::dialect::PostgreSqlDialect;
+
+let dialect = PostgreSqlDialect {};
+let context = RelationContext::new(Some("warehouse"), Some("analytics"))?;
+let catalog = RelationCatalog::new(&[
+    "warehouse.raw.orders",
+    "warehouse.analytics.orders",
+])?;
+
+let stage = SqlInput::inline(
+    "CREATE TABLE orders AS SELECT id FROM raw.orders WHERE id >= 1",
+);
+let configured = [
+    ConfiguredSqlInput::new("orders", &stage, "postgresql", &dialect)
+        .with_relation_context(&context),
+];
+
+let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)?;
+```
+
+Default catalog/schema context fills missing qualification before graph linking. If no context is supplied, a unique catalog suffix match can canonicalize a partially qualified reference. Multiple matches fail explicitly instead of selecting a producer arbitrarily. Canonical relation identities are then used by graph edges, transitive dependencies, physical lineage, and composed output-domain propagation.
+
+Quoted identifiers remain exact. For unquoted identifiers the resolver applies the dialect normalization needed for safe matching where that behavior is well-defined by the supported resolver: PostgreSQL and Redshift fold to lowercase, while ANSI and Snowflake fold to uppercase. Other dialects preserve unquoted spelling rather than applying a global case rule. Caller-supplied resolver implementations can provide different metadata behavior through the same parser-independent `RelationResolver` contract.
+
 ## Analysis manifests
 
 Large bundles can be declared in a versioned JSON manifest instead of repeating every analysis input and option on the command line. Manifest v1 is defined by [`schema/analysis-manifest-v1.schema.json`](schema/analysis-manifest-v1.schema.json) and documented in [`docs/analysis-manifest-v1.md`](docs/analysis-manifest-v1.md).
