@@ -226,19 +226,19 @@ fn validate_schema(
         }
     }
 
-    if let Some(minimum) = schema.get("minimum").and_then(Value::as_f64) {
-        let value = instance
-            .as_f64()
-            .ok_or_else(|| format!("{path}: minimum applies to a non-number"))?;
+    if let (Some(minimum), Some(value)) = (
+        schema.get("minimum").and_then(Value::as_f64),
+        instance.as_f64(),
+    ) {
         if value < minimum {
             return Err(format!("{path}: {value} is below minimum {minimum}"));
         }
     }
 
-    if let Some(min_length) = schema.get("minLength").and_then(Value::as_u64) {
-        let value = instance
-            .as_str()
-            .ok_or_else(|| format!("{path}: minLength applies to a non-string"))?;
+    if let (Some(min_length), Some(value)) = (
+        schema.get("minLength").and_then(Value::as_u64),
+        instance.as_str(),
+    ) {
         if value.chars().count() < min_length as usize {
             return Err(format!("{path}: string is shorter than {min_length}"));
         }
