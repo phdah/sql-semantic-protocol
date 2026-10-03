@@ -147,13 +147,20 @@ impl std::error::Error for ManifestError {}
 /// Parsing is pure: file contents and sqlparser dialect implementations are deliberately resolved
 /// by the caller after validation.
 pub fn parse_analysis_manifest(json: &str) -> Result<AnalysisManifest, ManifestError> {
-    let value = serde_json::from_str::<Value>(json).map_err(|error| ManifestError::InvalidJson {
-        message: error.to_string(),
-    })?;
+    let value =
+        serde_json::from_str::<Value>(json).map_err(|error| ManifestError::InvalidJson {
+            message: error.to_string(),
+        })?;
     let object = require_object(&value, "manifest")?;
     reject_unknown_fields(
         object,
-        &["manifest_version", "dialect", "output_scope", "targets", "inputs"],
+        &[
+            "manifest_version",
+            "dialect",
+            "output_scope",
+            "targets",
+            "inputs",
+        ],
         "manifest",
     )?;
 
@@ -185,7 +192,9 @@ pub fn parse_analysis_manifest(json: &str) -> Result<AnalysisManifest, ManifestE
             return invalid("manifest.targets requires output_scope 'targets'".to_string())
         }
         ManifestOutputScope::Targets if targets.is_empty() => {
-            return invalid("manifest.output_scope 'targets' requires at least one target".to_string())
+            return invalid(
+                "manifest.output_scope 'targets' requires at least one target".to_string(),
+            )
         }
         ManifestOutputScope::All | ManifestOutputScope::Targets => {}
     }
@@ -281,7 +290,9 @@ fn parse_input(value: &Value, position: usize) -> Result<ManifestInput, Manifest
             }
         }
         (Some(_), Some(_)) => {
-            return invalid(format!("{context} must specify exactly one of 'sql' or 'file'"))
+            return invalid(format!(
+                "{context} must specify exactly one of 'sql' or 'file'"
+            ))
         }
         (None, None) => {
             return invalid(format!("{context} must specify exactly one of 'sql' or 'file'"))
