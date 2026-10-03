@@ -1257,13 +1257,12 @@ fn analyze_input(
     dialect_name: &str,
     dialect: &dyn Dialect,
 ) -> Result<AnalyzedInput, InputAnalysisError> {
-    let protocol = analyze_sql(input.sql(), dialect_name, dialect).map_err(|error| {
-        InputAnalysisError {
+    let protocol =
+        analyze_sql(input.sql(), dialect_name, dialect).map_err(|error| InputAnalysisError {
             input_id: input_id.clone(),
             source: input.source().clone(),
             error,
-        }
-    })?;
+        })?;
 
     Ok(AnalyzedInput {
         id: input_id,
@@ -1312,9 +1311,7 @@ pub fn analyze_configured_inputs(
             });
         }
         if !seen_ids.insert(id.to_string()) {
-            return Err(ConfiguredInputAnalysisError::DuplicateInputId {
-                id: id.to_string(),
-            });
+            return Err(ConfiguredInputAnalysisError::DuplicateInputId { id: id.to_string() });
         }
 
         let analyzed = analyze_input(
