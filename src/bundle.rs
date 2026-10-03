@@ -12,7 +12,9 @@ use crate::protocol::{
     ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, WriteKind,
     PROTOCOL_VERSION,
 };
-use crate::relation::{RelationCatalog, RelationContext, RelationResolutionError};
+use crate::relation::{
+    RelationCatalog, RelationContext, RelationResolutionError, RelationResolver,
+};
 use crate::{analyze_sql, Error};
 
 /// Source identity retained for one SQL input unit.
@@ -627,15 +629,15 @@ impl AnalysisBundle {
 
     fn from_inputs(inputs: Vec<AnalyzedInput>) -> Self {
         let catalog = RelationCatalog::default();
-        Self::from_inputs_with_catalog(inputs, &catalog)
-            .expect("relation resolution without configured metadata cannot fail")
+        Self::from_inputs_with_resolver(inputs, &catalog)
+            .expect("empty resolver metadata preserves textual relation identities")
     }
 
-    fn from_inputs_with_catalog(
+    fn from_inputs_with_resolver(
         inputs: Vec<AnalyzedInput>,
-        catalog: &RelationCatalog,
+        resolver: &dyn RelationResolver,
     ) -> Result<Self, LayerBuildError> {
-        let mut layers = build_layers(&inputs, catalog)?;
+        let mut layers = build_layers(&inputs, resolver)?;
         let graph = build_graph(&layers);
         let composed = crate::composition::compose_layers(&inputs, &layers, &graph);
         for (layer, semantics) in layers.iter_mut().zip(composed) {
@@ -659,7 +661,7 @@ struct LayerBuildError {
 
 fn build_layers(
     inputs: &[AnalyzedInput],
-    catalog: &RelationCatalog,
+    resolver: &dyn RelationResolver,
 ) -> Result<Vec<TransformationLayer>, LayerBuildError> {
     let layer_count = inputs
         .iter()
@@ -679,7 +681,7 @@ fn build_layers(
             let layer_id = format!("layer-{:0width$}", layer_number, width = width);
             let produces = match query.produced_relation() {
                 Some(name) => vec![DatasetRef::Relation {
-                    name: resolve_relation(catalog, input, name)?,
+                    name: resolve_relation(resolver, input, name)?,
                 }],
                 None => vec![DatasetRef::Anonymous {
                     layer_id: layer_id.clone(),
@@ -689,7 +691,7 @@ fn build_layers(
             let mut relation_identities = BTreeMap::new();
             let mut consumes = BTreeSet::new();
             for relation in query.dependencies() {
-                let canonical = resolve_relation(catalog, input, relation)?;
+                let canonical = resolve_relation(resolver, input, relation)?;
                 relation_identities.insert(relation.clone(), canonical.clone());
                 consumes.insert(canonical);
             }
@@ -712,16 +714,12 @@ fn build_layers(
 }
 
 fn resolve_relation(
-    catalog: &RelationCatalog,
+    resolver: &dyn RelationResolver,
     input: &AnalyzedInput,
     relation: &str,
 ) -> Result<String, LayerBuildError> {
-    if catalog.is_empty() && input.relation_context().is_none() {
-        return Ok(relation.to_string());
-    }
-
-    catalog
-        .resolve(relation, input.dialect(), input.relation_context())
+    resolver
+        .resolve_relation(relation, input.dialect(), input.relation_context())
         .map_err(|error| LayerBuildError {
             input_id: input.id().to_string(),
             error,
@@ -1446,6 +1444,18 @@ pub fn analyze_configured_inputs_with_catalog(
     inputs: &[ConfiguredSqlInput<'_>],
     catalog: &RelationCatalog,
 ) -> Result<AnalysisBundle, ConfiguredInputAnalysisError> {
+    analyze_configured_inputs_with_resolver(inputs, catalog)
+}
+
+/// Analyze configured inputs with a caller-supplied relation resolver implementation.
+///
+/// This is the integration boundary for database catalogs or other metadata providers. Resolver
+/// implementations remain independent of sqlparser AST types and may canonicalize relation
+/// identity only from the textual SQL reference plus explicitly supplied metadata.
+pub fn analyze_configured_inputs_with_resolver(
+    inputs: &[ConfiguredSqlInput<'_>],
+    resolver: &dyn RelationResolver,
+) -> Result<AnalysisBundle, ConfiguredInputAnalysisError> {
     let mut seen_ids = BTreeSet::new();
     let mut analyzed_inputs = Vec::with_capacity(inputs.len());
 
@@ -1471,7 +1481,7 @@ pub fn analyze_configured_inputs_with_catalog(
         analyzed_inputs.push(analyzed);
     }
 
-    AnalysisBundle::from_inputs_with_catalog(analyzed_inputs, catalog).map_err(|failure| {
+    AnalysisBundle::from_inputs_with_resolver(analyzed_inputs, resolver).map_err(|failure| {
         ConfiguredInputAnalysisError::RelationResolution {
             input_id: failure.input_id,
             error: failure.error,
