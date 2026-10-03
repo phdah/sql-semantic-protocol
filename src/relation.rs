@@ -30,9 +30,7 @@ impl RelationContext {
 
     /// Return the configured default catalog using deterministic SQL identifier rendering.
     pub fn default_catalog(&self) -> Option<String> {
-        self.default_catalog
-            .as_ref()
-            .map(ParsedIdentifier::render)
+        self.default_catalog.as_ref().map(ParsedIdentifier::render)
     }
 
     /// Return the configured default schema using deterministic SQL identifier rendering.
@@ -82,11 +80,12 @@ impl RelationCatalog {
                 continue;
             }
 
-            let relation_parts =
-                parse_relation(canonical).map_err(|message| RelationMetadataError::InvalidRelation {
+            let relation_parts = parse_relation(canonical).map_err(|message| {
+                RelationMetadataError::InvalidRelation {
                     relation: canonical.to_string(),
                     message,
-                })?;
+                }
+            })?;
             parsed.push(CatalogRelation {
                 canonical: canonical.to_string(),
                 relation: relation_parts,
@@ -214,7 +213,10 @@ impl fmt::Display for RelationMetadataError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidRelation { relation, message } => {
-                write!(formatter, "invalid catalog relation '{relation}': {message}")
+                write!(
+                    formatter,
+                    "invalid catalog relation '{relation}': {message}"
+                )
             }
             Self::InvalidDefault {
                 field,
@@ -273,7 +275,10 @@ impl fmt::Display for RelationResolutionError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidReference { reference, message } => {
-                write!(formatter, "cannot resolve relation '{reference}': {message}")
+                write!(
+                    formatter,
+                    "cannot resolve relation '{reference}': {message}"
+                )
             }
             Self::Ambiguous {
                 reference,
@@ -366,11 +371,12 @@ fn parse_optional_identifier(
     let Some(value) = value else {
         return Ok(None);
     };
-    let parsed = parse_relation(value).map_err(|message| RelationMetadataError::InvalidDefault {
-        field: field.to_string(),
-        value: value.to_string(),
-        message,
-    })?;
+    let parsed =
+        parse_relation(value).map_err(|message| RelationMetadataError::InvalidDefault {
+            field: field.to_string(),
+            value: value.to_string(),
+            message,
+        })?;
     let [identifier] = parsed.parts.as_slice() else {
         return Err(RelationMetadataError::InvalidDefault {
             field: field.to_string(),
@@ -488,9 +494,7 @@ fn parse_unquoted_identifier(
         return Err("identifier cannot be empty".to_string());
     }
     if value.chars().any(char::is_whitespace) {
-        return Err(format!(
-            "unquoted identifier '{value}' contains whitespace"
-        ));
+        return Err(format!("unquoted identifier '{value}' contains whitespace"));
     }
 
     Ok(ParsedIdentifier {
@@ -532,10 +536,7 @@ fn parse_quoted_identifier(
     Err("unterminated quoted identifier".to_string())
 }
 
-fn parse_bracket_identifier(
-    chars: &[char],
-    index: &mut usize,
-) -> Result<ParsedIdentifier, String> {
+fn parse_bracket_identifier(chars: &[char], index: &mut usize) -> Result<ParsedIdentifier, String> {
     *index += 1;
     let mut value = String::new();
 
@@ -569,11 +570,9 @@ mod tests {
 
     #[test]
     fn postgres_unquoted_identifiers_fold_lowercase_but_quotes_do_not() {
-        let catalog = RelationCatalog::new(&[
-            "warehouse.public.orders",
-            "warehouse.public.\"Orders\"",
-        ])
-        .expect("catalog should be valid");
+        let catalog =
+            RelationCatalog::new(&["warehouse.public.orders", "warehouse.public.\"Orders\""])
+                .expect("catalog should be valid");
         let context = RelationContext::new(Some("warehouse"), Some("public"))
             .expect("context should be valid");
 
@@ -593,8 +592,8 @@ mod tests {
 
     #[test]
     fn snowflake_unquoted_identifiers_fold_uppercase() {
-        let catalog = RelationCatalog::new(&["WAREHOUSE.PUBLIC.ORDERS"])
-            .expect("catalog should be valid");
+        let catalog =
+            RelationCatalog::new(&["WAREHOUSE.PUBLIC.ORDERS"]).expect("catalog should be valid");
         let context = RelationContext::new(Some("warehouse"), Some("public"))
             .expect("context should be valid");
 
@@ -608,9 +607,8 @@ mod tests {
 
     #[test]
     fn partial_name_without_context_requires_unique_catalog_match() {
-        let catalog =
-            RelationCatalog::new(&["warehouse.sales.orders", "warehouse.finance.orders"])
-                .expect("catalog should be valid");
+        let catalog = RelationCatalog::new(&["warehouse.sales.orders", "warehouse.finance.orders"])
+            .expect("catalog should be valid");
 
         let error = catalog
             .resolve("orders", "postgresql", None)
