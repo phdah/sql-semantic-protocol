@@ -15,12 +15,12 @@ use crate::protocol::{
     BinaryExpression, Bound, CaseExpression, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonPredicate, Diagnostic, ExistsPredicate, Expression, FunctionExpression, GroupBy,
     GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, LineageSource,
-    LiteralExpression, LiteralValue, LogicalPredicate, NotPredicate, Output, OutputColumn,
-    Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement, RelationRef,
-    ScalarSubqueryExpression, SetOperand, SetOperation, SourceRelation, SubquerySemantics,
-    UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
-    ValueRange, WindowFrame, WindowFrameBound, WindowFunctionExpression, WindowOrderExpression,
-    WindowSpecification,
+    LiteralExpression, LiteralValue, LogicalPredicate, MergeAction, MergeClause, NotPredicate,
+    Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
+    RelationRef, ScalarSubqueryExpression, SetOperand, SetOperation, SourceRelation,
+    SubquerySemantics, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFunctionExpression,
+    WindowOrderExpression, WindowSpecification, WriteOperation,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
@@ -81,7 +81,7 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
 }
 
 fn transformation_layer_to_value(layer: &TransformationLayer) -> Value {
-    json!({
+    let mut value = json!({
         "id": layer.id(),
         "statement": {
             "input_id": layer.input_id(),
@@ -94,7 +94,13 @@ fn transformation_layer_to_value(layer: &TransformationLayer) -> Value {
             .collect::<Vec<_>>(),
         "consumes": layer.consumes(),
         "composed_semantics": composed_semantics_to_value(layer.composed_semantics())
-    })
+    });
+
+    if let Some(write_kind) = layer.write_kind() {
+        value["write_kind"] = json!(write_kind.as_str());
+    }
+
+    value
 }
 
 fn composed_semantics_to_value(semantics: &ComposedSemantics) -> Value {
@@ -262,7 +268,61 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
         value["set_operation"] = set_operation_to_value(set_operation);
     }
 
+    if let Some(write) = statement.write() {
+        value["write"] = write_operation_to_value(write);
+    }
+
     value
+}
+
+fn write_operation_to_value(write: &WriteOperation) -> Value {
+    json!({
+        "target": write.target(),
+        "kind": write.kind().as_str(),
+        "target_columns": write.target_columns(),
+        "match_condition": write.match_condition().map_or(Value::Null, predicate_to_value),
+        "merge_clauses": write
+            .merge_clauses()
+            .iter()
+            .map(merge_clause_to_value)
+            .collect::<Vec<_>>()
+    })
+}
+
+fn merge_clause_to_value(clause: &MergeClause) -> Value {
+    json!({
+        "match_kind": clause.match_kind().as_str(),
+        "predicate": clause.predicate().map_or(Value::Null, predicate_to_value),
+        "action": merge_action_to_value(clause.action())
+    })
+}
+
+fn merge_action_to_value(action: &MergeAction) -> Value {
+    match action {
+        MergeAction::Insert { columns, values } => json!({
+            "kind": "insert",
+            "columns": columns,
+            "values": values
+                .iter()
+                .map(|row| row.iter().map(expression_to_value).collect::<Vec<_>>())
+                .collect::<Vec<_>>()
+        }),
+        MergeAction::Update { assignments } => json!({
+            "kind": "update",
+            "assignments": assignments
+                .iter()
+                .map(|assignment| json!({
+                    "target": assignment.target(),
+                    "value": expression_to_value(assignment.value())
+                }))
+                .collect::<Vec<_>>()
+        }),
+        MergeAction::Delete => json!({ "kind": "delete" }),
+        MergeAction::Unsupported(semantic) => json!({
+            "kind": "unsupported",
+            "semantic": unsupported_semantic_to_value(semantic)
+        }),
+    }
 }
 
 fn aggregation_to_value(aggregation: &Aggregation) -> Value {
