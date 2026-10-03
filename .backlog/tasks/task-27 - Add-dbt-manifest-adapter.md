@@ -32,3 +32,4 @@ This task is intentionally scheduled after the complete generic bundle workflow 
 - [x] Tests cover multiple dbt models, model dependencies, configured relation names, at least one source/external dependency, and deterministic repeated emission.
 - [x] An equivalent workload supplied through the dbt adapter and through the generic analysis inputs produces equivalent protocol semantics where the available information is equivalent.
 - [x] README documentation shows how to generate protocol output from a dbt project artifact and clearly describes the adapter's scope and non-goals.
+- [x] CI runs a complete dbt Core project end to end, generates a real manifest artifact, consumes it through the CLI, and verifies graph and outcome-domain semantics.
