@@ -442,7 +442,7 @@ pub(crate) fn intersect_domains(left: &ValueDomain, right: &ValueDomain) -> Valu
     }
 }
 
-fn union_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
+pub(crate) fn union_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
     match (left, right) {
         (ValueDomain::Unbounded, _) | (_, ValueDomain::Unbounded) => ValueDomain::Unbounded,
         (ValueDomain::Empty, domain) | (domain, ValueDomain::Empty) => domain.clone(),
