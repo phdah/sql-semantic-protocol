@@ -1218,6 +1218,16 @@ pub enum ConfiguredInputAnalysisError {
     Input(InputAnalysisError),
 }
 
+impl ConfiguredInputAnalysisError {
+    /// Return the underlying per-input analysis error when SQL processing failed.
+    pub fn input_error(&self) -> Option<&InputAnalysisError> {
+        match self {
+            Self::Input(error) => Some(error),
+            Self::InvalidInputId { .. } | Self::DuplicateInputId { .. } => None,
+        }
+    }
+}
+
 impl fmt::Display for ConfiguredInputAnalysisError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
