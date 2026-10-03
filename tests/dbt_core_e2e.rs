@@ -63,6 +63,66 @@ fn layer_for_model<'a>(protocol: &'a Value, name: &str) -> &'a Value {
         .unwrap_or_else(|| panic!("missing protocol layer for {id}"))
 }
 
+fn produced_relation(layer: &Value) -> Option<&str> {
+    layer["produces"]
+        .as_array()
+        .expect("layer produces should be an array")
+        .iter()
+        .find_map(|dataset| {
+            (dataset["kind"] == "relation")
+                .then(|| dataset["name"].as_str())
+                .flatten()
+        })
+}
+
+fn final_outcome_snapshot(protocol: &Value) -> Value {
+    let layers = protocol["layers"]
+        .as_array()
+        .expect("protocol layers should be an array");
+    let mut outcomes = Vec::new();
+
+    for component in protocol["graph"]["components"]
+        .as_array()
+        .expect("graph components should be an array")
+    {
+        for dataset in component["final_outcomes"]
+            .as_array()
+            .expect("component final outcomes should be an array")
+        {
+            assert_eq!(
+                dataset["kind"], "relation",
+                "dbt model final outcomes should be named relations"
+            );
+            let relation = dataset["name"]
+                .as_str()
+                .expect("final relation should be a string");
+            let layer = layers
+                .iter()
+                .find(|layer| produced_relation(layer) == Some(relation))
+                .unwrap_or_else(|| panic!("missing producer layer for final outcome {relation}"));
+
+            outcomes.push(serde_json::json!({
+                "relation": relation,
+                "model_id": layer["statement"]["input_id"].clone(),
+                "composed_semantics": layer["composed_semantics"].clone()
+            }));
+        }
+    }
+
+    outcomes.sort_by(|left, right| {
+        left["model_id"]
+            .as_str()
+            .expect("model id should be a string")
+            .cmp(
+                right["model_id"]
+                    .as_str()
+                    .expect("model id should be a string"),
+            )
+    });
+
+    Value::Array(outcomes)
+}
+
 fn output_column<'a>(layer: &'a Value, name: &str) -> &'a Value {
     layer["composed_semantics"]["output"]["columns"]
         .as_array()
@@ -389,6 +449,19 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert!(
         graph_components.len() >= 3,
         "expected the primary model graph plus disconnected feature models"
+    );
+
+    let expected_final_outcomes: Value = serde_json::from_str(include_str!(
+        "fixtures/dbt_core_project/expected_final_outcomes.json"
+    ))
+    .expect("expected final-outcome fixture should be valid JSON");
+    let actual_final_outcomes = final_outcome_snapshot(&protocol);
+    assert_eq!(
+        actual_final_outcomes,
+        expected_final_outcomes,
+        "complete dbt terminal-outcome semantics changed:\n{}",
+        serde_json::to_string_pretty(&actual_final_outcomes)
+            .expect("final-outcome snapshot should serialize")
     );
 
     let merge_statement = input_statement(&protocol, "incremental_merge_orders");
