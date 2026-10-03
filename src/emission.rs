@@ -20,7 +20,7 @@ use crate::protocol::{
     RelationRef, ScalarSubqueryExpression, SetOperand, SetOperation, SourceRelation,
     SubquerySemantics, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
     ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteOperation,
+    WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
@@ -304,7 +304,7 @@ fn merge_action_to_value(action: &MergeAction) -> Value {
             "columns": columns,
             "values": values
                 .iter()
-                .map(|row| row.iter().map(expression_to_value).collect::<Vec<_>>())
+                .map(|row| row.iter().map(write_value_to_value).collect::<Vec<_>>())
                 .collect::<Vec<_>>()
         }),
         MergeAction::Update { assignments } => json!({
@@ -313,7 +313,7 @@ fn merge_action_to_value(action: &MergeAction) -> Value {
                 .iter()
                 .map(|assignment| json!({
                     "target": assignment.target(),
-                    "value": expression_to_value(assignment.value())
+                    "value": write_value_to_value(assignment.value())
                 }))
                 .collect::<Vec<_>>()
         }),
@@ -323,6 +323,13 @@ fn merge_action_to_value(action: &MergeAction) -> Value {
             "semantic": unsupported_semantic_to_value(semantic)
         }),
     }
+}
+
+fn write_value_to_value(value: &WriteValue) -> Value {
+    json!({
+        "expression": expression_to_value(value.expression()),
+        "domain": value_domain_to_value(value.domain())
+    })
 }
 
 fn aggregation_to_value(aggregation: &Aggregation) -> Value {
