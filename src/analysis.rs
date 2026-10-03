@@ -23,7 +23,10 @@ use sqlparser::ast::{
     WindowSpec as SqlWindowSpec, WindowType,
 };
 
-use crate::domain::{derive_column_domains, intersect_domains, union_domains};
+use crate::domain::{
+    derive_column_domains, intersect_domains, refine_column_domains_from_equalities, resolve_column,
+    union_domains,
+};
 use crate::parser::ParsedSql;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
@@ -38,7 +41,7 @@ use crate::protocol::{
     SetOperation, SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression,
     UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
     ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteOperation,
+    WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
 };
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
@@ -175,13 +178,14 @@ fn analyze_merge(
     clauses: &[SqlMergeClause],
     has_output: bool,
 ) -> ProtocolStatement {
-    let Some(target) = merge_target_relation(table) else {
+    let Some(target_source) = merge_target_relation(table) else {
         return unsupported_write_statement(
             "merge",
             "unsupported_merge_target",
             "MERGE target must be a named relation",
         );
     };
+    let target = target_source.name().to_string();
 
     let mut diagnostics = Vec::new();
     if has_output {
@@ -215,11 +219,14 @@ fn analyze_merge(
         &mut dependencies,
     );
     let match_condition = analyze_predicate(on, &mut diagnostics);
+    let merge_sources = vec![target_source, source_relation.source.clone()];
     let merge_clauses = clauses
         .iter()
         .map(|clause| {
             analyze_merge_clause(
                 clause,
+                &merge_sources,
+                &match_condition,
                 &mut diagnostics,
                 &mut derived_index,
                 &mut dependencies,
@@ -247,17 +254,25 @@ fn analyze_merge(
     ProtocolStatement::Query(query)
 }
 
-fn merge_target_relation(table: &TableFactor) -> Option<String> {
+fn merge_target_relation(table: &TableFactor) -> Option<SourceRelation> {
     match table {
         TableFactor::Table {
-            name, args: None, ..
-        } => Some(name.to_string()),
+            name,
+            alias,
+            args: None,
+            ..
+        } => Some(SourceRelation::new(
+            name.to_string(),
+            alias.as_ref().map(|alias| alias.name.to_string()),
+        )),
         _ => None,
     }
 }
 
 fn analyze_merge_clause(
     clause: &SqlMergeClause,
+    sources: &[SourceRelation],
+    match_condition: &Predicate,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     dependencies: &mut BTreeSet<String>,
@@ -280,6 +295,15 @@ fn analyze_merge_clause(
         analyze_predicate(predicate, diagnostics)
     });
 
+    let branch_predicate = merge_branch_predicate(match_kind, match_condition, predicate.as_ref());
+    let branch_domains = branch_predicate.as_ref().map_or_else(Vec::new, |predicate| {
+        let domains = derive_column_domains(
+            &Predicates::new(Some(predicate.clone()), None, None),
+            sources,
+        );
+        refine_column_domains_from_equalities(domains, predicate, sources)
+    });
+
     let action = match &clause.action {
         SqlMergeAction::Delete => ProtocolMergeAction::Delete,
         SqlMergeAction::Update { assignments } => {
@@ -293,9 +317,13 @@ fn analyze_merge_clause(
                         derived_index,
                         dependencies,
                     );
+                    let expression =
+                        analyze_expression_with_scope(&assignment.value, &[], &[], diagnostics);
+                    let domain =
+                        derive_expression_domain_with_column_domains(&expression, &branch_domains, sources);
                     MergeAssignment::new(
                         assignment.target.to_string(),
-                        analyze_expression_with_scope(&assignment.value, &[], &[], diagnostics),
+                        WriteValue::new(expression, domain),
                     )
                 })
                 .collect();
@@ -316,7 +344,14 @@ fn analyze_merge_clause(
                                     derived_index,
                                     dependencies,
                                 );
-                                analyze_expression_with_scope(expression, &[], &[], diagnostics)
+                                let expression =
+                                    analyze_expression_with_scope(expression, &[], &[], diagnostics);
+                                let domain = derive_expression_domain_with_column_domains(
+                                    &expression,
+                                    &branch_domains,
+                                    sources,
+                                );
+                                WriteValue::new(expression, domain)
                             })
                             .collect()
                     })
@@ -341,6 +376,25 @@ fn analyze_merge_clause(
     };
 
     ProtocolMergeClause::new(match_kind, predicate, action)
+}
+
+fn merge_branch_predicate(
+    match_kind: MergeMatchKind,
+    match_condition: &Predicate,
+    clause_predicate: Option<&Predicate>,
+) -> Option<Predicate> {
+    match match_kind {
+        MergeMatchKind::Matched => Some(match clause_predicate {
+            Some(predicate) => Predicate::And(LogicalPredicate::pair(
+                match_condition.clone(),
+                predicate.clone(),
+            )),
+            None => match_condition.clone(),
+        }),
+        MergeMatchKind::NotMatched
+        | MergeMatchKind::NotMatchedByTarget
+        | MergeMatchKind::NotMatchedBySource => clause_predicate.cloned(),
+    }
 }
 
 fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QueryStatement {
@@ -378,6 +432,11 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         }
         _ => Vec::new(),
     };
+    let output = refine_output_domains_from_column_domains(
+        output,
+        &column_domains,
+        &relation_analysis.sources,
+    );
 
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
@@ -2736,6 +2795,46 @@ fn unresolved_wildcard_column(name: String, diagnostics: &mut Vec<Diagnostic>) -
         ValueDomain::unknown(reason),
         Vec::new(),
     )
+}
+
+fn refine_output_domains_from_column_domains(
+    output: Output,
+    column_domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+) -> Output {
+    Output::new(
+        output
+            .columns()
+            .iter()
+            .cloned()
+            .map(|column| {
+                let derived = derive_expression_domain_with_column_domains(
+                    column.expression(),
+                    column_domains,
+                    sources,
+                );
+                column.with_domain(intersect_domains(column.domain(), &derived))
+            })
+            .collect(),
+    )
+}
+
+fn derive_expression_domain_with_column_domains(
+    expression: &Expression,
+    column_domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+) -> ValueDomain {
+    if let Expression::Column(column) = expression {
+        let resolved = resolve_column(column, sources);
+        if let Some(domain) = column_domains
+            .iter()
+            .find(|candidate| candidate.column() == &resolved)
+        {
+            return domain.domain().clone();
+        }
+    }
+
+    derive_output_domain(expression)
 }
 
 fn derive_output_domain(expression: &Expression) -> ValueDomain {
