@@ -146,11 +146,30 @@ Default catalog/schema context fills missing qualification before graph linking.
 
 Quoted identifiers remain exact. For unquoted identifiers the resolver applies the dialect normalization needed for safe matching where that behavior is well-defined by the supported resolver: PostgreSQL and Redshift fold to lowercase, while ANSI and Snowflake fold to uppercase. Other dialects preserve unquoted spelling rather than applying a global case rule. Caller-supplied resolver implementations can provide different metadata behavior through the same parser-independent `RelationResolver` contract.
 
+The direct CLI exposes the built-in resolver with repeatable `--catalog-relation` plus optional `--default-catalog` and `--default-schema` values:
+
+```sh
+cargo run -- \
+  --dialect postgresql \
+  --default-catalog warehouse \
+  --default-schema analytics \
+  --catalog-relation warehouse.raw.orders \
+  --catalog-relation warehouse.analytics.orders \
+  --catalog-relation warehouse.analytics.final_orders \
+  --target warehouse.analytics.final_orders \
+  --sql "CREATE TABLE orders AS SELECT id FROM raw.orders WHERE id >= 5" \
+  --sql "CREATE TABLE final_orders AS SELECT id FROM orders WHERE id <= 10"
+```
+
+Catalog metadata is optional. Without these options, direct CLI analysis preserves the same metadata-free textual relation identities as the library API.
+
 ## Analysis manifests
 
 Large bundles can be declared in a versioned JSON manifest instead of repeating every analysis input and option on the command line. Manifest v1 is defined by [`schema/analysis-manifest-v1.schema.json`](schema/analysis-manifest-v1.schema.json) and documented in [`docs/analysis-manifest-v1.md`](docs/analysis-manifest-v1.md).
 
 Each manifest input has a stable unique `id`, exactly one inline `sql` string or `file` path, and an optional per-input `dialect`. The root `dialect` defaults to `generic` and supplies the default for inputs that omit an override. Dialect names continue to resolve through sqlparser rather than a project-maintained list. Relative file paths resolve relative to the manifest file while the declared path is retained as source identity.
+
+Manifests may also declare `catalog_relations` and a bundle-level `relation_context` with `default_catalog` and/or `default_schema`. An input can replace that context for its own analysis. The CLI maps this metadata to the same `RelationCatalog` and `RelationContext` API used by direct Rust callers, so canonical graph links, lineage, and composed output domains are equivalent.
 
 The default `output_scope` is `all`, which preserves the complete analyzed bundle. `output_scope: "targets"` requires one or more exact relation names and applies target projection only after every input has been analyzed and composed.
 
@@ -158,8 +177,17 @@ The default `output_scope` is `all`, which preserves the complete analyzed bundl
 {
   "manifest_version": "1",
   "dialect": "generic",
+  "catalog_relations": [
+    "warehouse.stage.orders",
+    "warehouse.mart.orders",
+    "warehouse.raw.orders"
+  ],
+  "relation_context": {
+    "default_catalog": "warehouse",
+    "default_schema": "stage"
+  },
   "output_scope": "targets",
-  "targets": ["mart.orders"],
+  "targets": ["warehouse.mart.orders"],
   "inputs": [
     {
       "id": "stage-orders",
@@ -169,7 +197,11 @@ The default `output_scope` is `all`, which preserves the complete analyzed bundl
     {
       "id": "mart-orders",
       "sql": "CREATE TABLE mart.orders AS SELECT * FROM stage.orders",
-      "dialect": "postgresql"
+      "dialect": "postgresql",
+      "relation_context": {
+        "default_catalog": "warehouse",
+        "default_schema": "mart"
+      }
     }
   ]
 }
@@ -181,7 +213,7 @@ Run it with:
 cargo run -- --manifest analysis.json
 ```
 
-`--manifest` is mutually exclusive with direct analysis options such as `--dialect`, `--target`, `--sql`, `--file`, `--dir`, and positional SQL. Output-format options such as OpenLineage export remain CLI-level options and can be combined with a manifest.
+`--manifest` is mutually exclusive with direct analysis options such as `--dialect`, `--catalog-relation`, `--default-catalog`, `--default-schema`, `--target`, `--sql`, `--file`, `--dir`, and positional SQL. Output-format options such as OpenLineage export remain CLI-level options and can be combined with a manifest.
 
 ## OpenLineage export
 
@@ -226,7 +258,7 @@ The current development version is `0.2.0`. The current roadmap targets the firs
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--manifest <path> | [--dialect <name>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]]
+sql-semantic-protocol [--manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]]
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
@@ -261,7 +293,9 @@ A single file remains unchanged:
 cargo run -- --dialect snowflake --file query.sql
 ```
 
-For multiple inputs, repeat `--sql`, `--file`, and `--dir` in any mixture. `--dir` recursively discovers regular files whose extension is `.sql` case-insensitively and ignores all other files. Repeat `--target` to project the completed analysis onto one or more named output relations:
+For multiple inputs, repeat `--sql`, `--file`, and `--dir` in any mixture. `--dir` recursively discovers regular files whose extension is `.sql` case-insensitively and ignores all other files. Repeat `--catalog-relation` to supply canonical catalog metadata and use `--default-catalog`/`--default-schema` when direct inputs need qualification before graph linking.
+
+Repeat `--target` to project the completed analysis onto one or more named output relations:
 
 ```sh
 cargo run -- \
