@@ -5,3 +5,6 @@ sources:
     schema: raw
     tables:
       - name: orders
+      - name: customers
+      - name: legacy_orders
+      - name: returns
