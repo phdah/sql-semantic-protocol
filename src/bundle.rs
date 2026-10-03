@@ -1412,13 +1412,7 @@ pub fn analyze_inputs(
 
     for (index, input) in inputs.iter().enumerate() {
         let input_id = format!("input-{:0width$}", index + 1, width = width);
-        analyzed_inputs.push(analyze_input(
-            input_id,
-            input,
-            dialect_name,
-            dialect,
-            None,
-        )?);
+        analyzed_inputs.push(analyze_input(input_id, input, dialect_name, dialect, None)?);
     }
 
     Ok(AnalysisBundle::from_inputs(analyzed_inputs))
