@@ -276,7 +276,7 @@ fn where_having_and_qualify_keep_clause_context() {
 }
 
 #[test]
-fn unsupported_predicate_expression_remains_explicit() {
+fn case_predicate_expression_remains_explicit() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
         "SELECT a FROM t WHERE CASE WHEN a > 0 THEN TRUE ELSE FALSE END",
@@ -285,14 +285,11 @@ fn unsupported_predicate_expression_remains_explicit() {
     )
     .expect("CASE predicate should parse");
 
-    match first_query(&protocol).predicates().where_predicate() {
-        Some(Predicate::BooleanExpression(Expression::Unsupported(semantic))) => {
-            assert_eq!(semantic.feature(), "expression");
-        }
-        other => panic!("expected explicit unsupported expression, got {other:?}"),
-    }
-
-    assert!(first_query(&protocol)
+    assert!(matches!(
+        first_query(&protocol).predicates().where_predicate(),
+        Some(Predicate::BooleanExpression(Expression::Case(_)))
+    ));
+    assert!(!first_query(&protocol)
         .diagnostics()
         .iter()
         .any(|diagnostic| {
@@ -353,7 +350,7 @@ fn unsupported_table_factor_is_diagnosed() {
 }
 
 #[test]
-fn unsupported_expression_is_diagnosed() {
+fn case_expression_is_typed_without_unsupported_diagnostic() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
         "SELECT CASE WHEN a > 0 THEN a ELSE 0 END FROM t",
@@ -363,8 +360,11 @@ fn unsupported_expression_is_diagnosed() {
     .expect("CASE expression should parse");
 
     let statement = first_query(&protocol);
-
-    assert!(statement.diagnostics().iter().any(|diagnostic| {
+    assert!(matches!(
+        statement.output().columns()[0].expression(),
+        Expression::Case(_)
+    ));
+    assert!(!statement.diagnostics().iter().any(|diagnostic| {
         diagnostic.area() == DiagnosticArea::Expression
             && diagnostic.code() == "unsupported_expression"
     }));
