@@ -101,15 +101,12 @@ fn per_input_schema_context_distinguishes_same_named_relations() {
     let finance_context =
         RelationContext::new(Some("warehouse"), Some("finance")).expect("finance context");
 
-    let sales = SqlInput::inline(
-        "CREATE TABLE orders AS SELECT id FROM raw.sales_orders WHERE id >= 1",
-    );
+    let sales =
+        SqlInput::inline("CREATE TABLE orders AS SELECT id FROM raw.sales_orders WHERE id >= 1");
     let finance = SqlInput::inline(
         "CREATE TABLE orders AS SELECT id FROM raw.finance_orders WHERE id >= 100",
     );
-    let report = SqlInput::inline(
-        "CREATE TABLE report AS SELECT id FROM orders WHERE id <= 10",
-    );
+    let report = SqlInput::inline("CREATE TABLE report AS SELECT id FROM orders WHERE id <= 10");
     let configured = [
         ConfiguredSqlInput::new("sales", &sales, "postgresql", &dialect)
             .with_relation_context(&sales_context),
@@ -159,11 +156,8 @@ fn ambiguous_partial_catalog_name_fails_explicitly() {
         "postgresql",
         &dialect,
     )];
-    let catalog = RelationCatalog::new(&[
-        "warehouse.sales.orders",
-        "warehouse.finance.orders",
-    ])
-    .expect("catalog should be valid");
+    let catalog = RelationCatalog::new(&["warehouse.sales.orders", "warehouse.finance.orders"])
+        .expect("catalog should be valid");
 
     let error = analyze_configured_inputs_with_catalog(&configured, &catalog)
         .expect_err("ambiguous relation should fail");
@@ -197,11 +191,8 @@ fn quoted_and_unquoted_snowflake_identifiers_resolve_differently() {
     let dialect = dialect_from_str("snowflake").expect("snowflake dialect should exist");
     let context =
         RelationContext::new(Some("warehouse"), Some("public")).expect("context should be valid");
-    let catalog = RelationCatalog::new(&[
-        "WAREHOUSE.PUBLIC.ORDERS",
-        "WAREHOUSE.PUBLIC.\"orders\"",
-    ])
-    .expect("catalog should be valid");
+    let catalog = RelationCatalog::new(&["WAREHOUSE.PUBLIC.ORDERS", "WAREHOUSE.PUBLIC.\"orders\""])
+        .expect("catalog should be valid");
     let unquoted = SqlInput::inline("SELECT id FROM orders");
     let quoted = SqlInput::inline("SELECT id FROM \"orders\"");
     let configured = [
