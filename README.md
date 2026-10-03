@@ -213,6 +213,15 @@ Run it with:
 cargo run -- --manifest analysis.json
 ```
 
+The checked-in `tests/fixtures/extended_bundle/analysis-all.json` fixture demonstrates the complete bundle workflow: multiple independent pipelines, PostgreSQL/Generic/Snowflake/MySQL inputs, CREATE TABLE/VIEW layers, INSERT-select semantics, catalog-aware canonical identities, and per-input relation context. Its companion `analysis-target.json` applies target projection only after the whole workload has been analyzed and composed.
+
+```sh
+cargo run -- --manifest tests/fixtures/extended_bundle/analysis-all.json
+cargo run -- --manifest tests/fixtures/extended_bundle/analysis-target.json
+```
+
+The full fixture preserves every layer and identifies terminal outcomes in `graph.components[].final_outcomes`. The targeted fixture keeps only `warehouse.analytics.final_orders` and its required in-bundle ancestors while retaining the complete analyzed input evidence.
+
 `--manifest` is mutually exclusive with direct analysis options such as `--dialect`, `--catalog-relation`, `--default-catalog`, `--default-schema`, `--target`, `--sql`, `--file`, `--dir`, and positional SQL. Output-format options such as OpenLineage export remain CLI-level options and can be combined with a manifest.
 
 ## OpenLineage export
