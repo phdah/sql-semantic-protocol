@@ -77,6 +77,7 @@ pub struct QueryStatement {
     aggregation: Option<Box<Aggregation>>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
+    write: Option<Box<WriteOperation>>,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -101,6 +102,7 @@ impl QueryStatement {
             aggregation: None,
             set_operation: None,
             produced_relation: None,
+            write: None,
             diagnostics,
         }
     }
@@ -117,6 +119,11 @@ impl QueryStatement {
 
     pub(crate) fn with_produced_relation(mut self, produced_relation: Option<String>) -> Self {
         self.produced_relation = produced_relation;
+        self
+    }
+
+    pub(crate) fn with_write(mut self, write: Option<WriteOperation>) -> Self {
+        self.write = write.map(Box::new);
         self
     }
 
@@ -160,16 +167,246 @@ impl QueryStatement {
         self.set_operation.as_ref()
     }
 
-    /// Return the named relation produced by query-backed DDL, if any.
+    /// Return the named relation written by this transformation, if any.
     ///
     /// Bare queries produce anonymous results and therefore return `None`.
     pub fn produced_relation(&self) -> Option<&str> {
         self.produced_relation.as_deref()
     }
 
+    /// Return relation-write semantics when this transformation writes a named relation.
+    pub fn write(&self) -> Option<&WriteOperation> {
+        self.write.as_deref()
+    }
+
     /// Return diagnostics describing incomplete query semantics.
     pub fn diagnostics(&self) -> &[Diagnostic] {
         &self.diagnostics
+    }
+}
+
+/// How a transformation changes its named target relation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WriteKind {
+    /// The transformation defines the complete relation contents represented by its query.
+    Definition,
+    /// The transformation appends rows without replacing pre-existing relation contents.
+    Append,
+    /// The transformation conditionally updates, inserts, or deletes existing relation rows.
+    ConditionalMutation,
+}
+
+impl WriteKind {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Definition => "definition",
+            Self::Append => "append",
+            Self::ConditionalMutation => "conditional_mutation",
+        }
+    }
+
+    /// Return whether this write fully defines the resulting relation.
+    pub fn fully_defines_relation(self) -> bool {
+        matches!(self, Self::Definition)
+    }
+}
+
+/// Parser-independent semantics for a write into a named relation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WriteOperation {
+    target: String,
+    kind: WriteKind,
+    target_columns: Vec<String>,
+    match_condition: Option<Predicate>,
+    merge_clauses: Vec<MergeClause>,
+}
+
+impl WriteOperation {
+    pub(crate) fn definition(target: String) -> Self {
+        Self {
+            target,
+            kind: WriteKind::Definition,
+            target_columns: Vec::new(),
+            match_condition: None,
+            merge_clauses: Vec::new(),
+        }
+    }
+
+    pub(crate) fn append(target: String, target_columns: Vec<String>) -> Self {
+        Self {
+            target,
+            kind: WriteKind::Append,
+            target_columns,
+            match_condition: None,
+            merge_clauses: Vec::new(),
+        }
+    }
+
+    pub(crate) fn conditional_mutation(
+        target: String,
+        match_condition: Predicate,
+        merge_clauses: Vec<MergeClause>,
+    ) -> Self {
+        Self {
+            target,
+            kind: WriteKind::ConditionalMutation,
+            target_columns: Vec::new(),
+            match_condition: Some(match_condition),
+            merge_clauses,
+        }
+    }
+
+    /// Return the relation written by the transformation.
+    pub fn target(&self) -> &str {
+        &self.target
+    }
+
+    /// Return how the write changes the target relation.
+    pub fn kind(&self) -> WriteKind {
+        self.kind
+    }
+
+    /// Return explicit INSERT target columns in SQL order.
+    pub fn target_columns(&self) -> &[String] {
+        &self.target_columns
+    }
+
+    /// Return the MERGE match condition for conditional mutations.
+    pub fn match_condition(&self) -> Option<&Predicate> {
+        self.match_condition.as_ref()
+    }
+
+    /// Return normalized MERGE clauses in SQL order.
+    pub fn merge_clauses(&self) -> &[MergeClause] {
+        &self.merge_clauses
+    }
+}
+
+/// MERGE clause match category.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MergeMatchKind {
+    /// WHEN MATCHED.
+    Matched,
+    /// WHEN NOT MATCHED.
+    NotMatched,
+    /// WHEN NOT MATCHED BY TARGET.
+    NotMatchedByTarget,
+    /// WHEN NOT MATCHED BY SOURCE.
+    NotMatchedBySource,
+}
+
+impl MergeMatchKind {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Matched => "matched",
+            Self::NotMatched => "not_matched",
+            Self::NotMatchedByTarget => "not_matched_by_target",
+            Self::NotMatchedBySource => "not_matched_by_source",
+        }
+    }
+}
+
+/// One normalized MERGE clause.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MergeClause {
+    match_kind: MergeMatchKind,
+    predicate: Option<Predicate>,
+    action: MergeAction,
+}
+
+impl MergeClause {
+    pub(crate) fn new(
+        match_kind: MergeMatchKind,
+        predicate: Option<Predicate>,
+        action: MergeAction,
+    ) -> Self {
+        Self {
+            match_kind,
+            predicate,
+            action,
+        }
+    }
+
+    /// Return which MERGE rows this clause can match.
+    pub fn match_kind(&self) -> MergeMatchKind {
+        self.match_kind
+    }
+
+    /// Return the optional additional clause predicate.
+    pub fn predicate(&self) -> Option<&Predicate> {
+        self.predicate.as_ref()
+    }
+
+    /// Return the action executed by the clause.
+    pub fn action(&self) -> &MergeAction {
+        &self.action
+    }
+}
+
+/// One normalized MERGE action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MergeAction {
+    /// INSERT target columns and value rows.
+    Insert {
+        /// Explicit target columns in SQL order.
+        columns: Vec<String>,
+        /// Inserted value rows with normalized expressions and conservative outcome domains.
+        values: Vec<Vec<WriteValue>>,
+    },
+    /// UPDATE assignments.
+    Update {
+        /// Assignments in SQL order.
+        assignments: Vec<MergeAssignment>,
+    },
+    /// DELETE matching rows.
+    Delete,
+    /// The parser recognized an action form that cannot be represented safely.
+    Unsupported(UnsupportedSemantic),
+}
+
+/// One value written by a DML action together with its conservative outcome domain.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WriteValue {
+    expression: Expression,
+    domain: ValueDomain,
+}
+
+impl WriteValue {
+    pub(crate) fn new(expression: Expression, domain: ValueDomain) -> Self {
+        Self { expression, domain }
+    }
+
+    /// Return the normalized expression that produces the written value.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Return the strongest safely derivable value domain for the written value.
+    pub fn domain(&self) -> &ValueDomain {
+        &self.domain
+    }
+}
+
+/// One normalized MERGE UPDATE assignment.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MergeAssignment {
+    target: String,
+    value: WriteValue,
+}
+
+impl MergeAssignment {
+    pub(crate) fn new(target: String, value: WriteValue) -> Self {
+        Self { target, value }
+    }
+
+    /// Return the target column or tuple representation.
+    pub fn target(&self) -> &str {
+        &self.target
+    }
+
+    /// Return the value expression and conservative domain assigned to the target.
+    pub fn value(&self) -> &WriteValue {
+        &self.value
     }
 }
 

@@ -13,7 +13,7 @@ use crate::bundle::{
 use crate::domain::intersect_domains;
 use crate::protocol::{
     ColumnDomain, ColumnRef, Expression, LineageSource, Output, OutputColumn, ProtocolStatement,
-    QueryStatement, ValueDomain,
+    QueryStatement, ValueDomain, WriteKind,
 };
 
 pub(crate) fn compose_layers(
@@ -89,6 +89,25 @@ impl<'a> Composer<'a> {
             return composed;
         };
 
+        if layer.write_kind() == Some(WriteKind::ConditionalMutation) {
+            let composed = ComposedSemantics::unresolved(
+                CompositionFailureReason::PartialProducer,
+                vec![CompositionDiagnostic::layer_warning(
+                    layer.input_id(),
+                    layer.id(),
+                    "conditional_mutation_partial_semantics",
+                    "MERGE mutates existing target state, so complete target semantics cannot be composed",
+                    layer
+                        .produces()
+                        .iter()
+                        .find_map(|dataset| dataset.relation_name())
+                        .map(str::to_string),
+                )],
+            );
+            self.memo.insert(layer_id.to_string(), composed.clone());
+            return composed;
+        }
+
         let edges = self
             .graph
             .edges()
@@ -162,6 +181,7 @@ impl<'a> Composer<'a> {
                 RelationResolution::Missing
                 | RelationResolution::Ambiguous
                 | RelationResolution::Cycle
+                | RelationResolution::Partial
                 | RelationResolution::Unsupported => {
                     // These states are handled before upstream traversal.
                 }
@@ -344,6 +364,7 @@ impl<'a> Composer<'a> {
             RelationResolution::Missing
             | RelationResolution::Ambiguous
             | RelationResolution::Cycle
+            | RelationResolution::Partial
             | RelationResolution::Unsupported => Err(composition_error(
                 consumer.input_id(),
                 consumer.id(),
@@ -509,6 +530,7 @@ impl<'a> Composer<'a> {
             RelationResolution::Missing
             | RelationResolution::Ambiguous
             | RelationResolution::Cycle
+            | RelationResolution::Partial
             | RelationResolution::Unsupported => Err(composition_error(
                 consumer.input_id(),
                 consumer.id(),
@@ -564,6 +586,12 @@ fn graph_failure_reason(edges: &[GraphEdge]) -> Option<CompositionFailureReason>
     }
     if edges
         .iter()
+        .any(|edge| edge.resolution() == RelationResolution::Partial)
+    {
+        return Some(CompositionFailureReason::PartialProducer);
+    }
+    if edges
+        .iter()
         .any(|edge| edge.resolution() == RelationResolution::Unsupported)
     {
         return Some(CompositionFailureReason::Unsupported);
@@ -598,6 +626,13 @@ fn graph_failure_diagnostics(
                     "missing_relation_producer",
                     format!(
                         "relation '{}' requires a producer that is unavailable",
+                        edge.relation()
+                    ),
+                ),
+                RelationResolution::Partial => (
+                    "partial_relation_producer",
+                    format!(
+                        "relation '{}' is only partially defined by its in-bundle writer",
                         edge.relation()
                     ),
                 ),

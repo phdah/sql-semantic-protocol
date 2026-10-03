@@ -18,13 +18,18 @@ A `layer` points to exactly one statement through `input_id` plus zero-based `st
 
 - `produces`: named relations or an anonymous query result
 - `consumes`: relation names referenced by the local statement
+- optional `write_kind`: `definition`, `append`, or `conditional_mutation` for named relation writes
 - `composed_semantics`: the transitive, outcome-focused result after following producers
 
 Named datasets use `{"kind":"relation","name":"..."}`. Anonymous query results use `{"kind":"anonymous","layer_id":"..."}`, which makes them addressable without inventing a physical relation name.
 
 The statement stored under the referenced input is the local semantics for that layer. `composed_semantics` is deliberately separate. A resolved composed result contains physical leaf dependencies, composed column domains, and the final output with transitive lineage. Composition does not rewrite or flatten local joins and predicates into a synthetic SQL statement.
 
-If composition cannot be trusted, it is emitted as `status: "unresolved"` with one of `missing_producer`, `ambiguous_producer`, `cycle`, or `unsupported` plus diagnostics. Producers must not guess through these states.
+If composition cannot be trusted, it is emitted as `status: "unresolved"` with one of `missing_producer`, `ambiguous_producer`, `cycle`, `partial_producer`, or `unsupported` plus diagnostics. Producers must not guess through these states.
+
+A query-backed CREATE is a `definition` write and fully defines its named relation. `INSERT INTO ... SELECT` is an `append` write: the source query is analyzed normally, so the inserted rows retain dependencies, output value domains, and lineage, but the write does not describe rows already present in the target. `MERGE` is a `conditional_mutation` write and records the source dependencies, match condition, and normalized update/insert/delete clauses. Every normalized UPDATE assignment and INSERT value stores both its expression and its conservative `domain`. For MATCHED branches, the match condition and additional clause predicate constrain those write domains; safe equality propagation can transfer a known interval across equal columns. Non-matching branches do not incorrectly assume the positive match condition. Unsupported DML forms remain explicit diagnostics rather than being treated as complete transformations.
+
+These per-write domains describe values the MERGE can introduce or assign. They do not claim to describe the complete post-MERGE table because untouched target rows can remain. The relation therefore continues to compose as a partial producer even when individual written values have precise intervals.
 
 ## Dependency graph
 
@@ -35,9 +40,10 @@ Each consumed relation has a graph edge from its consumer layer. `resolution` is
 - `missing`: a producer is required but unavailable
 - `ambiguous`: more than one producer could satisfy the relation
 - `cycle`: following the producer participates in a dependency cycle
+- `partial`: an in-bundle append or conditional mutation writes the relation but does not fully define its contents
 - `unsupported`: the relation could not be composed safely for another explicit reason
 
-This distinction matters because an external warehouse table is valid input, while a missing intermediate model is an incomplete bundle.
+This distinction matters because an external warehouse table is valid input, while a missing intermediate model is an incomplete bundle. A partial edge still links the downstream reader to the DML writer, but composition stops with `partial_producer` instead of inventing complete target lineage.
 
 Unrelated SQL inputs remain separate connected components in the same protocol document. Components contain their layer IDs and determine final outcomes independently.
 

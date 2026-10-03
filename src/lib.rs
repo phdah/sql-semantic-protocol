@@ -44,13 +44,15 @@ pub use protocol::{
     ColumnExpression, ColumnRef, ComparisonOperator, ComparisonPredicate, Diagnostic,
     DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
     GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, JoinKind,
-    LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, NotPredicate,
-    Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource, ProtocolStatement,
-    QueryStatement, RangesDomain, RelationRef, ScalarSubqueryExpression, SetDomain, SetMode,
-    SetOperand, SetOperation, SetOperator, SetQuantifier, SourceRelation, SubquerySemantics,
-    UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic, UnsupportedSemantic,
-    UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
-    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, PROTOCOL_VERSION,
+    LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, MergeAction,
+    MergeAssignment, MergeClause, MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate,
+    Predicates, Protocol, ProtocolSource, ProtocolStatement, QueryStatement, RangesDomain,
+    RelationRef, ScalarSubqueryExpression, SetDomain, SetMode, SetOperand, SetOperation,
+    SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
+    UnknownDomain, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
+    ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
+    WindowOrderExpression, WindowSpecification, WriteKind, WriteOperation, WriteValue,
+    PROTOCOL_VERSION,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.

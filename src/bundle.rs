@@ -9,7 +9,8 @@ use std::fmt;
 use sqlparser::dialect::Dialect;
 
 use crate::protocol::{
-    ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, PROTOCOL_VERSION,
+    ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, WriteKind,
+    PROTOCOL_VERSION,
 };
 use crate::{analyze_sql, Error};
 
@@ -191,6 +192,8 @@ pub enum RelationResolution {
     Ambiguous,
     /// The resolved producer relationship participates in a dependency cycle.
     Cycle,
+    /// A producer writes only part of the relation, so it cannot define complete downstream semantics.
+    Partial,
     /// Resolution could not be represented safely for another explicit reason.
     Unsupported,
 }
@@ -203,6 +206,7 @@ impl RelationResolution {
             Self::Missing => "missing",
             Self::Ambiguous => "ambiguous",
             Self::Cycle => "cycle",
+            Self::Partial => "partial",
             Self::Unsupported => "unsupported",
         }
     }
@@ -325,6 +329,8 @@ pub enum CompositionFailureReason {
     AmbiguousProducer,
     /// The dependency graph contains a cycle.
     Cycle,
+    /// A linked producer only partially defines the written relation.
+    PartialProducer,
     /// Known semantics cannot be propagated safely.
     Unsupported,
 }
@@ -335,6 +341,7 @@ impl CompositionFailureReason {
             Self::MissingProducer => "missing_producer",
             Self::AmbiguousProducer => "ambiguous_producer",
             Self::Cycle => "cycle",
+            Self::PartialProducer => "partial_producer",
             Self::Unsupported => "unsupported",
         }
     }
@@ -507,6 +514,7 @@ pub struct TransformationLayer {
     statement_index: usize,
     produces: Vec<DatasetRef>,
     consumes: Vec<String>,
+    write_kind: Option<WriteKind>,
     composed_semantics: ComposedSemantics,
 }
 
@@ -534,6 +542,11 @@ impl TransformationLayer {
     /// Return normalized physical relations consumed directly by this layer.
     pub fn consumes(&self) -> &[String] {
         &self.consumes
+    }
+
+    /// Return how this layer writes its named relation, if it performs a relation write.
+    pub fn write_kind(&self) -> Option<WriteKind> {
+        self.write_kind
     }
 
     /// Return transitive semantics composed through in-bundle producers.
@@ -633,6 +646,7 @@ fn build_layers(inputs: &[AnalyzedInput]) -> Vec<TransformationLayer> {
                 statement_index,
                 produces,
                 consumes: query.dependencies().to_vec(),
+                write_kind: query.write().map(|write| write.kind()),
                 composed_semantics,
             });
         }
@@ -693,7 +707,16 @@ fn build_edges(
             let producer_layer_ids = producers.get(relation).cloned().unwrap_or_default();
             let resolution = match producer_layer_ids.len() {
                 0 => RelationResolution::External,
-                1 => RelationResolution::Resolved,
+                1 => {
+                    let producer = layers
+                        .iter()
+                        .find(|candidate| candidate.id() == producer_layer_ids[0])
+                        .expect("producer index is built from existing layers");
+                    match producer.write_kind() {
+                        Some(kind) if !kind.fully_defines_relation() => RelationResolution::Partial,
+                        _ => RelationResolution::Resolved,
+                    }
+                }
                 _ => RelationResolution::Ambiguous,
             };
 
@@ -889,6 +912,15 @@ fn build_component(
                 Some(edge.consumer_layer_id().to_string()),
                 Some(edge.relation().to_string()),
             )),
+            RelationResolution::Partial => Some(CompositionDiagnostic::warning(
+                "partial_relation_producer",
+                format!(
+                    "relation '{}' is written by a partial mutation and cannot fully define downstream semantics",
+                    edge.relation()
+                ),
+                Some(edge.consumer_layer_id().to_string()),
+                Some(edge.relation().to_string()),
+            )),
             RelationResolution::Resolved
             | RelationResolution::External
             | RelationResolution::Missing
@@ -926,7 +958,10 @@ fn topological_layer_order(layer_ids: &BTreeSet<String>, edges: &[GraphEdge]) ->
     let mut consumers = BTreeMap::<String, BTreeSet<String>>::new();
 
     for edge in edges {
-        if edge.resolution() != RelationResolution::Resolved {
+        if !matches!(
+            edge.resolution(),
+            RelationResolution::Resolved | RelationResolution::Partial
+        ) {
             continue;
         }
         let Some(producer_id) = edge.producer_layer_ids().first() else {
@@ -982,7 +1017,12 @@ fn component_final_outcomes(
 ) -> Vec<DatasetRef> {
     let consumed_producer_ids = edges
         .iter()
-        .filter(|edge| edge.resolution() == RelationResolution::Resolved)
+        .filter(|edge| {
+            matches!(
+                edge.resolution(),
+                RelationResolution::Resolved | RelationResolution::Partial
+            )
+        })
         .flat_map(|edge| edge.producer_layer_ids().iter().cloned())
         .collect::<BTreeSet<_>>();
 

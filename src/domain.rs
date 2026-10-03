@@ -378,7 +378,7 @@ fn collect_expression_columns(
     }
 }
 
-fn resolve_column(column: &ColumnExpression, sources: &[SourceRelation]) -> ColumnRef {
+pub(crate) fn resolve_column(column: &ColumnExpression, sources: &[SourceRelation]) -> ColumnRef {
     let relation = match column.relation() {
         Some(qualifier) => {
             let candidates = sources
@@ -403,6 +403,58 @@ fn relation_matches(source: &SourceRelation, qualifier: &str) -> bool {
     source.alias() == Some(qualifier)
         || source.name() == qualifier
         || (source.alias().is_none() && source.name().rsplit('.').next() == Some(qualifier))
+}
+
+pub(crate) fn refine_column_domains_from_equalities(
+    domains: Vec<ColumnDomain>,
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+) -> Vec<ColumnDomain> {
+    let mut domains = domains
+        .into_iter()
+        .map(|column| (column.column().clone(), column.domain().clone()))
+        .collect::<DomainMap>();
+    refine_equalities(predicate, sources, &mut domains);
+
+    domains
+        .into_iter()
+        .map(|(column, domain)| ColumnDomain::new(column, domain))
+        .collect()
+}
+
+fn refine_equalities(predicate: &Predicate, sources: &[SourceRelation], domains: &mut DomainMap) {
+    match predicate {
+        Predicate::Comparison(comparison) if comparison.operator() == ComparisonOperator::Eq => {
+            let (Expression::Column(left), Expression::Column(right)) =
+                (comparison.left(), comparison.right())
+            else {
+                return;
+            };
+            let left = resolve_column(left, sources);
+            let right = resolve_column(right, sources);
+            if !domains.contains_key(&left) && !domains.contains_key(&right) {
+                return;
+            }
+
+            let left_domain = domains
+                .get(&left)
+                .cloned()
+                .unwrap_or(ValueDomain::Unbounded);
+            let right_domain = domains
+                .get(&right)
+                .cloned()
+                .unwrap_or(ValueDomain::Unbounded);
+            let intersection = intersect_domains(&left_domain, &right_domain);
+            domains.insert(left, intersection.clone());
+            domains.insert(right, intersection);
+        }
+        Predicate::And(logical) => {
+            for operand in logical.operands() {
+                refine_equalities(operand, sources, domains);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn intersect_maps(mut left: DomainMap, right: DomainMap) -> DomainMap {
