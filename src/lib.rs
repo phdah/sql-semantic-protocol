@@ -2,6 +2,7 @@
 //!
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
+//! - analyze_configured_inputs_with_catalog adds optional catalog/schema-aware relation resolution.
 //! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
 //! - parse_analysis_manifest validates the versioned declarative analysis-manifest contract.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
@@ -18,6 +19,7 @@ mod manifest;
 mod openlineage;
 mod parser;
 pub mod protocol;
+mod relation;
 
 use std::fmt;
 
@@ -25,7 +27,8 @@ use sqlparser::dialect::Dialect;
 
 pub use analysis::AnalysisError;
 pub use bundle::{
-    analyze_configured_inputs, analyze_inputs, select_targets, AnalysisBundle, AnalysisGraph,
+    analyze_configured_inputs, analyze_configured_inputs_with_catalog, analyze_inputs,
+    select_targets, AnalysisBundle, AnalysisGraph,
     AnalyzedInput, ComposedSemantics, CompositionDiagnostic, CompositionFailureReason,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
     InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
@@ -38,6 +41,9 @@ pub use manifest::{
 };
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
+pub use relation::{
+    RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
+};
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression, ColumnDomain,
