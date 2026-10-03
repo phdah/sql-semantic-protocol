@@ -360,6 +360,7 @@ impl Output {
 pub struct OutputColumn {
     name: String,
     expression: Expression,
+    domain: ValueDomain,
     lineage: Vec<LineageSource>,
 }
 
@@ -367,6 +368,7 @@ impl OutputColumn {
     pub(crate) fn new(
         name: String,
         expression: Expression,
+        domain: ValueDomain,
         mut lineage: Vec<LineageSource>,
     ) -> Self {
         lineage.sort();
@@ -374,8 +376,14 @@ impl OutputColumn {
         Self {
             name,
             expression,
+            domain,
             lineage,
         }
+    }
+
+    pub(crate) fn with_domain(mut self, domain: ValueDomain) -> Self {
+        self.domain = domain;
+        self
     }
 
     /// Return the final output column name or unresolved projection label.
@@ -386,6 +394,11 @@ impl OutputColumn {
     /// Return the semantic expression that produces this output column.
     pub fn expression(&self) -> &Expression {
         &self.expression
+    }
+
+    /// Return the conservative value domain for this produced output value.
+    pub fn domain(&self) -> &ValueDomain {
+        &self.domain
     }
 
     /// Return physical source columns contributing to this output value.
@@ -604,6 +617,10 @@ pub enum Expression {
     AggregateFunction(AggregateFunctionExpression),
     /// A window function call with a resolved parser-independent window specification.
     WindowFunction(WindowFunctionExpression),
+    /// A CASE expression preserving branch semantics.
+    Case(CaseExpression),
+    /// A predicate used as a boolean-valued scalar expression.
+    BooleanPredicate(Box<Predicate>),
     /// A supported unary operation.
     Unary(UnaryExpression),
     /// A supported binary operation.
@@ -1067,6 +1084,66 @@ impl AggregateFunctionExpression {
     /// Return the aggregate FILTER predicate, if present.
     pub fn filter(&self) -> Option<&Predicate> {
         self.filter.as_deref()
+    }
+}
+
+/// One normalized CASE expression.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CaseExpression {
+    operand: Option<Box<Expression>>,
+    branches: Vec<CaseBranch>,
+    else_result: Option<Box<Expression>>,
+}
+
+impl CaseExpression {
+    pub(crate) fn new(
+        operand: Option<Expression>,
+        branches: Vec<CaseBranch>,
+        else_result: Option<Expression>,
+    ) -> Self {
+        Self {
+            operand: operand.map(Box::new),
+            branches,
+            else_result: else_result.map(Box::new),
+        }
+    }
+
+    /// Return the optional simple-CASE operand.
+    pub fn operand(&self) -> Option<&Expression> {
+        self.operand.as_deref()
+    }
+
+    /// Return CASE branches in SQL order.
+    pub fn branches(&self) -> &[CaseBranch] {
+        &self.branches
+    }
+
+    /// Return the ELSE result, if present.
+    pub fn else_result(&self) -> Option<&Expression> {
+        self.else_result.as_deref()
+    }
+}
+
+/// One WHEN/THEN branch in a CASE expression.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CaseBranch {
+    condition: Expression,
+    result: Expression,
+}
+
+impl CaseBranch {
+    pub(crate) fn new(condition: Expression, result: Expression) -> Self {
+        Self { condition, result }
+    }
+
+    /// Return the WHEN condition or simple-CASE match value.
+    pub fn condition(&self) -> &Expression {
+        &self.condition
+    }
+
+    /// Return the THEN result expression.
+    pub fn result(&self) -> &Expression {
+        &self.result
     }
 }
 
