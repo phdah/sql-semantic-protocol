@@ -1,7 +1,7 @@
 ---
 id: TASK-24
 title: Add catalog-aware relation resolution
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-01'
 labels: []
@@ -20,12 +20,12 @@ Resolution must remain deterministic and conservative. External metadata may res
 
 ## Acceptance Criteria
 
-- [ ] The public API defines an optional parser-independent relation-resolution/catalog input.
-- [ ] Callers can supply default catalog and schema context per input.
-- [ ] Fully and partially qualified relation references can resolve to a canonical relation identity when metadata is sufficient.
-- [ ] Resolution honors quoted identifier semantics and dialect-specific identifier normalization without unsafe global case folding.
-- [ ] The resolver can distinguish same-named relations in different catalogs/schemas.
-- [ ] Missing metadata falls back to the existing conservative textual resolution behavior.
-- [ ] Conflicting or ambiguous metadata produces explicit diagnostics/errors rather than arbitrary linking.
-- [ ] The analysis layer depends on a small resolver contract rather than on a specific database/catalog implementation.
-- [ ] Tests cover default schemas, multi-schema ambiguity, quoted names, and cross-input linking.
+- [x] The public API defines an optional parser-independent relation-resolution/catalog input.
+- [x] Callers can supply default catalog and schema context per input.
+- [x] Fully and partially qualified relation references can resolve to a canonical relation identity when metadata is sufficient.
+- [x] Resolution honors quoted identifier semantics and dialect-specific identifier normalization without unsafe global case folding.
+- [x] The resolver can distinguish same-named relations in different catalogs/schemas.
+- [x] Missing metadata falls back to the existing conservative textual resolution behavior.
+- [x] Conflicting or ambiguous metadata produces explicit diagnostics/errors rather than arbitrary linking.
+- [x] The analysis layer depends on a small resolver contract rather than on a specific database/catalog implementation.
+- [x] Tests cover default schemas, multi-schema ambiguity, quoted names, and cross-input linking.
