@@ -109,6 +109,43 @@ If `stage_orders.sql` produces `stage.orders`, the next statement consumes that 
 
 For a three-layer chain such as `raw.orders -> stage.orders -> core.ranked_orders -> mart.customer_summary`, the final layer retains transitive physical lineage and domains that can be propagated safely. For example, a `ROW_NUMBER()` output constrained by `QUALIFY rn <= 10` keeps the derived output domain `[1, 10]` while source-column constraints remain separate. CASE, grouping, nested subqueries, and set operations are represented in the same document when they occur in the supplied workload.
 
+## Analysis manifests
+
+Large bundles can be declared in a versioned JSON manifest instead of repeating every analysis input and option on the command line. Manifest v1 is defined by [`schema/analysis-manifest-v1.schema.json`](schema/analysis-manifest-v1.schema.json) and documented in [`docs/analysis-manifest-v1.md`](docs/analysis-manifest-v1.md).
+
+Each manifest input has a stable unique `id`, exactly one inline `sql` string or `file` path, and an optional per-input `dialect`. The root `dialect` defaults to `generic` and supplies the default for inputs that omit an override. Dialect names continue to resolve through sqlparser rather than a project-maintained list. Relative file paths resolve relative to the manifest file while the declared path is retained as source identity.
+
+The default `output_scope` is `all`, which preserves the complete analyzed bundle. `output_scope: "targets"` requires one or more exact relation names and applies target projection only after every input has been analyzed and composed.
+
+```json
+{
+  "manifest_version": "1",
+  "dialect": "generic",
+  "output_scope": "targets",
+  "targets": ["mart.orders"],
+  "inputs": [
+    {
+      "id": "stage-orders",
+      "file": "sql/stage_orders.sql",
+      "dialect": "snowflake"
+    },
+    {
+      "id": "mart-orders",
+      "sql": "CREATE TABLE mart.orders AS SELECT * FROM stage.orders",
+      "dialect": "postgresql"
+    }
+  ]
+}
+```
+
+Run it with:
+
+```sh
+cargo run -- --manifest analysis.json
+```
+
+`--manifest` is mutually exclusive with direct analysis options such as `--dialect`, `--target`, `--sql`, `--file`, `--dir`, and positional SQL. Output-format options such as OpenLineage export remain CLI-level options and can be combined with a manifest.
+
 ## OpenLineage export
 
 The SQL Semantic Protocol remains the authoritative semantic representation. The library function `to_openlineage_json` maps resolved named layers to OpenLineage 2.0.2 DatasetEvents using the current Lineage Dataset Facet for dataset-level and field-level lineage. OpenLineage types do not appear in the core protocol model.
@@ -152,7 +189,7 @@ The current development version is `0.2.0`. The current roadmap targets the firs
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--dialect <name>] [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]
+sql-semantic-protocol [--manifest <path> | [--dialect <name>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]]
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
@@ -208,7 +245,7 @@ cargo run -- \
   --file sql/unrelated_pipeline.sql
 ```
 
-Explicit inputs are analyzed in command-line occurrence order and receive deterministic IDs `input-0001`, `input-0002`, and so on. Each `--dir` expands at its command-line position into all recursively discovered SQL files sorted lexicographically by path, so filesystem traversal order cannot affect protocol output. Discovered file paths are retained as source identity. The ID width expands when necessary, so there is no fixed input-count limit. Parse, file, and analysis failures identify the affected input or path.
+Direct CLI inputs are analyzed in command-line occurrence order and receive deterministic IDs `input-0001`, `input-0002`, and so on. Manifest inputs retain their explicit stable IDs. Each `--dir` expands at its command-line position into all recursively discovered SQL files sorted lexicographically by path, so filesystem traversal order cannot affect protocol output. Discovered file paths are retained as source identity. The ID width expands when necessary, so there is no fixed input-count limit. Parse, file, and analysis failures identify the affected input or path.
 
 Positional SQL represents one legacy input and cannot be mixed with `--sql`, `--file`, or `--dir`. If neither explicit input nor positional SQL is supplied, the CLI reads one input from standard input:
 
