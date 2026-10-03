@@ -713,9 +713,7 @@ fn build_edges(
                         .find(|candidate| candidate.id() == producer_layer_ids[0])
                         .expect("producer index is built from existing layers");
                     match producer.write_kind() {
-                        Some(kind) if !kind.fully_defines_relation() => {
-                            RelationResolution::Partial
-                        }
+                        Some(kind) if !kind.fully_defines_relation() => RelationResolution::Partial,
                         _ => RelationResolution::Resolved,
                     }
                 }
