@@ -41,6 +41,20 @@ impl RelationContext {
     }
 }
 
+/// Parser-independent contract for resolving textual SQL relation references.
+///
+/// Implementations may use caller-owned metadata, but must return deterministic canonical relation
+/// identities and fail explicitly when a reference cannot be resolved safely.
+pub trait RelationResolver {
+    /// Resolve one relation reference in the context of its SQL dialect and optional input defaults.
+    fn resolve_relation(
+        &self,
+        reference: &str,
+        dialect_name: &str,
+        context: Option<&RelationContext>,
+    ) -> Result<String, RelationResolutionError>;
+}
+
 /// Optional set of known canonical relations used to disambiguate textual references.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct RelationCatalog {
@@ -91,10 +105,6 @@ impl RelationCatalog {
             .collect()
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
-        self.relations.is_empty()
-    }
-
     /// Resolve one textual relation reference to a canonical identity.
     ///
     /// The resolver first applies explicit input defaults where they supply missing qualification.
@@ -107,6 +117,10 @@ impl RelationCatalog {
         dialect_name: &str,
         context: Option<&RelationContext>,
     ) -> Result<String, RelationResolutionError> {
+        if self.relations.is_empty() && context.is_none() {
+            return Ok(reference.to_string());
+        }
+
         let parsed = parse_relation(reference).map_err(|message| {
             RelationResolutionError::InvalidReference {
                 reference: reference.to_string(),
@@ -160,6 +174,17 @@ impl RelationCatalog {
                     && candidate_key[candidate_key.len() - key.len()..] == key
             })
             .collect()
+    }
+}
+
+impl RelationResolver for RelationCatalog {
+    fn resolve_relation(
+        &self,
+        reference: &str,
+        dialect_name: &str,
+        context: Option<&RelationContext>,
+    ) -> Result<String, RelationResolutionError> {
+        self.resolve(reference, dialect_name, context)
     }
 }
 
