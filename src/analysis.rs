@@ -18,9 +18,9 @@ use sqlparser::ast::{
     MergeClauseKind as SqlMergeClauseKind, MergeInsertKind, NamedWindowDefinition, NamedWindowExpr,
     Query as SqlQuery, Select, SelectItem, SetExpr, SetOperator as SqlSetOperator,
     SetQuantifier as SqlSetQuantifier, Statement as SqlStatement, TableFactor, TableObject,
-    TableWithJoins, UnaryOperator as SqlUnaryOperator, Value,
-    WindowFrame as SqlWindowFrame, WindowFrameBound as SqlWindowFrameBound,
-    WindowFrameUnits as SqlWindowFrameUnits, WindowSpec as SqlWindowSpec, WindowType,
+    TableWithJoins, UnaryOperator as SqlUnaryOperator, Value, WindowFrame as SqlWindowFrame,
+    WindowFrameBound as SqlWindowFrameBound, WindowFrameUnits as SqlWindowFrameUnits,
+    WindowSpec as SqlWindowSpec, WindowType,
 };
 
 use crate::domain::{derive_column_domains, intersect_domains, union_domains};
@@ -4037,11 +4037,7 @@ fn unsupported_queryless_create_table() -> ProtocolStatement {
     ))
 }
 
-fn unsupported_write_statement(
-    category: &str,
-    code: &str,
-    message: &str,
-) -> ProtocolStatement {
+fn unsupported_write_statement(category: &str, code: &str, message: &str) -> ProtocolStatement {
     ProtocolStatement::Unsupported(UnsupportedStatement::new(
         category.to_string(),
         vec![warning(code, DiagnosticArea::Statement, message)],
