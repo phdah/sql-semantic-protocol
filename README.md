@@ -222,7 +222,48 @@ cargo run -- --manifest tests/fixtures/extended_bundle/analysis-target.json
 
 The full fixture preserves every layer and identifies terminal outcomes in `graph.components[].final_outcomes`. The targeted fixture keeps only `warehouse.analytics.final_orders` and its required in-bundle ancestors while retaining the complete analyzed input evidence.
 
-`--manifest` is mutually exclusive with direct analysis options such as `--dialect`, `--catalog-relation`, `--default-catalog`, `--default-schema`, `--target`, `--sql`, `--file`, `--dir`, and positional SQL. Output-format options such as OpenLineage export remain CLI-level options and can be combined with a manifest.
+`--manifest` is mutually exclusive with `--dbt-manifest` and direct analysis options such as `--dialect`, `--catalog-relation`, `--default-catalog`, `--default-schema`, `--target`, `--sql`, `--file`, `--dir`, and positional SQL. `--dbt-manifest` is mutually exclusive with direct SQL/catalog options but may be combined with `--target`. Output-format options such as OpenLineage export remain CLI-level options and can be combined with either manifest form.
+
+## dbt manifest adapter
+
+A dbt project can be analyzed directly from its `manifest.json` artifact without teaching the core protocol about dbt-specific types. The adapter uses dbt metadata for stable model identity, relation identity, and declared dependencies, then routes model SQL through the same analyzer, relation catalog, graph construction, composition, and output-domain logic used by ordinary SQL inputs.
+
+The CLI reads the artifact's `metadata.adapter_type` and delegates dialect selection to sqlparser:
+
+```sh
+cargo run -- --dbt-manifest target/manifest.json
+```
+
+Target projection remains a consumer-side operation and can be applied after dbt analysis:
+
+```sh
+cargo run -- \
+  --dbt-manifest target/manifest.json \
+  --target warehouse.analytics.customer_summary
+```
+
+The library keeps dialect selection explicit:
+
+```rust
+use sql_semantic_protocol::{analyze_dbt_manifest, parse_dbt_manifest, to_bundle_json};
+use sqlparser::dialect::dialect_from_str;
+
+let artifact = std::fs::read_to_string("target/manifest.json")?;
+let manifest = parse_dbt_manifest(&artifact)?;
+let dialect = dialect_from_str(manifest.adapter_type())
+    .ok_or("dbt adapter type is not a sqlparser dialect")?;
+let bundle = analyze_dbt_manifest(&manifest, manifest.adapter_type(), dialect.as_ref())?;
+
+println!("{}", to_bundle_json(&bundle));
+```
+
+The adapter currently accepts dbt manifest schema versions v10, v11, and v12. It intentionally reads only the artifact fields needed at this boundary: `metadata`, `nodes`, `sources`, model `unique_id`, `relation_name`, `database`, `schema`, `language`, `compiled_code`/`raw_code`, source paths, and `depends_on.nodes`. dbt-specific artifact structures do not appear in the core protocol model.
+
+Model identity comes from dbt `unique_id`, and produced dataset identity comes from `relation_name`; filenames are retained only as source metadata. `compiled_code` is preferred. Plain `raw_code` is accepted only when it contains no Jinja delimiters. Python models, relation-less models such as ephemerals, missing dependency relations, dependency cycles, and uncompiled Jinja fail explicitly rather than being guessed or silently omitted.
+
+dbt `depends_on.nodes` provides deterministic model ordering and is mapped to canonical relation identities from the artifact. The adapter verifies that every declared dependency is also present in the dependency graph derived from the analyzed SQL. This preserves the SQL Semantic Protocol as the semantic authority while using dbt metadata to resolve identities and detect inconsistent artifacts. Sources and other relation-backed dbt resources seed the generic relation catalog and remain external graph dependencies unless an analyzed SQL model produces them.
+
+An equivalent workload supplied through the dbt adapter and through generic configured inputs produces the same protocol semantics when both provide the same SQL, identities, relation context, and catalog metadata.
 
 ## OpenLineage export
 
@@ -267,7 +308,7 @@ The current development version is `0.2.0`. The current roadmap targets the firs
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]]
+sql-semantic-protocol [--dbt-manifest <path> | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]...
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.
