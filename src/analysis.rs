@@ -2617,7 +2617,7 @@ fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDomain {
         BinaryOperator::Add => left.checked_add(right),
         BinaryOperator::Subtract => left.checked_sub(right),
         BinaryOperator::Multiply => left.checked_mul(right),
-        BinaryOperator::Division => {
+        BinaryOperator::Divide => {
             if right == 0 {
                 None
             } else {
