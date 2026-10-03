@@ -307,7 +307,20 @@ SemVer compatibility is defined primarily by the public protocol contract. A bre
 
 Release Please manages the shared application/protocol version from Conventional Commits. The first stable bootstrap release is `1.0.0`; after that, breaking changes use major releases, backward-compatible features use minor releases, and compatible fixes or internal changes use patch releases.
 
-The release workflow opens or updates a release PR from `main`. Merging that release PR creates the matching `vX.Y.Z` tag and GitHub release. The one-time `release-as: 1.0.0` bootstrap override is removed after `v1.0.0` has been produced.
+The release workflow opens or updates a release PR from `main`. The generated release branch is checked with `cargo publish --dry-run --locked`. Merging the release PR creates the matching `vX.Y.Z` tag and GitHub release, then publishes the same package version to crates.io. Publishing uses the repository secret `CARGO_REGISTRY_TOKEN`. The one-time `release-as: 1.0.0` bootstrap override is removed after `v1.0.0` has been produced.
+
+After publication, the binary can be installed with:
+
+```sh
+cargo install sql-semantic-protocol
+```
+
+The library can be consumed from crates.io with:
+
+```toml
+[dependencies]
+sql-semantic-protocol = "1"
+```
 
 ## CLI
 

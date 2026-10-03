@@ -37,3 +37,31 @@ jobs:
       - name: Verify release version invariants
         if: steps.release.outputs.prs_created == 'true'
         run: cargo test --test version_contract
+
+      - name: Verify crates.io package
+        if: steps.release.outputs.prs_created == 'true'
+        run: cargo publish --dry-run --locked
+
+      - name: Check out released revision
+        if: steps.release.outputs.release_created == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+
+      - name: Install Rust toolchain for publish
+        if: steps.release.outputs.release_created == 'true'
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Verify released version
+        if: steps.release.outputs.release_created == 'true'
+        run: |
+          test "v${{ steps.release.outputs.version }}" = "${{ steps.release.outputs.tag_name }}"
+          cargo test --test version_contract
+
+      - name: Publish crate to crates.io
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --locked
