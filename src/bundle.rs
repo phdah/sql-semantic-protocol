@@ -981,8 +981,7 @@ impl TargetSelectionError {
         match self {
             Self::UnknownTarget { .. } => &[],
             Self::AmbiguousTarget {
-                producer_layer_ids,
-                ..
+                producer_layer_ids, ..
             } => producer_layer_ids,
         }
     }
