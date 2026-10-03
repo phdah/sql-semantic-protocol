@@ -27,7 +27,9 @@ The statement stored under the referenced input is the local semantics for that 
 
 If composition cannot be trusted, it is emitted as `status: "unresolved"` with one of `missing_producer`, `ambiguous_producer`, `cycle`, `partial_producer`, or `unsupported` plus diagnostics. Producers must not guess through these states.
 
-A query-backed CREATE is a `definition` write and fully defines its named relation. `INSERT INTO ... SELECT` is an `append` write: the source query is analyzed normally, so the inserted rows retain dependencies, domains, output, and lineage, but the write does not describe rows already present in the target. `MERGE` is a `conditional_mutation` write and records the source dependencies, match condition, and normalized update/insert/delete clauses. Unsupported DML forms remain explicit diagnostics rather than being treated as complete transformations.
+A query-backed CREATE is a `definition` write and fully defines its named relation. `INSERT INTO ... SELECT` is an `append` write: the source query is analyzed normally, so the inserted rows retain dependencies, output value domains, and lineage, but the write does not describe rows already present in the target. `MERGE` is a `conditional_mutation` write and records the source dependencies, match condition, and normalized update/insert/delete clauses. Every normalized UPDATE assignment and INSERT value stores both its expression and its conservative `domain`. For MATCHED branches, the match condition and additional clause predicate constrain those write domains; safe equality propagation can transfer a known interval across equal columns. Non-matching branches do not incorrectly assume the positive match condition. Unsupported DML forms remain explicit diagnostics rather than being treated as complete transformations.
+
+These per-write domains describe values the MERGE can introduce or assign. They do not claim to describe the complete post-MERGE table because untouched target rows can remain. The relation therefore continues to compose as a partial producer even when individual written values have precise intervals.
 
 ## Dependency graph
 
