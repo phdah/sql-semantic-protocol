@@ -78,7 +78,10 @@
                     "relation": "t",
                     "column": "b"
                   }
-                ]
+                ],
+                "domain": {
+                  "kind": "unbounded"
+                }
               }
             ]
           },
@@ -146,7 +149,10 @@
                   "relation": "t",
                   "column": "b"
                 }
-              ]
+              ],
+              "domain": {
+                "kind": "unbounded"
+              }
             }
           ]
         },
