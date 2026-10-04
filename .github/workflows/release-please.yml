@@ -85,6 +85,7 @@ jobs:
           fi
 
           if curl --fail --silent --show-error \
+            --user-agent "sql-semantic-protocol-release-workflow (+https://github.com/phdah/sql-semantic-protocol)" \
             "https://crates.io/api/v1/crates/sql-semantic-protocol/${version}" \
             >/dev/null; then
             echo "required=false" >> "$GITHUB_OUTPUT"
