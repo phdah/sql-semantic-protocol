@@ -1324,6 +1324,148 @@ mod tests {
     }
 
     #[test]
+    fn parses_catalog_columns_in_warehouse_order() {
+        let json = r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+                "dbt_version": "1.12.5"
+            },
+            "nodes": {},
+            "sources": {
+                "source.demo.raw.orders": {
+                    "unique_id": "source.demo.raw.orders",
+                    "metadata": {
+                        "type": "BASE TABLE",
+                        "schema": "raw",
+                        "name": "orders",
+                        "database": "warehouse"
+                    },
+                    "columns": {
+                        "payload": {"name": "payload", "type": "JSONB", "index": 2},
+                        "id": {"name": "id", "type": "BIGINT", "index": 1}
+                    },
+                    "stats": {}
+                }
+            },
+            "errors": null
+        }"#;
+
+        let catalog = parse_dbt_catalog(json).expect("catalog should parse");
+        assert_eq!(catalog.schema_version(), 1);
+        assert_eq!(catalog.dbt_version(), Some("1.12.5"));
+
+        let columns = &catalog
+            .resources
+            .get("source.demo.raw.orders")
+            .expect("source should exist")
+            .columns;
+        assert_eq!(
+            columns
+                .iter()
+                .map(|column| column.name.as_str())
+                .collect::<Vec<_>>(),
+            ["id", "payload"]
+        );
+    }
+
+    #[test]
+    fn rejects_catalog_metadata_query_errors() {
+        let json = r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json"
+            },
+            "nodes": {},
+            "sources": {},
+            "errors": ["permission denied reading raw.orders"]
+        }"#;
+
+        assert_eq!(
+            parse_dbt_catalog(json),
+            Err(DbtCatalogError::CatalogErrors {
+                errors: vec!["permission denied reading raw.orders".to_string()]
+            })
+        );
+    }
+
+    #[test]
+    fn manifest_and_catalog_produce_typed_source_schemas() {
+        use sqlparser::dialect::PostgreSqlDialect;
+
+        let manifest_json = r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+                "adapter_type": "postgres",
+                "dbt_version": "1.12.5"
+            },
+            "nodes": {
+                "model.demo.orders": {
+                    "unique_id": "model.demo.orders",
+                    "resource_type": "model",
+                    "relation_name": "analytics.orders",
+                    "language": "sql",
+                    "compiled_code": "select id, payload from raw.orders where id >= 10",
+                    "depends_on": {"nodes": ["source.demo.raw.orders"]},
+                    "database": null,
+                    "schema": "analytics"
+                }
+            },
+            "sources": {
+                "source.demo.raw.orders": {
+                    "unique_id": "source.demo.raw.orders",
+                    "relation_name": "raw.orders"
+                }
+            }
+        }"#;
+        let catalog_json = r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+                "dbt_version": "1.12.5"
+            },
+            "nodes": {},
+            "sources": {
+                "source.demo.raw.orders": {
+                    "unique_id": "source.demo.raw.orders",
+                    "metadata": {
+                        "type": "BASE TABLE",
+                        "schema": "raw",
+                        "name": "orders",
+                        "database": null
+                    },
+                    "columns": {
+                        "payload": {"name": "payload", "type": "JSONB", "index": 2},
+                        "id": {"name": "id", "type": "BIGINT", "index": 1}
+                    },
+                    "stats": {}
+                }
+            },
+            "errors": null
+        }"#;
+
+        let manifest = parse_dbt_manifest(manifest_json).expect("manifest should parse");
+        let catalog = parse_dbt_catalog(catalog_json).expect("catalog should parse");
+        let bundle = analyze_dbt_artifacts(
+            &manifest,
+            &catalog,
+            "postgresql",
+            &PostgreSqlDialect {},
+        )
+        .expect("paired dbt artifacts should analyze");
+
+        let [schema] = bundle.source_schemas() else {
+            panic!("one source schema should be emitted");
+        };
+        assert_eq!(schema.relation(), "raw.orders");
+        assert_eq!(
+            schema
+                .columns()
+                .iter()
+                .map(|column| (column.name(), column.data_type().kind()))
+                .collect::<Vec<_>>(),
+            [("id", "signed_integer"), ("payload", "json")]
+        );
+    }
+
+    #[test]
     fn rejects_uncompiled_jinja_model() {
         let json = r#"{
             "metadata": {
