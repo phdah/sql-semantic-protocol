@@ -11,7 +11,7 @@ use serde_json::{Map, Value};
 use sqlparser::dialect::Dialect;
 
 use crate::{
-    analyze_configured_inputs_with_catalog, AnalysisBundle, ComposedSemantics,
+    analyze_configured_inputs_with_catalog, AnalysisBundle,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, RelationCatalog, RelationContext,
     RelationSchema, SchemaColumn, SqlInput,
 };
@@ -21,7 +21,6 @@ use crate::{
 /// These schemas cover dbt manifest v10, v11, and v12. The adapter intentionally reads only the
 /// stable fields it needs at the integration boundary.
 pub const SUPPORTED_DBT_MANIFEST_VERSIONS: &[u32] = &[10, 11, 12];
-
 
 /// dbt catalog schema versions accepted by the adapter.
 ///
