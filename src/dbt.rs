@@ -11,8 +11,9 @@ use serde_json::{Map, Value};
 use sqlparser::dialect::Dialect;
 
 use crate::{
-    analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, RelationCatalog, RelationContext, SqlInput,
+    analyze_configured_inputs_with_catalog, AnalysisBundle, ComposedSemantics,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, RelationCatalog, RelationContext,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 /// dbt manifest schema versions accepted by the adapter.
@@ -20,6 +21,199 @@ use crate::{
 /// These schemas cover dbt manifest v10, v11, and v12. The adapter intentionally reads only the
 /// stable fields it needs at the integration boundary.
 pub const SUPPORTED_DBT_MANIFEST_VERSIONS: &[u32] = &[10, 11, 12];
+
+
+/// dbt catalog schema versions accepted by the adapter.
+///
+/// Catalog v0 and v1 share the table/column shape needed by the protocol. v1 adds artifact
+/// metadata while v0 exposes its generation timestamp at the root.
+pub const SUPPORTED_DBT_CATALOG_VERSIONS: &[u32] = &[0, 1];
+
+/// Parsed dbt catalog metadata containing warehouse-introspected relation schemas.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DbtCatalog {
+    schema_version: u32,
+    dbt_version: Option<String>,
+    resources: BTreeMap<String, DbtCatalogResource>,
+}
+
+impl DbtCatalog {
+    /// Return the dbt catalog schema version.
+    pub fn schema_version(&self) -> u32 {
+        self.schema_version
+    }
+
+    /// Return the dbt version recorded by catalog v1 when present.
+    pub fn dbt_version(&self) -> Option<&str> {
+        self.dbt_version.as_deref()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DbtCatalogResource {
+    columns: Vec<DbtCatalogColumn>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DbtCatalogColumn {
+    name: String,
+    data_type: String,
+    index: i64,
+}
+
+/// Error returned when dbt catalog metadata cannot be translated safely.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum DbtCatalogError {
+    /// The catalog artifact is not valid JSON.
+    InvalidJson {
+        /// JSON parser error text.
+        message: String,
+    },
+    /// A required catalog field is absent or malformed.
+    InvalidField {
+        /// JSON path identifying the affected field.
+        path: String,
+        /// Explanation of the invalid value.
+        message: String,
+    },
+    /// The catalog schema version is valid but unsupported.
+    UnsupportedSchemaVersion {
+        /// Parsed catalog schema version.
+        version: u32,
+    },
+    /// dbt reported warehouse metadata-query failures while producing the catalog.
+    CatalogErrors {
+        /// Errors reported by dbt.
+        errors: Vec<String>,
+    },
+}
+
+impl fmt::Display for DbtCatalogError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidJson { message } => write!(formatter, "invalid dbt catalog JSON: {message}"),
+            Self::InvalidField { path, message } => {
+                write!(formatter, "invalid dbt catalog field '{path}': {message}")
+            }
+            Self::UnsupportedSchemaVersion { version } => write!(
+                formatter,
+                "unsupported dbt catalog schema v{version}; supported versions are {}",
+                SUPPORTED_DBT_CATALOG_VERSIONS
+                    .iter()
+                    .map(u32::to_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Self::CatalogErrors { errors } => {
+                write!(formatter, "dbt catalog contains metadata errors: {}", errors.join("; "))
+            }
+        }
+    }
+}
+
+impl std::error::Error for DbtCatalogError {}
+
+/// Error returned when a manifest/catalog pair cannot produce the complete dbt protocol.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum DbtArtifactsError {
+    /// Manifest parsing or SQL analysis failed.
+    Manifest(DbtManifestError),
+    /// Catalog parsing failed.
+    Catalog(DbtCatalogError),
+    /// The catalog contains a resource absent from the paired manifest.
+    CatalogResourceNotInManifest {
+        /// Catalog resource unique ID.
+        unique_id: String,
+    },
+    /// A catalog resource cannot be attached to a canonical relation identity.
+    MissingRelationIdentity {
+        /// Resource unique ID.
+        unique_id: String,
+    },
+    /// A warehouse datatype could not be normalized safely.
+    ColumnType {
+        /// Resource unique ID.
+        unique_id: String,
+        /// Canonical relation identity.
+        relation: String,
+        /// Column name.
+        column: String,
+        /// Warehouse datatype string.
+        data_type: String,
+        /// Normalization failure.
+        message: String,
+    },
+    /// A physical dependency discovered from dbt SQL has no warehouse schema in catalog.json.
+    MissingCatalogSchema {
+        /// Canonical physical relation identity.
+        relation: String,
+    },
+}
+
+impl DbtArtifactsError {
+    /// Return the underlying configured-input analysis error when SQL analysis failed.
+    pub fn analysis_error(&self) -> Option<&ConfiguredInputAnalysisError> {
+        match self {
+            Self::Manifest(error) => error.analysis_error(),
+            _ => None,
+        }
+    }
+}
+
+impl fmt::Display for DbtArtifactsError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Manifest(error) => write!(formatter, "{error}"),
+            Self::Catalog(error) => write!(formatter, "{error}"),
+            Self::CatalogResourceNotInManifest { unique_id } => write!(
+                formatter,
+                "dbt catalog resource '{unique_id}' is absent from the paired manifest"
+            ),
+            Self::MissingRelationIdentity { unique_id } => write!(
+                formatter,
+                "dbt catalog resource '{unique_id}' has no relation identity in the paired manifest"
+            ),
+            Self::ColumnType {
+                unique_id,
+                relation,
+                column,
+                data_type,
+                message,
+            } => write!(
+                formatter,
+                "dbt catalog column '{unique_id}' ({relation}.{column}) has unsupported datatype '{data_type}': {message}"
+            ),
+            Self::MissingCatalogSchema { relation } => write!(
+                formatter,
+                "dbt catalog has no warehouse schema for physical dependency '{relation}'"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for DbtArtifactsError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Manifest(error) => Some(error),
+            Self::Catalog(error) => Some(error),
+            _ => None,
+        }
+    }
+}
+
+impl From<DbtManifestError> for DbtArtifactsError {
+    fn from(error: DbtManifestError) -> Self {
+        Self::Manifest(error)
+    }
+}
+
+impl From<DbtCatalogError> for DbtArtifactsError {
+    fn from(error: DbtCatalogError) -> Self {
+        Self::Catalog(error)
+    }
+}
 
 /// Parsed dbt manifest metadata and SQL-model inputs ready for protocol analysis.
 #[derive(Debug, Clone, PartialEq, Eq)]
