@@ -1034,7 +1034,7 @@ fn relation_schemas_from_catalog(
             None => {
                 schemas.insert(relation.to_string(), (unique_id.clone(), schema));
             }
-            Some((first_unique_id, existing)) if existing == &schema => {}
+            Some((_, existing)) if existing == &schema => {}
             Some((first_unique_id, _)) => {
                 return Err(DbtArtifactsError::ConflictingCatalogSchemas {
                     relation: relation.to_string(),
