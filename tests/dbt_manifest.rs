@@ -2,8 +2,9 @@ use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
 
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest, parse_dbt_manifest,
-    to_bundle_json, ComposedSemantics, ConfiguredSqlInput, LiteralValue, RelationCatalog,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_dbt_manifest,
+    parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ComposedSemantics, ConfiguredSqlInput,
+    LiteralValue, RelationCatalog,
     RelationContext, RelationResolution, SqlInput, TransformationLayer, ValueDomain,
 };
 use sqlparser::dialect::dialect_from_str;
@@ -15,6 +16,11 @@ fn fixture_path() -> PathBuf {
 fn fixture_manifest() -> sql_semantic_protocol::DbtManifest {
     parse_dbt_manifest(include_str!("fixtures/dbt/manifest-v12.json"))
         .expect("dbt manifest fixture should parse")
+}
+
+fn fixture_catalog() -> sql_semantic_protocol::DbtCatalog {
+    parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json"))
+        .expect("dbt catalog fixture should parse")
 }
 
 fn run(arguments: &[&str]) -> Output {
@@ -113,6 +119,30 @@ fn dbt_manifest_builds_named_graph_and_composed_outcome_domains() {
 }
 
 #[test]
+fn dbt_manifest_and_catalog_emit_complete_typed_relation_schemas() {
+    let manifest = fixture_manifest();
+    let catalog = fixture_catalog();
+    let dialect = dialect_from_str("postgres").expect("postgres dialect");
+    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "postgres", dialect.as_ref())
+        .expect("paired dbt artifacts should analyze");
+
+    assert_eq!(bundle.source_schemas().len(), 3);
+    let source = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == "warehouse.raw.orders")
+        .expect("raw source schema should be present");
+    assert_eq!(
+        source
+            .columns()
+            .iter()
+            .map(|column| (column.name(), column.data_type().kind()))
+            .collect::<Vec<_>>(),
+        [("id", "signed_integer"), ("amount", "signed_integer")]
+    );
+}
+
+#[test]
 fn dbt_adapter_matches_equivalent_generic_analysis() {
     let manifest = fixture_manifest();
     let dialect = dialect_from_str("postgres").expect("postgres dialect");
@@ -175,9 +205,13 @@ fn repeated_dbt_analysis_is_byte_identical() {
 #[test]
 fn dbt_manifest_cli_matches_library_analysis() {
     let manifest_path = fixture_path();
+    let catalog_path =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/dbt/catalog-v1.json");
     let output = run(&[
         "--dbt-manifest",
         manifest_path.to_str().expect("UTF-8 fixture path"),
+        "--dbt-catalog",
+        catalog_path.to_str().expect("UTF-8 catalog fixture path"),
     ]);
     assert!(
         output.status.success(),
@@ -187,9 +221,10 @@ fn dbt_manifest_cli_matches_library_analysis() {
     assert!(output.stderr.is_empty());
 
     let manifest = fixture_manifest();
+    let catalog = fixture_catalog();
     let dialect = dialect_from_str("postgres").expect("postgres dialect");
-    let bundle =
-        analyze_dbt_manifest(&manifest, "postgres", dialect.as_ref()).expect("library analysis");
+    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "postgres", dialect.as_ref())
+        .expect("library analysis");
 
     assert_eq!(
         String::from_utf8(output.stdout)
