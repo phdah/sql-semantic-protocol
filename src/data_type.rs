@@ -263,10 +263,16 @@ impl fmt::Display for DataTypeParseError {
                 write!(formatter, "unsupported SQL dialect '{dialect}'")
             }
             Self::Parse { data_type, message } => {
-                write!(formatter, "could not parse datatype '{data_type}': {message}")
+                write!(
+                    formatter,
+                    "could not parse datatype '{data_type}': {message}"
+                )
             }
             Self::TrailingSyntax { data_type } => {
-                write!(formatter, "unexpected trailing syntax after datatype '{data_type}'")
+                write!(
+                    formatter,
+                    "unexpected trailing syntax after datatype '{data_type}'"
+                )
             }
         }
     }
@@ -275,10 +281,7 @@ impl fmt::Display for DataTypeParseError {
 impl Error for DataTypeParseError {}
 
 /// Parse dialect-specific SQL datatype syntax into the canonical protocol datatype model.
-pub fn parse_data_type(
-    sql: &str,
-    dialect_name: &str,
-) -> Result<DataType, DataTypeParseError> {
+pub fn parse_data_type(sql: &str, dialect_name: &str) -> Result<DataType, DataTypeParseError> {
     let normalized_dialect = dialect_name.to_ascii_lowercase();
     let dialect = dialect_from_str(&normalized_dialect).ok_or_else(|| {
         DataTypeParseError::UnsupportedDialect {
@@ -381,13 +384,16 @@ fn normalize_data_type(data_type: &SqlDataType, dialect_name: &str) -> DataType 
             unsigned_integer(8)
         }
         SqlDataType::Int2(_) | SqlDataType::SmallInt(_) | SqlDataType::Int16 => signed_integer(16),
-        SqlDataType::Int2Unsigned(_) | SqlDataType::SmallIntUnsigned(_) | SqlDataType::USmallInt
+        SqlDataType::Int2Unsigned(_)
+        | SqlDataType::SmallIntUnsigned(_)
+        | SqlDataType::USmallInt
         | SqlDataType::UInt16 => unsigned_integer(16),
         SqlDataType::MediumInt(_) => signed_integer(24),
         SqlDataType::MediumIntUnsigned(_) => unsigned_integer(24),
-        SqlDataType::Int(_) | SqlDataType::Int4(_) | SqlDataType::Int32 | SqlDataType::Integer(_) => {
-            signed_integer(32)
-        }
+        SqlDataType::Int(_)
+        | SqlDataType::Int4(_)
+        | SqlDataType::Int32
+        | SqlDataType::Integer(_) => signed_integer(32),
         SqlDataType::IntUnsigned(_)
         | SqlDataType::Int4Unsigned(_)
         | SqlDataType::IntegerUnsigned(_)
@@ -399,9 +405,10 @@ fn normalize_data_type(data_type: &SqlDataType, dialect_name: &str) -> DataType 
                 signed_integer(64)
             }
         }
-        SqlDataType::Int64 | SqlDataType::BigInt(_) | SqlDataType::Signed | SqlDataType::SignedInteger => {
-            signed_integer(64)
-        }
+        SqlDataType::Int64
+        | SqlDataType::BigInt(_)
+        | SqlDataType::Signed
+        | SqlDataType::SignedInteger => signed_integer(64),
         SqlDataType::Int8Unsigned(_) => {
             if dialect_name == "clickhouse" {
                 unsigned_integer(8)
@@ -459,9 +466,9 @@ fn normalize_data_type(data_type: &SqlDataType, dialect_name: &str) -> DataType 
             length: None,
             fixed: false,
         },
-        SqlDataType::Bit(length) | SqlDataType::BitVarying(length) | SqlDataType::VarBit(length) => {
-            DataType::BitString { length: *length }
-        }
+        SqlDataType::Bit(length)
+        | SqlDataType::BitVarying(length)
+        | SqlDataType::VarBit(length) => DataType::BitString { length: *length },
         SqlDataType::Custom(name, modifiers) => {
             normalize_custom_type(&name.to_string(), modifiers, dialect_name)
         }
@@ -604,7 +611,9 @@ fn column_field(column: &ColumnDef, dialect_name: &str) -> DataTypeField {
 
 fn normalize_custom_type(name: &str, modifiers: &[String], _dialect_name: &str) -> DataType {
     let normalized = name
-        .trim_matches(|character| character == '"' || character == '`' || character == '[' || character == ']')
+        .trim_matches(|character| {
+            character == '"' || character == '`' || character == '[' || character == ']'
+        })
         .to_ascii_uppercase();
 
     match normalized.as_str() {
