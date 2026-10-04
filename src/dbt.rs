@@ -149,6 +149,15 @@ pub enum DbtArtifactsError {
         /// Normalization failure.
         message: String,
     },
+    /// Multiple dbt resources map to one physical relation but disagree on its warehouse schema.
+    ConflictingCatalogSchemas {
+        /// Canonical physical relation identity.
+        relation: String,
+        /// First resource unique ID.
+        first_unique_id: String,
+        /// Conflicting resource unique ID.
+        second_unique_id: String,
+    },
     /// A catalog relation schema is internally inconsistent.
     CatalogSchema {
         /// Resource unique ID.
@@ -197,6 +206,14 @@ impl fmt::Display for DbtArtifactsError {
             } => write!(
                 formatter,
                 "dbt catalog column '{unique_id}' ({relation}.{column}) has unsupported datatype '{data_type}': {message}"
+            ),
+            Self::ConflictingCatalogSchemas {
+                relation,
+                first_unique_id,
+                second_unique_id,
+            } => write!(
+                formatter,
+                "dbt catalog resources '{first_unique_id}' and '{second_unique_id}' disagree on warehouse schema for '{relation}'"
             ),
             Self::CatalogSchema {
                 unique_id,
@@ -973,7 +990,7 @@ fn relation_schemas_from_catalog(
     catalog: &DbtCatalog,
     dialect_name: &str,
 ) -> Result<Vec<RelationSchema>, DbtArtifactsError> {
-    let mut schemas = Vec::with_capacity(catalog.resources.len());
+    let mut schemas = BTreeMap::<String, (String, RelationSchema)>::new();
 
     for (unique_id, catalog_resource) in &catalog.resources {
         let resource = manifest.resources.get(unique_id).ok_or_else(|| {
@@ -1012,11 +1029,23 @@ fn relation_schemas_from_catalog(
                 message: error.to_string(),
             }
         })?;
-        schemas.push(schema);
+
+        match schemas.get(relation) {
+            None => {
+                schemas.insert(relation.to_string(), (unique_id.clone(), schema));
+            }
+            Some((first_unique_id, existing)) if existing == &schema => {}
+            Some((first_unique_id, _)) => {
+                return Err(DbtArtifactsError::ConflictingCatalogSchemas {
+                    relation: relation.to_string(),
+                    first_unique_id: first_unique_id.clone(),
+                    second_unique_id: unique_id.clone(),
+                });
+            }
+        }
     }
 
-    schemas.sort_by(|left, right| left.relation().cmp(right.relation()));
-    Ok(schemas)
+    Ok(schemas.into_values().map(|(_, schema)| schema).collect())
 }
 
 fn validate_catalog_coverage(bundle: &AnalysisBundle) -> Result<(), DbtArtifactsError> {
