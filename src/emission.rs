@@ -5,6 +5,7 @@
 
 use serde_json::{json, Value};
 
+use crate::data_type::DataType;
 use crate::bundle::{
     AnalysisBundle, AnalysisGraph, ComposedSemantics, CompositionDiagnostic, DatasetRef,
     GraphComponent, GraphEdge, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
@@ -89,7 +90,7 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                     "columns": schema.columns().iter().map(|column| {
                         json!({
                             "name": column.name(),
-                            "type": column.data_type().as_str()
+                            "data_type": data_type_to_value(column.data_type())
                         })
                     }).collect::<Vec<_>>()
                 })
@@ -98,6 +99,117 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
     }
 
     value
+}
+
+fn data_type_to_value(data_type: &DataType) -> Value {
+    match data_type {
+        DataType::Boolean => json!({ "kind": "boolean" }),
+        DataType::SignedInteger { bits } => {
+            json!({ "kind": "signed_integer", "bits": bits })
+        }
+        DataType::UnsignedInteger { bits } => {
+            json!({ "kind": "unsigned_integer", "bits": bits })
+        }
+        DataType::Decimal { precision, scale } => {
+            json!({ "kind": "decimal", "precision": precision, "scale": scale })
+        }
+        DataType::FloatingPoint { bits } => {
+            json!({ "kind": "floating_point", "bits": bits })
+        }
+        DataType::String { length, fixed } => {
+            json!({ "kind": "string", "length": length, "fixed": fixed })
+        }
+        DataType::Binary { length, fixed } => {
+            json!({ "kind": "binary", "length": length, "fixed": fixed })
+        }
+        DataType::Date => json!({ "kind": "date" }),
+        DataType::Time { precision } => {
+            json!({ "kind": "time", "precision": precision })
+        }
+        DataType::Timestamp { precision } => {
+            json!({ "kind": "timestamp", "precision": precision })
+        }
+        DataType::Interval => json!({ "kind": "interval" }),
+        DataType::Uuid => json!({ "kind": "uuid" }),
+        DataType::Json => json!({ "kind": "json" }),
+        DataType::BitString { length } => {
+            json!({ "kind": "bit_string", "length": length })
+        }
+        DataType::Array { element, length } => json!({
+            "kind": "array",
+            "element": element.as_deref().map(data_type_to_value),
+            "length": length
+        }),
+        DataType::Map { key, value } => json!({
+            "kind": "map",
+            "key": data_type_to_value(key),
+            "value": data_type_to_value(value)
+        }),
+        DataType::Struct { fields } => json!({
+            "kind": "struct",
+            "fields": fields
+                .iter()
+                .map(|field| json!({
+                    "name": field.name(),
+                    "data_type": data_type_to_value(field.data_type())
+                }))
+                .collect::<Vec<_>>()
+        }),
+        DataType::Union { fields } => json!({
+            "kind": "union",
+            "fields": fields
+                .iter()
+                .map(|field| json!({
+                    "name": field.name(),
+                    "data_type": data_type_to_value(field.data_type())
+                }))
+                .collect::<Vec<_>>()
+        }),
+        DataType::Enum { values } => json!({
+            "kind": "enum",
+            "values": values
+                .iter()
+                .map(|value| json!({
+                    "name": value.name(),
+                    "value": value.value()
+                }))
+                .collect::<Vec<_>>()
+        }),
+        DataType::Set { values } => json!({
+            "kind": "set",
+            "values": values
+        }),
+        DataType::Table { name, fields } => json!({
+            "kind": "table",
+            "name": name,
+            "fields": fields
+                .iter()
+                .map(|field| json!({
+                    "name": field.name(),
+                    "data_type": data_type_to_value(field.data_type())
+                }))
+                .collect::<Vec<_>>()
+        }),
+        DataType::Geometry { kind } => json!({
+            "kind": "geometry",
+            "geometry_kind": kind
+        }),
+        DataType::Regclass => json!({ "kind": "regclass" }),
+        DataType::TextSearchVector => json!({ "kind": "text_search_vector" }),
+        DataType::TextSearchQuery => json!({ "kind": "text_search_query" }),
+        DataType::Nullable(inner) => json!({
+            "kind": "nullable",
+            "inner": data_type_to_value(inner)
+        }),
+        DataType::Any => json!({ "kind": "any" }),
+        DataType::Unspecified => json!({ "kind": "unspecified" }),
+        DataType::Trigger => json!({ "kind": "trigger" }),
+        DataType::Custom { name, modifiers } => json!({
+            "kind": "custom",
+            "name": name,
+            "modifiers": modifiers
+        }),
+    }
 }
 
 fn transformation_layer_to_value(layer: &TransformationLayer) -> Value {
