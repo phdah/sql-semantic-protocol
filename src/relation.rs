@@ -107,55 +107,18 @@ impl SchemaColumn {
     }
 }
 
-/// Whether the supplied relation schema is known to enumerate every column.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SchemaCompleteness {
-    /// The metadata source guarantees that every column is represented.
-    Complete,
-    /// The metadata source may contain only a declared subset of columns.
-    Partial,
-}
-
-impl SchemaCompleteness {
-    /// Return the stable protocol name for this completeness level.
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Complete => "complete",
-            Self::Partial => "partial",
-        }
-    }
-}
-
 /// Declared typed schema for one canonical source relation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RelationSchema {
     relation: String,
     columns: Vec<SchemaColumn>,
-    completeness: SchemaCompleteness,
 }
 
 impl RelationSchema {
-    /// Construct a validated complete relation schema.
+    /// Construct a validated relation schema.
     pub fn new(
         relation: impl Into<String>,
         columns: Vec<SchemaColumn>,
-    ) -> Result<Self, RelationMetadataError> {
-        Self::with_completeness(relation, columns, SchemaCompleteness::Complete)
-    }
-
-    /// Construct a validated relation schema that may contain only a subset of columns.
-    pub fn partial(
-        relation: impl Into<String>,
-        columns: Vec<SchemaColumn>,
-    ) -> Result<Self, RelationMetadataError> {
-        Self::with_completeness(relation, columns, SchemaCompleteness::Partial)
-    }
-
-    /// Construct a validated relation schema with explicit completeness metadata.
-    pub fn with_completeness(
-        relation: impl Into<String>,
-        columns: Vec<SchemaColumn>,
-        completeness: SchemaCompleteness,
     ) -> Result<Self, RelationMetadataError> {
         let relation = relation.into();
         let canonical = relation.trim();
@@ -183,7 +146,6 @@ impl RelationSchema {
         Ok(Self {
             relation: canonical.to_string(),
             columns,
-            completeness,
         })
     }
 
@@ -195,11 +157,6 @@ impl RelationSchema {
     /// Return columns in caller-declared order.
     pub fn columns(&self) -> &[SchemaColumn] {
         &self.columns
-    }
-
-    /// Return whether this schema is complete or only partial declared evidence.
-    pub const fn completeness(&self) -> SchemaCompleteness {
-        self.completeness
     }
 }
 
