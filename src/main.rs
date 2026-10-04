@@ -850,6 +850,53 @@ mod tests {
     use super::*;
 
     #[test]
+    fn parses_dbt_manifest_with_catalog_override() {
+        let command = parse_args(
+            [
+                "--dbt-manifest",
+                "target/manifest.json",
+                "--dbt-catalog",
+                "metadata/catalog.json",
+                "--target",
+                "analytics.orders",
+            ]
+            .into_iter()
+            .map(str::to_string),
+        )
+        .expect("dbt artifact options should parse");
+
+        match command {
+            Command::Analyze(options) => {
+                assert_eq!(
+                    options.dbt_manifest.as_deref(),
+                    Some(Path::new("target/manifest.json"))
+                );
+                assert_eq!(
+                    options.dbt_catalog.as_deref(),
+                    Some(Path::new("metadata/catalog.json"))
+                );
+                assert_eq!(options.targets, ["analytics.orders"]);
+            }
+            Command::Help => panic!("expected analyze command"),
+        }
+    }
+
+    #[test]
+    fn dbt_catalog_requires_manifest() {
+        let error = parse_args(
+            ["--dbt-catalog", "target/catalog.json"]
+                .into_iter()
+                .map(str::to_string),
+        )
+        .expect_err("catalog without manifest should fail");
+
+        assert_eq!(
+            error.to_string(),
+            "input error: --dbt-catalog requires --dbt-manifest"
+        );
+    }
+
+    #[test]
     fn parses_openlineage_output_options() {
         let command = parse_args(
             [
