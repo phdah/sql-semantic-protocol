@@ -107,18 +107,55 @@ impl SchemaColumn {
     }
 }
 
+/// Whether the supplied relation schema is known to enumerate every column.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SchemaCompleteness {
+    /// The metadata source guarantees that every column is represented.
+    Complete,
+    /// The metadata source may contain only a declared subset of columns.
+    Partial,
+}
+
+impl SchemaCompleteness {
+    /// Return the stable protocol name for this completeness level.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Complete => "complete",
+            Self::Partial => "partial",
+        }
+    }
+}
+
 /// Declared typed schema for one canonical source relation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RelationSchema {
     relation: String,
     columns: Vec<SchemaColumn>,
+    completeness: SchemaCompleteness,
 }
 
 impl RelationSchema {
-    /// Construct a validated relation schema.
+    /// Construct a validated complete relation schema.
     pub fn new(
         relation: impl Into<String>,
         columns: Vec<SchemaColumn>,
+    ) -> Result<Self, RelationMetadataError> {
+        Self::with_completeness(relation, columns, SchemaCompleteness::Complete)
+    }
+
+    /// Construct a validated relation schema that may contain only a subset of columns.
+    pub fn partial(
+        relation: impl Into<String>,
+        columns: Vec<SchemaColumn>,
+    ) -> Result<Self, RelationMetadataError> {
+        Self::with_completeness(relation, columns, SchemaCompleteness::Partial)
+    }
+
+    /// Construct a validated relation schema with explicit completeness metadata.
+    pub fn with_completeness(
+        relation: impl Into<String>,
+        columns: Vec<SchemaColumn>,
+        completeness: SchemaCompleteness,
     ) -> Result<Self, RelationMetadataError> {
         let relation = relation.into();
         let canonical = relation.trim();
@@ -146,6 +183,7 @@ impl RelationSchema {
         Ok(Self {
             relation: canonical.to_string(),
             columns,
+            completeness,
         })
     }
 
@@ -157,6 +195,11 @@ impl RelationSchema {
     /// Return columns in caller-declared order.
     pub fn columns(&self) -> &[SchemaColumn] {
         &self.columns
+    }
+
+    /// Return whether this schema is complete or only partial declared evidence.
+    pub const fn completeness(&self) -> SchemaCompleteness {
+        self.completeness
     }
 }
 
@@ -212,7 +255,29 @@ impl RelationCatalog {
     /// Schema relation identities participate in the same canonical relation resolution as names
     /// supplied to `RelationCatalog::new`.
     pub fn from_schemas(schemas: &[RelationSchema]) -> Result<Self, RelationMetadataError> {
+        let relation_names = schemas
+            .iter()
+            .map(RelationSchema::relation)
+            .collect::<Vec<_>>();
+        Self::from_relations_and_schemas(&relation_names, schemas)
+    }
+
+    /// Construct a catalog from relation identities plus optional typed schemas.
+    ///
+    /// This is useful for metadata sources such as dbt where every relation identity is known but
+    /// typed column evidence may only be available for a subset of resources.
+    pub fn from_relations_and_schemas(
+        relations: &[&str],
+        schemas: &[RelationSchema],
+    ) -> Result<Self, RelationMetadataError> {
+        let mut catalog = Self::new(relations)?;
+        let relation_names = catalog
+            .relations
+            .iter()
+            .map(|relation| relation.canonical.as_str())
+            .collect::<BTreeSet<_>>();
         let mut unique = BTreeSet::new();
+
         for schema in schemas {
             if !unique.insert(schema.relation().to_string()) {
                 return Err(RelationMetadataError::InvalidSchema {
@@ -220,13 +285,14 @@ impl RelationCatalog {
                     message: "relation schema is duplicated".to_string(),
                 });
             }
+            if !relation_names.contains(schema.relation()) {
+                return Err(RelationMetadataError::InvalidSchema {
+                    relation: schema.relation().to_string(),
+                    message: "schema relation is not present in catalog relations".to_string(),
+                });
+            }
         }
 
-        let relation_names = schemas
-            .iter()
-            .map(RelationSchema::relation)
-            .collect::<Vec<_>>();
-        let mut catalog = Self::new(&relation_names)?;
         catalog.schemas = schemas.to_vec();
         catalog
             .schemas
