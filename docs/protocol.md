@@ -13,6 +13,12 @@ Implementations should preserve caller order and generate deterministic IDs when
 Inline source labels are optional. File sources retain their path. Raw SQL text is intentionally not part of the semantic protocol.
 
 ## Source schemas
+For dbt inputs, complete source schemas come from the paired `catalog.json` artifact rather than
+being inferred from model SQL or declared manifest columns. `manifest.json` supplies resource and
+relation identity; `catalog.json` supplies warehouse-introspected columns and type strings. The
+adapter joins them by dbt `unique_id`, normalizes each catalog type into the canonical protocol
+datatype model, and rejects missing catalog coverage for physical dependencies.
+
 
 Optional `source_schemas` metadata carries declared datatypes for physical source relations when
 the caller supplies catalog schema information. Each entry has a canonical relation identity and
