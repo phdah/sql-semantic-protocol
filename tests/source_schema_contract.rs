@@ -83,14 +83,14 @@ fn complex_types_are_recursive_and_parser_independent() {
         Ok(DataType::Struct {
             fields: vec![
                 DataTypeField::new(
-                    Some("a"),
+                    Some("a".to_owned()),
                     DataType::String {
                         length: None,
                         fixed: false,
                     },
                 ),
                 DataTypeField::new(
-                    Some("b"),
+                    Some("b".to_owned()),
                     DataType::Array {
                         element: Some(Box::new(DataType::SignedInteger { bits: Some(64) })),
                         length: None,
