@@ -7,6 +7,8 @@
 use std::collections::BTreeSet;
 use std::fmt;
 
+use crate::data_type::{DataType, parse_data_type};
+
 /// Default catalog and schema context applied to one configured SQL input.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct RelationContext {
@@ -53,44 +55,18 @@ pub trait RelationResolver {
     ) -> Result<String, RelationResolutionError>;
 }
 
-/// Scalar source-column types carried by catalog schema metadata.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-#[non_exhaustive]
-pub enum ScalarType {
-    /// Signed integer values.
-    Integer,
-    /// Boolean values.
-    Boolean,
-    /// Timestamp values.
-    Timestamp,
-    /// UTF-8 string values.
-    String,
-}
-
-impl ScalarType {
-    /// Return the stable protocol name for this scalar type.
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Integer => "integer",
-            Self::Boolean => "boolean",
-            Self::Timestamp => "timestamp",
-            Self::String => "string",
-        }
-    }
-}
-
 /// One typed column in caller-supplied relation schema metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SchemaColumn {
     name: String,
-    data_type: ScalarType,
+    data_type: DataType,
 }
 
 impl SchemaColumn {
-    /// Construct a validated schema column.
+    /// Construct a validated schema column from an already normalized datatype.
     pub fn new(
         name: impl Into<String>,
-        data_type: ScalarType,
+        data_type: DataType,
     ) -> Result<Self, RelationMetadataError> {
         let name = name.into();
         if name.trim().is_empty() {
@@ -103,14 +79,31 @@ impl SchemaColumn {
         Ok(Self { name, data_type })
     }
 
+    /// Construct a schema column from dialect-specific SQL datatype syntax.
+    ///
+    /// The syntax is normalized immediately into the parser-independent protocol datatype model.
+    pub fn from_sql_type(
+        name: impl Into<String>,
+        sql_type: &str,
+        dialect_name: &str,
+    ) -> Result<Self, RelationMetadataError> {
+        let data_type = parse_data_type(sql_type, dialect_name).map_err(|error| {
+            RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: error.to_string(),
+            }
+        })?;
+        Self::new(name, data_type)
+    }
+
     /// Return the column name.
     pub fn name(&self) -> &str {
         &self.name
     }
 
-    /// Return the declared scalar type.
-    pub const fn data_type(&self) -> ScalarType {
-        self.data_type
+    /// Return the canonical declared datatype.
+    pub fn data_type(&self) -> &DataType {
+        &self.data_type
     }
 }
 
