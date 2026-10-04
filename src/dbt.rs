@@ -11,9 +11,8 @@ use serde_json::{Map, Value};
 use sqlparser::dialect::Dialect;
 
 use crate::{
-    analyze_configured_inputs_with_catalog, AnalysisBundle,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, RelationCatalog, RelationContext,
-    RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
+    ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn, SqlInput,
 };
 
 /// dbt manifest schema versions accepted by the adapter.
@@ -91,7 +90,9 @@ pub enum DbtCatalogError {
 impl fmt::Display for DbtCatalogError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidJson { message } => write!(formatter, "invalid dbt catalog JSON: {message}"),
+            Self::InvalidJson { message } => {
+                write!(formatter, "invalid dbt catalog JSON: {message}")
+            }
             Self::InvalidField { path, message } => {
                 write!(formatter, "invalid dbt catalog field '{path}': {message}")
             }
@@ -105,7 +106,11 @@ impl fmt::Display for DbtCatalogError {
                     .join(", ")
             ),
             Self::CatalogErrors { errors } => {
-                write!(formatter, "dbt catalog contains metadata errors: {}", errors.join("; "))
+                write!(
+                    formatter,
+                    "dbt catalog contains metadata errors: {}",
+                    errors.join("; ")
+                )
             }
         }
     }
@@ -501,17 +506,13 @@ fn parse_catalog_resources(
     for (resource_id, value) in resources {
         let resource_path = format!("{path}.{resource_id}");
         let object = catalog_object(value, &resource_path)?;
-        if let Some(unique_id) = catalog_optional_string(
-            object,
-            "unique_id",
-            &format!("{resource_path}.unique_id"),
-        )? {
+        if let Some(unique_id) =
+            catalog_optional_string(object, "unique_id", &format!("{resource_path}.unique_id"))?
+        {
             if unique_id != *resource_id {
                 return Err(catalog_invalid_field(
                     format!("{resource_path}.unique_id"),
-                    format!(
-                        "value '{unique_id}' does not match dictionary key '{resource_id}'"
-                    ),
+                    format!("value '{unique_id}' does not match dictionary key '{resource_id}'"),
                 ));
             }
         }
@@ -538,8 +539,7 @@ fn parse_catalog_resources(
                     "column datatype cannot be empty",
                 ));
             }
-            let index =
-                catalog_required_i64(column, "index", &format!("{column_path}.index"))?;
+            let index = catalog_required_i64(column, "index", &format!("{column_path}.index"))?;
 
             parsed_columns.push(DbtCatalogColumn {
                 name: name.to_string(),
@@ -680,10 +680,7 @@ fn catalog_required_i64(
         .ok_or_else(|| catalog_invalid_field(path, "expected an integer"))
 }
 
-fn catalog_invalid_field(
-    path: impl Into<String>,
-    message: impl Into<String>,
-) -> DbtCatalogError {
+fn catalog_invalid_field(path: impl Into<String>, message: impl Into<String>) -> DbtCatalogError {
     DbtCatalogError::InvalidField {
         path: path.into(),
         message: message.into(),
@@ -1443,13 +1440,9 @@ mod tests {
 
         let manifest = parse_dbt_manifest(manifest_json).expect("manifest should parse");
         let catalog = parse_dbt_catalog(catalog_json).expect("catalog should parse");
-        let bundle = analyze_dbt_artifacts(
-            &manifest,
-            &catalog,
-            "postgresql",
-            &PostgreSqlDialect {},
-        )
-        .expect("paired dbt artifacts should analyze");
+        let bundle =
+            analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &PostgreSqlDialect {})
+                .expect("paired dbt artifacts should analyze");
 
         let [schema] = bundle.source_schemas() else {
             panic!("one source schema should be emitted");
