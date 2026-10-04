@@ -1,7 +1,7 @@
 mod common;
 
 use sql_semantic_protocol::{
-    ConfiguredSqlInput, DataType, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, DataType, DataTypeField, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     analyze_configured_inputs_with_catalog, dialect_from_name, parse_data_type, to_bundle_json,
 };
 
@@ -82,14 +82,14 @@ fn complex_types_are_recursive_and_parser_independent() {
         parse_data_type("STRUCT<a STRING, b ARRAY<INT64>>", "bigquery"),
         Ok(DataType::Struct {
             fields: vec![
-                sql_semantic_protocol::DataTypeField::test_value(
+                DataTypeField::new(
                     Some("a"),
                     DataType::String {
                         length: None,
                         fixed: false,
                     },
                 ),
-                sql_semantic_protocol::DataTypeField::test_value(
+                DataTypeField::new(
                     Some("b"),
                     DataType::Array {
                         element: Some(Box::new(DataType::SignedInteger { bits: Some(64) })),
