@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/phdah/sql-semantic-protocol/compare/v1.0.0...v1.0.1) (2026-10-04)
+
+
+### Bug Fixes
+
+* **ci:** identify crates.io recovery requests ([#37](https://github.com/phdah/sql-semantic-protocol/issues/37)) ([e7ac121](https://github.com/phdah/sql-semantic-protocol/commit/e7ac12153a41b3178e0894d753249bfbcf726d84))
+* **ci:** recover unpublished tagged crate ([#32](https://github.com/phdah/sql-semantic-protocol/issues/32)) ([7833d86](https://github.com/phdah/sql-semantic-protocol/commit/7833d86e3971ebfce9f4f535a19febac167c8713))
+
 ## [1.0.0](https://github.com/phdah/sql-semantic-protocol/compare/v0.2.0...v1.0.0) (2026-10-04)
 
 
