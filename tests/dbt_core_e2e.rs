@@ -332,16 +332,19 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         library_json
     );
 
+    let raw_orders_relation = manifest_json["sources"]
+        .as_object()
+        .expect("manifest sources should be an object")
+        .values()
+        .find(|source| source["source_name"] == "raw" && source["name"] == "orders")
+        .and_then(|source| source["relation_name"].as_str())
+        .expect("raw orders source should have a relation identity");
     let source_schemas = protocol["source_schemas"]
         .as_array()
         .expect("dbt protocol should include warehouse source schemas");
     let raw_orders_schema = source_schemas
         .iter()
-        .find(|schema| {
-            schema["relation"]
-                .as_str()
-                .is_some_and(|relation| relation.ends_with(".raw.orders"))
-        })
+        .find(|schema| schema["relation"] == raw_orders_relation)
         .expect("raw orders warehouse schema should be present");
     let raw_order_columns = raw_orders_schema["columns"]
         .as_array()
