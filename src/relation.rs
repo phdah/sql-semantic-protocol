@@ -7,7 +7,7 @@
 use std::collections::BTreeSet;
 use std::fmt;
 
-use crate::data_type::{DataType, parse_data_type};
+use crate::data_type::{parse_data_type, DataType};
 
 /// Default catalog and schema context applied to one configured SQL input.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
