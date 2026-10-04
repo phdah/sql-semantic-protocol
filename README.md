@@ -73,13 +73,26 @@ Table-producing sources whose output schema cannot yet be modeled safely, includ
 ## Typed source schemas
 
 Consumers that need declared source datatypes can supply typed relation schemas through
-`RelationCatalog::from_schemas`. The resulting analysis bundle preserves those schemas under
-`source_schemas`, alongside the analyzed value domains. This allows consumers such as
-`sql-tdg` to generate unconstrained source columns without reparsing SQL or maintaining a
-separate datatype contract.
+`RelationCatalog::from_schemas`. A `SchemaColumn` can be constructed from the canonical
+parser-independent `DataType` model or from dialect-specific SQL syntax with
+`SchemaColumn::from_sql_type`. The latter delegates parsing to the selected sqlparser dialect and
+normalizes the result immediately.
 
-The public `dialect_from_name` helper delegates dialect lookup to sqlparser while keeping simple
-consumers from adding a direct sqlparser dependency only to select a dialect.
+The canonical model covers numeric widths and signedness, decimals, floating point, character and
+binary families, dates/times/timestamps, intervals, UUIDs, JSON and semi-structured documents,
+bit strings, arrays, maps, structs/tuples/nested records, unions, enums, sets, nullable wrappers,
+table-valued types, geometry/geography, PostgreSQL search/regclass types, and vendor/user-defined
+custom types. Dialect storage aliases normalize where their logical meaning is the same: for
+example timestamp timezone variants become one timestamp type, JSON/JSONB/VARIANT/OBJECT/SUPER
+become one document type, and ClickHouse LowCardinality unwraps to its logical value type.
+
+The resulting analysis bundle preserves those schemas under `source_schemas`, alongside analyzed
+value domains. This allows consumers such as `sql-tdg` to generate unconstrained source columns
+without reparsing SQL or maintaining a second datatype contract. Unknown vendor extensions remain
+explicit `custom` datatypes instead of being discarded or guessed.
+
+The public `dialect_from_name` and `parse_data_type` helpers delegate dialect handling to
+sqlparser while keeping consumers independent from sqlparser AST types.
 
 ## Outcome selection
 
