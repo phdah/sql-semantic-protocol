@@ -4,8 +4,8 @@ use std::process::{Command, Output, Stdio};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_dbt_manifest,
     parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ComposedSemantics, ConfiguredSqlInput,
-    LiteralValue, RelationCatalog,
-    RelationContext, RelationResolution, SqlInput, TransformationLayer, ValueDomain,
+    LiteralValue, RelationCatalog, RelationContext, RelationResolution, SqlInput,
+    TransformationLayer, ValueDomain,
 };
 use sqlparser::dialect::dialect_from_str;
 
