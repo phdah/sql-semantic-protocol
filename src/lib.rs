@@ -39,7 +39,7 @@ pub use bundle::{
     SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
     UnresolvedComposedSemantics,
 };
-pub use data_type::{DataType, DataTypeField, DataTypeParseError, EnumValue, parse_data_type};
+pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{
     analyze_dbt_manifest, parse_dbt_manifest, DbtManifest, DbtManifestError,
     SUPPORTED_DBT_MANIFEST_VERSIONS,
