@@ -388,7 +388,8 @@ fn analyze_dbt_artifacts_from_paths(
             manifest_path.display()
         ))
     })?;
-    let manifest = parse_dbt_manifest(&manifest_json).map_err(DbtArtifactsError::Manifest)?;
+    let manifest = parse_dbt_manifest(&manifest_json)
+        .map_err(|error| CliError::DbtArtifacts(DbtArtifactsError::Manifest(error)))?;
 
     let catalog_path = match catalog_override {
         Some(path) => path.to_path_buf(),
@@ -403,7 +404,8 @@ fn analyze_dbt_artifacts_from_paths(
             catalog_path.display()
         ))
     })?;
-    let catalog = parse_dbt_catalog(&catalog_json).map_err(DbtArtifactsError::Catalog)?;
+    let catalog = parse_dbt_catalog(&catalog_json)
+        .map_err(|error| CliError::DbtArtifacts(DbtArtifactsError::Catalog(error)))?;
 
     let (dialect_name, dialect) = select_dialect(manifest.adapter_type()).map_err(|error| {
         CliError::Input(format!(
