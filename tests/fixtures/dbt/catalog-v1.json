@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+    "dbt_version": "1.11.8"
+  },
+  "nodes": {
+    "model.demo.final_orders": {
+      "unique_id": "model.demo.final_orders",
+      "metadata": {
+        "type": "VIEW",
+        "database": "warehouse",
+        "schema": "analytics",
+        "name": "final_orders"
+      },
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "BIGINT",
+          "index": 1
+        },
+        "amount": {
+          "name": "amount",
+          "type": "INTEGER",
+          "index": 2
+        }
+      },
+      "stats": {}
+    },
+    "model.demo.stg_orders": {
+      "unique_id": "model.demo.stg_orders",
+      "metadata": {
+        "type": "VIEW",
+        "database": "warehouse",
+        "schema": "analytics",
+        "name": "stg_orders"
+      },
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "BIGINT",
+          "index": 1
+        },
+        "amount": {
+          "name": "amount",
+          "type": "INTEGER",
+          "index": 2
+        }
+      },
+      "stats": {}
+    }
+  },
+  "sources": {
+    "source.demo.orders": {
+      "unique_id": "source.demo.orders",
+      "metadata": {
+        "type": "BASE TABLE",
+        "database": "warehouse",
+        "schema": "raw",
+        "name": "orders"
+      },
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "BIGINT",
+          "index": 1
+        },
+        "amount": {
+          "name": "amount",
+          "type": "INTEGER",
+          "index": 2
+        }
+      },
+      "stats": {}
+    }
+  },
+  "errors": null
+}
