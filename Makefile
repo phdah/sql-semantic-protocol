@@ -26,4 +26,5 @@ dbt-e2e:
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) dbt seed --project-dir $(DBT_E2E_PROJECT) --profiles-dir $(DBT_E2E_PROJECT)
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) dbt run --project-dir $(DBT_E2E_PROJECT) --profiles-dir $(DBT_E2E_PROJECT)
 	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) dbt run --project-dir $(DBT_E2E_PROJECT) --profiles-dir $(DBT_E2E_PROJECT)
+	DBT_E2E_DATABASE=$(DBT_E2E_DATABASE) dbt docs generate --project-dir $(DBT_E2E_PROJECT) --profiles-dir $(DBT_E2E_PROJECT)
 	cargo test --test dbt_core_e2e -- --ignored --nocapture

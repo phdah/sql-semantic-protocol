@@ -70,6 +70,30 @@ Derived tables expose only their projected columns to the parent query while pre
 
 Table-producing sources whose output schema cannot yet be modeled safely, including unresolved table functions and UNNEST-like factors, remain explicit `unsupported_table_factor` diagnostics rather than being omitted or assigned invented columns.
 
+## Typed source schemas
+
+Consumers that need declared source datatypes can supply typed relation schemas through
+`RelationCatalog::from_schemas`. A `SchemaColumn` can be constructed from the canonical
+parser-independent `DataType` model or from dialect-specific SQL syntax with
+`SchemaColumn::from_sql_type`. The latter delegates parsing to the selected sqlparser dialect and
+normalizes the result immediately.
+
+The canonical model covers numeric widths and signedness, decimals, floating point, character and
+binary families, dates/times/timestamps, intervals, UUIDs, JSON and semi-structured documents,
+bit strings, arrays, maps, structs/tuples/nested records, unions, enums, sets, nullable wrappers,
+table-valued types, geometry/geography, PostgreSQL search/regclass types, and vendor/user-defined
+custom types. Dialect storage aliases normalize where their logical meaning is the same: for
+example timestamp timezone variants become one timestamp type, JSON/JSONB/VARIANT/OBJECT/SUPER
+become one document type, and ClickHouse LowCardinality unwraps to its logical value type.
+
+The resulting analysis bundle preserves those schemas under `source_schemas`, alongside analyzed
+value domains. This allows consumers such as `sql-tdg` to generate unconstrained source columns
+without reparsing SQL or maintaining a second datatype contract. Unknown vendor extensions remain
+explicit `custom` datatypes instead of being discarded or guessed.
+
+The public `dialect_from_name` and `parse_data_type` helpers delegate dialect handling to
+sqlparser while keeping consumers independent from sqlparser AST types.
+
 ## Outcome selection
 
 `analyze_inputs` always analyzes and composes the complete supplied bundle. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.
@@ -224,17 +248,36 @@ The full fixture preserves every layer and identifies terminal outcomes in `grap
 
 `--manifest` is mutually exclusive with `--dbt-manifest` and direct analysis options such as `--dialect`, `--catalog-relation`, `--default-catalog`, `--default-schema`, `--target`, `--sql`, `--file`, `--dir`, and positional SQL. `--dbt-manifest` is mutually exclusive with direct SQL/catalog options but may be combined with `--target`. Output-format options such as OpenLineage export remain CLI-level options and can be combined with either manifest form.
 
-## dbt manifest adapter
+## dbt artifact adapter
 
-A dbt project can be analyzed directly from its `manifest.json` artifact without teaching the core protocol about dbt-specific types. The adapter uses dbt metadata for stable model identity, relation identity, and declared dependencies, then routes model SQL through the same analyzer, relation catalog, graph construction, composition, and output-domain logic used by ordinary SQL inputs.
+dbt is a first-class protocol input. The complete adapter consumes both `manifest.json` and
+`catalog.json`, using each artifact only for the evidence it authoritatively owns:
 
-The CLI reads the artifact's `metadata.adapter_type` and delegates dialect selection to sqlparser:
+- `manifest.json`: model unique IDs, canonical relation identities, compiled SQL, relation context,
+  and declared dependency metadata.
+- `catalog.json`: warehouse-introspected physical columns and database datatypes for models,
+  seeds, snapshots, and sources.
+
+The adapter joins the artifacts by dbt resource `unique_id`, normalizes catalog datatypes into the
+same parser-independent `DataType` model used by direct callers, and runs compiled model SQL
+through the ordinary analyzer, graph builder, composition, and outcome-domain pipeline. dbt-specific
+artifact types never appear in the emitted protocol.
+
+The CLI expects `catalog.json` next to `manifest.json` by default:
 
 ```sh
 cargo run -- --dbt-manifest target/manifest.json
 ```
 
-Target projection remains a consumer-side operation and can be applied after dbt analysis:
+Use `--dbt-catalog` when the catalog artifact is stored elsewhere:
+
+```sh
+cargo run -- \
+  --dbt-manifest artifacts/manifest.json \
+  --dbt-catalog warehouse/catalog.json
+```
+
+Target projection remains a consumer-side operation and can be applied after complete dbt analysis:
 
 ```sh
 cargo run -- \
@@ -242,32 +285,60 @@ cargo run -- \
   --target warehouse.analytics.customer_summary
 ```
 
-The library keeps dialect selection explicit:
+The library API keeps artifact loading and dialect selection explicit:
 
 ```rust
-use sql_semantic_protocol::{analyze_dbt_manifest, parse_dbt_manifest, to_bundle_json};
+use sql_semantic_protocol::{
+    analyze_dbt_artifacts, parse_dbt_catalog, parse_dbt_manifest, to_bundle_json,
+};
 use sqlparser::dialect::dialect_from_str;
 
-let artifact = std::fs::read_to_string("target/manifest.json")?;
-let manifest = parse_dbt_manifest(&artifact)?;
+let manifest_json = std::fs::read_to_string("target/manifest.json")?;
+let catalog_json = std::fs::read_to_string("target/catalog.json")?;
+let manifest = parse_dbt_manifest(&manifest_json)?;
+let catalog = parse_dbt_catalog(&catalog_json)?;
 let dialect = dialect_from_str(manifest.adapter_type())
     .ok_or("dbt adapter type is not a sqlparser dialect")?;
-let bundle = analyze_dbt_manifest(&manifest, manifest.adapter_type(), dialect.as_ref())?;
+let bundle = analyze_dbt_artifacts(
+    &manifest,
+    &catalog,
+    manifest.adapter_type(),
+    dialect.as_ref(),
+)?;
 
 println!("{}", to_bundle_json(&bundle));
 ```
 
-The adapter currently accepts dbt manifest schema versions v10, v11, and v12. It intentionally reads only the artifact fields needed at this boundary: `metadata`, `nodes`, `sources`, model `unique_id`, `relation_name`, `database`, `schema`, `language`, `compiled_code`/`raw_code`, source paths, and `depends_on.nodes`. dbt-specific artifact structures do not appear in the core protocol model.
+The manifest adapter accepts schema versions v10, v11, and v12. The catalog adapter accepts v0 and
+v1. Catalog columns are ordered by their warehouse ordinal and their dialect-specific type strings
+are normalized through the selected dbt adapter dialect. Catalog-reported metadata query errors,
+catalog resources absent from the paired manifest, missing relation identities, invalid datatypes,
+or physical SQL dependencies without catalog schema evidence fail explicitly rather than producing
+an apparently complete protocol.
 
-Model identity comes from dbt `unique_id`, and produced dataset identity comes from `relation_name`; filenames are retained only as source metadata. `compiled_code` is preferred. Plain `raw_code` is accepted only when it contains no Jinja delimiters. Python models, relation-less models such as ephemerals, missing dependency relations, dependency cycles, and uncompiled Jinja fail explicitly rather than being guessed or silently omitted.
+`analyze_dbt_manifest` remains available as a compatibility API for manifest-only semantic
+analysis, but it cannot emit complete typed relation schemas. New consumers that need the full
+protocol contract should use `analyze_dbt_artifacts`.
 
-dbt `depends_on.nodes` provides deterministic model ordering and is mapped to canonical relation identities from the artifact. The adapter verifies that every declared dependency is also present in the dependency graph derived from the analyzed SQL. This preserves the SQL Semantic Protocol as the semantic authority while using dbt metadata to resolve identities and detect inconsistent artifacts. Sources and other relation-backed dbt resources seed the generic relation catalog and remain external graph dependencies unless an analyzed SQL model produces them.
+Model identity comes from dbt `unique_id`, and produced dataset identity comes from
+`relation_name`; filenames are retained only as source metadata. `compiled_code` is preferred.
+Plain `raw_code` is accepted only when it contains no Jinja delimiters. Python models,
+relation-less models such as ephemerals, missing dependency relations, dependency cycles, and
+uncompiled Jinja fail explicitly rather than being guessed or silently omitted.
 
-An equivalent workload supplied through the dbt adapter and through generic configured inputs produces the same protocol semantics when both provide the same SQL, identities, relation context, and catalog metadata.
+dbt `depends_on.nodes` provides deterministic model ordering and is mapped to canonical relation
+identities from the manifest. The adapter verifies that every declared dependency is also present
+in the dependency graph derived from analyzed SQL. Source schemas come from catalog metadata using
+those same canonical relation identities, so relation resolution, lineage, value domains, and typed
+source schemas describe one consistent graph.
 
-CI also exercises a complete dbt Core project rather than relying only on hand-authored manifest fixtures. The checked-in `tests/fixtures/dbt_core_project` feature matrix uses real `source()` and `ref()` calls and covers the model-query semantic classes currently supported by the protocol: predicate and output domains, CASE and arithmetic expressions, joins, window functions and frames, QUALIFY, named windows, UNION/INTERSECT/EXCEPT, aggregation, aggregate FILTER, HAVING, DISTINCT, ROLLUP, scalar/EXISTS/IN subqueries, derived and lateral tables, transitive composition, disconnected components, and explicit unsupported ORDER BY/LIMIT handling on set results. The Rust integration test `tests/dbt_core_e2e.rs` consumes the manifest generated by dbt Core, compares library and CLI output, and asserts representative semantics and outcome domains including the final `amount` domain `[10, 50]`. It also derives every terminal dataset from `graph.components[].final_outcomes` and compares the complete composed semantics of all 14 terminal outcomes against `tests/fixtures/dbt_core_project/expected_final_outcomes.json`. That fixture locks dependencies, source-column domains, output expressions, output domains, lineage, and diagnostics for every terminal dbt outcome.
-
-The same fixture includes incremental `merge` and `append` models and executes dbt twice so those real dbt materialization paths run in CI. dbt stores the model SELECT in `compiled_code`; adapter-generated materialization SQL such as MERGE or INSERT is not part of that field. The protocol's MERGE and INSERT statement semantics therefore remain covered by the direct Rust DML tests, while the dbt end-to-end test verifies the dbt configuration and successful incremental executions without pretending the manifest contains generated DML. The end-to-end environment is pinned in `tests/requirements-dbt-e2e.txt`; run it locally with `make dbt-e2e`.
+CI exercises a complete dbt Core project rather than relying only on hand-authored fixtures.
+`make dbt-e2e` runs seed and model execution, generates `catalog.json` from the real warehouse,
+then analyzes the generated manifest/catalog pair through both the library and CLI. The fixture
+covers predicate and output domains, CASE and arithmetic expressions, joins, window functions,
+QUALIFY, named windows, UNION/INTERSECT/EXCEPT, aggregation, HAVING, DISTINCT, ROLLUP, subqueries,
+derived/lateral tables, transitive composition, disconnected components, incremental model
+configuration, terminal outcome snapshots, and warehouse source-schema datatype emission.
 
 ## OpenLineage export
 
@@ -327,7 +398,7 @@ sql-semantic-protocol = "1"
 The CLI analyzes SQL and writes the SQL Semantic Protocol JSON document to standard output.
 
 ```text
-sql-semantic-protocol [--dbt-manifest <path> | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]...
+sql-semantic-protocol [--dbt-manifest <path> [--dbt-catalog <path>] | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]...
 ```
 
 The dialect defaults to `generic`. The CLI delegates dialect selection to `sqlparser::dialect::dialect_from_str`, so it accepts any built-in dialect recognized by the pinned `sqlparser` version rather than maintaining a separate dialect list.

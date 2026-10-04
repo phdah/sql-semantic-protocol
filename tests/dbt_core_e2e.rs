@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 use serde_json::Value;
-use sql_semantic_protocol::{analyze_dbt_manifest, parse_dbt_manifest, to_bundle_json};
+use sql_semantic_protocol::{
+    analyze_dbt_artifacts, parse_dbt_catalog, parse_dbt_manifest, to_bundle_json,
+};
 use sqlparser::dialect::dialect_from_str;
 
 const PROJECT: &str = "sql_semantic_protocol_e2e";
@@ -19,6 +21,10 @@ fn manifest_path() -> PathBuf {
 
 fn run_results_path() -> PathBuf {
     project_dir().join("target/run_results.json")
+}
+
+fn catalog_path() -> PathBuf {
+    project_dir().join("target/catalog.json")
 }
 
 fn read_json(path: &Path) -> Value {
@@ -287,10 +293,22 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
 
     let manifest_text = fs::read_to_string(&manifest_path).expect("manifest should be readable");
     let manifest = parse_dbt_manifest(&manifest_text).expect("real dbt manifest should parse");
+    let catalog_path = catalog_path();
+    assert!(
+        catalog_path.exists(),
+        "dbt catalog is missing; run make dbt-e2e"
+    );
+    let catalog_text = fs::read_to_string(&catalog_path).expect("catalog should be readable");
+    let catalog = parse_dbt_catalog(&catalog_text).expect("real dbt catalog should parse");
     let dialect =
         dialect_from_str(manifest.adapter_type()).expect("dbt DuckDB dialect should resolve");
-    let bundle = analyze_dbt_manifest(&manifest, manifest.adapter_type(), dialect.as_ref())
-        .expect("real dbt project should analyze");
+    let bundle = analyze_dbt_artifacts(
+        &manifest,
+        &catalog,
+        manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .expect("real dbt project should analyze with warehouse schemas");
     let library_json = to_bundle_json(&bundle);
     let protocol: Value =
         serde_json::from_str(&library_json).expect("library protocol should be valid JSON");
@@ -318,6 +336,42 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
             .trim(),
         library_json
     );
+
+    let raw_orders_relation = manifest_json["sources"]
+        .as_object()
+        .expect("manifest sources should be an object")
+        .values()
+        .find(|source| source["source_name"] == "raw" && source["name"] == "orders")
+        .and_then(|source| source["relation_name"].as_str())
+        .expect("raw orders source should have a relation identity");
+    let source_schemas = protocol["source_schemas"]
+        .as_array()
+        .expect("dbt protocol should include warehouse source schemas");
+    let raw_orders_schema = source_schemas
+        .iter()
+        .find(|schema| schema["relation"] == raw_orders_relation)
+        .expect("raw orders warehouse schema should be present");
+    let raw_order_columns = raw_orders_schema["columns"]
+        .as_array()
+        .expect("raw orders columns should be an array");
+    assert_eq!(
+        raw_order_columns
+            .iter()
+            .map(|column| column["name"]
+                .as_str()
+                .expect("catalog column name should be a string"))
+            .collect::<Vec<_>>(),
+        [
+            "id",
+            "customer_id",
+            "amount",
+            "status",
+            "created_at",
+            "region"
+        ]
+    );
+    assert_eq!(raw_order_columns[0]["data_type"]["kind"], "signed_integer");
+    assert_eq!(raw_order_columns[3]["data_type"]["kind"], "string");
 
     let protocol_input_ids = protocol["inputs"]
         .as_array()

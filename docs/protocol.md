@@ -12,6 +12,46 @@ Implementations should preserve caller order and generate deterministic IDs when
 
 Inline source labels are optional. File sources retain their path. Raw SQL text is intentionally not part of the semantic protocol.
 
+## Source schemas
+For dbt inputs, complete source schemas come from the paired `catalog.json` artifact rather than
+being inferred from model SQL or declared manifest columns. `manifest.json` supplies resource and
+relation identity; `catalog.json` supplies warehouse-introspected columns and type strings. The
+adapter joins them by dbt `unique_id`, normalizes each catalog type into the canonical protocol
+datatype model, and rejects missing catalog coverage for physical dependencies.
+
+
+Optional `source_schemas` metadata carries declared datatypes for physical source relations when
+the caller supplies catalog schema information. Each entry has a canonical relation identity and
+its columns in declared order.
+
+Datatypes use one parser-independent recursive model rather than dialect-specific names. The model
+covers booleans; signed and unsigned integer widths; exact decimals; floating point; character,
+binary, and bit strings; dates, times, timestamps, and intervals; UUID; JSON/semi-structured
+documents; arrays; maps; structs/tuples/nested records; unions; enums; sets; nullable wrappers;
+table-valued types; geometry/geography; PostgreSQL regclass and text-search values; and explicit
+custom, any, unspecified, and trigger types. Nested fields carry their own canonical datatype.
+
+Dialect syntax is normalized at the protocol boundary. Equivalent storage aliases intentionally
+collapse to one logical type. Timestamp timezone variants normalize to `timestamp` because
+consumers can use one UTC representation; JSON, JSONB, Snowflake VARIANT/OBJECT, and Redshift
+SUPER normalize to `json`; and representation-only wrappers such as ClickHouse LowCardinality
+normalize to the underlying logical type. Semantically relevant nullability remains explicit.
+Unrecognized vendor or user-defined types are preserved as `custom` with their name and
+modifiers.
+
+`SchemaColumn::from_sql_type` accepts dialect-specific datatype syntax and performs this
+normalization through sqlparser. Consumers can alternatively construct the canonical `DataType`
+directly. Raw sqlparser AST types never appear in the protocol contract.
+
+This metadata exists so consumers such as test-data generators can interpret unbounded or
+literal-constrained source columns without maintaining a second SQL parser or private schema
+contract. When no typed schema metadata is supplied, `source_schemas` is omitted rather than
+inferred.
+
+Source schemas are evidence supplied by the caller; they do not weaken or replace analyzed value
+domains. Consumers combine the declared type with `composed_semantics.column_domains` and must
+still treat unknown, empty, or unresolved semantics explicitly.
+
 ## Transformation layers
 
 A `layer` points to exactly one statement through `input_id` plus zero-based `statement_index`. The layer records:

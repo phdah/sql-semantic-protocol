@@ -12,7 +12,7 @@ use sqlparser::dialect::Dialect;
 
 use crate::{
     analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, RelationCatalog, RelationContext, SqlInput,
+    ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn, SqlInput,
 };
 
 /// dbt manifest schema versions accepted by the adapter.
@@ -20,6 +20,238 @@ use crate::{
 /// These schemas cover dbt manifest v10, v11, and v12. The adapter intentionally reads only the
 /// stable fields it needs at the integration boundary.
 pub const SUPPORTED_DBT_MANIFEST_VERSIONS: &[u32] = &[10, 11, 12];
+
+/// dbt catalog schema versions accepted by the adapter.
+///
+/// Catalog v0 and v1 share the table/column shape needed by the protocol. v1 adds artifact
+/// metadata while v0 exposes its generation timestamp at the root.
+pub const SUPPORTED_DBT_CATALOG_VERSIONS: &[u32] = &[0, 1];
+
+/// Parsed dbt catalog metadata containing warehouse-introspected relation schemas.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DbtCatalog {
+    schema_version: u32,
+    dbt_version: Option<String>,
+    resources: BTreeMap<String, DbtCatalogResource>,
+}
+
+impl DbtCatalog {
+    /// Return the dbt catalog schema version.
+    pub fn schema_version(&self) -> u32 {
+        self.schema_version
+    }
+
+    /// Return the dbt version recorded by catalog v1 when present.
+    pub fn dbt_version(&self) -> Option<&str> {
+        self.dbt_version.as_deref()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DbtCatalogResource {
+    columns: Vec<DbtCatalogColumn>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DbtCatalogColumn {
+    name: String,
+    data_type: String,
+    index: i64,
+}
+
+/// Error returned when dbt catalog metadata cannot be translated safely.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum DbtCatalogError {
+    /// The catalog artifact is not valid JSON.
+    InvalidJson {
+        /// JSON parser error text.
+        message: String,
+    },
+    /// A required catalog field is absent or malformed.
+    InvalidField {
+        /// JSON path identifying the affected field.
+        path: String,
+        /// Explanation of the invalid value.
+        message: String,
+    },
+    /// The catalog schema version is valid but unsupported.
+    UnsupportedSchemaVersion {
+        /// Parsed catalog schema version.
+        version: u32,
+    },
+    /// dbt reported warehouse metadata-query failures while producing the catalog.
+    CatalogErrors {
+        /// Errors reported by dbt.
+        errors: Vec<String>,
+    },
+}
+
+impl fmt::Display for DbtCatalogError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidJson { message } => {
+                write!(formatter, "invalid dbt catalog JSON: {message}")
+            }
+            Self::InvalidField { path, message } => {
+                write!(formatter, "invalid dbt catalog field '{path}': {message}")
+            }
+            Self::UnsupportedSchemaVersion { version } => write!(
+                formatter,
+                "unsupported dbt catalog schema v{version}; supported versions are {}",
+                SUPPORTED_DBT_CATALOG_VERSIONS
+                    .iter()
+                    .map(u32::to_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Self::CatalogErrors { errors } => {
+                write!(
+                    formatter,
+                    "dbt catalog contains metadata errors: {}",
+                    errors.join("; ")
+                )
+            }
+        }
+    }
+}
+
+impl std::error::Error for DbtCatalogError {}
+
+/// Error returned when a manifest/catalog pair cannot produce the complete dbt protocol.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum DbtArtifactsError {
+    /// Manifest parsing or SQL analysis failed.
+    Manifest(DbtManifestError),
+    /// Catalog parsing failed.
+    Catalog(DbtCatalogError),
+    /// The catalog contains a resource absent from the paired manifest.
+    CatalogResourceNotInManifest {
+        /// Catalog resource unique ID.
+        unique_id: String,
+    },
+    /// A catalog resource cannot be attached to a canonical relation identity.
+    MissingRelationIdentity {
+        /// Resource unique ID.
+        unique_id: String,
+    },
+    /// A warehouse datatype could not be normalized safely.
+    ColumnType {
+        /// Resource unique ID.
+        unique_id: String,
+        /// Canonical relation identity.
+        relation: String,
+        /// Column name.
+        column: String,
+        /// Warehouse datatype string.
+        data_type: String,
+        /// Normalization failure.
+        message: String,
+    },
+    /// Multiple dbt resources map to one physical relation but disagree on its warehouse schema.
+    ConflictingCatalogSchemas {
+        /// Canonical physical relation identity.
+        relation: String,
+        /// First resource unique ID.
+        first_unique_id: String,
+        /// Conflicting resource unique ID.
+        second_unique_id: String,
+    },
+    /// A catalog relation schema is internally inconsistent.
+    CatalogSchema {
+        /// Resource unique ID.
+        unique_id: String,
+        /// Canonical relation identity.
+        relation: String,
+        /// Schema construction failure.
+        message: String,
+    },
+    /// A physical dependency discovered from dbt SQL has no warehouse schema in catalog.json.
+    MissingCatalogSchema {
+        /// Canonical physical relation identity.
+        relation: String,
+    },
+}
+
+impl DbtArtifactsError {
+    /// Return the underlying configured-input analysis error when SQL analysis failed.
+    pub fn analysis_error(&self) -> Option<&ConfiguredInputAnalysisError> {
+        match self {
+            Self::Manifest(error) => error.analysis_error(),
+            _ => None,
+        }
+    }
+}
+
+impl fmt::Display for DbtArtifactsError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Manifest(error) => write!(formatter, "{error}"),
+            Self::Catalog(error) => write!(formatter, "{error}"),
+            Self::CatalogResourceNotInManifest { unique_id } => write!(
+                formatter,
+                "dbt catalog resource '{unique_id}' is absent from the paired manifest"
+            ),
+            Self::MissingRelationIdentity { unique_id } => write!(
+                formatter,
+                "dbt catalog resource '{unique_id}' has no relation identity in the paired manifest"
+            ),
+            Self::ColumnType {
+                unique_id,
+                relation,
+                column,
+                data_type,
+                message,
+            } => write!(
+                formatter,
+                "dbt catalog column '{unique_id}' ({relation}.{column}) has unsupported datatype '{data_type}': {message}"
+            ),
+            Self::ConflictingCatalogSchemas {
+                relation,
+                first_unique_id,
+                second_unique_id,
+            } => write!(
+                formatter,
+                "dbt catalog resources '{first_unique_id}' and '{second_unique_id}' disagree on warehouse schema for '{relation}'"
+            ),
+            Self::CatalogSchema {
+                unique_id,
+                relation,
+                message,
+            } => write!(
+                formatter,
+                "dbt catalog resource '{unique_id}' has invalid schema for '{relation}': {message}"
+            ),
+            Self::MissingCatalogSchema { relation } => write!(
+                formatter,
+                "dbt catalog has no warehouse schema for physical dependency '{relation}'"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for DbtArtifactsError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Manifest(error) => Some(error),
+            Self::Catalog(error) => Some(error),
+            _ => None,
+        }
+    }
+}
+
+impl From<DbtManifestError> for DbtArtifactsError {
+    fn from(error: DbtManifestError) -> Self {
+        Self::Manifest(error)
+    }
+}
+
+impl From<DbtCatalogError> for DbtArtifactsError {
+    fn from(error: DbtCatalogError) -> Self {
+        Self::Catalog(error)
+    }
+}
 
 /// Parsed dbt manifest metadata and SQL-model inputs ready for protocol analysis.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -225,6 +457,253 @@ impl std::error::Error for DbtManifestError {
     }
 }
 
+/// Parse and validate a dbt `catalog.json` artifact at the adapter boundary.
+///
+/// Catalog metadata is warehouse-introspected evidence. The adapter accepts catalog schema v0 and
+/// v1, rejects dbt-reported metadata-query errors, and preserves deterministic column order by the
+/// catalog ordinal index.
+pub fn parse_dbt_catalog(json: &str) -> Result<DbtCatalog, DbtCatalogError> {
+    let value =
+        serde_json::from_str::<Value>(json).map_err(|error| DbtCatalogError::InvalidJson {
+            message: error.to_string(),
+        })?;
+    let root = catalog_object(&value, "$")?;
+
+    let (schema_version, dbt_version) =
+        match catalog_optional_object(root, "metadata", "$.metadata")? {
+            Some(metadata) => {
+                let schema_url = catalog_required_string(
+                    metadata,
+                    "dbt_schema_version",
+                    "$.metadata.dbt_schema_version",
+                )?;
+                let version = parse_catalog_schema_version(schema_url)?;
+                let dbt_version =
+                    catalog_optional_string(metadata, "dbt_version", "$.metadata.dbt_version")?;
+                (version, dbt_version)
+            }
+            None if root.contains_key("generated_at") => (0, None),
+            None => {
+                return Err(catalog_invalid_field(
+                    "$.metadata",
+                    "catalog must contain v1 metadata or the v0 generated_at field",
+                ));
+            }
+        };
+
+    if !SUPPORTED_DBT_CATALOG_VERSIONS.contains(&schema_version) {
+        return Err(DbtCatalogError::UnsupportedSchemaVersion {
+            version: schema_version,
+        });
+    }
+
+    let errors = catalog_errors(root)?;
+    if !errors.is_empty() {
+        return Err(DbtCatalogError::CatalogErrors { errors });
+    }
+
+    let nodes = catalog_required_object(root, "nodes", "$.nodes")?;
+    let sources = catalog_required_object(root, "sources", "$.sources")?;
+    let mut resources = BTreeMap::new();
+    parse_catalog_resources(nodes, "$.nodes", &mut resources)?;
+    parse_catalog_resources(sources, "$.sources", &mut resources)?;
+
+    Ok(DbtCatalog {
+        schema_version,
+        dbt_version,
+        resources,
+    })
+}
+
+fn parse_catalog_resources(
+    resources: &Map<String, Value>,
+    path: &str,
+    parsed: &mut BTreeMap<String, DbtCatalogResource>,
+) -> Result<(), DbtCatalogError> {
+    for (resource_id, value) in resources {
+        let resource_path = format!("{path}.{resource_id}");
+        let object = catalog_object(value, &resource_path)?;
+        if let Some(unique_id) =
+            catalog_optional_string(object, "unique_id", &format!("{resource_path}.unique_id"))?
+        {
+            if unique_id != *resource_id {
+                return Err(catalog_invalid_field(
+                    format!("{resource_path}.unique_id"),
+                    format!("value '{unique_id}' does not match dictionary key '{resource_id}'"),
+                ));
+            }
+        }
+
+        let columns =
+            catalog_required_object(object, "columns", &format!("{resource_path}.columns"))?;
+        let mut parsed_columns = Vec::with_capacity(columns.len());
+        for (column_key, value) in columns {
+            let column_path = format!("{resource_path}.columns.{column_key}");
+            let column = catalog_object(value, &column_path)?;
+            let name =
+                catalog_required_string(column, "name", &format!("{column_path}.name"))?.trim();
+            if name.is_empty() {
+                return Err(catalog_invalid_field(
+                    format!("{column_path}.name"),
+                    "column name cannot be empty",
+                ));
+            }
+            let data_type =
+                catalog_required_string(column, "type", &format!("{column_path}.type"))?.trim();
+            if data_type.is_empty() {
+                return Err(catalog_invalid_field(
+                    format!("{column_path}.type"),
+                    "column datatype cannot be empty",
+                ));
+            }
+            let index = catalog_required_i64(column, "index", &format!("{column_path}.index"))?;
+
+            parsed_columns.push(DbtCatalogColumn {
+                name: name.to_string(),
+                data_type: data_type.to_string(),
+                index,
+            });
+        }
+
+        parsed_columns.sort_by(|left, right| {
+            left.index
+                .cmp(&right.index)
+                .then_with(|| left.name.cmp(&right.name))
+        });
+
+        if parsed
+            .insert(
+                resource_id.clone(),
+                DbtCatalogResource {
+                    columns: parsed_columns,
+                },
+            )
+            .is_some()
+        {
+            return Err(catalog_invalid_field(
+                &resource_path,
+                "resource unique ID is duplicated across nodes and sources",
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn catalog_errors(root: &Map<String, Value>) -> Result<Vec<String>, DbtCatalogError> {
+    let Some(value) = root.get("errors") else {
+        return Ok(Vec::new());
+    };
+    if value.is_null() {
+        return Ok(Vec::new());
+    }
+    let values = value
+        .as_array()
+        .ok_or_else(|| catalog_invalid_field("$.errors", "expected an array of strings or null"))?;
+    values
+        .iter()
+        .enumerate()
+        .map(|(index, value)| {
+            value.as_str().map(str::to_string).ok_or_else(|| {
+                catalog_invalid_field(
+                    format!("$.errors[{index}]"),
+                    "expected a string catalog error",
+                )
+            })
+        })
+        .collect()
+}
+
+fn parse_catalog_schema_version(schema_url: &str) -> Result<u32, DbtCatalogError> {
+    let marker = "/catalog/v";
+    schema_url
+        .rsplit_once(marker)
+        .and_then(|(_, suffix)| suffix.strip_suffix(".json"))
+        .and_then(|value| value.parse::<u32>().ok())
+        .ok_or_else(|| {
+            catalog_invalid_field(
+                "$.metadata.dbt_schema_version",
+                format!(
+                    "expected a dbt catalog schema URL ending in /catalog/vN.json, got '{schema_url}'"
+                ),
+            )
+        })
+}
+
+fn catalog_object<'a>(
+    value: &'a Value,
+    path: &str,
+) -> Result<&'a Map<String, Value>, DbtCatalogError> {
+    value
+        .as_object()
+        .ok_or_else(|| catalog_invalid_field(path, "expected an object"))
+}
+
+fn catalog_required_object<'a>(
+    object: &'a Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<&'a Map<String, Value>, DbtCatalogError> {
+    let value = object
+        .get(key)
+        .ok_or_else(|| catalog_invalid_field(path, "field is required"))?;
+    catalog_object(value, path)
+}
+
+fn catalog_optional_object<'a>(
+    object: &'a Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<Option<&'a Map<String, Value>>, DbtCatalogError> {
+    match object.get(key) {
+        None | Some(Value::Null) => Ok(None),
+        Some(value) => catalog_object(value, path).map(Some),
+    }
+}
+
+fn catalog_required_string<'a>(
+    object: &'a Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<&'a str, DbtCatalogError> {
+    object
+        .get(key)
+        .ok_or_else(|| catalog_invalid_field(path, "field is required"))?
+        .as_str()
+        .ok_or_else(|| catalog_invalid_field(path, "expected a string"))
+}
+
+fn catalog_optional_string(
+    object: &Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<Option<String>, DbtCatalogError> {
+    match object.get(key) {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::String(value)) => Ok(Some(value.clone())),
+        Some(_) => Err(catalog_invalid_field(path, "expected a string or null")),
+    }
+}
+
+fn catalog_required_i64(
+    object: &Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<i64, DbtCatalogError> {
+    object
+        .get(key)
+        .ok_or_else(|| catalog_invalid_field(path, "field is required"))?
+        .as_i64()
+        .ok_or_else(|| catalog_invalid_field(path, "expected an integer"))
+}
+
+fn catalog_invalid_field(path: impl Into<String>, message: impl Into<String>) -> DbtCatalogError {
+    DbtCatalogError::InvalidField {
+        path: path.into(),
+        message: message.into(),
+    }
+}
+
 /// Parse and validate a dbt `manifest.json` artifact at the adapter boundary.
 ///
 /// The adapter accepts manifest schema v10 through v12. SQL models must have a materialized
@@ -391,15 +870,66 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
 
 /// Analyze a parsed dbt manifest through the same core analyzer used by generic SQL inputs.
 ///
-/// Each dbt model is wrapped as a named query-backed view using its artifact `relation_name` so
-/// model identity comes from dbt metadata rather than filenames. dbt relation metadata seeds the
-/// generic relation catalog. `depends_on.nodes` establishes deterministic model order and is
-/// checked against the relation dependencies discovered from compiled SQL, preventing dbt metadata
-/// from inventing semantics the SQL does not support.
+/// This compatibility path uses manifest relation metadata only. Use `analyze_dbt_artifacts`
+/// when a complete protocol with warehouse-introspected source schemas is required.
 pub fn analyze_dbt_manifest(
     manifest: &DbtManifest,
     dialect_name: &str,
     dialect: &dyn Dialect,
+) -> Result<AnalysisBundle, DbtManifestError> {
+    let catalog_relations = manifest
+        .catalog_relations
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::new(&catalog_relations).map_err(|error| {
+        DbtManifestError::RelationMetadata {
+            resource_id: "manifest catalog".to_string(),
+            message: error.to_string(),
+        }
+    })?;
+
+    analyze_dbt_with_catalog(manifest, dialect_name, dialect, &catalog)
+}
+
+/// Analyze a paired dbt manifest and catalog into the complete protocol contract.
+///
+/// The manifest supplies model identity, compiled SQL, and declared dependency metadata. The
+/// catalog supplies warehouse-introspected physical columns and datatypes. Resource unique IDs tie
+/// the artifacts together, while canonical relation identity remains sourced from the manifest so
+/// graph resolution and schema metadata use exactly the same relation names.
+pub fn analyze_dbt_artifacts(
+    manifest: &DbtManifest,
+    catalog: &DbtCatalog,
+    dialect_name: &str,
+    dialect: &dyn Dialect,
+) -> Result<AnalysisBundle, DbtArtifactsError> {
+    let schemas = relation_schemas_from_catalog(manifest, catalog, dialect_name)?;
+    let catalog_relations = manifest
+        .catalog_relations
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    let relation_catalog =
+        RelationCatalog::from_relations_and_schemas(&catalog_relations, &schemas).map_err(
+            |error| {
+                DbtArtifactsError::Manifest(DbtManifestError::RelationMetadata {
+                    resource_id: "manifest/catalog relation metadata".to_string(),
+                    message: error.to_string(),
+                })
+            },
+        )?;
+
+    let bundle = analyze_dbt_with_catalog(manifest, dialect_name, dialect, &relation_catalog)?;
+    validate_catalog_coverage(&bundle)?;
+    Ok(bundle)
+}
+
+fn analyze_dbt_with_catalog(
+    manifest: &DbtManifest,
+    dialect_name: &str,
+    dialect: &dyn Dialect,
+    catalog: &RelationCatalog,
 ) -> Result<AnalysisBundle, DbtManifestError> {
     struct PreparedInput {
         id: String,
@@ -448,22 +978,106 @@ pub fn analyze_dbt_manifest(
             }
         })
         .collect::<Vec<_>>();
-    let catalog_relations = manifest
-        .catalog_relations
-        .iter()
-        .map(String::as_str)
-        .collect::<Vec<_>>();
-    let catalog = RelationCatalog::new(&catalog_relations).map_err(|error| {
-        DbtManifestError::RelationMetadata {
-            resource_id: "manifest catalog".to_string(),
-            message: error.to_string(),
-        }
-    })?;
-    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+    let bundle = analyze_configured_inputs_with_catalog(&configured, catalog)
         .map_err(DbtManifestError::Analysis)?;
 
     validate_declared_dependencies(manifest, &bundle)?;
     Ok(bundle)
+}
+
+fn relation_schemas_from_catalog(
+    manifest: &DbtManifest,
+    catalog: &DbtCatalog,
+    dialect_name: &str,
+) -> Result<Vec<RelationSchema>, DbtArtifactsError> {
+    let mut schemas = BTreeMap::<String, (String, RelationSchema)>::new();
+
+    for (unique_id, catalog_resource) in &catalog.resources {
+        let resource = manifest.resources.get(unique_id).ok_or_else(|| {
+            DbtArtifactsError::CatalogResourceNotInManifest {
+                unique_id: unique_id.clone(),
+            }
+        })?;
+        let relation = resource
+            .relation_name
+            .as_deref()
+            .filter(|relation| !relation.trim().is_empty())
+            .ok_or_else(|| DbtArtifactsError::MissingRelationIdentity {
+                unique_id: unique_id.clone(),
+            })?;
+
+        let columns = catalog_resource
+            .columns
+            .iter()
+            .map(|column| {
+                SchemaColumn::from_sql_type(&column.name, &column.data_type, dialect_name).map_err(
+                    |error| DbtArtifactsError::ColumnType {
+                        unique_id: unique_id.clone(),
+                        relation: relation.to_string(),
+                        column: column.name.clone(),
+                        data_type: column.data_type.clone(),
+                        message: error.to_string(),
+                    },
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let schema = RelationSchema::new(relation, columns).map_err(|error| {
+            DbtArtifactsError::CatalogSchema {
+                unique_id: unique_id.clone(),
+                relation: relation.to_string(),
+                message: error.to_string(),
+            }
+        })?;
+
+        match schemas.get(relation) {
+            None => {
+                schemas.insert(relation.to_string(), (unique_id.clone(), schema));
+            }
+            Some((_, existing)) if existing == &schema => {}
+            Some((first_unique_id, _)) => {
+                return Err(DbtArtifactsError::ConflictingCatalogSchemas {
+                    relation: relation.to_string(),
+                    first_unique_id: first_unique_id.clone(),
+                    second_unique_id: unique_id.clone(),
+                });
+            }
+        }
+    }
+
+    Ok(schemas.into_values().map(|(_, schema)| schema).collect())
+}
+
+fn validate_catalog_coverage(bundle: &AnalysisBundle) -> Result<(), DbtArtifactsError> {
+    let schemas = bundle
+        .source_schemas()
+        .iter()
+        .map(RelationSchema::relation)
+        .collect::<BTreeSet<_>>();
+    let produced = bundle
+        .layers()
+        .iter()
+        .flat_map(|layer| layer.produces())
+        .filter_map(|dataset| dataset.relation_name())
+        .collect::<BTreeSet<_>>();
+
+    let physical_dependencies = bundle
+        .layers()
+        .iter()
+        .flat_map(|layer| layer.consumes())
+        .filter(|relation| !produced.contains(relation.as_str()))
+        .collect::<BTreeSet<_>>();
+
+    if let Some(relation) = physical_dependencies
+        .into_iter()
+        .find(|relation| !schemas.contains(relation.as_str()))
+    {
+        return Err(DbtArtifactsError::MissingCatalogSchema {
+            relation: relation.clone(),
+        });
+    }
+
+    Ok(())
 }
 
 fn validate_declared_dependencies(
@@ -732,6 +1346,144 @@ mod tests {
         assert_eq!(
             parse_dbt_manifest(json),
             Err(DbtManifestError::UnsupportedSchemaVersion { version: 9 })
+        );
+    }
+
+    #[test]
+    fn parses_catalog_columns_in_warehouse_order() {
+        let json = r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+                "dbt_version": "1.12.5"
+            },
+            "nodes": {},
+            "sources": {
+                "source.demo.raw.orders": {
+                    "unique_id": "source.demo.raw.orders",
+                    "metadata": {
+                        "type": "BASE TABLE",
+                        "schema": "raw",
+                        "name": "orders",
+                        "database": "warehouse"
+                    },
+                    "columns": {
+                        "payload": {"name": "payload", "type": "JSONB", "index": 2},
+                        "id": {"name": "id", "type": "BIGINT", "index": 1}
+                    },
+                    "stats": {}
+                }
+            },
+            "errors": null
+        }"#;
+
+        let catalog = parse_dbt_catalog(json).expect("catalog should parse");
+        assert_eq!(catalog.schema_version(), 1);
+        assert_eq!(catalog.dbt_version(), Some("1.12.5"));
+
+        let columns = &catalog
+            .resources
+            .get("source.demo.raw.orders")
+            .expect("source should exist")
+            .columns;
+        assert_eq!(
+            columns
+                .iter()
+                .map(|column| column.name.as_str())
+                .collect::<Vec<_>>(),
+            ["id", "payload"]
+        );
+    }
+
+    #[test]
+    fn rejects_catalog_metadata_query_errors() {
+        let json = r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json"
+            },
+            "nodes": {},
+            "sources": {},
+            "errors": ["permission denied reading raw.orders"]
+        }"#;
+
+        assert_eq!(
+            parse_dbt_catalog(json),
+            Err(DbtCatalogError::CatalogErrors {
+                errors: vec!["permission denied reading raw.orders".to_string()]
+            })
+        );
+    }
+
+    #[test]
+    fn manifest_and_catalog_produce_typed_source_schemas() {
+        use sqlparser::dialect::PostgreSqlDialect;
+
+        let manifest_json = r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+                "adapter_type": "postgres",
+                "dbt_version": "1.12.5"
+            },
+            "nodes": {
+                "model.demo.orders": {
+                    "unique_id": "model.demo.orders",
+                    "resource_type": "model",
+                    "relation_name": "analytics.orders",
+                    "language": "sql",
+                    "compiled_code": "select id, payload from raw.orders where id >= 10",
+                    "depends_on": {"nodes": ["source.demo.raw.orders"]},
+                    "database": null,
+                    "schema": "analytics"
+                }
+            },
+            "sources": {
+                "source.demo.raw.orders": {
+                    "unique_id": "source.demo.raw.orders",
+                    "relation_name": "raw.orders"
+                }
+            }
+        }"#;
+        let catalog_json = r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+                "dbt_version": "1.12.5"
+            },
+            "nodes": {},
+            "sources": {
+                "source.demo.raw.orders": {
+                    "unique_id": "source.demo.raw.orders",
+                    "metadata": {
+                        "type": "BASE TABLE",
+                        "schema": "raw",
+                        "name": "orders",
+                        "database": null
+                    },
+                    "columns": {
+                        "payload": {"name": "payload", "type": "JSONB", "index": 2},
+                        "id": {"name": "id", "type": "BIGINT", "index": 1}
+                    },
+                    "stats": {}
+                }
+            },
+            "errors": null
+        }"#;
+
+        let manifest = parse_dbt_manifest(manifest_json).expect("manifest should parse");
+        let catalog = parse_dbt_catalog(catalog_json).expect("catalog should parse");
+        let bundle =
+            analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &PostgreSqlDialect {})
+                .expect("paired dbt artifacts should analyze");
+
+        let [schema] = bundle.source_schemas() else {
+            panic!("one source schema should be emitted");
+        };
+        assert_eq!(schema.relation(), "raw.orders");
+        assert_eq!(
+            schema
+                .columns()
+                .iter()
+                .map(|column| (column.name(), column.data_type().kind()))
+                .collect::<Vec<_>>(),
+            [("id", "signed_integer"), ("payload", "json")]
         );
     }
 

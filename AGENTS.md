@@ -30,6 +30,18 @@ analysis (walks the AST and builds the semantic model), and emission (serializes
 into the protocol format). The CLI in `main.rs` only reads input, calls the library, and
 writes output. It holds no analysis logic.
 
+
+**dbt adapter is a first-class protocol surface** Whenever a protocol capability is added or
+changed, evaluate whether dbt artifacts can provide the evidence needed for the same capability.
+If they can, the change is not complete until the dbt adapter translates that evidence into the
+same canonical protocol representation and tests cover the dbt path. Do not leave dbt parity as a
+follow-up for semantics, schema metadata, relation identity, lineage, outcome domains, or other
+protocol fields that dbt can represent. Use the authoritative dbt artifact for each fact rather
+than approximating it from another artifact: for example manifest.json owns model SQL, identity,
+and dependencies, while catalog.json owns warehouse-introspected columns and datatypes. When dbt
+cannot provide equivalent evidence, preserve that limitation explicitly instead of inventing or
+silently omitting semantics.
+
 **Library first, thin binary** Core logic lives in a library crate (`src/lib.rs`) with a
 small public API, e.g. a function taking SQL text plus a dialect and returning
 `Result<Protocol, Error>`. The binary is a thin wrapper around it. This keeps the analysis

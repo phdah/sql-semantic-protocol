@@ -7,6 +7,8 @@
 use std::collections::BTreeSet;
 use std::fmt;
 
+use crate::data_type::{parse_data_type, DataType};
+
 /// Default catalog and schema context applied to one configured SQL input.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct RelationContext {
@@ -53,10 +55,116 @@ pub trait RelationResolver {
     ) -> Result<String, RelationResolutionError>;
 }
 
+/// One typed column in caller-supplied relation schema metadata.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SchemaColumn {
+    name: String,
+    data_type: DataType,
+}
+
+impl SchemaColumn {
+    /// Construct a validated schema column from an already normalized datatype.
+    pub fn new(
+        name: impl Into<String>,
+        data_type: DataType,
+    ) -> Result<Self, RelationMetadataError> {
+        let name = name.into();
+        if name.trim().is_empty() {
+            return Err(RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: "column name cannot be empty".to_string(),
+            });
+        }
+
+        Ok(Self { name, data_type })
+    }
+
+    /// Construct a schema column from dialect-specific SQL datatype syntax.
+    ///
+    /// The syntax is normalized immediately into the parser-independent protocol datatype model.
+    pub fn from_sql_type(
+        name: impl Into<String>,
+        sql_type: &str,
+        dialect_name: &str,
+    ) -> Result<Self, RelationMetadataError> {
+        let data_type = parse_data_type(sql_type, dialect_name).map_err(|error| {
+            RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: error.to_string(),
+            }
+        })?;
+        Self::new(name, data_type)
+    }
+
+    /// Return the column name.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Return the canonical declared datatype.
+    pub fn data_type(&self) -> &DataType {
+        &self.data_type
+    }
+}
+
+/// Declared typed schema for one canonical source relation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RelationSchema {
+    relation: String,
+    columns: Vec<SchemaColumn>,
+}
+
+impl RelationSchema {
+    /// Construct a validated relation schema.
+    pub fn new(
+        relation: impl Into<String>,
+        columns: Vec<SchemaColumn>,
+    ) -> Result<Self, RelationMetadataError> {
+        let relation = relation.into();
+        let canonical = relation.trim();
+        if canonical.is_empty() {
+            return Err(RelationMetadataError::InvalidSchema {
+                relation,
+                message: "relation cannot be empty".to_string(),
+            });
+        }
+        parse_relation(canonical).map_err(|message| RelationMetadataError::InvalidSchema {
+            relation: canonical.to_string(),
+            message,
+        })?;
+
+        let mut names = BTreeSet::new();
+        for column in &columns {
+            if !names.insert(column.name().to_string()) {
+                return Err(RelationMetadataError::InvalidSchema {
+                    relation: canonical.to_string(),
+                    message: format!("duplicate column '{}'", column.name()),
+                });
+            }
+        }
+
+        Ok(Self {
+            relation: canonical.to_string(),
+            columns,
+        })
+    }
+
+    /// Return the canonical relation identity.
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
+
+    /// Return columns in caller-declared order.
+    pub fn columns(&self) -> &[SchemaColumn] {
+        &self.columns
+    }
+}
+
 /// Optional set of known canonical relations used to disambiguate textual references.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct RelationCatalog {
     relations: Vec<CatalogRelation>,
+    schemas: Vec<RelationSchema>,
 }
 
 impl RelationCatalog {
@@ -93,7 +201,65 @@ impl RelationCatalog {
         }
 
         parsed.sort_by(|left, right| left.canonical.cmp(&right.canonical));
-        Ok(Self { relations: parsed })
+        Ok(Self {
+            relations: parsed,
+            schemas: Vec::new(),
+        })
+    }
+
+    /// Construct a catalog from typed relation schemas.
+    ///
+    /// Schema relation identities participate in the same canonical relation resolution as names
+    /// supplied to `RelationCatalog::new`.
+    pub fn from_schemas(schemas: &[RelationSchema]) -> Result<Self, RelationMetadataError> {
+        let relation_names = schemas
+            .iter()
+            .map(RelationSchema::relation)
+            .collect::<Vec<_>>();
+        Self::from_relations_and_schemas(&relation_names, schemas)
+    }
+
+    /// Construct a catalog from relation identities plus optional typed schemas.
+    ///
+    /// This is useful for metadata sources such as dbt where every relation identity is known but
+    /// typed column evidence may only be available for a subset of resources.
+    pub fn from_relations_and_schemas(
+        relations: &[&str],
+        schemas: &[RelationSchema],
+    ) -> Result<Self, RelationMetadataError> {
+        let mut catalog = Self::new(relations)?;
+        let relation_names = catalog
+            .relations
+            .iter()
+            .map(|relation| relation.canonical.as_str())
+            .collect::<BTreeSet<_>>();
+        let mut unique = BTreeSet::new();
+
+        for schema in schemas {
+            if !unique.insert(schema.relation().to_string()) {
+                return Err(RelationMetadataError::InvalidSchema {
+                    relation: schema.relation().to_string(),
+                    message: "relation schema is duplicated".to_string(),
+                });
+            }
+            if !relation_names.contains(schema.relation()) {
+                return Err(RelationMetadataError::InvalidSchema {
+                    relation: schema.relation().to_string(),
+                    message: "schema relation is not present in catalog relations".to_string(),
+                });
+            }
+        }
+
+        catalog.schemas = schemas.to_vec();
+        catalog
+            .schemas
+            .sort_by(|left, right| left.relation().cmp(right.relation()));
+        Ok(catalog)
+    }
+
+    /// Return typed relation schemas in deterministic relation order.
+    pub fn schemas(&self) -> &[RelationSchema] {
+        &self.schemas
     }
 
     /// Return canonical catalog relation names in deterministic order.
@@ -198,6 +364,13 @@ pub enum RelationMetadataError {
         /// Explanation of the invalid syntax.
         message: String,
     },
+    /// Caller-supplied typed schema metadata is invalid.
+    InvalidSchema {
+        /// Relation associated with the invalid schema when available.
+        relation: String,
+        /// Explanation of the invalid schema.
+        message: String,
+    },
     /// A default catalog or schema value was not exactly one valid identifier.
     InvalidDefault {
         /// Configuration field name.
@@ -217,6 +390,13 @@ impl fmt::Display for RelationMetadataError {
                     formatter,
                     "invalid catalog relation '{relation}': {message}"
                 )
+            }
+            Self::InvalidSchema { relation, message } => {
+                if relation.is_empty() {
+                    write!(formatter, "invalid relation schema: {message}")
+                } else {
+                    write!(formatter, "invalid relation schema '{relation}': {message}")
+                }
             }
             Self::InvalidDefault {
                 field,
