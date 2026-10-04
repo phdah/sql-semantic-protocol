@@ -15,6 +15,7 @@
 mod analysis;
 mod bundle;
 mod composition;
+mod data_type;
 mod dbt;
 mod domain;
 mod emission;
@@ -38,6 +39,7 @@ pub use bundle::{
     SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
     UnresolvedComposedSemantics,
 };
+pub use data_type::{DataType, DataTypeField, DataTypeParseError, EnumValue, parse_data_type};
 pub use dbt::{
     analyze_dbt_manifest, parse_dbt_manifest, DbtManifest, DbtManifestError,
     SUPPORTED_DBT_MANIFEST_VERSIONS,
@@ -67,7 +69,7 @@ pub use protocol::{
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
-    RelationResolver, RelationSchema, ScalarType, SchemaColumn,
+    RelationResolver, RelationSchema, SchemaColumn,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.
