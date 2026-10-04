@@ -5,12 +5,12 @@
 
 use serde_json::{json, Value};
 
-use crate::data_type::DataType;
 use crate::bundle::{
     AnalysisBundle, AnalysisGraph, ComposedSemantics, CompositionDiagnostic, DatasetRef,
     GraphComponent, GraphEdge, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
     UnresolvedComposedSemantics,
 };
+use crate::data_type::DataType;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, Bound, CaseExpression, ColumnDomain, ColumnExpression, ColumnRef,
