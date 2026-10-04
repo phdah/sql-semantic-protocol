@@ -37,10 +37,8 @@ fn run() -> Result<(), CliError> {
         Command::Analyze(options) => {
             let bundle = match options.dbt_manifest.as_deref() {
                 Some(path) => {
-                    let bundle = analyze_dbt_artifacts_from_paths(
-                        path,
-                        options.dbt_catalog.as_deref(),
-                    )?;
+                    let bundle =
+                        analyze_dbt_artifacts_from_paths(path, options.dbt_catalog.as_deref())?;
                     select_targets(&bundle, &options.targets).map_err(CliError::TargetSelection)?
                 }
                 None => match options.manifest.as_deref() {
@@ -170,9 +168,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                     CliError::Input("missing value for --dbt-catalog".to_string())
                 })?;
                 if path.trim().is_empty() {
-                    return Err(CliError::Input(
-                        "--dbt-catalog cannot be empty".to_string(),
-                    ));
+                    return Err(CliError::Input("--dbt-catalog cannot be empty".to_string()));
                 }
                 if dbt_catalog.replace(PathBuf::from(path)).is_some() {
                     return Err(CliError::Input(
