@@ -419,6 +419,261 @@ impl std::error::Error for DbtManifestError {
     }
 }
 
+/// Parse and validate a dbt `catalog.json` artifact at the adapter boundary.
+///
+/// Catalog metadata is warehouse-introspected evidence. The adapter accepts catalog schema v0 and
+/// v1, rejects dbt-reported metadata-query errors, and preserves deterministic column order by the
+/// catalog ordinal index.
+pub fn parse_dbt_catalog(json: &str) -> Result<DbtCatalog, DbtCatalogError> {
+    let value =
+        serde_json::from_str::<Value>(json).map_err(|error| DbtCatalogError::InvalidJson {
+            message: error.to_string(),
+        })?;
+    let root = catalog_object(&value, "$")?;
+
+    let (schema_version, dbt_version) =
+        match catalog_optional_object(root, "metadata", "$.metadata")? {
+            Some(metadata) => {
+                let schema_url = catalog_required_string(
+                    metadata,
+                    "dbt_schema_version",
+                    "$.metadata.dbt_schema_version",
+                )?;
+                let version = parse_catalog_schema_version(schema_url)?;
+                let dbt_version =
+                    catalog_optional_string(metadata, "dbt_version", "$.metadata.dbt_version")?;
+                (version, dbt_version)
+            }
+            None if root.contains_key("generated_at") => (0, None),
+            None => {
+                return Err(catalog_invalid_field(
+                    "$.metadata",
+                    "catalog must contain v1 metadata or the v0 generated_at field",
+                ));
+            }
+        };
+
+    if !SUPPORTED_DBT_CATALOG_VERSIONS.contains(&schema_version) {
+        return Err(DbtCatalogError::UnsupportedSchemaVersion {
+            version: schema_version,
+        });
+    }
+
+    let errors = catalog_errors(root)?;
+    if !errors.is_empty() {
+        return Err(DbtCatalogError::CatalogErrors { errors });
+    }
+
+    let nodes = catalog_required_object(root, "nodes", "$.nodes")?;
+    let sources = catalog_required_object(root, "sources", "$.sources")?;
+    let mut resources = BTreeMap::new();
+    parse_catalog_resources(nodes, "$.nodes", &mut resources)?;
+    parse_catalog_resources(sources, "$.sources", &mut resources)?;
+
+    Ok(DbtCatalog {
+        schema_version,
+        dbt_version,
+        resources,
+    })
+}
+
+fn parse_catalog_resources(
+    resources: &Map<String, Value>,
+    path: &str,
+    parsed: &mut BTreeMap<String, DbtCatalogResource>,
+) -> Result<(), DbtCatalogError> {
+    for (resource_id, value) in resources {
+        let resource_path = format!("{path}.{resource_id}");
+        let object = catalog_object(value, &resource_path)?;
+        if let Some(unique_id) = catalog_optional_string(
+            object,
+            "unique_id",
+            &format!("{resource_path}.unique_id"),
+        )? {
+            if unique_id != *resource_id {
+                return Err(catalog_invalid_field(
+                    format!("{resource_path}.unique_id"),
+                    format!(
+                        "value '{unique_id}' does not match dictionary key '{resource_id}'"
+                    ),
+                ));
+            }
+        }
+
+        let columns =
+            catalog_required_object(object, "columns", &format!("{resource_path}.columns"))?;
+        let mut parsed_columns = Vec::with_capacity(columns.len());
+        for (column_key, value) in columns {
+            let column_path = format!("{resource_path}.columns.{column_key}");
+            let column = catalog_object(value, &column_path)?;
+            let name =
+                catalog_required_string(column, "name", &format!("{column_path}.name"))?.trim();
+            if name.is_empty() {
+                return Err(catalog_invalid_field(
+                    format!("{column_path}.name"),
+                    "column name cannot be empty",
+                ));
+            }
+            let data_type =
+                catalog_required_string(column, "type", &format!("{column_path}.type"))?.trim();
+            if data_type.is_empty() {
+                return Err(catalog_invalid_field(
+                    format!("{column_path}.type"),
+                    "column datatype cannot be empty",
+                ));
+            }
+            let index =
+                catalog_required_i64(column, "index", &format!("{column_path}.index"))?;
+
+            parsed_columns.push(DbtCatalogColumn {
+                name: name.to_string(),
+                data_type: data_type.to_string(),
+                index,
+            });
+        }
+
+        parsed_columns.sort_by(|left, right| {
+            left.index
+                .cmp(&right.index)
+                .then_with(|| left.name.cmp(&right.name))
+        });
+
+        if parsed
+            .insert(
+                resource_id.clone(),
+                DbtCatalogResource {
+                    columns: parsed_columns,
+                },
+            )
+            .is_some()
+        {
+            return Err(catalog_invalid_field(
+                &resource_path,
+                "resource unique ID is duplicated across nodes and sources",
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn catalog_errors(root: &Map<String, Value>) -> Result<Vec<String>, DbtCatalogError> {
+    let Some(value) = root.get("errors") else {
+        return Ok(Vec::new());
+    };
+    if value.is_null() {
+        return Ok(Vec::new());
+    }
+    let values = value
+        .as_array()
+        .ok_or_else(|| catalog_invalid_field("$.errors", "expected an array of strings or null"))?;
+    values
+        .iter()
+        .enumerate()
+        .map(|(index, value)| {
+            value.as_str().map(str::to_string).ok_or_else(|| {
+                catalog_invalid_field(
+                    format!("$.errors[{index}]"),
+                    "expected a string catalog error",
+                )
+            })
+        })
+        .collect()
+}
+
+fn parse_catalog_schema_version(schema_url: &str) -> Result<u32, DbtCatalogError> {
+    let marker = "/catalog/v";
+    schema_url
+        .rsplit_once(marker)
+        .and_then(|(_, suffix)| suffix.strip_suffix(".json"))
+        .and_then(|value| value.parse::<u32>().ok())
+        .ok_or_else(|| {
+            catalog_invalid_field(
+                "$.metadata.dbt_schema_version",
+                format!(
+                    "expected a dbt catalog schema URL ending in /catalog/vN.json, got '{schema_url}'"
+                ),
+            )
+        })
+}
+
+fn catalog_object<'a>(
+    value: &'a Value,
+    path: &str,
+) -> Result<&'a Map<String, Value>, DbtCatalogError> {
+    value
+        .as_object()
+        .ok_or_else(|| catalog_invalid_field(path, "expected an object"))
+}
+
+fn catalog_required_object<'a>(
+    object: &'a Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<&'a Map<String, Value>, DbtCatalogError> {
+    let value = object
+        .get(key)
+        .ok_or_else(|| catalog_invalid_field(path, "field is required"))?;
+    catalog_object(value, path)
+}
+
+fn catalog_optional_object<'a>(
+    object: &'a Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<Option<&'a Map<String, Value>>, DbtCatalogError> {
+    match object.get(key) {
+        None | Some(Value::Null) => Ok(None),
+        Some(value) => catalog_object(value, path).map(Some),
+    }
+}
+
+fn catalog_required_string<'a>(
+    object: &'a Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<&'a str, DbtCatalogError> {
+    object
+        .get(key)
+        .ok_or_else(|| catalog_invalid_field(path, "field is required"))?
+        .as_str()
+        .ok_or_else(|| catalog_invalid_field(path, "expected a string"))
+}
+
+fn catalog_optional_string(
+    object: &Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<Option<String>, DbtCatalogError> {
+    match object.get(key) {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::String(value)) => Ok(Some(value.clone())),
+        Some(_) => Err(catalog_invalid_field(path, "expected a string or null")),
+    }
+}
+
+fn catalog_required_i64(
+    object: &Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<i64, DbtCatalogError> {
+    object
+        .get(key)
+        .ok_or_else(|| catalog_invalid_field(path, "field is required"))?
+        .as_i64()
+        .ok_or_else(|| catalog_invalid_field(path, "expected an integer"))
+}
+
+fn catalog_invalid_field(
+    path: impl Into<String>,
+    message: impl Into<String>,
+) -> DbtCatalogError {
+    DbtCatalogError::InvalidField {
+        path: path.into(),
+        message: message.into(),
+    }
+}
+
 /// Parse and validate a dbt `manifest.json` artifact at the adapter boundary.
 ///
 /// The adapter accepts manifest schema v10 through v12. SQL models must have a materialized
