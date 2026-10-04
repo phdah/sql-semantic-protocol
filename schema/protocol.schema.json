@@ -2127,19 +2127,14 @@
       "additionalProperties": false,
       "required": [
         "name",
-        "type"
+        "data_type"
       ],
       "properties": {
         "name": {
           "$ref": "#/$defs/nonEmptyString"
         },
-        "type": {
-          "enum": [
-            "integer",
-            "boolean",
-            "timestamp",
-            "string"
-          ]
+        "data_type": {
+          "$ref": "#/$defs/dataType"
         }
       }
     },
@@ -2161,6 +2156,586 @@
           }
         }
       }
+    },
+    "dataTypeField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "data_type"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "data_type": {
+          "$ref": "#/$defs/dataType"
+        }
+      }
+    },
+    "enumValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "dataType": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bits"
+          ],
+          "properties": {
+            "kind": {
+              "const": "signed_integer"
+            },
+            "bits": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bits"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unsigned_integer"
+            },
+            "bits": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "precision",
+            "scale"
+          ],
+          "properties": {
+            "kind": {
+              "const": "decimal"
+            },
+            "precision": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "scale": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bits"
+          ],
+          "properties": {
+            "kind": {
+              "const": "floating_point"
+            },
+            "bits": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "length",
+            "fixed"
+          ],
+          "properties": {
+            "kind": {
+              "const": "string"
+            },
+            "length": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "fixed": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "length",
+            "fixed"
+          ],
+          "properties": {
+            "kind": {
+              "const": "binary"
+            },
+            "length": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "fixed": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "date"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "precision"
+          ],
+          "properties": {
+            "kind": {
+              "const": "time"
+            },
+            "precision": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "precision"
+          ],
+          "properties": {
+            "kind": {
+              "const": "timestamp"
+            },
+            "precision": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "interval"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "uuid"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "json"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "length"
+          ],
+          "properties": {
+            "kind": {
+              "const": "bit_string"
+            },
+            "length": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "element",
+            "length"
+          ],
+          "properties": {
+            "kind": {
+              "const": "array"
+            },
+            "element": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/dataType"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "length": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "key",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "map"
+            },
+            "key": {
+              "$ref": "#/$defs/dataType"
+            },
+            "value": {
+              "$ref": "#/$defs/dataType"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "fields"
+          ],
+          "properties": {
+            "kind": {
+              "const": "struct"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/dataTypeField"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "fields"
+          ],
+          "properties": {
+            "kind": {
+              "const": "union"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/dataTypeField"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "values"
+          ],
+          "properties": {
+            "kind": {
+              "const": "enum"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/enumValue"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "values"
+          ],
+          "properties": {
+            "kind": {
+              "const": "set"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "name",
+            "fields"
+          ],
+          "properties": {
+            "kind": {
+              "const": "table"
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/dataTypeField"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "geometry_kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "geometry"
+            },
+            "geometry_kind": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "regclass"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "text_search_vector"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "text_search_query"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "inner"
+          ],
+          "properties": {
+            "kind": {
+              "const": "nullable"
+            },
+            "inner": {
+              "$ref": "#/$defs/dataType"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "any"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unspecified"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "trigger"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "name",
+            "modifiers"
+          ],
+          "properties": {
+            "kind": {
+              "const": "custom"
+            },
+            "name": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "modifiers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
