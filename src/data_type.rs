@@ -199,7 +199,8 @@ pub struct DataTypeField {
 }
 
 impl DataTypeField {
-    fn new(name: Option<String>, data_type: DataType) -> Self {
+    /// Construct one canonical structured field.
+    pub fn new(name: Option<String>, data_type: DataType) -> Self {
         Self { name, data_type }
     }
 
