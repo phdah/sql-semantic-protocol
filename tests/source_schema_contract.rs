@@ -1,8 +1,9 @@
 mod common;
 
 use sql_semantic_protocol::{
-    ConfiguredSqlInput, DataType, DataTypeField, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     analyze_configured_inputs_with_catalog, dialect_from_name, parse_data_type, to_bundle_json,
+    ConfiguredSqlInput, DataType, DataTypeField, RelationCatalog, RelationSchema, SchemaColumn,
+    SqlInput,
 };
 
 #[test]
@@ -117,9 +118,7 @@ fn catalog_source_schema_is_preserved_in_bundle_and_emission() {
     .expect("relation schema should be valid");
     let catalog =
         RelationCatalog::from_schemas(std::slice::from_ref(&schema)).expect("catalog should build");
-    let input = SqlInput::inline(
-        "SELECT id, payload, created_at FROM raw.orders WHERE id > 10",
-    );
+    let input = SqlInput::inline("SELECT id, payload, created_at FROM raw.orders WHERE id > 10");
     let dialect = dialect_from_name("postgresql").expect("PostgreSQL dialect should exist");
     let configured = [ConfiguredSqlInput::new(
         "orders",
