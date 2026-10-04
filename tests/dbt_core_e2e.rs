@@ -302,8 +302,13 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     let catalog = parse_dbt_catalog(&catalog_text).expect("real dbt catalog should parse");
     let dialect =
         dialect_from_str(manifest.adapter_type()).expect("dbt DuckDB dialect should resolve");
-    let bundle = analyze_dbt_artifacts(&manifest, &catalog, manifest.adapter_type(), dialect.as_ref())
-        .expect("real dbt project should analyze with warehouse schemas");
+    let bundle = analyze_dbt_artifacts(
+        &manifest,
+        &catalog,
+        manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .expect("real dbt project should analyze with warehouse schemas");
     let library_json = to_bundle_json(&bundle);
     let protocol: Value =
         serde_json::from_str(&library_json).expect("library protocol should be valid JSON");
@@ -356,7 +361,14 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 .as_str()
                 .expect("catalog column name should be a string"))
             .collect::<Vec<_>>(),
-        ["id", "customer_id", "amount", "status", "created_at", "region"]
+        [
+            "id",
+            "customer_id",
+            "amount",
+            "status",
+            "created_at",
+            "region"
+        ]
     );
     assert_eq!(raw_order_columns[0]["data_type"]["kind"], "signed_integer");
     assert_eq!(raw_order_columns[3]["data_type"]["kind"], "string");
