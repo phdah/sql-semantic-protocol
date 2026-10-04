@@ -65,3 +65,47 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: cargo publish --locked
+
+      - name: Check out current revision for publish recovery
+        if: steps.release.outputs.release_created != 'true'
+        uses: actions/checkout@v4
+
+      - name: Detect unpublished tagged crate
+        id: recovery
+        if: steps.release.outputs.release_created != 'true'
+        run: |
+          version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -n1)"
+          test -n "$version"
+
+          if ! curl --fail --silent --show-error \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/git/ref/tags/v${version}" \
+            >/dev/null; then
+            echo "required=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if curl --fail --silent --show-error \
+            "https://crates.io/api/v1/crates/sql-semantic-protocol/${version}" \
+            >/dev/null; then
+            echo "required=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "required=true" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Rust toolchain for publish recovery
+        if: steps.recovery.outputs.required == 'true'
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Verify tagged version for publish recovery
+        if: steps.recovery.outputs.required == 'true'
+        run: cargo test --test version_contract
+
+      - name: Recover unpublished crate on crates.io
+        if: steps.recovery.outputs.required == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --locked
