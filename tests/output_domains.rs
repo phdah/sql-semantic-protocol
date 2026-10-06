@@ -2,8 +2,9 @@ mod common;
 
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_inputs, analyze_sql, Expression, LiteralType, LiteralValue, Protocol,
-    ProtocolStatement, QueryStatement, SetMode, SqlInput, ValueDomain,
+    analyze_inputs, analyze_sql, CaseSourceDomainAlternative, CaseSourceDomains, Expression,
+    LiteralType, LiteralValue, Protocol, ProtocolStatement, QueryStatement, SetMode, SqlInput,
+    ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect, SnowflakeDialect};
 
@@ -193,4 +194,179 @@ fn shared_case_semantics_are_consistent_across_exposed_dialects() {
             Expression::Case(_)
         ));
     }
+}
+
+
+fn reachable_case_alternatives(
+    domains: &CaseSourceDomains,
+) -> &[CaseSourceDomainAlternative] {
+    match domains {
+        CaseSourceDomains::Reachable { alternatives } => alternatives,
+        other => panic!("expected reachable CASE source domains, got {other:?}"),
+    }
+}
+
+#[test]
+fn searched_case_branch_domains_account_for_prior_matches_and_else_nulls() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT CASE
+            WHEN amount > 100 THEN 'high'
+            WHEN amount > 50 THEN 'medium'
+            ELSE 'low'
+         END AS bucket
+         FROM orders",
+        "generic",
+        &dialect,
+    )
+    .expect("searched CASE should analyze");
+
+    let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+    else {
+        panic!("expected CASE expression");
+    };
+
+    let first = reachable_case_alternatives(case_expression.branches()[0].source_domains());
+    assert_eq!(first.len(), 1);
+    let [first_domain] = first[0].column_domains() else {
+        panic!("expected one source domain for first branch");
+    };
+    assert_eq!(first_domain.column().relation(), Some("orders"));
+    assert_eq!(first_domain.column().name(), "amount");
+    assert_eq!(
+        integer_bounds(first_domain.domain()),
+        (Some(("100".to_string(), false)), None)
+    );
+
+    let second = reachable_case_alternatives(case_expression.branches()[1].source_domains());
+    assert_eq!(second.len(), 1);
+    let [second_domain] = second[0].column_domains() else {
+        panic!("expected one source domain for second branch");
+    };
+    assert_eq!(
+        integer_bounds(second_domain.domain()),
+        (
+            Some(("50".to_string(), false)),
+            Some(("100".to_string(), true))
+        )
+    );
+
+    let else_alternatives = reachable_case_alternatives(case_expression.else_source_domains());
+    assert_eq!(else_alternatives.len(), 2);
+    assert!(else_alternatives.iter().any(|alternative| {
+        let [domain] = alternative.column_domains() else {
+            return false;
+        };
+        matches!(
+            integer_bounds(domain.domain()),
+            (None, Some((ref value, true))) if value == "50"
+        )
+    }));
+    assert!(else_alternatives.iter().any(|alternative| {
+        let [domain] = alternative.column_domains() else {
+            return false;
+        };
+        matches!(
+            domain.domain(),
+            ValueDomain::Set(set)
+                if set.mode() == SetMode::Include
+                    && matches!(
+                        set.values(),
+                        [literal] if literal.value() == &LiteralValue::Null
+                    )
+        )
+    }));
+}
+
+#[test]
+fn simple_case_marks_overlapping_branch_unreachable() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT CASE status
+            WHEN 'new' THEN 1
+            WHEN 'new' THEN 2
+            ELSE 3
+         END AS rank
+         FROM orders",
+        "generic",
+        &dialect,
+    )
+    .expect("simple CASE should analyze");
+
+    let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+    else {
+        panic!("expected CASE expression");
+    };
+
+    assert!(matches!(
+        case_expression.branches()[1].source_domains(),
+        CaseSourceDomains::Unreachable
+    ));
+
+    let alternatives = reachable_case_alternatives(case_expression.else_source_domains());
+    assert_eq!(alternatives.len(), 1);
+    let [domain] = alternatives[0].column_domains() else {
+        panic!("expected one ELSE source domain");
+    };
+    let ValueDomain::Set(set) = domain.domain() else {
+        panic!("expected exclusion set for ELSE");
+    };
+    assert_eq!(set.mode(), SetMode::Exclude);
+    assert!(matches!(
+        set.values(),
+        [literal] if literal.value() == &LiteralValue::Text("new".to_string())
+    ));
+}
+
+#[test]
+fn case_branch_domains_preserve_unknown_reason_for_non_derivable_condition() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT CASE WHEN ABS(amount) > 10 THEN 'large' ELSE 'small' END AS bucket FROM orders",
+        "generic",
+        &dialect,
+    )
+    .expect("CASE with function condition should analyze");
+
+    let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+    else {
+        panic!("expected CASE expression");
+    };
+
+    let CaseSourceDomains::Unknown(reason) = case_expression.branches()[0].source_domains() else {
+        panic!("expected unknown branch source domains");
+    };
+    assert!(reason.reason().contains("one source column"));
+    assert!(matches!(
+        case_expression.else_source_domains(),
+        CaseSourceDomains::Unknown(_)
+    ));
+}
+
+#[test]
+fn case_branch_domains_resolve_through_cte_lineage() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "WITH base AS (
+            SELECT amount AS value
+            FROM raw.orders
+         )
+         SELECT CASE WHEN value > 10 THEN 'high' ELSE 'low' END AS bucket
+         FROM base",
+        "generic",
+        &dialect,
+    )
+    .expect("CTE CASE should analyze");
+
+    let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+    else {
+        panic!("expected CASE expression");
+    };
+    let alternatives =
+        reachable_case_alternatives(case_expression.branches()[0].source_domains());
+    let [domain] = alternatives[0].column_domains() else {
+        panic!("expected one physical source domain");
+    };
+    assert_eq!(domain.column().relation(), Some("raw.orders"));
+    assert_eq!(domain.column().name(), "amount");
 }
