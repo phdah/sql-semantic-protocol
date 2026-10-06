@@ -28,6 +28,7 @@ use crate::domain::{
     resolve_column, union_domains,
 };
 use crate::parser::ParsedSql;
+use crate::relation::{RelationCatalog, RelationContext};
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression, ColumnDomain,
@@ -67,7 +68,51 @@ impl fmt::Display for AnalysisError {
 
 impl std::error::Error for AnalysisError {}
 
+struct AnalysisMetadata<'a> {
+    catalog: Option<&'a RelationCatalog>,
+    dialect_name: &'a str,
+    relation_context: Option<&'a RelationContext>,
+}
+
+impl AnalysisMetadata<'_> {
+    fn schema_columns(&self, relation: &str) -> Option<Vec<String>> {
+        let catalog = self.catalog?;
+        let canonical = catalog
+            .resolve(relation, self.dialect_name, self.relation_context)
+            .ok()?;
+        catalog
+            .schemas()
+            .iter()
+            .find(|schema| schema.relation() == canonical)
+            .map(|schema| {
+                schema
+                    .columns()
+                    .iter()
+                    .map(|column| column.name().to_string())
+                    .collect()
+            })
+    }
+}
+
 pub(crate) fn analyze(parsed: ParsedSql, dialect_name: &str) -> Result<Protocol, AnalysisError> {
+    analyze_with_metadata(parsed, dialect_name, None, None)
+}
+
+pub(crate) fn analyze_with_catalog(
+    parsed: ParsedSql,
+    dialect_name: &str,
+    catalog: &RelationCatalog,
+    relation_context: Option<&RelationContext>,
+) -> Result<Protocol, AnalysisError> {
+    analyze_with_metadata(parsed, dialect_name, Some(catalog), relation_context)
+}
+
+fn analyze_with_metadata(
+    parsed: ParsedSql,
+    dialect_name: &str,
+    catalog: Option<&RelationCatalog>,
+    relation_context: Option<&RelationContext>,
+) -> Result<Protocol, AnalysisError> {
     if dialect_name.trim().is_empty() {
         return Err(AnalysisError::EmptyDialectName);
     }
@@ -76,19 +121,31 @@ pub(crate) fn analyze(parsed: ParsedSql, dialect_name: &str) -> Result<Protocol,
         return Err(AnalysisError::NoStatements);
     }
 
-    let statements = parsed.statements.iter().map(analyze_statement).collect();
+    let metadata = AnalysisMetadata {
+        catalog,
+        dialect_name,
+        relation_context,
+    };
+    let statements = parsed
+        .statements
+        .iter()
+        .map(|statement| analyze_statement(statement, &metadata))
+        .collect();
 
     Ok(Protocol::new(dialect_name.to_string(), statements))
 }
 
-fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
+fn analyze_statement(
+    statement: &SqlStatement,
+    metadata: &AnalysisMetadata<'_>,
+) -> ProtocolStatement {
     match statement {
-        SqlStatement::Query(query) => ProtocolStatement::Query(analyze_query(query, None)),
+        SqlStatement::Query(query) => ProtocolStatement::Query(analyze_query(query, None, metadata)),
         SqlStatement::CreateTable(create_table) => match &create_table.query {
             Some(query) => {
                 let target = create_table.name.to_string();
                 ProtocolStatement::Query(
-                    analyze_query(query, Some(target.clone()))
+                    analyze_query(query, Some(target.clone()), metadata)
                         .with_write(Some(WriteOperation::definition(target))),
                 )
             }
@@ -97,11 +154,11 @@ fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
         SqlStatement::CreateView { name, query, .. } => {
             let target = name.to_string();
             ProtocolStatement::Query(
-                analyze_query(query, Some(target.clone()))
+                analyze_query(query, Some(target.clone()), metadata)
                     .with_write(Some(WriteOperation::definition(target))),
             )
         }
-        SqlStatement::Insert(insert) => analyze_insert(insert),
+        SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
         SqlStatement::Merge {
             table,
             source,
@@ -114,7 +171,7 @@ fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
     }
 }
 
-fn analyze_insert(insert: &SqlInsert) -> ProtocolStatement {
+fn analyze_insert(insert: &SqlInsert, metadata: &AnalysisMetadata<'_>) -> ProtocolStatement {
     let target = match &insert.table {
         TableObject::TableName(name) => name.to_string(),
         TableObject::TableFunction(_) => {
@@ -166,7 +223,7 @@ fn analyze_insert(insert: &SqlInsert) -> ProtocolStatement {
     }
 
     let target_columns = insert.columns.iter().map(ToString::to_string).collect();
-    let query = analyze_query(source, Some(target.clone()))
+    let query = analyze_query(source, Some(target.clone()), metadata)
         .with_write(Some(WriteOperation::append(target, target_columns)));
     ProtocolStatement::Query(query)
 }
@@ -406,7 +463,11 @@ fn merge_branch_predicate(
     }
 }
 
-fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QueryStatement {
+fn analyze_query(
+    query: &SqlQuery,
+    produced_relation: Option<String>,
+    metadata: &AnalysisMetadata<'_>,
+) -> QueryStatement {
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let relation_analysis = analyze_query_relations(
@@ -418,7 +479,12 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
 
     let set_operation = analyze_set_operation(query.body.as_ref());
     let aggregation = analyze_query_aggregation(query, &mut diagnostics);
-    let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics);
+    let output = analyze_query_output(
+        query,
+        &BTreeMap::new(),
+        &mut diagnostics,
+        Some(metadata),
+    );
 
     let predicates = match query.body.as_ref() {
         SetExpr::Select(select) => analyze_select(select, &mut diagnostics),
@@ -434,13 +500,13 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         }
     };
 
-    let column_domains = match query.body.as_ref() {
-        SetExpr::Select(_) => derive_column_domains(&predicates, &relation_analysis.sources),
-        SetExpr::SetOperation { .. } | SetExpr::Query(_) => {
-            analyze_query_column_domains(query, &BTreeSet::new())
-        }
-        _ => Vec::new(),
-    };
+    let column_domains = analyze_query_column_domains(
+        query,
+        &BTreeSet::new(),
+        &BTreeMap::new(),
+        &BTreeMap::new(),
+        Some(metadata),
+    );
     let output = refine_output_domains_from_column_domains(
         output,
         &column_domains,
