@@ -2846,7 +2846,7 @@ fn unsupported_expression(
     Expression::Unsupported(UnsupportedSemantic::new(feature.to_string(), Some(reason)))
 }
 
-type LocalOutputMap = BTreeMap<String, BTreeMap<String, Vec<LineageSource>>>;
+type LocalOutputMap = BTreeMap<String, Output>;
 
 #[derive(Clone)]
 struct OutputRelation {
@@ -2856,16 +2856,26 @@ struct OutputRelation {
 
 #[derive(Clone)]
 enum OutputRelationSource {
-    Physical(String),
-    Local(BTreeMap<String, Vec<LineageSource>>),
+    Physical {
+        relation: String,
+        columns: Option<Vec<String>>,
+    },
+    Local(Output),
 }
 
 fn analyze_query_output(
     query: &SqlQuery,
     inherited_local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
-    analyze_query_output_with_outer_scope(query, inherited_local_outputs, &[], diagnostics)
+    analyze_query_output_with_outer_scope(
+        query,
+        inherited_local_outputs,
+        &[],
+        diagnostics,
+        metadata,
+    )
 }
 
 fn analyze_query_output_with_outer_scope(
@@ -2873,14 +2883,20 @@ fn analyze_query_output_with_outer_scope(
     inherited_local_outputs: &LocalOutputMap,
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
     let mut local_outputs = inherited_local_outputs.clone();
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
-            let output =
-                analyze_query_output_with_outer_scope(&cte.query, &local_outputs, &[], diagnostics);
-            local_outputs.insert(cte.alias.name.to_string(), output_lineage_map(&output));
+            let output = analyze_query_output_with_outer_scope(
+                &cte.query,
+                &local_outputs,
+                &[],
+                diagnostics,
+                metadata,
+            );
+            local_outputs.insert(cte.alias.name.to_string(), output);
         }
     }
 
@@ -2889,6 +2905,7 @@ fn analyze_query_output_with_outer_scope(
         &local_outputs,
         outer_scope,
         diagnostics,
+        metadata,
     )
 }
 
@@ -2897,13 +2914,26 @@ fn analyze_set_expr_output_with_outer_scope(
     local_outputs: &LocalOutputMap,
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
     match expression {
         SetExpr::Select(select) => {
-            analyze_select_output_with_outer_scope(select, local_outputs, outer_scope, diagnostics)
+            analyze_select_output_with_outer_scope(
+                select,
+                local_outputs,
+                outer_scope,
+                diagnostics,
+                metadata,
+            )
         }
         SetExpr::Query(query) => {
-            analyze_query_output_with_outer_scope(query, local_outputs, outer_scope, diagnostics)
+            analyze_query_output_with_outer_scope(
+                query,
+                local_outputs,
+                outer_scope,
+                diagnostics,
+                metadata,
+            )
         }
         SetExpr::SetOperation {
             left,
@@ -2926,12 +2956,14 @@ fn analyze_set_expr_output_with_outer_scope(
                 local_outputs,
                 outer_scope,
                 diagnostics,
+                metadata,
             );
             let right_output = analyze_set_expr_output_with_outer_scope(
                 right,
                 local_outputs,
                 outer_scope,
                 diagnostics,
+                metadata,
             );
             merge_set_operation_output(left_output, right_output, diagnostics)
         }
