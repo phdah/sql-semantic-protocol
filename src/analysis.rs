@@ -1054,6 +1054,7 @@ struct AnalyzedRelation {
     source: SourceRelation,
     reference: RelationRef,
     dependencies: BTreeSet<String>,
+    joins: Vec<ProtocolJoin>,
 }
 
 fn analyze_query_relations(
@@ -1074,6 +1075,7 @@ fn analyze_query_relations(
             let nested =
                 analyze_query_relations(&cte.query, &local_relations, diagnostics, derived_index);
             analysis.dependencies.extend(nested.dependencies);
+            analysis.joins.extend(nested.joins);
         }
     }
 
@@ -1300,6 +1302,7 @@ fn register_table_factor(
     for dependency in relation.dependencies {
         analysis.dependencies.insert(dependency);
     }
+    analysis.joins.extend(relation.joins);
 
     if !analysis.sources.iter().any(|existing| {
         existing.name() == relation.source.name() && existing.alias() == relation.source.alias()
@@ -1335,6 +1338,7 @@ fn analyze_table_factor(
                 source: SourceRelation::new(name.clone(), alias.clone()),
                 reference: RelationRef::new(name, alias),
                 dependencies,
+                joins: Vec::new(),
             })
         }
         TableFactor::Derived {
@@ -1355,6 +1359,7 @@ fn analyze_table_factor(
                 source: SourceRelation::new(name.clone(), alias.clone()),
                 reference: RelationRef::new(name, alias),
                 dependencies: nested.dependencies,
+                joins: nested.joins,
             })
         }
         _ => {
