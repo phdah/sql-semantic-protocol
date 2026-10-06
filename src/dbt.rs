@@ -990,10 +990,27 @@ fn analyze_dbt_with_catalog(
             }
         })
         .collect::<Vec<_>>();
-    let bundle = analyze_configured_inputs_with_catalog(&configured, catalog)
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, catalog)
         .map_err(DbtManifestError::Analysis)?;
 
     validate_declared_dependencies(manifest, &bundle)?;
+
+    let mut resolved_constraints = Vec::with_capacity(manifest.relation_constraints.len());
+    for constraints in &manifest.relation_constraints {
+        let relation = constraints.relation().to_string();
+        let resolved = constraints.map_relations(relation.clone(), |reference| {
+            catalog
+                .resolve(reference, dialect_name, None)
+                .map_err(|error| DbtManifestError::RelationMetadata {
+                    resource_id: relation.clone(),
+                    message: format!(
+                        "constraint reference '{reference}' cannot be resolved: {error}"
+                    ),
+                })
+        })?;
+        resolved_constraints.push(resolved);
+    }
+    bundle.enrich_relation_constraints(&resolved_constraints);
     Ok(bundle)
 }
 
