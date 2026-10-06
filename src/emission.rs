@@ -13,15 +13,16 @@ use crate::bundle::{
 use crate::data_type::DataType;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
-    BinaryExpression, Bound, CaseExpression, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonPredicate, Diagnostic, ExistsPredicate, Expression, FunctionExpression, GroupBy,
-    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, LineageSource,
-    LiteralExpression, LiteralValue, LogicalPredicate, MergeAction, MergeClause, NotPredicate,
-    Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
-    RelationRef, ScalarSubqueryExpression, SetOperand, SetOperation, SourceRelation,
-    SubquerySemantics, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
-    ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
+    BinaryExpression, Bound, CaseExpression, CaseSourceDomains, ColumnDomain, ColumnExpression,
+    ColumnRef, ComparisonPredicate, Diagnostic, ExistsPredicate, Expression, FunctionExpression,
+    GroupBy, GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join,
+    LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, MergeAction, MergeClause,
+    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
+    QueryStatement, RelationRef, ScalarSubqueryExpression, SetOperand, SetOperation,
+    SourceRelation, SubquerySemantics, UnaryExpression, UnknownSemantic, UnsupportedSemantic,
+    UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound,
+    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteOperation,
+    WriteValue,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
@@ -775,13 +776,40 @@ fn case_expression_to_value(expression: &CaseExpression) -> Value {
             .iter()
             .map(|branch| json!({
                 "condition": expression_to_value(branch.condition()),
-                "result": expression_to_value(branch.result())
+                "result": expression_to_value(branch.result()),
+                "source_domains": case_source_domains_to_value(branch.source_domains())
             }))
             .collect::<Vec<_>>(),
         "else_result": expression
             .else_result()
-            .map_or(Value::Null, expression_to_value)
+            .map_or(Value::Null, expression_to_value),
+        "else_source_domains": case_source_domains_to_value(expression.else_source_domains())
     })
+}
+
+fn case_source_domains_to_value(domains: &CaseSourceDomains) -> Value {
+    match domains {
+        CaseSourceDomains::Reachable { alternatives } => json!({
+            "status": "reachable",
+            "alternatives": alternatives
+                .iter()
+                .map(|alternative| json!({
+                    "column_domains": alternative
+                        .column_domains()
+                        .iter()
+                        .map(column_domain_to_value)
+                        .collect::<Vec<_>>()
+                }))
+                .collect::<Vec<_>>()
+        }),
+        CaseSourceDomains::Unreachable => json!({
+            "status": "unreachable"
+        }),
+        CaseSourceDomains::Unknown(domain) => json!({
+            "status": "unknown",
+            "reason": domain.reason()
+        }),
+    }
 }
 
 fn scalar_subquery_expression_to_value(expression: &ScalarSubqueryExpression) -> Value {

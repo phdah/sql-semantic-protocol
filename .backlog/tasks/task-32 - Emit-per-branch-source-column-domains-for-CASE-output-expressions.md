@@ -1,10 +1,10 @@
 ---
 id: TASK-32
 title: Emit per-branch source-column domains for CASE output expressions
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-06 13:25'
-updated_date: '2026-10-06 13:26'
+updated_date: '2026-10-06 17:08'
 labels: []
 milestone: m-2
 dependencies:
@@ -21,11 +21,11 @@ Output columns defined by CASE expressions carry their branches and conditions, 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Searched and simple CASE output expressions expose per-branch domains on physical source columns, including ELSE
-- [ ] #2 Each branch domain accounts for earlier branch conditions not matching
-- [ ] #3 Unreachable branches are identified explicitly
-- [ ] #4 Branches whose domains cannot be derived safely are marked unknown with a reason rather than omitted
-- [ ] #5 Branch domains resolve through CTE and derived-table lineage once local-relation semantics are carried
-- [ ] #6 Integration tests cover searched CASE, simple CASE, ELSE, overlapping conditions, unreachable branches, and non-derivable conditions
-- [ ] #7 JSON Schema, protocol documentation, and public API docs reflect the new representation
+- [x] #1 Searched and simple CASE output expressions expose per-branch domains on physical source columns, including ELSE
+- [x] #2 Each branch domain accounts for earlier branch conditions not matching
+- [x] #3 Unreachable branches are identified explicitly
+- [x] #4 Branches whose domains cannot be derived safely are marked unknown with a reason rather than omitted
+- [x] #5 Branch domains resolve through CTE and derived-table lineage once local-relation semantics are carried
+- [x] #6 Integration tests cover searched CASE, simple CASE, ELSE, overlapping conditions, unreachable branches, and non-derivable conditions
+- [x] #7 JSON Schema, protocol documentation, and public API docs reflect the new representation
 <!-- AC:END -->

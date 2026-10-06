@@ -1840,7 +1840,8 @@
         "kind",
         "operand",
         "branches",
-        "else_result"
+        "else_result",
+        "else_source_domains"
       ],
       "properties": {
         "kind": {
@@ -1872,6 +1873,9 @@
               "type": "null"
             }
           ]
+        },
+        "else_source_domains": {
+          "$ref": "#/$defs/caseSourceDomains"
         }
       }
     },
@@ -1880,7 +1884,8 @@
       "additionalProperties": false,
       "required": [
         "condition",
-        "result"
+        "result",
+        "source_domains"
       ],
       "properties": {
         "condition": {
@@ -1888,6 +1893,76 @@
         },
         "result": {
           "$ref": "#/$defs/expression"
+        },
+        "source_domains": {
+          "$ref": "#/$defs/caseSourceDomains"
+        }
+      }
+    },
+    "caseSourceDomains": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "alternatives"
+          ],
+          "properties": {
+            "status": {
+              "const": "reachable"
+            },
+            "alternatives": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/caseSourceDomainAlternative"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "const": "unreachable"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reason"
+          ],
+          "properties": {
+            "status": {
+              "const": "unknown"
+            },
+            "reason": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        }
+      ]
+    },
+    "caseSourceDomainAlternative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "column_domains"
+      ],
+      "properties": {
+        "column_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
         }
       }
     },
