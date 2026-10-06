@@ -8,9 +8,7 @@ use std::fmt;
 
 use sqlparser::dialect::Dialect;
 
-use crate::constraints::{
-    merge_relation_constraint_sets, RelationConstraintSet,
-};
+use crate::constraints::{merge_relation_constraint_sets, RelationConstraintSet};
 use crate::protocol::{
     ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, WriteKind,
     PROTOCOL_VERSION,
