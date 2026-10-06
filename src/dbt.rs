@@ -1534,7 +1534,12 @@ fn parse_manifest_relation_constraints(
                     evidence,
                 )
             }
-            _ => unreachable!("supported dbt tests are matched above"),
+            _ => {
+                return Err(invalid_field(
+                    format!("{path}.test_metadata.name"),
+                    format!("unsupported dbt test kind '{test_name}'"),
+                ));
+            }
         }
         .map_err(|error| DbtManifestError::RelationMetadata {
             resource_id: test_id.clone(),
