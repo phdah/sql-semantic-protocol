@@ -11,6 +11,7 @@ models:
           - type: unique
         data_tests:
           - unique
+          - not_null
 
   - name: stg_orders
     constraints:
@@ -26,9 +27,15 @@ models:
       - name: order_id
         data_tests:
           - unique
+          - not_null
       - name: customer_id
         data_tests:
           - relationships:
               arguments:
                 to: ref('stg_customers')
                 field: customer_id
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['paid', 'pending']
