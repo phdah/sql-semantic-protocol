@@ -347,6 +347,33 @@ fn case_branch_domains_preserve_unknown_reason_for_non_derivable_condition() {
 }
 
 #[test]
+fn case_branch_domains_resolve_through_derived_table_lineage() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT CASE WHEN d.value > 10 THEN 'high' ELSE 'low' END AS bucket
+         FROM (
+            SELECT amount AS value
+            FROM raw.orders
+         ) AS d",
+        "generic",
+        &dialect,
+    )
+    .expect("derived-table CASE should analyze");
+
+    let Expression::Case(case_expression) =
+        first_query(&protocol).output().columns()[0].expression()
+    else {
+        panic!("expected CASE expression");
+    };
+    let alternatives = reachable_case_alternatives(case_expression.branches()[0].source_domains());
+    let [domain] = alternatives[0].column_domains() else {
+        panic!("expected one physical source domain");
+    };
+    assert_eq!(domain.column().relation(), Some("raw.orders"));
+    assert_eq!(domain.column().name(), "amount");
+}
+
+#[test]
 fn case_branch_domains_resolve_through_cte_lineage() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
