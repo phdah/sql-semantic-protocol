@@ -24,8 +24,8 @@ use sqlparser::ast::{
 };
 
 use crate::domain::{
-    derive_case_source_domains, derive_column_domains, intersect_domains,
-    refine_column_domains_from_equalities, resolve_column, union_domains,
+    derive_case_source_domains, derive_column_domains, intersect_case_domain_values,
+    intersect_domains, refine_column_domains_from_equalities, resolve_column, union_domains,
 };
 use crate::parser::ParsedSql;
 use crate::protocol::{
@@ -2208,8 +2208,9 @@ fn remap_case_source_domains_to_physical(
     source_domains: CaseSourceDomains,
     scope: &[OutputRelation],
 ) -> CaseSourceDomains {
-    let CaseSourceDomains::Reachable { alternatives } = source_domains else {
-        return source_domains;
+    let alternatives = match source_domains {
+        CaseSourceDomains::Reachable { alternatives } => alternatives,
+        other => return other,
     };
 
     let mut mapped_alternatives = Vec::new();
@@ -2228,7 +2229,7 @@ fn remap_case_source_domains_to_physical(
             mapped_domains
                 .entry(column)
                 .and_modify(|existing| {
-                    *existing = intersect_domains(existing, &domain);
+                    *existing = intersect_case_domain_values(existing, &domain);
                 })
                 .or_insert(domain);
         }
