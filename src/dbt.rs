@@ -1129,7 +1129,22 @@ fn validate_declared_dependencies(
                 .get(dependency_id)
                 .and_then(|resource| resource.relation_name.as_deref())
                 .expect("dependency relation identity is validated during manifest parsing");
-            if !layer.consumes().iter().any(|consumed| consumed == relation) {
+            let represented_by_sql =
+                layer.consumes().iter().any(|consumed| consumed == relation);
+            let represented_by_constraint = manifest
+                .relation_constraints
+                .iter()
+                .find(|constraints| constraints.relation() == model.relation_name)
+                .is_some_and(|constraints| {
+                    constraints.constraints().iter().any(|constraint| {
+                        matches!(
+                            constraint,
+                            RelationConstraint::ForeignKey(foreign_key)
+                                if foreign_key.referenced_relation() == relation
+                        )
+                    })
+                });
+            if !represented_by_sql && !represented_by_constraint {
                 return Err(DbtManifestError::DependencyNotRepresented {
                     model_id: model.unique_id.clone(),
                     dependency_id: dependency_id.clone(),
