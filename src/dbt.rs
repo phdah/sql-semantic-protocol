@@ -17,7 +17,8 @@ use crate::constraints::{
 };
 use crate::{
     analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn,
+    SchemaSourceKind, SqlInput,
 };
 
 /// dbt manifest schema versions accepted by the adapter.
@@ -163,7 +164,7 @@ pub enum DbtArtifactsError {
         /// Conflicting resource unique ID.
         second_unique_id: String,
     },
-    /// A catalog relation schema is internally inconsistent.
+    /// A dbt metadata relation schema is internally inconsistent.
     CatalogSchema {
         /// Resource unique ID.
         unique_id: String,
@@ -172,7 +173,14 @@ pub enum DbtArtifactsError {
         /// Schema construction failure.
         message: String,
     },
-    /// A physical dependency discovered from dbt SQL has no warehouse schema in catalog.json.
+    /// Manifest schema evidence exists but required columns lack declared datatypes.
+    MissingDeclaredColumnTypes {
+        /// Canonical physical relation identity.
+        relation: String,
+        /// Columns that do not declare a usable `data_type`.
+        columns: Vec<String>,
+    },
+    /// A physical dependency has neither catalog schema evidence nor a usable manifest schema.
     MissingCatalogSchema {
         /// Canonical physical relation identity.
         relation: String,
@@ -210,7 +218,7 @@ impl fmt::Display for DbtArtifactsError {
                 message,
             } => write!(
                 formatter,
-                "dbt catalog column '{unique_id}' ({relation}.{column}) has unsupported datatype '{data_type}': {message}"
+                "dbt schema column '{unique_id}' ({relation}.{column}) has unsupported datatype '{data_type}': {message}"
             ),
             Self::ConflictingCatalogSchemas {
                 relation,
@@ -226,11 +234,16 @@ impl fmt::Display for DbtArtifactsError {
                 message,
             } => write!(
                 formatter,
-                "dbt catalog resource '{unique_id}' has invalid schema for '{relation}': {message}"
+                "dbt resource '{unique_id}' has invalid schema for '{relation}': {message}"
+            ),
+            Self::MissingDeclaredColumnTypes { relation, columns } => write!(
+                formatter,
+                "dbt manifest relation '{relation}' is missing declared data_type for columns: {}",
+                columns.join(", ")
             ),
             Self::MissingCatalogSchema { relation } => write!(
                 formatter,
-                "dbt catalog has no warehouse schema for physical dependency '{relation}'"
+                "dbt metadata has no typed schema for physical dependency '{relation}'; provide catalog.json coverage or manifest column data_type declarations"
             ),
         }
     }
@@ -309,6 +322,13 @@ struct DbtModel {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct DbtResource {
     relation_name: Option<String>,
+    columns: Vec<DbtDeclaredColumn>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DbtDeclaredColumn {
+    name: String,
+    data_type: Option<String>,
 }
 
 /// Error returned when a dbt manifest cannot be translated without guessing.
@@ -758,22 +778,15 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
     for (resource_id, value) in nodes {
         let path = format!("$.nodes.{resource_id}");
         let object = as_object(value, &path)?;
-        validate_unique_id(resource_id, object, &path)?;
-        let relation_name =
-            optional_string(object, "relation_name", &format!("{path}.relation_name"))?;
-        resources.insert(resource_id.clone(), DbtResource { relation_name });
+        let resource = parse_manifest_resource(resource_id, object, &path)?;
+        resources.insert(resource_id.clone(), resource);
     }
     if let Some(sources) = sources {
         for (resource_id, value) in sources {
             let path = format!("$.sources.{resource_id}");
             let object = as_object(value, &path)?;
-            validate_unique_id(resource_id, object, &path)?;
-            let relation_name =
-                optional_string(object, "relation_name", &format!("{path}.relation_name"))?;
-            if resources
-                .insert(resource_id.clone(), DbtResource { relation_name })
-                .is_some()
-            {
+            let resource = parse_manifest_resource(resource_id, object, &path)?;
+            if resources.insert(resource_id.clone(), resource).is_some() {
                 return Err(invalid_field(
                     &path,
                     "resource unique ID is duplicated across nodes and sources",
@@ -1217,6 +1230,60 @@ fn topologically_order_models(
         .into_iter()
         .filter_map(|id| models.get(&id).cloned())
         .collect())
+}
+
+fn parse_manifest_resource(
+    resource_id: &str,
+    object: &Map<String, Value>,
+    path: &str,
+) -> Result<DbtResource, DbtManifestError> {
+    validate_unique_id(resource_id, object, path)?;
+    let relation_name =
+        optional_string(object, "relation_name", &format!("{path}.relation_name"))?;
+    let columns = parse_manifest_columns(object, path)?;
+    Ok(DbtResource {
+        relation_name,
+        columns,
+    })
+}
+
+fn parse_manifest_columns(
+    object: &Map<String, Value>,
+    path: &str,
+) -> Result<Vec<DbtDeclaredColumn>, DbtManifestError> {
+    let Some(columns) = optional_object(object, "columns", &format!("{path}.columns"))? else {
+        return Ok(Vec::new());
+    };
+
+    let mut parsed = Vec::with_capacity(columns.len());
+    for (column_key, value) in columns {
+        let column_path = format!("{path}.columns.{column_key}");
+        let column = as_object(value, &column_path)?;
+        let name = optional_string(column, "name", &format!("{column_path}.name"))?
+            .unwrap_or_else(|| column_key.clone());
+        let name = name.trim();
+        if name.is_empty() {
+            return Err(invalid_field(
+                format!("{column_path}.name"),
+                "column name cannot be empty",
+            ));
+        }
+        let data_type = optional_string(
+            column,
+            "data_type",
+            &format!("{column_path}.data_type"),
+        )?
+        .and_then(|data_type| {
+            let data_type = data_type.trim();
+            (!data_type.is_empty()).then(|| data_type.to_string())
+        });
+        parsed.push(DbtDeclaredColumn {
+            name: name.to_string(),
+            data_type,
+        });
+    }
+    parsed.sort_by(|left, right| left.name.cmp(&right.name));
+    Ok(parsed)
 }
 
 fn validate_unique_id(
