@@ -223,8 +223,8 @@ impl AcceptedValuesConstraint {
     }
 
     fn intersect(&mut self, other: &Self) {
-        let accepted = other.values.iter().collect::<BTreeSet<_>>();
-        self.values.retain(|value| accepted.contains(value));
+        self.values
+            .retain(|value| other.values.binary_search(value).is_ok());
         self.evidence.extend(other.evidence.iter().cloned());
         self.evidence.sort();
         self.evidence.dedup();
