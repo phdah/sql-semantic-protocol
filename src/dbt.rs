@@ -1543,7 +1543,7 @@ fn parse_dbt_constraint_array(
                     evidence,
                 )
             }
-            _ => unreachable!("constraint kind was filtered above"),
+            _ => continue,
         }
         .map_err(|error| DbtManifestError::RelationMetadata {
             resource_id: resource_id.to_string(),
