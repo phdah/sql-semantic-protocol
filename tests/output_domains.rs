@@ -257,6 +257,9 @@ fn searched_case_branch_domains_account_for_prior_matches_and_else_nulls() {
         let [domain] = alternative.column_domains() else {
             return false;
         };
+        let ValueDomain::Ranges(_) = domain.domain() else {
+            return false;
+        };
         matches!(
             integer_bounds(domain.domain()),
             (None, Some((ref value, true))) if value == "50"
