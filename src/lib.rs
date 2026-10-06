@@ -54,8 +54,9 @@ pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
-    BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression, ColumnDomain,
-    ColumnExpression, ColumnRef, ComparisonOperator, ComparisonPredicate, Diagnostic,
+    BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
+    CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
+    ComparisonOperator, ComparisonPredicate, Diagnostic,
     DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
     GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, JoinKind,
     LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, MergeAction,
