@@ -12,15 +12,15 @@ use std::{
 use serde_json::Number;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, ColumnOption, ConstraintCharacteristics,
-    CreateTable as SqlCreateTable, Distinct as SqlDistinct, DuplicateTreatment, Expr,
-    Function, FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
-    GroupByWithModifier as SqlGroupByWithModifier, Insert as SqlInsert, Join as SqlJoin,
-    JoinConstraint, JoinOperator, MergeAction as SqlMergeAction, MergeClause as SqlMergeClause,
-    MergeClauseKind as SqlMergeClauseKind, MergeInsertKind, NamedWindowDefinition, NamedWindowExpr,
-    IndexColumn, Query as SqlQuery, Select, SelectItem, SetExpr, SetOperator as SqlSetOperator,
-    SetQuantifier as SqlSetQuantifier, Statement as SqlStatement, TableConstraint, TableFactor,
-    TableObject,
-    TableWithJoins, UnaryOperator as SqlUnaryOperator, Value, WindowFrame as SqlWindowFrame,
+    CreateTable as SqlCreateTable, Distinct as SqlDistinct, DuplicateTreatment, Expr, Function,
+    FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
+    GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
+    Join as SqlJoin, JoinConstraint, JoinOperator, MergeAction as SqlMergeAction,
+    MergeClause as SqlMergeClause, MergeClauseKind as SqlMergeClauseKind, MergeInsertKind,
+    NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
+    SetOperator as SqlSetOperator, SetQuantifier as SqlSetQuantifier, Statement as SqlStatement,
+    TableConstraint, TableFactor, TableObject, TableWithJoins,
+    UnaryOperator as SqlUnaryOperator, Value, WindowFrame as SqlWindowFrame,
     WindowFrameBound as SqlWindowFrameBound, WindowFrameUnits as SqlWindowFrameUnits,
     WindowSpec as SqlWindowSpec, WindowType,
 };
@@ -150,11 +150,11 @@ fn analyze_with_metadata(
 
     let mut relation_constraints = Vec::new();
     for statement in &parsed.statements {
-        if let Some(constraints) = analyze_relation_constraints(statement)
-            .map_err(|error| AnalysisError::ConstraintMetadata {
+        if let Some(constraints) = analyze_relation_constraints(statement).map_err(|error| {
+            AnalysisError::ConstraintMetadata {
                 message: error.to_string(),
-            })?
-        {
+            }
+        })? {
             merge_relation_constraint_sets(&mut relation_constraints, &[constraints]);
         }
     }
@@ -4678,7 +4678,6 @@ fn inspect_query_features(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) {
     }
 }
 
-
 fn analyze_relation_constraints(
     statement: &SqlStatement,
 ) -> Result<Option<RelationConstraintSet>, ConstraintMetadataError> {
@@ -4807,15 +4806,9 @@ fn analyze_create_table_constraints(
                         characteristics.as_ref(),
                     )?];
                     let constraint = if *is_primary {
-                        RelationConstraint::primary_key(
-                            vec![column.name.to_string()],
-                            evidence,
-                        )?
+                        RelationConstraint::primary_key(vec![column.name.to_string()], evidence)?
                     } else {
-                        RelationConstraint::unique_key(
-                            vec![column.name.to_string()],
-                            evidence,
-                        )?
+                        RelationConstraint::unique_key(vec![column.name.to_string()], evidence)?
                     };
                     constraints.push(constraint);
                 }
@@ -4866,9 +4859,7 @@ fn analyze_create_table_constraints(
             )?),
             None => diagnostics.push(ConstraintDiagnostic::new(
                 "unsupported_key_expression",
-                format!(
-                    "primary key on relation '{relation}' contains a non-column expression"
-                ),
+                format!("primary key on relation '{relation}' contains a non-column expression"),
             )),
         }
     }
@@ -4905,11 +4896,7 @@ fn sql_constraint_evidence(
     Ok(ConstraintEvidence::new(provenance, enforcement))
 }
 
-fn constraint_identity(
-    kind: &str,
-    index: usize,
-    name: Option<String>,
-) -> String {
+fn constraint_identity(kind: &str, index: usize, name: Option<String>) -> String {
     match name {
         Some(name) => format!("{kind}:{name}"),
         None => format!("{kind}:{}", index + 1),
