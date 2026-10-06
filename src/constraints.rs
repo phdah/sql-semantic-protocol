@@ -601,14 +601,18 @@ impl RelationConstraintSet {
     fn add_constraint(&mut self, constraint: RelationConstraint) {
         if let RelationConstraint::AcceptedValues(incoming) = &constraint {
             let merged_empty = {
-                let existing = self.constraints.iter_mut().find_map(|existing| match existing {
-                    RelationConstraint::AcceptedValues(existing)
-                        if existing.column == incoming.column && existing.quote == incoming.quote =>
-                    {
-                        Some(existing)
-                    }
-                    _ => None,
-                });
+                let existing = self
+                    .constraints
+                    .iter_mut()
+                    .find_map(|existing| match existing {
+                        RelationConstraint::AcceptedValues(existing)
+                            if existing.column == incoming.column
+                                && existing.quote == incoming.quote =>
+                        {
+                            Some(existing)
+                        }
+                        _ => None,
+                    });
                 existing.map(|existing| {
                     existing.intersect(incoming);
                     existing.values.is_empty()
