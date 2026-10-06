@@ -19,10 +19,9 @@ use sqlparser::ast::{
     MergeClause as SqlMergeClause, MergeClauseKind as SqlMergeClauseKind, MergeInsertKind,
     NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
     SetOperator as SqlSetOperator, SetQuantifier as SqlSetQuantifier, Statement as SqlStatement,
-    TableConstraint, TableFactor, TableObject, TableWithJoins,
-    UnaryOperator as SqlUnaryOperator, Value, WindowFrame as SqlWindowFrame,
-    WindowFrameBound as SqlWindowFrameBound, WindowFrameUnits as SqlWindowFrameUnits,
-    WindowSpec as SqlWindowSpec, WindowType,
+    TableConstraint, TableFactor, TableObject, TableWithJoins, UnaryOperator as SqlUnaryOperator,
+    Value, WindowFrame as SqlWindowFrame, WindowFrameBound as SqlWindowFrameBound,
+    WindowFrameUnits as SqlWindowFrameUnits, WindowSpec as SqlWindowSpec, WindowType,
 };
 
 use crate::constraints::{
