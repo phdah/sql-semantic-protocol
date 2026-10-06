@@ -3,6 +3,8 @@
 //! The Rust model intentionally contains no sqlparser AST types. Unknown and unsupported
 //! semantics remain explicit so consumers can distinguish incomplete analysis from known values.
 
+use crate::constraints::RelationConstraintSet;
+
 /// Current protocol version emitted by this crate.
 pub const PROTOCOL_VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -12,6 +14,7 @@ pub struct Protocol {
     protocol_version: &'static str,
     source: ProtocolSource,
     statements: Vec<ProtocolStatement>,
+    relation_constraints: Vec<RelationConstraintSet>,
 }
 
 impl Protocol {
@@ -20,7 +23,16 @@ impl Protocol {
             protocol_version: PROTOCOL_VERSION,
             source: ProtocolSource { dialect },
             statements,
+            relation_constraints: Vec::new(),
         }
+    }
+
+    pub(crate) fn with_relation_constraints(
+        mut self,
+        relation_constraints: Vec<RelationConstraintSet>,
+    ) -> Self {
+        self.relation_constraints = relation_constraints;
+        self
     }
 
     /// Return the protocol contract version.
@@ -36,6 +48,11 @@ impl Protocol {
     /// Return statements in original SQL statement order.
     pub fn statements(&self) -> &[ProtocolStatement] {
         &self.statements
+    }
+
+    /// Return canonical relation constraints discovered from the analyzed SQL.
+    pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
+        &self.relation_constraints
     }
 }
 
