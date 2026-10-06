@@ -1610,12 +1610,13 @@ fn parse_dbt_constraint_array(
 
         if constraint_type == "not_null" {
             for column in columns {
-                let constraint = RelationConstraint::not_null(column, evidence.clone()).map_err(
-                    |error| DbtManifestError::RelationMetadata {
-                        resource_id: resource_id.to_string(),
-                        message: format!("{relation}: {error}"),
-                    },
-                )?;
+                let constraint =
+                    RelationConstraint::not_null(column, evidence.clone()).map_err(|error| {
+                        DbtManifestError::RelationMetadata {
+                            resource_id: resource_id.to_string(),
+                            message: format!("{relation}: {error}"),
+                        }
+                    })?;
                 output.push(constraint);
             }
             continue;
