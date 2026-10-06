@@ -72,10 +72,7 @@ pub(crate) fn derive_case_source_domains(
         );
     }
 
-    (
-        branches,
-        case_source_domains_from_derivation(remaining),
-    )
+    (branches, case_source_domains_from_derivation(remaining))
 }
 
 fn derive_case_condition_domains(
@@ -195,9 +192,7 @@ fn derive_case_leaf_true_domains(
         }
         Predicate::BooleanExpression(Expression::Literal(literal)) => {
             return match literal.value() {
-                LiteralValue::Boolean(true) => {
-                    CaseDomainDerivation::Known(vec![DomainMap::new()])
-                }
+                LiteralValue::Boolean(true) => CaseDomainDerivation::Known(vec![DomainMap::new()]),
                 LiteralValue::Boolean(false) | LiteralValue::Null => {
                     CaseDomainDerivation::Known(Vec::new())
                 }
@@ -208,8 +203,7 @@ fn derive_case_leaf_true_domains(
         }
         Predicate::BooleanExpression(_) => {
             return CaseDomainDerivation::Unknown(
-                "CASE boolean branch cannot be reduced safely to source-column domains"
-                    .to_string(),
+                "CASE boolean branch cannot be reduced safely to source-column domains".to_string(),
             );
         }
         Predicate::Exists(_) | Predicate::InSubquery(_) => {
@@ -375,8 +369,9 @@ fn intersect_case_derivations(
         {
             CaseDomainDerivation::Known(Vec::new())
         }
-        (CaseDomainDerivation::Unknown(reason), _)
-        | (_, CaseDomainDerivation::Unknown(reason)) => CaseDomainDerivation::Unknown(reason),
+        (CaseDomainDerivation::Unknown(reason), _) | (_, CaseDomainDerivation::Unknown(reason)) => {
+            CaseDomainDerivation::Unknown(reason)
+        }
     }
 }
 
@@ -397,19 +392,19 @@ fn union_case_derivations(
         {
             CaseDomainDerivation::Known(vec![DomainMap::new()])
         }
-        (CaseDomainDerivation::Unknown(reason), _)
-        | (_, CaseDomainDerivation::Unknown(reason)) => CaseDomainDerivation::Unknown(reason),
+        (CaseDomainDerivation::Unknown(reason), _) | (_, CaseDomainDerivation::Unknown(reason)) => {
+            CaseDomainDerivation::Unknown(reason)
+        }
     }
 }
 
 fn intersect_case_maps(left: &DomainMap, right: &DomainMap) -> Option<DomainMap> {
     let mut result = left.clone();
     for (column, right_domain) in right {
-        let domain = result
-            .remove(column)
-            .map_or_else(|| right_domain.clone(), |left_domain| {
-                intersect_case_domain_values(&left_domain, right_domain)
-            });
+        let domain = result.remove(column).map_or_else(
+            || right_domain.clone(),
+            |left_domain| intersect_case_domain_values(&left_domain, right_domain),
+        );
         if matches!(domain, ValueDomain::Empty) {
             return None;
         }
@@ -420,12 +415,10 @@ fn intersect_case_maps(left: &DomainMap, right: &DomainMap) -> Option<DomainMap>
     Some(result)
 }
 
-pub(crate) fn intersect_case_domain_values(
-    left: &ValueDomain,
-    right: &ValueDomain,
-) -> ValueDomain {
+pub(crate) fn intersect_case_domain_values(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
     let intersection = intersect_domains(left, right);
-    let has_range = matches!(left, ValueDomain::Ranges(_)) || matches!(right, ValueDomain::Ranges(_));
+    let has_range =
+        matches!(left, ValueDomain::Ranges(_)) || matches!(right, ValueDomain::Ranges(_));
 
     if !has_range {
         return intersection;
