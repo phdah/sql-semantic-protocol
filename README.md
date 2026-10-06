@@ -150,11 +150,13 @@ column flags:
 ```
 
 Direct SQL analysis captures parser-supported column- and table-level `PRIMARY KEY`, `UNIQUE`,
-and `FOREIGN KEY` declarations, including queryless `CREATE TABLE` statements. The dbt adapter
-reads explicit model/column constraints plus built-in `unique`, `relationships`, `not_null`,
-and `accepted_values` tests from `manifest.json`. Unsupported dbt test kinds attached to a
-known relation are surfaced explicitly instead of being silently treated as supported.
-`catalog.json` remains authoritative only for warehouse-introspected columns and datatypes.
+and `FOREIGN KEY` declarations, column-level `NOT NULL`, and finite accepted-value sets from
+non-negated `CHECK (column IN (...))` constraints, including queryless `CREATE TABLE`
+statements. The dbt adapter reads explicit model/column constraints, including `not_null`, plus
+built-in `unique`, `relationships`, `not_null`, and `accepted_values` tests from
+`manifest.json`. Unsupported dbt test kinds attached to a known relation are surfaced explicitly
+instead of being silently treated as supported. `catalog.json` remains authoritative only for
+warehouse-introspected columns and datatypes.
 
 ## Outcome selection
 
