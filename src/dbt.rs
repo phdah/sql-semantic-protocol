@@ -1278,6 +1278,355 @@ fn dependency_ids(
     Ok(dependencies)
 }
 
+
+fn parse_manifest_relation_constraints(
+    nodes: &Map<String, Value>,
+    sources: Option<&Map<String, Value>>,
+    resources: &BTreeMap<String, DbtResource>,
+) -> Result<Vec<RelationConstraintSet>, DbtManifestError> {
+    let mut result = Vec::new();
+
+    for (resource_id, value) in nodes
+        .iter()
+        .chain(sources.into_iter().flat_map(|sources| sources.iter()))
+    {
+        let Some(relation) = resources
+            .get(resource_id)
+            .and_then(|resource| resource.relation_name.as_deref())
+            .filter(|relation| !relation.trim().is_empty())
+        else {
+            continue;
+        };
+        let path = if nodes.contains_key(resource_id) {
+            format!("$.nodes.{resource_id}")
+        } else {
+            format!("$.sources.{resource_id}")
+        };
+        let object = as_object(value, &path)?;
+        let mut constraints = Vec::new();
+
+        parse_dbt_constraint_array(
+            object.get("constraints"),
+            &format!("{path}.constraints"),
+            resource_id,
+            relation,
+            None,
+            resources,
+            &mut constraints,
+        )?;
+
+        if let Some(columns) = optional_object(object, "columns", &format!("{path}.columns"))? {
+            for (column_key, column_value) in columns {
+                let column_path = format!("{path}.columns.{column_key}");
+                let column = as_object(column_value, &column_path)?;
+                let column_name = optional_string(
+                    column,
+                    "name",
+                    &format!("{column_path}.name"),
+                )?
+                .unwrap_or_else(|| column_key.clone());
+                parse_dbt_constraint_array(
+                    column.get("constraints"),
+                    &format!("{column_path}.constraints"),
+                    resource_id,
+                    relation,
+                    Some(&column_name),
+                    resources,
+                    &mut constraints,
+                )?;
+            }
+        }
+
+        if !constraints.is_empty() {
+            let set = RelationConstraintSet::new(relation, constraints).map_err(|error| {
+                DbtManifestError::RelationMetadata {
+                    resource_id: resource_id.clone(),
+                    message: error.to_string(),
+                }
+            })?;
+            merge_relation_constraint_sets(&mut result, &[set]);
+        }
+    }
+
+    for (test_id, value) in nodes {
+        let path = format!("$.nodes.{test_id}");
+        let object = as_object(value, &path)?;
+        if required_string(object, "resource_type", &format!("{path}.resource_type"))? != "test" {
+            continue;
+        }
+        let Some(test_metadata) =
+            optional_object(object, "test_metadata", &format!("{path}.test_metadata"))?
+        else {
+            continue;
+        };
+        let test_name =
+            required_string(test_metadata, "name", &format!("{path}.test_metadata.name"))?;
+        if !matches!(test_name, "unique" | "relationships") {
+            continue;
+        }
+        let namespace = optional_string(
+            test_metadata,
+            "namespace",
+            &format!("{path}.test_metadata.namespace"),
+        )?;
+        if namespace
+            .as_deref()
+            .is_some_and(|namespace| !namespace.is_empty() && namespace != "dbt")
+        {
+            continue;
+        }
+
+        let attached_node = optional_string(
+            object,
+            "attached_node",
+            &format!("{path}.attached_node"),
+        )?
+        .filter(|node| !node.trim().is_empty())
+        .ok_or_else(|| {
+            invalid_field(
+                format!("{path}.attached_node"),
+                format!("built-in {test_name} test must identify its attached resource"),
+            )
+        })?;
+        let local_relation = resources
+            .get(&attached_node)
+            .and_then(|resource| resource.relation_name.as_deref())
+            .filter(|relation| !relation.trim().is_empty())
+            .ok_or_else(|| {
+                invalid_field(
+                    format!("{path}.attached_node"),
+                    format!(
+                        "built-in {test_name} test references resource '{attached_node}' without relation identity"
+                    ),
+                )
+            })?;
+        let kwargs = required_object(
+            test_metadata,
+            "kwargs",
+            &format!("{path}.test_metadata.kwargs"),
+        )?;
+        let column_name = optional_string(
+            object,
+            "column_name",
+            &format!("{path}.column_name"),
+        )?
+        .or_else(|| {
+            kwargs
+                .get("column_name")
+                .and_then(Value::as_str)
+                .map(ToString::to_string)
+        })
+        .filter(|column| !column.trim().is_empty())
+        .ok_or_else(|| {
+            invalid_field(
+                format!("{path}.column_name"),
+                format!("built-in {test_name} test must identify one tested column"),
+            )
+        })?;
+
+        let evidence = vec![dbt_constraint_evidence(
+            ConstraintSourceKind::DbtTest,
+            test_id,
+        )?];
+
+        let constraint = if test_name == "unique" {
+            RelationConstraint::unique_key(vec![column_name], evidence)
+        } else {
+            let referenced_column =
+                required_string(kwargs, "field", &format!("{path}.test_metadata.kwargs.field"))?
+                    .to_string();
+            let dependencies = dependency_ids(object, &path)?;
+            let referenced_resources = dependencies
+                .iter()
+                .filter(|dependency| dependency.as_str() != attached_node)
+                .filter_map(|dependency| {
+                    resources
+                        .get(dependency)
+                        .and_then(|resource| resource.relation_name.as_deref())
+                })
+                .collect::<Vec<_>>();
+            let referenced_relation = match referenced_resources.as_slice() {
+                [relation] => (*relation).to_string(),
+                [] => required_string(
+                    kwargs,
+                    "to",
+                    &format!("{path}.test_metadata.kwargs.to"),
+                )?
+                .to_string(),
+                _ => {
+                    return Err(invalid_field(
+                        format!("{path}.depends_on.nodes"),
+                        "relationships test has multiple candidate referenced relations",
+                    ));
+                }
+            };
+            RelationConstraint::foreign_key(
+                vec![column_name],
+                referenced_relation,
+                vec![referenced_column],
+                evidence,
+            )
+        }
+        .map_err(|error| DbtManifestError::RelationMetadata {
+            resource_id: test_id.clone(),
+            message: error.to_string(),
+        })?;
+
+        let set =
+            RelationConstraintSet::new(local_relation, vec![constraint]).map_err(|error| {
+                DbtManifestError::RelationMetadata {
+                    resource_id: test_id.clone(),
+                    message: error.to_string(),
+                }
+            })?;
+        merge_relation_constraint_sets(&mut result, &[set]);
+    }
+
+    Ok(result)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn parse_dbt_constraint_array(
+    value: Option<&Value>,
+    path: &str,
+    resource_id: &str,
+    relation: &str,
+    implied_column: Option<&str>,
+    resources: &BTreeMap<String, DbtResource>,
+    output: &mut Vec<RelationConstraint>,
+) -> Result<(), DbtManifestError> {
+    let Some(value) = value else {
+        return Ok(());
+    };
+    if value.is_null() {
+        return Ok(());
+    }
+    let constraints = value
+        .as_array()
+        .ok_or_else(|| invalid_field(path, "expected an array of constraints"))?;
+
+    for (index, value) in constraints.iter().enumerate() {
+        let constraint_path = format!("{path}[{index}]");
+        let object = as_object(value, &constraint_path)?;
+        let constraint_type =
+            required_string(object, "type", &format!("{constraint_path}.type"))?;
+        if !matches!(constraint_type, "primary_key" | "unique" | "foreign_key") {
+            continue;
+        }
+
+        let columns = match implied_column {
+            Some(column) => vec![column.to_string()],
+            None => required_string_array(
+                object,
+                "columns",
+                &format!("{constraint_path}.columns"),
+            )?,
+        };
+        let evidence = vec![dbt_constraint_evidence(
+            ConstraintSourceKind::DbtConstraint,
+            &format!("{resource_id}:{constraint_path}"),
+        )?];
+
+        let constraint = match constraint_type {
+            "primary_key" => RelationConstraint::primary_key(columns, evidence),
+            "unique" => RelationConstraint::unique_key(columns, evidence),
+            "foreign_key" => {
+                let reference =
+                    required_string(object, "to", &format!("{constraint_path}.to"))?;
+                let referenced_relation = dbt_constraint_reference(reference, resources);
+                let referenced_columns = required_string_array(
+                    object,
+                    "to_columns",
+                    &format!("{constraint_path}.to_columns"),
+                )?;
+                RelationConstraint::foreign_key(
+                    columns,
+                    referenced_relation,
+                    referenced_columns,
+                    evidence,
+                )
+            }
+            _ => unreachable!("constraint kind was filtered above"),
+        }
+        .map_err(|error| DbtManifestError::RelationMetadata {
+            resource_id: resource_id.to_string(),
+            message: format!("{relation}: {error}"),
+        })?;
+        output.push(constraint);
+    }
+
+    Ok(())
+}
+
+fn dbt_constraint_reference(
+    reference: &str,
+    resources: &BTreeMap<String, DbtResource>,
+) -> String {
+    if let Some(relation) = resources
+        .get(reference)
+        .and_then(|resource| resource.relation_name.as_deref())
+    {
+        return relation.to_string();
+    }
+
+    let mut exact = resources
+        .values()
+        .filter_map(|resource| resource.relation_name.as_deref())
+        .filter(|relation| *relation == reference);
+    match (exact.next(), exact.next()) {
+        (Some(relation), None) => relation.to_string(),
+        _ => reference.to_string(),
+    }
+}
+
+fn dbt_constraint_evidence(
+    source_kind: ConstraintSourceKind,
+    source_id: &str,
+) -> Result<ConstraintEvidence, DbtManifestError> {
+    let provenance = ConstraintProvenance::new(source_kind, source_id).map_err(|error| {
+        DbtManifestError::RelationMetadata {
+            resource_id: source_id.to_string(),
+            message: error.to_string(),
+        }
+    })?;
+    Ok(ConstraintEvidence::new(
+        provenance,
+        ConstraintEnforcement::Unknown,
+    ))
+}
+
+fn required_string_array(
+    object: &Map<String, Value>,
+    key: &str,
+    path: &str,
+) -> Result<Vec<String>, DbtManifestError> {
+    let values = object
+        .get(key)
+        .ok_or_else(|| invalid_field(path, "field is required"))?
+        .as_array()
+        .ok_or_else(|| invalid_field(path, "expected an array of strings"))?;
+    if values.is_empty() {
+        return Err(invalid_field(path, "array cannot be empty"));
+    }
+
+    values
+        .iter()
+        .enumerate()
+        .map(|(index, value)| {
+            value
+                .as_str()
+                .filter(|value| !value.trim().is_empty())
+                .map(ToString::to_string)
+                .ok_or_else(|| {
+                    invalid_field(
+                        format!("{path}[{index}]"),
+                        "expected a non-empty string",
+                    )
+                })
+        })
+        .collect()
+}
+
 fn contains_jinja(sql: &str) -> bool {
     sql.contains("{{") || sql.contains("{%") || sql.contains("{#")
 }
