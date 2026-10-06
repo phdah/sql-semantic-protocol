@@ -1,0 +1,82 @@
+apiVersion: v3.2.0
+kind: DataContract
+id: commerce-contract
+name: Commerce contract
+version: 1.0.0
+status: active
+schema:
+  - id: customers_tbl
+    name: customers
+    physicalName: analytics.customers
+    properties:
+      - id: customer_tenant_pk
+        name: tenant_id
+        logicalType: integer
+        physicalType: BIGINT
+        required: true
+        primaryKey: true
+        primaryKeyPosition: 1
+      - id: customer_id_pk
+        name: customer_id
+        logicalType: integer
+        physicalType: BIGINT
+        required: true
+        primaryKey: true
+        primaryKeyPosition: 2
+      - id: customer_email
+        name: email
+        logicalType: string
+        physicalType: TEXT
+        unique: true
+  - id: orders_tbl
+    name: orders
+    physicalName: analytics.orders
+    properties:
+      - id: order_id_pk
+        name: id
+        logicalType: integer
+        physicalType: BIGINT
+        required: true
+        primaryKey: true
+      - id: order_number
+        name: order_number
+        logicalType: string
+        physicalType: TEXT
+        unique: true
+      - id: order_tenant_id
+        name: tenant_id
+        logicalType: integer
+        physicalType: BIGINT
+      - id: order_customer_id
+        name: customer_id
+        logicalType: integer
+        physicalType: BIGINT
+      - id: order_status
+        name: status
+        logicalType: string
+        physicalType: TEXT
+        required: true
+        enum:
+          - value: paid
+          - value: pending
+      - id: order_priority
+        name: priority
+        logicalType: integer
+        physicalType: INTEGER
+        enum:
+          - value: 1
+          - value: 2
+          - value: 3
+      - id: order_created_at
+        name: created_at
+        logicalType: timestamp
+        physicalType: TIMESTAMPTZ
+    relationships:
+      - id: orders_customer_fk
+        type: foreignKey
+        from:
+          - schema/orders_tbl/properties/order_tenant_id
+          - schema/orders_tbl/properties/order_customer_id
+        to:
+          - schema/customers_tbl/properties/customer_tenant_pk
+          - schema/customers_tbl/properties/customer_id_pk

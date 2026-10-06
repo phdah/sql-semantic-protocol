@@ -641,6 +641,11 @@ impl AnalysisBundle {
         merge_relation_constraint_sets(&mut self.relation_constraints, constraints);
     }
 
+    pub(crate) fn replace_source_schemas(&mut self, mut schemas: Vec<RelationSchema>) {
+        schemas.sort_by(|left, right| left.relation().cmp(right.relation()));
+        self.source_schemas = schemas;
+    }
+
     pub(crate) fn from_protocol(protocol: &Protocol) -> Self {
         let inputs = vec![AnalyzedInput {
             id: "input-0001".to_string(),

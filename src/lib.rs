@@ -4,6 +4,7 @@
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
 //! - analyze_configured_inputs_with_catalog adds optional catalog/schema-aware relation resolution and typed source schemas.
 //! - parse_dbt_manifest, parse_dbt_catalog, and analyze_dbt_artifacts adapt dbt artifacts, including canonical key and column constraints, into the same core analysis path.
+//! - parse_odcs_yaml and parse_odcs_documents adapt ODCS v3.2 YAML contracts into canonical schema and constraint evidence.
 //! - canonical constraint types expose primary, unique, foreign-key, not-null, and accepted-values metadata with provenance.
 //! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
 //! - parse_analysis_manifest validates the versioned declarative analysis-manifest contract.
@@ -22,6 +23,7 @@ mod dbt;
 mod domain;
 mod emission;
 mod manifest;
+mod odcs;
 mod openlineage;
 mod parser;
 pub mod protocol;
@@ -57,6 +59,10 @@ pub use emission::{to_bundle_json, to_json};
 pub use manifest::{
     parse_analysis_manifest, AnalysisManifest, ManifestError, ManifestInput, ManifestInputSource,
     ManifestOutputScope, ManifestRelationContext, ANALYSIS_MANIFEST_VERSION,
+};
+pub use odcs::{
+    parse_odcs_documents, parse_odcs_yaml, OdcsDiagnostic, OdcsDocument, OdcsError, OdcsMetadata,
+    SUPPORTED_ODCS_API_VERSION,
 };
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use parser::ParseError;

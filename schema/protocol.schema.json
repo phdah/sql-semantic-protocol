@@ -2239,7 +2239,8 @@
           "type": "string",
           "enum": [
             "dbt_catalog",
-            "dbt_manifest"
+            "dbt_manifest",
+            "external_metadata"
           ]
         },
         "columns": {

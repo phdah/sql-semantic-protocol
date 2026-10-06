@@ -99,6 +99,27 @@ explicit `custom` datatypes instead of being discarded or guessed.
 The public `dialect_from_name` and `parse_data_type` helpers delegate dialect handling to
 sqlparser while keeping consumers independent from sqlparser AST types.
 
+
+### ODCS v3.2 metadata
+
+Open Data Contract Standard v3.2 YAML can enrich the same canonical schema and constraint model
+used by SQL and dbt. Use `parse_odcs_yaml` for one self-contained contract or
+`parse_odcs_documents` with explicitly named `OdcsDocument` values when relationships cross
+contract boundaries. The adapter never fetches external contracts.
+
+ODCS schema `physicalName` is used when present, otherwise `name`, and is resolved through the
+existing `RelationCatalog` rules. Property `physicalType` is the preferred datatype evidence;
+`logicalType` is lower-authority fallback evidence. Bundle enrichment preserves the overall
+datatype authority order: dbt catalog, dbt manifest, ODCS physical type, then ODCS logical type.
+A contradictory lower-authority ODCS datatype is returned explicitly rather than silently
+discarded.
+
+ODCS `required`, `primaryKey`/`primaryKeyPosition`, property `unique`, relationships, and
+`enum` declarations normalize into the existing not-null, primary-key, unique-key, foreign-key,
+and accepted-values constraints. Evidence uses `external_metadata` provenance with unknown
+enforcement. Same-contract and explicitly supplied cross-contract foreign-key references resolve
+deterministically; missing, ambiguous, or unsupported references fail rather than being guessed.
+
 ## Relation constraint metadata
 
 Relation constraints are canonical and source-independent: any supported adapter that can prove an equivalent fact must emit the same canonical constraint. Direct SQL DDL, dbt metadata/tests, and future external metadata adapters therefore converge on one representation rather than owning separate semantics.
