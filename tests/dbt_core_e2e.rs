@@ -501,9 +501,16 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         .collect::<BTreeSet<_>>();
     assert_eq!(
         fallback_columns,
-        ["amount", "created_at", "customer_id", "id", "region", "status"]
-            .into_iter()
-            .collect::<BTreeSet<_>>()
+        [
+            "amount",
+            "created_at",
+            "customer_id",
+            "id",
+            "region",
+            "status",
+        ]
+        .into_iter()
+        .collect::<BTreeSet<_>>()
     );
 
     let protocol_input_ids = protocol["inputs"]
