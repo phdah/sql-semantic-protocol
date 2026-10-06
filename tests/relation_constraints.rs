@@ -1,6 +1,7 @@
 use sql_semantic_protocol::{
-    analyze_inputs, analyze_sql, select_targets, to_bundle_json, ConstraintEnforcement,
-    ConstraintSourceKind, RelationConstraint, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, select_targets,
+    to_bundle_json, ConfiguredSqlInput, ConstraintEnforcement, ConstraintSourceKind,
+    RelationCatalog, RelationConstraint, SqlInput,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -155,4 +156,90 @@ fn constraint_emission_is_byte_deterministic() {
         analyze_inputs(&[input], "postgresql", &PostgreSqlDialect {}).expect("second analysis");
 
     assert_eq!(to_bundle_json(&first), to_bundle_json(&second));
+}
+
+#[test]
+fn unique_and_not_null_do_not_imply_primary_key() {
+    let protocol = analyze_sql(
+        "CREATE TABLE candidate (id BIGINT NOT NULL UNIQUE)",
+        "postgresql",
+        &PostgreSqlDialect {},
+    )
+    .expect("DDL should analyze");
+    let metadata = &protocol.relation_constraints()[0];
+
+    assert!(metadata
+        .constraints()
+        .iter()
+        .any(|constraint| matches!(constraint, RelationConstraint::UniqueKey(_))));
+    assert!(!metadata
+        .constraints()
+        .iter()
+        .any(|constraint| matches!(constraint, RelationConstraint::PrimaryKey(_))));
+}
+
+#[test]
+fn self_referential_foreign_key_is_preserved() {
+    let protocol = analyze_sql(
+        "CREATE TABLE node (id BIGINT PRIMARY KEY, parent_id BIGINT, FOREIGN KEY (parent_id) REFERENCES node(id))",
+        "postgresql",
+        &PostgreSqlDialect {},
+    )
+    .expect("DDL should analyze");
+    let metadata = &protocol.relation_constraints()[0];
+    let foreign_key = metadata
+        .constraints()
+        .iter()
+        .find_map(|constraint| match constraint {
+            RelationConstraint::ForeignKey(key) => Some(key),
+            _ => None,
+        })
+        .expect("self-reference should be preserved");
+
+    assert_eq!(foreign_key.columns(), ["parent_id"]);
+    assert_eq!(foreign_key.referenced_relation(), "node");
+    assert_eq!(foreign_key.referenced_columns(), ["id"]);
+}
+
+#[test]
+fn ambiguous_foreign_key_reference_fails_instead_of_guessing() {
+    let input = SqlInput::inline(
+        "CREATE TABLE child (parent_id BIGINT, FOREIGN KEY (parent_id) REFERENCES parent(id))",
+    );
+    let configured = [ConfiguredSqlInput::new(
+        "child-ddl",
+        &input,
+        "postgresql",
+        &PostgreSqlDialect {},
+    )];
+    let catalog =
+        RelationCatalog::new(&["warehouse_a.public.parent", "warehouse_b.public.parent"])
+            .expect("catalog should be valid");
+
+    let error = analyze_configured_inputs_with_catalog(&configured, &catalog)
+        .expect_err("ambiguous foreign-key target must fail");
+    assert!(error.to_string().contains("parent"));
+    assert!(error.to_string().contains("ambiguous"));
+}
+
+#[test]
+fn source_keys_are_not_invented_on_derived_relations() {
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline("CREATE TABLE source_keys (id BIGINT PRIMARY KEY)"),
+            SqlInput::inline("CREATE TABLE copied AS SELECT id FROM source_keys"),
+        ],
+        "postgresql",
+        &PostgreSqlDialect {},
+    )
+    .expect("bundle should analyze");
+
+    assert!(bundle
+        .relation_constraints()
+        .iter()
+        .any(|metadata| metadata.relation() == "source_keys"));
+    assert!(!bundle
+        .relation_constraints()
+        .iter()
+        .any(|metadata| metadata.relation() == "copied"));
 }
