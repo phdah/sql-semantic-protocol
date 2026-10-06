@@ -287,6 +287,33 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert_eq!(append_node["config"]["materialized"], "incremental");
     assert_eq!(append_node["config"]["incremental_strategy"], "append");
 
+    let stg_orders_node = manifest_node(&manifest_json, "stg_orders");
+    let explicit_constraints = stg_orders_node["constraints"]
+        .as_array()
+        .expect("stg_orders should expose explicit dbt constraints");
+    assert!(explicit_constraints
+        .iter()
+        .any(|constraint| constraint["type"] == "primary_key"));
+    assert!(explicit_constraints
+        .iter()
+        .any(|constraint| constraint["type"] == "unique"));
+    assert!(explicit_constraints
+        .iter()
+        .any(|constraint| constraint["type"] == "foreign_key"));
+
+    let generic_tests = manifest_json["nodes"]
+        .as_object()
+        .expect("dbt nodes should be an object")
+        .values()
+        .filter(|node| node["resource_type"] == "test")
+        .collect::<Vec<_>>();
+    assert!(generic_tests
+        .iter()
+        .any(|test| test["test_metadata"]["name"] == "unique"));
+    assert!(generic_tests
+        .iter()
+        .any(|test| test["test_metadata"]["name"] == "relationships"));
+
     let run_results = read_json(&run_results_path());
     assert_successful_dbt_result(&run_results, "incremental_merge_orders");
     assert_successful_dbt_result(&run_results, "incremental_append_orders");
@@ -312,6 +339,30 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     let library_json = to_bundle_json(&bundle);
     let protocol: Value =
         serde_json::from_str(&library_json).expect("library protocol should be valid JSON");
+
+    let stg_orders_relation = manifest_node(&manifest_json, "stg_orders")["relation_name"]
+        .as_str()
+        .expect("stg_orders should have a relation identity");
+    let stg_order_constraints = protocol["relation_constraints"]
+        .as_array()
+        .expect("dbt protocol should include relation constraints")
+        .iter()
+        .find(|metadata| metadata["relation"] == stg_orders_relation)
+        .expect("stg_orders constraints should be emitted");
+    let emitted_constraints = stg_order_constraints["constraints"]
+        .as_array()
+        .expect("relation constraints should be an array");
+    assert!(emitted_constraints
+        .iter()
+        .any(|constraint| constraint["kind"] == "primary_key"));
+    assert!(emitted_constraints
+        .iter()
+        .any(|constraint| constraint["kind"] == "unique_key"));
+    assert!(emitted_constraints
+        .iter()
+        .any(|constraint| constraint["kind"] == "foreign_key"));
+    assert!(contains_string(stg_order_constraints, "dbt_constraint"));
+    assert!(contains_string(stg_order_constraints, "dbt_test"));
 
     let cli = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
         .args([
