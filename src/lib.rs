@@ -41,9 +41,10 @@ pub use bundle::{
     UnresolvedComposedSemantics,
 };
 pub use constraints::{
-    merge_relation_constraint_sets, ConstraintDiagnostic, ConstraintEnforcement,
-    ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance, ConstraintSourceKind,
-    ForeignKeyConstraint, KeyConstraint, RelationConstraint, RelationConstraintSet,
+    merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance,
+    ConstraintSourceKind, ConstraintValue, ForeignKeyConstraint, KeyConstraint, NotNullConstraint,
+    RelationConstraint, RelationConstraintSet,
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{
