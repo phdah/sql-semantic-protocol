@@ -14,14 +14,15 @@ use crate::data_type::DataType;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, Bound, CaseExpression, CaseSourceDomains, ColumnDomain, ColumnExpression,
-    ColumnRef, ComparisonPredicate, Diagnostic, ExistsPredicate, Expression, FunctionExpression, GroupBy,
-    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, LineageSource,
-    LiteralExpression, LiteralValue, LogicalPredicate, MergeAction, MergeClause, NotPredicate,
-    Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement, QueryStatement,
-    RelationRef, ScalarSubqueryExpression, SetOperand, SetOperation, SourceRelation,
-    SubquerySemantics, UnaryExpression, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
-    ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
+    ColumnRef, ComparisonPredicate, Diagnostic, ExistsPredicate, Expression, FunctionExpression,
+    GroupBy, GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join,
+    LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, MergeAction, MergeClause,
+    NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
+    QueryStatement, RelationRef, ScalarSubqueryExpression, SetOperand, SetOperation,
+    SourceRelation, SubquerySemantics, UnaryExpression, UnknownSemantic, UnsupportedSemantic,
+    UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound,
+    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteOperation,
+    WriteValue,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
