@@ -79,7 +79,7 @@
                   "value": {
                     "kind": "literal",
                     "type": "integer",
-                    "value": 10
+                    "value": 20
                   }
                 },
                 "upper": {
@@ -150,7 +150,7 @@
                     "value": {
                       "kind": "literal",
                       "type": "integer",
-                      "value": 10
+                      "value": 20
                     }
                   },
                   "upper": {

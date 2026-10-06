@@ -43,6 +43,7 @@ use crate::protocol::{
     ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
     WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
 };
+use crate::relation::{RelationCatalog, RelationContext};
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -67,7 +68,51 @@ impl fmt::Display for AnalysisError {
 
 impl std::error::Error for AnalysisError {}
 
+struct AnalysisMetadata<'a> {
+    catalog: Option<&'a RelationCatalog>,
+    dialect_name: &'a str,
+    relation_context: Option<&'a RelationContext>,
+}
+
+impl AnalysisMetadata<'_> {
+    fn schema_columns(&self, relation: &str) -> Option<Vec<String>> {
+        let catalog = self.catalog?;
+        let canonical = catalog
+            .resolve(relation, self.dialect_name, self.relation_context)
+            .ok()?;
+        catalog
+            .schemas()
+            .iter()
+            .find(|schema| schema.relation() == canonical)
+            .map(|schema| {
+                schema
+                    .columns()
+                    .iter()
+                    .map(|column| column.name().to_string())
+                    .collect()
+            })
+    }
+}
+
 pub(crate) fn analyze(parsed: ParsedSql, dialect_name: &str) -> Result<Protocol, AnalysisError> {
+    analyze_with_metadata(parsed, dialect_name, None, None)
+}
+
+pub(crate) fn analyze_with_catalog(
+    parsed: ParsedSql,
+    dialect_name: &str,
+    catalog: &RelationCatalog,
+    relation_context: Option<&RelationContext>,
+) -> Result<Protocol, AnalysisError> {
+    analyze_with_metadata(parsed, dialect_name, Some(catalog), relation_context)
+}
+
+fn analyze_with_metadata(
+    parsed: ParsedSql,
+    dialect_name: &str,
+    catalog: Option<&RelationCatalog>,
+    relation_context: Option<&RelationContext>,
+) -> Result<Protocol, AnalysisError> {
     if dialect_name.trim().is_empty() {
         return Err(AnalysisError::EmptyDialectName);
     }
@@ -76,19 +121,33 @@ pub(crate) fn analyze(parsed: ParsedSql, dialect_name: &str) -> Result<Protocol,
         return Err(AnalysisError::NoStatements);
     }
 
-    let statements = parsed.statements.iter().map(analyze_statement).collect();
+    let metadata = AnalysisMetadata {
+        catalog,
+        dialect_name,
+        relation_context,
+    };
+    let statements = parsed
+        .statements
+        .iter()
+        .map(|statement| analyze_statement(statement, &metadata))
+        .collect();
 
     Ok(Protocol::new(dialect_name.to_string(), statements))
 }
 
-fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
+fn analyze_statement(
+    statement: &SqlStatement,
+    metadata: &AnalysisMetadata<'_>,
+) -> ProtocolStatement {
     match statement {
-        SqlStatement::Query(query) => ProtocolStatement::Query(analyze_query(query, None)),
+        SqlStatement::Query(query) => {
+            ProtocolStatement::Query(analyze_query(query, None, metadata))
+        }
         SqlStatement::CreateTable(create_table) => match &create_table.query {
             Some(query) => {
                 let target = create_table.name.to_string();
                 ProtocolStatement::Query(
-                    analyze_query(query, Some(target.clone()))
+                    analyze_query(query, Some(target.clone()), metadata)
                         .with_write(Some(WriteOperation::definition(target))),
                 )
             }
@@ -97,11 +156,11 @@ fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
         SqlStatement::CreateView { name, query, .. } => {
             let target = name.to_string();
             ProtocolStatement::Query(
-                analyze_query(query, Some(target.clone()))
+                analyze_query(query, Some(target.clone()), metadata)
                     .with_write(Some(WriteOperation::definition(target))),
             )
         }
-        SqlStatement::Insert(insert) => analyze_insert(insert),
+        SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
         SqlStatement::Merge {
             table,
             source,
@@ -114,7 +173,7 @@ fn analyze_statement(statement: &SqlStatement) -> ProtocolStatement {
     }
 }
 
-fn analyze_insert(insert: &SqlInsert) -> ProtocolStatement {
+fn analyze_insert(insert: &SqlInsert, metadata: &AnalysisMetadata<'_>) -> ProtocolStatement {
     let target = match &insert.table {
         TableObject::TableName(name) => name.to_string(),
         TableObject::TableFunction(_) => {
@@ -166,7 +225,7 @@ fn analyze_insert(insert: &SqlInsert) -> ProtocolStatement {
     }
 
     let target_columns = insert.columns.iter().map(ToString::to_string).collect();
-    let query = analyze_query(source, Some(target.clone()))
+    let query = analyze_query(source, Some(target.clone()), metadata)
         .with_write(Some(WriteOperation::append(target, target_columns)));
     ProtocolStatement::Query(query)
 }
@@ -406,7 +465,11 @@ fn merge_branch_predicate(
     }
 }
 
-fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QueryStatement {
+fn analyze_query(
+    query: &SqlQuery,
+    produced_relation: Option<String>,
+    metadata: &AnalysisMetadata<'_>,
+) -> QueryStatement {
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let relation_analysis = analyze_query_relations(
@@ -418,7 +481,7 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
 
     let set_operation = analyze_set_operation(query.body.as_ref());
     let aggregation = analyze_query_aggregation(query, &mut diagnostics);
-    let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics);
+    let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics, Some(metadata));
 
     let predicates = match query.body.as_ref() {
         SetExpr::Select(select) => analyze_select(select, &mut diagnostics),
@@ -434,13 +497,13 @@ fn analyze_query(query: &SqlQuery, produced_relation: Option<String>) -> QuerySt
         }
     };
 
-    let column_domains = match query.body.as_ref() {
-        SetExpr::Select(_) => derive_column_domains(&predicates, &relation_analysis.sources),
-        SetExpr::SetOperation { .. } | SetExpr::Query(_) => {
-            analyze_query_column_domains(query, &BTreeSet::new())
-        }
-        _ => Vec::new(),
-    };
+    let column_domains = analyze_query_column_domains(
+        query,
+        &BTreeSet::new(),
+        &BTreeMap::new(),
+        &BTreeMap::new(),
+        Some(metadata),
+    );
     let output = refine_output_domains_from_column_domains(
         output,
         &column_domains,
@@ -484,6 +547,7 @@ fn analyze_query_predicates_with_outer_scope(
                 &BTreeMap::new(),
                 outer_scope,
                 &mut scope_diagnostics,
+                None,
             );
             analyze_select_predicates_with_scope(select, &scope, diagnostics)
         }
@@ -498,12 +562,8 @@ fn analyze_query_predicates_with_outer_scope(
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     inspect_select_features(select, diagnostics);
     let mut scope_diagnostics = Vec::new();
-    let scope = build_output_scope(select, &BTreeMap::new(), &[], &mut scope_diagnostics);
+    let scope = build_output_scope(select, &BTreeMap::new(), &[], &mut scope_diagnostics, None);
     analyze_select_predicates_with_scope(select, &scope, diagnostics)
-}
-
-fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
-    analyze_select_predicates_with_scope(select, &[], diagnostics)
 }
 
 fn analyze_select_predicates_with_scope(
@@ -716,29 +776,71 @@ fn analyze_set_quantifier(quantifier: SqlSetQuantifier) -> SetQuantifier {
     }
 }
 
+type LocalDomainMap = BTreeMap<String, Vec<ColumnDomain>>;
+
 fn analyze_query_column_domains(
     query: &SqlQuery,
     inherited_local_relations: &BTreeSet<String>,
+    inherited_local_outputs: &LocalOutputMap,
+    inherited_local_domains: &LocalDomainMap,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Vec<ColumnDomain> {
     let mut local_relations = inherited_local_relations.clone();
+    let mut local_outputs = inherited_local_outputs.clone();
+    let mut local_domains = inherited_local_domains.clone();
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
-            local_relations.insert(cte.alias.name.to_string());
+            let name = cte.alias.name.to_string();
+            let domains = analyze_query_column_domains(
+                &cte.query,
+                &local_relations,
+                &local_outputs,
+                &local_domains,
+                metadata,
+            );
+            let mut output_diagnostics = Vec::new();
+            let output = analyze_query_output(
+                &cte.query,
+                &local_outputs,
+                &mut output_diagnostics,
+                metadata,
+            );
+
+            local_relations.insert(name.clone());
+            local_outputs.insert(name.clone(), output);
+            local_domains.insert(name, domains);
         }
     }
 
-    analyze_set_expr_column_domains(query.body.as_ref(), &local_relations)
+    analyze_set_expr_column_domains(
+        query.body.as_ref(),
+        &local_relations,
+        &local_outputs,
+        &local_domains,
+        metadata,
+    )
 }
 
 fn analyze_set_expr_column_domains(
     expression: &SetExpr,
     local_relations: &BTreeSet<String>,
+    local_outputs: &LocalOutputMap,
+    local_domains: &LocalDomainMap,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Vec<ColumnDomain> {
     match expression {
         SetExpr::Select(select) => {
             let mut predicate_diagnostics = Vec::new();
-            let predicates = analyze_select_predicates(select, &mut predicate_diagnostics);
+            let scope = build_output_scope(
+                select,
+                local_outputs,
+                &[],
+                &mut predicate_diagnostics,
+                metadata,
+            );
+            let predicates =
+                analyze_select_predicates_with_scope(select, &scope, &mut predicate_diagnostics);
             let mut relation_diagnostics = Vec::new();
             let mut derived_index = 0;
             let relations = analyze_select_relations(
@@ -747,12 +849,41 @@ fn analyze_set_expr_column_domains(
                 &mut relation_diagnostics,
                 &mut derived_index,
             );
-            derive_column_domains(&predicates, &relations.sources)
+            let own_domains = remap_local_column_domains(
+                derive_column_domains(&predicates, &relations.sources),
+                local_outputs,
+            );
+            let source_domains = collect_select_local_domains(
+                select,
+                local_relations,
+                local_outputs,
+                local_domains,
+                metadata,
+            );
+            intersect_column_domain_sets([source_domains, own_domains])
         }
-        SetExpr::Query(query) => analyze_query_column_domains(query, local_relations),
+        SetExpr::Query(query) => analyze_query_column_domains(
+            query,
+            local_relations,
+            local_outputs,
+            local_domains,
+            metadata,
+        ),
         SetExpr::SetOperation { left, right, .. } => merge_set_operation_domains(
-            analyze_set_expr_column_domains(left, local_relations),
-            analyze_set_expr_column_domains(right, local_relations),
+            analyze_set_expr_column_domains(
+                left,
+                local_relations,
+                local_outputs,
+                local_domains,
+                metadata,
+            ),
+            analyze_set_expr_column_domains(
+                right,
+                local_relations,
+                local_outputs,
+                local_domains,
+                metadata,
+            ),
         ),
         SetExpr::Values(_)
         | SetExpr::Insert(_)
@@ -760,6 +891,119 @@ fn analyze_set_expr_column_domains(
         | SetExpr::Delete(_)
         | SetExpr::Table(_) => Vec::new(),
     }
+}
+
+fn collect_select_local_domains(
+    select: &Select,
+    local_relations: &BTreeSet<String>,
+    local_outputs: &LocalOutputMap,
+    local_domains: &LocalDomainMap,
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> Vec<ColumnDomain> {
+    let mut domains = Vec::new();
+
+    for source in &select.from {
+        domains.extend(collect_table_factor_local_domains(
+            &source.relation,
+            local_relations,
+            local_outputs,
+            local_domains,
+            metadata,
+        ));
+        for join in &source.joins {
+            domains.extend(collect_table_factor_local_domains(
+                &join.relation,
+                local_relations,
+                local_outputs,
+                local_domains,
+                metadata,
+            ));
+        }
+    }
+
+    intersect_column_domain_sets([domains])
+}
+
+fn collect_table_factor_local_domains(
+    factor: &TableFactor,
+    local_relations: &BTreeSet<String>,
+    local_outputs: &LocalOutputMap,
+    local_domains: &LocalDomainMap,
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> Vec<ColumnDomain> {
+    match factor {
+        TableFactor::Table {
+            name, args: None, ..
+        } => local_domains
+            .get(&name.to_string())
+            .cloned()
+            .unwrap_or_default(),
+        TableFactor::Derived { subquery, .. } => analyze_query_column_domains(
+            subquery,
+            local_relations,
+            local_outputs,
+            local_domains,
+            metadata,
+        ),
+        _ => Vec::new(),
+    }
+}
+
+fn remap_local_column_domains(
+    domains: Vec<ColumnDomain>,
+    local_outputs: &LocalOutputMap,
+) -> Vec<ColumnDomain> {
+    domains
+        .into_iter()
+        .map(|column_domain| {
+            let Some(relation) = column_domain.column().relation() else {
+                return column_domain;
+            };
+            let Some(output) = local_outputs.get(relation) else {
+                return column_domain;
+            };
+            let mut candidates = output
+                .columns()
+                .iter()
+                .filter(|column| column.name() == column_domain.column().name());
+            let Some(output_column) = candidates.next() else {
+                return column_domain;
+            };
+            if candidates.next().is_some() {
+                return column_domain;
+            }
+            let [source] = output_column.lineage() else {
+                return column_domain;
+            };
+
+            ColumnDomain::new(
+                ColumnRef::new(
+                    Some(source.relation().to_string()),
+                    source.column().to_string(),
+                ),
+                column_domain.domain().clone(),
+            )
+        })
+        .collect()
+}
+
+fn intersect_column_domain_sets<const N: usize>(sets: [Vec<ColumnDomain>; N]) -> Vec<ColumnDomain> {
+    let mut domains = BTreeMap::<ColumnRef, ValueDomain>::new();
+    for column_domain in sets.into_iter().flatten() {
+        let column = column_domain.column().clone();
+        let domain = column_domain.domain().clone();
+        domains
+            .entry(column)
+            .and_modify(|existing| {
+                *existing = intersect_domains(existing, &domain);
+            })
+            .or_insert(domain);
+    }
+
+    domains
+        .into_iter()
+        .map(|(column, domain)| ColumnDomain::new(column, domain))
+        .collect()
 }
 
 fn merge_set_operation_domains(
@@ -802,6 +1046,7 @@ struct AnalyzedRelation {
     source: SourceRelation,
     reference: RelationRef,
     dependencies: BTreeSet<String>,
+    joins: Vec<ProtocolJoin>,
 }
 
 fn analyze_query_relations(
@@ -822,6 +1067,7 @@ fn analyze_query_relations(
             let nested =
                 analyze_query_relations(&cte.query, &local_relations, diagnostics, derived_index);
             analysis.dependencies.extend(nested.dependencies);
+            analysis.joins.extend(nested.joins);
         }
     }
 
@@ -1048,6 +1294,7 @@ fn register_table_factor(
     for dependency in relation.dependencies {
         analysis.dependencies.insert(dependency);
     }
+    analysis.joins.extend(relation.joins);
 
     if !analysis.sources.iter().any(|existing| {
         existing.name() == relation.source.name() && existing.alias() == relation.source.alias()
@@ -1083,6 +1330,7 @@ fn analyze_table_factor(
                 source: SourceRelation::new(name.clone(), alias.clone()),
                 reference: RelationRef::new(name, alias),
                 dependencies,
+                joins: Vec::new(),
             })
         }
         TableFactor::Derived {
@@ -1103,6 +1351,7 @@ fn analyze_table_factor(
                 source: SourceRelation::new(name.clone(), alias.clone()),
                 reference: RelationRef::new(name, alias),
                 dependencies: nested.dependencies,
+                joins: nested.joins,
             })
         }
         _ => {
@@ -2589,7 +2838,7 @@ fn unsupported_expression(
     Expression::Unsupported(UnsupportedSemantic::new(feature.to_string(), Some(reason)))
 }
 
-type LocalOutputMap = BTreeMap<String, BTreeMap<String, Vec<LineageSource>>>;
+type LocalOutputMap = BTreeMap<String, Output>;
 
 #[derive(Clone)]
 struct OutputRelation {
@@ -2599,16 +2848,26 @@ struct OutputRelation {
 
 #[derive(Clone)]
 enum OutputRelationSource {
-    Physical(String),
-    Local(BTreeMap<String, Vec<LineageSource>>),
+    Physical {
+        relation: String,
+        columns: Option<Vec<String>>,
+    },
+    Local(Output),
 }
 
 fn analyze_query_output(
     query: &SqlQuery,
     inherited_local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
-    analyze_query_output_with_outer_scope(query, inherited_local_outputs, &[], diagnostics)
+    analyze_query_output_with_outer_scope(
+        query,
+        inherited_local_outputs,
+        &[],
+        diagnostics,
+        metadata,
+    )
 }
 
 fn analyze_query_output_with_outer_scope(
@@ -2616,14 +2875,20 @@ fn analyze_query_output_with_outer_scope(
     inherited_local_outputs: &LocalOutputMap,
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
     let mut local_outputs = inherited_local_outputs.clone();
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
-            let output =
-                analyze_query_output_with_outer_scope(&cte.query, &local_outputs, &[], diagnostics);
-            local_outputs.insert(cte.alias.name.to_string(), output_lineage_map(&output));
+            let output = analyze_query_output_with_outer_scope(
+                &cte.query,
+                &local_outputs,
+                &[],
+                diagnostics,
+                metadata,
+            );
+            local_outputs.insert(cte.alias.name.to_string(), output);
         }
     }
 
@@ -2632,6 +2897,7 @@ fn analyze_query_output_with_outer_scope(
         &local_outputs,
         outer_scope,
         diagnostics,
+        metadata,
     )
 }
 
@@ -2640,14 +2906,23 @@ fn analyze_set_expr_output_with_outer_scope(
     local_outputs: &LocalOutputMap,
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
     match expression {
-        SetExpr::Select(select) => {
-            analyze_select_output_with_outer_scope(select, local_outputs, outer_scope, diagnostics)
-        }
-        SetExpr::Query(query) => {
-            analyze_query_output_with_outer_scope(query, local_outputs, outer_scope, diagnostics)
-        }
+        SetExpr::Select(select) => analyze_select_output_with_outer_scope(
+            select,
+            local_outputs,
+            outer_scope,
+            diagnostics,
+            metadata,
+        ),
+        SetExpr::Query(query) => analyze_query_output_with_outer_scope(
+            query,
+            local_outputs,
+            outer_scope,
+            diagnostics,
+            metadata,
+        ),
         SetExpr::SetOperation {
             left,
             set_quantifier,
@@ -2669,12 +2944,14 @@ fn analyze_set_expr_output_with_outer_scope(
                 local_outputs,
                 outer_scope,
                 diagnostics,
+                metadata,
             );
             let right_output = analyze_set_expr_output_with_outer_scope(
                 right,
                 local_outputs,
                 outer_scope,
                 diagnostics,
+                metadata,
             );
             merge_set_operation_output(left_output, right_output, diagnostics)
         }
@@ -2741,13 +3018,18 @@ fn analyze_select_output_with_outer_scope(
     local_outputs: &LocalOutputMap,
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
-    let scope = build_output_scope(select, local_outputs, outer_scope, diagnostics);
-    let mut columns = select
-        .projection
-        .iter()
-        .map(|item| analyze_output_item(item, &scope, &select.named_window, diagnostics))
-        .collect::<Vec<_>>();
+    let scope = build_output_scope(select, local_outputs, outer_scope, diagnostics, metadata);
+    let mut columns = Vec::new();
+    for item in &select.projection {
+        columns.extend(analyze_output_item(
+            item,
+            &scope,
+            &select.named_window,
+            diagnostics,
+        ));
+    }
 
     if let Some(qualify) = &select.qualify {
         refine_output_domains_from_predicate(&mut columns, qualify);
@@ -2761,33 +3043,110 @@ fn analyze_output_item(
     scope: &[OutputRelation],
     named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
-) -> OutputColumn {
+) -> Vec<OutputColumn> {
     match item {
         SelectItem::UnnamedExpr(expression) => {
             let normalized =
                 analyze_expression_with_scope(expression, scope, named_windows, diagnostics);
             let domain = derive_output_domain(&normalized);
-            OutputColumn::new(
+            vec![OutputColumn::new(
                 output_name_for_expression(expression),
                 normalized,
                 domain,
                 lineage_for_expression(expression, scope, named_windows, diagnostics),
-            )
+            )]
         }
         SelectItem::ExprWithAlias { expr, alias } => {
             let normalized = analyze_expression_with_scope(expr, scope, named_windows, diagnostics);
             let domain = derive_output_domain(&normalized);
-            OutputColumn::new(
+            vec![OutputColumn::new(
                 alias.value.clone(),
                 normalized,
                 domain,
                 lineage_for_expression(expr, scope, named_windows, diagnostics),
-            )
+            )]
         }
-        SelectItem::Wildcard(_) => unresolved_wildcard_column("*".to_string(), diagnostics),
+        SelectItem::Wildcard(_) => expand_wildcard(None, scope, diagnostics),
         SelectItem::QualifiedWildcard(prefix, _) => {
-            unresolved_wildcard_column(format!("{prefix}.*"), diagnostics)
+            let qualifier = prefix.to_string();
+            expand_wildcard(Some(&qualifier), scope, diagnostics)
         }
+    }
+}
+
+fn expand_wildcard(
+    qualifier: Option<&str>,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<OutputColumn> {
+    let relations = scope
+        .iter()
+        .filter(|relation| {
+            qualifier.is_none_or(|qualifier| {
+                relation
+                    .qualifiers
+                    .iter()
+                    .any(|candidate| candidate == qualifier)
+            })
+        })
+        .collect::<Vec<_>>();
+
+    if relations.is_empty() || (qualifier.is_some() && relations.len() != 1) {
+        return vec![unresolved_wildcard_column(
+            qualifier.map_or_else(|| "*".to_string(), |value| format!("{value}.*")),
+            diagnostics,
+        )];
+    }
+
+    let mut columns = Vec::new();
+    for relation in relations {
+        let expression_qualifier = relation.qualifiers.first().cloned();
+        match &relation.source {
+            OutputRelationSource::Physical {
+                relation,
+                columns: Some(schema_columns),
+            } => {
+                columns.extend(schema_columns.iter().map(|column| {
+                    OutputColumn::new(
+                        column.clone(),
+                        Expression::Column(ColumnExpression::new(
+                            expression_qualifier.clone(),
+                            column.clone(),
+                        )),
+                        ValueDomain::Unbounded,
+                        vec![LineageSource::new(relation.clone(), column.clone())],
+                    )
+                }));
+            }
+            OutputRelationSource::Physical { columns: None, .. } => {
+                return vec![unresolved_wildcard_column(
+                    qualifier.map_or_else(|| "*".to_string(), |value| format!("{value}.*")),
+                    diagnostics,
+                )];
+            }
+            OutputRelationSource::Local(output) => {
+                columns.extend(output.columns().iter().map(|column| {
+                    OutputColumn::new(
+                        column.name().to_string(),
+                        Expression::Column(ColumnExpression::new(
+                            expression_qualifier.clone(),
+                            column.name().to_string(),
+                        )),
+                        column.domain().clone(),
+                        column.lineage().to_vec(),
+                    )
+                }));
+            }
+        }
+    }
+
+    if columns.is_empty() {
+        vec![unresolved_wildcard_column(
+            qualifier.map_or_else(|| "*".to_string(), |value| format!("{value}.*")),
+            diagnostics,
+        )]
+    } else {
+        columns
     }
 }
 
@@ -2822,7 +3181,20 @@ fn refine_output_domains_from_column_domains(
                     column_domains,
                     sources,
                 );
+                let lineage_domain = match column.lineage() {
+                    [source] => column_domains
+                        .iter()
+                        .find(|candidate| {
+                            candidate.column().relation() == Some(source.relation())
+                                && candidate.column().name() == source.column()
+                        })
+                        .map_or(ValueDomain::Unbounded, |candidate| {
+                            candidate.domain().clone()
+                        }),
+                    _ => ValueDomain::Unbounded,
+                };
                 let domain = intersect_domains(column.domain(), &derived);
+                let domain = intersect_domains(&domain, &lineage_domain);
                 column.with_domain(domain)
             })
             .collect(),
@@ -3141,6 +3513,7 @@ fn analyze_subquery_semantics(
         &BTreeMap::new(),
         outer_scope,
         &mut diagnostics,
+        None,
     );
     let predicates =
         analyze_query_predicates_with_outer_scope(query, outer_scope, &mut diagnostics);
@@ -3434,19 +3807,12 @@ fn output_name_for_expression(expression: &Expr) -> String {
     }
 }
 
-fn output_lineage_map(output: &Output) -> BTreeMap<String, Vec<LineageSource>> {
-    output
-        .columns()
-        .iter()
-        .map(|column| (column.name().to_string(), column.lineage().to_vec()))
-        .collect()
-}
-
 fn build_output_scope(
     select: &Select,
     local_outputs: &LocalOutputMap,
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Vec<OutputRelation> {
     let local_qualifiers = select_local_qualifiers(select);
     let mut scope = outer_scope
@@ -3466,9 +3832,21 @@ fn build_output_scope(
         .collect::<Vec<_>>();
 
     for source in &select.from {
-        register_output_table_factor(&source.relation, local_outputs, diagnostics, &mut scope);
+        register_output_table_factor(
+            &source.relation,
+            local_outputs,
+            diagnostics,
+            &mut scope,
+            metadata,
+        );
         for join in &source.joins {
-            register_output_table_factor(&join.relation, local_outputs, diagnostics, &mut scope);
+            register_output_table_factor(
+                &join.relation,
+                local_outputs,
+                diagnostics,
+                &mut scope,
+                metadata,
+            );
         }
     }
 
@@ -3480,6 +3858,7 @@ fn register_output_table_factor(
     local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
     scope: &mut Vec<OutputRelation>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) {
     match factor {
         TableFactor::Table {
@@ -3492,8 +3871,11 @@ fn register_output_table_factor(
             let qualifiers =
                 relation_qualifiers(&relation_name, alias.as_ref().map(|a| a.name.to_string()));
             let source = match local_outputs.get(&relation_name) {
-                Some(columns) => OutputRelationSource::Local(columns.clone()),
-                None => OutputRelationSource::Physical(relation_name),
+                Some(output) => OutputRelationSource::Local(output.clone()),
+                None => OutputRelationSource::Physical {
+                    columns: metadata.and_then(|metadata| metadata.schema_columns(&relation_name)),
+                    relation: relation_name,
+                },
             };
             scope.push(OutputRelation { qualifiers, source });
         }
@@ -3509,6 +3891,7 @@ fn register_output_table_factor(
                 local_outputs,
                 &visible_outer_scope,
                 diagnostics,
+                metadata,
             );
             let qualifiers = alias
                 .as_ref()
@@ -3516,7 +3899,7 @@ fn register_output_table_factor(
                 .unwrap_or_default();
             scope.push(OutputRelation {
                 qualifiers,
-                source: OutputRelationSource::Local(output_lineage_map(&output)),
+                source: OutputRelationSource::Local(output),
             });
         }
         _ => {}
@@ -3588,8 +3971,13 @@ fn collect_output_lineage(
             }
         }
         Expr::Subquery(query) => {
-            let output =
-                analyze_query_output_with_outer_scope(query, &BTreeMap::new(), scope, diagnostics);
+            let output = analyze_query_output_with_outer_scope(
+                query,
+                &BTreeMap::new(),
+                scope,
+                diagnostics,
+                None,
+            );
             for column in output.columns() {
                 lineage.extend(
                     column
@@ -3930,11 +4318,19 @@ fn output_column_candidates(
             })
         })
         .filter_map(|relation| match &relation.source {
-            OutputRelationSource::Physical(relation) => Some(vec![LineageSource::new(
+            OutputRelationSource::Physical {
+                relation,
+                columns: Some(columns),
+            } if !columns.iter().any(|candidate| candidate == column) => None,
+            OutputRelationSource::Physical { relation, .. } => Some(vec![LineageSource::new(
                 relation.clone(),
                 column.to_string(),
             )]),
-            OutputRelationSource::Local(columns) => columns.get(column).cloned(),
+            OutputRelationSource::Local(output) => output
+                .columns()
+                .iter()
+                .find(|candidate| candidate.name() == column)
+                .map(|candidate| candidate.lineage().to_vec()),
         })
         .collect()
 }

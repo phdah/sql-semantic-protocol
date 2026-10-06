@@ -1,7 +1,7 @@
 ---
 id: TASK-31
 title: Carry CTE and derived-table semantics through query analysis
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-06 13:25'
 labels: []

@@ -114,6 +114,18 @@ pub fn analyze_sql(
     analysis::analyze(parsed, dialect_name).map_err(Error::Analysis)
 }
 
+pub(crate) fn analyze_sql_with_catalog(
+    sql: &str,
+    dialect_name: &str,
+    dialect: &dyn Dialect,
+    catalog: &RelationCatalog,
+    relation_context: Option<&RelationContext>,
+) -> Result<Protocol, Error> {
+    let parsed = parser::parse_sql(sql, dialect).map_err(Error::Parse)?;
+    analysis::analyze_with_catalog(parsed, dialect_name, catalog, relation_context)
+        .map_err(Error::Analysis)
+}
+
 /// Resolve a built-in sqlparser dialect by name for library consumers.
 ///
 /// This keeps consumers from depending directly on sqlparser only to select a dialect before

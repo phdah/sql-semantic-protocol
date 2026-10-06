@@ -64,8 +64,9 @@ pub enum ProtocolStatement {
 
 /// Partially analyzed query semantics.
 ///
-/// Sections whose analysis has not been implemented are emitted conservatively and accompanied by
-/// diagnostics.
+/// Supported CTE and derived-table semantics are resolved through local scopes so physical joins,
+/// source-column domains, and output lineage remain visible on the enclosing query. Sections whose
+/// analysis has not been implemented are emitted conservatively and accompanied by diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QueryStatement {
     sources: Vec<SourceRelation>,

@@ -68,6 +68,8 @@ Each nested subquery carries a parser-independent semantic summary containing it
 
 Derived tables expose only their projected columns to the parent query while preserving physical lineage through those columns. LATERAL derived tables may resolve references to preceding visible sources, so lineage from a lateral projection can flow back to the outer physical relation.
 
+CTEs and derived tables are local semantic scopes rather than physical dependencies. Supported joins and WHERE/HAVING/QUALIFY constraints inside those scopes are carried through to the enclosing query as physical-source joins, column domains, and output lineage. Chained local relations preserve those constraints through direct projections. When typed catalog metadata is available, wildcard projections over physical relations and CTEs expand to concrete output columns; without schema evidence, wildcard output remains explicitly unresolved.
+
 Table-producing sources whose output schema cannot yet be modeled safely, including unresolved table functions and UNNEST-like factors, remain explicit `unsupported_table_factor` diagnostics rather than being omitted or assigned invented columns.
 
 ## Typed source schemas
