@@ -566,10 +566,6 @@ fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predica
     analyze_select_predicates_with_scope(select, &scope, diagnostics)
 }
 
-fn analyze_select_predicates(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
-    analyze_select_predicates_with_scope(select, &[], diagnostics)
-}
-
 fn analyze_select_predicates_with_scope(
     select: &Select,
     scope: &[OutputRelation],
