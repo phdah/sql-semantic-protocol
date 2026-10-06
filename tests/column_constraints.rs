@@ -135,6 +135,44 @@ fn dbt_not_null_and_accepted_values_use_canonical_column_constraints() {
     }));
 }
 
+
+#[test]
+fn dbt_declared_not_null_uses_the_same_canonical_constraint() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest should parse");
+    manifest["nodes"]["model.demo.stg_orders"]["columns"] = json!({
+        "id": {
+            "name": "id",
+            "constraints": [{"type": "not_null"}]
+        }
+    });
+
+    let manifest = parse_dbt_manifest(
+        &serde_json::to_string(&manifest).expect("manifest should serialize"),
+    )
+    .expect("manifest should parse");
+    let model = manifest
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .expect("model constraints");
+    let not_null = model
+        .constraints()
+        .iter()
+        .find_map(|constraint| match constraint {
+            RelationConstraint::NotNull(constraint) if constraint.column() == "id" => {
+                Some(constraint)
+            }
+            _ => None,
+        })
+        .expect("declared not-null constraint");
+
+    assert_eq!(
+        not_null.evidence()[0].provenance().source_kind(),
+        ConstraintSourceKind::DbtConstraint
+    );
+}
+
 #[test]
 fn accepted_values_intersect_and_empty_intersection_is_explicit() {
     let manifest = parse_dbt_manifest(&manifest_with_tests(vec![
