@@ -1,12 +1,13 @@
 ---
 id: TASK-34
 title: Use manifest-declared column data_type when catalog lacks a relation
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-06 13:25'
 labels: []
 milestone: m-2
 dependencies: []
+updated_date: '2026-10-06 19:47'
 priority: medium
 type: feature
 ---
@@ -19,9 +20,9 @@ analyze_dbt_artifacts builds physical relation schemas only from catalog.json. W
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Physical dependencies absent from catalog.json use manifest-declared column data_type when every referenced column declares one
-- [ ] #2 Catalog types take precedence over declared types when both exist
-- [ ] #3 A relation missing types for any required column still fails with an explicit error naming the relation and columns
-- [ ] #4 Schema provenance (catalog versus declared) is preserved or documented so consumers can tell the evidence apart
-- [ ] #5 Tests cover catalog-only, declared-only, mixed precedence, and missing-type failures, including a dbt end-to-end case with sources defined only in YAML
+- [x] #1 Physical dependencies absent from catalog.json use manifest-declared column data_type when every referenced column declares one
+- [x] #2 Catalog types take precedence over declared types when both exist
+- [x] #3 A relation missing types for any required column still fails with an explicit error naming the relation and columns
+- [x] #4 Schema provenance (catalog versus declared) is preserved or documented so consumers can tell the evidence apart
+- [x] #5 Tests cover catalog-only, declared-only, mixed precedence, and missing-type failures, including a dbt end-to-end case with sources defined only in YAML
 <!-- AC:END -->
