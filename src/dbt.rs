@@ -1384,9 +1384,14 @@ fn parse_manifest_relation_constraints(
             "unique" | "relationships" | "not_null" | "accepted_values"
         );
 
+        let dependencies = dependency_ids(object, &path)?;
         let attached_node =
             optional_string(object, "attached_node", &format!("{path}.attached_node"))?
-                .filter(|node| !node.trim().is_empty());
+                .filter(|node| !node.trim().is_empty())
+                .or_else(|| {
+                    (test_name != "relationships" && dependencies.len() == 1)
+                        .then(|| dependencies[0].clone())
+                });
         let local_relation = attached_node.as_deref().and_then(|node| {
             resources
                 .get(node)
@@ -1505,7 +1510,6 @@ fn parse_manifest_relation_constraints(
                     &format!("{path}.test_metadata.kwargs.field"),
                 )?
                 .to_string();
-                let dependencies = dependency_ids(object, &path)?;
                 let referenced_resources = dependencies
                     .iter()
                     .filter(|dependency| dependency.as_str() != attached_node)
