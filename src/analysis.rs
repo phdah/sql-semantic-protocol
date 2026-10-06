@@ -782,29 +782,71 @@ fn analyze_set_quantifier(quantifier: SqlSetQuantifier) -> SetQuantifier {
     }
 }
 
+type LocalDomainMap = BTreeMap<String, Vec<ColumnDomain>>;
+
 fn analyze_query_column_domains(
     query: &SqlQuery,
     inherited_local_relations: &BTreeSet<String>,
+    inherited_local_outputs: &LocalOutputMap,
+    inherited_local_domains: &LocalDomainMap,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Vec<ColumnDomain> {
     let mut local_relations = inherited_local_relations.clone();
+    let mut local_outputs = inherited_local_outputs.clone();
+    let mut local_domains = inherited_local_domains.clone();
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
-            local_relations.insert(cte.alias.name.to_string());
+            let name = cte.alias.name.to_string();
+            let domains = analyze_query_column_domains(
+                &cte.query,
+                &local_relations,
+                &local_outputs,
+                &local_domains,
+                metadata,
+            );
+            let mut output_diagnostics = Vec::new();
+            let output = analyze_query_output(
+                &cte.query,
+                &local_outputs,
+                &mut output_diagnostics,
+                metadata,
+            );
+
+            local_relations.insert(name.clone());
+            local_outputs.insert(name.clone(), output);
+            local_domains.insert(name, domains);
         }
     }
 
-    analyze_set_expr_column_domains(query.body.as_ref(), &local_relations)
+    analyze_set_expr_column_domains(
+        query.body.as_ref(),
+        &local_relations,
+        &local_outputs,
+        &local_domains,
+        metadata,
+    )
 }
 
 fn analyze_set_expr_column_domains(
     expression: &SetExpr,
     local_relations: &BTreeSet<String>,
+    local_outputs: &LocalOutputMap,
+    local_domains: &LocalDomainMap,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Vec<ColumnDomain> {
     match expression {
         SetExpr::Select(select) => {
             let mut predicate_diagnostics = Vec::new();
-            let predicates = analyze_select_predicates(select, &mut predicate_diagnostics);
+            let scope = build_output_scope(
+                select,
+                local_outputs,
+                &[],
+                &mut predicate_diagnostics,
+                metadata,
+            );
+            let predicates =
+                analyze_select_predicates_with_scope(select, &scope, &mut predicate_diagnostics);
             let mut relation_diagnostics = Vec::new();
             let mut derived_index = 0;
             let relations = analyze_select_relations(
@@ -813,12 +855,41 @@ fn analyze_set_expr_column_domains(
                 &mut relation_diagnostics,
                 &mut derived_index,
             );
-            derive_column_domains(&predicates, &relations.sources)
+            let own_domains = remap_local_column_domains(
+                derive_column_domains(&predicates, &relations.sources),
+                local_outputs,
+            );
+            let source_domains = collect_select_local_domains(
+                select,
+                local_relations,
+                local_outputs,
+                local_domains,
+                metadata,
+            );
+            intersect_column_domain_sets([source_domains, own_domains])
         }
-        SetExpr::Query(query) => analyze_query_column_domains(query, local_relations),
+        SetExpr::Query(query) => analyze_query_column_domains(
+            query,
+            local_relations,
+            local_outputs,
+            local_domains,
+            metadata,
+        ),
         SetExpr::SetOperation { left, right, .. } => merge_set_operation_domains(
-            analyze_set_expr_column_domains(left, local_relations),
-            analyze_set_expr_column_domains(right, local_relations),
+            analyze_set_expr_column_domains(
+                left,
+                local_relations,
+                local_outputs,
+                local_domains,
+                metadata,
+            ),
+            analyze_set_expr_column_domains(
+                right,
+                local_relations,
+                local_outputs,
+                local_domains,
+                metadata,
+            ),
         ),
         SetExpr::Values(_)
         | SetExpr::Insert(_)
@@ -826,6 +897,121 @@ fn analyze_set_expr_column_domains(
         | SetExpr::Delete(_)
         | SetExpr::Table(_) => Vec::new(),
     }
+}
+
+fn collect_select_local_domains(
+    select: &Select,
+    local_relations: &BTreeSet<String>,
+    local_outputs: &LocalOutputMap,
+    local_domains: &LocalDomainMap,
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> Vec<ColumnDomain> {
+    let mut domains = Vec::new();
+
+    for source in &select.from {
+        domains.extend(collect_table_factor_local_domains(
+            &source.relation,
+            local_relations,
+            local_outputs,
+            local_domains,
+            metadata,
+        ));
+        for join in &source.joins {
+            domains.extend(collect_table_factor_local_domains(
+                &join.relation,
+                local_relations,
+                local_outputs,
+                local_domains,
+                metadata,
+            ));
+        }
+    }
+
+    intersect_column_domain_sets([domains])
+}
+
+fn collect_table_factor_local_domains(
+    factor: &TableFactor,
+    local_relations: &BTreeSet<String>,
+    local_outputs: &LocalOutputMap,
+    local_domains: &LocalDomainMap,
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> Vec<ColumnDomain> {
+    match factor {
+        TableFactor::Table {
+            name, args: None, ..
+        } => local_domains
+            .get(&name.to_string())
+            .cloned()
+            .unwrap_or_default(),
+        TableFactor::Derived { subquery, .. } => analyze_query_column_domains(
+            subquery,
+            local_relations,
+            local_outputs,
+            local_domains,
+            metadata,
+        ),
+        _ => Vec::new(),
+    }
+}
+
+fn remap_local_column_domains(
+    domains: Vec<ColumnDomain>,
+    local_outputs: &LocalOutputMap,
+) -> Vec<ColumnDomain> {
+    domains
+        .into_iter()
+        .map(|column_domain| {
+            let Some(relation) = column_domain.column().relation() else {
+                return column_domain;
+            };
+            let Some(output) = local_outputs.get(relation) else {
+                return column_domain;
+            };
+            let mut candidates = output
+                .columns()
+                .iter()
+                .filter(|column| column.name() == column_domain.column().name());
+            let Some(output_column) = candidates.next() else {
+                return column_domain;
+            };
+            if candidates.next().is_some() {
+                return column_domain;
+            }
+            let [source] = output_column.lineage() else {
+                return column_domain;
+            };
+
+            ColumnDomain::new(
+                ColumnRef::new(
+                    Some(source.relation().to_string()),
+                    source.column().to_string(),
+                ),
+                column_domain.domain().clone(),
+            )
+        })
+        .collect()
+}
+
+fn intersect_column_domain_sets<const N: usize>(
+    sets: [Vec<ColumnDomain>; N],
+) -> Vec<ColumnDomain> {
+    let mut domains = BTreeMap::<ColumnRef, ValueDomain>::new();
+    for column_domain in sets.into_iter().flatten() {
+        let column = column_domain.column().clone();
+        let domain = column_domain.domain().clone();
+        domains
+            .entry(column)
+            .and_modify(|existing| {
+                *existing = intersect_domains(existing, &domain);
+            })
+            .or_insert(domain);
+    }
+
+    domains
+        .into_iter()
+        .map(|(column, domain)| ColumnDomain::new(column, domain))
+        .collect()
 }
 
 fn merge_set_operation_domains(
