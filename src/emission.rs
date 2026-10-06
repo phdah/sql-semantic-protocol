@@ -10,7 +10,7 @@ use crate::bundle::{
     GraphComponent, GraphEdge, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
     UnresolvedComposedSemantics,
 };
-use crate::constraints::{RelationConstraint, RelationConstraintSet};
+use crate::constraints::{ConstraintValue, RelationConstraint, RelationConstraintSet};
 use crate::data_type::DataType;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
@@ -147,6 +147,22 @@ fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> Value {
                     "referenced_columns": key.referenced_columns(),
                     "evidence": evidence
                 }),
+                RelationConstraint::NotNull(constraint) => json!({
+                    "kind": "not_null",
+                    "column": constraint.column(),
+                    "evidence": evidence
+                }),
+                RelationConstraint::AcceptedValues(constraint) => json!({
+                    "kind": "accepted_values",
+                    "column": constraint.column(),
+                    "values": constraint
+                        .values()
+                        .iter()
+                        .map(constraint_value_to_value)
+                        .collect::<Vec<_>>(),
+                    "quote": constraint.quote(),
+                    "evidence": evidence
+                }),
             }
         })
         .collect::<Vec<_>>();
@@ -168,6 +184,19 @@ fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> Value {
             .collect::<Vec<_>>());
     }
     value
+}
+
+fn constraint_value_to_value(value: &ConstraintValue) -> Value {
+    match value {
+        ConstraintValue::Null => json!({ "type": "null", "value": null }),
+        ConstraintValue::Boolean(value) => json!({ "type": "boolean", "value": value }),
+        ConstraintValue::Integer(value) => json!({ "type": "integer", "value": value }),
+        ConstraintValue::UnsignedInteger(value) => {
+            json!({ "type": "unsigned_integer", "value": value })
+        }
+        ConstraintValue::Number(value) => json!({ "type": "number", "value": value }),
+        ConstraintValue::String(value) => json!({ "type": "string", "value": value }),
+    }
 }
 
 fn data_type_to_value(data_type: &DataType) -> Value {
