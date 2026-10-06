@@ -135,8 +135,7 @@ fn dbt_constraints_and_generic_tests_normalize_to_one_canonical_model() {
 
 #[test]
 fn dbt_constraint_metadata_survives_bundle_emission() {
-    let manifest =
-        parse_dbt_manifest(&manifest_with_constraints()).expect("manifest should parse");
+    let manifest = parse_dbt_manifest(&manifest_with_constraints()).expect("manifest should parse");
     let bundle = analyze_dbt_manifest(&manifest, "postgresql", &PostgreSqlDialect {})
         .expect("dbt manifest should analyze");
     let json: Value =
