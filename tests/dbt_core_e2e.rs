@@ -313,6 +313,12 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert!(generic_tests
         .iter()
         .any(|test| test["test_metadata"]["name"] == "relationships"));
+    assert!(generic_tests
+        .iter()
+        .any(|test| test["test_metadata"]["name"] == "not_null"));
+    assert!(generic_tests
+        .iter()
+        .any(|test| test["test_metadata"]["name"] == "accepted_values"));
 
     let run_results = read_json(&run_results_path());
     assert_successful_dbt_result(&run_results, "incremental_merge_orders");
@@ -361,6 +367,18 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert!(emitted_constraints
         .iter()
         .any(|constraint| constraint["kind"] == "foreign_key"));
+    assert!(emitted_constraints
+        .iter()
+        .any(|constraint| constraint["kind"] == "not_null"));
+    let accepted_values = emitted_constraints
+        .iter()
+        .find(|constraint| {
+            constraint["kind"] == "accepted_values" && constraint["column"] == "status"
+        })
+        .expect("stg_orders status accepted-values constraint");
+    assert_eq!(accepted_values["quote"], true);
+    assert!(contains_string(accepted_values, "paid"));
+    assert!(contains_string(accepted_values, "pending"));
     assert!(contains_string(stg_order_constraints, "dbt_constraint"));
     assert!(contains_string(stg_order_constraints, "dbt_test"));
 
@@ -395,6 +413,25 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         .find(|source| source["source_name"] == "raw" && source["name"] == "orders")
         .and_then(|source| source["relation_name"].as_str())
         .expect("raw orders source should have a relation identity");
+    let raw_order_constraints = protocol["relation_constraints"]
+        .as_array()
+        .expect("dbt protocol should include relation constraints")
+        .iter()
+        .find(|metadata| metadata["relation"] == raw_orders_relation)
+        .expect("raw orders source constraints should be emitted");
+    assert!(raw_order_constraints["constraints"]
+        .as_array()
+        .expect("raw order constraints should be an array")
+        .iter()
+        .any(|constraint| constraint["kind"] == "not_null"));
+    assert!(raw_order_constraints["constraints"]
+        .as_array()
+        .expect("raw order constraints should be an array")
+        .iter()
+        .any(|constraint| {
+            constraint["kind"] == "accepted_values" && constraint["column"] == "status"
+        }));
+
     let source_schemas = protocol["source_schemas"]
         .as_array()
         .expect("dbt protocol should include warehouse source schemas");
