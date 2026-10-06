@@ -1,7 +1,7 @@
 ---
 id: TASK-30
 title: Add canonical primary, unique, and foreign key constraints
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-05'
 updated_date: '2026-10-06'
