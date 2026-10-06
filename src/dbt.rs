@@ -11,8 +11,9 @@ use serde_json::{Map, Value};
 use sqlparser::dialect::Dialect;
 
 use crate::constraints::{
-    merge_relation_constraint_sets, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, RelationConstraint, RelationConstraintSet,
+    merge_relation_constraint_sets, ConstraintDiagnostic, ConstraintEnforcement,
+    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue,
+    RelationConstraint, RelationConstraintSet,
 };
 use crate::{
     analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
@@ -1370,50 +1371,92 @@ fn parse_manifest_relation_constraints(
         };
         let test_name =
             required_string(test_metadata, "name", &format!("{path}.test_metadata.name"))?;
-        if !matches!(test_name, "unique" | "relationships") {
-            continue;
-        }
         let namespace = optional_string(
             test_metadata,
             "namespace",
             &format!("{path}.test_metadata.namespace"),
         )?;
-        if namespace
+        let is_builtin_namespace = namespace
             .as_deref()
-            .is_some_and(|namespace| !namespace.is_empty() && namespace != "dbt")
-        {
-            continue;
-        }
+            .is_none_or(|namespace| namespace.is_empty() || namespace == "dbt");
+        let is_supported_test = matches!(
+            test_name,
+            "unique" | "relationships" | "not_null" | "accepted_values"
+        );
 
+        let dependencies = dependency_ids(object, &path)?;
         let attached_node =
             optional_string(object, "attached_node", &format!("{path}.attached_node"))?
                 .filter(|node| !node.trim().is_empty())
-                .ok_or_else(|| {
-                    invalid_field(
-                        format!("{path}.attached_node"),
-                        format!("built-in {test_name} test must identify its attached resource"),
-                    )
-                })?;
-        let local_relation = resources
-            .get(&attached_node)
-            .and_then(|resource| resource.relation_name.as_deref())
-            .filter(|relation| !relation.trim().is_empty())
-            .ok_or_else(|| {
-                invalid_field(
-                    format!("{path}.attached_node"),
+                .or_else(|| {
+                    (test_name != "relationships" && dependencies.len() == 1)
+                        .then(|| dependencies[0].clone())
+                });
+        let local_relation = attached_node.as_deref().and_then(|node| {
+            resources
+                .get(node)
+                .and_then(|resource| resource.relation_name.as_deref())
+                .filter(|relation| !relation.trim().is_empty())
+        });
+
+        if !is_builtin_namespace || !is_supported_test {
+            if let Some(relation) = local_relation {
+                let mut set =
+                    RelationConstraintSet::new(relation, Vec::new()).map_err(|error| {
+                        DbtManifestError::RelationMetadata {
+                            resource_id: test_id.clone(),
+                            message: error.to_string(),
+                        }
+                    })?;
+                set.add_diagnostic(ConstraintDiagnostic::new(
+                    "unsupported_dbt_test",
                     format!(
-                        "built-in {test_name} test references resource '{attached_node}' without relation identity"
+                        "dbt test '{test_id}' uses unsupported test kind '{}{}'",
+                        namespace
+                            .as_deref()
+                            .filter(|namespace| !namespace.is_empty())
+                            .map(|namespace| format!("{namespace}."))
+                            .unwrap_or_default(),
+                        test_name
                     ),
-                )
-            })?;
+                ));
+                merge_relation_constraint_sets(&mut result, &[set]);
+            }
+            continue;
+        }
+
+        let attached_node = attached_node.ok_or_else(|| {
+            invalid_field(
+                format!("{path}.attached_node"),
+                format!("built-in {test_name} test must identify its attached resource"),
+            )
+        })?;
+        let local_relation = local_relation.ok_or_else(|| {
+            invalid_field(
+                format!("{path}.attached_node"),
+                format!(
+                    "built-in {test_name} test references resource '{attached_node}' without relation identity"
+                ),
+            )
+        })?;
         let kwargs = required_object(
             test_metadata,
             "kwargs",
             &format!("{path}.test_metadata.kwargs"),
         )?;
+        let arguments = match kwargs.get("arguments") {
+            Some(value) => as_object(value, &format!("{path}.test_metadata.kwargs.arguments"))?,
+            None => kwargs,
+        };
         let column_name = optional_string(object, "column_name", &format!("{path}.column_name"))?
             .or_else(|| {
                 kwargs
+                    .get("column_name")
+                    .and_then(Value::as_str)
+                    .map(ToString::to_string)
+            })
+            .or_else(|| {
+                arguments
                     .get("column_name")
                     .and_then(Value::as_str)
                     .map(ToString::to_string)
@@ -1431,42 +1474,79 @@ fn parse_manifest_relation_constraints(
             test_id,
         )?];
 
-        let constraint = if test_name == "unique" {
-            RelationConstraint::unique_key(vec![column_name], evidence)
-        } else {
-            let referenced_column = required_string(
-                kwargs,
-                "field",
-                &format!("{path}.test_metadata.kwargs.field"),
-            )?
-            .to_string();
-            let dependencies = dependency_ids(object, &path)?;
-            let referenced_resources = dependencies
-                .iter()
-                .filter(|dependency| dependency.as_str() != attached_node)
-                .filter_map(|dependency| {
-                    resources
-                        .get(dependency)
-                        .and_then(|resource| resource.relation_name.as_deref())
-                })
-                .collect::<Vec<_>>();
-            let referenced_relation = match referenced_resources.as_slice() {
-                [relation] => (*relation).to_string(),
-                [] => required_string(kwargs, "to", &format!("{path}.test_metadata.kwargs.to"))?
+        let constraint = match test_name {
+            "unique" => RelationConstraint::unique_key(vec![column_name], evidence),
+            "not_null" => RelationConstraint::not_null(column_name, evidence),
+            "accepted_values" => {
+                let values_path = format!("{path}.test_metadata.kwargs.values");
+                let values = arguments
+                    .get("values")
+                    .ok_or_else(|| invalid_field(&values_path, "field is required"))?
+                    .as_array()
+                    .ok_or_else(|| {
+                        invalid_field(&values_path, "expected an array of scalar values")
+                    })?
+                    .iter()
+                    .enumerate()
+                    .map(|(index, value)| {
+                        dbt_constraint_value(value, &format!("{values_path}[{index}]"))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                let quote = match arguments.get("quote") {
+                    Some(value) => value.as_bool().ok_or_else(|| {
+                        invalid_field(
+                            format!("{path}.test_metadata.kwargs.quote"),
+                            "expected a boolean",
+                        )
+                    })?,
+                    None => true,
+                };
+                RelationConstraint::accepted_values(column_name, values, quote, evidence)
+            }
+            "relationships" => {
+                let referenced_column = required_string(
+                    arguments,
+                    "field",
+                    &format!("{path}.test_metadata.kwargs.field"),
+                )?
+                .to_string();
+                let referenced_resources = dependencies
+                    .iter()
+                    .filter(|dependency| dependency.as_str() != attached_node)
+                    .filter_map(|dependency| {
+                        resources
+                            .get(dependency)
+                            .and_then(|resource| resource.relation_name.as_deref())
+                    })
+                    .collect::<Vec<_>>();
+                let referenced_relation = match referenced_resources.as_slice() {
+                    [relation] => (*relation).to_string(),
+                    [] => required_string(
+                        arguments,
+                        "to",
+                        &format!("{path}.test_metadata.kwargs.to"),
+                    )?
                     .to_string(),
-                _ => {
-                    return Err(invalid_field(
-                        format!("{path}.depends_on.nodes"),
-                        "relationships test has multiple candidate referenced relations",
-                    ));
-                }
-            };
-            RelationConstraint::foreign_key(
-                vec![column_name],
-                referenced_relation,
-                vec![referenced_column],
-                evidence,
-            )
+                    _ => {
+                        return Err(invalid_field(
+                            format!("{path}.depends_on.nodes"),
+                            "relationships test has multiple candidate referenced relations",
+                        ));
+                    }
+                };
+                RelationConstraint::foreign_key(
+                    vec![column_name],
+                    referenced_relation,
+                    vec![referenced_column],
+                    evidence,
+                )
+            }
+            _ => {
+                return Err(invalid_field(
+                    format!("{path}.test_metadata.name"),
+                    format!("unsupported dbt test kind '{test_name}'"),
+                ));
+            }
         }
         .map_err(|error| DbtManifestError::RelationMetadata {
             resource_id: test_id.clone(),
@@ -1510,7 +1590,10 @@ fn parse_dbt_constraint_array(
         let constraint_path = format!("{path}[{index}]");
         let object = as_object(value, &constraint_path)?;
         let constraint_type = required_string(object, "type", &format!("{constraint_path}.type"))?;
-        if !matches!(constraint_type, "primary_key" | "unique" | "foreign_key") {
+        if !matches!(
+            constraint_type,
+            "primary_key" | "unique" | "foreign_key" | "not_null"
+        ) {
             continue;
         }
 
@@ -1524,6 +1607,20 @@ fn parse_dbt_constraint_array(
             ConstraintSourceKind::DbtConstraint,
             &format!("{resource_id}:{constraint_path}"),
         )?];
+
+        if constraint_type == "not_null" {
+            for column in columns {
+                let constraint =
+                    RelationConstraint::not_null(column, evidence.clone()).map_err(|error| {
+                        DbtManifestError::RelationMetadata {
+                            resource_id: resource_id.to_string(),
+                            message: format!("{relation}: {error}"),
+                        }
+                    })?;
+                output.push(constraint);
+            }
+            continue;
+        }
 
         let constraint = match constraint_type {
             "primary_key" => RelationConstraint::primary_key(columns, evidence),
@@ -1553,6 +1650,27 @@ fn parse_dbt_constraint_array(
     }
 
     Ok(())
+}
+
+fn dbt_constraint_value(value: &Value, path: &str) -> Result<ConstraintValue, DbtManifestError> {
+    match value {
+        Value::Null => Ok(ConstraintValue::Null),
+        Value::Bool(value) => Ok(ConstraintValue::Boolean(*value)),
+        Value::Number(value) => {
+            if let Some(value) = value.as_i64() {
+                Ok(ConstraintValue::Integer(value))
+            } else if let Some(value) = value.as_u64() {
+                Ok(ConstraintValue::UnsignedInteger(value))
+            } else {
+                Ok(ConstraintValue::Number(value.to_string()))
+            }
+        }
+        Value::String(value) => Ok(ConstraintValue::String(value.clone())),
+        Value::Array(_) | Value::Object(_) => Err(invalid_field(
+            path,
+            "accepted_values entries must be scalar JSON values",
+        )),
+    }
 }
 
 fn dbt_constraint_reference(reference: &str, resources: &BTreeMap<String, DbtResource>) -> String {

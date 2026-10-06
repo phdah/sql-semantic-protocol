@@ -54,23 +54,35 @@ still treat unknown, empty, or unresolved semantics explicitly.
 
 ## Relation constraints
 
-Optional `relation_constraints` metadata records parser-independent key declarations for named
-relations. It is separate from transformation semantics and from `source_schemas`; a relation can
-therefore carry key metadata even when a queryless `CREATE TABLE` produces no transformation
-layer.
+Optional `relation_constraints` metadata records parser-independent relation and column
+constraints for named relations. It is separate from transformation semantics and from
+`source_schemas`; a relation can therefore carry metadata even when a queryless `CREATE TABLE`
+produces no transformation layer.
 
-Each relation entry contains an ordered `constraints` array. Constraint `kind` is one of:
+Each relation entry contains a deterministic `constraints` array. Constraint `kind` is one of:
 
 - `primary_key`: ordered `columns` forming the declared primary key.
 - `unique_key`: ordered `columns` forming one declared unique key.
 - `foreign_key`: ordered local `columns`, `referenced_relation`, and ordered
   `referenced_columns`. Local and referenced arity must match.
+- `not_null`: one non-null `column`.
+- `accepted_values`: one `column`, a finite typed `values` array, and the source `quote`
+  setting.
+
+Accepted values are emitted as typed scalar objects so strings, booleans, integers, unsigned
+integers, non-integral numbers, and null remain distinguishable. Non-integral numbers retain a
+deterministic textual representation instead of being round-tripped through floating point.
 
 Composite keys are not flattened into independent single-column facts. Multiple different unique
 keys and foreign keys can coexist. Distinct primary-key definitions for the same relation are not
 silently resolved: both facts remain present and the relation emits a
 `conflicting_primary_key` diagnostic. Invalid or unresolved foreign-key metadata fails or emits
 an explicit diagnostic at the adapter boundary rather than guessing a target.
+
+Independent accepted-value constraints for the same column and quoting semantics are conjunctive,
+so their canonical value set is the deterministic intersection. An empty intersection remains
+present and emits `unsatisfiable_accepted_values`. Conflicting dbt quoting semantics are retained
+with `conflicting_accepted_values_quoting` instead of choosing one declaration.
 
 Every constraint carries one or more `evidence` items. Evidence separates:
 
@@ -84,14 +96,23 @@ the parsed DDL explicitly states it; otherwise it is `unknown`. dbt model/column
 generic tests are declarations/assertions, so their enforcement is `unknown` rather than inferred
 from an adapter or warehouse.
 
-Direct SQL analysis normalizes parser-supported column- and table-level `PRIMARY KEY`, `UNIQUE`,
-and `FOREIGN KEY` clauses. The dbt adapter normalizes explicit key constraints and built-in
-`unique` / `relationships` tests from `manifest.json`. The catalog artifact does not contribute
-constraint facts.
+Canonical relation constraints are source-independent. Every supported adapter that can provide
+equivalent evidence must translate it into these same constraint types rather than defining a
+source-specific representation.
 
-Key metadata is preserved through target selection but is not propagated through projection,
-join, aggregation, set operations, INSERT, or MERGE simply because a source key exists. Consumers
-must treat absent derived-key metadata as unknown. The public
+Direct SQL analysis normalizes parser-supported column- and table-level `PRIMARY KEY`, `UNIQUE`,
+and `FOREIGN KEY` clauses, column-level `NOT NULL`, and finite accepted-value sets expressed as
+non-negated `CHECK (column IN (...))` constraints. CHECK expressions that cannot be represented
+safely as a finite accepted-value set emit an `unsupported_check_constraint` diagnostic instead
+of being guessed or silently dropped. The dbt adapter normalizes explicit `primary_key`, `unique`,
+`foreign_key`, and `not_null` declarations plus built-in `unique`, `relationships`,
+`not_null`, and `accepted_values` tests from `manifest.json`. Unsupported attached dbt test
+kinds are reported with an `unsupported_dbt_test` diagnostic rather than silently disappearing.
+The catalog artifact does not contribute constraint facts.
+
+Constraint metadata is preserved through target selection. Key facts are not propagated through
+projection, join, aggregation, set operations, INSERT, or MERGE simply because a source key exists.
+Consumers must treat absent derived-key metadata as unknown. The public
 `AnalysisBundle::enrich_relation_constraints` plus the canonical constraint types provide the
 adapter-neutral enrichment boundary for external metadata producers.
 

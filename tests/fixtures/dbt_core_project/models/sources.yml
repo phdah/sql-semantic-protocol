@@ -5,6 +5,15 @@ sources:
     schema: raw
     tables:
       - name: orders
+        columns:
+          - name: id
+            data_tests:
+              - not_null
+          - name: status
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: ['paid', 'pending', 'cancelled']
       - name: customers
       - name: legacy_orders
       - name: returns
