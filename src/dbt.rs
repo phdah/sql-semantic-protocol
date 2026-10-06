@@ -1129,8 +1129,7 @@ fn validate_declared_dependencies(
                 .get(dependency_id)
                 .and_then(|resource| resource.relation_name.as_deref())
                 .expect("dependency relation identity is validated during manifest parsing");
-            let represented_by_sql =
-                layer.consumes().iter().any(|consumed| consumed == relation);
+            let represented_by_sql = layer.consumes().iter().any(|consumed| consumed == relation);
             let represented_by_constraint = manifest
                 .relation_constraints
                 .iter()
