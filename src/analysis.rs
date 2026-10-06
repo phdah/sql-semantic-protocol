@@ -550,6 +550,7 @@ fn analyze_query_predicates_with_outer_scope(
                 &BTreeMap::new(),
                 outer_scope,
                 &mut scope_diagnostics,
+                None,
             );
             analyze_select_predicates_with_scope(select, &scope, diagnostics)
         }
@@ -564,7 +565,13 @@ fn analyze_query_predicates_with_outer_scope(
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     inspect_select_features(select, diagnostics);
     let mut scope_diagnostics = Vec::new();
-    let scope = build_output_scope(select, &BTreeMap::new(), &[], &mut scope_diagnostics);
+    let scope = build_output_scope(
+        select,
+        &BTreeMap::new(),
+        &[],
+        &mut scope_diagnostics,
+        None,
+    );
     analyze_select_predicates_with_scope(select, &scope, diagnostics)
 }
 
@@ -3529,6 +3536,7 @@ fn analyze_subquery_semantics(
         &BTreeMap::new(),
         outer_scope,
         &mut diagnostics,
+        None,
     );
     let predicates =
         analyze_query_predicates_with_outer_scope(query, outer_scope, &mut diagnostics);
@@ -3822,19 +3830,12 @@ fn output_name_for_expression(expression: &Expr) -> String {
     }
 }
 
-fn output_lineage_map(output: &Output) -> BTreeMap<String, Vec<LineageSource>> {
-    output
-        .columns()
-        .iter()
-        .map(|column| (column.name().to_string(), column.lineage().to_vec()))
-        .collect()
-}
-
 fn build_output_scope(
     select: &Select,
     local_outputs: &LocalOutputMap,
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Vec<OutputRelation> {
     let local_qualifiers = select_local_qualifiers(select);
     let mut scope = outer_scope
@@ -3854,9 +3855,21 @@ fn build_output_scope(
         .collect::<Vec<_>>();
 
     for source in &select.from {
-        register_output_table_factor(&source.relation, local_outputs, diagnostics, &mut scope);
+        register_output_table_factor(
+            &source.relation,
+            local_outputs,
+            diagnostics,
+            &mut scope,
+            metadata,
+        );
         for join in &source.joins {
-            register_output_table_factor(&join.relation, local_outputs, diagnostics, &mut scope);
+            register_output_table_factor(
+                &join.relation,
+                local_outputs,
+                diagnostics,
+                &mut scope,
+                metadata,
+            );
         }
     }
 
@@ -3868,6 +3881,7 @@ fn register_output_table_factor(
     local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
     scope: &mut Vec<OutputRelation>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) {
     match factor {
         TableFactor::Table {
@@ -3880,8 +3894,11 @@ fn register_output_table_factor(
             let qualifiers =
                 relation_qualifiers(&relation_name, alias.as_ref().map(|a| a.name.to_string()));
             let source = match local_outputs.get(&relation_name) {
-                Some(columns) => OutputRelationSource::Local(columns.clone()),
-                None => OutputRelationSource::Physical(relation_name),
+                Some(output) => OutputRelationSource::Local(output.clone()),
+                None => OutputRelationSource::Physical {
+                    columns: metadata.and_then(|metadata| metadata.schema_columns(&relation_name)),
+                    relation: relation_name,
+                },
             };
             scope.push(OutputRelation { qualifiers, source });
         }
@@ -3897,6 +3914,7 @@ fn register_output_table_factor(
                 local_outputs,
                 &visible_outer_scope,
                 diagnostics,
+                metadata,
             );
             let qualifiers = alias
                 .as_ref()
@@ -3904,7 +3922,7 @@ fn register_output_table_factor(
                 .unwrap_or_default();
             scope.push(OutputRelation {
                 qualifiers,
-                source: OutputRelationSource::Local(output_lineage_map(&output)),
+                source: OutputRelationSource::Local(output),
             });
         }
         _ => {}
@@ -3976,8 +3994,13 @@ fn collect_output_lineage(
             }
         }
         Expr::Subquery(query) => {
-            let output =
-                analyze_query_output_with_outer_scope(query, &BTreeMap::new(), scope, diagnostics);
+            let output = analyze_query_output_with_outer_scope(
+                query,
+                &BTreeMap::new(),
+                scope,
+                diagnostics,
+                None,
+            );
             for column in output.columns() {
                 lineage.extend(
                     column
@@ -4318,11 +4341,15 @@ fn output_column_candidates(
             })
         })
         .filter_map(|relation| match &relation.source {
-            OutputRelationSource::Physical(relation) => Some(vec![LineageSource::new(
+            OutputRelationSource::Physical { relation, .. } => Some(vec![LineageSource::new(
                 relation.clone(),
                 column.to_string(),
             )]),
-            OutputRelationSource::Local(columns) => columns.get(column).cloned(),
+            OutputRelationSource::Local(output) => output
+                .columns()
+                .iter()
+                .find(|candidate| candidate.name() == column)
+                .map(|candidate| candidate.lineage().to_vec()),
         })
         .collect()
 }
