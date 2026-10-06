@@ -4341,6 +4341,10 @@ fn output_column_candidates(
             })
         })
         .filter_map(|relation| match &relation.source {
+            OutputRelationSource::Physical {
+                relation,
+                columns: Some(columns),
+            } if !columns.iter().any(|candidate| candidate == column) => None,
             OutputRelationSource::Physical { relation, .. } => Some(vec![LineageSource::new(
                 relation.clone(),
                 column.to_string(),
