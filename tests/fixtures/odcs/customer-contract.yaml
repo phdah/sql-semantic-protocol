@@ -1,0 +1,17 @@
+apiVersion: v3.2.0
+kind: DataContract
+id: customer-contract
+name: Customers
+version: 1.0.0
+status: active
+schema:
+  - id: customers_tbl
+    name: customers
+    physicalName: analytics.customers
+    properties:
+      - id: customer_id_pk
+        name: id
+        logicalType: integer
+        physicalType: BIGINT
+        required: true
+        primaryKey: true

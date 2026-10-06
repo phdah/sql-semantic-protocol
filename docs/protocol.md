@@ -53,6 +53,25 @@ Source schemas are evidence supplied by the caller; they do not weaken or replac
 domains. Consumers combine the declared type with `composed_semantics.column_domains` and must
 still treat unknown, empty, or unresolved semantics explicitly.
 
+
+### ODCS v3.2 schema evidence
+
+ODCS v3.2 YAML is an external metadata evidence source for the same protocol-owned schema and
+constraint types. Adapter-created source schemas use `source_kind: "external_metadata"`. Schema
+objects resolve `physicalName` when present and otherwise `name` through the same canonical
+relation resolver used by SQL and dbt.
+
+For datatypes, ODCS `physicalType` is preferred and normalized through the selected SQL dialect.
+`logicalType` is lower-authority fallback evidence. Existing dbt catalog and dbt manifest schema
+evidence retains higher authority during bundle enrichment, but contradictory ODCS evidence is
+surfaced explicitly instead of being hidden by precedence.
+
+ODCS `required`, primary-key positions, property uniqueness, relationships, and enums map into
+the canonical `relation_constraints` representation. ODCS declarations use
+`external_metadata` constraint provenance and `unknown` enforcement. External contract
+references are resolved only from contracts explicitly supplied to the adapter; the adapter does
+not perform network or filesystem fetching.
+
 ## Relation constraints
 
 Optional `relation_constraints` metadata records parser-independent relation and column

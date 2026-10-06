@@ -64,6 +64,8 @@ pub enum SchemaSourceKind {
     DbtCatalog,
     /// Declared schema from dbt manifest metadata, typically originating in project YAML.
     DbtManifest,
+    /// Schema evidence supplied by an external metadata adapter such as ODCS.
+    ExternalMetadata,
 }
 
 impl SchemaSourceKind {
@@ -72,6 +74,7 @@ impl SchemaSourceKind {
         match self {
             Self::DbtCatalog => "dbt_catalog",
             Self::DbtManifest => "dbt_manifest",
+            Self::ExternalMetadata => "external_metadata",
         }
     }
 }

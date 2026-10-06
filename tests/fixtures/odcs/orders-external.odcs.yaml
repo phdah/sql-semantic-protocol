@@ -1,0 +1,24 @@
+apiVersion: v3.2.0
+kind: DataContract
+id: orders-contract
+name: Orders
+version: 1.0.0
+status: active
+schema:
+  - id: orders_tbl
+    name: orders
+    physicalName: analytics.orders
+    properties:
+      - id: order_id_pk
+        name: id
+        logicalType: integer
+        physicalType: BIGINT
+        required: true
+        primaryKey: true
+      - id: order_customer_id
+        name: customer_id
+        logicalType: integer
+        physicalType: BIGINT
+        relationships:
+          - id: customer_fk
+            to: customer-contract.yaml#/schema/customers_tbl/properties/customer_id_pk
