@@ -406,11 +406,11 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         library_json
     );
 
-    let (raw_orders_id, raw_orders_source) = manifest_json["sources"]
+    let raw_orders_source = manifest_json["sources"]
         .as_object()
         .expect("manifest sources should be an object")
-        .iter()
-        .find(|(_, source)| source["source_name"] == "raw" && source["name"] == "orders")
+        .values()
+        .find(|source| source["source_name"] == "raw" && source["name"] == "orders")
         .expect("raw orders source should exist");
     let raw_orders_relation = raw_orders_source["relation_name"]
         .as_str()
@@ -466,11 +466,26 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
 
     let mut catalog_without_raw_orders: Value =
         serde_json::from_str(&catalog_text).expect("catalog should be valid JSON");
-    catalog_without_raw_orders["sources"]
-        .as_object_mut()
-        .expect("catalog sources should be an object")
-        .remove(raw_orders_id)
-        .expect("raw orders should exist in generated catalog");
+    for section in ["nodes", "sources"] {
+        let matching_ids = catalog_without_raw_orders[section]
+            .as_object()
+            .expect("catalog resource section should be an object")
+            .keys()
+            .filter(|unique_id| {
+                manifest_json[section]
+                    .get(*unique_id)
+                    .and_then(|resource| resource["relation_name"].as_str())
+                    == Some(raw_orders_relation)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        let resources = catalog_without_raw_orders[section]
+            .as_object_mut()
+            .expect("catalog resource section should be mutable");
+        for unique_id in matching_ids {
+            resources.remove(&unique_id);
+        }
+    }
     let fallback_catalog = parse_dbt_catalog(&catalog_without_raw_orders.to_string())
         .expect("catalog without raw orders should still parse");
     let fallback_bundle = analyze_dbt_artifacts(
