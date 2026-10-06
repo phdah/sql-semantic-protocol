@@ -27,7 +27,7 @@ use sqlparser::ast::{
 use crate::constraints::{
     merge_relation_constraint_sets, ConstraintDiagnostic, ConstraintEnforcement,
     ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance, ConstraintSourceKind,
-    RelationConstraint, RelationConstraintSet,
+    ConstraintValue, RelationConstraint, RelationConstraintSet,
 };
 use crate::domain::{
     derive_case_source_domains, derive_column_domains, intersect_case_domain_values,
@@ -4781,6 +4781,34 @@ fn analyze_create_table_constraints(
                     )?],
                 )?);
             }
+            TableConstraint::Check {
+                name,
+                expr,
+                enforced,
+            } => match accepted_values_from_check(expr, None) {
+                Some((column, values, quote)) => {
+                    constraints.push(RelationConstraint::accepted_values(
+                        column,
+                        values,
+                        quote,
+                        vec![sql_constraint_evidence_with_enforcement(
+                            &relation,
+                            constraint_identity(
+                                "check",
+                                index,
+                                name.as_ref().map(ToString::to_string),
+                            ),
+                            *enforced,
+                        )?],
+                    )?);
+                }
+                None => diagnostics.push(ConstraintDiagnostic::new(
+                    "unsupported_check_constraint",
+                    format!(
+                        "check constraint on relation '{relation}' cannot be represented safely as a finite accepted-values constraint"
+                    ),
+                )),
+            },
             _ => {}
         }
     }
@@ -4841,6 +4869,45 @@ fn analyze_create_table_constraints(
                         )?],
                     )?);
                 }
+                ColumnOption::NotNull => {
+                    constraints.push(RelationConstraint::not_null(
+                        column.name.to_string(),
+                        vec![sql_constraint_evidence(
+                            &relation,
+                            format!(
+                                "{}:column:{}:not_null:{}",
+                                relation, column.name, option_index
+                            ),
+                            None,
+                        )?],
+                    )?);
+                }
+                ColumnOption::Check(expr) => {
+                    match accepted_values_from_check(expr, Some(column.name.value.as_str())) {
+                        Some((column_name, values, quote)) => {
+                            constraints.push(RelationConstraint::accepted_values(
+                                column_name,
+                                values,
+                                quote,
+                                vec![sql_constraint_evidence(
+                                    &relation,
+                                    format!(
+                                        "{}:column:{}:check:{}",
+                                        relation, column.name, option_index
+                                    ),
+                                    None,
+                                )?],
+                            )?);
+                        }
+                        None => diagnostics.push(ConstraintDiagnostic::new(
+                            "unsupported_check_constraint",
+                            format!(
+                                "check constraint on '{}.{}' cannot be represented safely as a finite accepted-values constraint",
+                                relation, column.name
+                            ),
+                        )),
+                    }
+                }
                 _ => {}
             }
         }
@@ -4874,12 +4941,128 @@ fn analyze_create_table_constraints(
     Ok(Some(set))
 }
 
+fn accepted_values_from_check(
+    expression: &Expr,
+    expected_column: Option<&str>,
+) -> Option<(String, Vec<ConstraintValue>, bool)> {
+    let Expr::InList {
+        expr,
+        list,
+        negated: false,
+    } = unwrap_nested_expression(expression)
+    else {
+        return None;
+    };
+
+    let column = check_column_name(expr)?;
+    if expected_column.is_some_and(|expected| expected != column) {
+        return None;
+    }
+
+    let mut values = Vec::with_capacity(list.len());
+    let mut quote = None;
+    for expression in list {
+        let (value, value_quote) = constraint_value_from_expression(expression)?;
+        if let Some(value_quote) = value_quote {
+            match quote {
+                Some(current) if current != value_quote => return None,
+                None => quote = Some(value_quote),
+                _ => {}
+            }
+        }
+        values.push(value);
+    }
+
+    Some((column.to_string(), values, quote.unwrap_or(false)))
+}
+
+fn unwrap_nested_expression(mut expression: &Expr) -> &Expr {
+    while let Expr::Nested(inner) = expression {
+        expression = inner;
+    }
+    expression
+}
+
+fn check_column_name(expression: &Expr) -> Option<&str> {
+    match unwrap_nested_expression(expression) {
+        Expr::Identifier(identifier) => Some(identifier.value.as_str()),
+        Expr::CompoundIdentifier(identifiers) => {
+            identifiers.last().map(|identifier| identifier.value.as_str())
+        }
+        _ => None,
+    }
+}
+
+fn constraint_value_from_expression(
+    expression: &Expr,
+) -> Option<(ConstraintValue, Option<bool>)> {
+    match unwrap_nested_expression(expression) {
+        Expr::Value(value) => constraint_value_from_sql_value(&value.value),
+        Expr::UnaryOp {
+            op: SqlUnaryOperator::Plus,
+            expr,
+        } => constraint_number_from_expression(expr, false).map(|value| (value, Some(false))),
+        Expr::UnaryOp {
+            op: SqlUnaryOperator::Minus,
+            expr,
+        } => constraint_number_from_expression(expr, true).map(|value| (value, Some(false))),
+        _ => None,
+    }
+}
+
+fn constraint_value_from_sql_value(value: &Value) -> Option<(ConstraintValue, Option<bool>)> {
+    match value {
+        Value::Null => Some((ConstraintValue::Null, None)),
+        Value::Boolean(value) => Some((ConstraintValue::Boolean(*value), Some(false))),
+        Value::Number(value, _) => constraint_number(value).map(|value| (value, Some(false))),
+        value => string_literal_value(value)
+            .map(|value| (ConstraintValue::String(value.to_string()), Some(true))),
+    }
+}
+
+fn constraint_number_from_expression(expression: &Expr, negative: bool) -> Option<ConstraintValue> {
+    let Expr::Value(value) = unwrap_nested_expression(expression) else {
+        return None;
+    };
+    let Value::Number(value, _) = &value.value else {
+        return None;
+    };
+    if negative {
+        constraint_number(&format!("-{value}"))
+    } else {
+        constraint_number(value)
+    }
+}
+
+fn constraint_number(value: &str) -> Option<ConstraintValue> {
+    let number = Number::from_str(value).ok()?;
+    if let Some(value) = number.as_i64() {
+        Some(ConstraintValue::Integer(value))
+    } else if let Some(value) = number.as_u64() {
+        Some(ConstraintValue::UnsignedInteger(value))
+    } else {
+        Some(ConstraintValue::Number(number.to_string()))
+    }
+}
+
 fn sql_constraint_evidence(
     relation: &str,
     source_id: String,
     characteristics: Option<&ConstraintCharacteristics>,
 ) -> Result<ConstraintEvidence, ConstraintMetadataError> {
-    let enforcement = match characteristics.and_then(|value| value.enforced) {
+    sql_constraint_evidence_with_enforcement(
+        relation,
+        source_id,
+        characteristics.and_then(|value| value.enforced),
+    )
+}
+
+fn sql_constraint_evidence_with_enforcement(
+    relation: &str,
+    source_id: String,
+    enforced: Option<bool>,
+) -> Result<ConstraintEvidence, ConstraintMetadataError> {
+    let enforcement = match enforced {
         Some(true) => ConstraintEnforcement::Enforced,
         Some(false) => ConstraintEnforcement::NotEnforced,
         None => ConstraintEnforcement::Unknown,
