@@ -135,7 +135,6 @@ fn dbt_not_null_and_accepted_values_use_canonical_column_constraints() {
     }));
 }
 
-
 #[test]
 fn dbt_declared_not_null_uses_the_same_canonical_constraint() {
     let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
@@ -147,10 +146,9 @@ fn dbt_declared_not_null_uses_the_same_canonical_constraint() {
         }
     });
 
-    let manifest = parse_dbt_manifest(
-        &serde_json::to_string(&manifest).expect("manifest should serialize"),
-    )
-    .expect("manifest should parse");
+    let manifest =
+        parse_dbt_manifest(&serde_json::to_string(&manifest).expect("manifest should serialize"))
+            .expect("manifest should parse");
     let model = manifest
         .relation_constraints()
         .iter()
