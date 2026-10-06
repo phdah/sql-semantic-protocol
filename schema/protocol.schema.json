@@ -2235,6 +2235,13 @@
         "relation": {
           "$ref": "#/$defs/relationName"
         },
+        "source_kind": {
+          "type": "string",
+          "enum": [
+            "dbt_catalog",
+            "dbt_manifest"
+          ]
+        },
         "columns": {
           "type": "array",
           "items": {
