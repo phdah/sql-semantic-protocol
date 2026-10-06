@@ -184,7 +184,6 @@ fn unique_and_not_null_do_not_imply_primary_key() {
         .any(|constraint| matches!(constraint, RelationConstraint::PrimaryKey(_))));
 }
 
-
 #[test]
 fn sql_ddl_check_in_emits_canonical_accepted_values() {
     let protocol = analyze_sql(
