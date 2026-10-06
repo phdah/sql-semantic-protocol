@@ -9,9 +9,10 @@ use std::{
 };
 
 use crate::protocol::{
-    BetweenPredicate, Bound, ColumnDomain, ColumnExpression, ColumnRef, ComparisonOperator,
-    ComparisonPredicate, Expression, InPredicate, IsNullPredicate, LiteralExpression, LiteralType,
-    LiteralValue, Predicate, Predicates, SetMode, SourceRelation, ValueDomain, ValueRange,
+    BetweenPredicate, Bound, CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain,
+    ColumnExpression, ColumnRef, ComparisonOperator, ComparisonPredicate, Expression, InPredicate,
+    IsNullPredicate, LiteralExpression, LiteralType, LiteralValue, Predicate, Predicates, SetMode,
+    SourceRelation, ValueDomain, ValueRange,
 };
 
 type DomainMap = BTreeMap<ColumnRef, ValueDomain>;
@@ -37,6 +38,411 @@ pub(crate) fn derive_column_domains(
         .into_iter()
         .map(|(column, domain)| ColumnDomain::new(column, domain))
         .collect()
+}
+
+#[derive(Debug, Clone)]
+enum CaseDomainDerivation {
+    Known(Vec<DomainMap>),
+    Unknown(String),
+}
+
+#[derive(Debug, Clone, Copy)]
+enum CaseConditionMode {
+    True,
+    NotTrue,
+}
+
+pub(crate) fn derive_case_source_domains(
+    conditions: &[Predicate],
+    sources: &[SourceRelation],
+) -> (Vec<CaseSourceDomains>, CaseSourceDomains) {
+    let mut remaining = CaseDomainDerivation::Known(vec![DomainMap::new()]);
+    let mut branches = Vec::with_capacity(conditions.len());
+
+    for condition in conditions {
+        let selected = intersect_case_derivations(
+            remaining.clone(),
+            derive_case_condition_domains(condition, CaseConditionMode::True, sources),
+        );
+        branches.push(case_source_domains_from_derivation(selected));
+
+        remaining = intersect_case_derivations(
+            remaining,
+            derive_case_condition_domains(condition, CaseConditionMode::NotTrue, sources),
+        );
+    }
+
+    (
+        branches,
+        case_source_domains_from_derivation(remaining),
+    )
+}
+
+fn derive_case_condition_domains(
+    predicate: &Predicate,
+    mode: CaseConditionMode,
+    sources: &[SourceRelation],
+) -> CaseDomainDerivation {
+    match predicate {
+        Predicate::And(predicate) => match mode {
+            CaseConditionMode::True => predicate.operands().iter().fold(
+                CaseDomainDerivation::Known(vec![DomainMap::new()]),
+                |domains, operand| {
+                    intersect_case_derivations(
+                        domains,
+                        derive_case_condition_domains(operand, mode, sources),
+                    )
+                },
+            ),
+            CaseConditionMode::NotTrue => predicate.operands().iter().fold(
+                CaseDomainDerivation::Known(Vec::new()),
+                |domains, operand| {
+                    union_case_derivations(
+                        domains,
+                        derive_case_condition_domains(operand, mode, sources),
+                    )
+                },
+            ),
+        },
+        Predicate::Or(predicate) => match mode {
+            CaseConditionMode::True => predicate.operands().iter().fold(
+                CaseDomainDerivation::Known(Vec::new()),
+                |domains, operand| {
+                    union_case_derivations(
+                        domains,
+                        derive_case_condition_domains(operand, mode, sources),
+                    )
+                },
+            ),
+            CaseConditionMode::NotTrue => predicate.operands().iter().fold(
+                CaseDomainDerivation::Known(vec![DomainMap::new()]),
+                |domains, operand| {
+                    intersect_case_derivations(
+                        domains,
+                        derive_case_condition_domains(operand, mode, sources),
+                    )
+                },
+            ),
+        },
+        Predicate::Not(_) => CaseDomainDerivation::Unknown(
+            "CASE branch domains for logical NOT require distinguishing SQL FALSE from UNKNOWN"
+                .to_string(),
+        ),
+        _ => {
+            let truth = derive_case_leaf_true_domains(predicate, sources);
+            match mode {
+                CaseConditionMode::True => truth,
+                CaseConditionMode::NotTrue => complement_case_derivation(truth),
+            }
+        }
+    }
+}
+
+fn derive_case_leaf_true_domains(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+) -> CaseDomainDerivation {
+    let domains = match predicate {
+        Predicate::Comparison(predicate)
+            if matches!(
+                (predicate.left(), predicate.right()),
+                (Expression::Column(_), Expression::Literal(_))
+                    | (Expression::Literal(_), Expression::Column(_))
+            ) =>
+        {
+            derive_comparison(predicate, sources)
+        }
+        Predicate::Comparison(_) => {
+            return CaseDomainDerivation::Unknown(
+                "CASE comparison branch requires one source column and one scalar literal"
+                    .to_string(),
+            );
+        }
+        Predicate::IsNull(predicate) if matches!(predicate.expression(), Expression::Column(_)) => {
+            derive_is_null(predicate, sources)
+        }
+        Predicate::IsNull(_) => {
+            return CaseDomainDerivation::Unknown(
+                "CASE null-test branch targets a non-column expression".to_string(),
+            );
+        }
+        Predicate::In(predicate)
+            if matches!(predicate.expression(), Expression::Column(_))
+                && predicate
+                    .values()
+                    .iter()
+                    .all(|value| matches!(value, Expression::Literal(_))) =>
+        {
+            derive_in(predicate, sources)
+        }
+        Predicate::In(_) => {
+            return CaseDomainDerivation::Unknown(
+                "CASE IN branch requires a source column and scalar literal values".to_string(),
+            );
+        }
+        Predicate::Between(predicate)
+            if matches!(predicate.expression(), Expression::Column(_))
+                && matches!(predicate.lower(), Expression::Literal(_))
+                && matches!(predicate.upper(), Expression::Literal(_)) =>
+        {
+            derive_between(predicate, sources)
+        }
+        Predicate::Between(_) => {
+            return CaseDomainDerivation::Unknown(
+                "CASE BETWEEN branch requires a source column and scalar literal bounds"
+                    .to_string(),
+            );
+        }
+        Predicate::BooleanExpression(Expression::Literal(literal)) => {
+            return match literal.value() {
+                LiteralValue::Boolean(true) => {
+                    CaseDomainDerivation::Known(vec![DomainMap::new()])
+                }
+                LiteralValue::Boolean(false) | LiteralValue::Null => {
+                    CaseDomainDerivation::Known(Vec::new())
+                }
+                LiteralValue::Number(_) | LiteralValue::Text(_) => CaseDomainDerivation::Unknown(
+                    "CASE boolean branch uses a non-boolean scalar literal".to_string(),
+                ),
+            };
+        }
+        Predicate::BooleanExpression(_) => {
+            return CaseDomainDerivation::Unknown(
+                "CASE boolean branch cannot be reduced safely to source-column domains"
+                    .to_string(),
+            );
+        }
+        Predicate::Exists(_) | Predicate::InSubquery(_) => {
+            return CaseDomainDerivation::Unknown(
+                "CASE subquery branch cannot be reduced safely to source-column domains"
+                    .to_string(),
+            );
+        }
+        Predicate::Unknown(semantic) => {
+            return CaseDomainDerivation::Unknown(semantic.reason().to_string());
+        }
+        Predicate::Unsupported(_) => {
+            return CaseDomainDerivation::Unknown(
+                "CASE branch uses unsupported predicate semantics".to_string(),
+            );
+        }
+        Predicate::And(_) | Predicate::Or(_) | Predicate::Not(_) => unreachable!(),
+    };
+
+    case_derivation_from_map(domains)
+}
+
+fn case_derivation_from_map(mut domains: DomainMap) -> CaseDomainDerivation {
+    if let Some(reason) = domains.values().find_map(|domain| match domain {
+        ValueDomain::Unknown(unknown) => Some(unknown.reason().to_string()),
+        _ => None,
+    }) {
+        return CaseDomainDerivation::Unknown(reason);
+    }
+    if domains
+        .values()
+        .any(|domain| matches!(domain, ValueDomain::Empty))
+    {
+        return CaseDomainDerivation::Known(Vec::new());
+    }
+
+    domains.retain(|_, domain| !matches!(domain, ValueDomain::Unbounded));
+    CaseDomainDerivation::Known(vec![domains])
+}
+
+fn complement_case_derivation(derivation: CaseDomainDerivation) -> CaseDomainDerivation {
+    match derivation {
+        CaseDomainDerivation::Unknown(reason) => CaseDomainDerivation::Unknown(reason),
+        CaseDomainDerivation::Known(alternatives) if alternatives.is_empty() => {
+            CaseDomainDerivation::Known(vec![DomainMap::new()])
+        }
+        CaseDomainDerivation::Known(alternatives) => alternatives.into_iter().fold(
+            CaseDomainDerivation::Known(vec![DomainMap::new()]),
+            |domains, alternative| {
+                intersect_case_derivations(domains, complement_case_map(&alternative))
+            },
+        ),
+    }
+}
+
+fn complement_case_map(domains: &DomainMap) -> CaseDomainDerivation {
+    if domains.is_empty() {
+        return CaseDomainDerivation::Known(Vec::new());
+    }
+
+    let mut alternatives = Vec::new();
+    for (column, domain) in domains {
+        let complements = match complement_case_domain(domain) {
+            Ok(complements) => complements,
+            Err(reason) => return CaseDomainDerivation::Unknown(reason),
+        };
+        for complement in complements {
+            if matches!(complement, ValueDomain::Empty) {
+                continue;
+            }
+            let mut alternative = DomainMap::new();
+            if !matches!(complement, ValueDomain::Unbounded) {
+                alternative.insert(column.clone(), complement);
+            }
+            push_unique_case_map(&mut alternatives, alternative);
+        }
+    }
+
+    CaseDomainDerivation::Known(alternatives)
+}
+
+fn complement_case_domain(domain: &ValueDomain) -> Result<Vec<ValueDomain>, String> {
+    Ok(match domain {
+        ValueDomain::Unbounded => Vec::new(),
+        ValueDomain::Empty => vec![ValueDomain::Unbounded],
+        ValueDomain::Set(set) => vec![ValueDomain::set(
+            match set.mode() {
+                SetMode::Include => SetMode::Exclude,
+                SetMode::Exclude => SetMode::Include,
+            },
+            set.values().to_vec(),
+        )],
+        ValueDomain::Ranges(ranges) => complement_case_ranges(ranges.ranges()),
+        ValueDomain::Unknown(unknown) => return Err(unknown.reason().to_string()),
+    })
+}
+
+fn complement_case_ranges(ranges: &[ValueRange]) -> Vec<ValueDomain> {
+    let mut ordered = vec![ValueDomain::Unbounded];
+
+    for range in ranges {
+        let mut complement = Vec::new();
+        if let Some(lower) = range.lower() {
+            complement.push(ValueDomain::ranges(vec![ValueRange::new(
+                None,
+                Some(Bound::new(lower.value().clone(), !lower.inclusive())),
+            )]));
+        }
+        if let Some(upper) = range.upper() {
+            complement.push(ValueDomain::ranges(vec![ValueRange::new(
+                Some(Bound::new(upper.value().clone(), !upper.inclusive())),
+                None,
+            )]));
+        }
+
+        if complement.is_empty() {
+            ordered.clear();
+            break;
+        }
+
+        let mut next = Vec::new();
+        for current in &ordered {
+            for candidate in &complement {
+                let intersection = intersect_domains(current, candidate);
+                if !matches!(intersection, ValueDomain::Empty) && !next.contains(&intersection) {
+                    next.push(intersection);
+                }
+            }
+        }
+        ordered = next;
+    }
+
+    let null_domain = ValueDomain::set(SetMode::Include, vec![null_literal()]);
+    if !ordered.contains(&null_domain) {
+        ordered.push(null_domain);
+    }
+    ordered
+}
+
+fn intersect_case_derivations(
+    left: CaseDomainDerivation,
+    right: CaseDomainDerivation,
+) -> CaseDomainDerivation {
+    match (left, right) {
+        (CaseDomainDerivation::Known(left), CaseDomainDerivation::Known(right)) => {
+            if left.is_empty() || right.is_empty() {
+                return CaseDomainDerivation::Known(Vec::new());
+            }
+
+            let mut alternatives = Vec::new();
+            for left in &left {
+                for right in &right {
+                    if let Some(intersection) = intersect_case_maps(left, right) {
+                        push_unique_case_map(&mut alternatives, intersection);
+                    }
+                }
+            }
+            CaseDomainDerivation::Known(alternatives)
+        }
+        (CaseDomainDerivation::Unknown(reason), CaseDomainDerivation::Known(known))
+        | (CaseDomainDerivation::Known(known), CaseDomainDerivation::Unknown(reason))
+            if known.is_empty() =>
+        {
+            CaseDomainDerivation::Known(Vec::new())
+        }
+        (CaseDomainDerivation::Unknown(reason), _)
+        | (_, CaseDomainDerivation::Unknown(reason)) => CaseDomainDerivation::Unknown(reason),
+    }
+}
+
+fn union_case_derivations(
+    left: CaseDomainDerivation,
+    right: CaseDomainDerivation,
+) -> CaseDomainDerivation {
+    match (left, right) {
+        (CaseDomainDerivation::Known(mut left), CaseDomainDerivation::Known(right)) => {
+            for alternative in right {
+                push_unique_case_map(&mut left, alternative);
+            }
+            CaseDomainDerivation::Known(left)
+        }
+        (CaseDomainDerivation::Unknown(reason), CaseDomainDerivation::Known(known))
+        | (CaseDomainDerivation::Known(known), CaseDomainDerivation::Unknown(reason))
+            if known.iter().any(BTreeMap::is_empty) =>
+        {
+            CaseDomainDerivation::Known(vec![DomainMap::new()])
+        }
+        (CaseDomainDerivation::Unknown(reason), _)
+        | (_, CaseDomainDerivation::Unknown(reason)) => CaseDomainDerivation::Unknown(reason),
+    }
+}
+
+fn intersect_case_maps(left: &DomainMap, right: &DomainMap) -> Option<DomainMap> {
+    let mut result = left.clone();
+    for (column, right_domain) in right {
+        let domain = result
+            .remove(column)
+            .map_or_else(|| right_domain.clone(), |left_domain| {
+                intersect_domains(&left_domain, right_domain)
+            });
+        if matches!(domain, ValueDomain::Empty) {
+            return None;
+        }
+        if !matches!(domain, ValueDomain::Unbounded) {
+            result.insert(column.clone(), domain);
+        }
+    }
+    Some(result)
+}
+
+fn push_unique_case_map(alternatives: &mut Vec<DomainMap>, candidate: DomainMap) {
+    if !alternatives.contains(&candidate) {
+        alternatives.push(candidate);
+    }
+}
+
+fn case_source_domains_from_derivation(derivation: CaseDomainDerivation) -> CaseSourceDomains {
+    match derivation {
+        CaseDomainDerivation::Known(alternatives) => CaseSourceDomains::reachable(
+            alternatives
+                .into_iter()
+                .map(|domains| {
+                    CaseSourceDomainAlternative::new(
+                        domains
+                            .into_iter()
+                            .map(|(column, domain)| ColumnDomain::new(column, domain))
+                            .collect(),
+                    )
+                })
+                .collect(),
+        ),
+        CaseDomainDerivation::Unknown(reason) => CaseSourceDomains::unknown(reason),
+    }
 }
 
 fn derive_predicate_domains(predicate: &Predicate, sources: &[SourceRelation]) -> DomainMap {
