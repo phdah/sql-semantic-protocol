@@ -1,7 +1,7 @@
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, select_targets,
     to_bundle_json, ConfiguredSqlInput, ConstraintEnforcement, ConstraintSourceKind,
-    RelationCatalog, RelationConstraint, SqlInput,
+    ConstraintValue, RelationCatalog, RelationConstraint, SqlInput,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -172,10 +172,87 @@ fn unique_and_not_null_do_not_imply_primary_key() {
         .constraints()
         .iter()
         .any(|constraint| matches!(constraint, RelationConstraint::UniqueKey(_))));
+    assert!(metadata.constraints().iter().any(|constraint| {
+        matches!(
+            constraint,
+            RelationConstraint::NotNull(not_null) if not_null.column() == "id"
+        )
+    }));
     assert!(!metadata
         .constraints()
         .iter()
         .any(|constraint| matches!(constraint, RelationConstraint::PrimaryKey(_))));
+}
+
+
+#[test]
+fn sql_ddl_check_in_emits_canonical_accepted_values() {
+    let protocol = analyze_sql(
+        "CREATE TABLE orders (status TEXT NOT NULL CHECK (status IN ('paid', 'pending')), priority INT, CONSTRAINT priority_values CHECK (priority IN (1, 2, 3)))",
+        "postgresql",
+        &PostgreSqlDialect {},
+    )
+    .expect("DDL should analyze");
+    let metadata = &protocol.relation_constraints()[0];
+
+    let status = metadata
+        .constraints()
+        .iter()
+        .find_map(|constraint| match constraint {
+            RelationConstraint::AcceptedValues(values) if values.column() == "status" => {
+                Some(values)
+            }
+            _ => None,
+        })
+        .expect("status accepted-values constraint");
+    assert!(status.quote());
+    assert_eq!(
+        status.values(),
+        [
+            ConstraintValue::String("paid".to_string()),
+            ConstraintValue::String("pending".to_string())
+        ]
+    );
+    assert_eq!(
+        status.evidence()[0].provenance().source_kind(),
+        ConstraintSourceKind::SqlDdl
+    );
+
+    let priority = metadata
+        .constraints()
+        .iter()
+        .find_map(|constraint| match constraint {
+            RelationConstraint::AcceptedValues(values) if values.column() == "priority" => {
+                Some(values)
+            }
+            _ => None,
+        })
+        .expect("priority accepted-values constraint");
+    assert!(!priority.quote());
+    assert_eq!(
+        priority.values(),
+        [
+            ConstraintValue::Integer(1),
+            ConstraintValue::Integer(2),
+            ConstraintValue::Integer(3)
+        ]
+    );
+}
+
+#[test]
+fn unsupported_sql_check_is_explicit() {
+    let protocol = analyze_sql(
+        "CREATE TABLE orders (amount BIGINT CHECK (amount > 0))",
+        "postgresql",
+        &PostgreSqlDialect {},
+    )
+    .expect("DDL should analyze");
+    let metadata = &protocol.relation_constraints()[0];
+
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
 }
 
 #[test]
