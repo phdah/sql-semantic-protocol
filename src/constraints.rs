@@ -603,9 +603,8 @@ mod tests {
 
     #[test]
     fn conflicting_primary_keys_remain_explicit() {
-        let first =
-            RelationConstraint::primary_key(vec!["id".to_string()], vec![evidence("one")])
-                .expect("constraint");
+        let first = RelationConstraint::primary_key(vec!["id".to_string()], vec![evidence("one")])
+            .expect("constraint");
         let second =
             RelationConstraint::primary_key(vec!["other_id".to_string()], vec![evidence("two")])
                 .expect("constraint");
