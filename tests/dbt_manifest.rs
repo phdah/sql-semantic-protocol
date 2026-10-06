@@ -4,8 +4,8 @@ use std::process::{Command, Output, Stdio};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_dbt_manifest,
     parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ComposedSemantics, ConfiguredSqlInput,
-    LiteralValue, RelationCatalog, RelationContext, RelationResolution, SqlInput,
-    TransformationLayer, ValueDomain,
+    DataType, DbtArtifactsError, LiteralValue, RelationCatalog, RelationContext,
+    RelationResolution, SchemaSourceKind, SqlInput, TransformationLayer, ValueDomain,
 };
 use sqlparser::dialect::dialect_from_str;
 
@@ -21,6 +21,21 @@ fn fixture_manifest() -> sql_semantic_protocol::DbtManifest {
 fn fixture_catalog() -> sql_semantic_protocol::DbtCatalog {
     parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json"))
         .expect("dbt catalog fixture should parse")
+}
+
+fn empty_catalog() -> sql_semantic_protocol::DbtCatalog {
+    parse_dbt_catalog(
+        r#"{
+            "metadata": {
+                "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+                "dbt_version": "1.11.8"
+            },
+            "nodes": {},
+            "sources": {},
+            "errors": null
+        }"#,
+    )
+    .expect("empty dbt catalog should parse")
 }
 
 fn run(arguments: &[&str]) -> Output {
@@ -119,7 +134,7 @@ fn dbt_manifest_builds_named_graph_and_composed_outcome_domains() {
 }
 
 #[test]
-fn dbt_manifest_and_catalog_emit_complete_typed_relation_schemas() {
+fn dbt_catalog_schema_takes_precedence_over_manifest_declared_types() {
     let manifest = fixture_manifest();
     let catalog = fixture_catalog();
     let dialect = dialect_from_str("postgres").expect("postgres dialect");
@@ -132,13 +147,97 @@ fn dbt_manifest_and_catalog_emit_complete_typed_relation_schemas() {
         .iter()
         .find(|schema| schema.relation() == "warehouse.raw.orders")
         .expect("raw source schema should be present");
+    assert_eq!(source.source_kind(), Some(SchemaSourceKind::DbtCatalog));
     assert_eq!(
-        source
-            .columns()
-            .iter()
-            .map(|column| (column.name(), column.data_type().kind()))
-            .collect::<Vec<_>>(),
-        [("id", "signed_integer"), ("amount", "signed_integer")]
+        source.columns()[0].data_type(),
+        &DataType::SignedInteger { bits: Some(64) }
+    );
+    assert_eq!(
+        source.columns()[1].data_type(),
+        &DataType::SignedInteger { bits: Some(32) }
+    );
+    assert!(to_bundle_json(&bundle).contains(r#""source_kind":"dbt_catalog""#));
+}
+
+#[test]
+fn dbt_catalog_schema_works_without_manifest_declared_types() {
+    let mut manifest_json: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+            .expect("manifest fixture should be JSON");
+    manifest_json["sources"]["source.demo.orders"]
+        .as_object_mut()
+        .expect("source should be an object")
+        .remove("columns");
+    let manifest =
+        parse_dbt_manifest(&manifest_json.to_string()).expect("catalog-only manifest should parse");
+    let catalog = fixture_catalog();
+    let dialect = dialect_from_str("postgres").expect("postgres dialect");
+
+    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "postgres", dialect.as_ref())
+        .expect("catalog-only schemas should analyze");
+
+    let source = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == "warehouse.raw.orders")
+        .expect("raw source schema should be present");
+    assert_eq!(source.source_kind(), Some(SchemaSourceKind::DbtCatalog));
+}
+
+#[test]
+fn dbt_manifest_declared_types_fill_missing_catalog_relation() {
+    let manifest = fixture_manifest();
+    let catalog = empty_catalog();
+    let dialect = dialect_from_str("postgres").expect("postgres dialect");
+
+    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "postgres", dialect.as_ref())
+        .expect("manifest-declared source schema should be enough");
+
+    let [source] = bundle.source_schemas() else {
+        panic!("only the physical source should need fallback schema evidence");
+    };
+    assert_eq!(source.relation(), "warehouse.raw.orders");
+    assert_eq!(source.source_kind(), Some(SchemaSourceKind::DbtManifest));
+    assert_eq!(
+        source.columns()[0].data_type(),
+        &DataType::SignedInteger { bits: Some(64) }
+    );
+    assert_eq!(
+        source.columns()[1].data_type(),
+        &DataType::SignedInteger { bits: Some(32) }
+    );
+    assert_eq!(
+        source.columns()[0].name(),
+        "amount",
+        "manifest fallback order should be deterministic"
+    );
+    assert_eq!(source.columns()[1].name(), "id");
+    assert!(to_bundle_json(&bundle).contains(r#""source_kind":"dbt_manifest""#));
+}
+
+#[test]
+fn dbt_manifest_fallback_names_columns_missing_declared_types() {
+    let mut manifest_json: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+            .expect("manifest fixture should be JSON");
+    manifest_json["sources"]["source.demo.orders"]["columns"]["amount"]
+        .as_object_mut()
+        .expect("amount column should be an object")
+        .remove("data_type");
+    let manifest =
+        parse_dbt_manifest(&manifest_json.to_string()).expect("manifest should still parse");
+    let catalog = empty_catalog();
+    let dialect = dialect_from_str("postgres").expect("postgres dialect");
+
+    let error = analyze_dbt_artifacts(&manifest, &catalog, "postgres", dialect.as_ref())
+        .expect_err("missing required declared datatype should fail");
+
+    assert_eq!(
+        error,
+        DbtArtifactsError::MissingDeclaredColumnTypes {
+            relation: "warehouse.raw.orders".to_string(),
+            columns: vec!["amount".to_string()],
+        }
     );
 }
 

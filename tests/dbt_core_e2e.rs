@@ -406,12 +406,14 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         library_json
     );
 
-    let raw_orders_relation = manifest_json["sources"]
+    let raw_orders_source = manifest_json["sources"]
         .as_object()
         .expect("manifest sources should be an object")
         .values()
         .find(|source| source["source_name"] == "raw" && source["name"] == "orders")
-        .and_then(|source| source["relation_name"].as_str())
+        .expect("raw orders source should exist");
+    let raw_orders_relation = raw_orders_source["relation_name"]
+        .as_str()
         .expect("raw orders source should have a relation identity");
     let raw_order_constraints = protocol["relation_constraints"]
         .as_array()
@@ -460,6 +462,71 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     );
     assert_eq!(raw_order_columns[0]["data_type"]["kind"], "signed_integer");
     assert_eq!(raw_order_columns[3]["data_type"]["kind"], "string");
+    assert_eq!(raw_orders_schema["source_kind"], "dbt_catalog");
+
+    let mut catalog_without_raw_orders: Value =
+        serde_json::from_str(&catalog_text).expect("catalog should be valid JSON");
+    for section in ["nodes", "sources"] {
+        let matching_ids = catalog_without_raw_orders[section]
+            .as_object()
+            .expect("catalog resource section should be an object")
+            .keys()
+            .filter(|unique_id| {
+                manifest_json[section]
+                    .get(*unique_id)
+                    .and_then(|resource| resource["relation_name"].as_str())
+                    == Some(raw_orders_relation)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        let resources = catalog_without_raw_orders[section]
+            .as_object_mut()
+            .expect("catalog resource section should be mutable");
+        for unique_id in matching_ids {
+            resources.remove(&unique_id);
+        }
+    }
+    let fallback_catalog = parse_dbt_catalog(&catalog_without_raw_orders.to_string())
+        .expect("catalog without raw orders should still parse");
+    let fallback_bundle = analyze_dbt_artifacts(
+        &manifest,
+        &fallback_catalog,
+        manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .expect("manifest-declared raw orders schema should replace missing catalog evidence");
+    let fallback_protocol: Value = serde_json::from_str(&to_bundle_json(&fallback_bundle))
+        .expect("fallback protocol should be valid JSON");
+    let fallback_raw_orders_schema = fallback_protocol["source_schemas"]
+        .as_array()
+        .expect("fallback protocol should include source schemas")
+        .iter()
+        .find(|schema| schema["relation"] == raw_orders_relation)
+        .expect("fallback raw orders schema should be emitted");
+    assert_eq!(fallback_raw_orders_schema["source_kind"], "dbt_manifest");
+    let fallback_columns = fallback_raw_orders_schema["columns"]
+        .as_array()
+        .expect("fallback raw orders columns should be an array")
+        .iter()
+        .map(|column| {
+            column["name"]
+                .as_str()
+                .expect("fallback column name should be a string")
+        })
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        fallback_columns,
+        [
+            "amount",
+            "created_at",
+            "customer_id",
+            "id",
+            "region",
+            "status",
+        ]
+        .into_iter()
+        .collect::<BTreeSet<_>>()
+    );
 
     let protocol_input_ids = protocol["inputs"]
         .as_array()

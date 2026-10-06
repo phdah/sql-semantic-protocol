@@ -87,7 +87,7 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
             .source_schemas()
             .iter()
             .map(|schema| {
-                json!({
+                let mut value = json!({
                     "relation": schema.relation(),
                     "columns": schema.columns().iter().map(|column| {
                         json!({
@@ -95,7 +95,11 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                             "data_type": data_type_to_value(column.data_type())
                         })
                     }).collect::<Vec<_>>()
-                })
+                });
+                if let Some(source_kind) = schema.source_kind() {
+                    value["source_kind"] = json!(source_kind.as_str());
+                }
+                value
             })
             .collect::<Vec<_>>());
     }

@@ -90,7 +90,9 @@ example timestamp timezone variants become one timestamp type, JSON/JSONB/VARIAN
 become one document type, and ClickHouse LowCardinality unwraps to its logical value type.
 
 The resulting analysis bundle preserves those schemas under `source_schemas`, alongside analyzed
-value domains. This allows consumers such as `sql-tdg` to generate unconstrained source columns
+value domains. Adapter-supplied schemas also carry `source_kind`: `dbt_catalog` for
+warehouse-introspected catalog evidence and `dbt_manifest` for manifest-declared fallback
+evidence. This allows consumers such as `sql-tdg` to generate unconstrained source columns
 without reparsing SQL or maintaining a second datatype contract. Unknown vendor extensions remain
 explicit `custom` datatypes instead of being discarded or guessed.
 
@@ -376,10 +378,13 @@ println!("{}", to_bundle_json(&bundle));
 
 The manifest adapter accepts schema versions v10, v11, and v12. The catalog adapter accepts v0 and
 v1. Catalog columns are ordered by their warehouse ordinal and their dialect-specific type strings
-are normalized through the selected dbt adapter dialect. Catalog-reported metadata query errors,
-catalog resources absent from the paired manifest, missing relation identities, invalid datatypes,
-or physical SQL dependencies without catalog schema evidence fail explicitly rather than producing
-an apparently complete protocol.
+are normalized through the selected dbt adapter dialect. Catalog schema evidence takes precedence
+when present. If a physical dependency is absent from `catalog.json`, the adapter falls back to
+column `data_type` declarations in `manifest.json` when the declared schema is complete. Missing
+declared datatypes are reported with the relation and affected columns. Catalog-reported metadata
+query errors, catalog resources absent from the paired manifest, missing relation identities,
+invalid datatypes, or dependencies with neither usable catalog nor manifest schema evidence fail
+explicitly rather than producing an apparently complete protocol.
 
 `analyze_dbt_manifest` remains available as a compatibility API for manifest-only semantic
 analysis, but it cannot emit complete typed relation schemas. New consumers that need the full
@@ -393,9 +398,10 @@ uncompiled Jinja fail explicitly rather than being guessed or silently omitted.
 
 dbt `depends_on.nodes` provides deterministic model ordering and is mapped to canonical relation
 identities from the manifest. The adapter verifies that every declared dependency is also present
-in the dependency graph derived from analyzed SQL. Source schemas come from catalog metadata using
-those same canonical relation identities, so relation resolution, lineage, value domains, and typed
-source schemas describe one consistent graph.
+in the dependency graph derived from analyzed SQL. Source schemas use catalog metadata when
+available and manifest-declared column types only as fallback evidence for missing physical
+relations. Both use the same canonical relation identities, so relation resolution, lineage, value
+domains, and typed source schemas describe one consistent graph.
 
 CI exercises a complete dbt Core project rather than relying only on hand-authored fixtures.
 `make dbt-e2e` runs seed and model execution, generates `catalog.json` from the real warehouse,

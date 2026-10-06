@@ -17,7 +17,8 @@ use crate::constraints::{
 };
 use crate::{
     analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn, SqlInput,
+    ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn,
+    SchemaSourceKind, SqlInput,
 };
 
 /// dbt manifest schema versions accepted by the adapter.
@@ -141,7 +142,7 @@ pub enum DbtArtifactsError {
         /// Resource unique ID.
         unique_id: String,
     },
-    /// A warehouse datatype could not be normalized safely.
+    /// A catalog or manifest-declared datatype could not be normalized safely.
     ColumnType {
         /// Resource unique ID.
         unique_id: String,
@@ -149,7 +150,7 @@ pub enum DbtArtifactsError {
         relation: String,
         /// Column name.
         column: String,
-        /// Warehouse datatype string.
+        /// dbt datatype string.
         data_type: String,
         /// Normalization failure.
         message: String,
@@ -163,7 +164,7 @@ pub enum DbtArtifactsError {
         /// Conflicting resource unique ID.
         second_unique_id: String,
     },
-    /// A catalog relation schema is internally inconsistent.
+    /// A dbt metadata relation schema is internally inconsistent.
     CatalogSchema {
         /// Resource unique ID.
         unique_id: String,
@@ -172,7 +173,14 @@ pub enum DbtArtifactsError {
         /// Schema construction failure.
         message: String,
     },
-    /// A physical dependency discovered from dbt SQL has no warehouse schema in catalog.json.
+    /// Manifest schema evidence exists but required columns lack declared datatypes.
+    MissingDeclaredColumnTypes {
+        /// Canonical physical relation identity.
+        relation: String,
+        /// Columns that do not declare a usable `data_type`.
+        columns: Vec<String>,
+    },
+    /// A physical dependency has neither catalog schema evidence nor a usable manifest schema.
     MissingCatalogSchema {
         /// Canonical physical relation identity.
         relation: String,
@@ -210,7 +218,7 @@ impl fmt::Display for DbtArtifactsError {
                 message,
             } => write!(
                 formatter,
-                "dbt catalog column '{unique_id}' ({relation}.{column}) has unsupported datatype '{data_type}': {message}"
+                "dbt schema column '{unique_id}' ({relation}.{column}) has unsupported datatype '{data_type}': {message}"
             ),
             Self::ConflictingCatalogSchemas {
                 relation,
@@ -226,11 +234,16 @@ impl fmt::Display for DbtArtifactsError {
                 message,
             } => write!(
                 formatter,
-                "dbt catalog resource '{unique_id}' has invalid schema for '{relation}': {message}"
+                "dbt resource '{unique_id}' has invalid schema for '{relation}': {message}"
+            ),
+            Self::MissingDeclaredColumnTypes { relation, columns } => write!(
+                formatter,
+                "dbt manifest relation '{relation}' is missing declared data_type for columns: {}",
+                columns.join(", ")
             ),
             Self::MissingCatalogSchema { relation } => write!(
                 formatter,
-                "dbt catalog has no warehouse schema for physical dependency '{relation}'"
+                "dbt metadata has no typed schema for physical dependency '{relation}'; provide catalog.json coverage or manifest column data_type declarations"
             ),
         }
     }
@@ -309,6 +322,13 @@ struct DbtModel {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct DbtResource {
     relation_name: Option<String>,
+    columns: Vec<DbtDeclaredColumn>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DbtDeclaredColumn {
+    name: String,
+    data_type: Option<String>,
 }
 
 /// Error returned when a dbt manifest cannot be translated without guessing.
@@ -758,22 +778,15 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
     for (resource_id, value) in nodes {
         let path = format!("$.nodes.{resource_id}");
         let object = as_object(value, &path)?;
-        validate_unique_id(resource_id, object, &path)?;
-        let relation_name =
-            optional_string(object, "relation_name", &format!("{path}.relation_name"))?;
-        resources.insert(resource_id.clone(), DbtResource { relation_name });
+        let resource = parse_manifest_resource(resource_id, object, &path)?;
+        resources.insert(resource_id.clone(), resource);
     }
     if let Some(sources) = sources {
         for (resource_id, value) in sources {
             let path = format!("$.sources.{resource_id}");
             let object = as_object(value, &path)?;
-            validate_unique_id(resource_id, object, &path)?;
-            let relation_name =
-                optional_string(object, "relation_name", &format!("{path}.relation_name"))?;
-            if resources
-                .insert(resource_id.clone(), DbtResource { relation_name })
-                .is_some()
-            {
+            let resource = parse_manifest_resource(resource_id, object, &path)?;
+            if resources.insert(resource_id.clone(), resource).is_some() {
                 return Err(invalid_field(
                     &path,
                     "resource unique ID is duplicated across nodes and sources",
@@ -907,17 +920,17 @@ pub fn analyze_dbt_manifest(
 
 /// Analyze a paired dbt manifest and catalog into the complete protocol contract.
 ///
-/// The manifest supplies model identity, compiled SQL, and declared dependency metadata. The
-/// catalog supplies warehouse-introspected physical columns and datatypes. Resource unique IDs tie
-/// the artifacts together, while canonical relation identity remains sourced from the manifest so
-/// graph resolution and schema metadata use exactly the same relation names.
+/// The manifest supplies model identity, compiled SQL, dependency metadata, and declared column
+/// datatypes. The catalog supplies authoritative warehouse-introspected schemas when available.
+/// Physical relations absent from the catalog may use complete manifest-declared column datatypes
+/// as fallback evidence. Canonical relation identity remains sourced from the manifest.
 pub fn analyze_dbt_artifacts(
     manifest: &DbtManifest,
     catalog: &DbtCatalog,
     dialect_name: &str,
     dialect: &dyn Dialect,
 ) -> Result<AnalysisBundle, DbtArtifactsError> {
-    let schemas = relation_schemas_from_catalog(manifest, catalog, dialect_name)?;
+    let schemas = relation_schemas_from_artifacts(manifest, catalog, dialect_name)?;
     let catalog_relations = manifest
         .catalog_relations
         .iter()
@@ -934,7 +947,7 @@ pub fn analyze_dbt_artifacts(
         )?;
 
     let bundle = analyze_dbt_with_catalog(manifest, dialect_name, dialect, &relation_catalog)?;
-    validate_catalog_coverage(&bundle)?;
+    validate_schema_coverage(&bundle)?;
     Ok(bundle)
 }
 
@@ -1015,7 +1028,7 @@ fn analyze_dbt_with_catalog(
     Ok(bundle)
 }
 
-fn relation_schemas_from_catalog(
+fn relation_schemas_from_artifacts(
     manifest: &DbtManifest,
     catalog: &DbtCatalog,
     dialect_name: &str,
@@ -1052,13 +1065,13 @@ fn relation_schemas_from_catalog(
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let schema = RelationSchema::new(relation, columns).map_err(|error| {
-            DbtArtifactsError::CatalogSchema {
+        let schema = RelationSchema::new(relation, columns)
+            .map(|schema| schema.with_source_kind(SchemaSourceKind::DbtCatalog))
+            .map_err(|error| DbtArtifactsError::CatalogSchema {
                 unique_id: unique_id.clone(),
                 relation: relation.to_string(),
                 message: error.to_string(),
-            }
-        })?;
+            })?;
 
         match schemas.get(relation) {
             None => {
@@ -1075,10 +1088,86 @@ fn relation_schemas_from_catalog(
         }
     }
 
+    let model_ids = manifest
+        .models
+        .iter()
+        .map(|model| model.unique_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let manifest_only_dependencies = manifest
+        .models
+        .iter()
+        .flat_map(|model| model.dependencies.iter())
+        .filter(|dependency_id| !model_ids.contains(dependency_id.as_str()))
+        .filter(|dependency_id| !catalog.resources.contains_key(dependency_id.as_str()))
+        .cloned()
+        .collect::<BTreeSet<_>>();
+
+    for unique_id in manifest_only_dependencies {
+        let resource = manifest
+            .resources
+            .get(&unique_id)
+            .expect("model dependencies are validated during manifest parsing");
+        let relation = resource
+            .relation_name
+            .as_deref()
+            .filter(|relation| !relation.trim().is_empty())
+            .ok_or_else(|| DbtArtifactsError::MissingRelationIdentity {
+                unique_id: unique_id.clone(),
+            })?;
+
+        // Warehouse-introspected catalog evidence is authoritative for the relation even if
+        // the manifest dependency is represented by a different dbt resource ID.
+        if schemas.contains_key(relation) || resource.columns.is_empty() {
+            continue;
+        }
+
+        let missing_types = resource
+            .columns
+            .iter()
+            .filter(|column| column.data_type.is_none())
+            .map(|column| column.name.clone())
+            .collect::<Vec<_>>();
+        if !missing_types.is_empty() {
+            return Err(DbtArtifactsError::MissingDeclaredColumnTypes {
+                relation: relation.to_string(),
+                columns: missing_types,
+            });
+        }
+
+        let columns = resource
+            .columns
+            .iter()
+            .map(|column| {
+                let data_type = column
+                    .data_type
+                    .as_deref()
+                    .expect("missing manifest datatypes are rejected above");
+                SchemaColumn::from_sql_type(&column.name, data_type, dialect_name).map_err(
+                    |error| DbtArtifactsError::ColumnType {
+                        unique_id: unique_id.clone(),
+                        relation: relation.to_string(),
+                        column: column.name.clone(),
+                        data_type: data_type.to_string(),
+                        message: error.to_string(),
+                    },
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let schema = RelationSchema::new(relation, columns)
+            .map(|schema| schema.with_source_kind(SchemaSourceKind::DbtManifest))
+            .map_err(|error| DbtArtifactsError::CatalogSchema {
+                unique_id: unique_id.clone(),
+                relation: relation.to_string(),
+                message: error.to_string(),
+            })?;
+        schemas.insert(relation.to_string(), (unique_id, schema));
+    }
+
     Ok(schemas.into_values().map(|(_, schema)| schema).collect())
 }
 
-fn validate_catalog_coverage(bundle: &AnalysisBundle) -> Result<(), DbtArtifactsError> {
+fn validate_schema_coverage(bundle: &AnalysisBundle) -> Result<(), DbtArtifactsError> {
     let schemas = bundle
         .source_schemas()
         .iter()
@@ -1217,6 +1306,55 @@ fn topologically_order_models(
         .into_iter()
         .filter_map(|id| models.get(&id).cloned())
         .collect())
+}
+
+fn parse_manifest_resource(
+    resource_id: &str,
+    object: &Map<String, Value>,
+    path: &str,
+) -> Result<DbtResource, DbtManifestError> {
+    validate_unique_id(resource_id, object, path)?;
+    let relation_name = optional_string(object, "relation_name", &format!("{path}.relation_name"))?;
+    let columns = parse_manifest_columns(object, path)?;
+    Ok(DbtResource {
+        relation_name,
+        columns,
+    })
+}
+
+fn parse_manifest_columns(
+    object: &Map<String, Value>,
+    path: &str,
+) -> Result<Vec<DbtDeclaredColumn>, DbtManifestError> {
+    let Some(columns) = optional_object(object, "columns", &format!("{path}.columns"))? else {
+        return Ok(Vec::new());
+    };
+
+    let mut parsed = Vec::with_capacity(columns.len());
+    for (column_key, value) in columns {
+        let column_path = format!("{path}.columns.{column_key}");
+        let column = as_object(value, &column_path)?;
+        let name = optional_string(column, "name", &format!("{column_path}.name"))?
+            .unwrap_or_else(|| column_key.clone());
+        let name = name.trim();
+        if name.is_empty() {
+            return Err(invalid_field(
+                format!("{column_path}.name"),
+                "column name cannot be empty",
+            ));
+        }
+        let data_type = optional_string(column, "data_type", &format!("{column_path}.data_type"))?
+            .and_then(|data_type| {
+                let data_type = data_type.trim();
+                (!data_type.is_empty()).then(|| data_type.to_string())
+            });
+        parsed.push(DbtDeclaredColumn {
+            name: name.to_string(),
+            data_type,
+        });
+    }
+    parsed.sort_by(|left, right| left.name.cmp(&right.name));
+    Ok(parsed)
 }
 
 fn validate_unique_id(

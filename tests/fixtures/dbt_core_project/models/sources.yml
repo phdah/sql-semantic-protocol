@@ -7,13 +7,23 @@ sources:
       - name: orders
         columns:
           - name: id
+            data_type: BIGINT
             data_tests:
               - not_null
+          - name: customer_id
+            data_type: BIGINT
+          - name: amount
+            data_type: BIGINT
           - name: status
+            data_type: VARCHAR
             data_tests:
               - accepted_values:
                   arguments:
                     values: ['paid', 'pending', 'cancelled']
+          - name: created_at
+            data_type: TIMESTAMP
+          - name: region
+            data_type: VARCHAR
       - name: customers
       - name: legacy_orders
       - name: returns
