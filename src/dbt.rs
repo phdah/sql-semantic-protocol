@@ -930,7 +930,7 @@ pub fn analyze_dbt_artifacts(
     dialect_name: &str,
     dialect: &dyn Dialect,
 ) -> Result<AnalysisBundle, DbtArtifactsError> {
-    let schemas = relation_schemas_from_catalog(manifest, catalog, dialect_name)?;
+    let schemas = relation_schemas_from_artifacts(manifest, catalog, dialect_name)?;
     let catalog_relations = manifest
         .catalog_relations
         .iter()
@@ -947,7 +947,7 @@ pub fn analyze_dbt_artifacts(
         )?;
 
     let bundle = analyze_dbt_with_catalog(manifest, dialect_name, dialect, &relation_catalog)?;
-    validate_catalog_coverage(&bundle)?;
+    validate_schema_coverage(&bundle)?;
     Ok(bundle)
 }
 
@@ -1028,7 +1028,7 @@ fn analyze_dbt_with_catalog(
     Ok(bundle)
 }
 
-fn relation_schemas_from_catalog(
+fn relation_schemas_from_artifacts(
     manifest: &DbtManifest,
     catalog: &DbtCatalog,
     dialect_name: &str,
@@ -1065,13 +1065,13 @@ fn relation_schemas_from_catalog(
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let schema = RelationSchema::new(relation, columns).map_err(|error| {
-            DbtArtifactsError::CatalogSchema {
+        let schema = RelationSchema::new(relation, columns)
+            .map(|schema| schema.with_source_kind(SchemaSourceKind::DbtCatalog))
+            .map_err(|error| DbtArtifactsError::CatalogSchema {
                 unique_id: unique_id.clone(),
                 relation: relation.to_string(),
                 message: error.to_string(),
-            }
-        })?;
+            })?;
 
         match schemas.get(relation) {
             None => {
@@ -1088,10 +1088,86 @@ fn relation_schemas_from_catalog(
         }
     }
 
+    let model_ids = manifest
+        .models
+        .iter()
+        .map(|model| model.unique_id.as_str())
+        .collect::<BTreeSet<_>>();
+    let manifest_only_dependencies = manifest
+        .models
+        .iter()
+        .flat_map(|model| model.dependencies.iter())
+        .filter(|dependency_id| !model_ids.contains(dependency_id.as_str()))
+        .filter(|dependency_id| !catalog.resources.contains_key(dependency_id.as_str()))
+        .cloned()
+        .collect::<BTreeSet<_>>();
+
+    for unique_id in manifest_only_dependencies {
+        let resource = manifest
+            .resources
+            .get(&unique_id)
+            .expect("model dependencies are validated during manifest parsing");
+        let relation = resource
+            .relation_name
+            .as_deref()
+            .filter(|relation| !relation.trim().is_empty())
+            .ok_or_else(|| DbtArtifactsError::MissingRelationIdentity {
+                unique_id: unique_id.clone(),
+            })?;
+
+        // Warehouse-introspected catalog evidence is authoritative for the relation even if
+        // the manifest dependency is represented by a different dbt resource ID.
+        if schemas.contains_key(relation) || resource.columns.is_empty() {
+            continue;
+        }
+
+        let missing_types = resource
+            .columns
+            .iter()
+            .filter(|column| column.data_type.is_none())
+            .map(|column| column.name.clone())
+            .collect::<Vec<_>>();
+        if !missing_types.is_empty() {
+            return Err(DbtArtifactsError::MissingDeclaredColumnTypes {
+                relation: relation.to_string(),
+                columns: missing_types,
+            });
+        }
+
+        let columns = resource
+            .columns
+            .iter()
+            .map(|column| {
+                let data_type = column
+                    .data_type
+                    .as_deref()
+                    .expect("missing manifest datatypes are rejected above");
+                SchemaColumn::from_sql_type(&column.name, data_type, dialect_name).map_err(
+                    |error| DbtArtifactsError::ColumnType {
+                        unique_id: unique_id.clone(),
+                        relation: relation.to_string(),
+                        column: column.name.clone(),
+                        data_type: data_type.to_string(),
+                        message: error.to_string(),
+                    },
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let schema = RelationSchema::new(relation, columns)
+            .map(|schema| schema.with_source_kind(SchemaSourceKind::DbtManifest))
+            .map_err(|error| DbtArtifactsError::CatalogSchema {
+                unique_id: unique_id.clone(),
+                relation: relation.to_string(),
+                message: error.to_string(),
+            })?;
+        schemas.insert(relation.to_string(), (unique_id, schema));
+    }
+
     Ok(schemas.into_values().map(|(_, schema)| schema).collect())
 }
 
-fn validate_catalog_coverage(bundle: &AnalysisBundle) -> Result<(), DbtArtifactsError> {
+fn validate_schema_coverage(bundle: &AnalysisBundle) -> Result<(), DbtArtifactsError> {
     let schemas = bundle
         .source_schemas()
         .iter()
