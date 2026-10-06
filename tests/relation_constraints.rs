@@ -127,19 +127,17 @@ fn queryless_ddl_constraints_are_emitted_without_inventing_a_layer() {
 #[test]
 fn target_selection_preserves_relation_constraint_metadata() {
     let inputs = [
-        SqlInput::inline(
-            "CREATE TABLE stage AS SELECT id FROM raw_orders WHERE id > 0",
-        ),
-        SqlInput::inline(
-            "CREATE TABLE final (id BIGINT PRIMARY KEY) AS SELECT id FROM stage",
-        ),
+        SqlInput::inline("CREATE TABLE stage AS SELECT id FROM raw_orders WHERE id > 0"),
+        SqlInput::inline("CREATE TABLE final (id BIGINT PRIMARY KEY) AS SELECT id FROM stage"),
     ];
     let bundle = analyze_inputs(&inputs, "postgresql", &PostgreSqlDialect {})
         .expect("bundle should analyze");
-    let selected =
-        select_targets(&bundle, &["final".to_string()]).expect("target should resolve");
+    let selected = select_targets(&bundle, &["final".to_string()]).expect("target should resolve");
 
-    assert_eq!(selected.relation_constraints(), bundle.relation_constraints());
+    assert_eq!(
+        selected.relation_constraints(),
+        bundle.relation_constraints()
+    );
 }
 
 #[test]
@@ -153,8 +151,8 @@ fn constraint_emission_is_byte_deterministic() {
         &PostgreSqlDialect {},
     )
     .expect("first analysis");
-    let second = analyze_inputs(&[input], "postgresql", &PostgreSqlDialect {})
-        .expect("second analysis");
+    let second =
+        analyze_inputs(&[input], "postgresql", &PostgreSqlDialect {}).expect("second analysis");
 
     assert_eq!(to_bundle_json(&first), to_bundle_json(&second));
 }
