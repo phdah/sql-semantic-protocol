@@ -24,14 +24,15 @@ use sqlparser::ast::{
 };
 
 use crate::domain::{
-    derive_column_domains, intersect_domains, refine_column_domains_from_equalities,
-    resolve_column, union_domains,
+    derive_case_source_domains, derive_column_domains, intersect_domains,
+    refine_column_domains_from_equalities, resolve_column, union_domains,
 };
 use crate::parser::ParsedSql;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
-    BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression, ColumnDomain,
-    ColumnExpression, ColumnRef, ComparisonOperator, ComparisonPredicate, Diagnostic,
+    BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
+    CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
+    ComparisonOperator, ComparisonPredicate, Diagnostic,
     DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
     GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin,
     JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
@@ -2131,7 +2132,7 @@ fn analyze_case_expression(
 ) -> Expression {
     let normalized_operand = operand
         .map(|value| analyze_expression_with_scope(value, scope, named_windows, diagnostics));
-    let branches = conditions
+    let normalized_branches = conditions
         .iter()
         .map(|branch| {
             let condition = if operand.is_some() {
@@ -2147,7 +2148,37 @@ fn analyze_case_expression(
             };
             let result =
                 analyze_expression_with_scope(&branch.result, scope, named_windows, diagnostics);
-            CaseBranch::new(condition, result)
+            (condition, result)
+        })
+        .collect::<Vec<_>>();
+    let branch_predicates = normalized_branches
+        .iter()
+        .map(|(condition, _)| match &normalized_operand {
+            Some(operand) => Predicate::Comparison(ComparisonPredicate::new(
+                operand.clone(),
+                ComparisonOperator::Eq,
+                condition.clone(),
+            )),
+            None => match condition {
+                Expression::BooleanPredicate(predicate) => predicate.as_ref().clone(),
+                _ => Predicate::BooleanExpression(condition.clone()),
+            },
+        })
+        .collect::<Vec<_>>();
+    let case_sources = case_scope_sources(scope);
+    let (branch_source_domains, else_source_domains) =
+        derive_case_source_domains(&branch_predicates, &case_sources);
+    let branch_source_domains = branch_source_domains
+        .into_iter()
+        .map(|domains| remap_case_source_domains_to_physical(domains, scope))
+        .collect::<Vec<_>>();
+    let else_source_domains =
+        remap_case_source_domains_to_physical(else_source_domains, scope);
+    let branches = normalized_branches
+        .into_iter()
+        .zip(branch_source_domains)
+        .map(|((condition, result), source_domains)| {
+            CaseBranch::new(condition, result, source_domains)
         })
         .collect();
     let normalized_else = else_result
@@ -2157,7 +2188,98 @@ fn analyze_case_expression(
         normalized_operand,
         branches,
         normalized_else,
+        else_source_domains,
     ))
+}
+
+fn case_scope_sources(scope: &[OutputRelation]) -> Vec<SourceRelation> {
+    scope
+        .iter()
+        .filter_map(|relation| {
+            relation
+                .qualifiers
+                .first()
+                .map(|qualifier| SourceRelation::new(qualifier.clone(), None))
+        })
+        .collect()
+}
+
+fn remap_case_source_domains_to_physical(
+    source_domains: CaseSourceDomains,
+    scope: &[OutputRelation],
+) -> CaseSourceDomains {
+    let CaseSourceDomains::Reachable { alternatives } = source_domains else {
+        return source_domains;
+    };
+
+    let mut mapped_alternatives = Vec::new();
+    for alternative in alternatives {
+        let mut mapped_domains = BTreeMap::<ColumnRef, ValueDomain>::new();
+        for column_domain in alternative.column_domains() {
+            let source = match resolve_case_source_column(column_domain.column(), scope) {
+                Ok(source) => source,
+                Err(reason) => return CaseSourceDomains::unknown(reason),
+            };
+            let column = ColumnRef::new(
+                Some(source.relation().to_string()),
+                source.column().to_string(),
+            );
+            let domain = column_domain.domain().clone();
+            mapped_domains
+                .entry(column)
+                .and_modify(|existing| {
+                    *existing = intersect_domains(existing, &domain);
+                })
+                .or_insert(domain);
+        }
+
+        if mapped_domains
+            .values()
+            .any(|domain| matches!(domain, ValueDomain::Empty))
+        {
+            continue;
+        }
+        mapped_domains.retain(|_, domain| !matches!(domain, ValueDomain::Unbounded));
+        let mapped = CaseSourceDomainAlternative::new(
+            mapped_domains
+                .into_iter()
+                .map(|(column, domain)| ColumnDomain::new(column, domain))
+                .collect(),
+        );
+        if !mapped_alternatives.contains(&mapped) {
+            mapped_alternatives.push(mapped);
+        }
+    }
+
+    CaseSourceDomains::reachable(mapped_alternatives)
+}
+
+fn resolve_case_source_column(
+    column: &ColumnRef,
+    scope: &[OutputRelation],
+) -> Result<LineageSource, String> {
+    let candidates = output_column_candidates(column.relation(), column.name(), scope);
+    match candidates.as_slice() {
+        [candidate] => match candidate.as_slice() {
+            [source] => Ok(source.clone()),
+            [] => Err(format!(
+                "CASE branch source column {} has no physical lineage",
+                qualified_column_name(column.relation(), column.name())
+            )),
+            _ => Err(format!(
+                "CASE branch source column {} maps to multiple physical source columns",
+                qualified_column_name(column.relation(), column.name())
+            )),
+        },
+        [] => Err(format!(
+            "CASE branch source column {} could not be resolved to physical lineage",
+            qualified_column_name(column.relation(), column.name())
+        )),
+        _ => Err(format!(
+            "CASE branch source column {} is ambiguous without source schema information",
+            qualified_column_name(column.relation(), column.name())
+        )),
+    }
 }
 
 fn analyze_expression_with_windows(
