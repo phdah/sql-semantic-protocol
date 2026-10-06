@@ -3030,13 +3030,24 @@ fn analyze_select_output_with_outer_scope(
     local_outputs: &LocalOutputMap,
     outer_scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
-    let scope = build_output_scope(select, local_outputs, outer_scope, diagnostics);
-    let mut columns = select
-        .projection
-        .iter()
-        .map(|item| analyze_output_item(item, &scope, &select.named_window, diagnostics))
-        .collect::<Vec<_>>();
+    let scope = build_output_scope(
+        select,
+        local_outputs,
+        outer_scope,
+        diagnostics,
+        metadata,
+    );
+    let mut columns = Vec::new();
+    for item in &select.projection {
+        columns.extend(analyze_output_item(
+            item,
+            &scope,
+            &select.named_window,
+            diagnostics,
+        ));
+    }
 
     if let Some(qualify) = &select.qualify {
         refine_output_domains_from_predicate(&mut columns, qualify);
@@ -3050,33 +3061,110 @@ fn analyze_output_item(
     scope: &[OutputRelation],
     named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
-) -> OutputColumn {
+) -> Vec<OutputColumn> {
     match item {
         SelectItem::UnnamedExpr(expression) => {
             let normalized =
                 analyze_expression_with_scope(expression, scope, named_windows, diagnostics);
             let domain = derive_output_domain(&normalized);
-            OutputColumn::new(
+            vec![OutputColumn::new(
                 output_name_for_expression(expression),
                 normalized,
                 domain,
                 lineage_for_expression(expression, scope, named_windows, diagnostics),
-            )
+            )]
         }
         SelectItem::ExprWithAlias { expr, alias } => {
             let normalized = analyze_expression_with_scope(expr, scope, named_windows, diagnostics);
             let domain = derive_output_domain(&normalized);
-            OutputColumn::new(
+            vec![OutputColumn::new(
                 alias.value.clone(),
                 normalized,
                 domain,
                 lineage_for_expression(expr, scope, named_windows, diagnostics),
-            )
+            )]
         }
-        SelectItem::Wildcard(_) => unresolved_wildcard_column("*".to_string(), diagnostics),
+        SelectItem::Wildcard(_) => expand_wildcard(None, scope, diagnostics),
         SelectItem::QualifiedWildcard(prefix, _) => {
-            unresolved_wildcard_column(format!("{prefix}.*"), diagnostics)
+            let qualifier = prefix.to_string();
+            expand_wildcard(Some(&qualifier), scope, diagnostics)
         }
+    }
+}
+
+fn expand_wildcard(
+    qualifier: Option<&str>,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<OutputColumn> {
+    let relations = scope
+        .iter()
+        .filter(|relation| {
+            qualifier.is_none_or(|qualifier| {
+                relation
+                    .qualifiers
+                    .iter()
+                    .any(|candidate| candidate == qualifier)
+            })
+        })
+        .collect::<Vec<_>>();
+
+    if relations.is_empty() || (qualifier.is_some() && relations.len() != 1) {
+        return vec![unresolved_wildcard_column(
+            qualifier.map_or_else(|| "*".to_string(), |value| format!("{value}.*")),
+            diagnostics,
+        )];
+    }
+
+    let mut columns = Vec::new();
+    for relation in relations {
+        let expression_qualifier = relation.qualifiers.first().cloned();
+        match &relation.source {
+            OutputRelationSource::Physical {
+                relation,
+                columns: Some(schema_columns),
+            } => {
+                columns.extend(schema_columns.iter().map(|column| {
+                    OutputColumn::new(
+                        column.clone(),
+                        Expression::Column(ColumnExpression::new(
+                            expression_qualifier.clone(),
+                            column.clone(),
+                        )),
+                        ValueDomain::Unbounded,
+                        vec![LineageSource::new(relation.clone(), column.clone())],
+                    )
+                }));
+            }
+            OutputRelationSource::Physical { columns: None, .. } => {
+                return vec![unresolved_wildcard_column(
+                    qualifier.map_or_else(|| "*".to_string(), |value| format!("{value}.*")),
+                    diagnostics,
+                )];
+            }
+            OutputRelationSource::Local(output) => {
+                columns.extend(output.columns().iter().map(|column| {
+                    OutputColumn::new(
+                        column.name().to_string(),
+                        Expression::Column(ColumnExpression::new(
+                            expression_qualifier.clone(),
+                            column.name().to_string(),
+                        )),
+                        column.domain().clone(),
+                        column.lineage().to_vec(),
+                    )
+                }));
+            }
+        }
+    }
+
+    if columns.is_empty() {
+        vec![unresolved_wildcard_column(
+            qualifier.map_or_else(|| "*".to_string(), |value| format!("{value}.*")),
+            diagnostics,
+        )]
+    } else {
+        columns
     }
 }
 
@@ -3111,7 +3199,18 @@ fn refine_output_domains_from_column_domains(
                     column_domains,
                     sources,
                 );
+                let lineage_domain = match column.lineage() {
+                    [source] => column_domains
+                        .iter()
+                        .find(|candidate| {
+                            candidate.column().relation() == Some(source.relation())
+                                && candidate.column().name() == source.column()
+                        })
+                        .map_or(ValueDomain::Unbounded, |candidate| candidate.domain().clone()),
+                    _ => ValueDomain::Unbounded,
+                };
                 let domain = intersect_domains(column.domain(), &derived);
+                let domain = intersect_domains(&domain, &lineage_domain);
                 column.with_domain(domain)
             })
             .collect(),
