@@ -97,11 +97,12 @@ explicit `custom` datatypes instead of being discarded or guessed.
 The public `dialect_from_name` and `parse_data_type` helpers delegate dialect handling to
 sqlparser while keeping consumers independent from sqlparser AST types.
 
-## Relation key metadata
+## Relation constraint metadata
 
-Optional `relation_constraints` metadata describes declared primary keys, unique keys, and foreign
-keys independently from query-derived value domains. Composite keys preserve declared column
-order, and foreign keys preserve both local columns and the referenced relation/columns.
+Optional `relation_constraints` metadata describes canonical relation and column constraints
+independently from query-derived value domains. Supported facts are primary keys, unique keys,
+foreign keys, non-null columns, and finite accepted-value sets. Composite keys preserve declared
+column order, and foreign keys preserve both local columns and the referenced relation/columns.
 
 Each constraint carries one or more evidence records with a source kind, stable source identity,
 and enforcement state. SQL DDL declarations, dbt constraints, and dbt generic tests normalize into
@@ -110,9 +111,13 @@ test is never promoted into a proven warehouse-enforced constraint.
 
 Identical facts from multiple sources coalesce their evidence. Different unique keys and foreign
 keys coexist, while contradictory primary-key declarations remain visible with an explicit
-`conflicting_primary_key` diagnostic. The analyzer does not infer primary keys from
-`unique + not_null`, and it does not invent or propagate keys through transformations unless a
-future analyzer can prove that property.
+`conflicting_primary_key` diagnostic. Independent accepted-value declarations for the same column
+combine by intersection. An empty intersection is retained as an explicit unsatisfiable constraint
+with an `unsatisfiable_accepted_values` diagnostic rather than choosing one source. Accepted
+values preserve scalar literal types and the dbt `quote` setting.
+
+The analyzer does not infer primary keys from `unique + not_null`, and it does not invent or
+propagate keys through transformations unless a future analyzer can prove that property.
 
 For example, a composite foreign key is emitted as relation metadata rather than flattened into
 column flags:
@@ -144,9 +149,10 @@ column flags:
 
 Direct SQL analysis captures parser-supported column- and table-level `PRIMARY KEY`, `UNIQUE`,
 and `FOREIGN KEY` declarations, including queryless `CREATE TABLE` statements. The dbt adapter
-reads explicit model/column constraints plus built-in `unique` and `relationships` tests from
-`manifest.json`. `catalog.json` remains authoritative only for warehouse-introspected columns
-and datatypes.
+reads explicit model/column constraints plus built-in `unique`, `relationships`, `not_null`,
+and `accepted_values` tests from `manifest.json`. Unsupported dbt test kinds attached to a
+known relation are surfaced explicitly instead of being silently treated as supported.
+`catalog.json` remains authoritative only for warehouse-introspected columns and datatypes.
 
 ## Outcome selection
 
