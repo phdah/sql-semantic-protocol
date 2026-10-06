@@ -114,6 +114,34 @@ keys coexist, while contradictory primary-key declarations remain visible with a
 `unique + not_null`, and it does not invent or propagate keys through transformations unless a
 future analyzer can prove that property.
 
+For example, a composite foreign key is emitted as relation metadata rather than flattened into
+column flags:
+
+```json
+{
+  "relation_constraints": [
+    {
+      "relation": "analytics.order_items",
+      "constraints": [
+        {
+          "kind": "foreign_key",
+          "columns": ["tenant_id", "order_id"],
+          "referenced_relation": "analytics.orders",
+          "referenced_columns": ["tenant_id", "order_id"],
+          "evidence": [
+            {
+              "source_kind": "sql_ddl",
+              "source_id": "foreign_key:order_items_order_fk",
+              "enforcement": "unknown"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
 Direct SQL analysis captures parser-supported column- and table-level `PRIMARY KEY`, `UNIQUE`,
 and `FOREIGN KEY` declarations, including queryless `CREATE TABLE` statements. The dbt adapter
 reads explicit model/column constraints plus built-in `unique` and `relationships` tests from
