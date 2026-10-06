@@ -1,7 +1,9 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    parse_dbt_manifest, ConstraintSourceKind, ConstraintValue, RelationConstraint,
+    analyze_dbt_manifest, parse_dbt_manifest, select_targets, to_bundle_json, ConstraintSourceKind,
+    ConstraintValue, RelationConstraint,
 };
+use sqlparser::dialect::PostgreSqlDialect;
 
 fn manifest_with_tests(tests: Vec<(&str, Value)>) -> String {
     let mut manifest: Value =
@@ -230,4 +232,58 @@ fn accepted_values_reject_non_scalar_arguments() {
     .expect_err("object accepted value must fail");
 
     assert!(error.to_string().contains("scalar JSON values"));
+}
+
+
+#[test]
+fn column_constraints_survive_target_selection_and_emission() {
+    let manifest = parse_dbt_manifest(&manifest_with_tests(vec![
+        (
+            "test.demo.not_null_stg_orders_id",
+            generic_test(
+                "test.demo.not_null_stg_orders_id",
+                "model.demo.stg_orders",
+                "id",
+                "not_null",
+                json!({"column_name": "id"}),
+            ),
+        ),
+        (
+            "test.demo.accepted_values_stg_orders_amount",
+            generic_test(
+                "test.demo.accepted_values_stg_orders_amount",
+                "model.demo.stg_orders",
+                "amount",
+                "accepted_values",
+                json!({"column_name": "amount", "values": [20, 50], "quote": false}),
+            ),
+        ),
+    ]))
+    .expect("manifest should parse");
+    let bundle = analyze_dbt_manifest(&manifest, "postgresql", &PostgreSqlDialect {})
+        .expect("manifest should analyze");
+    let selected = select_targets(
+        &bundle,
+        &["warehouse.analytics.final_orders".to_string()],
+    )
+    .expect("target should resolve");
+    let json: Value =
+        serde_json::from_str(&to_bundle_json(&selected)).expect("bundle JSON should parse");
+
+    let stg = json["relation_constraints"]
+        .as_array()
+        .expect("relation constraints should be emitted")
+        .iter()
+        .find(|set| set["relation"] == "warehouse.analytics.stg_orders")
+        .expect("stg_orders constraints should survive selection");
+    assert!(stg["constraints"]
+        .as_array()
+        .expect("constraints should be an array")
+        .iter()
+        .any(|constraint| constraint["kind"] == "not_null"));
+    assert!(stg["constraints"]
+        .as_array()
+        .expect("constraints should be an array")
+        .iter()
+        .any(|constraint| constraint["kind"] == "accepted_values"));
 }
