@@ -212,9 +212,8 @@ fn ambiguous_foreign_key_reference_fails_instead_of_guessing() {
         "postgresql",
         &PostgreSqlDialect {},
     )];
-    let catalog =
-        RelationCatalog::new(&["warehouse_a.public.parent", "warehouse_b.public.parent"])
-            .expect("catalog should be valid");
+    let catalog = RelationCatalog::new(&["warehouse_a.public.parent", "warehouse_b.public.parent"])
+        .expect("catalog should be valid");
 
     let error = analyze_configured_inputs_with_catalog(&configured, &catalog)
         .expect_err("ambiguous foreign-key target must fail");
