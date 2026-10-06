@@ -408,7 +408,7 @@ fn intersect_case_maps(left: &DomainMap, right: &DomainMap) -> Option<DomainMap>
         let domain = result
             .remove(column)
             .map_or_else(|| right_domain.clone(), |left_domain| {
-                intersect_domains(&left_domain, right_domain)
+                intersect_case_domain_values(&left_domain, right_domain)
             });
         if matches!(domain, ValueDomain::Empty) {
             return None;
@@ -418,6 +418,30 @@ fn intersect_case_maps(left: &DomainMap, right: &DomainMap) -> Option<DomainMap>
         }
     }
     Some(result)
+}
+
+pub(crate) fn intersect_case_domain_values(
+    left: &ValueDomain,
+    right: &ValueDomain,
+) -> ValueDomain {
+    let intersection = intersect_domains(left, right);
+    let has_range = matches!(left, ValueDomain::Ranges(_)) || matches!(right, ValueDomain::Ranges(_));
+
+    if !has_range {
+        return intersection;
+    }
+
+    match intersection {
+        ValueDomain::Set(set) if set.mode() == SetMode::Include => ValueDomain::set(
+            SetMode::Include,
+            set.values()
+                .iter()
+                .filter(|literal| !matches!(literal.value(), LiteralValue::Null))
+                .cloned()
+                .collect(),
+        ),
+        domain => domain,
+    }
 }
 
 fn push_unique_case_map(alternatives: &mut Vec<DomainMap>, candidate: DomainMap) {
