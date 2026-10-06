@@ -1590,7 +1590,10 @@ fn parse_dbt_constraint_array(
         let constraint_path = format!("{path}[{index}]");
         let object = as_object(value, &constraint_path)?;
         let constraint_type = required_string(object, "type", &format!("{constraint_path}.type"))?;
-        if !matches!(constraint_type, "primary_key" | "unique" | "foreign_key") {
+        if !matches!(
+            constraint_type,
+            "primary_key" | "unique" | "foreign_key" | "not_null"
+        ) {
             continue;
         }
 
@@ -1604,6 +1607,19 @@ fn parse_dbt_constraint_array(
             ConstraintSourceKind::DbtConstraint,
             &format!("{resource_id}:{constraint_path}"),
         )?];
+
+        if constraint_type == "not_null" {
+            for column in columns {
+                let constraint = RelationConstraint::not_null(column, evidence.clone()).map_err(
+                    |error| DbtManifestError::RelationMetadata {
+                        resource_id: resource_id.to_string(),
+                        message: format!("{relation}: {error}"),
+                    },
+                )?;
+                output.push(constraint);
+            }
+            continue;
+        }
 
         let constraint = match constraint_type {
             "primary_key" => RelationConstraint::primary_key(columns, evidence),
