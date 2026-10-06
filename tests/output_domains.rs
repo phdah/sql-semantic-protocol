@@ -196,10 +196,7 @@ fn shared_case_semantics_are_consistent_across_exposed_dialects() {
     }
 }
 
-
-fn reachable_case_alternatives(
-    domains: &CaseSourceDomains,
-) -> &[CaseSourceDomainAlternative] {
+fn reachable_case_alternatives(domains: &CaseSourceDomains) -> &[CaseSourceDomainAlternative] {
     match domains {
         CaseSourceDomains::Reachable { alternatives } => alternatives,
         other => panic!("expected reachable CASE source domains, got {other:?}"),
@@ -221,7 +218,8 @@ fn searched_case_branch_domains_account_for_prior_matches_and_else_nulls() {
     )
     .expect("searched CASE should analyze");
 
-    let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+    let Expression::Case(case_expression) =
+        first_query(&protocol).output().columns()[0].expression()
     else {
         panic!("expected CASE expression");
     };
@@ -296,7 +294,8 @@ fn simple_case_marks_overlapping_branch_unreachable() {
     )
     .expect("simple CASE should analyze");
 
-    let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+    let Expression::Case(case_expression) =
+        first_query(&protocol).output().columns()[0].expression()
     else {
         panic!("expected CASE expression");
     };
@@ -331,7 +330,8 @@ fn case_branch_domains_preserve_unknown_reason_for_non_derivable_condition() {
     )
     .expect("CASE with function condition should analyze");
 
-    let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+    let Expression::Case(case_expression) =
+        first_query(&protocol).output().columns()[0].expression()
     else {
         panic!("expected CASE expression");
     };
@@ -361,12 +361,12 @@ fn case_branch_domains_resolve_through_cte_lineage() {
     )
     .expect("CTE CASE should analyze");
 
-    let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+    let Expression::Case(case_expression) =
+        first_query(&protocol).output().columns()[0].expression()
     else {
         panic!("expected CASE expression");
     };
-    let alternatives =
-        reachable_case_alternatives(case_expression.branches()[0].source_domains());
+    let alternatives = reachable_case_alternatives(case_expression.branches()[0].source_domains());
     let [domain] = alternatives[0].column_domains() else {
         panic!("expected one physical source domain");
     };
