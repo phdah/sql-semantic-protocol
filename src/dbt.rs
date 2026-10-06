@@ -1396,12 +1396,13 @@ fn parse_manifest_relation_constraints(
 
         if !is_builtin_namespace || !is_supported_test {
             if let Some(relation) = local_relation {
-                let mut set = RelationConstraintSet::new(relation, Vec::new()).map_err(|error| {
-                    DbtManifestError::RelationMetadata {
-                        resource_id: test_id.clone(),
-                        message: error.to_string(),
-                    }
-                })?;
+                let mut set =
+                    RelationConstraintSet::new(relation, Vec::new()).map_err(|error| {
+                        DbtManifestError::RelationMetadata {
+                            resource_id: test_id.clone(),
+                            message: error.to_string(),
+                        }
+                    })?;
                 set.add_diagnostic(ConstraintDiagnostic::new(
                     "unsupported_dbt_test",
                     format!(
@@ -1477,7 +1478,9 @@ fn parse_manifest_relation_constraints(
                     .get("values")
                     .ok_or_else(|| invalid_field(&values_path, "field is required"))?
                     .as_array()
-                    .ok_or_else(|| invalid_field(&values_path, "expected an array of scalar values"))?
+                    .ok_or_else(|| {
+                        invalid_field(&values_path, "expected an array of scalar values")
+                    })?
                     .iter()
                     .enumerate()
                     .map(|(index, value)| {
@@ -1628,10 +1631,7 @@ fn parse_dbt_constraint_array(
     Ok(())
 }
 
-fn dbt_constraint_value(
-    value: &Value,
-    path: &str,
-) -> Result<ConstraintValue, DbtManifestError> {
+fn dbt_constraint_value(value: &Value, path: &str) -> Result<ConstraintValue, DbtManifestError> {
     match value {
         Value::Null => Ok(ConstraintValue::Null),
         Value::Bool(value) => Ok(ConstraintValue::Boolean(*value)),
