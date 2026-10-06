@@ -15,7 +15,7 @@ use crate::protocol::{
 use crate::relation::{
     RelationCatalog, RelationContext, RelationResolutionError, RelationResolver, RelationSchema,
 };
-use crate::{analyze_sql, Error};
+use crate::{analyze_sql, analyze_sql_with_catalog, Error};
 
 /// Source identity retained for one SQL input unit.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1389,13 +1389,23 @@ fn analyze_input(
     dialect_name: &str,
     dialect: &dyn Dialect,
     relation_context: Option<RelationContext>,
+    catalog: Option<&RelationCatalog>,
 ) -> Result<AnalyzedInput, InputAnalysisError> {
-    let protocol =
-        analyze_sql(input.sql(), dialect_name, dialect).map_err(|error| InputAnalysisError {
-            input_id: input_id.clone(),
-            source: input.source().clone(),
-            error,
-        })?;
+    let protocol = match catalog {
+        Some(catalog) => analyze_sql_with_catalog(
+            input.sql(),
+            dialect_name,
+            dialect,
+            catalog,
+            relation_context.as_ref(),
+        ),
+        None => analyze_sql(input.sql(), dialect_name, dialect),
+    }
+    .map_err(|error| InputAnalysisError {
+        input_id: input_id.clone(),
+        source: input.source().clone(),
+        error,
+    })?;
 
     Ok(AnalyzedInput {
         id: input_id,
@@ -1420,7 +1430,14 @@ pub fn analyze_inputs(
 
     for (index, input) in inputs.iter().enumerate() {
         let input_id = format!("input-{:0width$}", index + 1, width = width);
-        analyzed_inputs.push(analyze_input(input_id, input, dialect_name, dialect, None)?);
+        analyzed_inputs.push(analyze_input(
+            input_id,
+            input,
+            dialect_name,
+            dialect,
+            None,
+            None,
+        )?);
     }
 
     Ok(AnalysisBundle::from_inputs(analyzed_inputs))
@@ -1446,7 +1463,39 @@ pub fn analyze_configured_inputs_with_catalog(
     inputs: &[ConfiguredSqlInput<'_>],
     catalog: &RelationCatalog,
 ) -> Result<AnalysisBundle, ConfiguredInputAnalysisError> {
-    let mut bundle = analyze_configured_inputs_with_resolver(inputs, catalog)?;
+    let mut seen_ids = BTreeSet::new();
+    let mut analyzed_inputs = Vec::with_capacity(inputs.len());
+
+    for (index, configured) in inputs.iter().enumerate() {
+        let id = configured.id().trim();
+        if id.is_empty() {
+            return Err(ConfiguredInputAnalysisError::InvalidInputId {
+                position: index + 1,
+            });
+        }
+        if !seen_ids.insert(id.to_string()) {
+            return Err(ConfiguredInputAnalysisError::DuplicateInputId { id: id.to_string() });
+        }
+
+        let analyzed = analyze_input(
+            id.to_string(),
+            configured.input(),
+            configured.dialect_name(),
+            configured.dialect(),
+            configured.relation_context().cloned(),
+            Some(catalog),
+        )
+        .map_err(ConfiguredInputAnalysisError::Input)?;
+        analyzed_inputs.push(analyzed);
+    }
+
+    let mut bundle =
+        AnalysisBundle::from_inputs_with_resolver(analyzed_inputs, catalog).map_err(|failure| {
+            ConfiguredInputAnalysisError::RelationResolution {
+                input_id: failure.input_id,
+                error: failure.error,
+            }
+        })?;
     bundle.source_schemas = catalog.schemas().to_vec();
     Ok(bundle)
 }
@@ -1480,6 +1529,7 @@ pub fn analyze_configured_inputs_with_resolver(
             configured.dialect_name(),
             configured.dialect(),
             configured.relation_context().cloned(),
+            None,
         )
         .map_err(ConfiguredInputAnalysisError::Input)?;
         analyzed_inputs.push(analyzed);
