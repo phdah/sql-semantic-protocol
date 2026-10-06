@@ -55,6 +55,27 @@ pub trait RelationResolver {
     ) -> Result<String, RelationResolutionError>;
 }
 
+/// Provenance category for a typed relation schema.
+///
+/// Provenance is metadata evidence only. It does not change the canonical datatype semantics.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SchemaSourceKind {
+    /// Warehouse-introspected schema from a dbt `catalog.json` artifact.
+    DbtCatalog,
+    /// Declared schema from dbt manifest metadata, typically originating in project YAML.
+    DbtManifest,
+}
+
+impl SchemaSourceKind {
+    /// Return the stable protocol representation of this provenance category.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::DbtCatalog => "dbt_catalog",
+            Self::DbtManifest => "dbt_manifest",
+        }
+    }
+}
+
 /// One typed column in caller-supplied relation schema metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SchemaColumn {
@@ -112,6 +133,7 @@ impl SchemaColumn {
 pub struct RelationSchema {
     relation: String,
     columns: Vec<SchemaColumn>,
+    source_kind: Option<SchemaSourceKind>,
 }
 
 impl RelationSchema {
@@ -146,7 +168,19 @@ impl RelationSchema {
         Ok(Self {
             relation: canonical.to_string(),
             columns,
+            source_kind: None,
         })
+    }
+
+    /// Attach adapter provenance to this schema.
+    pub fn with_source_kind(mut self, source_kind: SchemaSourceKind) -> Self {
+        self.source_kind = Some(source_kind);
+        self
+    }
+
+    /// Return the provenance category for this schema when an adapter supplied one.
+    pub fn source_kind(&self) -> Option<SchemaSourceKind> {
+        self.source_kind
     }
 
     /// Return the canonical relation identity.
