@@ -11,18 +11,24 @@ use std::{
 
 use serde_json::Number;
 use sqlparser::ast::{
-    BinaryOperator as SqlBinaryOperator, Distinct as SqlDistinct, DuplicateTreatment, Expr,
-    Function, FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
-    GroupByWithModifier as SqlGroupByWithModifier, Insert as SqlInsert, Join as SqlJoin,
-    JoinConstraint, JoinOperator, MergeAction as SqlMergeAction, MergeClause as SqlMergeClause,
-    MergeClauseKind as SqlMergeClauseKind, MergeInsertKind, NamedWindowDefinition, NamedWindowExpr,
-    Query as SqlQuery, Select, SelectItem, SetExpr, SetOperator as SqlSetOperator,
-    SetQuantifier as SqlSetQuantifier, Statement as SqlStatement, TableFactor, TableObject,
-    TableWithJoins, UnaryOperator as SqlUnaryOperator, Value, WindowFrame as SqlWindowFrame,
-    WindowFrameBound as SqlWindowFrameBound, WindowFrameUnits as SqlWindowFrameUnits,
-    WindowSpec as SqlWindowSpec, WindowType,
+    BinaryOperator as SqlBinaryOperator, ColumnOption, ConstraintCharacteristics,
+    CreateTable as SqlCreateTable, Distinct as SqlDistinct, DuplicateTreatment, Expr, Function,
+    FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
+    GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
+    Join as SqlJoin, JoinConstraint, JoinOperator, MergeAction as SqlMergeAction,
+    MergeClause as SqlMergeClause, MergeClauseKind as SqlMergeClauseKind, MergeInsertKind,
+    NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
+    SetOperator as SqlSetOperator, SetQuantifier as SqlSetQuantifier, Statement as SqlStatement,
+    TableConstraint, TableFactor, TableObject, TableWithJoins, UnaryOperator as SqlUnaryOperator,
+    Value, WindowFrame as SqlWindowFrame, WindowFrameBound as SqlWindowFrameBound,
+    WindowFrameUnits as SqlWindowFrameUnits, WindowSpec as SqlWindowSpec, WindowType,
 };
 
+use crate::constraints::{
+    merge_relation_constraint_sets, ConstraintDiagnostic, ConstraintEnforcement,
+    ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance, ConstraintSourceKind,
+    RelationConstraint, RelationConstraintSet,
+};
 use crate::domain::{
     derive_case_source_domains, derive_column_domains, intersect_case_domain_values,
     intersect_domains, refine_column_domains_from_equalities, resolve_column, union_domains,
@@ -54,6 +60,11 @@ pub enum AnalysisError {
     EmptyDialectName,
     /// Parsing succeeded but produced no SQL statements to analyze.
     NoStatements,
+    /// Parsed DDL contained internally inconsistent canonical constraint metadata.
+    ConstraintMetadata {
+        /// Explanation of the invalid constraint metadata.
+        message: String,
+    },
 }
 
 impl fmt::Display for AnalysisError {
@@ -63,6 +74,9 @@ impl fmt::Display for AnalysisError {
                 write!(formatter, "analysis requires a non-empty dialect name")
             }
             Self::NoStatements => write!(formatter, "analysis requires at least one SQL statement"),
+            Self::ConstraintMetadata { message } => {
+                write!(formatter, "invalid relation constraint metadata: {message}")
+            }
         }
     }
 }
@@ -133,7 +147,19 @@ fn analyze_with_metadata(
         .map(|statement| analyze_statement(statement, &metadata))
         .collect();
 
-    Ok(Protocol::new(dialect_name.to_string(), statements))
+    let mut relation_constraints = Vec::new();
+    for statement in &parsed.statements {
+        if let Some(constraints) = analyze_relation_constraints(statement).map_err(|error| {
+            AnalysisError::ConstraintMetadata {
+                message: error.to_string(),
+            }
+        })? {
+            merge_relation_constraint_sets(&mut relation_constraints, &[constraints]);
+        }
+    }
+
+    Ok(Protocol::new(dialect_name.to_string(), statements)
+        .with_relation_constraints(relation_constraints))
 }
 
 fn analyze_statement(
@@ -4648,6 +4674,255 @@ fn inspect_query_features(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) {
             DiagnosticArea::Other,
             "pipe-operator semantics are not implemented yet",
         ));
+    }
+}
+
+fn analyze_relation_constraints(
+    statement: &SqlStatement,
+) -> Result<Option<RelationConstraintSet>, ConstraintMetadataError> {
+    let SqlStatement::CreateTable(create_table) = statement else {
+        return Ok(None);
+    };
+    analyze_create_table_constraints(create_table)
+}
+
+fn analyze_create_table_constraints(
+    create_table: &SqlCreateTable,
+) -> Result<Option<RelationConstraintSet>, ConstraintMetadataError> {
+    let relation = create_table.name.to_string();
+    let mut constraints = Vec::new();
+    let mut diagnostics = Vec::new();
+
+    for (index, constraint) in create_table.constraints.iter().enumerate() {
+        match constraint {
+            TableConstraint::PrimaryKey {
+                name,
+                index_name,
+                columns,
+                characteristics,
+                ..
+            } => match index_column_names(columns) {
+                Some(columns) => constraints.push(RelationConstraint::primary_key(
+                    columns,
+                    vec![sql_constraint_evidence(
+                        &relation,
+                        constraint_identity(
+                            "primary_key",
+                            index,
+                            name.as_ref().map(ToString::to_string)
+                                .or_else(|| index_name.as_ref().map(ToString::to_string)),
+                        ),
+                        characteristics.as_ref(),
+                    )?],
+                )?),
+                None => diagnostics.push(ConstraintDiagnostic::new(
+                    "unsupported_key_expression",
+                    format!(
+                        "primary key on relation '{relation}' contains a non-column expression"
+                    ),
+                )),
+            },
+            TableConstraint::Unique {
+                name,
+                index_name,
+                columns,
+                characteristics,
+                ..
+            } => match index_column_names(columns) {
+                Some(columns) => constraints.push(RelationConstraint::unique_key(
+                    columns,
+                    vec![sql_constraint_evidence(
+                        &relation,
+                        constraint_identity(
+                            "unique",
+                            index,
+                            name.as_ref().map(ToString::to_string)
+                                .or_else(|| index_name.as_ref().map(ToString::to_string)),
+                        ),
+                        characteristics.as_ref(),
+                    )?],
+                )?),
+                None => diagnostics.push(ConstraintDiagnostic::new(
+                    "unsupported_key_expression",
+                    format!(
+                        "unique constraint on relation '{relation}' contains a non-column expression"
+                    ),
+                )),
+            },
+            TableConstraint::ForeignKey {
+                name,
+                columns,
+                foreign_table,
+                referred_columns,
+                characteristics,
+                ..
+            } => {
+                if referred_columns.is_empty() {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "unresolved_foreign_key_columns",
+                        format!(
+                            "foreign key on relation '{relation}' does not declare referenced columns"
+                        ),
+                    ));
+                    continue;
+                }
+                constraints.push(RelationConstraint::foreign_key(
+                    columns.iter().map(ToString::to_string).collect(),
+                    foreign_table.to_string(),
+                    referred_columns.iter().map(ToString::to_string).collect(),
+                    vec![sql_constraint_evidence(
+                        &relation,
+                        constraint_identity(
+                            "foreign_key",
+                            index,
+                            name.as_ref().map(ToString::to_string),
+                        ),
+                        characteristics.as_ref(),
+                    )?],
+                )?);
+            }
+            _ => {}
+        }
+    }
+
+    for column in &create_table.columns {
+        for (option_index, option) in column.options.iter().enumerate() {
+            match &option.option {
+                ColumnOption::Unique {
+                    is_primary,
+                    characteristics,
+                } => {
+                    let source_id = format!(
+                        "{}:column:{}:{}:{}",
+                        relation,
+                        column.name,
+                        if *is_primary { "primary_key" } else { "unique" },
+                        option_index
+                    );
+                    let evidence = vec![sql_constraint_evidence(
+                        &relation,
+                        source_id,
+                        characteristics.as_ref(),
+                    )?];
+                    let constraint = if *is_primary {
+                        RelationConstraint::primary_key(vec![column.name.to_string()], evidence)?
+                    } else {
+                        RelationConstraint::unique_key(vec![column.name.to_string()], evidence)?
+                    };
+                    constraints.push(constraint);
+                }
+                ColumnOption::ForeignKey {
+                    foreign_table,
+                    referred_columns,
+                    characteristics,
+                    ..
+                } => {
+                    if referred_columns.is_empty() {
+                        diagnostics.push(ConstraintDiagnostic::new(
+                            "unresolved_foreign_key_columns",
+                            format!(
+                                "foreign key on '{}.{}' does not declare referenced columns",
+                                relation, column.name
+                            ),
+                        ));
+                        continue;
+                    }
+                    constraints.push(RelationConstraint::foreign_key(
+                        vec![column.name.to_string()],
+                        foreign_table.to_string(),
+                        referred_columns.iter().map(ToString::to_string).collect(),
+                        vec![sql_constraint_evidence(
+                            &relation,
+                            format!(
+                                "{}:column:{}:foreign_key:{}",
+                                relation, column.name, option_index
+                            ),
+                            characteristics.as_ref(),
+                        )?],
+                    )?);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    if let Some(primary_key) = create_table.primary_key.as_deref() {
+        match expression_key_columns(primary_key) {
+            Some(columns) => constraints.push(RelationConstraint::primary_key(
+                columns,
+                vec![sql_constraint_evidence(
+                    &relation,
+                    format!("{relation}:clickhouse_primary_key"),
+                    None,
+                )?],
+            )?),
+            None => diagnostics.push(ConstraintDiagnostic::new(
+                "unsupported_key_expression",
+                format!("primary key on relation '{relation}' contains a non-column expression"),
+            )),
+        }
+    }
+
+    if constraints.is_empty() && diagnostics.is_empty() {
+        return Ok(None);
+    }
+
+    let mut set = RelationConstraintSet::new(relation, constraints)?;
+    for diagnostic in diagnostics {
+        set.add_diagnostic(diagnostic);
+    }
+    Ok(Some(set))
+}
+
+fn sql_constraint_evidence(
+    relation: &str,
+    source_id: String,
+    characteristics: Option<&ConstraintCharacteristics>,
+) -> Result<ConstraintEvidence, ConstraintMetadataError> {
+    let enforcement = match characteristics.and_then(|value| value.enforced) {
+        Some(true) => ConstraintEnforcement::Enforced,
+        Some(false) => ConstraintEnforcement::NotEnforced,
+        None => ConstraintEnforcement::Unknown,
+    };
+    let provenance = ConstraintProvenance::new(
+        ConstraintSourceKind::SqlDdl,
+        if source_id.trim().is_empty() {
+            format!("create_table:{relation}")
+        } else {
+            source_id
+        },
+    )?;
+    Ok(ConstraintEvidence::new(provenance, enforcement))
+}
+
+fn constraint_identity(kind: &str, index: usize, name: Option<String>) -> String {
+    match name {
+        Some(name) => format!("{kind}:{name}"),
+        None => format!("{kind}:{}", index + 1),
+    }
+}
+
+fn index_column_names(columns: &[IndexColumn]) -> Option<Vec<String>> {
+    columns
+        .iter()
+        .map(|column| match &column.column.expr {
+            Expr::Identifier(identifier) => Some(identifier.to_string()),
+            _ => None,
+        })
+        .collect()
+}
+
+fn expression_key_columns(expression: &Expr) -> Option<Vec<String>> {
+    match expression {
+        Expr::Identifier(identifier) => Some(vec![identifier.to_string()]),
+        Expr::Tuple(expressions) => expressions
+            .iter()
+            .map(|expression| match expression {
+                Expr::Identifier(identifier) => Some(identifier.to_string()),
+                _ => None,
+            })
+            .collect(),
+        _ => None,
     }
 }
 

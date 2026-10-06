@@ -52,6 +52,49 @@ Source schemas are evidence supplied by the caller; they do not weaken or replac
 domains. Consumers combine the declared type with `composed_semantics.column_domains` and must
 still treat unknown, empty, or unresolved semantics explicitly.
 
+## Relation constraints
+
+Optional `relation_constraints` metadata records parser-independent key declarations for named
+relations. It is separate from transformation semantics and from `source_schemas`; a relation can
+therefore carry key metadata even when a queryless `CREATE TABLE` produces no transformation
+layer.
+
+Each relation entry contains an ordered `constraints` array. Constraint `kind` is one of:
+
+- `primary_key`: ordered `columns` forming the declared primary key.
+- `unique_key`: ordered `columns` forming one declared unique key.
+- `foreign_key`: ordered local `columns`, `referenced_relation`, and ordered
+  `referenced_columns`. Local and referenced arity must match.
+
+Composite keys are not flattened into independent single-column facts. Multiple different unique
+keys and foreign keys can coexist. Distinct primary-key definitions for the same relation are not
+silently resolved: both facts remain present and the relation emits a
+`conflicting_primary_key` diagnostic. Invalid or unresolved foreign-key metadata fails or emits
+an explicit diagnostic at the adapter boundary rather than guessing a target.
+
+Every constraint carries one or more `evidence` items. Evidence separates:
+
+- `source_kind`: `sql_ddl`, `dbt_constraint`, `dbt_test`, or `external_metadata`.
+- `source_id`: deterministic identity of the declaration/test that supplied the fact.
+- `enforcement`: `enforced`, `not_enforced`, or `unknown`.
+
+Identical semantic constraints from multiple sources coalesce while retaining all distinct
+evidence. Enforcement is evidence-specific. SQL only records `enforced` or `not_enforced` when
+the parsed DDL explicitly states it; otherwise it is `unknown`. dbt model/column constraints and
+generic tests are declarations/assertions, so their enforcement is `unknown` rather than inferred
+from an adapter or warehouse.
+
+Direct SQL analysis normalizes parser-supported column- and table-level `PRIMARY KEY`, `UNIQUE`,
+and `FOREIGN KEY` clauses. The dbt adapter normalizes explicit key constraints and built-in
+`unique` / `relationships` tests from `manifest.json`. The catalog artifact does not contribute
+constraint facts.
+
+Key metadata is preserved through target selection but is not propagated through projection,
+join, aggregation, set operations, INSERT, or MERGE simply because a source key exists. Consumers
+must treat absent derived-key metadata as unknown. The public
+`AnalysisBundle::enrich_relation_constraints` plus the canonical constraint types provide the
+adapter-neutral enrichment boundary for external metadata producers.
+
 ## Transformation layers
 
 A `layer` points to exactly one statement through `input_id` plus zero-based `statement_index`. The layer records:

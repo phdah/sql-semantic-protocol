@@ -10,6 +10,7 @@ use crate::bundle::{
     GraphComponent, GraphEdge, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
     UnresolvedComposedSemantics,
 };
+use crate::constraints::{RelationConstraint, RelationConstraintSet};
 use crate::data_type::DataType;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
@@ -99,6 +100,73 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
             .collect::<Vec<_>>());
     }
 
+    if !bundle.relation_constraints().is_empty() {
+        value["relation_constraints"] = Value::Array(
+            bundle
+                .relation_constraints()
+                .iter()
+                .map(relation_constraint_set_to_value)
+                .collect(),
+        );
+    }
+
+    value
+}
+
+fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> Value {
+    let constraints = set
+        .constraints()
+        .iter()
+        .map(|constraint| {
+            let evidence = constraint
+                .evidence()
+                .iter()
+                .map(|evidence| {
+                    json!({
+                        "source_kind": evidence.provenance().source_kind().as_str(),
+                        "source_id": evidence.provenance().source_id(),
+                        "enforcement": evidence.enforcement().as_str()
+                    })
+                })
+                .collect::<Vec<_>>();
+            match constraint {
+                RelationConstraint::PrimaryKey(key) => json!({
+                    "kind": "primary_key",
+                    "columns": key.columns(),
+                    "evidence": evidence
+                }),
+                RelationConstraint::UniqueKey(key) => json!({
+                    "kind": "unique_key",
+                    "columns": key.columns(),
+                    "evidence": evidence
+                }),
+                RelationConstraint::ForeignKey(key) => json!({
+                    "kind": "foreign_key",
+                    "columns": key.columns(),
+                    "referenced_relation": key.referenced_relation(),
+                    "referenced_columns": key.referenced_columns(),
+                    "evidence": evidence
+                }),
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let mut value = json!({
+        "relation": set.relation(),
+        "constraints": constraints
+    });
+    if !set.diagnostics().is_empty() {
+        value["diagnostics"] = json!(set
+            .diagnostics()
+            .iter()
+            .map(|diagnostic| {
+                json!({
+                    "code": diagnostic.code(),
+                    "message": diagnostic.message()
+                })
+            })
+            .collect::<Vec<_>>());
+    }
     value
 }
 

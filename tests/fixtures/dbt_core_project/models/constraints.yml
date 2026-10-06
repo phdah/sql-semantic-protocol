@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: stg_customers
+    constraints:
+      - type: primary_key
+        columns: [customer_id]
+    columns:
+      - name: customer_id
+        constraints:
+          - type: unique
+        data_tests:
+          - unique
+
+  - name: stg_orders
+    constraints:
+      - type: primary_key
+        columns: [order_id]
+      - type: unique
+        columns: [order_id, customer_id]
+      - type: foreign_key
+        columns: [customer_id]
+        to: ref('stg_customers')
+        to_columns: [customer_id]
+    columns:
+      - name: order_id
+        data_tests:
+          - unique
+      - name: customer_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
