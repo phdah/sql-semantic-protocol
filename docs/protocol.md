@@ -96,11 +96,19 @@ the parsed DDL explicitly states it; otherwise it is `unknown`. dbt model/column
 generic tests are declarations/assertions, so their enforcement is `unknown` rather than inferred
 from an adapter or warehouse.
 
+Canonical relation constraints are source-independent. Every supported adapter that can provide
+equivalent evidence must translate it into these same constraint types rather than defining a
+source-specific representation.
+
 Direct SQL analysis normalizes parser-supported column- and table-level `PRIMARY KEY`, `UNIQUE`,
-and `FOREIGN KEY` clauses. The dbt adapter normalizes explicit key constraints plus built-in
-`unique`, `relationships`, `not_null`, and `accepted_values` tests from `manifest.json`.
-Unsupported attached dbt test kinds are reported with an `unsupported_dbt_test` diagnostic rather
-than silently disappearing. The catalog artifact does not contribute constraint facts.
+and `FOREIGN KEY` clauses, column-level `NOT NULL`, and finite accepted-value sets expressed as
+non-negated `CHECK (column IN (...))` constraints. CHECK expressions that cannot be represented
+safely as a finite accepted-value set emit an `unsupported_check_constraint` diagnostic instead
+of being guessed or silently dropped. The dbt adapter normalizes explicit `primary_key`, `unique`,
+`foreign_key`, and `not_null` declarations plus built-in `unique`, `relationships`,
+`not_null`, and `accepted_values` tests from `manifest.json`. Unsupported attached dbt test
+kinds are reported with an `unsupported_dbt_test` diagnostic rather than silently disappearing.
+The catalog artifact does not contribute constraint facts.
 
 Constraint metadata is preserved through target selection. Key facts are not propagated through
 projection, join, aggregation, set operations, INSERT, or MERGE simply because a source key exists.
