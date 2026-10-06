@@ -142,7 +142,7 @@ pub enum DbtArtifactsError {
         /// Resource unique ID.
         unique_id: String,
     },
-    /// A warehouse datatype could not be normalized safely.
+    /// A catalog or manifest-declared datatype could not be normalized safely.
     ColumnType {
         /// Resource unique ID.
         unique_id: String,
@@ -150,7 +150,7 @@ pub enum DbtArtifactsError {
         relation: String,
         /// Column name.
         column: String,
-        /// Warehouse datatype string.
+        /// dbt datatype string.
         data_type: String,
         /// Normalization failure.
         message: String,
@@ -920,10 +920,10 @@ pub fn analyze_dbt_manifest(
 
 /// Analyze a paired dbt manifest and catalog into the complete protocol contract.
 ///
-/// The manifest supplies model identity, compiled SQL, and declared dependency metadata. The
-/// catalog supplies warehouse-introspected physical columns and datatypes. Resource unique IDs tie
-/// the artifacts together, while canonical relation identity remains sourced from the manifest so
-/// graph resolution and schema metadata use exactly the same relation names.
+/// The manifest supplies model identity, compiled SQL, dependency metadata, and declared column
+/// datatypes. The catalog supplies authoritative warehouse-introspected schemas when available.
+/// Physical relations absent from the catalog may use complete manifest-declared column datatypes
+/// as fallback evidence. Canonical relation identity remains sourced from the manifest.
 pub fn analyze_dbt_artifacts(
     manifest: &DbtManifest,
     catalog: &DbtCatalog,
