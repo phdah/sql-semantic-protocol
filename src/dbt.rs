@@ -10,6 +10,10 @@ use std::fmt;
 use serde_json::{Map, Value};
 use sqlparser::dialect::Dialect;
 
+use crate::constraints::{
+    merge_relation_constraint_sets, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintProvenance, ConstraintSourceKind, RelationConstraint, RelationConstraintSet,
+};
 use crate::{
     analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
     ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn, SqlInput,
@@ -262,6 +266,7 @@ pub struct DbtManifest {
     models: Vec<DbtModel>,
     resources: BTreeMap<String, DbtResource>,
     catalog_relations: Vec<String>,
+    relation_constraints: Vec<RelationConstraintSet>,
 }
 
 impl DbtManifest {
@@ -281,6 +286,11 @@ impl DbtManifest {
     /// callers remain free to provide a compatible dialect implementation explicitly.
     pub fn adapter_type(&self) -> &str {
         &self.adapter_type
+    }
+
+    /// Return canonical key constraints declared by dbt metadata and generic tests.
+    pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
+        &self.relation_constraints
     }
 }
 
@@ -849,6 +859,7 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
     }
 
     let models = topologically_order_models(models)?;
+    let relation_constraints = parse_manifest_relation_constraints(nodes, sources, &resources)?;
     let mut catalog_relations = resources
         .values()
         .filter_map(|resource| resource.relation_name.as_ref())
@@ -865,6 +876,7 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
         models,
         resources,
         catalog_relations,
+        relation_constraints,
     })
 }
 
