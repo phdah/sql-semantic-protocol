@@ -13,16 +13,17 @@ Implementations should preserve caller order and generate deterministic IDs when
 Inline source labels are optional. File sources retain their path. Raw SQL text is intentionally not part of the semantic protocol.
 
 ## Source schemas
-For dbt inputs, complete source schemas come from the paired `catalog.json` artifact rather than
-being inferred from model SQL or declared manifest columns. `manifest.json` supplies resource and
-relation identity; `catalog.json` supplies warehouse-introspected columns and type strings. The
-adapter joins them by dbt `unique_id`, normalizes each catalog type into the canonical protocol
-datatype model, and rejects missing catalog coverage for physical dependencies.
+For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
+types when a relation is present there. When a physical dependency is absent from the catalog,
+`manifest.json` column `data_type` declarations are accepted as lower-authority schema evidence
+when the declared schema is complete. The adapter never lets a manifest declaration override
+catalog evidence. Missing declared datatypes fail explicitly with the affected relation and column
+names rather than being guessed.
 
-
-Optional `source_schemas` metadata carries declared datatypes for physical source relations when
-the caller supplies catalog schema information. Each entry has a canonical relation identity and
-its columns in declared order.
+Optional `source_schemas` metadata carries typed schema evidence for physical source relations.
+Each entry has a canonical relation identity, its columns, and may include `source_kind`.
+`dbt_catalog` means warehouse-introspected evidence; `dbt_manifest` means declared fallback
+evidence. Caller-supplied generic schemas omit `source_kind` unless an adapter attached provenance.
 
 Datatypes use one parser-independent recursive model rather than dialect-specific names. The model
 covers booleans; signed and unsigned integer widths; exact decimals; floating point; character,
