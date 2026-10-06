@@ -118,6 +118,119 @@ impl ConstraintEvidence {
     }
 }
 
+/// Scalar value accepted by a canonical column constraint.
+///
+/// The variant preserves the literal type supplied by metadata adapters. Non-integral numeric
+/// values retain their source text so emission is deterministic and does not introduce floating
+/// point rounding.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[non_exhaustive]
+pub enum ConstraintValue {
+    /// SQL/metadata null literal.
+    Null,
+    /// Boolean literal.
+    Boolean(bool),
+    /// Signed integer literal.
+    Integer(i64),
+    /// Unsigned integer literal outside the signed range.
+    UnsignedInteger(u64),
+    /// Non-integral JSON number in its normalized source representation.
+    Number(String),
+    /// String literal.
+    String(String),
+}
+
+/// A canonical non-null constraint on one column.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct NotNullConstraint {
+    column: String,
+    evidence: Vec<ConstraintEvidence>,
+}
+
+impl NotNullConstraint {
+    fn new(
+        column: String,
+        evidence: Vec<ConstraintEvidence>,
+    ) -> Result<Self, ConstraintMetadataError> {
+        validate_column(&column)?;
+        validate_evidence(&evidence)?;
+        Ok(Self {
+            column,
+            evidence: normalized_evidence(evidence),
+        })
+    }
+
+    /// Return the constrained column.
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+
+    /// Return every coalesced evidence item in deterministic order.
+    pub fn evidence(&self) -> &[ConstraintEvidence] {
+        &self.evidence
+    }
+}
+
+/// A canonical finite accepted-values constraint on one column.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct AcceptedValuesConstraint {
+    column: String,
+    values: Vec<ConstraintValue>,
+    quote: bool,
+    evidence: Vec<ConstraintEvidence>,
+}
+
+impl AcceptedValuesConstraint {
+    fn new(
+        column: String,
+        mut values: Vec<ConstraintValue>,
+        quote: bool,
+        evidence: Vec<ConstraintEvidence>,
+    ) -> Result<Self, ConstraintMetadataError> {
+        validate_column(&column)?;
+        validate_evidence(&evidence)?;
+        values.sort();
+        values.dedup();
+        Ok(Self {
+            column,
+            values,
+            quote,
+            evidence: normalized_evidence(evidence),
+        })
+    }
+
+    /// Return the constrained column.
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+
+    /// Return accepted values in deterministic order.
+    ///
+    /// An empty value set is valid only as an explicit unsatisfiable intersection and is paired
+    /// with an `unsatisfiable_accepted_values` diagnostic on its relation metadata.
+    pub fn values(&self) -> &[ConstraintValue] {
+        &self.values
+    }
+
+    /// Return whether string-like values were declared with quoting enabled by the evidence.
+    pub fn quote(&self) -> bool {
+        self.quote
+    }
+
+    /// Return every coalesced evidence item in deterministic order.
+    pub fn evidence(&self) -> &[ConstraintEvidence] {
+        &self.evidence
+    }
+
+    fn intersect(&mut self, other: &Self) {
+        let accepted = other.values.iter().collect::<BTreeSet<_>>();
+        self.values.retain(|value| accepted.contains(value));
+        self.evidence.extend(other.evidence.iter().cloned());
+        self.evidence.sort();
+        self.evidence.dedup();
+    }
+}
+
 /// Ordered columns forming a primary or unique key.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct KeyConstraint {
@@ -212,7 +325,7 @@ impl ForeignKeyConstraint {
     }
 }
 
-/// One canonical key or relationship constraint on a relation.
+/// One canonical constraint on a relation or one of its columns.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[non_exhaustive]
 pub enum RelationConstraint {
@@ -222,6 +335,10 @@ pub enum RelationConstraint {
     UniqueKey(KeyConstraint),
     /// Declared foreign-key relationship.
     ForeignKey(ForeignKeyConstraint),
+    /// Declared non-null column constraint.
+    NotNull(NotNullConstraint),
+    /// Declared finite accepted-values column constraint.
+    AcceptedValues(AcceptedValuesConstraint),
 }
 
 impl RelationConstraint {
@@ -256,11 +373,39 @@ impl RelationConstraint {
         )?))
     }
 
-    /// Return primary/unique key columns, or local columns for a foreign key.
+    /// Construct a non-null column constraint.
+    pub fn not_null(
+        column: impl Into<String>,
+        evidence: Vec<ConstraintEvidence>,
+    ) -> Result<Self, ConstraintMetadataError> {
+        Ok(Self::NotNull(NotNullConstraint::new(
+            column.into(),
+            evidence,
+        )?))
+    }
+
+    /// Construct a finite accepted-values column constraint.
+    pub fn accepted_values(
+        column: impl Into<String>,
+        values: Vec<ConstraintValue>,
+        quote: bool,
+        evidence: Vec<ConstraintEvidence>,
+    ) -> Result<Self, ConstraintMetadataError> {
+        Ok(Self::AcceptedValues(AcceptedValuesConstraint::new(
+            column.into(),
+            values,
+            quote,
+            evidence,
+        )?))
+    }
+
+    /// Return primary/unique key columns, local foreign-key columns, or the constrained column.
     pub fn columns(&self) -> &[String] {
         match self {
             Self::PrimaryKey(key) | Self::UniqueKey(key) => key.columns(),
             Self::ForeignKey(key) => key.columns(),
+            Self::NotNull(constraint) => std::slice::from_ref(&constraint.column),
+            Self::AcceptedValues(constraint) => std::slice::from_ref(&constraint.column),
         }
     }
 
@@ -269,6 +414,8 @@ impl RelationConstraint {
         match self {
             Self::PrimaryKey(key) | Self::UniqueKey(key) => key.evidence(),
             Self::ForeignKey(key) => key.evidence(),
+            Self::NotNull(constraint) => constraint.evidence(),
+            Self::AcceptedValues(constraint) => constraint.evidence(),
         }
     }
 
@@ -280,6 +427,12 @@ impl RelationConstraint {
                 left.columns == right.columns
                     && left.referenced_relation == right.referenced_relation
                     && left.referenced_columns == right.referenced_columns
+            }
+            (Self::NotNull(left), Self::NotNull(right)) => left.column == right.column,
+            (Self::AcceptedValues(left), Self::AcceptedValues(right)) => {
+                left.column == right.column
+                    && left.values == right.values
+                    && left.quote == right.quote
             }
             _ => false,
         }
@@ -298,6 +451,16 @@ impl RelationConstraint {
                 key.evidence.sort();
                 key.evidence.dedup();
             }
+            Self::NotNull(constraint) => {
+                constraint.evidence.extend(incoming);
+                constraint.evidence.sort();
+                constraint.evidence.dedup();
+            }
+            Self::AcceptedValues(constraint) => {
+                constraint.evidence.extend(incoming);
+                constraint.evidence.sort();
+                constraint.evidence.dedup();
+            }
         }
     }
 
@@ -315,6 +478,8 @@ impl RelationConstraint {
                 referenced_columns: key.referenced_columns.clone(),
                 evidence: key.evidence.clone(),
             }),
+            Self::NotNull(constraint) => Self::NotNull(constraint.clone()),
+            Self::AcceptedValues(constraint) => Self::AcceptedValues(constraint.clone()),
         }
     }
 }
@@ -418,9 +583,10 @@ impl RelationConstraintSet {
                 RelationConstraint::ForeignKey(foreign_key) => constraint.with_referenced_relation(
                     resolve_reference(foreign_key.referenced_relation())?,
                 ),
-                RelationConstraint::PrimaryKey(_) | RelationConstraint::UniqueKey(_) => {
-                    constraint.clone()
-                }
+                RelationConstraint::PrimaryKey(_)
+                | RelationConstraint::UniqueKey(_)
+                | RelationConstraint::NotNull(_)
+                | RelationConstraint::AcceptedValues(_) => constraint.clone(),
             };
             constraints.push(mapped);
         }
@@ -433,6 +599,60 @@ impl RelationConstraintSet {
     }
 
     fn add_constraint(&mut self, constraint: RelationConstraint) {
+        if let RelationConstraint::AcceptedValues(incoming) = &constraint {
+            let merged_empty = {
+                let existing = self.constraints.iter_mut().find_map(|existing| match existing {
+                    RelationConstraint::AcceptedValues(existing)
+                        if existing.column == incoming.column && existing.quote == incoming.quote =>
+                    {
+                        Some(existing)
+                    }
+                    _ => None,
+                });
+                existing.map(|existing| {
+                    existing.intersect(incoming);
+                    existing.values.is_empty()
+                })
+            };
+            if let Some(empty) = merged_empty {
+                if empty {
+                    self.diagnostics.push(ConstraintDiagnostic::new(
+                        "unsatisfiable_accepted_values",
+                        format!(
+                            "relation '{}' column '{}' has accepted-values evidence with an empty intersection",
+                            self.relation, incoming.column
+                        ),
+                    ));
+                }
+                return;
+            }
+
+            if self.constraints.iter().any(|existing| {
+                matches!(
+                    existing,
+                    RelationConstraint::AcceptedValues(existing)
+                        if existing.column == incoming.column && existing.quote != incoming.quote
+                )
+            }) {
+                self.diagnostics.push(ConstraintDiagnostic::new(
+                    "conflicting_accepted_values_quoting",
+                    format!(
+                        "relation '{}' column '{}' has accepted-values evidence with conflicting quote semantics",
+                        self.relation, incoming.column
+                    ),
+                ));
+            }
+            if incoming.values.is_empty() {
+                self.diagnostics.push(ConstraintDiagnostic::new(
+                    "unsatisfiable_accepted_values",
+                    format!(
+                        "relation '{}' column '{}' declares no accepted values",
+                        self.relation, incoming.column
+                    ),
+                ));
+            }
+        }
+
         if let Some(existing) = self
             .constraints
             .iter_mut()
@@ -534,6 +754,15 @@ impl fmt::Display for ConstraintMetadataError {
 }
 
 impl std::error::Error for ConstraintMetadataError {}
+
+fn validate_column(column: &str) -> Result<(), ConstraintMetadataError> {
+    if column.trim().is_empty() {
+        return Err(ConstraintMetadataError::InvalidColumns {
+            message: "column names cannot be empty".to_string(),
+        });
+    }
+    Ok(())
+}
 
 fn validate_columns(columns: &[String]) -> Result<(), ConstraintMetadataError> {
     if columns.is_empty() {
