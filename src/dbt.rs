@@ -1278,7 +1278,6 @@ fn dependency_ids(
     Ok(dependencies)
 }
 
-
 fn parse_manifest_relation_constraints(
     nodes: &Map<String, Value>,
     sources: Option<&Map<String, Value>>,
@@ -1319,12 +1318,8 @@ fn parse_manifest_relation_constraints(
             for (column_key, column_value) in columns {
                 let column_path = format!("{path}.columns.{column_key}");
                 let column = as_object(column_value, &column_path)?;
-                let column_name = optional_string(
-                    column,
-                    "name",
-                    &format!("{column_path}.name"),
-                )?
-                .unwrap_or_else(|| column_key.clone());
+                let column_name = optional_string(column, "name", &format!("{column_path}.name"))?
+                    .unwrap_or_else(|| column_key.clone());
                 parse_dbt_constraint_array(
                     column.get("constraints"),
                     &format!("{column_path}.constraints"),
@@ -1376,18 +1371,15 @@ fn parse_manifest_relation_constraints(
             continue;
         }
 
-        let attached_node = optional_string(
-            object,
-            "attached_node",
-            &format!("{path}.attached_node"),
-        )?
-        .filter(|node| !node.trim().is_empty())
-        .ok_or_else(|| {
-            invalid_field(
-                format!("{path}.attached_node"),
-                format!("built-in {test_name} test must identify its attached resource"),
-            )
-        })?;
+        let attached_node =
+            optional_string(object, "attached_node", &format!("{path}.attached_node"))?
+                .filter(|node| !node.trim().is_empty())
+                .ok_or_else(|| {
+                    invalid_field(
+                        format!("{path}.attached_node"),
+                        format!("built-in {test_name} test must identify its attached resource"),
+                    )
+                })?;
         let local_relation = resources
             .get(&attached_node)
             .and_then(|resource| resource.relation_name.as_deref())
@@ -1405,24 +1397,20 @@ fn parse_manifest_relation_constraints(
             "kwargs",
             &format!("{path}.test_metadata.kwargs"),
         )?;
-        let column_name = optional_string(
-            object,
-            "column_name",
-            &format!("{path}.column_name"),
-        )?
-        .or_else(|| {
-            kwargs
-                .get("column_name")
-                .and_then(Value::as_str)
-                .map(ToString::to_string)
-        })
-        .filter(|column| !column.trim().is_empty())
-        .ok_or_else(|| {
-            invalid_field(
-                format!("{path}.column_name"),
-                format!("built-in {test_name} test must identify one tested column"),
-            )
-        })?;
+        let column_name = optional_string(object, "column_name", &format!("{path}.column_name"))?
+            .or_else(|| {
+                kwargs
+                    .get("column_name")
+                    .and_then(Value::as_str)
+                    .map(ToString::to_string)
+            })
+            .filter(|column| !column.trim().is_empty())
+            .ok_or_else(|| {
+                invalid_field(
+                    format!("{path}.column_name"),
+                    format!("built-in {test_name} test must identify one tested column"),
+                )
+            })?;
 
         let evidence = vec![dbt_constraint_evidence(
             ConstraintSourceKind::DbtTest,
@@ -1432,9 +1420,12 @@ fn parse_manifest_relation_constraints(
         let constraint = if test_name == "unique" {
             RelationConstraint::unique_key(vec![column_name], evidence)
         } else {
-            let referenced_column =
-                required_string(kwargs, "field", &format!("{path}.test_metadata.kwargs.field"))?
-                    .to_string();
+            let referenced_column = required_string(
+                kwargs,
+                "field",
+                &format!("{path}.test_metadata.kwargs.field"),
+            )?
+            .to_string();
             let dependencies = dependency_ids(object, &path)?;
             let referenced_resources = dependencies
                 .iter()
@@ -1447,12 +1438,8 @@ fn parse_manifest_relation_constraints(
                 .collect::<Vec<_>>();
             let referenced_relation = match referenced_resources.as_slice() {
                 [relation] => (*relation).to_string(),
-                [] => required_string(
-                    kwargs,
-                    "to",
-                    &format!("{path}.test_metadata.kwargs.to"),
-                )?
-                .to_string(),
+                [] => required_string(kwargs, "to", &format!("{path}.test_metadata.kwargs.to"))?
+                    .to_string(),
                 _ => {
                     return Err(invalid_field(
                         format!("{path}.depends_on.nodes"),
@@ -1508,19 +1495,16 @@ fn parse_dbt_constraint_array(
     for (index, value) in constraints.iter().enumerate() {
         let constraint_path = format!("{path}[{index}]");
         let object = as_object(value, &constraint_path)?;
-        let constraint_type =
-            required_string(object, "type", &format!("{constraint_path}.type"))?;
+        let constraint_type = required_string(object, "type", &format!("{constraint_path}.type"))?;
         if !matches!(constraint_type, "primary_key" | "unique" | "foreign_key") {
             continue;
         }
 
         let columns = match implied_column {
             Some(column) => vec![column.to_string()],
-            None => required_string_array(
-                object,
-                "columns",
-                &format!("{constraint_path}.columns"),
-            )?,
+            None => {
+                required_string_array(object, "columns", &format!("{constraint_path}.columns"))?
+            }
         };
         let evidence = vec![dbt_constraint_evidence(
             ConstraintSourceKind::DbtConstraint,
@@ -1531,8 +1515,7 @@ fn parse_dbt_constraint_array(
             "primary_key" => RelationConstraint::primary_key(columns, evidence),
             "unique" => RelationConstraint::unique_key(columns, evidence),
             "foreign_key" => {
-                let reference =
-                    required_string(object, "to", &format!("{constraint_path}.to"))?;
+                let reference = required_string(object, "to", &format!("{constraint_path}.to"))?;
                 let referenced_relation = dbt_constraint_reference(reference, resources);
                 let referenced_columns = required_string_array(
                     object,
@@ -1558,10 +1541,7 @@ fn parse_dbt_constraint_array(
     Ok(())
 }
 
-fn dbt_constraint_reference(
-    reference: &str,
-    resources: &BTreeMap<String, DbtResource>,
-) -> String {
+fn dbt_constraint_reference(reference: &str, resources: &BTreeMap<String, DbtResource>) -> String {
     if let Some(relation) = resources
         .get(reference)
         .and_then(|resource| resource.relation_name.as_deref())
@@ -1618,10 +1598,7 @@ fn required_string_array(
                 .filter(|value| !value.trim().is_empty())
                 .map(ToString::to_string)
                 .ok_or_else(|| {
-                    invalid_field(
-                        format!("{path}[{index}]"),
-                        "expected a non-empty string",
-                    )
+                    invalid_field(format!("{path}[{index}]"), "expected a non-empty string")
                 })
         })
         .collect()
