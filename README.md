@@ -99,6 +99,8 @@ sqlparser while keeping consumers independent from sqlparser AST types.
 
 ## Relation constraint metadata
 
+Relation constraints are canonical and source-independent: any supported adapter that can prove an equivalent fact must emit the same canonical constraint. Direct SQL DDL, dbt metadata/tests, and future external metadata adapters therefore converge on one representation rather than owning separate semantics.
+
 Optional `relation_constraints` metadata describes canonical relation and column constraints
 independently from query-derived value domains. Supported facts are primary keys, unique keys,
 foreign keys, non-null columns, and finite accepted-value sets. Composite keys preserve declared
