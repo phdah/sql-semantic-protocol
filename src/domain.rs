@@ -369,8 +369,8 @@ fn intersect_case_derivations(
             }
             CaseDomainDerivation::Known(alternatives)
         }
-        (CaseDomainDerivation::Unknown(reason), CaseDomainDerivation::Known(known))
-        | (CaseDomainDerivation::Known(known), CaseDomainDerivation::Unknown(reason))
+        (CaseDomainDerivation::Unknown(_), CaseDomainDerivation::Known(known))
+        | (CaseDomainDerivation::Known(known), CaseDomainDerivation::Unknown(_))
             if known.is_empty() =>
         {
             CaseDomainDerivation::Known(Vec::new())
@@ -391,8 +391,8 @@ fn union_case_derivations(
             }
             CaseDomainDerivation::Known(left)
         }
-        (CaseDomainDerivation::Unknown(reason), CaseDomainDerivation::Known(known))
-        | (CaseDomainDerivation::Known(known), CaseDomainDerivation::Unknown(reason))
+        (CaseDomainDerivation::Unknown(_), CaseDomainDerivation::Known(known))
+        | (CaseDomainDerivation::Known(known), CaseDomainDerivation::Unknown(_))
             if known.iter().any(BTreeMap::is_empty) =>
         {
             CaseDomainDerivation::Known(vec![DomainMap::new()])
