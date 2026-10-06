@@ -1314,8 +1314,7 @@ fn parse_manifest_resource(
     path: &str,
 ) -> Result<DbtResource, DbtManifestError> {
     validate_unique_id(resource_id, object, path)?;
-    let relation_name =
-        optional_string(object, "relation_name", &format!("{path}.relation_name"))?;
+    let relation_name = optional_string(object, "relation_name", &format!("{path}.relation_name"))?;
     let columns = parse_manifest_columns(object, path)?;
     Ok(DbtResource {
         relation_name,
@@ -1344,15 +1343,11 @@ fn parse_manifest_columns(
                 "column name cannot be empty",
             ));
         }
-        let data_type = optional_string(
-            column,
-            "data_type",
-            &format!("{column_path}.data_type"),
-        )?
-        .and_then(|data_type| {
-            let data_type = data_type.trim();
-            (!data_type.is_empty()).then(|| data_type.to_string())
-        });
+        let data_type = optional_string(column, "data_type", &format!("{column_path}.data_type"))?
+            .and_then(|data_type| {
+                let data_type = data_type.trim();
+                (!data_type.is_empty()).then(|| data_type.to_string())
+            });
         parsed.push(DbtDeclaredColumn {
             name: name.to_string(),
             data_type,
