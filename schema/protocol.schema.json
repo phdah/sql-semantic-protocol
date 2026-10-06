@@ -621,6 +621,7 @@
           "const": "query"
         },
         "sources": {
+          "description": "Direct query sources. CTEs and derived tables remain local sources while their supported semantics resolve through to physical dependencies, joins, domains, and lineage.",
           "type": "array",
           "items": {
             "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/sourceRelation"
@@ -634,6 +635,7 @@
           }
         },
         "joins": {
+          "description": "Normalized joins visible to the query, including supported joins carried through referenced CTEs and derived tables.",
           "type": "array",
           "items": {
             "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/join"
@@ -643,12 +645,14 @@
           "$ref": "#/$defs/predicates"
         },
         "column_domains": {
+          "description": "Conservative source-column domains, including supported constraints propagated through CTE and derived-table projections to physical columns.",
           "type": "array",
           "items": {
             "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
           }
         },
         "output": {
+          "description": "Final query output. With catalog schema metadata, wildcard projections over physical and local relations expand to concrete columns; otherwise they remain explicitly unresolved.",
           "$ref": "#/$defs/output"
         },
         "set_operation": {
