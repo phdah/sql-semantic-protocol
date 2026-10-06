@@ -45,7 +45,17 @@
       "relation_name": "warehouse.raw.orders",
       "database": "warehouse",
       "schema": "raw",
-      "name": "orders"
+      "name": "orders",
+      "columns": {
+        "id": {
+          "name": "id",
+          "data_type": "INTEGER"
+        },
+        "amount": {
+          "name": "amount",
+          "data_type": "BIGINT"
+        }
+      }
     }
   }
 }
