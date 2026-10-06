@@ -32,10 +32,10 @@ use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonOperator, ComparisonPredicate, Diagnostic,
-    DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
-    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin,
-    JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
+    ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
+    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ScalarSubqueryExpression, SetMode, SetOperand,
@@ -2172,8 +2172,7 @@ fn analyze_case_expression(
         .into_iter()
         .map(|domains| remap_case_source_domains_to_physical(domains, scope))
         .collect::<Vec<_>>();
-    let else_source_domains =
-        remap_case_source_domains_to_physical(else_source_domains, scope);
+    let else_source_domains = remap_case_source_domains_to_physical(else_source_domains, scope);
     let branches = normalized_branches
         .into_iter()
         .zip(branch_source_domains)
