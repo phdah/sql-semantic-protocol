@@ -11,6 +11,7 @@ The protocol describes semantics such as:
 - the relations and columns a query depends on
 - the columns produced by the query and their lineage
 - the constraints placed on values by predicates
+- declared primary, unique, and foreign keys with provenance and enforcement evidence
 - the allowed value domains of columns, including bounded, unbounded, excluded, or disjoint ranges
 - relationships between columns and relations introduced by joins and predicates
 - other query semantics required to understand the resulting rows and output schema
@@ -95,6 +96,29 @@ explicit `custom` datatypes instead of being discarded or guessed.
 
 The public `dialect_from_name` and `parse_data_type` helpers delegate dialect handling to
 sqlparser while keeping consumers independent from sqlparser AST types.
+
+## Relation key metadata
+
+Optional `relation_constraints` metadata describes declared primary keys, unique keys, and foreign
+keys independently from query-derived value domains. Composite keys preserve declared column
+order, and foreign keys preserve both local columns and the referenced relation/columns.
+
+Each constraint carries one or more evidence records with a source kind, stable source identity,
+and enforcement state. SQL DDL declarations, dbt constraints, and dbt generic tests normalize into
+the same canonical model. Missing enforcement evidence remains `unknown`: a declaration or a dbt
+test is never promoted into a proven warehouse-enforced constraint.
+
+Identical facts from multiple sources coalesce their evidence. Different unique keys and foreign
+keys coexist, while contradictory primary-key declarations remain visible with an explicit
+`conflicting_primary_key` diagnostic. The analyzer does not infer primary keys from
+`unique + not_null`, and it does not invent or propagate keys through transformations unless a
+future analyzer can prove that property.
+
+Direct SQL analysis captures parser-supported column- and table-level `PRIMARY KEY`, `UNIQUE`,
+and `FOREIGN KEY` declarations, including queryless `CREATE TABLE` statements. The dbt adapter
+reads explicit model/column constraints plus built-in `unique` and `relationships` tests from
+`manifest.json`. `catalog.json` remains authoritative only for warehouse-introspected columns
+and datatypes.
 
 ## Outcome selection
 
@@ -256,7 +280,8 @@ dbt is a first-class protocol input. The complete adapter consumes both `manifes
 `catalog.json`, using each artifact only for the evidence it authoritatively owns:
 
 - `manifest.json`: model unique IDs, canonical relation identities, compiled SQL, relation context,
-  and declared dependency metadata.
+  declared dependency metadata, explicit model/column key constraints, and built-in `unique` /
+  `relationships` generic-test declarations.
 - `catalog.json`: warehouse-introspected physical columns and database datatypes for models,
   seeds, snapshots, and sources.
 
