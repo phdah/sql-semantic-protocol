@@ -4986,16 +4986,14 @@ fn unwrap_nested_expression(mut expression: &Expr) -> &Expr {
 fn check_column_name(expression: &Expr) -> Option<&str> {
     match unwrap_nested_expression(expression) {
         Expr::Identifier(identifier) => Some(identifier.value.as_str()),
-        Expr::CompoundIdentifier(identifiers) => {
-            identifiers.last().map(|identifier| identifier.value.as_str())
-        }
+        Expr::CompoundIdentifier(identifiers) => identifiers
+            .last()
+            .map(|identifier| identifier.value.as_str()),
         _ => None,
     }
 }
 
-fn constraint_value_from_expression(
-    expression: &Expr,
-) -> Option<(ConstraintValue, Option<bool>)> {
+fn constraint_value_from_expression(expression: &Expr) -> Option<(ConstraintValue, Option<bool>)> {
     match unwrap_nested_expression(expression) {
         Expr::Value(value) => constraint_value_from_sql_value(&value.value),
         Expr::UnaryOp {
