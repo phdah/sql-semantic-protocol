@@ -1331,6 +1331,7 @@ pub struct CaseExpression {
     operand: Option<Box<Expression>>,
     branches: Vec<CaseBranch>,
     else_result: Option<Box<Expression>>,
+    else_source_domains: CaseSourceDomains,
 }
 
 impl CaseExpression {
@@ -1338,11 +1339,13 @@ impl CaseExpression {
         operand: Option<Expression>,
         branches: Vec<CaseBranch>,
         else_result: Option<Expression>,
+        else_source_domains: CaseSourceDomains,
     ) -> Self {
         Self {
             operand: operand.map(Box::new),
             branches,
             else_result: else_result.map(Box::new),
+            else_source_domains,
         }
     }
 
@@ -1360,6 +1363,11 @@ impl CaseExpression {
     pub fn else_result(&self) -> Option<&Expression> {
         self.else_result.as_deref()
     }
+
+    /// Return physical source-column domains selecting the explicit or implicit ELSE branch.
+    pub fn else_source_domains(&self) -> &CaseSourceDomains {
+        &self.else_source_domains
+    }
 }
 
 /// One WHEN/THEN branch in a CASE expression.
@@ -1367,11 +1375,20 @@ impl CaseExpression {
 pub struct CaseBranch {
     condition: Expression,
     result: Expression,
+    source_domains: CaseSourceDomains,
 }
 
 impl CaseBranch {
-    pub(crate) fn new(condition: Expression, result: Expression) -> Self {
-        Self { condition, result }
+    pub(crate) fn new(
+        condition: Expression,
+        result: Expression,
+        source_domains: CaseSourceDomains,
+    ) -> Self {
+        Self {
+            condition,
+            result,
+            source_domains,
+        }
     }
 
     /// Return the WHEN condition or simple-CASE match value.
@@ -1382,6 +1399,67 @@ impl CaseBranch {
     /// Return the THEN result expression.
     pub fn result(&self) -> &Expression {
         &self.result
+    }
+
+    /// Return physical source-column domains selecting this branch after earlier branches fail.
+    pub fn source_domains(&self) -> &CaseSourceDomains {
+        &self.source_domains
+    }
+}
+
+/// One conjunction of physical source-column domains that can select a CASE branch.
+///
+/// Alternatives inside CaseSourceDomains::Reachable are combined with logical OR. Domains inside
+/// one alternative are combined with logical AND.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CaseSourceDomainAlternative {
+    column_domains: Vec<ColumnDomain>,
+}
+
+impl CaseSourceDomainAlternative {
+    pub(crate) fn new(mut column_domains: Vec<ColumnDomain>) -> Self {
+        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
+        Self { column_domains }
+    }
+
+    /// Return conjunctive physical source-column domains in deterministic column order.
+    pub fn column_domains(&self) -> &[ColumnDomain] {
+        &self.column_domains
+    }
+}
+
+/// Physical source-column domains controlling CASE branch selection.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum CaseSourceDomains {
+    /// The branch is reachable through one or more disjunctive domain alternatives.
+    Reachable {
+        /// Domain alternatives in deterministic derivation order.
+        alternatives: Vec<CaseSourceDomainAlternative>,
+    },
+    /// Earlier CASE branches make this branch impossible to select.
+    Unreachable,
+    /// Branch selection cannot be reduced safely to physical source-column domains.
+    Unknown(UnknownDomain),
+}
+
+impl CaseSourceDomains {
+    pub(crate) fn reachable(alternatives: Vec<CaseSourceDomainAlternative>) -> Self {
+        if alternatives.is_empty() {
+            Self::Unreachable
+        } else {
+            Self::Reachable { alternatives }
+        }
+    }
+
+    pub(crate) fn unknown(reason: impl Into<String>) -> Self {
+        let reason = reason.into();
+        let reason = if reason.trim().is_empty() {
+            "CASE branch source domains could not be derived safely".to_string()
+        } else {
+            reason
+        };
+        Self::Unknown(UnknownDomain { reason })
     }
 }
 
