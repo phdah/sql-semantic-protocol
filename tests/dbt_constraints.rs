@@ -6,9 +6,8 @@ use sql_semantic_protocol::{
 use sqlparser::dialect::PostgreSqlDialect;
 
 fn manifest_with_constraints() -> String {
-    let mut manifest: Value =
-        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
-            .expect("fixture manifest should parse");
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest should parse");
 
     let stg = manifest["nodes"]
         .get_mut("model.demo.stg_orders")
@@ -78,8 +77,7 @@ fn manifest_with_constraints() -> String {
 
 #[test]
 fn dbt_constraints_and_generic_tests_normalize_to_one_canonical_model() {
-    let manifest =
-        parse_dbt_manifest(&manifest_with_constraints()).expect("manifest should parse");
+    let manifest = parse_dbt_manifest(&manifest_with_constraints()).expect("manifest should parse");
     let metadata = manifest
         .relation_constraints()
         .iter()
@@ -109,10 +107,13 @@ fn dbt_constraints_and_generic_tests_normalize_to_one_canonical_model() {
         })
         .expect("single-column unique metadata");
     assert_eq!(single_unique.evidence().len(), 2);
-    assert!(single_unique
-        .evidence()
-        .iter()
-        .any(|evidence| evidence.provenance().source_kind() == ConstraintSourceKind::DbtConstraint));
+    assert!(
+        single_unique
+            .evidence()
+            .iter()
+            .any(|evidence| evidence.provenance().source_kind()
+                == ConstraintSourceKind::DbtConstraint)
+    );
     assert!(single_unique
         .evidence()
         .iter()
@@ -154,5 +155,7 @@ fn dbt_constraint_metadata_survives_bundle_emission() {
         .any(|constraint| constraint["kind"] == "primary_key"));
     assert!(metadata.to_string().contains("dbt_constraint"));
     assert!(metadata.to_string().contains("dbt_test"));
-    assert!(!metadata.to_string().contains("\"enforcement\":\"enforced\""));
+    assert!(!metadata
+        .to_string()
+        .contains("\"enforcement\":\"enforced\""));
 }
