@@ -15,6 +15,7 @@
 mod analysis;
 mod bundle;
 mod composition;
+mod constraints;
 mod data_type;
 mod dbt;
 mod domain;
@@ -38,6 +39,11 @@ pub use bundle::{
     GraphComponent, GraphEdge, InputAnalysisError, RelationResolution, ResolvedComposedSemantics,
     SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
     UnresolvedComposedSemantics,
+};
+pub use constraints::{
+    merge_relation_constraint_sets, ConstraintDiagnostic, ConstraintEnforcement,
+    ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance, ConstraintSourceKind,
+    ForeignKeyConstraint, KeyConstraint, RelationConstraint, RelationConstraintSet,
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{
