@@ -19,7 +19,10 @@ fn assert_number_range(
 
     match (range.lower(), lower) {
         (Some(actual), Some((value, inclusive))) => {
-            assert_eq!(actual.value().value(), &LiteralValue::Number(value.to_string()));
+            assert_eq!(
+                actual.value().value(),
+                &LiteralValue::Number(value.to_string())
+            );
             assert_eq!(actual.inclusive(), inclusive);
         }
         (None, None) => {}
@@ -27,7 +30,10 @@ fn assert_number_range(
     }
     match (range.upper(), upper) {
         (Some(actual), Some((value, inclusive))) => {
-            assert_eq!(actual.value().value(), &LiteralValue::Number(value.to_string()));
+            assert_eq!(
+                actual.value().value(),
+                &LiteralValue::Number(value.to_string())
+            );
             assert_eq!(actual.inclusive(), inclusive);
         }
         (None, None) => {}
@@ -35,7 +41,9 @@ fn assert_number_range(
     }
 }
 
-fn first_query(protocol: &sql_semantic_protocol::Protocol) -> &sql_semantic_protocol::QueryStatement {
+fn first_query(
+    protocol: &sql_semantic_protocol::Protocol,
+) -> &sql_semantic_protocol::QueryStatement {
     match protocol.statements().first() {
         Some(ProtocolStatement::Query(query)) => query,
         other => panic!("expected query statement, got {other:?}"),
@@ -56,9 +64,7 @@ fn cte_filter_domains_and_lineage_resolve_to_physical_columns() {
     let domain = query
         .column_domains()
         .iter()
-        .find(|domain| {
-            domain.column().relation() == Some("t") && domain.column().name() == "a"
-        })
+        .find(|domain| domain.column().relation() == Some("t") && domain.column().name() == "a")
         .expect("CTE filter should constrain t.a");
     assert_number_range(domain.domain(), Some(("1000", false)), None);
 
@@ -88,9 +94,7 @@ fn chained_cte_filters_intersect_on_the_physical_column() {
     let domain = query
         .column_domains()
         .iter()
-        .find(|domain| {
-            domain.column().relation() == Some("t") && domain.column().name() == "a"
-        })
+        .find(|domain| domain.column().relation() == Some("t") && domain.column().name() == "a")
         .expect("chained CTE filters should constrain t.a");
     assert_number_range(
         domain.domain(),
@@ -118,9 +122,7 @@ fn derived_table_filters_propagate_to_physical_columns() {
     let domain = query
         .column_domains()
         .iter()
-        .find(|domain| {
-            domain.column().relation() == Some("t") && domain.column().name() == "a"
-        })
+        .find(|domain| domain.column().relation() == Some("t") && domain.column().name() == "a")
         .expect("derived-table filter should constrain t.a");
     assert_number_range(domain.domain(), Some(("10", true)), None);
     assert_eq!(query.output().columns()[0].lineage()[0].relation(), "t");
@@ -145,7 +147,10 @@ fn joins_inside_ctes_are_retained() {
     assert_eq!(query.joins().len(), 1);
     assert_eq!(query.joins()[0].left().relation(), "orders");
     assert_eq!(query.joins()[0].right().relation(), "customers");
-    assert_eq!(query.output().columns()[0].lineage()[0].relation(), "orders");
+    assert_eq!(
+        query.output().columns()[0].lineage()[0].relation(),
+        "orders"
+    );
     assert_eq!(
         query.output().columns()[1].lineage()[0].relation(),
         "customers"
@@ -292,9 +297,5 @@ fn dbt_artifacts_preserve_cte_domains_and_expand_wildcards() {
                 && domain.column().name() == "amount"
         })
         .expect("dbt CTE should constrain physical amount");
-    assert_number_range(
-        amount.domain(),
-        Some(("10", false)),
-        Some(("20", false)),
-    );
+    assert_number_range(amount.domain(), Some(("10", false)), Some(("20", false)));
 }
