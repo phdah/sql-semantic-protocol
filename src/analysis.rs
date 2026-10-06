@@ -28,7 +28,6 @@ use crate::domain::{
     resolve_column, union_domains,
 };
 use crate::parser::ParsedSql;
-use crate::relation::{RelationCatalog, RelationContext};
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression, ColumnDomain,
@@ -44,6 +43,7 @@ use crate::protocol::{
     ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
     WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
 };
+use crate::relation::{RelationCatalog, RelationContext};
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -140,7 +140,9 @@ fn analyze_statement(
     metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
     match statement {
-        SqlStatement::Query(query) => ProtocolStatement::Query(analyze_query(query, None, metadata)),
+        SqlStatement::Query(query) => {
+            ProtocolStatement::Query(analyze_query(query, None, metadata))
+        }
         SqlStatement::CreateTable(create_table) => match &create_table.query {
             Some(query) => {
                 let target = create_table.name.to_string();
@@ -479,12 +481,7 @@ fn analyze_query(
 
     let set_operation = analyze_set_operation(query.body.as_ref());
     let aggregation = analyze_query_aggregation(query, &mut diagnostics);
-    let output = analyze_query_output(
-        query,
-        &BTreeMap::new(),
-        &mut diagnostics,
-        Some(metadata),
-    );
+    let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics, Some(metadata));
 
     let predicates = match query.body.as_ref() {
         SetExpr::Select(select) => analyze_select(select, &mut diagnostics),
@@ -565,13 +562,7 @@ fn analyze_query_predicates_with_outer_scope(
 fn analyze_select(select: &Select, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
     inspect_select_features(select, diagnostics);
     let mut scope_diagnostics = Vec::new();
-    let scope = build_output_scope(
-        select,
-        &BTreeMap::new(),
-        &[],
-        &mut scope_diagnostics,
-        None,
-    );
+    let scope = build_output_scope(select, &BTreeMap::new(), &[], &mut scope_diagnostics, None);
     analyze_select_predicates_with_scope(select, &scope, diagnostics)
 }
 
@@ -1000,9 +991,7 @@ fn remap_local_column_domains(
         .collect()
 }
 
-fn intersect_column_domain_sets<const N: usize>(
-    sets: [Vec<ColumnDomain>; N],
-) -> Vec<ColumnDomain> {
+fn intersect_column_domain_sets<const N: usize>(sets: [Vec<ColumnDomain>; N]) -> Vec<ColumnDomain> {
     let mut domains = BTreeMap::<ColumnRef, ValueDomain>::new();
     for column_domain in sets.into_iter().flatten() {
         let column = column_domain.column().clone();
@@ -2924,24 +2913,20 @@ fn analyze_set_expr_output_with_outer_scope(
     metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
     match expression {
-        SetExpr::Select(select) => {
-            analyze_select_output_with_outer_scope(
-                select,
-                local_outputs,
-                outer_scope,
-                diagnostics,
-                metadata,
-            )
-        }
-        SetExpr::Query(query) => {
-            analyze_query_output_with_outer_scope(
-                query,
-                local_outputs,
-                outer_scope,
-                diagnostics,
-                metadata,
-            )
-        }
+        SetExpr::Select(select) => analyze_select_output_with_outer_scope(
+            select,
+            local_outputs,
+            outer_scope,
+            diagnostics,
+            metadata,
+        ),
+        SetExpr::Query(query) => analyze_query_output_with_outer_scope(
+            query,
+            local_outputs,
+            outer_scope,
+            diagnostics,
+            metadata,
+        ),
         SetExpr::SetOperation {
             left,
             set_quantifier,
@@ -3039,13 +3024,7 @@ fn analyze_select_output_with_outer_scope(
     diagnostics: &mut Vec<Diagnostic>,
     metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Output {
-    let scope = build_output_scope(
-        select,
-        local_outputs,
-        outer_scope,
-        diagnostics,
-        metadata,
-    );
+    let scope = build_output_scope(select, local_outputs, outer_scope, diagnostics, metadata);
     let mut columns = Vec::new();
     for item in &select.projection {
         columns.extend(analyze_output_item(
@@ -3213,7 +3192,9 @@ fn refine_output_domains_from_column_domains(
                             candidate.column().relation() == Some(source.relation())
                                 && candidate.column().name() == source.column()
                         })
-                        .map_or(ValueDomain::Unbounded, |candidate| candidate.domain().clone()),
+                        .map_or(ValueDomain::Unbounded, |candidate| {
+                            candidate.domain().clone()
+                        }),
                     _ => ValueDomain::Unbounded,
                 };
                 let domain = intersect_domains(column.domain(), &derived);
