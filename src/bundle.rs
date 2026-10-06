@@ -8,6 +8,9 @@ use std::fmt;
 
 use sqlparser::dialect::Dialect;
 
+use crate::constraints::{
+    merge_relation_constraint_sets, RelationConstraintSet,
+};
 use crate::protocol::{
     ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, WriteKind,
     PROTOCOL_VERSION,
@@ -137,6 +140,7 @@ pub struct AnalyzedInput {
     dialect: String,
     relation_context: Option<RelationContext>,
     statements: Vec<ProtocolStatement>,
+    relation_constraints: Vec<RelationConstraintSet>,
 }
 
 impl AnalyzedInput {
@@ -163,6 +167,11 @@ impl AnalyzedInput {
     /// Return analyzed statements in source statement order.
     pub fn statements(&self) -> &[ProtocolStatement] {
         &self.statements
+    }
+
+    /// Return relation constraints discovered in this input before bundle-level enrichment.
+    pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
+        &self.relation_constraints
     }
 }
 
@@ -593,6 +602,7 @@ pub struct AnalysisBundle {
     layers: Vec<TransformationLayer>,
     graph: AnalysisGraph,
     source_schemas: Vec<RelationSchema>,
+    relation_constraints: Vec<RelationConstraintSet>,
 }
 
 impl AnalysisBundle {
@@ -621,6 +631,18 @@ impl AnalysisBundle {
         &self.source_schemas
     }
 
+    /// Return canonical relation constraints from SQL and metadata adapters.
+    pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
+        &self.relation_constraints
+    }
+
+    /// Merge adapter-neutral canonical constraint evidence into this bundle.
+    ///
+    /// Identical facts coalesce evidence. Conflicting primary keys remain explicit diagnostics.
+    pub fn enrich_relation_constraints(&mut self, constraints: &[RelationConstraintSet]) {
+        merge_relation_constraint_sets(&mut self.relation_constraints, constraints);
+    }
+
     pub(crate) fn from_protocol(protocol: &Protocol) -> Self {
         let inputs = vec![AnalyzedInput {
             id: "input-0001".to_string(),
@@ -628,6 +650,7 @@ impl AnalysisBundle {
             dialect: protocol.source().dialect().to_string(),
             relation_context: None,
             statements: protocol.statements().to_vec(),
+            relation_constraints: protocol.relation_constraints().to_vec(),
         }];
 
         Self::from_inputs(inputs)
@@ -643,6 +666,17 @@ impl AnalysisBundle {
         inputs: Vec<AnalyzedInput>,
         resolver: &dyn RelationResolver,
     ) -> Result<Self, LayerBuildError> {
+        let mut relation_constraints = Vec::new();
+        for input in &inputs {
+            for constraints in input.relation_constraints() {
+                let relation = resolve_relation(resolver, input, constraints.relation())?;
+                let resolved = constraints.map_relations(relation, |reference| {
+                    resolve_relation(resolver, input, reference)
+                })?;
+                merge_relation_constraint_sets(&mut relation_constraints, &[resolved]);
+            }
+        }
+
         let mut layers = build_layers(&inputs, resolver)?;
         let graph = build_graph(&layers);
         let composed = crate::composition::compose_layers(&inputs, &layers, &graph);
@@ -656,6 +690,7 @@ impl AnalysisBundle {
             layers,
             graph,
             source_schemas: Vec::new(),
+            relation_constraints,
         })
     }
 }
@@ -1244,6 +1279,7 @@ pub fn select_targets(
         layers,
         graph,
         source_schemas: bundle.source_schemas.clone(),
+        relation_constraints: bundle.relation_constraints.clone(),
     })
 }
 
@@ -1413,6 +1449,7 @@ fn analyze_input(
         dialect: dialect_name.to_string(),
         relation_context,
         statements: protocol.statements().to_vec(),
+        relation_constraints: protocol.relation_constraints().to_vec(),
     })
 }
 
