@@ -6,9 +6,8 @@ use sql_semantic_protocol::{
 use sqlparser::dialect::PostgreSqlDialect;
 
 fn manifest_with_tests(tests: Vec<(&str, Value)>) -> String {
-    let mut manifest: Value =
-        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
-            .expect("fixture manifest should parse");
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest should parse");
     let nodes = manifest["nodes"]
         .as_object_mut()
         .expect("manifest nodes should be an object");
@@ -234,7 +233,6 @@ fn accepted_values_reject_non_scalar_arguments() {
     assert!(error.to_string().contains("scalar JSON values"));
 }
 
-
 #[test]
 fn column_constraints_survive_target_selection_and_emission() {
     let manifest = parse_dbt_manifest(&manifest_with_tests(vec![
@@ -262,11 +260,8 @@ fn column_constraints_survive_target_selection_and_emission() {
     .expect("manifest should parse");
     let bundle = analyze_dbt_manifest(&manifest, "postgresql", &PostgreSqlDialect {})
         .expect("manifest should analyze");
-    let selected = select_targets(
-        &bundle,
-        &["warehouse.analytics.final_orders".to_string()],
-    )
-    .expect("target should resolve");
+    let selected = select_targets(&bundle, &["warehouse.analytics.final_orders".to_string()])
+        .expect("target should resolve");
     let json: Value =
         serde_json::from_str(&to_bundle_json(&selected)).expect("bundle JSON should parse");
 
