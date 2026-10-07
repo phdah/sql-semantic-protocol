@@ -1111,6 +1111,13 @@ struct LocalRelationAnalysis {
 
 type LocalRelationAnalysisMap = BTreeMap<String, LocalRelationAnalysis>;
 
+struct RelationAnalysisScope<'a> {
+    local_relations: &'a BTreeSet<String>,
+    local_outputs: &'a LocalOutputMap,
+    local_analyses: &'a LocalRelationAnalysisMap,
+    output_scope: &'a [OutputRelation],
+}
+
 struct AnalyzedRelation {
     source: SourceRelation,
     reference: RelationRef,
@@ -1261,15 +1268,19 @@ fn analyze_select_relations_with_locals(
 ) -> RelationAnalysis {
     let mut analysis = RelationAnalysis::default();
     let mut scope_diagnostics = Vec::new();
-    let scope = build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
+    let output_scope =
+        build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
+    let relation_scope = RelationAnalysisScope {
+        local_relations,
+        local_outputs,
+        local_analyses,
+        output_scope: &output_scope,
+    };
 
     for source in &select.from {
         analyze_table_with_joins(
             source,
-            local_relations,
-            local_outputs,
-            local_analyses,
-            &scope,
+            &relation_scope,
             diagnostics,
             derived_index,
             &mut analysis,
@@ -1378,7 +1389,7 @@ fn collect_grouping_dependencies(
         _ => collect_expression_dependencies_with_windows(
             expression,
             named_windows,
-            local_relations,
+            scope.local_relations,
             diagnostics,
             derived_index,
             dependencies,
@@ -1388,19 +1399,14 @@ fn collect_grouping_dependencies(
 
 fn analyze_table_with_joins(
     source: &TableWithJoins,
-    local_relations: &BTreeSet<String>,
-    local_outputs: &LocalOutputMap,
-    local_analyses: &LocalRelationAnalysisMap,
-    scope: &[OutputRelation],
+    scope: &RelationAnalysisScope<'_>,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     analysis: &mut RelationAnalysis,
 ) {
     let mut left = register_table_factor(
         &source.relation,
-        local_relations,
-        local_outputs,
-        local_analyses,
+        scope,
         diagnostics,
         derived_index,
         analysis,
@@ -1409,9 +1415,7 @@ fn analyze_table_with_joins(
     for join in &source.joins {
         let right = register_table_factor(
             &join.relation,
-            local_relations,
-            local_outputs,
-            local_analyses,
+            scope,
             diagnostics,
             derived_index,
             analysis,
@@ -1422,7 +1426,6 @@ fn analyze_table_with_joins(
                 join,
                 left_ref,
                 right_ref,
-                local_relations,
                 scope,
                 diagnostics,
                 derived_index,
@@ -1444,18 +1447,16 @@ fn analyze_table_with_joins(
 
 fn register_table_factor(
     factor: &TableFactor,
-    local_relations: &BTreeSet<String>,
-    local_outputs: &LocalOutputMap,
-    local_analyses: &LocalRelationAnalysisMap,
+    scope: &RelationAnalysisScope<'_>,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     analysis: &mut RelationAnalysis,
 ) -> Option<RelationRef> {
     let relation = analyze_table_factor_with_locals(
         factor,
-        local_relations,
-        local_outputs,
-        local_analyses,
+        scope.local_relations,
+        scope.local_outputs,
+        scope.local_analyses,
         diagnostics,
         derived_index,
     )?;
@@ -1590,8 +1591,7 @@ fn analyze_join(
     join: &SqlJoin,
     left: &RelationRef,
     right: &RelationRef,
-    local_relations: &BTreeSet<String>,
-    scope: &[OutputRelation],
+    scope: &RelationAnalysisScope<'_>,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     dependencies: &mut BTreeSet<String>,
@@ -1625,7 +1625,7 @@ fn analyze_join(
     }
 
     let condition = constraint.and_then(|constraint| {
-        analyze_join_constraint(constraint, left, right, scope, diagnostics)
+        analyze_join_constraint(constraint, left, right, scope.output_scope, diagnostics)
     });
 
     ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
