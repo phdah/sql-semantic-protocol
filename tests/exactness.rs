@@ -73,9 +73,8 @@ fn same_column_disjunction_is_exact_but_cross_column_disjunction_is_residual() {
 
 #[test]
 fn correlated_or_tree_is_residual_even_when_each_projection_has_a_domain() {
-    let protocol = analyze_generic(
-        "SELECT a, b FROM t WHERE (a = 1 AND b = 2) OR (a = 3 AND b = 4)",
-    );
+    let protocol =
+        analyze_generic("SELECT a, b FROM t WHERE (a = 1 AND b = 2) OR (a = 3 AND b = 4)");
     let query = first_query(&protocol);
 
     assert!(has_residual(
@@ -83,8 +82,14 @@ fn correlated_or_tree_is_residual_even_when_each_projection_has_a_domain() {
         ResidualConditionReason::CrossColumnDisjunction,
         ConditionClause::Where,
     ));
-    assert!(query.column_domains().iter().any(|domain| domain.column().name() == "a"));
-    assert!(query.column_domains().iter().any(|domain| domain.column().name() == "b"));
+    assert!(query
+        .column_domains()
+        .iter()
+        .any(|domain| domain.column().name() == "a"));
+    assert!(query
+        .column_domains()
+        .iter()
+        .any(|domain| domain.column().name() == "b"));
 }
 
 #[test]
@@ -109,9 +114,8 @@ fn computed_and_pattern_predicates_are_residual() {
 
 #[test]
 fn subquery_predicates_are_residual_and_nested_scope_has_its_own_contract() {
-    let protocol = analyze_generic(
-        "SELECT id FROM t WHERE EXISTS (SELECT 1 FROM u WHERE u.id = t.id)",
-    );
+    let protocol =
+        analyze_generic("SELECT id FROM t WHERE EXISTS (SELECT 1 FROM u WHERE u.id = t.id)");
     let query = first_query(&protocol);
 
     assert!(has_residual(
@@ -240,9 +244,7 @@ fn set_operations_are_residual() {
 
 #[test]
 fn inner_join_scalar_filters_are_domains_and_equality_joins_remain_exact() {
-    let protocol = analyze_generic(
-        "SELECT t.x FROM t JOIN u ON t.x = u.y AND t.a > 5",
-    );
+    let protocol = analyze_generic("SELECT t.x FROM t JOIN u ON t.x = u.y AND t.a > 5");
     let query = first_query(&protocol);
 
     assert!(query.condition_exactness().is_exact());
@@ -280,43 +282,57 @@ fn null_membership_is_explicit_for_every_domain_kind() {
 
     let is_null = analyze_generic("SELECT a FROM t WHERE a IS NULL");
     assert_eq!(
-        first_query(&is_null).column_domains()[0].domain().admits_null(),
+        first_query(&is_null).column_domains()[0]
+            .domain()
+            .admits_null(),
         Some(true)
     );
 
     let is_not_null = analyze_generic("SELECT a FROM t WHERE a IS NOT NULL");
     assert_eq!(
-        first_query(&is_not_null).column_domains()[0].domain().admits_null(),
+        first_query(&is_not_null).column_domains()[0]
+            .domain()
+            .admits_null(),
         Some(false)
     );
 
     let not_equal = analyze_generic("SELECT a FROM t WHERE a <> 1");
     assert_eq!(
-        first_query(&not_equal).column_domains()[0].domain().admits_null(),
+        first_query(&not_equal).column_domains()[0]
+            .domain()
+            .admits_null(),
         Some(false)
     );
 
     let not_in = analyze_generic("SELECT a FROM t WHERE a NOT IN (1, 2)");
     assert_eq!(
-        first_query(&not_in).column_domains()[0].domain().admits_null(),
+        first_query(&not_in).column_domains()[0]
+            .domain()
+            .admits_null(),
         Some(false)
     );
 
     let distinct = analyze_generic("SELECT a FROM t WHERE a IS DISTINCT FROM 1");
     assert_eq!(
-        first_query(&distinct).column_domains()[0].domain().admits_null(),
+        first_query(&distinct).column_domains()[0]
+            .domain()
+            .admits_null(),
         Some(true)
     );
 
     let range = analyze_generic("SELECT a FROM t WHERE a > 1");
     assert_eq!(
-        first_query(&range).column_domains()[0].domain().admits_null(),
+        first_query(&range).column_domains()[0]
+            .domain()
+            .admits_null(),
         Some(false)
     );
 
     let empty = analyze_generic("SELECT a FROM t WHERE a = NULL");
     assert_eq!(
-        first_query(&empty).column_domains()[0].domain().admits_null(),
+        first_query(&empty).column_domains()[0]
+            .domain()
+            .admits_null(),
         Some(false)
     );
 
