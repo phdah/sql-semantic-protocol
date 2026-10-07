@@ -4907,6 +4907,7 @@ fn analyze_subquery_semantics(
     SubquerySemantics::new(
         relations.dependencies.into_iter().collect(),
         correlations,
+        relations.joins,
         output,
         predicates,
         column_domains,
