@@ -78,8 +78,7 @@ fn same_column_disjunction_is_exact_but_cross_column_disjunction_is_residual() {
 
 #[test]
 fn same_column_disjunction_preserves_sql_null_truth_semantics() {
-    let protocol =
-        analyze_generic("SELECT a FROM t WHERE (a <= 0 OR a IS NOT NULL) AND a IS NULL");
+    let protocol = analyze_generic("SELECT a FROM t WHERE (a <= 0 OR a IS NOT NULL) AND a IS NULL");
     let query = first_query(&protocol);
 
     assert!(query.condition_exactness().is_exact());
