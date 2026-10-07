@@ -13,8 +13,8 @@ use crate::bundle::{
 use crate::domain::{intersect_case_domain_values, intersect_domains};
 use crate::protocol::{
     CaseBranch, CaseExpression, CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain,
-    ColumnRef, Expression, LineageSource, Output, OutputColumn, ProtocolStatement, QueryStatement,
-    ValueDomain, WriteKind,
+    ColumnRef, ConditionExactness, Expression, LineageSource, Output, OutputColumn,
+    ProtocolStatement, QueryStatement, ValueDomain, WriteKind,
 };
 
 pub(crate) fn compose_layers(
@@ -127,6 +127,9 @@ impl<'a> Composer<'a> {
         let mut dependencies = BTreeSet::<String>::new();
         let mut domain_map = BTreeMap::<ColumnRef, ValueDomain>::new();
         let mut diagnostics = Vec::<CompositionDiagnostic>::new();
+        let mut condition_exactness: ConditionExactness = query
+            .condition_exactness()
+            .with_layer_origin(layer.id().to_string());
 
         for edge in &edges {
             match edge.resolution() {
@@ -156,6 +159,8 @@ impl<'a> Composer<'a> {
                         ComposedSemantics::Resolved(upstream) => {
                             dependencies.extend(upstream.dependencies().iter().cloned());
                             merge_column_domains(&mut domain_map, upstream.column_domains());
+                            condition_exactness =
+                                condition_exactness.merged_with(upstream.condition_exactness());
                         }
                         ComposedSemantics::Unresolved(upstream) => {
                             let mut upstream_diagnostics = upstream.diagnostics().to_vec();
@@ -210,7 +215,7 @@ impl<'a> Composer<'a> {
         let composed = ComposedSemantics::resolved(
             dependencies.into_iter().collect(),
             column_domains,
-            query.condition_exactness().clone(),
+            condition_exactness,
             output,
             diagnostics,
         );
