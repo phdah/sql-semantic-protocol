@@ -186,6 +186,15 @@ fn non_join_column_comparisons_and_in_subqueries_are_residual() {
 }
 
 #[test]
+fn implicit_where_equi_join_is_exact_without_unknown_scalar_domains() {
+    let protocol = analyze_generic("SELECT t.id FROM t, u WHERE t.id = u.id");
+    let query = first_query(&protocol);
+
+    assert!(query.condition_exactness().is_exact());
+    assert!(query.column_domains().is_empty());
+}
+
+#[test]
 fn subquery_predicates_are_residual_and_nested_scope_has_its_own_contract() {
     let protocol =
         analyze_generic("SELECT id FROM t WHERE EXISTS (SELECT 1 FROM u WHERE u.id = t.id)");
