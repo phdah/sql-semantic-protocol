@@ -236,6 +236,8 @@ Correlation resolution is lexical and conservative. A relation alias declared in
 
 A derived table is a local relation whose visible columns are exactly its projected output. Parent references cannot reach hidden columns from the derived query. For LATERAL derived tables, preceding visible FROM/JOIN sources are available while computing the derived output lineage, allowing qualified outer references to resolve without treating them as independent physical inputs.
 
+Joins carried through referenced CTEs and derived tables keep their logical `left` and `right` relation participants, because one local relation can depend on more than one physical relation. Equality-column operands inside the join `condition` are different: when each local projection hop is a plain column copy, those operands are rewritten to the physical source relation and column. Computed, ambiguous, or otherwise unprovable mappings become explicit unknown expressions with an `unresolved_join_column_lineage` diagnostic rather than exposing a local alias as though it were physical. CTEs that are not referenced by the query contribute no dependencies or joins to that query's relation semantics.
+
 Table-producing factors that do not yet have a trustworthy output-schema representation, including unresolved table functions and UNNEST-like sources, emit explicit `unsupported_table_factor` diagnostics. The analyzer does not invent columns or silently drop those factors.
 
 ## Output value domains
