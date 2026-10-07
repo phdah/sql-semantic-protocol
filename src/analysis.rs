@@ -1436,6 +1436,7 @@ fn analyze_set_expr_column_domains(
             let own_domains = remap_local_column_domains(
                 intersect_column_domain_sets([predicate_domains, join_domains]),
                 &scope,
+                &relations.sources,
             );
             let source_domains = collect_select_local_domains(
                 select,
@@ -1604,11 +1605,13 @@ fn collect_table_factor_local_domains(
 fn remap_local_column_domains(
     domains: Vec<ColumnDomain>,
     scope: &[OutputRelation],
+    sources: &[SourceRelation],
 ) -> Vec<ColumnDomain> {
     domains
         .into_iter()
         .flat_map(|column_domain| {
-            if let Ok(source) = resolve_plain_source_column(column_domain.column(), scope) {
+            let scoped_column = scoped_column_ref(column_domain.column(), sources);
+            if let Ok(source) = resolve_plain_source_column(&scoped_column, scope) {
                 return vec![ColumnDomain::new(
                     ColumnRef::new(
                         Some(source.relation().to_string()),
@@ -1621,7 +1624,7 @@ fn remap_local_column_domains(
             let local_matches = scope
                 .iter()
                 .filter(|relation| {
-                    column_domain.column().relation().is_none_or(|qualifier| {
+                    scoped_column.relation().is_none_or(|qualifier| {
                         relation
                             .qualifiers
                             .iter()
@@ -1633,7 +1636,7 @@ fn remap_local_column_domains(
                         let matches = output
                             .columns()
                             .iter()
-                            .filter(|candidate| candidate.name() == column_domain.column().name())
+                            .filter(|candidate| candidate.name() == scoped_column.name())
                             .collect::<Vec<_>>();
                         match matches.as_slice() {
                             [column] => Some(Ok(*column)),
@@ -1690,6 +1693,24 @@ fn remap_local_column_domains(
                 .collect()
         })
         .collect()
+}
+
+fn scoped_column_ref(column: &ColumnRef, sources: &[SourceRelation]) -> ColumnRef {
+    let Some(relation) = column.relation() else {
+        return column.clone();
+    };
+    let candidates = sources
+        .iter()
+        .filter(|source| source.name() == relation)
+        .collect::<Vec<_>>();
+
+    match candidates.as_slice() {
+        [source] => match source.alias() {
+            Some(alias) => ColumnRef::new(Some(alias.to_string()), column.name().to_string()),
+            None => column.clone(),
+        },
+        _ => column.clone(),
+    }
 }
 
 fn remap_predicates_for_domain_derivation(
