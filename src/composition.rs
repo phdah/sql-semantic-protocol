@@ -233,9 +233,8 @@ impl<'a> Composer<'a> {
         let (local_join_equalities, equality_residuals) =
             self.compose_query_join_equalities(&layer, &query);
         join_equalities.extend(local_join_equalities);
-        condition_exactness = condition_exactness.merged_with(&ConditionExactness::from_residuals(
-            equality_residuals,
-        ));
+        condition_exactness = condition_exactness
+            .merged_with(&ConditionExactness::from_residuals(equality_residuals));
 
         let output = self.compose_output(&layer, &query, &mut diagnostics);
         let column_domains = domain_map
@@ -286,14 +285,8 @@ impl<'a> Composer<'a> {
             let mut pairs = Vec::new();
             collect_conjunctive_column_equalities(condition, &mut pairs);
             for (equality_index, (left, right)) in pairs.into_iter().enumerate() {
-                match self.compose_join_equality(
-                    layer,
-                    query,
-                    left,
-                    right,
-                    join.kind(),
-                    Some(join),
-                ) {
+                match self.compose_join_equality(layer, query, left, right, join.kind(), Some(join))
+                {
                     Ok(equality) => equalities.push(equality),
                     Err(()) => residuals.push(
                         ResidualCondition::new(
@@ -314,14 +307,7 @@ impl<'a> Composer<'a> {
                 if !columns_reference_distinct_query_sources(left, right, query.sources()) {
                     continue;
                 }
-                match self.compose_join_equality(
-                    layer,
-                    query,
-                    left,
-                    right,
-                    JoinKind::Inner,
-                    None,
-                ) {
+                match self.compose_join_equality(layer, query, left, right, JoinKind::Inner, None) {
                     Ok(equality) => equalities.push(equality),
                     Err(()) => residuals.push(
                         ResidualCondition::new(
@@ -957,8 +943,7 @@ fn source_relation_matches(source: &SourceRelation, qualifier: &str) -> bool {
 fn relation_ref_matches(relation: &RelationRef, qualifier: &str) -> bool {
     relation.alias() == Some(qualifier)
         || relation.relation() == qualifier
-        || (relation.alias().is_none()
-            && relation.relation().rsplit('.').next() == Some(qualifier))
+        || (relation.alias().is_none() && relation.relation().rsplit('.').next() == Some(qualifier))
 }
 
 fn composition_error(
