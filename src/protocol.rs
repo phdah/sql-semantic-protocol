@@ -79,6 +79,28 @@ pub enum ProtocolStatement {
     Unsupported(UnsupportedStatement),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct RowConditions {
+    predicates: Box<Predicates>,
+    column_domains: Vec<ColumnDomain>,
+    exactness: ConditionExactness,
+}
+
+impl RowConditions {
+    pub(crate) fn new(
+        predicates: Predicates,
+        mut column_domains: Vec<ColumnDomain>,
+        exactness: ConditionExactness,
+    ) -> Self {
+        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
+        Self {
+            predicates: Box::new(predicates),
+            column_domains,
+            exactness,
+        }
+    }
+}
+
 /// Partially analyzed query semantics.
 ///
 /// Supported CTE and derived-table semantics are resolved through local scopes so physical joins,
@@ -89,8 +111,7 @@ pub struct QueryStatement {
     sources: Vec<SourceRelation>,
     dependencies: Vec<String>,
     joins: Vec<Join>,
-    predicates: Box<Predicates>,
-    column_domains: Vec<ColumnDomain>,
+    row_conditions: RowConditions,
     output: Output,
     aggregation: Option<Box<Aggregation>>,
     set_operation: Option<SetOperation>,
@@ -104,18 +125,15 @@ impl QueryStatement {
         sources: Vec<SourceRelation>,
         dependencies: Vec<String>,
         joins: Vec<Join>,
-        predicates: Predicates,
-        mut column_domains: Vec<ColumnDomain>,
+        row_conditions: RowConditions,
         output: Output,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
-        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
         Self {
             sources,
             dependencies,
             joins,
-            predicates: Box::new(predicates),
-            column_domains,
+            row_conditions,
             output,
             aggregation: None,
             set_operation: None,
@@ -166,12 +184,17 @@ impl QueryStatement {
 
     /// Return WHERE, HAVING, and QUALIFY semantics known for the query.
     pub fn predicates(&self) -> &Predicates {
-        &self.predicates
+        &self.row_conditions.predicates
     }
 
     /// Return derived source-column value domains in deterministic column order.
     pub fn column_domains(&self) -> &[ColumnDomain] {
-        &self.column_domains
+        &self.row_conditions.column_domains
+    }
+
+    /// Return whether row-membership conditions are represented exactly by domains and joins.
+    pub fn condition_exactness(&self) -> &ConditionExactness {
+        &self.row_conditions.exactness
     }
 
     /// Return final query output columns in SELECT-list order.
@@ -877,6 +900,218 @@ impl Predicates {
     }
 }
 
+/// Whether row-membership conditions are completely represented by protocol domains and joins.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ConditionExactnessStatus {
+    /// Every row-membership condition is represented by the allow-listed exact contract.
+    Exact,
+    /// One or more row-membership conditions remain outside the exact representation.
+    Residual,
+}
+
+impl ConditionExactnessStatus {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Exact => "exact",
+            Self::Residual => "residual",
+        }
+    }
+}
+
+/// SQL clause that owns a residual row-membership condition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ConditionClause {
+    /// WHERE clause.
+    Where,
+    /// JOIN ON or USING condition.
+    JoinOn,
+    /// HAVING clause.
+    Having,
+    /// QUALIFY clause.
+    Qualify,
+    /// UNION, INTERSECT, or EXCEPT set operation.
+    SetOperation,
+    /// LIMIT, OFFSET, FETCH, TOP, TABLESAMPLE, or another row-set operator.
+    RowSetOperator,
+}
+
+impl ConditionClause {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Where => "where",
+            Self::JoinOn => "on",
+            Self::Having => "having",
+            Self::Qualify => "qualify",
+            Self::SetOperation => "set_operation",
+            Self::RowSetOperator => "row_set_operator",
+        }
+    }
+}
+
+/// Stable reason why a row-membership condition is not represented exactly.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResidualConditionReason {
+    /// OR spans multiple source columns and therefore carries correlation not representable by independent domains.
+    CrossColumnDisjunction,
+    /// Logical NOT is not on the exactness allow-list.
+    LogicalNot,
+    /// A comparison relates source columns outside an equi-join.
+    ColumnComparison,
+    /// A condition depends on a computed expression rather than a plain source column.
+    ComputedExpression,
+    /// A condition uses a subquery predicate.
+    SubqueryPredicate,
+    /// A normalized predicate is unknown or unsupported.
+    UnsupportedPredicate,
+    /// A constant FALSE or NULL condition cannot be represented as independent column domains.
+    ConstantFalseOrNull,
+    /// HAVING drops groups based on aggregate or grouped results.
+    Having,
+    /// QUALIFY drops rows based on window results.
+    Qualify,
+    /// An outer-join condition cannot constrain both inputs as an inner-row equality contract.
+    OuterJoin,
+    /// A non-inner join kind decides membership through semantics not represented by domains/equalities.
+    UnsupportedJoinKind,
+    /// The same physical relation is read through multiple instances whose identities collapse in column domains.
+    RepeatedSourceInstance,
+    /// LIMIT affects which otherwise qualifying rows survive.
+    Limit,
+    /// OFFSET affects which otherwise qualifying rows survive.
+    Offset,
+    /// FETCH affects which otherwise qualifying rows survive.
+    Fetch,
+    /// DISTINCT ON selects rows based on ordering within duplicate groups.
+    DistinctOn,
+    /// TABLESAMPLE drops otherwise qualifying source rows.
+    TableSample,
+    /// Set-operation row membership is not represented exactly.
+    SetOperation,
+    /// TOP limits the qualifying row set.
+    Top,
+    /// PREWHERE is parsed but not represented as an exact source predicate.
+    Prewhere,
+    /// CONNECT BY changes row membership through recursive traversal.
+    ConnectBy,
+    /// A condition-affecting analysis diagnostic prevents an exact guarantee.
+    AnalysisDiagnostic,
+    /// A correlated subquery depends on an outer row outside the local domain contract.
+    CorrelatedSubquery,
+}
+
+impl ResidualConditionReason {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::CrossColumnDisjunction => "cross_column_disjunction",
+            Self::LogicalNot => "logical_not",
+            Self::ColumnComparison => "column_comparison",
+            Self::ComputedExpression => "computed_expression",
+            Self::SubqueryPredicate => "subquery_predicate",
+            Self::UnsupportedPredicate => "unsupported_predicate",
+            Self::ConstantFalseOrNull => "constant_false_or_null",
+            Self::Having => "having",
+            Self::Qualify => "qualify",
+            Self::OuterJoin => "outer_join",
+            Self::UnsupportedJoinKind => "unsupported_join_kind",
+            Self::RepeatedSourceInstance => "repeated_source_instance",
+            Self::Limit => "limit",
+            Self::Offset => "offset",
+            Self::Fetch => "fetch",
+            Self::DistinctOn => "distinct_on",
+            Self::TableSample => "table_sample",
+            Self::SetOperation => "set_operation",
+            Self::Top => "top",
+            Self::Prewhere => "prewhere",
+            Self::ConnectBy => "connect_by",
+            Self::AnalysisDiagnostic => "analysis_diagnostic",
+            Self::CorrelatedSubquery => "correlated_subquery",
+        }
+    }
+}
+
+/// One row-membership condition that remains outside the exact representation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResidualCondition {
+    reason: ResidualConditionReason,
+    clause: ConditionClause,
+    identity: String,
+}
+
+impl ResidualCondition {
+    pub(crate) fn new(
+        reason: ResidualConditionReason,
+        clause: ConditionClause,
+        identity: impl Into<String>,
+    ) -> Self {
+        Self {
+            reason,
+            clause,
+            identity: identity.into(),
+        }
+    }
+
+    /// Return the stable residual reason.
+    pub fn reason(&self) -> ResidualConditionReason {
+        self.reason
+    }
+
+    /// Return the SQL clause that owns the residual.
+    pub fn clause(&self) -> ConditionClause {
+        self.clause
+    }
+
+    /// Return deterministic identity locating the residual inside its query scope.
+    pub fn identity(&self) -> &str {
+        &self.identity
+    }
+}
+
+/// Exactness contract for the row-membership conditions of one query scope.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConditionExactness {
+    residual_conditions: Vec<ResidualCondition>,
+}
+
+impl ConditionExactness {
+    pub(crate) fn from_residuals(mut residual_conditions: Vec<ResidualCondition>) -> Self {
+        residual_conditions.sort_by(|left, right| {
+            (
+                left.clause.as_str(),
+                left.identity.as_str(),
+                left.reason.as_str(),
+            )
+                .cmp(&(
+                    right.clause.as_str(),
+                    right.identity.as_str(),
+                    right.reason.as_str(),
+                ))
+        });
+        residual_conditions.dedup();
+        Self {
+            residual_conditions,
+        }
+    }
+
+    /// Return whether the scope satisfies the exact row-membership contract.
+    pub fn status(&self) -> ConditionExactnessStatus {
+        if self.residual_conditions.is_empty() {
+            ConditionExactnessStatus::Exact
+        } else {
+            ConditionExactnessStatus::Residual
+        }
+    }
+
+    /// Return residual conditions in deterministic clause, identity, and reason order.
+    pub fn residual_conditions(&self) -> &[ResidualCondition] {
+        &self.residual_conditions
+    }
+
+    /// Return true when no row-membership condition is residual.
+    pub fn is_exact(&self) -> bool {
+        self.residual_conditions.is_empty()
+    }
+}
+
 /// Parser-independent expression semantics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
@@ -916,8 +1151,9 @@ pub enum Expression {
 pub struct SubquerySemantics {
     dependencies: Vec<String>,
     correlations: Vec<LineageSource>,
+    joins: Vec<Join>,
     output: Output,
-    predicates: Box<Predicates>,
+    row_conditions: RowConditions,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -925,8 +1161,9 @@ impl SubquerySemantics {
     pub(crate) fn new(
         mut dependencies: Vec<String>,
         mut correlations: Vec<LineageSource>,
+        joins: Vec<Join>,
         output: Output,
-        predicates: Predicates,
+        row_conditions: RowConditions,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
         dependencies.sort();
@@ -936,8 +1173,9 @@ impl SubquerySemantics {
         Self {
             dependencies,
             correlations,
+            joins,
             output,
-            predicates: Box::new(predicates),
+            row_conditions,
             diagnostics,
         }
     }
@@ -952,6 +1190,11 @@ impl SubquerySemantics {
         &self.correlations
     }
 
+    /// Return joins whose row-membership equalities belong to the nested query.
+    pub fn joins(&self) -> &[Join] {
+        &self.joins
+    }
+
     /// Return projected nested-query output semantics.
     pub fn output(&self) -> &Output {
         &self.output
@@ -959,7 +1202,17 @@ impl SubquerySemantics {
 
     /// Return WHERE, HAVING, and QUALIFY semantics inside the nested query.
     pub fn predicates(&self) -> &Predicates {
-        &self.predicates
+        &self.row_conditions.predicates
+    }
+
+    /// Return source-column domains derived inside the nested query.
+    pub fn column_domains(&self) -> &[ColumnDomain] {
+        &self.row_conditions.column_domains
+    }
+
+    /// Return row-condition exactness for the nested query scope.
+    pub fn condition_exactness(&self) -> &ConditionExactness {
+        &self.row_conditions.exactness
     }
 
     /// Return diagnostics scoped to the nested query.
@@ -1184,6 +1437,28 @@ impl ValueDomain {
             reason
         };
         Self::Unknown(UnknownDomain { reason })
+    }
+
+    /// Return whether SQL NULL is admitted by this domain.
+    ///
+    /// A None result means the domain itself is unknown, so NULL membership cannot be proven.
+    pub fn admits_null(&self) -> Option<bool> {
+        match self {
+            Self::Unbounded => Some(true),
+            Self::Ranges(_) => Some(false),
+            Self::Set(domain) => {
+                let contains_null = domain
+                    .values
+                    .iter()
+                    .any(|literal| matches!(literal.value(), LiteralValue::Null));
+                Some(match domain.mode {
+                    SetMode::Include => contains_null,
+                    SetMode::Exclude => !contains_null,
+                })
+            }
+            Self::Empty => Some(false),
+            Self::Unknown(_) => None,
+        }
     }
 }
 

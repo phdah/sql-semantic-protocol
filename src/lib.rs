@@ -12,7 +12,7 @@
 //! - to_openlineage_json exports representable dataset and field lineage as OpenLineage DatasetEvents.
 //! - dialect_from_name resolves built-in dialects for consumers without a direct sqlparser dependency.
 //! - protocol contains the parser-independent public protocol model, including normalized
-//!   expressions and predicates plus explicit unknown and unsupported semantic values.
+//!   expressions, predicates, row-condition exactness, and explicit unknown/unsupported values.
 
 mod analysis;
 mod bundle;
@@ -70,12 +70,13 @@ pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
-    ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
-    InSubqueryPredicate, IsNullPredicate, Join, JoinKind, LineageSource, LiteralExpression,
-    LiteralType, LiteralValue, LogicalPredicate, MergeAction, MergeAssignment, MergeClause,
-    MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
-    ProtocolSource, ProtocolStatement, QueryStatement, RangesDomain, RelationRef,
+    ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness,
+    ConditionExactnessStatus, Diagnostic, DiagnosticArea, DiagnosticSeverity, ExistsPredicate,
+    Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate, InSubqueryPredicate,
+    IsNullPredicate, Join, JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue,
+    LogicalPredicate, MergeAction, MergeAssignment, MergeClause, MergeMatchKind, NotPredicate,
+    Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource, ProtocolStatement,
+    QueryStatement, RangesDomain, RelationRef, ResidualCondition, ResidualConditionReason,
     ScalarSubqueryExpression, SetDomain, SetMode, SetOperand, SetOperation, SetOperator,
     SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
     UnknownDomain, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,

@@ -57,7 +57,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.constant_domains",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"constant_domains\""
@@ -179,7 +183,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.derived_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"derived_orders\""
@@ -340,7 +348,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.distinct_regions",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"distinct_regions\""
@@ -504,7 +516,17 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [
+          {
+            "clause": "set_operation",
+            "identity": "body:except",
+            "reason": "set_operation"
+          }
+        ],
+        "status": "residual"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.excluded_order_ids",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"excluded_order_ids\""
@@ -626,7 +648,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.final_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"final_orders\""
@@ -765,7 +791,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.incremental_append_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"incremental_append_orders\""
@@ -904,7 +934,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.incremental_merge_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"incremental_merge_orders\""
@@ -968,7 +1002,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.independent_return_summary",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"independent_return_summary\""
@@ -1128,7 +1166,17 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [
+          {
+            "clause": "set_operation",
+            "identity": "body:intersect",
+            "reason": "set_operation"
+          }
+        ],
+        "status": "residual"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.intersected_order_ids",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"intersected_order_ids\""
@@ -1250,7 +1298,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.lateral_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"lateral_orders\""
@@ -1455,7 +1507,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.named_window_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"named_window_orders\""
@@ -1545,7 +1601,22 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [
+          {
+            "clause": "row_set_operator",
+            "identity": "limit",
+            "reason": "limit"
+          },
+          {
+            "clause": "set_operation",
+            "identity": "body:union",
+            "reason": "set_operation"
+          }
+        ],
+        "status": "residual"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.ordered_limited_union",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ordered_limited_union\""
@@ -1739,7 +1810,11 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [],
+        "status": "exact"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.rollup_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"rollup_orders\""
@@ -1945,6 +2020,43 @@
             "expression": {
               "kind": "scalar_subquery",
               "subquery": {
+                "column_domains": [
+                  {
+                    "column": {
+                      "name": "order_id",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "domain": {
+                      "kind": "unknown",
+                      "reason": "comparison bound is not a scalar literal"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "order_id",
+                      "relation": "o"
+                    },
+                    "domain": {
+                      "kind": "unknown",
+                      "reason": "comparison bound is not a scalar literal"
+                    }
+                  }
+                ],
+                "condition_exactness": {
+                  "residual_conditions": [
+                    {
+                      "clause": "where",
+                      "identity": "correlation",
+                      "reason": "correlated_subquery"
+                    },
+                    {
+                      "clause": "where",
+                      "identity": "where",
+                      "reason": "column_comparison"
+                    }
+                  ],
+                  "status": "residual"
+                },
                 "correlations": [
                   {
                     "column": "order_id",
@@ -1955,6 +2067,7 @@
                   "\"dbt-core-e2e\".\"raw\".\"returns\""
                 ],
                 "diagnostics": [],
+                "joins": [],
                 "output": {
                   "columns": [
                     {
@@ -2018,7 +2131,17 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "condition_exactness": {
+        "residual_conditions": [
+          {
+            "clause": "where",
+            "identity": "where",
+            "reason": "subquery_predicate"
+          }
+        ],
+        "status": "residual"
+      }
     },
     "model_id": "model.sql_semantic_protocol_e2e.subquery_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"subquery_orders\""

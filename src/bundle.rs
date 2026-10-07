@@ -12,8 +12,8 @@ use crate::constraints::{
     merge_relation_constraint_sets, ConstraintDiagnostic, RelationConstraintSet,
 };
 use crate::protocol::{
-    ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, WriteKind,
-    PROTOCOL_VERSION,
+    ColumnDomain, ConditionExactness, DiagnosticSeverity, Output, Protocol, ProtocolStatement,
+    WriteKind, PROTOCOL_VERSION,
 };
 use crate::relation::{
     RelationCatalog, RelationContext, RelationResolutionError, RelationResolver, RelationSchema,
@@ -405,6 +405,7 @@ impl ComposedSemantics {
     pub(crate) fn resolved(
         dependencies: Vec<String>,
         column_domains: Vec<ColumnDomain>,
+        condition_exactness: ConditionExactness,
         output: Output,
         mut diagnostics: Vec<CompositionDiagnostic>,
     ) -> Self {
@@ -413,6 +414,7 @@ impl ComposedSemantics {
         Self::Resolved(ResolvedComposedSemantics {
             dependencies,
             column_domains,
+            condition_exactness,
             output,
             diagnostics,
         })
@@ -436,6 +438,7 @@ impl ComposedSemantics {
 pub struct ResolvedComposedSemantics {
     dependencies: Vec<String>,
     column_domains: Vec<ColumnDomain>,
+    condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
 }
@@ -449,6 +452,14 @@ impl ResolvedComposedSemantics {
     /// Return value domains mapped back to physical source columns.
     pub fn column_domains(&self) -> &[ColumnDomain] {
         &self.column_domains
+    }
+
+    /// Return row-condition exactness for this resolved layer.
+    ///
+    /// TASK-44 will compose residual conditions across ancestor layers. Until then this carries
+    /// the exactness contract of the layer's own analyzed query.
+    pub fn condition_exactness(&self) -> &ConditionExactness {
+        &self.condition_exactness
     }
 
     /// Return final output columns with transitive physical lineage.
