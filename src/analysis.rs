@@ -513,6 +513,7 @@ fn analyze_query(
         &BTreeSet::new(),
         &mut diagnostics,
         &mut derived_index,
+        Some(metadata),
     );
 
     let set_operation = analyze_set_operation(query.body.as_ref());
@@ -1380,8 +1381,12 @@ fn analyze_query_column_domains(
                 metadata,
             );
             let mut output_diagnostics = Vec::new();
-            let output =
-                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
+            let output = analyze_query_output(
+                &cte.query,
+                &local_outputs,
+                &mut output_diagnostics,
+                metadata,
+            );
 
             local_relations.insert(name.clone());
             local_outputs.insert(name.clone(), output);
@@ -1897,42 +1902,58 @@ fn diagnose_local_query_predicates(
     query: &SqlQuery,
     inherited_local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) {
     let mut local_outputs = inherited_local_outputs.clone();
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
             let mut output_diagnostics = Vec::new();
-            let output =
-                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
+            let output = analyze_query_output(
+                &cte.query,
+                &local_outputs,
+                &mut output_diagnostics,
+                metadata,
+            );
             local_outputs.insert(cte.alias.name.to_string(), output);
         }
     }
 
-    diagnose_local_set_expr_predicates(query.body.as_ref(), &local_outputs, diagnostics);
+    diagnose_local_set_expr_predicates(
+        query.body.as_ref(),
+        &local_outputs,
+        diagnostics,
+        metadata,
+    );
 }
 
 fn diagnose_local_set_expr_predicates(
     expression: &SetExpr,
     local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) {
     match expression {
         SetExpr::Select(select) => {
             let mut predicate_diagnostics = Vec::new();
-            let scope =
-                build_output_scope(select, local_outputs, &[], &mut predicate_diagnostics, None);
+            let scope = build_output_scope(
+                select,
+                local_outputs,
+                &[],
+                &mut predicate_diagnostics,
+                metadata,
+            );
             let predicates =
                 analyze_select_predicates_with_scope(select, &scope, &mut predicate_diagnostics);
             extend_unique_diagnostics(diagnostics, &predicate_diagnostics);
             diagnose_uncarried_local_predicates(&predicates, &scope, diagnostics);
         }
         SetExpr::Query(query) => {
-            diagnose_local_query_predicates(query, local_outputs, diagnostics);
+            diagnose_local_query_predicates(query, local_outputs, diagnostics, metadata);
         }
         SetExpr::SetOperation { left, right, .. } => {
-            diagnose_local_set_expr_predicates(left, local_outputs, diagnostics);
-            diagnose_local_set_expr_predicates(right, local_outputs, diagnostics);
+            diagnose_local_set_expr_predicates(left, local_outputs, diagnostics, metadata);
+            diagnose_local_set_expr_predicates(right, local_outputs, diagnostics, metadata);
         }
         SetExpr::Values(_)
         | SetExpr::Insert(_)
@@ -2187,6 +2208,7 @@ fn analyze_query_relations(
     inherited_local_relations: &BTreeSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> RelationAnalysis {
     analyze_query_relations_with_locals(
         query,
@@ -2195,6 +2217,7 @@ fn analyze_query_relations(
         &BTreeMap::new(),
         diagnostics,
         derived_index,
+        metadata,
     )
 }
 
@@ -2205,6 +2228,7 @@ fn analyze_query_relations_with_locals(
     inherited_local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> RelationAnalysis {
     let mut local_relations = inherited_local_relations.clone();
     let mut local_outputs = inherited_local_outputs.clone();
@@ -2225,8 +2249,14 @@ fn analyze_query_relations_with_locals(
                 &local_analyses,
                 &mut cte_diagnostics,
                 derived_index,
+                metadata,
             );
-            diagnose_local_query_predicates(&cte.query, &local_outputs, &mut cte_diagnostics);
+            diagnose_local_query_predicates(
+                &cte.query,
+                &local_outputs,
+                &mut cte_diagnostics,
+                metadata,
+            );
             let local_exactness =
                 analyze_local_query_condition_exactness(&cte.query, &local_outputs, &nested)
                     .with_scope(format!("cte:{name}"));
@@ -2255,6 +2285,7 @@ fn analyze_query_relations_with_locals(
         &local_analyses,
         diagnostics,
         derived_index,
+        metadata,
     )
 }
 
@@ -2265,6 +2296,7 @@ fn analyze_set_expr_relations_with_locals(
     local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> RelationAnalysis {
     match expression {
         SetExpr::Select(select) => analyze_select_relations_with_locals(
@@ -2274,6 +2306,7 @@ fn analyze_set_expr_relations_with_locals(
             local_analyses,
             diagnostics,
             derived_index,
+            metadata,
         ),
         SetExpr::Query(query) => analyze_query_relations_with_locals(
             query,
@@ -2282,6 +2315,7 @@ fn analyze_set_expr_relations_with_locals(
             local_analyses,
             diagnostics,
             derived_index,
+            metadata,
         ),
         SetExpr::SetOperation { left, right, .. } => {
             let mut analysis = analyze_set_expr_relations_with_locals(
@@ -2291,6 +2325,7 @@ fn analyze_set_expr_relations_with_locals(
                 local_analyses,
                 diagnostics,
                 derived_index,
+                metadata,
             );
             let right = analyze_set_expr_relations_with_locals(
                 right,
@@ -2299,6 +2334,7 @@ fn analyze_set_expr_relations_with_locals(
                 local_analyses,
                 diagnostics,
                 derived_index,
+                metadata,
             );
             merge_relation_analysis(&mut analysis, right);
             analysis
@@ -2320,6 +2356,7 @@ fn analyze_select_relations(
         &BTreeMap::new(),
         diagnostics,
         derived_index,
+        None,
     )
 }
 
@@ -2330,10 +2367,12 @@ fn analyze_select_relations_with_locals(
     local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> RelationAnalysis {
     let mut analysis = RelationAnalysis::default();
     let mut scope_diagnostics = Vec::new();
-    let output_scope = build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
+    let output_scope =
+        build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, metadata);
     let relation_scope = RelationAnalysisScope {
         local_relations,
         local_outputs,
@@ -2348,6 +2387,7 @@ fn analyze_select_relations_with_locals(
             diagnostics,
             derived_index,
             &mut analysis,
+            metadata,
         );
     }
 
@@ -2467,6 +2507,7 @@ fn analyze_table_with_joins(
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     analysis: &mut RelationAnalysis,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) {
     let mut left = register_table_factor(
         &source.relation,
@@ -2474,11 +2515,19 @@ fn analyze_table_with_joins(
         diagnostics,
         derived_index,
         analysis,
+        metadata,
     );
 
     for join in &source.joins {
         let right =
-            register_table_factor(&join.relation, scope, diagnostics, derived_index, analysis);
+            register_table_factor(
+                &join.relation,
+                scope,
+                diagnostics,
+                derived_index,
+                analysis,
+                metadata,
+            );
 
         if let (Some(left_ref), Some(right_ref)) = (left.as_ref(), right.as_ref()) {
             analysis.joins.push(analyze_join(
@@ -2510,6 +2559,7 @@ fn register_table_factor(
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     analysis: &mut RelationAnalysis,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Option<RelationRef> {
     let relation = analyze_table_factor_with_locals(
         factor,
@@ -2518,6 +2568,7 @@ fn register_table_factor(
         scope.local_analyses,
         diagnostics,
         derived_index,
+        metadata,
     )?;
 
     for dependency in relation.dependencies {
@@ -2550,6 +2601,7 @@ fn analyze_table_factor(
         &BTreeMap::new(),
         diagnostics,
         derived_index,
+        None,
     )
 }
 
@@ -2560,6 +2612,7 @@ fn analyze_table_factor_with_locals(
     local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Option<AnalyzedRelation> {
     match factor {
         TableFactor::Table {
@@ -2613,8 +2666,9 @@ fn analyze_table_factor_with_locals(
                 local_analyses,
                 diagnostics,
                 derived_index,
+                metadata,
             );
-            diagnose_local_query_predicates(subquery, local_outputs, diagnostics);
+            diagnose_local_query_predicates(subquery, local_outputs, diagnostics, metadata);
             let alias = alias.as_ref().map(|alias| alias.name.to_string());
             let name = match &alias {
                 Some(_) => "subquery".to_string(),
@@ -2906,7 +2960,7 @@ fn collect_expression_dependencies_with_windows(
             subquery: query, ..
         } => {
             let nested =
-                analyze_query_relations(query, local_relations, diagnostics, derived_index);
+                analyze_query_relations(query, local_relations, diagnostics, derived_index, None);
             dependencies.extend(nested.dependencies);
         }
         Expr::InSubquery { expr, subquery, .. } => {
@@ -2919,7 +2973,7 @@ fn collect_expression_dependencies_with_windows(
                 dependencies,
             );
             let nested =
-                analyze_query_relations(subquery, local_relations, diagnostics, derived_index);
+                analyze_query_relations(subquery, local_relations, diagnostics, derived_index, None);
             dependencies.extend(nested.dependencies);
         }
         Expr::BinaryOp { left, right, .. }
@@ -3086,7 +3140,7 @@ fn collect_function_argument_dependencies(
         FunctionArguments::None => {}
         FunctionArguments::Subquery(query) => {
             let nested =
-                analyze_query_relations(query, local_relations, diagnostics, derived_index);
+                analyze_query_relations(query, local_relations, diagnostics, derived_index, None);
             dependencies.extend(nested.dependencies);
         }
         FunctionArguments::List(arguments) => {
@@ -5113,6 +5167,7 @@ fn analyze_subquery_semantics(
         &BTreeSet::new(),
         &mut diagnostics,
         &mut derived_index,
+        None,
     );
     let output = analyze_query_output_with_outer_scope(
         query,
