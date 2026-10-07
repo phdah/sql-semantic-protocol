@@ -885,16 +885,12 @@ mod tests {
 
     #[test]
     fn canonical_constraints_define_null_admission() {
-        let primary = RelationConstraint::primary_key(
-            vec!["id".to_string()],
-            vec![evidence("primary")],
-        )
-        .expect("primary key");
-        let unique = RelationConstraint::unique_key(
-            vec!["email".to_string()],
-            vec![evidence("unique")],
-        )
-        .expect("unique key");
+        let primary =
+            RelationConstraint::primary_key(vec!["id".to_string()], vec![evidence("primary")])
+                .expect("primary key");
+        let unique =
+            RelationConstraint::unique_key(vec!["email".to_string()], vec![evidence("unique")])
+                .expect("unique key");
         let foreign = RelationConstraint::foreign_key(
             vec!["parent_id".to_string()],
             "parents",
