@@ -70,7 +70,10 @@ fn unknown_domains_survive_local_relation_intersections() {
             .unwrap_or_else(|error| panic!("{sql}: {error}"));
         let semantics = resolved(bundle.layers().first().expect("query layer"));
         assert!(
-            matches!(semantics.output().columns()[0].domain(), ValueDomain::Unknown(_)),
+            matches!(
+                semantics.output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
             "arithmetic local output domain must remain conservative: {sql}"
         );
     }
