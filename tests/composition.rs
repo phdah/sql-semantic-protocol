@@ -2,9 +2,9 @@ mod common;
 
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_inputs, AnalysisBundle, CaseSourceDomains, ComposedSemantics,
-    CompositionFailureReason, DatasetRef, Expression, LiteralValue, ResolvedComposedSemantics,
-    SqlInput, TransformationLayer, ValueDomain,
+    analyze_inputs, AnalysisBundle, CaseSourceDomains, ComposedSemantics, CompositionFailureReason,
+    DatasetRef, Expression, LiteralValue, ResolvedComposedSemantics, SqlInput, TransformationLayer,
+    ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
