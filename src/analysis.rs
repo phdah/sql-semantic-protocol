@@ -3785,8 +3785,10 @@ fn analyze_output_item(
 ) -> Vec<OutputColumn> {
     match item {
         SelectItem::UnnamedExpr(expression) => {
-            let normalized =
-                analyze_expression_with_scope(expression, scope, named_windows, diagnostics);
+            let normalized = inherit_local_case_expression(
+                analyze_expression_with_scope(expression, scope, named_windows, diagnostics),
+                scope,
+            );
             let domain = derive_output_domain(&normalized);
             vec![OutputColumn::new(
                 output_name_for_expression(expression),
@@ -3796,7 +3798,10 @@ fn analyze_output_item(
             )]
         }
         SelectItem::ExprWithAlias { expr, alias } => {
-            let normalized = analyze_expression_with_scope(expr, scope, named_windows, diagnostics);
+            let normalized = inherit_local_case_expression(
+                analyze_expression_with_scope(expr, scope, named_windows, diagnostics),
+                scope,
+            );
             let domain = derive_output_domain(&normalized);
             vec![OutputColumn::new(
                 alias.value.clone(),
@@ -3810,6 +3815,51 @@ fn analyze_output_item(
             let qualifier = prefix.to_string();
             expand_wildcard(Some(&qualifier), scope, diagnostics)
         }
+    }
+}
+
+fn inherit_local_case_expression(expression: Expression, scope: &[OutputRelation]) -> Expression {
+    let Expression::Column(column) = &expression else {
+        return expression;
+    };
+
+    let candidates = scope
+        .iter()
+        .filter(|relation| {
+            column.relation().is_none_or(|qualifier| {
+                relation
+                    .qualifiers
+                    .iter()
+                    .any(|candidate| candidate == qualifier)
+            })
+        })
+        .filter_map(|relation| match &relation.source {
+            OutputRelationSource::Physical {
+                columns: Some(columns),
+                ..
+            } if !columns.iter().any(|candidate| candidate == column.name()) => None,
+            OutputRelationSource::Physical { .. } => Some(None),
+            OutputRelationSource::Local(output) => {
+                let mut matches = output
+                    .columns()
+                    .iter()
+                    .filter(|candidate| candidate.name() == column.name());
+                let candidate = matches.next()?;
+                if matches.next().is_some() {
+                    return Some(None);
+                }
+
+                Some(
+                    matches!(candidate.expression(), Expression::Case(_))
+                        .then(|| candidate.expression().clone()),
+                )
+            }
+        })
+        .collect::<Vec<_>>();
+
+    match candidates.as_slice() {
+        [Some(case_expression)] => case_expression.clone(),
+        _ => expression,
     }
 }
 
@@ -3865,12 +3915,16 @@ fn expand_wildcard(
             }
             OutputRelationSource::Local(output) => {
                 columns.extend(output.columns().iter().map(|column| {
-                    OutputColumn::new(
-                        column.name().to_string(),
-                        Expression::Column(ColumnExpression::new(
+                    let expression = match column.expression() {
+                        Expression::Case(_) => column.expression().clone(),
+                        _ => Expression::Column(ColumnExpression::new(
                             expression_qualifier.clone(),
                             column.name().to_string(),
                         )),
+                    };
+                    OutputColumn::new(
+                        column.name().to_string(),
+                        expression,
                         column.domain().clone(),
                         column.lineage().to_vec(),
                     )

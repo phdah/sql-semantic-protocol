@@ -535,3 +535,101 @@ fn computed_domain_guard_is_consistent_across_exposed_dialects() {
         );
     }
 }
+
+#[test]
+fn case_semantics_survive_plain_copy_through_ctes_and_derived_tables() {
+    let dialect = GenericDialect {};
+
+    for sql in [
+        "WITH classified AS (
+            SELECT CASE WHEN amount > 10 THEN 'high' ELSE 'low' END AS bucket
+            FROM raw.orders
+         )
+         SELECT bucket FROM classified",
+        "SELECT rank
+         FROM (
+            SELECT CASE status WHEN 'new' THEN 1 ELSE 0 END AS rank
+            FROM raw.orders
+         ) AS classified",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect)
+            .unwrap_or_else(|error| panic!("local CASE copy should analyze: {error}"));
+        let Expression::Case(case_expression) =
+            first_query(&protocol).output().columns()[0].expression()
+        else {
+            panic!("plain local CASE copy should preserve CASE semantics: {sql}");
+        };
+
+        let alternatives =
+            reachable_case_alternatives(case_expression.branches()[0].source_domains());
+        assert!(!alternatives.is_empty(), "{sql}");
+        assert!(
+            alternatives
+                .iter()
+                .flat_map(|alternative| alternative.column_domains())
+                .all(|domain| domain.column().relation() == Some("raw.orders")),
+            "{sql}"
+        );
+        assert!(
+            matches!(
+                case_expression.else_source_domains(),
+                CaseSourceDomains::Reachable { .. }
+            ),
+            "{sql}"
+        );
+    }
+}
+
+#[test]
+fn case_over_aggregate_stays_unknown_through_cte_copy() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "WITH classified AS (
+            SELECT CASE WHEN SUM(amount) > 100 THEN 'high' ELSE 'low' END AS bucket
+            FROM raw.orders
+         )
+         SELECT bucket FROM classified",
+        "generic",
+        &dialect,
+    )
+    .expect("aggregate CASE CTE should analyze");
+
+    let Expression::Case(case_expression) =
+        first_query(&protocol).output().columns()[0].expression()
+    else {
+        panic!("plain local CASE copy should preserve CASE semantics");
+    };
+
+    assert!(matches!(
+        case_expression.branches()[0].source_domains(),
+        CaseSourceDomains::Unknown(_)
+    ));
+    assert!(matches!(
+        case_expression.else_source_domains(),
+        CaseSourceDomains::Unknown(_)
+    ));
+}
+
+#[test]
+fn local_case_copy_is_consistent_across_exposed_dialects() {
+    let sql = "WITH classified AS (
+        SELECT CASE WHEN amount > 10 THEN 'high' ELSE 'low' END AS bucket
+        FROM orders
+    )
+    SELECT bucket FROM classified";
+
+    for dialect_name in DIALECTS {
+        let dialect =
+            dialect_from_str(dialect_name).expect("documented dialect should be recognized");
+        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref()).unwrap_or_else(|error| {
+            panic!("dialect {dialect_name} failed local CASE copy: {error}")
+        });
+        assert!(
+            matches!(
+                first_query(&protocol).output().columns()[0].expression(),
+                Expression::Case(_)
+            ),
+            "dialect {dialect_name}"
+        );
+    }
+}
