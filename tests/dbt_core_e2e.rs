@@ -599,9 +599,7 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
 
     let return_equality = enriched_equalities
         .iter()
-        .find(|equality| {
-            equality["join_kind"] == "left" && contains_string(equality, "order_id")
-        })
+        .find(|equality| equality["join_kind"] == "left" && contains_string(equality, "order_id"))
         .expect("return join should retain its composed left equality");
     assert!(
         return_equality["left"]["relation"]
