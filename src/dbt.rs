@@ -1875,9 +1875,12 @@ fn dbt_constraint_reference(
     let matches = resources
         .iter()
         .filter_map(|(resource_id, resource)| {
-            dbt_reference_matches_resource(&parsed, resource_id)
-                .then(|| resource.relation_name.as_ref())
-                .flatten()
+            if !dbt_reference_matches_resource(&parsed, resource_id) {
+                return None;
+            }
+            resource
+                .relation_name
+                .as_ref()
                 .filter(|relation| !relation.trim().is_empty())
                 .cloned()
         })
@@ -1967,7 +1970,7 @@ fn dbt_reference_matches_resource(reference: &DbtRelationReference, resource_id:
     match reference {
         DbtRelationReference::Ref { package, name } => {
             !resource_id.starts_with("source.")
-                && parts.last().is_some_and(|part| *part == name)
+                && parts.last().is_some_and(|part| *part == name.as_str())
                 && package
                     .as_deref()
                     .is_none_or(|package| parts.get(1).is_some_and(|part| *part == package))
@@ -1977,8 +1980,8 @@ fn dbt_reference_matches_resource(reference: &DbtRelationReference, resource_id:
                 && parts.len() >= 3
                 && parts
                     .get(parts.len() - 2)
-                    .is_some_and(|part| *part == source)
-                && parts.last().is_some_and(|part| *part == name)
+                    .is_some_and(|part| *part == source.as_str())
+                && parts.last().is_some_and(|part| *part == name.as_str())
         }
     }
 }
