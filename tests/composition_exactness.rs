@@ -60,9 +60,18 @@ fn unknown_domains_survive_local_relation_intersections() {
             !semantics.condition_exactness().is_exact(),
             "computed local predicate must be residual: {sql}"
         );
+    }
+
+    for sql in [
+        "WITH x AS (SELECT a - 10 AS b FROM t WHERE a > 3) SELECT b FROM x WHERE b BETWEEN 0 AND 5",
+        "SELECT b FROM (SELECT a - 10 AS b FROM t WHERE a > 3) d WHERE b BETWEEN 0 AND 5",
+    ] {
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], "generic", &dialect)
+            .unwrap_or_else(|error| panic!("{sql}: {error}"));
+        let semantics = resolved(bundle.layers().first().expect("query layer"));
         assert!(
             matches!(semantics.output().columns()[0].domain(), ValueDomain::Unknown(_)),
-            "computed local output domain must remain conservative: {sql}"
+            "arithmetic local output domain must remain conservative: {sql}"
         );
     }
 }
