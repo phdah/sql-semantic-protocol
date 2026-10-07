@@ -1,7 +1,7 @@
 ---
 id: TASK-42
 title: Define NULL and typing semantics for canonical constraints
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-07 09:27'
 updated_date: '2026-10-07'
@@ -29,8 +29,8 @@ Consumers such as sql-tdg (TASK-22) need these to generate data that passes `dbt
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Protocol documentation and public API docs state whether unique, accepted values, and foreign key constraints admit NULL values
-- [ ] #2 Accepted values are expressed in a form consumers can compare with the column datatype without parsing SQL, or unrepresentable values produce an explicit diagnostic
-- [ ] #3 quote: false accepted values are never emitted as raw SQL text presented as string values
-- [ ] #4 Tests cover NULL handling and quoted and unquoted accepted values for string and numeric columns
+- [x] #1 Protocol documentation and public API docs state whether unique, accepted values, and foreign key constraints admit NULL values
+- [x] #2 Accepted values are expressed in a form consumers can compare with the column datatype without parsing SQL, or unrepresentable values produce an explicit diagnostic
+- [x] #3 quote: false accepted values are never emitted as raw SQL text presented as string values
+- [x] #4 Tests cover NULL handling and quoted and unquoted accepted values for string and numeric columns
 <!-- AC:END -->
