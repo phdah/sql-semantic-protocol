@@ -2264,8 +2264,12 @@ fn analyze_query_relations_with_locals(
                 .residual_conditions
                 .extend(local_exactness.residual_conditions().iter().cloned());
             let mut output_diagnostics = Vec::new();
-            let output =
-                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
+            let output = analyze_query_output(
+                &cte.query,
+                &local_outputs,
+                &mut output_diagnostics,
+                metadata,
+            );
             extend_unique_diagnostics(&mut cte_diagnostics, &output_diagnostics);
             local_outputs.insert(name.clone(), output);
             local_analyses.insert(
