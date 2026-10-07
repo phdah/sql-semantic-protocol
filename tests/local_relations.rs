@@ -62,15 +62,24 @@ fn assert_join_equality(
     right_column: &str,
 ) {
     let Some(Predicate::Comparison(comparison)) = join.condition() else {
-        panic!("expected equality comparison join condition, got {:?}", join.condition());
+        panic!(
+            "expected equality comparison join condition, got {:?}",
+            join.condition()
+        );
     };
     assert_eq!(comparison.operator(), ComparisonOperator::Eq);
 
     let Expression::Column(left) = comparison.left() else {
-        panic!("expected physical left join column, got {:?}", comparison.left());
+        panic!(
+            "expected physical left join column, got {:?}",
+            comparison.left()
+        );
     };
     let Expression::Column(right) = comparison.right() else {
-        panic!("expected physical right join column, got {:?}", comparison.right());
+        panic!(
+            "expected physical right join column, got {:?}",
+            comparison.right()
+        );
     };
 
     assert_eq!(left.relation(), Some(left_relation));
@@ -416,7 +425,6 @@ fn case_branch_domains_stop_at_computed_local_columns() {
     }
 }
 
-
 #[test]
 fn chained_cte_join_columns_resolve_through_plain_copy_lineage() {
     let dialect = GenericDialect {};
@@ -503,9 +511,10 @@ fn computed_local_join_columns_are_explicitly_unresolved() {
     };
     assert_eq!(right.relation(), Some("raw.customers"));
     assert_eq!(right.name(), "id");
-    assert!(query.diagnostics().iter().any(|diagnostic| {
-        diagnostic.code() == "unresolved_join_column_lineage"
-    }));
+    assert!(query
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| { diagnostic.code() == "unresolved_join_column_lineage" }));
 }
 
 #[test]
@@ -531,9 +540,10 @@ fn unused_cte_relation_semantics_do_not_leak() {
 
     assert!(query.joins().is_empty());
     assert_eq!(query.dependencies(), ["live.orders"]);
-    assert!(query.column_domains().iter().all(|domain| {
-        !matches!(domain.column().relation(), Some("ghost.a" | "ghost.b"))
-    }));
+    assert!(query
+        .column_domains()
+        .iter()
+        .all(|domain| { !matches!(domain.column().relation(), Some("ghost.a" | "ghost.b")) }));
 }
 
 #[test]
