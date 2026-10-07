@@ -544,10 +544,7 @@ fn columns_reference_distinct_sources(
     left_index != right_index
 }
 
-fn source_index_for_column(
-    column: &ColumnExpression,
-    sources: &[SourceRelation],
-) -> Option<usize> {
+fn source_index_for_column(column: &ColumnExpression, sources: &[SourceRelation]) -> Option<usize> {
     match column.relation() {
         Some(qualifier) => {
             let matches = sources
