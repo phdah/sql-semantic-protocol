@@ -1,10 +1,10 @@
 ---
 id: TASK-45
 title: Expose canonical physical join equalities on composed semantics
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 18:11'
-updated_date: '2026-10-07 18:11'
+updated_date: '2026-10-08'
 labels: []
 milestone: m-2
 dependencies:
@@ -35,11 +35,18 @@ Resolved composed semantics expose the complete set of equality relationships th
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Resolved composed semantics list every equality relationship that participates in the exactness guarantee, with physical relation, column, relation instance identity, join kind, and originating layer on each entry
-- [ ] #2 Equi-joins written in WHERE over comma or CROSS joins are represented as inner equality relationships, not Unknown domains
-- [ ] #3 Equalities from joins inside referenced CTEs, derived tables, and every ancestor layer are included after plain-copy mapping; unmappable equalities are residual
-- [ ] #4 Self-joins and repeated relation instances keep distinct instance identities on equalities and on column domains, or are residual
-- [ ] #5 Outer joins are listed with their kind, and their conditions are residual until an exact outer-join contract exists
-- [ ] #6 Tests cover explicit and implicit inner joins, multi-column keys, joins inside single and chained CTEs, joins in upstream layers, self-joins, and a dbt-style CTE chain joining three sources
-- [ ] #7 JSON Schema and protocol docs describe the equality relationship representation
+- [x] #1 Resolved composed semantics list every equality relationship that participates in the exactness guarantee, with physical relation, column, relation instance identity, join kind, and originating layer on each entry
+- [x] #2 Equi-joins written in WHERE over comma or CROSS joins are represented as inner equality relationships, not Unknown domains
+- [x] #3 Equalities from joins inside referenced CTEs, derived tables, and every ancestor layer are included after plain-copy mapping; unmappable equalities are residual
+- [x] #4 Self-joins and repeated relation instances keep distinct instance identities on equalities and on column domains, or are residual
+- [x] #5 Outer joins are listed with their kind, and their conditions are residual until an exact outer-join contract exists
+- [x] #6 Tests cover explicit and implicit inner joins, multi-column keys, joins inside single and chained CTEs, joins in upstream layers, self-joins, and a dbt-style CTE chain joining three sources
+- [x] #7 JSON Schema and protocol docs describe the equality relationship representation
 <!-- AC:END -->
+
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Implemented in PR #58. Resolved composed semantics now expose deterministic physical join equalities with relation-instance identity, join kind, and origin layer. Explicit joins, implicit WHERE equi-joins, local CTE/derived-table joins, and upstream producer equalities compose through proven plain-copy lineage. Outer joins retain their kind while remaining residual, and repeated/self-join cases remain residual when instance identity cannot be proven safely. Schema, docs, unit/conformance coverage, and dbt Core E2E coverage were updated.
+<!-- SECTION:NOTES:END -->
