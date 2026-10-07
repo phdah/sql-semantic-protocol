@@ -1,9 +1,10 @@
 ---
 id: TASK-41
 title: Report dbt tests and constraints the adapter does not carry
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 09:27'
+updated_date: '2026-10-07'
 labels: []
 milestone: m-2
 dependencies: []
@@ -32,10 +33,10 @@ Dropping `where` makes the emitted constraint stronger than the real test, which
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Singular dbt tests attached to a relation produce an explicit constraint diagnostic
-- [ ] #2 Built-in tests with config that changes their meaning (for example where) are either represented faithfully or reported with a diagnostic naming the ignored config
-- [ ] #3 dbt check and custom constraints produce an explicit diagnostic consistent with the SQL DDL path
-- [ ] #4 Unsupported tests are never skipped without a diagnostic, including tests attached to relation-less nodes
-- [ ] #5 Protocol documentation lists exactly which dbt tests and configs are carried and how the rest are reported
-- [ ] #6 Tests cover each reported case
+- [x] #1 Singular dbt tests attached to a relation produce an explicit constraint diagnostic
+- [x] #2 Built-in tests with config that changes their meaning (for example where) are either represented faithfully or reported with a diagnostic naming the ignored config
+- [x] #3 dbt check and custom constraints produce an explicit diagnostic consistent with the SQL DDL path
+- [x] #4 Unsupported tests are never skipped without a diagnostic, including tests attached to relation-less nodes
+- [x] #5 Protocol documentation lists exactly which dbt tests and configs are carried and how the rest are reported
+- [x] #6 Tests cover each reported case
 <!-- AC:END -->
