@@ -55,41 +55,57 @@ fn duckdb_connection() -> Connection {
         )
         .expect("create oracle tables");
 
-    for row in source_rows() {
-        connection
-            .execute(
-                "INSERT INTO predicate_rows VALUES (?, ?, ?, ?)",
-                [duckdb::types::Value::BigInt(row.row_id), optional_bigint(row.a), optional_bigint(row.b), optional_bigint(row.c)],
+    let predicate_values = source_rows()
+        .into_iter()
+        .map(|row| {
+            format!(
+                "({}, {}, {}, {})",
+                row.row_id,
+                sql_integer(row.a),
+                sql_integer(row.b),
+                sql_integer(row.c)
             )
-            .expect("insert predicate row");
-    }
+        })
+        .collect::<Vec<_>>()
+        .join(",");
+    let left_values = left_rows()
+        .into_iter()
+        .map(|row| {
+            format!(
+                "({}, {}, {})",
+                row.row_id,
+                sql_integer(row.a),
+                sql_integer(row.x)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(",");
+    let right_values = right_rows()
+        .into_iter()
+        .map(|row| {
+            format!(
+                "({}, {}, {})",
+                row.row_id,
+                sql_integer(row.b),
+                sql_integer(row.y)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(",");
 
-    for row in left_rows() {
-        connection
-            .execute(
-                "INSERT INTO left_rows VALUES (?, ?, ?)",
-                [duckdb::types::Value::BigInt(row.row_id), optional_bigint(row.a), optional_bigint(row.x)],
-            )
-            .expect("insert left row");
-    }
-
-    for row in right_rows() {
-        connection
-            .execute(
-                "INSERT INTO right_rows VALUES (?, ?, ?)",
-                [duckdb::types::Value::BigInt(row.row_id), optional_bigint(row.b), optional_bigint(row.y)],
-            )
-            .expect("insert right row");
-    }
+    connection
+        .execute_batch(&format!(
+            "INSERT INTO predicate_rows VALUES {predicate_values};
+             INSERT INTO left_rows VALUES {left_values};
+             INSERT INTO right_rows VALUES {right_values};"
+        ))
+        .expect("populate oracle tables");
 
     connection
 }
 
-fn optional_bigint(value: Option<i64>) -> duckdb::types::Value {
-    match value {
-        Some(value) => duckdb::types::Value::BigInt(value),
-        None => duckdb::types::Value::Null,
-    }
+fn sql_integer(value: Option<i64>) -> String {
+    value.map_or_else(|| "NULL".to_string(), |value| value.to_string())
 }
 
 fn source_rows() -> Vec<SourceRow> {
