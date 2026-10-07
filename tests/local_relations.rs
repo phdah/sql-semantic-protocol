@@ -1,7 +1,11 @@
+mod common;
+
+use common::DIALECTS;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, parse_dbt_catalog,
-    parse_dbt_manifest, CaseSourceDomains, ConfiguredSqlInput, Expression, LiteralValue,
-    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
+    parse_dbt_manifest, CaseSourceDomains, ComparisonOperator, ConfiguredSqlInput, Expression,
+    LiteralValue, Predicate, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn,
+    SqlInput, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
@@ -48,6 +52,40 @@ fn first_query(
         Some(ProtocolStatement::Query(query)) => query,
         other => panic!("expected query statement, got {other:?}"),
     }
+}
+
+fn assert_join_equality(
+    join: &sql_semantic_protocol::Join,
+    left_relation: &str,
+    left_column: &str,
+    right_relation: &str,
+    right_column: &str,
+) {
+    let Some(Predicate::Comparison(comparison)) = join.condition() else {
+        panic!(
+            "expected equality comparison join condition, got {:?}",
+            join.condition()
+        );
+    };
+    assert_eq!(comparison.operator(), ComparisonOperator::Eq);
+
+    let Expression::Column(left) = comparison.left() else {
+        panic!(
+            "expected physical left join column, got {:?}",
+            comparison.left()
+        );
+    };
+    let Expression::Column(right) = comparison.right() else {
+        panic!(
+            "expected physical right join column, got {:?}",
+            comparison.right()
+        );
+    };
+
+    assert_eq!(left.relation(), Some(left_relation));
+    assert_eq!(left.name(), left_column);
+    assert_eq!(right.relation(), Some(right_relation));
+    assert_eq!(right.name(), right_column);
 }
 
 #[test]
@@ -129,15 +167,16 @@ fn derived_table_filters_propagate_to_physical_columns() {
 }
 
 #[test]
-fn joins_inside_ctes_are_retained() {
+fn joins_inside_ctes_resolve_equality_columns_to_physical_sources() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
         "WITH x AS (
-            SELECT o.id, c.region
+            SELECT o.id, o.amount, c.region
             FROM orders o
             JOIN customers c ON o.customer_id = c.id
+            WHERE o.amount BETWEEN 10 AND 20
          )
-         SELECT id, region FROM x",
+         SELECT id, amount, region FROM x",
         "generic",
         &dialect,
     )
@@ -147,13 +186,25 @@ fn joins_inside_ctes_are_retained() {
     assert_eq!(query.joins().len(), 1);
     assert_eq!(query.joins()[0].left().relation(), "orders");
     assert_eq!(query.joins()[0].right().relation(), "customers");
+    assert_join_equality(
+        &query.joins()[0],
+        "orders",
+        "customer_id",
+        "customers",
+        "id",
+    );
     assert_eq!(
         query.output().columns()[0].lineage()[0].relation(),
         "orders"
     );
     assert_eq!(
-        query.output().columns()[1].lineage()[0].relation(),
+        query.output().columns()[2].lineage()[0].relation(),
         "customers"
+    );
+    assert_number_range(
+        query.output().columns()[1].domain(),
+        Some(("10", true)),
+        Some(("20", true)),
     );
 }
 
@@ -372,4 +423,279 @@ fn case_branch_domains_stop_at_computed_local_columns() {
             CaseSourceDomains::Unknown(_)
         ));
     }
+}
+
+#[test]
+fn chained_cte_join_columns_resolve_through_plain_copy_lineage() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "WITH
+            orders_cte AS (
+                SELECT order_id, customer_id FROM raw.orders
+            ),
+            customers_cte AS (
+                SELECT id AS customer_id FROM raw.customers
+            ),
+            joined AS (
+                SELECT o.order_id, c.customer_id
+                FROM orders_cte o
+                JOIN customers_cte c ON o.customer_id = c.customer_id
+            )
+         SELECT order_id, customer_id FROM joined",
+        "generic",
+        &dialect,
+    )
+    .expect("chained CTE join should analyze");
+    let query = first_query(&protocol);
+
+    assert_eq!(query.joins().len(), 1);
+    assert_join_equality(
+        &query.joins()[0],
+        "raw.orders",
+        "customer_id",
+        "raw.customers",
+        "id",
+    );
+    assert_eq!(query.dependencies(), ["raw.customers", "raw.orders"]);
+}
+
+#[test]
+fn derived_table_join_columns_resolve_to_physical_sources() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT d.order_id, c.id
+         FROM (
+             SELECT id AS order_id, customer_id
+             FROM raw.orders
+         ) d
+         JOIN raw.customers c ON d.customer_id = c.id",
+        "generic",
+        &dialect,
+    )
+    .expect("derived-table join should analyze");
+    let query = first_query(&protocol);
+
+    assert_eq!(query.joins().len(), 1);
+    assert_join_equality(
+        &query.joins()[0],
+        "raw.orders",
+        "customer_id",
+        "raw.customers",
+        "id",
+    );
+}
+
+#[test]
+fn computed_local_join_columns_are_explicitly_unresolved() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "WITH x AS (
+            SELECT id + 1 AS join_id
+            FROM raw.orders
+         )
+         SELECT x.join_id, c.id
+         FROM x
+         JOIN raw.customers c ON x.join_id = c.id",
+        "generic",
+        &dialect,
+    )
+    .expect("computed local join should analyze");
+    let query = first_query(&protocol);
+
+    let Some(Predicate::Comparison(comparison)) = query.joins()[0].condition() else {
+        panic!("expected join comparison");
+    };
+    assert!(matches!(comparison.left(), Expression::Unknown(_)));
+    let Expression::Column(right) = comparison.right() else {
+        panic!("expected physical right join column");
+    };
+    assert_eq!(right.relation(), Some("raw.customers"));
+    assert_eq!(right.name(), "id");
+    assert!(query
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| { diagnostic.code() == "unresolved_join_column_lineage" }));
+}
+
+#[test]
+fn unused_cte_relation_semantics_do_not_leak() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "WITH
+            unused AS (
+                SELECT a.id
+                FROM ghost.a a
+                JOIN ghost.b b ON a.id = b.id
+                WHERE a.id > 10
+            ),
+            used AS (
+                SELECT id FROM live.orders
+            )
+         SELECT id FROM used",
+        "generic",
+        &dialect,
+    )
+    .expect("unused CTE query should analyze");
+    let query = first_query(&protocol);
+
+    assert!(query.joins().is_empty());
+    assert_eq!(query.dependencies(), ["live.orders"]);
+    assert!(query
+        .column_domains()
+        .iter()
+        .all(|domain| { !matches!(domain.column().relation(), Some("ghost.a" | "ghost.b")) }));
+}
+
+#[test]
+fn local_join_resolution_is_shared_across_supported_dialects() {
+    let sql = "WITH
+        x AS (SELECT id, customer_id FROM orders),
+        y AS (SELECT id FROM customers),
+        joined AS (
+            SELECT x.id
+            FROM x
+            JOIN y ON x.customer_id = y.id
+        )
+        SELECT id FROM joined";
+
+    for dialect_name in DIALECTS {
+        let dialect = dialect_from_str(dialect_name)
+            .unwrap_or_else(|| panic!("dialect {dialect_name} should resolve"));
+        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
+            .unwrap_or_else(|error| panic!("dialect {dialect_name} should analyze: {error}"));
+        let query = first_query(&protocol);
+
+        assert_eq!(query.joins().len(), 1, "dialect {dialect_name}");
+        assert_join_equality(
+            &query.joins()[0],
+            "orders",
+            "customer_id",
+            "customers",
+            "id",
+        );
+        assert!(
+            query
+                .diagnostics()
+                .iter()
+                .all(|diagnostic| diagnostic.code() != "unresolved_join_column_lineage"),
+            "dialect {dialect_name}"
+        );
+    }
+}
+
+#[test]
+fn dbt_cte_chain_join_columns_resolve_to_physical_sources() {
+    let manifest = parse_dbt_manifest(
+        r#"{
+          "metadata": {
+            "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
+            "dbt_version": "1.11.8",
+            "adapter_type": "postgres"
+          },
+          "nodes": {
+            "model.demo.joined": {
+              "unique_id": "model.demo.joined",
+              "resource_type": "model",
+              "relation_name": "warehouse.analytics.joined",
+              "database": "warehouse",
+              "schema": "analytics",
+              "original_file_path": "models/joined.sql",
+              "language": "sql",
+              "raw_code": "compiled fixture",
+              "compiled_code": "WITH orders AS (SELECT order_id FROM warehouse.raw.orders), order_items AS (SELECT order_id FROM warehouse.raw.order_items), joined AS (SELECT o.order_id FROM orders o JOIN order_items oi ON o.order_id = oi.order_id) SELECT order_id FROM joined",
+              "depends_on": {
+                "nodes": ["source.demo.orders", "source.demo.order_items"]
+              }
+            }
+          },
+          "sources": {
+            "source.demo.orders": {
+              "unique_id": "source.demo.orders",
+              "resource_type": "source",
+              "relation_name": "warehouse.raw.orders",
+              "database": "warehouse",
+              "schema": "raw",
+              "name": "orders"
+            },
+            "source.demo.order_items": {
+              "unique_id": "source.demo.order_items",
+              "resource_type": "source",
+              "relation_name": "warehouse.raw.order_items",
+              "database": "warehouse",
+              "schema": "raw",
+              "name": "order_items"
+            }
+          }
+        }"#,
+    )
+    .expect("manifest");
+    let catalog = parse_dbt_catalog(
+        r#"{
+          "metadata": {
+            "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+            "dbt_version": "1.11.8"
+          },
+          "nodes": {
+            "model.demo.joined": {
+              "unique_id": "model.demo.joined",
+              "metadata": {
+                "type": "VIEW",
+                "database": "warehouse",
+                "schema": "analytics",
+                "name": "joined"
+              },
+              "columns": {
+                "order_id": {"name": "order_id", "type": "BIGINT", "index": 1}
+              },
+              "stats": {}
+            }
+          },
+          "sources": {
+            "source.demo.orders": {
+              "unique_id": "source.demo.orders",
+              "metadata": {
+                "type": "BASE TABLE",
+                "database": "warehouse",
+                "schema": "raw",
+                "name": "orders"
+              },
+              "columns": {
+                "order_id": {"name": "order_id", "type": "BIGINT", "index": 1}
+              },
+              "stats": {}
+            },
+            "source.demo.order_items": {
+              "unique_id": "source.demo.order_items",
+              "metadata": {
+                "type": "BASE TABLE",
+                "database": "warehouse",
+                "schema": "raw",
+                "name": "order_items"
+              },
+              "columns": {
+                "order_id": {"name": "order_id", "type": "BIGINT", "index": 1}
+              },
+              "stats": {}
+            }
+          },
+          "errors": null
+        }"#,
+    )
+    .expect("catalog");
+    let dialect = dialect_from_str("postgres").expect("postgres dialect");
+    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "postgres", dialect.as_ref())
+        .expect("dbt artifacts should analyze");
+    let query = match &bundle.inputs()[0].statements()[0] {
+        ProtocolStatement::Query(query) => query,
+        other => panic!("expected query statement, got {other:?}"),
+    };
+
+    assert_eq!(query.joins().len(), 1);
+    assert_join_equality(
+        &query.joins()[0],
+        "warehouse.raw.orders",
+        "order_id",
+        "warehouse.raw.order_items",
+        "order_id",
+    );
 }

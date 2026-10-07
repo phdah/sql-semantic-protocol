@@ -1,9 +1,10 @@
 ---
 id: TASK-37
 title: Resolve joins inside CTEs and derived tables to physical columns
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 09:27'
+updated_date: '2026-10-07 12:48'
 labels: []
 milestone: m-2
 dependencies: []
@@ -29,9 +30,9 @@ This is the remaining gap in TASK-31 AC #1 (marked Done with unchecked criteria)
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Every join reported for a query exposes its equality columns resolved to physical source relations and columns when lineage is a plain column copy
-- [ ] #2 Joins whose columns cannot be resolved to physical columns produce an explicit diagnostic or unresolved composition
-- [ ] #3 Joins, predicates, and dependencies of CTEs that the query does not reference do not appear in the query semantics
-- [ ] #4 Integration tests cover joins inside single CTEs, chained CTEs, derived tables, and a dbt-style CTE chain model joining two sources
-- [ ] #5 JSON Schema, protocol documentation, and public API docs describe how local-relation joins map to physical columns
+- [x] #1 Every join reported for a query exposes its equality columns resolved to physical source relations and columns when lineage is a plain column copy
+- [x] #2 Joins whose columns cannot be resolved to physical columns produce an explicit diagnostic or unresolved composition
+- [x] #3 Joins, predicates, and dependencies of CTEs that the query does not reference do not appear in the query semantics
+- [x] #4 Integration tests cover joins inside single CTEs, chained CTEs, derived tables, and a dbt-style CTE chain model joining two sources
+- [x] #5 JSON Schema, protocol documentation, and public API docs describe how local-relation joins map to physical columns
 <!-- AC:END -->

@@ -642,7 +642,7 @@
           }
         },
         "joins": {
-          "description": "Normalized joins visible to the query, including supported joins carried through referenced CTEs and derived tables.",
+          "description": "Normalized joins visible to the query, including supported joins carried through referenced CTEs and derived tables. Equality-column operands in join conditions use physical source relation and column identities when every local projection hop is a plain column copy; unsafe mappings remain explicit through unknown expressions and diagnostics.",
           "type": "array",
           "items": {
             "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/join"

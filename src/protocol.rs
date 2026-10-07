@@ -155,7 +155,11 @@ impl QueryStatement {
         &self.dependencies
     }
 
-    /// Return joins in SQL join order.
+    /// Return joins visible to the query in SQL join order.
+    ///
+    /// Joins carried through referenced CTEs and derived tables retain their logical relation
+    /// participants. Equality-column operands in their conditions resolve to physical source
+    /// columns when every local projection hop is a plain column copy.
     pub fn joins(&self) -> &[Join] {
         &self.joins
     }
@@ -827,6 +831,10 @@ impl Join {
     }
 
     /// Return the normalized join condition when it can be represented safely.
+    ///
+    /// Equality-column operands are expressed with physical source relation and column identities
+    /// when lineage proves a plain-copy path through local relations. An unsafe mapping is retained
+    /// as an unknown expression and accompanied by an `unresolved_join_column_lineage` diagnostic.
     pub fn condition(&self) -> Option<&Predicate> {
         self.condition.as_ref()
     }
