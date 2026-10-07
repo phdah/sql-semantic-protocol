@@ -549,6 +549,7 @@ fn analyze_query(
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
     }
+    diagnose_local_query_predicates(query, &BTreeMap::new(), &mut diagnostics);
     inspect_query_features(query, &mut diagnostics);
     let condition_exactness = analyze_query_condition_exactness(
         query,
@@ -557,7 +558,10 @@ fn analyze_query(
         &relation_analysis.joins,
         &diagnostics,
         false,
-    );
+    )
+    .merged_with(&ConditionExactness::from_residuals(
+        relation_analysis.residual_conditions.clone(),
+    ));
     sort_diagnostics(&mut diagnostics);
 
     QueryStatement::new(
@@ -1805,6 +1809,7 @@ struct RelationAnalysis {
     sources: Vec<SourceRelation>,
     dependencies: BTreeSet<String>,
     joins: Vec<ProtocolJoin>,
+    residual_conditions: Vec<ResidualCondition>,
 }
 
 #[derive(Clone)]
@@ -1827,6 +1832,7 @@ struct AnalyzedRelation {
     reference: RelationRef,
     dependencies: BTreeSet<String>,
     joins: Vec<ProtocolJoin>,
+    residual_conditions: Vec<ResidualCondition>,
 }
 
 fn diagnose_local_query_predicates(
@@ -1998,6 +2004,59 @@ fn unresolved_domain_column_reason(
         })
 }
 
+fn analyze_local_query_condition_exactness(
+    query: &SqlQuery,
+    local_outputs: &LocalOutputMap,
+    relation_analysis: &RelationAnalysis,
+) -> ConditionExactness {
+    let mut diagnostics = Vec::new();
+    let predicates = analyze_query_predicates_with_local_outputs(
+        query,
+        local_outputs,
+        &mut diagnostics,
+    );
+    diagnose_local_set_expr_predicates(query.body.as_ref(), local_outputs, &mut diagnostics);
+    if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
+        inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
+    }
+    inspect_query_features(query, &mut diagnostics);
+
+    analyze_query_condition_exactness(
+        query,
+        &predicates,
+        &relation_analysis.sources,
+        &relation_analysis.joins,
+        &diagnostics,
+        false,
+    )
+}
+
+fn analyze_query_predicates_with_local_outputs(
+    query: &SqlQuery,
+    local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Predicates {
+    match query.body.as_ref() {
+        SetExpr::Select(select) => {
+            let mut scope_diagnostics = Vec::new();
+            let scope = build_output_scope(
+                select,
+                local_outputs,
+                &[],
+                &mut scope_diagnostics,
+                None,
+            );
+            extend_unique_diagnostics(diagnostics, &scope_diagnostics);
+            analyze_select_predicates_with_scope(select, &scope, diagnostics)
+        }
+        SetExpr::Query(query) => {
+            analyze_query_predicates_with_local_outputs(query, local_outputs, diagnostics)
+        }
+        SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
+        _ => Predicates::new(None, None, None),
+    }
+}
+
 fn analyze_query_relations(
     query: &SqlQuery,
     inherited_local_relations: &BTreeSet<String>,
@@ -2034,7 +2093,7 @@ fn analyze_query_relations_with_locals(
         for cte in &with.cte_tables {
             let name = cte.alias.name.to_string();
             let mut cte_diagnostics = Vec::new();
-            let nested = analyze_query_relations_with_locals(
+            let mut nested = analyze_query_relations_with_locals(
                 &cte.query,
                 &local_relations,
                 &local_outputs,
@@ -2043,9 +2102,19 @@ fn analyze_query_relations_with_locals(
                 derived_index,
             );
             diagnose_local_query_predicates(&cte.query, &local_outputs, &mut cte_diagnostics);
+            let local_exactness =
+                analyze_local_query_condition_exactness(&cte.query, &local_outputs, &nested)
+                    .with_scope(format!("cte:{name}"));
+            nested.residual_conditions.extend(
+                local_exactness
+                    .residual_conditions()
+                    .iter()
+                    .cloned(),
+            );
             let mut output_diagnostics = Vec::new();
             let output =
                 analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
+            extend_unique_diagnostics(&mut cte_diagnostics, &output_diagnostics);
             local_outputs.insert(name.clone(), output);
             local_analyses.insert(
                 name,
@@ -2333,6 +2402,9 @@ fn register_table_factor(
         analysis.dependencies.insert(dependency);
     }
     analysis.joins.extend(relation.joins);
+    analysis
+        .residual_conditions
+        .extend(relation.residual_conditions);
 
     if !analysis.sources.iter().any(|existing| {
         existing.name() == relation.source.name() && existing.alias() == relation.source.alias()
@@ -2376,41 +2448,44 @@ fn analyze_table_factor_with_locals(
         } => {
             let name = name.to_string();
             let alias = alias.as_ref().map(|alias| alias.name.to_string());
-            let (dependencies, joins) = if local_relations.contains(&name) {
-                match local_analyses.get(&name) {
-                    Some(local) => {
-                        extend_unique_diagnostics(diagnostics, &local.diagnostics);
-                        (
-                            local.analysis.dependencies.clone(),
-                            local.analysis.joins.clone(),
-                        )
+            let (dependencies, joins, residual_conditions) =
+                if local_relations.contains(&name) {
+                    match local_analyses.get(&name) {
+                        Some(local) => {
+                            extend_unique_diagnostics(diagnostics, &local.diagnostics);
+                            (
+                                local.analysis.dependencies.clone(),
+                                local.analysis.joins.clone(),
+                                local.analysis.residual_conditions.clone(),
+                            )
+                        }
+                        None => {
+                            diagnostics.push(warning(
+                                "unresolved_local_relation_analysis",
+                                DiagnosticArea::Source,
+                                &format!(
+                                    "local relation {name} is referenced before its relation semantics can be resolved"
+                                ),
+                            ));
+                            (BTreeSet::new(), Vec::new(), Vec::new())
+                        }
                     }
-                    None => {
-                        diagnostics.push(warning(
-                            "unresolved_local_relation_analysis",
-                            DiagnosticArea::Source,
-                            &format!(
-                                "local relation {name} is referenced before its relation semantics can be resolved"
-                            ),
-                        ));
-                        (BTreeSet::new(), Vec::new())
-                    }
-                }
-            } else {
-                (BTreeSet::from([name.clone()]), Vec::new())
-            };
+                } else {
+                    (BTreeSet::from([name.clone()]), Vec::new(), Vec::new())
+                };
 
             Some(AnalyzedRelation {
                 source: SourceRelation::new(name.clone(), alias.clone()),
                 reference: RelationRef::new(name, alias),
                 dependencies,
                 joins,
+                residual_conditions,
             })
         }
         TableFactor::Derived {
             subquery, alias, ..
         } => {
-            let nested = analyze_query_relations_with_locals(
+            let mut nested = analyze_query_relations_with_locals(
                 subquery,
                 local_relations,
                 local_outputs,
@@ -2427,12 +2502,25 @@ fn analyze_table_factor_with_locals(
                     format!("subquery#{}", derived_index)
                 }
             };
+            let scope = alias
+                .as_ref()
+                .map_or_else(|| format!("derived:{name}"), |alias| format!("derived:{alias}"));
+            let local_exactness =
+                analyze_local_query_condition_exactness(subquery, local_outputs, &nested)
+                    .with_scope(scope);
+            nested.residual_conditions.extend(
+                local_exactness
+                    .residual_conditions()
+                    .iter()
+                    .cloned(),
+            );
 
             Some(AnalyzedRelation {
                 source: SourceRelation::new(name.clone(), alias.clone()),
                 reference: RelationRef::new(name, alias),
                 dependencies: nested.dependencies,
                 joins: nested.joins,
+                residual_conditions: nested.residual_conditions,
             })
         }
         _ => {
@@ -3049,6 +3137,7 @@ fn merge_relation_analysis(target: &mut RelationAnalysis, source: RelationAnalys
     }
     target.dependencies.extend(source.dependencies);
     target.joins.extend(source.joins);
+    target.residual_conditions.extend(source.residual_conditions);
 }
 
 fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Predicate {
@@ -4220,11 +4309,12 @@ fn analyze_query_output_with_outer_scope(
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
+            let mut cte_diagnostics = Vec::new();
             let output = analyze_query_output_with_outer_scope(
                 &cte.query,
                 &local_outputs,
                 &[],
-                diagnostics,
+                &mut cte_diagnostics,
                 metadata,
             );
             local_outputs.insert(cte.alias.name.to_string(), output);
