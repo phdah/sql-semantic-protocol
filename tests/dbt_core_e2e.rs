@@ -582,16 +582,37 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         .as_array()
         .expect("composed join equalities should be an array");
     assert_eq!(enriched_equalities.len(), 2);
-    assert!(enriched_equalities.iter().any(|equality| {
-        equality["join_kind"] == "inner"
-            && contains_string(equality, "customer_id")
-            && contains_string(equality, "raw")
-    }));
-    assert!(enriched_equalities.iter().any(|equality| {
-        equality["join_kind"] == "left"
-            && contains_string(equality, "order_id")
-            && contains_string(equality, "returns")
-    }));
+    let customer_equality = enriched_equalities
+        .iter()
+        .find(|equality| {
+            equality["join_kind"] == "inner" && contains_string(equality, "customer_id")
+        })
+        .expect("customer join should be a composed inner equality");
+    assert!(customer_equality["left"]["relation"]
+        .as_str()
+        .expect("left equality relation")
+        .contains("\"raw\""));
+    assert!(customer_equality["right"]["relation"]
+        .as_str()
+        .expect("right equality relation")
+        .contains("\"raw\""));
+
+    let return_equality = enriched_equalities
+        .iter()
+        .find(|equality| {
+            equality["join_kind"] == "left" && contains_string(equality, "order_id")
+        })
+        .expect("return join should retain its composed left equality");
+    assert!(
+        return_equality["left"]["relation"]
+            .as_str()
+            .expect("left equality relation")
+            .contains("returns")
+            || return_equality["right"]["relation"]
+                .as_str()
+                .expect("right equality relation")
+                .contains("returns")
+    );
 
     let ranked = input_statement(&protocol, "ranked_orders");
     assert!(contains_string(ranked, "window_function"));
