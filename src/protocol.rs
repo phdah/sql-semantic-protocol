@@ -1035,6 +1035,8 @@ pub struct ResidualCondition {
     reason: ResidualConditionReason,
     clause: ConditionClause,
     identity: String,
+    origin_layer_id: Option<String>,
+    origin_scope: Option<String>,
 }
 
 impl ResidualCondition {
@@ -1047,7 +1049,22 @@ impl ResidualCondition {
             reason,
             clause,
             identity: identity.into(),
+            origin_layer_id: None,
+            origin_scope: None,
         }
+    }
+
+    pub(crate) fn with_scope(mut self, scope: impl Into<String>) -> Self {
+        self.origin_scope = Some(scope.into());
+        self
+    }
+
+    pub(crate) fn with_layer_origin(mut self, layer_id: impl Into<String>) -> Self {
+        self.origin_layer_id = Some(layer_id.into());
+        if self.origin_scope.is_none() {
+            self.origin_scope = Some("query".to_string());
+        }
+        self
     }
 
     /// Return the stable residual reason.
@@ -1064,6 +1081,16 @@ impl ResidualCondition {
     pub fn identity(&self) -> &str {
         &self.identity
     }
+
+    /// Return the transformation layer where this residual originated after composition.
+    pub fn origin_layer_id(&self) -> Option<&str> {
+        self.origin_layer_id.as_deref()
+    }
+
+    /// Return the query, CTE, or derived-table scope where this residual originated.
+    pub fn origin_scope(&self) -> Option<&str> {
+        self.origin_scope.as_deref()
+    }
 }
 
 /// Exactness contract for the row-membership conditions of one query scope.
@@ -1076,11 +1103,15 @@ impl ConditionExactness {
     pub(crate) fn from_residuals(mut residual_conditions: Vec<ResidualCondition>) -> Self {
         residual_conditions.sort_by(|left, right| {
             (
+                left.origin_layer_id.as_deref(),
+                left.origin_scope.as_deref(),
                 left.clause.as_str(),
                 left.identity.as_str(),
                 left.reason.as_str(),
             )
                 .cmp(&(
+                    right.origin_layer_id.as_deref(),
+                    right.origin_scope.as_deref(),
                     right.clause.as_str(),
                     right.identity.as_str(),
                     right.reason.as_str(),
@@ -1090,6 +1121,38 @@ impl ConditionExactness {
         Self {
             residual_conditions,
         }
+    }
+
+    pub(crate) fn with_scope(&self, scope: impl Into<String>) -> Self {
+        let scope = scope.into();
+        Self::from_residuals(
+            self.residual_conditions
+                .iter()
+                .cloned()
+                .map(|residual| residual.with_scope(scope.clone()))
+                .collect(),
+        )
+    }
+
+    pub(crate) fn with_layer_origin(&self, layer_id: impl Into<String>) -> Self {
+        let layer_id = layer_id.into();
+        Self::from_residuals(
+            self.residual_conditions
+                .iter()
+                .cloned()
+                .map(|residual| residual.with_layer_origin(layer_id.clone()))
+                .collect(),
+        )
+    }
+
+    pub(crate) fn merged_with(&self, other: &Self) -> Self {
+        Self::from_residuals(
+            self.residual_conditions
+                .iter()
+                .chain(other.residual_conditions.iter())
+                .cloned()
+                .collect(),
+        )
     }
 
     /// Return whether the scope satisfies the exact row-membership contract.
