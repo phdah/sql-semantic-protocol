@@ -2263,14 +2263,13 @@ fn analyze_query_relations_with_locals(
                 &mut cte_diagnostics,
                 metadata,
             );
-            let local_exactness =
-                analyze_local_query_condition_exactness(
-                    &cte.query,
-                    &local_outputs,
-                    &nested,
-                    metadata,
-                )
-                .with_scope(format!("cte:{name}"));
+            let local_exactness = analyze_local_query_condition_exactness(
+                &cte.query,
+                &local_outputs,
+                &nested,
+                metadata,
+            )
+            .with_scope(format!("cte:{name}"));
             nested
                 .residual_conditions
                 .extend(local_exactness.residual_conditions().iter().cloned());
@@ -2696,13 +2695,8 @@ fn analyze_table_factor_with_locals(
                 |alias| format!("derived:{alias}"),
             );
             let local_exactness =
-                analyze_local_query_condition_exactness(
-                    subquery,
-                    local_outputs,
-                    &nested,
-                    metadata,
-                )
-                .with_scope(scope);
+                analyze_local_query_condition_exactness(subquery, local_outputs, &nested, metadata)
+                    .with_scope(scope);
             nested
                 .residual_conditions
                 .extend(local_exactness.residual_conditions().iter().cloned());
