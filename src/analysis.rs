@@ -2010,11 +2010,8 @@ fn analyze_local_query_condition_exactness(
     relation_analysis: &RelationAnalysis,
 ) -> ConditionExactness {
     let mut diagnostics = Vec::new();
-    let predicates = analyze_query_predicates_with_local_outputs(
-        query,
-        local_outputs,
-        &mut diagnostics,
-    );
+    let predicates =
+        analyze_query_predicates_with_local_outputs(query, local_outputs, &mut diagnostics);
     diagnose_local_set_expr_predicates(query.body.as_ref(), local_outputs, &mut diagnostics);
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
@@ -2039,13 +2036,8 @@ fn analyze_query_predicates_with_local_outputs(
     match query.body.as_ref() {
         SetExpr::Select(select) => {
             let mut scope_diagnostics = Vec::new();
-            let scope = build_output_scope(
-                select,
-                local_outputs,
-                &[],
-                &mut scope_diagnostics,
-                None,
-            );
+            let scope =
+                build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
             extend_unique_diagnostics(diagnostics, &scope_diagnostics);
             analyze_select_predicates_with_scope(select, &scope, diagnostics)
         }
@@ -2105,12 +2097,9 @@ fn analyze_query_relations_with_locals(
             let local_exactness =
                 analyze_local_query_condition_exactness(&cte.query, &local_outputs, &nested)
                     .with_scope(format!("cte:{name}"));
-            nested.residual_conditions.extend(
-                local_exactness
-                    .residual_conditions()
-                    .iter()
-                    .cloned(),
-            );
+            nested
+                .residual_conditions
+                .extend(local_exactness.residual_conditions().iter().cloned());
             let mut output_diagnostics = Vec::new();
             let output =
                 analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
@@ -2448,31 +2437,30 @@ fn analyze_table_factor_with_locals(
         } => {
             let name = name.to_string();
             let alias = alias.as_ref().map(|alias| alias.name.to_string());
-            let (dependencies, joins, residual_conditions) =
-                if local_relations.contains(&name) {
-                    match local_analyses.get(&name) {
-                        Some(local) => {
-                            extend_unique_diagnostics(diagnostics, &local.diagnostics);
-                            (
-                                local.analysis.dependencies.clone(),
-                                local.analysis.joins.clone(),
-                                local.analysis.residual_conditions.clone(),
-                            )
-                        }
-                        None => {
-                            diagnostics.push(warning(
-                                "unresolved_local_relation_analysis",
-                                DiagnosticArea::Source,
-                                &format!(
-                                    "local relation {name} is referenced before its relation semantics can be resolved"
-                                ),
-                            ));
-                            (BTreeSet::new(), Vec::new(), Vec::new())
-                        }
+            let (dependencies, joins, residual_conditions) = if local_relations.contains(&name) {
+                match local_analyses.get(&name) {
+                    Some(local) => {
+                        extend_unique_diagnostics(diagnostics, &local.diagnostics);
+                        (
+                            local.analysis.dependencies.clone(),
+                            local.analysis.joins.clone(),
+                            local.analysis.residual_conditions.clone(),
+                        )
                     }
-                } else {
-                    (BTreeSet::from([name.clone()]), Vec::new(), Vec::new())
-                };
+                    None => {
+                        diagnostics.push(warning(
+                            "unresolved_local_relation_analysis",
+                            DiagnosticArea::Source,
+                            &format!(
+                                "local relation {name} is referenced before its relation semantics can be resolved"
+                            ),
+                        ));
+                        (BTreeSet::new(), Vec::new(), Vec::new())
+                    }
+                }
+            } else {
+                (BTreeSet::from([name.clone()]), Vec::new(), Vec::new())
+            };
 
             Some(AnalyzedRelation {
                 source: SourceRelation::new(name.clone(), alias.clone()),
@@ -2502,18 +2490,16 @@ fn analyze_table_factor_with_locals(
                     format!("subquery#{}", derived_index)
                 }
             };
-            let scope = alias
-                .as_ref()
-                .map_or_else(|| format!("derived:{name}"), |alias| format!("derived:{alias}"));
+            let scope = alias.as_ref().map_or_else(
+                || format!("derived:{name}"),
+                |alias| format!("derived:{alias}"),
+            );
             let local_exactness =
                 analyze_local_query_condition_exactness(subquery, local_outputs, &nested)
                     .with_scope(scope);
-            nested.residual_conditions.extend(
-                local_exactness
-                    .residual_conditions()
-                    .iter()
-                    .cloned(),
-            );
+            nested
+                .residual_conditions
+                .extend(local_exactness.residual_conditions().iter().cloned());
 
             Some(AnalyzedRelation {
                 source: SourceRelation::new(name.clone(), alias.clone()),
@@ -3137,7 +3123,9 @@ fn merge_relation_analysis(target: &mut RelationAnalysis, source: RelationAnalys
     }
     target.dependencies.extend(source.dependencies);
     target.joins.extend(source.joins);
-    target.residual_conditions.extend(source.residual_conditions);
+    target
+        .residual_conditions
+        .extend(source.residual_conditions);
 }
 
 fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Predicate {
