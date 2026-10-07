@@ -1015,12 +1015,13 @@ fn columns_reference_distinct_sources(
     right: &ColumnExpression,
     sources: &[SourceRelation],
 ) -> bool {
-    let left = crate::domain::resolve_column(left, sources);
-    let right = crate::domain::resolve_column(right, sources);
-    matches!(
-        (left.relation(), right.relation()),
-        (Some(left), Some(right)) if left != right
-    )
+    let Some((left_index, _)) = source_for_column_expression(left, sources) else {
+        return false;
+    };
+    let Some((right_index, _)) = source_for_column_expression(right, sources) else {
+        return false;
+    };
+    left_index != right_index
 }
 
 fn collect_logical_residual_reasons(
