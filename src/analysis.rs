@@ -45,7 +45,8 @@ use crate::protocol::{
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
-    ScalarSubqueryExpression, SetMode, SetOperand, SetOperation, SetOperator, SetQuantifier,
+    RowConditions, ScalarSubqueryExpression, SetMode, SetOperand, SetOperation, SetOperator,
+    SetQuantifier,
     SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
@@ -326,13 +327,15 @@ fn analyze_merge(
         vec![source_relation.source],
         dependencies.into_iter().collect(),
         Vec::new(),
-        Predicates::new(None, None, None),
-        Vec::new(),
-        ConditionExactness::from_residuals(vec![ResidualCondition::new(
-            ResidualConditionReason::AnalysisDiagnostic,
-            ConditionClause::RowSetOperator,
-            "merge",
-        )]),
+        RowConditions::new(
+            Predicates::new(None, None, None),
+            Vec::new(),
+            ConditionExactness::from_residuals(vec![ResidualCondition::new(
+                ResidualConditionReason::AnalysisDiagnostic,
+                ConditionClause::RowSetOperator,
+                "merge",
+            )]),
+        ),
         Output::new(Vec::new()),
         diagnostics,
     )
@@ -561,9 +564,7 @@ fn analyze_query(
         relation_analysis.sources,
         relation_analysis.dependencies.into_iter().collect(),
         relation_analysis.joins,
-        predicates,
-        column_domains,
-        condition_exactness,
+        RowConditions::new(predicates, column_domains, condition_exactness),
         output,
         diagnostics,
     )
@@ -4934,9 +4935,7 @@ fn analyze_subquery_semantics(
         correlations,
         relations.joins,
         output,
-        predicates,
-        column_domains,
-        condition_exactness,
+        RowConditions::new(predicates, column_domains, condition_exactness),
         diagnostics,
     )
 }
