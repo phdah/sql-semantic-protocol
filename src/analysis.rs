@@ -1435,7 +1435,7 @@ fn analyze_set_expr_column_domains(
                 derive_inner_join_column_domains(&relations.joins, &relations.sources);
             let own_domains = remap_local_column_domains(
                 intersect_column_domain_sets([predicate_domains, join_domains]),
-                local_outputs,
+                &scope,
             );
             let source_domains = collect_select_local_domains(
                 select,
@@ -1603,25 +1603,52 @@ fn collect_table_factor_local_domains(
 
 fn remap_local_column_domains(
     domains: Vec<ColumnDomain>,
-    local_outputs: &LocalOutputMap,
+    scope: &[OutputRelation],
 ) -> Vec<ColumnDomain> {
     domains
         .into_iter()
         .flat_map(|column_domain| {
-            let Some(relation) = column_domain.column().relation() else {
-                return vec![column_domain];
-            };
-            let Some(output) = local_outputs.get(relation) else {
-                return vec![column_domain];
-            };
-            let mut candidates = output
-                .columns()
+            if let Ok(source) = resolve_plain_source_column(column_domain.column(), scope) {
+                return vec![ColumnDomain::new(
+                    ColumnRef::new(
+                        Some(source.relation().to_string()),
+                        source.column().to_string(),
+                    ),
+                    column_domain.domain().clone(),
+                )];
+            }
+
+            let local_matches = scope
                 .iter()
-                .filter(|column| column.name() == column_domain.column().name());
-            let Some(output_column) = candidates.next() else {
-                return vec![column_domain];
-            };
-            if candidates.next().is_some() {
+                .filter(|relation| {
+                    column_domain.column().relation().is_none_or(|qualifier| {
+                        relation
+                            .qualifiers
+                            .iter()
+                            .any(|candidate| candidate == qualifier)
+                    })
+                })
+                .filter_map(|relation| match &relation.source {
+                    OutputRelationSource::Local(output) => {
+                        let matches = output
+                            .columns()
+                            .iter()
+                            .filter(|candidate| candidate.name() == column_domain.column().name())
+                            .collect::<Vec<_>>();
+                        match matches.as_slice() {
+                            [column] => Some(Ok(*column)),
+                            [] => None,
+                            _ => Some(Err(())),
+                        }
+                    }
+                    OutputRelationSource::Physical { .. } => None,
+                })
+                .collect::<Vec<_>>();
+
+            let [Ok(output_column)] = local_matches.as_slice() else {
+                if local_matches.is_empty() {
+                    return vec![column_domain];
+                }
                 return vec![ColumnDomain::new(
                     column_domain.column().clone(),
                     ValueDomain::unknown(format!(
@@ -1632,43 +1659,35 @@ fn remap_local_column_domains(
                         )
                     )),
                 )];
-            }
-            let Some(source) = output_column.plain_copy_source() else {
-                let reason = format!(
-                    "predicate on computed local column {} cannot be mapped safely to physical source columns",
-                    qualified_column_name(
-                        column_domain.column().relation(),
-                        column_domain.column().name()
-                    )
-                );
-                if output_column.lineage().is_empty() {
-                    return vec![ColumnDomain::new(
-                        column_domain.column().clone(),
-                        ValueDomain::unknown(reason),
-                    )];
-                }
-                return output_column
-                    .lineage()
-                    .iter()
-                    .map(|source| {
-                        ColumnDomain::new(
-                            ColumnRef::new(
-                                Some(source.relation().to_string()),
-                                source.column().to_string(),
-                            ),
-                            ValueDomain::unknown(reason.clone()),
-                        )
-                    })
-                    .collect();
             };
 
-            vec![ColumnDomain::new(
-                ColumnRef::new(
-                    Some(source.relation().to_string()),
-                    source.column().to_string(),
-                ),
-                column_domain.domain().clone(),
-            )]
+            let reason = format!(
+                "predicate on computed local column {} cannot be mapped safely to physical source columns",
+                qualified_column_name(
+                    column_domain.column().relation(),
+                    column_domain.column().name()
+                )
+            );
+            if output_column.lineage().is_empty() {
+                return vec![ColumnDomain::new(
+                    column_domain.column().clone(),
+                    ValueDomain::unknown(reason),
+                )];
+            }
+
+            output_column
+                .lineage()
+                .iter()
+                .map(|source| {
+                    ColumnDomain::new(
+                        ColumnRef::new(
+                            Some(source.relation().to_string()),
+                            source.column().to_string(),
+                        ),
+                        ValueDomain::unknown(reason.clone()),
+                    )
+                })
+                .collect()
         })
         .collect()
 }
