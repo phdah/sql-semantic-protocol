@@ -617,7 +617,7 @@ fn analyze_query_condition_exactness(
             ConditionClause::Where,
             "where",
             sources,
-            false,
+            true,
             &mut residuals,
         );
     }
@@ -925,8 +925,10 @@ fn predicate_residual_reasons(
         Predicate::Comparison(comparison) => match (comparison.left(), comparison.right()) {
             (Expression::Column(_), Expression::Literal(_))
             | (Expression::Literal(_), Expression::Column(_)) => Vec::new(),
-            (Expression::Column(_), Expression::Column(_))
-                if allow_join_equality && comparison.operator() == ComparisonOperator::Eq =>
+            (Expression::Column(left), Expression::Column(right))
+                if allow_join_equality
+                    && comparison.operator() == ComparisonOperator::Eq
+                    && columns_reference_distinct_sources(left, right, sources) =>
             {
                 Vec::new()
             }
@@ -1006,6 +1008,19 @@ fn predicate_residual_reasons(
             vec![ResidualConditionReason::UnsupportedPredicate]
         }
     }
+}
+
+fn columns_reference_distinct_sources(
+    left: &ColumnExpression,
+    right: &ColumnExpression,
+    sources: &[SourceRelation],
+) -> bool {
+    let left = crate::domain::resolve_column(left, sources);
+    let right = crate::domain::resolve_column(right, sources);
+    matches!(
+        (left.relation(), right.relation()),
+        (Some(left), Some(right)) if left != right
+    )
 }
 
 fn collect_logical_residual_reasons(
