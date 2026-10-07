@@ -77,6 +77,31 @@ fn same_column_disjunction_is_exact_but_cross_column_disjunction_is_residual() {
 }
 
 #[test]
+fn same_column_disjunction_preserves_sql_null_truth_semantics() {
+    let protocol =
+        analyze_generic("SELECT a FROM t WHERE (a <= 0 OR a IS NOT NULL) AND a IS NULL");
+    let query = first_query(&protocol);
+
+    assert!(query.condition_exactness().is_exact());
+    assert!(matches!(
+        query.column_domains()[0].domain(),
+        ValueDomain::Empty
+    ));
+}
+
+#[test]
+fn unrepresentable_same_column_disjunction_is_residual() {
+    let protocol = analyze_generic("SELECT a FROM t WHERE a < 0 OR a != 'x'");
+    let query = first_query(&protocol);
+
+    assert!(has_residual(
+        query,
+        ResidualConditionReason::UnsupportedPredicate,
+        ConditionClause::Where,
+    ));
+}
+
+#[test]
 fn correlated_or_tree_is_residual_even_when_each_projection_has_a_domain() {
     let protocol =
         analyze_generic("SELECT a, b FROM t WHERE (a = 1 AND b = 2) OR (a = 3 AND b = 4)");
