@@ -401,7 +401,6 @@ fn case_branch_domains_resolve_through_cte_lineage() {
     assert_eq!(domain.column().name(), "amount");
 }
 
-
 #[test]
 fn computed_outputs_do_not_inherit_source_predicate_domains() {
     let dialect = GenericDialect {};
@@ -489,9 +488,7 @@ fn filtered_case_domain_survives_composition_without_becoming_empty() {
                  FROM raw.orders
                  WHERE amount = 100",
             ),
-            SqlInput::inline(
-                "CREATE TABLE mart.orders AS SELECT bucket FROM stage.orders",
-            ),
+            SqlInput::inline("CREATE TABLE mart.orders AS SELECT bucket FROM stage.orders"),
         ],
         "generic",
         &dialect,
@@ -526,8 +523,9 @@ fn computed_domain_guard_is_consistent_across_exposed_dialects() {
     for dialect_name in DIALECTS {
         let dialect =
             dialect_from_str(dialect_name).expect("documented dialect should be recognized");
-        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
-            .unwrap_or_else(|error| panic!("dialect {dialect_name} failed arithmetic syntax: {error}"));
+        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref()).unwrap_or_else(|error| {
+            panic!("dialect {dialect_name} failed arithmetic syntax: {error}")
+        });
         assert!(
             matches!(
                 first_query(&protocol).output().columns()[0].domain(),
