@@ -1,10 +1,10 @@
 ---
 id: TASK-39
 title: Carry CASE branch source domains through local relations and layers
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 09:27'
-updated_date: '2026-10-07 09:27'
+updated_date: '2026-10-07'
 labels: []
 milestone: m-2
 dependencies:
@@ -32,10 +32,10 @@ Needed by sql-tdg TASK-21.7 (cover every CASE branch).
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A CASE defined inside a CTE or derived table exposes its branch source domains on the outer output column that copies it
-- [ ] #2 Composed semantics express CASE branch source domains on physical source columns when every hop is a plain column copy
-- [ ] #3 Branch domains that cannot be mapped across a hop become Unknown with a reason rather than naming an intermediate relation as if physical
-- [ ] #4 The contract states whether branch reachability accounts for query filters, and if it does, branches made impossible by filters are reported Unreachable
-- [ ] #5 Tests cover searched CASE, simple CASE, and ELSE inside CTEs, derived tables, and multi-layer compositions, plus a CASE over an aggregate staying Unknown
-- [ ] #6 JSON Schema and protocol documentation describe the cross-layer branch domain behaviour
+- [x] #1 A CASE defined inside a CTE or derived table exposes its branch source domains on the outer output column that copies it
+- [x] #2 Composed semantics express CASE branch source domains on physical source columns when every hop is a plain column copy
+- [x] #3 Branch domains that cannot be mapped across a hop become Unknown with a reason rather than naming an intermediate relation as if physical
+- [x] #4 The contract states whether branch reachability accounts for query filters, and if it does, branches made impossible by filters are reported Unreachable
+- [x] #5 Tests cover searched CASE, simple CASE, and ELSE inside CTEs, derived tables, and multi-layer compositions, plus a CASE over an aggregate staying Unknown
+- [x] #6 JSON Schema and protocol documentation describe the cross-layer branch domain behaviour
 <!-- AC:END -->
