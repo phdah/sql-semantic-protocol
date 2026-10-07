@@ -549,7 +549,6 @@ fn analyze_query(
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
     }
-    diagnose_local_query_predicates(query, &BTreeMap::new(), &mut diagnostics);
     inspect_query_features(query, &mut diagnostics);
     let condition_exactness = analyze_query_condition_exactness(
         query,
@@ -559,6 +558,7 @@ fn analyze_query(
         &diagnostics,
         false,
     )
+    .merged_with(&unknown_column_domain_exactness(&column_domains))
     .merged_with(&ConditionExactness::from_residuals(
         relation_analysis.residual_conditions.clone(),
     ));
@@ -575,6 +575,28 @@ fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_produced_relation(produced_relation)
+}
+
+fn unknown_column_domain_exactness(column_domains: &[ColumnDomain]) -> ConditionExactness {
+    ConditionExactness::from_residuals(
+        column_domains
+            .iter()
+            .filter(|column_domain| matches!(column_domain.domain(), ValueDomain::Unknown(_)))
+            .map(|column_domain| {
+                ResidualCondition::new(
+                    ResidualConditionReason::ComputedExpression,
+                    ConditionClause::Where,
+                    format!(
+                        "column_domain:{}",
+                        qualified_column_name(
+                            column_domain.column().relation(),
+                            column_domain.column().name()
+                        )
+                    ),
+                )
+            })
+            .collect(),
+    )
 }
 
 fn analyze_query_condition_exactness(
@@ -1931,10 +1953,10 @@ fn uncarried_local_predicate_reason(
             .operands()
             .iter()
             .find_map(|predicate| uncarried_local_predicate_reason(predicate, scope)),
-        Predicate::Or(_) => Some(
-            "logical OR cannot be preserved as one conjunction of independent physical column domains"
-                .to_string(),
-        ),
+        Predicate::Or(logical) => logical
+            .operands()
+            .iter()
+            .find_map(|predicate| uncarried_local_predicate_reason(predicate, scope)),
         Predicate::Not(_) => Some(
             "logical NOT cannot always be reduced safely to independent physical column domains"
                 .to_string(),
