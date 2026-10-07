@@ -535,12 +535,34 @@ fn columns_reference_distinct_sources(
     right: &ColumnExpression,
     sources: &[SourceRelation],
 ) -> bool {
-    let left = resolve_column(left, sources);
-    let right = resolve_column(right, sources);
-    matches!(
-        (left.relation(), right.relation()),
-        (Some(left), Some(right)) if left != right
-    )
+    let Some(left_index) = source_index_for_column(left, sources) else {
+        return false;
+    };
+    let Some(right_index) = source_index_for_column(right, sources) else {
+        return false;
+    };
+    left_index != right_index
+}
+
+fn source_index_for_column(
+    column: &ColumnExpression,
+    sources: &[SourceRelation],
+) -> Option<usize> {
+    match column.relation() {
+        Some(qualifier) => {
+            let matches = sources
+                .iter()
+                .enumerate()
+                .filter(|(_, source)| relation_matches(source, qualifier))
+                .map(|(index, _)| index)
+                .collect::<Vec<_>>();
+            let [index] = matches.as_slice() else {
+                return None;
+            };
+            Some(*index)
+        }
+        None => (sources.len() == 1).then_some(0),
+    }
 }
 
 fn comparison_domain(operator: ComparisonOperator, literal: &LiteralExpression) -> ValueDomain {
