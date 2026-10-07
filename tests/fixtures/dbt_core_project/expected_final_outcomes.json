@@ -2020,6 +2020,43 @@
             "expression": {
               "kind": "scalar_subquery",
               "subquery": {
+                "column_domains": [
+                  {
+                    "column": {
+                      "name": "order_id",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "domain": {
+                      "kind": "unknown",
+                      "reason": "comparison bound is not a scalar literal"
+                    }
+                  },
+                  {
+                    "column": {
+                      "name": "order_id",
+                      "relation": "o"
+                    },
+                    "domain": {
+                      "kind": "unknown",
+                      "reason": "comparison bound is not a scalar literal"
+                    }
+                  }
+                ],
+                "condition_exactness": {
+                  "residual_conditions": [
+                    {
+                      "clause": "where",
+                      "identity": "correlation",
+                      "reason": "correlated_subquery"
+                    },
+                    {
+                      "clause": "where",
+                      "identity": "where",
+                      "reason": "column_comparison"
+                    }
+                  ],
+                  "status": "residual"
+                },
                 "correlations": [
                   {
                     "column": "order_id",
@@ -2030,6 +2067,7 @@
                   "\"dbt-core-e2e\".\"raw\".\"returns\""
                 ],
                 "diagnostics": [],
+                "joins": [],
                 "output": {
                   "columns": [
                     {
