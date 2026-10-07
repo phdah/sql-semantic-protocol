@@ -79,7 +79,10 @@ fn unused_ctes_do_not_contribute_semantics_or_diagnostics() {
     )
     .expect("query with unused CTE should analyze");
     let layer = bundle.layers().first().expect("query layer");
-    let query = layer.query().expect("query layer should expose its query");
+    let query = match bundle.inputs()[0].statements().first() {
+        Some(ProtocolStatement::Query(query)) => query,
+        other => panic!("expected query statement, got {other:?}"),
+    };
     let semantics = resolved(layer);
 
     assert_eq!(query.dependencies(), &["t".to_string()]);
