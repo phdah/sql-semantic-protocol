@@ -1783,13 +1783,12 @@ fn record_constraint_diagnostic(
 ) -> Result<(), DbtManifestError> {
     match relation {
         Some(relation) => {
-            let mut set =
-                RelationConstraintSet::new(relation, Vec::new()).map_err(|error| {
-                    DbtManifestError::RelationMetadata {
-                        resource_id: resource_id.to_string(),
-                        message: error.to_string(),
-                    }
-                })?;
+            let mut set = RelationConstraintSet::new(relation, Vec::new()).map_err(|error| {
+                DbtManifestError::RelationMetadata {
+                    resource_id: resource_id.to_string(),
+                    message: error.to_string(),
+                }
+            })?;
             set.add_diagnostic(diagnostic);
             merge_relation_constraint_sets(result, &[set]);
         }
