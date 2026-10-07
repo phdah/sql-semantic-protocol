@@ -1389,7 +1389,7 @@ fn collect_grouping_dependencies(
         _ => collect_expression_dependencies_with_windows(
             expression,
             named_windows,
-            scope.local_relations,
+            local_relations,
             diagnostics,
             derived_index,
             dependencies,
@@ -1617,7 +1617,7 @@ fn analyze_join(
     if let Some(JoinConstraint::On(expression)) = constraint {
         collect_expression_dependencies(
             expression,
-            local_relations,
+            scope.local_relations,
             diagnostics,
             derived_index,
             dependencies,
