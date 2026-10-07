@@ -40,8 +40,8 @@ pub use bundle::{
     AnalysisGraph, AnalyzedInput, ComposedJoinColumn, ComposedJoinEquality, ComposedSemantics,
     CompositionDiagnostic, CompositionFailureReason, ConfiguredInputAnalysisError,
     ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge, InputAnalysisError,
-    RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
-    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError,
+    TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
