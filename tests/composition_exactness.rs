@@ -130,9 +130,7 @@ fn computed_producer_predicates_make_composition_residual() {
     let dialect = GenericDialect {};
     let bundle = analyze_inputs(
         &[
-            SqlInput::inline(
-                "CREATE VIEW stage_computed AS SELECT a - 10 AS b FROM t WHERE a > 3",
-            ),
+            SqlInput::inline("CREATE VIEW stage_computed AS SELECT a - 10 AS b FROM t WHERE a > 3"),
             SqlInput::inline("SELECT b FROM stage_computed WHERE b BETWEEN 0 AND 5"),
         ],
         "generic",
