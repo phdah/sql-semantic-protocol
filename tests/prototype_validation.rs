@@ -243,6 +243,22 @@ fn representative_generic_query_matches_complete_protocol_document() {
                             }
                         }
                     ],
+                    "join_equalities": [
+                        {
+                            "left": {
+                                "relation": "sales.orders",
+                                "column": "customer_id",
+                                "relation_instance": "o"
+                            },
+                            "right": {
+                                "relation": "crm.customers",
+                                "column": "id",
+                                "relation_instance": "c"
+                            },
+                            "join_kind": "inner",
+                            "origin_layer_id": "layer-0001"
+                        }
+                    ],
                     "condition_exactness": {
                         "status": "exact",
                         "residual_conditions": []
