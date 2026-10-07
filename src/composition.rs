@@ -7,14 +7,16 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::bundle::{
-    AnalysisGraph, AnalyzedInput, ComposedSemantics, CompositionDiagnostic,
-    CompositionFailureReason, GraphEdge, RelationResolution, TransformationLayer,
+    AnalysisGraph, AnalyzedInput, ComposedJoinColumn, ComposedJoinEquality, ComposedSemantics,
+    CompositionDiagnostic, CompositionFailureReason, GraphEdge, RelationResolution,
+    TransformationLayer,
 };
 use crate::domain::{intersect_case_domain_values, intersect_domains};
 use crate::protocol::{
     CaseBranch, CaseExpression, CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain,
-    ColumnRef, ConditionClause, ConditionExactness, Expression, LineageSource, Output,
-    OutputColumn, ProtocolStatement, QueryStatement, ResidualCondition, ResidualConditionReason,
+    ColumnExpression, ColumnRef, ComparisonOperator, ConditionClause, ConditionExactness,
+    Expression, Join, JoinKind, LineageSource, Output, OutputColumn, Predicate, ProtocolStatement,
+    QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason, SourceRelation,
     ValueDomain, WriteKind,
 };
 
@@ -127,6 +129,7 @@ impl<'a> Composer<'a> {
 
         let mut dependencies = BTreeSet::<String>::new();
         let mut domain_map = BTreeMap::<ColumnRef, ValueDomain>::new();
+        let mut join_equalities = Vec::<ComposedJoinEquality>::new();
         let mut diagnostics = Vec::<CompositionDiagnostic>::new();
         let mut condition_exactness: ConditionExactness = query
             .condition_exactness()
@@ -160,6 +163,7 @@ impl<'a> Composer<'a> {
                         ComposedSemantics::Resolved(upstream) => {
                             dependencies.extend(upstream.dependencies().iter().cloned());
                             merge_column_domains(&mut domain_map, upstream.column_domains());
+                            join_equalities.extend(upstream.join_equalities().iter().cloned());
                             condition_exactness =
                                 condition_exactness.merged_with(upstream.condition_exactness());
                         }
@@ -226,6 +230,13 @@ impl<'a> Composer<'a> {
             }
         }
 
+        let (local_join_equalities, equality_residuals) =
+            self.compose_query_join_equalities(&layer, &query);
+        join_equalities.extend(local_join_equalities);
+        condition_exactness = condition_exactness.merged_with(&ConditionExactness::from_residuals(
+            equality_residuals,
+        ));
+
         let output = self.compose_output(&layer, &query, &mut diagnostics);
         let column_domains = domain_map
             .into_iter()
@@ -234,6 +245,7 @@ impl<'a> Composer<'a> {
         let composed = ComposedSemantics::resolved(
             dependencies.into_iter().collect(),
             column_domains,
+            join_equalities,
             condition_exactness,
             output,
             diagnostics,
@@ -257,6 +269,122 @@ impl<'a> Composer<'a> {
             ProtocolStatement::Query(query) => Some(query),
             ProtocolStatement::Unsupported(_) => None,
         }
+    }
+
+    fn compose_query_join_equalities(
+        &self,
+        layer: &TransformationLayer,
+        query: &QueryStatement,
+    ) -> (Vec<ComposedJoinEquality>, Vec<ResidualCondition>) {
+        let mut equalities = Vec::new();
+        let mut residuals = Vec::new();
+
+        for (join_index, join) in query.joins().iter().enumerate() {
+            let Some(condition) = join.condition() else {
+                continue;
+            };
+            let mut pairs = Vec::new();
+            collect_conjunctive_column_equalities(condition, &mut pairs);
+            for (equality_index, (left, right)) in pairs.into_iter().enumerate() {
+                match self.compose_join_equality(
+                    layer,
+                    query,
+                    left,
+                    right,
+                    join.kind(),
+                    Some(join),
+                ) {
+                    Ok(equality) => equalities.push(equality),
+                    Err(()) => residuals.push(
+                        ResidualCondition::new(
+                            ResidualConditionReason::ComputedExpression,
+                            ConditionClause::JoinOn,
+                            format!("join_equality:join:{join_index}:{equality_index}"),
+                        )
+                        .with_layer_origin(layer.id().to_string()),
+                    ),
+                }
+            }
+        }
+
+        if let Some(predicate) = query.predicates().where_predicate() {
+            let mut pairs = Vec::new();
+            collect_conjunctive_column_equalities(predicate, &mut pairs);
+            for (equality_index, (left, right)) in pairs.into_iter().enumerate() {
+                if !columns_reference_distinct_query_sources(left, right, query.sources()) {
+                    continue;
+                }
+                match self.compose_join_equality(
+                    layer,
+                    query,
+                    left,
+                    right,
+                    JoinKind::Inner,
+                    None,
+                ) {
+                    Ok(equality) => equalities.push(equality),
+                    Err(()) => residuals.push(
+                        ResidualCondition::new(
+                            ResidualConditionReason::ComputedExpression,
+                            ConditionClause::Where,
+                            format!("join_equality:where:{equality_index}"),
+                        )
+                        .with_layer_origin(layer.id().to_string()),
+                    ),
+                }
+            }
+        }
+
+        (equalities, residuals)
+    }
+
+    fn compose_join_equality(
+        &self,
+        layer: &TransformationLayer,
+        query: &QueryStatement,
+        left: &ColumnExpression,
+        right: &ColumnExpression,
+        kind: JoinKind,
+        join: Option<&Join>,
+    ) -> Result<ComposedJoinEquality, ()> {
+        let left = self.compose_join_column(layer, query, left, join)?;
+        let right = self.compose_join_column(layer, query, right, join)?;
+
+        if left.relation() == right.relation()
+            && left.relation_instance() == right.relation_instance()
+        {
+            return Err(());
+        }
+
+        Ok(ComposedJoinEquality::new(
+            left,
+            right,
+            kind,
+            layer.id().to_string(),
+        ))
+    }
+
+    fn compose_join_column(
+        &self,
+        layer: &TransformationLayer,
+        query: &QueryStatement,
+        column: &ColumnExpression,
+        join: Option<&Join>,
+    ) -> Result<ComposedJoinColumn, ()> {
+        let (source_relation, relation_instance) =
+            resolve_query_column_instance(column, query.sources(), join)?;
+        let physical = self
+            .resolve_source_identity(
+                layer,
+                &LineageSource::new(source_relation, column.name().to_string()),
+            )
+            .map_err(|_| ())?;
+
+        Ok(ComposedJoinColumn::new(
+            physical.relation().to_string(),
+            physical.column().to_string(),
+            relation_instance,
+        ))
     }
 
     fn resolve_column_identity(
@@ -733,6 +861,104 @@ impl<'a> Composer<'a> {
                 && edge.relation() == canonical_relation.as_str()
         })
     }
+}
+
+fn collect_conjunctive_column_equalities<'a>(
+    predicate: &'a Predicate,
+    equalities: &mut Vec<(&'a ColumnExpression, &'a ColumnExpression)>,
+) {
+    match predicate {
+        Predicate::Comparison(comparison) if comparison.operator() == ComparisonOperator::Eq => {
+            if let (Expression::Column(left), Expression::Column(right)) =
+                (comparison.left(), comparison.right())
+            {
+                equalities.push((left, right));
+            }
+        }
+        Predicate::And(logical) => {
+            for operand in logical.operands() {
+                collect_conjunctive_column_equalities(operand, equalities);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn columns_reference_distinct_query_sources(
+    left: &ColumnExpression,
+    right: &ColumnExpression,
+    sources: &[SourceRelation],
+) -> bool {
+    let left = resolve_query_source(left, sources);
+    let right = resolve_query_source(right, sources);
+    matches!((left, right), (Some((left_index, _)), Some((right_index, _))) if left_index != right_index)
+}
+
+fn resolve_query_column_instance(
+    column: &ColumnExpression,
+    sources: &[SourceRelation],
+    join: Option<&Join>,
+) -> Result<(String, String), ()> {
+    if let Some((_, source)) = resolve_query_source(column, sources) {
+        return Ok((
+            source.name().to_string(),
+            source.alias().unwrap_or(source.name()).to_string(),
+        ));
+    }
+
+    let qualifier = column.relation().ok_or(())?;
+    let join = join.ok_or(())?;
+    let matches = [join.left(), join.right()]
+        .into_iter()
+        .filter(|participant| relation_ref_matches(participant, qualifier))
+        .collect::<Vec<_>>();
+    let [participant] = matches.as_slice() else {
+        return Err(());
+    };
+
+    Ok((
+        participant.relation().to_string(),
+        participant
+            .alias()
+            .unwrap_or(participant.relation())
+            .to_string(),
+    ))
+}
+
+fn resolve_query_source<'a>(
+    column: &ColumnExpression,
+    sources: &'a [SourceRelation],
+) -> Option<(usize, &'a SourceRelation)> {
+    match column.relation() {
+        Some(qualifier) => {
+            let matches = sources
+                .iter()
+                .enumerate()
+                .filter(|(_, source)| source_relation_matches(source, qualifier))
+                .collect::<Vec<_>>();
+            let [source] = matches.as_slice() else {
+                return None;
+            };
+            Some(*source)
+        }
+        None => match sources {
+            [source] => Some((0, source)),
+            _ => None,
+        },
+    }
+}
+
+fn source_relation_matches(source: &SourceRelation, qualifier: &str) -> bool {
+    source.alias() == Some(qualifier)
+        || source.name() == qualifier
+        || (source.alias().is_none() && source.name().rsplit('.').next() == Some(qualifier))
+}
+
+fn relation_ref_matches(relation: &RelationRef, qualifier: &str) -> bool {
+    relation.alias() == Some(qualifier)
+        || relation.relation() == qualifier
+        || (relation.alias().is_none()
+            && relation.relation().rsplit('.').next() == Some(qualifier))
 }
 
 fn composition_error(
