@@ -560,7 +560,7 @@ fn local_join_resolution_is_shared_across_supported_dialects() {
 
     for dialect_name in DIALECTS {
         let dialect = dialect_from_str(dialect_name)
-            .unwrap_or_else(|error| panic!("dialect {dialect_name} should resolve: {error}"));
+            .unwrap_or_else(|| panic!("dialect {dialect_name} should resolve"));
         let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
             .unwrap_or_else(|error| panic!("dialect {dialect_name} should analyze: {error}"));
         let query = first_query(&protocol);
