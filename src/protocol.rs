@@ -1058,12 +1058,6 @@ pub struct ConditionExactness {
 }
 
 impl ConditionExactness {
-    pub(crate) fn exact() -> Self {
-        Self {
-            residual_conditions: Vec::new(),
-        }
-    }
-
     pub(crate) fn from_residuals(mut residual_conditions: Vec<ResidualCondition>) -> Self {
         residual_conditions.sort_by(|left, right| {
             (
