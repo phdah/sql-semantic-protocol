@@ -2083,22 +2083,10 @@ fn collect_local_predicate_source_columns(
     scope: &[OutputRelation],
     columns: &mut BTreeSet<LineageSource>,
 ) {
-    let mut collect_expression = |expression: &Expression| {
-        if let Expression::Column(column) = expression {
-            let reference = ColumnRef::new(
-                column.relation().map(ToString::to_string),
-                column.name().to_string(),
-            );
-            if let Ok(source) = resolve_plain_source_column(&reference, scope) {
-                columns.insert(source);
-            }
-        }
-    };
-
     match predicate {
         Predicate::Comparison(comparison) => {
-            collect_expression(comparison.left());
-            collect_expression(comparison.right());
+            collect_local_expression_source_column(comparison.left(), scope, columns);
+            collect_local_expression_source_column(comparison.right(), scope, columns);
         }
         Predicate::And(logical) | Predicate::Or(logical) => {
             for operand in logical.operands() {
@@ -2108,12 +2096,39 @@ fn collect_local_predicate_source_columns(
         Predicate::Not(not) => {
             collect_local_predicate_source_columns(not.operand(), scope, columns);
         }
-        Predicate::IsNull(predicate) => collect_expression(predicate.expression()),
-        Predicate::In(predicate) => collect_expression(predicate.expression()),
-        Predicate::InSubquery(predicate) => collect_expression(predicate.expression()),
-        Predicate::Between(predicate) => collect_expression(predicate.expression()),
-        Predicate::BooleanExpression(expression) => collect_expression(expression),
+        Predicate::IsNull(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
+        Predicate::In(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
+        Predicate::InSubquery(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
+        Predicate::Between(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
+        Predicate::BooleanExpression(expression) => {
+            collect_local_expression_source_column(expression, scope, columns);
+        }
         Predicate::Exists(_) | Predicate::Unknown(_) | Predicate::Unsupported(_) => {}
+    }
+}
+
+fn collect_local_expression_source_column(
+    expression: &Expression,
+    scope: &[OutputRelation],
+    columns: &mut BTreeSet<LineageSource>,
+) {
+    let Expression::Column(column) = expression else {
+        return;
+    };
+    let reference = ColumnRef::new(
+        column.relation().map(ToString::to_string),
+        column.name().to_string(),
+    );
+    if let Ok(source) = resolve_plain_source_column(&reference, scope) {
+        columns.insert(source);
     }
 }
 
