@@ -1163,12 +1163,8 @@ fn analyze_query_relations_with_locals(
                 derived_index,
             );
             let mut output_diagnostics = Vec::new();
-            let output = analyze_query_output(
-                &cte.query,
-                &local_outputs,
-                &mut output_diagnostics,
-                None,
-            );
+            let output =
+                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
             local_outputs.insert(name.clone(), output);
             local_analyses.insert(
                 name,
@@ -1265,13 +1261,7 @@ fn analyze_select_relations_with_locals(
 ) -> RelationAnalysis {
     let mut analysis = RelationAnalysis::default();
     let mut scope_diagnostics = Vec::new();
-    let scope = build_output_scope(
-        select,
-        local_outputs,
-        &[],
-        &mut scope_diagnostics,
-        None,
-    );
+    let scope = build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
 
     for source in &select.from {
         analyze_table_with_joins(
@@ -1721,27 +1711,19 @@ fn remap_join_equality_columns(
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Predicate {
     match predicate {
-        Predicate::Comparison(comparison)
-            if comparison.operator() == ComparisonOperator::Eq =>
-        {
+        Predicate::Comparison(comparison) if comparison.operator() == ComparisonOperator::Eq => {
             Predicate::Comparison(ComparisonPredicate::new(
                 remap_join_equality_expression(comparison.left(), scope, diagnostics),
                 comparison.operator(),
                 remap_join_equality_expression(comparison.right(), scope, diagnostics),
             ))
         }
-        Predicate::And(logical) => remap_join_logical_predicate(
-            logical.operands(),
-            true,
-            scope,
-            diagnostics,
-        ),
-        Predicate::Or(logical) => remap_join_logical_predicate(
-            logical.operands(),
-            false,
-            scope,
-            diagnostics,
-        ),
+        Predicate::And(logical) => {
+            remap_join_logical_predicate(logical.operands(), true, scope, diagnostics)
+        }
+        Predicate::Or(logical) => {
+            remap_join_logical_predicate(logical.operands(), false, scope, diagnostics)
+        }
         Predicate::Not(not) => Predicate::Not(NotPredicate::new(remap_join_equality_columns(
             not.operand().clone(),
             scope,
@@ -2552,9 +2534,7 @@ fn remap_case_source_domains_to_physical(
             let source = match resolve_plain_source_column(column_domain.column(), scope) {
                 Ok(source) => source,
                 Err(reason) => {
-                    return CaseSourceDomains::unknown(format!(
-                        "CASE branch source {reason}"
-                    ));
+                    return CaseSourceDomains::unknown(format!("CASE branch source {reason}"));
                 }
             };
             let column = ColumnRef::new(
