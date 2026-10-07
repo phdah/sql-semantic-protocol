@@ -117,6 +117,40 @@ fn safe_local_relations_match_their_inlined_form() {
 }
 
 #[test]
+fn computed_producer_predicates_make_composition_residual() {
+    let dialect = GenericDialect {};
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline(
+                "CREATE VIEW stage_computed AS SELECT a - 10 AS b FROM t WHERE a > 3",
+            ),
+            SqlInput::inline("SELECT b FROM stage_computed WHERE b BETWEEN 0 AND 5"),
+        ],
+        "generic",
+        &dialect,
+    )
+    .expect("computed producer pipeline should analyze");
+
+    let final_layer = bundle.layers().last().expect("final layer");
+    let semantics = resolved(final_layer);
+    let residual = semantics
+        .condition_exactness()
+        .residual_conditions()
+        .iter()
+        .find(|residual| {
+            residual.reason() == ResidualConditionReason::ComputedExpression
+                && residual.origin_layer_id() == Some(final_layer.id())
+        })
+        .expect("unmappable producer predicate should be residual");
+
+    assert_eq!(residual.origin_scope(), Some("query"));
+    assert!(matches!(
+        semantics.output().columns()[0].domain(),
+        ValueDomain::Unknown(_)
+    ));
+}
+
+#[test]
 fn composed_exactness_includes_upstream_layer_origins() {
     let dialect = GenericDialect {};
     let bundle = analyze_inputs(
