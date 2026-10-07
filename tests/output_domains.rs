@@ -621,8 +621,9 @@ fn local_case_copy_is_consistent_across_exposed_dialects() {
     for dialect_name in DIALECTS {
         let dialect =
             dialect_from_str(dialect_name).expect("documented dialect should be recognized");
-        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
-            .unwrap_or_else(|error| panic!("dialect {dialect_name} failed local CASE copy: {error}"));
+        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref()).unwrap_or_else(|error| {
+            panic!("dialect {dialect_name} failed local CASE copy: {error}")
+        });
         assert!(
             matches!(
                 first_query(&protocol).output().columns()[0].expression(),
