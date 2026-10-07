@@ -10,7 +10,9 @@ use crate::bundle::{
     GraphComponent, GraphEdge, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
     UnresolvedComposedSemantics,
 };
-use crate::constraints::{ConstraintValue, RelationConstraint, RelationConstraintSet};
+use crate::constraints::{
+    ConstraintDiagnostic, ConstraintValue, RelationConstraint, RelationConstraintSet,
+};
 use crate::data_type::DataType;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
@@ -114,6 +116,16 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         );
     }
 
+    if !bundle.constraint_diagnostics().is_empty() {
+        value["constraint_diagnostics"] = Value::Array(
+            bundle
+                .constraint_diagnostics()
+                .iter()
+                .map(constraint_diagnostic_to_value)
+                .collect(),
+        );
+    }
+
     value
 }
 
@@ -179,15 +191,17 @@ fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> Value {
         value["diagnostics"] = json!(set
             .diagnostics()
             .iter()
-            .map(|diagnostic| {
-                json!({
-                    "code": diagnostic.code(),
-                    "message": diagnostic.message()
-                })
-            })
+            .map(constraint_diagnostic_to_value)
             .collect::<Vec<_>>());
     }
     value
+}
+
+fn constraint_diagnostic_to_value(diagnostic: &ConstraintDiagnostic) -> Value {
+    json!({
+        "code": diagnostic.code(),
+        "message": diagnostic.message()
+    })
 }
 
 fn constraint_value_to_value(value: &ConstraintValue) -> Value {
