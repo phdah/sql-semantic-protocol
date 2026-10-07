@@ -1,7 +1,7 @@
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, parse_dbt_catalog,
-    parse_dbt_manifest, ConfiguredSqlInput, LiteralValue, ProtocolStatement, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput, ValueDomain,
+    parse_dbt_manifest, CaseSourceDomains, ConfiguredSqlInput, Expression, LiteralValue,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
@@ -298,4 +298,78 @@ fn dbt_artifacts_preserve_cte_domains_and_expand_wildcards() {
         })
         .expect("dbt CTE should constrain physical amount");
     assert_number_range(amount.domain(), Some(("10", false)), Some(("20", false)));
+}
+
+
+#[test]
+fn computed_cte_filters_do_not_map_as_plain_source_constraints() {
+    let dialect = GenericDialect {};
+
+    for sql in [
+        "WITH x AS (SELECT a - 10 AS b FROM t) SELECT b FROM x WHERE b BETWEEN 0 AND 5",
+        "WITH x AS (SELECT SUM(a) AS total FROM t) SELECT total FROM x WHERE total > 100",
+        "WITH x AS (SELECT ROW_NUMBER() OVER (ORDER BY a) AS rn FROM t) SELECT rn FROM x WHERE rn = 1",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect)
+            .unwrap_or_else(|error| panic!("computed CTE should analyze: {error}"));
+        let query = first_query(&protocol);
+        let physical = query
+            .column_domains()
+            .iter()
+            .find(|domain| domain.column().relation() == Some("t") && domain.column().name() == "a")
+            .expect("computed local predicate should leave an explicit physical unknown");
+        assert!(
+            matches!(physical.domain(), ValueDomain::Unknown(_)),
+            "computed CTE predicate must not be copied onto t.a: {sql}"
+        );
+    }
+}
+
+#[test]
+fn computed_derived_table_filter_is_not_mapped_to_the_physical_column() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT d.b FROM (SELECT a - 10 AS b FROM t) AS d WHERE d.b BETWEEN 0 AND 5",
+        "generic",
+        &dialect,
+    )
+    .expect("computed derived table should analyze");
+    let query = first_query(&protocol);
+
+    assert!(query.column_domains().iter().all(|domain| {
+        domain.column().relation() != Some("t")
+            || domain.column().name() != "a"
+            || matches!(domain.domain(), ValueDomain::Unknown(_))
+    }));
+}
+
+#[test]
+fn case_branch_domains_stop_at_computed_local_columns() {
+    let dialect = GenericDialect {};
+
+    for sql in [
+        "WITH x AS (SELECT a - 10 AS b FROM t)
+         SELECT CASE WHEN b > 0 THEN 'positive' ELSE 'other' END AS bucket FROM x",
+        "SELECT CASE WHEN d.b > 0 THEN 'positive' ELSE 'other' END AS bucket
+         FROM (SELECT a - 10 AS b FROM t) AS d",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect)
+            .unwrap_or_else(|error| panic!("computed CASE source should analyze: {error}"));
+        let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+        else {
+            panic!("expected CASE output");
+        };
+
+        assert!(
+            matches!(
+                case_expression.branches()[0].source_domains(),
+                CaseSourceDomains::Unknown(_)
+            ),
+            "CASE source domains must not cross a computed local column: {sql}"
+        );
+        assert!(matches!(
+            case_expression.else_source_domains(),
+            CaseSourceDomains::Unknown(_)
+        ));
+    }
 }
