@@ -42,24 +42,26 @@ fn unknown_domains_survive_local_relation_intersections() {
         "WITH x AS (SELECT SUM(a) AS b FROM t WHERE a > 3) SELECT b FROM x WHERE b BETWEEN 0 AND 5",
         "WITH x AS (SELECT ROW_NUMBER() OVER (ORDER BY a) AS b FROM t WHERE a > 3) SELECT b FROM x WHERE b BETWEEN 1 AND 5",
         "WITH x AS (SELECT CASE WHEN a > 10 THEN 1 ELSE 2 END AS b FROM t WHERE a > 3) SELECT b FROM x WHERE b = 1",
+        "WITH x AS (SELECT a - 10 AS b FROM t WHERE a > 3), y AS (SELECT b FROM x WHERE b BETWEEN 0 AND 5) SELECT b FROM y",
+        "SELECT b FROM (SELECT a - 10 AS b FROM t WHERE a > 3) d WHERE b BETWEEN 0 AND 5",
     ] {
-        let protocol =
-            analyze_sql(sql, "generic", &dialect).unwrap_or_else(|error| panic!("{sql}: {error}"));
-        let query = first_query(&protocol);
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], "generic", &dialect)
+            .unwrap_or_else(|error| panic!("{sql}: {error}"));
+        let semantics = resolved(bundle.layers().first().expect("query layer"));
 
         assert!(
-            query
+            semantics
                 .column_domains()
                 .iter()
                 .any(|domain| matches!(domain.domain(), ValueDomain::Unknown(_))),
             "computed local predicate must leave an unknown source domain: {sql}"
         );
         assert!(
-            !query.condition_exactness().is_exact(),
+            !semantics.condition_exactness().is_exact(),
             "computed local predicate must be residual: {sql}"
         );
         assert!(
-            matches!(query.output().columns()[0].domain(), ValueDomain::Unknown(_)),
+            matches!(semantics.output().columns()[0].domain(), ValueDomain::Unknown(_)),
             "computed local output domain must remain conservative: {sql}"
         );
     }
@@ -68,21 +70,26 @@ fn unknown_domains_survive_local_relation_intersections() {
 #[test]
 fn unused_ctes_do_not_contribute_semantics_or_diagnostics() {
     let dialect = GenericDialect {};
-    let protocol = analyze_sql(
-        "WITH unused AS (SELECT * FROM ghost) SELECT a FROM t",
+    let bundle = analyze_inputs(
+        &[SqlInput::inline(
+            "WITH unused AS (SELECT * FROM ghost) SELECT a FROM t",
+        )],
         "generic",
         &dialect,
     )
     .expect("query with unused CTE should analyze");
-    let query = first_query(&protocol);
+    let layer = bundle.layers().first().expect("query layer");
+    let query = layer.query().expect("query layer should expose its query");
+    let semantics = resolved(layer);
 
     assert_eq!(query.dependencies(), &["t".to_string()]);
     assert!(query.joins().is_empty());
-    assert!(query.condition_exactness().is_exact());
+    assert!(semantics.condition_exactness().is_exact());
     assert!(query
         .diagnostics()
         .iter()
         .all(|diagnostic| diagnostic.code() != "unresolved_wildcard"));
+    assert!(semantics.diagnostics().is_empty());
 }
 
 #[test]
