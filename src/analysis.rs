@@ -3394,20 +3394,20 @@ fn refine_output_domains_from_column_domains(
                     column_domains,
                     sources,
                 );
-                let lineage_domain = column.plain_copy_source().map_or(
-                    ValueDomain::Unbounded,
-                    |source| {
-                        column_domains
-                            .iter()
-                            .find(|candidate| {
-                                candidate.column().relation() == Some(source.relation())
-                                    && candidate.column().name() == source.column()
-                            })
-                            .map_or(ValueDomain::Unbounded, |candidate| {
-                                candidate.domain().clone()
-                            })
-                    },
-                );
+                let lineage_domain =
+                    column
+                        .plain_copy_source()
+                        .map_or(ValueDomain::Unbounded, |source| {
+                            column_domains
+                                .iter()
+                                .find(|candidate| {
+                                    candidate.column().relation() == Some(source.relation())
+                                        && candidate.column().name() == source.column()
+                                })
+                                .map_or(ValueDomain::Unbounded, |candidate| {
+                                    candidate.domain().clone()
+                                })
+                        });
                 let domain = intersect_domains(column.domain(), &derived);
                 let domain = intersect_domains(&domain, &lineage_domain);
                 column.with_domain(domain)
