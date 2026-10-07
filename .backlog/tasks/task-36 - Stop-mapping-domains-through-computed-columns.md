@@ -1,9 +1,10 @@
 ---
 id: TASK-36
 title: Stop mapping domains through computed columns
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 09:27'
+updated_date: '2026-10-07'
 labels: []
 milestone: m-2
 dependencies: []
@@ -34,10 +35,10 @@ This blocks the 1.1.0 release: consumers cannot upgrade from 1.0.x without regre
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Output column domains are refined from source column domains only when the output is a plain column copy
-- [ ] #2 Filters on computed, aggregated, or window columns of CTEs and derived tables are never mapped onto physical source columns as if copied
-- [ ] #3 CASE branch source domains are never attributed to a physical column through a computed local-relation column
-- [ ] #4 Constructs that can no longer be mapped surface as explicit unknown domains or diagnostics rather than being dropped
-- [ ] #5 Regression tests cover arithmetic, function, CASE, aggregate, and window columns for top-level queries, CTEs, and derived tables
-- [ ] #6 Composed semantics for a CASE output over a filtered source are non-empty and match the 1.0.1 behaviour for the reproduction above
+- [x] #1 Output column domains are refined from source column domains only when the output is a plain column copy
+- [x] #2 Filters on computed, aggregated, or window columns of CTEs and derived tables are never mapped onto physical source columns as if copied
+- [x] #3 CASE branch source domains are never attributed to a physical column through a computed local-relation column
+- [x] #4 Constructs that can no longer be mapped surface as explicit unknown domains or diagnostics rather than being dropped
+- [x] #5 Regression tests cover arithmetic, function, CASE, aggregate, and window columns for top-level queries, CTEs, and derived tables
+- [x] #6 Composed semantics for a CASE output over a filtered source are non-empty and match the 1.0.1 behaviour for the reproduction above
 <!-- AC:END -->
