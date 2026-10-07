@@ -2,8 +2,8 @@ mod common;
 
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_sql, ConditionClause, ConditionExactnessStatus, Expression, Predicate,
-    Protocol, ProtocolStatement, QueryStatement, ResidualConditionReason, ValueDomain,
+    analyze_sql, ConditionClause, ConditionExactnessStatus, Expression, Predicate, Protocol,
+    ProtocolStatement, QueryStatement, ResidualConditionReason, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
