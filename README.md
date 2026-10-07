@@ -126,7 +126,10 @@ Relation constraints are canonical and source-independent: any supported adapter
 
 Optional `relation_constraints` metadata describes canonical relation and column constraints
 independently from query-derived value domains. Supported facts are primary keys, unique keys,
-foreign keys, non-null columns, and finite accepted-value sets. Composite keys preserve declared
+foreign keys, non-null columns, and finite accepted-value sets. Unsupported constraint metadata is
+never silently discarded: relation-scoped cases remain on the relation entry and diagnostics that
+cannot be assigned to a canonical relation are emitted in the optional top-level
+`constraint_diagnostics` array. Composite keys preserve declared
 column order, and foreign keys preserve both local columns and the referenced relation/columns.
 
 Each constraint carries one or more evidence records with a source kind, stable source identity,
