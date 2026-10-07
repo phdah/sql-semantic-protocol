@@ -227,6 +227,12 @@ fn having_and_qualify_are_residual_row_conditions() {
 }
 
 #[test]
+fn group_by_without_having_is_row_set_shaping_not_a_residual_condition() {
+    let protocol = analyze_generic("SELECT category, COUNT(*) FROM t GROUP BY category");
+    assert!(first_query(&protocol).condition_exactness().is_exact());
+}
+
+#[test]
 fn row_set_operators_are_residual_but_order_by_and_plain_distinct_are_not() {
     let ordered = analyze_generic("SELECT DISTINCT a FROM t ORDER BY a");
     assert!(first_query(&ordered).condition_exactness().is_exact());
@@ -423,7 +429,7 @@ fn null_membership_is_explicit_for_every_domain_kind() {
         .first()
         .and_then(|statement| match statement {
             ProtocolStatement::Query(query) => query.column_domains().first(),
-            ProtocolStatement::Unsupported(_) => None,
+            _ => None,
         })
         .expect("computed predicate should retain an unknown domain");
     assert_eq!(domain.domain().admits_null(), None);
