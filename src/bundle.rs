@@ -651,7 +651,8 @@ impl AnalysisBundle {
 
     /// Merge adapter diagnostics that cannot be scoped to one canonical relation.
     pub fn enrich_constraint_diagnostics(&mut self, diagnostics: &[ConstraintDiagnostic]) {
-        self.constraint_diagnostics.extend(diagnostics.iter().cloned());
+        self.constraint_diagnostics
+            .extend(diagnostics.iter().cloned());
         self.constraint_diagnostics.sort();
         self.constraint_diagnostics.dedup();
     }
