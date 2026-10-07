@@ -516,11 +516,49 @@ fn derive_comparison(predicate: &ComparisonPredicate, sources: &[SourceRelation]
             resolve_column(column, sources),
             comparison_domain(predicate.operator().reversed(), literal),
         )]),
+        (Expression::Column(left), Expression::Column(right))
+            if predicate.operator() == ComparisonOperator::Eq
+                && columns_reference_distinct_sources(left, right, sources) =>
+        {
+            DomainMap::new()
+        }
         (left, right) => unknown_for_expressions(
             [left, right],
             sources,
             "comparison bound is not a scalar literal",
         ),
+    }
+}
+
+fn columns_reference_distinct_sources(
+    left: &ColumnExpression,
+    right: &ColumnExpression,
+    sources: &[SourceRelation],
+) -> bool {
+    let Some(left_index) = source_index_for_column(left, sources) else {
+        return false;
+    };
+    let Some(right_index) = source_index_for_column(right, sources) else {
+        return false;
+    };
+    left_index != right_index
+}
+
+fn source_index_for_column(column: &ColumnExpression, sources: &[SourceRelation]) -> Option<usize> {
+    match column.relation() {
+        Some(qualifier) => {
+            let matches = sources
+                .iter()
+                .enumerate()
+                .filter(|(_, source)| relation_matches(source, qualifier))
+                .map(|(index, _)| index)
+                .collect::<Vec<_>>();
+            let [index] = matches.as_slice() else {
+                return None;
+            };
+            Some(*index)
+        }
+        None => (sources.len() == 1).then_some(0),
     }
 }
 

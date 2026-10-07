@@ -369,6 +369,11 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .iter()
             .map(column_domain_to_value)
             .collect::<Vec<_>>(),
+        "join_equalities": semantics
+            .join_equalities()
+            .iter()
+            .map(composed_join_equality_to_value)
+            .collect::<Vec<_>>(),
         "condition_exactness": condition_exactness_to_value(semantics.condition_exactness()),
         "output": output_to_value(semantics.output()),
         "diagnostics": semantics
@@ -376,6 +381,23 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .iter()
             .map(composition_diagnostic_to_value)
             .collect::<Vec<_>>()
+    })
+}
+
+fn composed_join_equality_to_value(equality: &crate::ComposedJoinEquality) -> Value {
+    json!({
+        "left": {
+            "relation": equality.left().relation(),
+            "column": equality.left().column(),
+            "relation_instance": equality.left().relation_instance()
+        },
+        "right": {
+            "relation": equality.right().relation(),
+            "column": equality.right().column(),
+            "relation_instance": equality.right().relation_instance()
+        },
+        "join_kind": equality.join_kind().as_str(),
+        "origin_layer_id": equality.origin_layer_id()
     })
 }
 

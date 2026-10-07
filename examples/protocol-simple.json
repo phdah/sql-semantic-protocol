@@ -139,6 +139,7 @@
             }
           }
         ],
+        "join_equalities": [],
         "output": {
           "columns": [
             {

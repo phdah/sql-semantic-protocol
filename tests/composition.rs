@@ -3,8 +3,8 @@ mod common;
 use common::DIALECTS;
 use sql_semantic_protocol::{
     analyze_inputs, AnalysisBundle, CaseSourceDomains, ComposedSemantics, CompositionFailureReason,
-    DatasetRef, Expression, LiteralValue, ResolvedComposedSemantics, SqlInput, TransformationLayer,
-    ValueDomain,
+    DatasetRef, Expression, JoinKind, LiteralValue, ResolvedComposedSemantics, SqlInput,
+    TransformationLayer, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
@@ -499,4 +499,182 @@ fn case_branch_domain_composition_is_consistent_across_exposed_dialects() {
             .flat_map(|alternative| alternative.column_domains())
             .all(|domain| domain.column().relation() == Some("raw_orders")));
     }
+}
+
+#[test]
+fn composed_join_equalities_map_multi_column_join_through_producer_layers() {
+    let dialect = GenericDialect {};
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline(
+                "CREATE TABLE stage.orders AS
+                 SELECT customer_id, region, amount
+                 FROM raw.orders",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE stage.customers AS
+                 SELECT id, region, score
+                 FROM raw.customers",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE mart.summary AS
+                 SELECT o.amount + c.score AS combined
+                 FROM stage.orders AS o
+                 JOIN stage.customers AS c
+                   ON o.customer_id = c.id
+                  AND o.region = c.region",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE final.summary AS
+                 SELECT combined
+                 FROM mart.summary",
+            ),
+        ],
+        "generic",
+        &dialect,
+    )
+    .expect("multi-column join chain should analyze");
+
+    let origin = layer_for_relation(&bundle, "mart.summary").id().to_string();
+    let equalities = resolved(layer_for_relation(&bundle, "final.summary")).join_equalities();
+    assert_eq!(equalities.len(), 2);
+
+    assert_eq!(equalities[0].left().relation(), "raw.orders");
+    assert_eq!(equalities[0].left().column(), "customer_id");
+    assert_eq!(equalities[0].left().relation_instance(), "o");
+    assert_eq!(equalities[0].right().relation(), "raw.customers");
+    assert_eq!(equalities[0].right().column(), "id");
+    assert_eq!(equalities[0].right().relation_instance(), "c");
+    assert_eq!(equalities[0].join_kind(), JoinKind::Inner);
+    assert_eq!(equalities[0].origin_layer_id(), origin);
+
+    assert_eq!(equalities[1].left().relation(), "raw.orders");
+    assert_eq!(equalities[1].left().column(), "region");
+    assert_eq!(equalities[1].right().relation(), "raw.customers");
+    assert_eq!(equalities[1].right().column(), "region");
+}
+
+#[test]
+fn implicit_where_equi_join_is_a_composed_inner_equality() {
+    let dialect = GenericDialect {};
+    let bundle = analyze_inputs(
+        &[SqlInput::inline(
+            "CREATE TABLE mart.links AS
+             SELECT t.id
+             FROM raw.t AS t, raw.u AS u
+             WHERE t.id = u.id",
+        )],
+        "generic",
+        &dialect,
+    )
+    .expect("implicit equi-join should analyze");
+
+    let semantics = resolved(layer_for_relation(&bundle, "mart.links"));
+    assert!(semantics.condition_exactness().is_exact());
+    assert!(semantics.column_domains().is_empty());
+
+    let [equality] = semantics.join_equalities() else {
+        panic!("expected one implicit join equality");
+    };
+    assert_eq!(equality.left().relation(), "raw.t");
+    assert_eq!(equality.left().column(), "id");
+    assert_eq!(equality.left().relation_instance(), "t");
+    assert_eq!(equality.right().relation(), "raw.u");
+    assert_eq!(equality.right().column(), "id");
+    assert_eq!(equality.right().relation_instance(), "u");
+    assert_eq!(equality.join_kind(), JoinKind::Inner);
+}
+
+#[test]
+fn chained_cte_join_equalities_compose_to_physical_sources() {
+    let dialect = GenericDialect {};
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline(
+                "CREATE TABLE stage.orders AS
+                 SELECT customer_id, region_id
+                 FROM raw.orders",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE stage.customers AS
+                 SELECT id
+                 FROM raw.customers",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE stage.regions AS
+                 SELECT id
+                 FROM raw.regions",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE mart.final AS
+                 WITH eligible AS (
+                     SELECT o.customer_id, o.region_id
+                     FROM stage.orders AS o
+                     JOIN stage.customers AS c ON o.customer_id = c.id
+                 ),
+                 enriched AS (
+                     SELECT e.customer_id
+                     FROM eligible AS e
+                     JOIN stage.regions AS r ON e.region_id = r.id
+                 )
+                 SELECT customer_id
+                 FROM enriched",
+            ),
+        ],
+        "generic",
+        &dialect,
+    )
+    .expect("dbt-style CTE join chain should analyze");
+
+    let equalities = resolved(layer_for_relation(&bundle, "mart.final")).join_equalities();
+    assert_eq!(equalities.len(), 2);
+    assert!(equalities.iter().any(|equality| {
+        equality.left().relation() == "raw.orders"
+            && equality.left().column() == "customer_id"
+            && equality.right().relation() == "raw.customers"
+            && equality.right().column() == "id"
+    }));
+    assert!(equalities.iter().any(|equality| {
+        equality.left().relation() == "raw.orders"
+            && equality.left().column() == "region_id"
+            && equality.right().relation() == "raw.regions"
+            && equality.right().column() == "id"
+    }));
+}
+
+#[test]
+fn outer_and_self_join_equalities_remain_conservative() {
+    let dialect = GenericDialect {};
+    let outer = analyze_inputs(
+        &[SqlInput::inline(
+            "CREATE TABLE mart.outer_join AS
+             SELECT t.id
+             FROM raw.t AS t
+             LEFT JOIN raw.u AS u ON t.id = u.id",
+        )],
+        "generic",
+        &dialect,
+    )
+    .expect("outer join should analyze");
+    let outer = resolved(layer_for_relation(&outer, "mart.outer_join"));
+    let [equality] = outer.join_equalities() else {
+        panic!("outer join should retain its equality");
+    };
+    assert_eq!(equality.join_kind(), JoinKind::Left);
+    assert!(!outer.condition_exactness().is_exact());
+
+    let self_join = analyze_inputs(
+        &[SqlInput::inline(
+            "CREATE TABLE mart.self_join AS
+             SELECT a.id
+             FROM raw.t AS a
+             JOIN raw.t AS b ON a.id = b.id",
+        )],
+        "generic",
+        &dialect,
+    )
+    .expect("self join should analyze");
+    let self_join = resolved(layer_for_relation(&self_join, "mart.self_join"));
+    assert!(self_join.join_equalities().is_empty());
+    assert!(!self_join.condition_exactness().is_exact());
 }

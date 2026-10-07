@@ -617,7 +617,7 @@ fn analyze_query_condition_exactness(
             ConditionClause::Where,
             "where",
             sources,
-            false,
+            true,
             &mut residuals,
         );
     }
@@ -925,8 +925,10 @@ fn predicate_residual_reasons(
         Predicate::Comparison(comparison) => match (comparison.left(), comparison.right()) {
             (Expression::Column(_), Expression::Literal(_))
             | (Expression::Literal(_), Expression::Column(_)) => Vec::new(),
-            (Expression::Column(_), Expression::Column(_))
-                if allow_join_equality && comparison.operator() == ComparisonOperator::Eq =>
+            (Expression::Column(left), Expression::Column(right))
+                if allow_join_equality
+                    && comparison.operator() == ComparisonOperator::Eq
+                    && columns_reference_distinct_sources(left, right, sources) =>
             {
                 Vec::new()
             }
@@ -1006,6 +1008,20 @@ fn predicate_residual_reasons(
             vec![ResidualConditionReason::UnsupportedPredicate]
         }
     }
+}
+
+fn columns_reference_distinct_sources(
+    left: &ColumnExpression,
+    right: &ColumnExpression,
+    sources: &[SourceRelation],
+) -> bool {
+    let Some((left_index, _)) = source_for_column_expression(left, sources) else {
+        return false;
+    };
+    let Some((right_index, _)) = source_for_column_expression(right, sources) else {
+        return false;
+    };
+    left_index != right_index
 }
 
 fn collect_logical_residual_reasons(
@@ -2479,7 +2495,113 @@ fn analyze_select_relations_with_locals(
         );
     }
 
+    if let Some(selection) = &select.selection {
+        let mut ignored_diagnostics = Vec::new();
+        let predicate = analyze_predicate_with_windows(
+            selection,
+            &select.named_window,
+            &BTreeMap::new(),
+            &output_scope,
+            &mut ignored_diagnostics,
+        );
+        analysis.joins.extend(implicit_where_equality_joins(
+            &predicate,
+            &analysis.sources,
+            &output_scope,
+        ));
+    }
+
     analysis
+}
+
+fn implicit_where_equality_joins(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+    scope: &[OutputRelation],
+) -> Vec<ProtocolJoin> {
+    let mut comparisons = Vec::new();
+    collect_conjunctive_equality_comparisons(predicate, &mut comparisons);
+
+    comparisons
+        .into_iter()
+        .filter_map(|comparison| {
+            let (Expression::Column(left), Expression::Column(right)) =
+                (comparison.left(), comparison.right())
+            else {
+                return None;
+            };
+            let (left_index, left_source) = source_for_column_expression(left, sources)?;
+            let (right_index, right_source) = source_for_column_expression(right, sources)?;
+            if left_index == right_index {
+                return None;
+            }
+
+            let mut ignored_diagnostics = Vec::new();
+            let condition = remap_join_equality_columns(
+                Predicate::Comparison(comparison.clone()),
+                scope,
+                &mut ignored_diagnostics,
+            );
+
+            Some(ProtocolJoin::new(
+                JoinKind::Inner,
+                RelationRef::new(
+                    left_source.name().to_string(),
+                    left_source.alias().map(str::to_string),
+                ),
+                RelationRef::new(
+                    right_source.name().to_string(),
+                    right_source.alias().map(str::to_string),
+                ),
+                Some(condition),
+            ))
+        })
+        .collect()
+}
+
+fn collect_conjunctive_equality_comparisons<'a>(
+    predicate: &'a Predicate,
+    comparisons: &mut Vec<&'a ComparisonPredicate>,
+) {
+    match predicate {
+        Predicate::Comparison(comparison) if comparison.operator() == ComparisonOperator::Eq => {
+            comparisons.push(comparison);
+        }
+        Predicate::And(logical) => {
+            for operand in logical.operands() {
+                collect_conjunctive_equality_comparisons(operand, comparisons);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn source_for_column_expression<'a>(
+    column: &ColumnExpression,
+    sources: &'a [SourceRelation],
+) -> Option<(usize, &'a SourceRelation)> {
+    match column.relation() {
+        Some(qualifier) => {
+            let matches = sources
+                .iter()
+                .enumerate()
+                .filter(|(_, source)| {
+                    source.alias() == Some(qualifier)
+                        || source.name() == qualifier
+                        || (source.alias().is_none()
+                            && source.name().rsplit('.').next() == Some(qualifier))
+                })
+                .collect::<Vec<_>>();
+            let [source] = matches.as_slice() else {
+                return None;
+            };
+            Some(*source)
+        }
+        None => match sources {
+            [source] => Some((0, source)),
+            _ => None,
+        },
+    }
 }
 
 fn collect_grouping_dependencies(
