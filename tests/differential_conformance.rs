@@ -382,10 +382,7 @@ fn column_pair(predicate: &Predicate) -> Option<ColumnEquality<'_>> {
     ))
 }
 
-fn collect_join_equalities<'a>(
-    predicate: &'a Predicate,
-    equalities: &mut Vec<ColumnEquality<'a>>,
-) {
+fn collect_join_equalities<'a>(predicate: &'a Predicate, equalities: &mut Vec<ColumnEquality<'a>>) {
     if let Some(equality) = column_pair(predicate) {
         equalities.push(equality);
         return;
