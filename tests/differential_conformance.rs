@@ -127,21 +127,61 @@ fn source_rows() -> Vec<SourceRow> {
 
 fn left_rows() -> Vec<LeftRow> {
     vec![
-        LeftRow { row_id: 1, a: Some(-1), x: Some(1) },
-        LeftRow { row_id: 2, a: Some(1), x: Some(1) },
-        LeftRow { row_id: 3, a: Some(2), x: Some(2) },
-        LeftRow { row_id: 4, a: None, x: Some(2) },
-        LeftRow { row_id: 5, a: Some(3), x: None },
+        LeftRow {
+            row_id: 1,
+            a: Some(-1),
+            x: Some(1),
+        },
+        LeftRow {
+            row_id: 2,
+            a: Some(1),
+            x: Some(1),
+        },
+        LeftRow {
+            row_id: 3,
+            a: Some(2),
+            x: Some(2),
+        },
+        LeftRow {
+            row_id: 4,
+            a: None,
+            x: Some(2),
+        },
+        LeftRow {
+            row_id: 5,
+            a: Some(3),
+            x: None,
+        },
     ]
 }
 
 fn right_rows() -> Vec<RightRow> {
     vec![
-        RightRow { row_id: 11, b: Some(1), y: Some(1) },
-        RightRow { row_id: 12, b: Some(3), y: Some(1) },
-        RightRow { row_id: 13, b: Some(2), y: Some(2) },
-        RightRow { row_id: 14, b: None, y: Some(2) },
-        RightRow { row_id: 15, b: Some(0), y: None },
+        RightRow {
+            row_id: 11,
+            b: Some(1),
+            y: Some(1),
+        },
+        RightRow {
+            row_id: 12,
+            b: Some(3),
+            y: Some(1),
+        },
+        RightRow {
+            row_id: 13,
+            b: Some(2),
+            y: Some(2),
+        },
+        RightRow {
+            row_id: 14,
+            b: None,
+            y: Some(2),
+        },
+        RightRow {
+            row_id: 15,
+            b: Some(0),
+            y: None,
+        },
     ]
 }
 
@@ -231,7 +271,10 @@ fn domain_admits_integer(domain: &ValueDomain, value: Option<i64>) -> bool {
         ValueDomain::Unbounded => true,
         ValueDomain::Empty => false,
         ValueDomain::Unknown(unknown) => {
-            panic!("exact conformance check received unknown domain: {}", unknown.reason())
+            panic!(
+                "exact conformance check received unknown domain: {}",
+                unknown.reason()
+            )
         }
         ValueDomain::Set(set) => {
             let contains = set
@@ -362,12 +405,7 @@ fn join_equalities(joins: &[Join]) -> Vec<((&str, &str), (&str, &str))> {
     equalities
 }
 
-fn joined_value(
-    left: &LeftRow,
-    right: &RightRow,
-    relation: &str,
-    column: &str,
-) -> Option<i64> {
+fn joined_value(left: &LeftRow, right: &RightRow, relation: &str, column: &str) -> Option<i64> {
     match relation {
         "left_rows" => left_value(left, column),
         "right_rows" => right_value(right, column),
@@ -393,14 +431,16 @@ fn pair_matches_equalities(
     right: &RightRow,
     equalities: &[((&str, &str), (&str, &str))],
 ) -> bool {
-    equalities.iter().all(|((left_relation, left_column), (right_relation, right_column))| {
-        let left_value = joined_value(left, right, left_relation, left_column);
-        let right_value = joined_value(left, right, right_relation, right_column);
-        match (left_value, right_value) {
-            (Some(left_value), Some(right_value)) => left_value == right_value,
-            _ => false,
-        }
-    })
+    equalities.iter().all(
+        |((left_relation, left_column), (right_relation, right_column))| {
+            let left_value = joined_value(left, right, left_relation, left_column);
+            let right_value = joined_value(left, right, right_relation, right_column);
+            match (left_value, right_value) {
+                (Some(left_value), Some(right_value)) => left_value == right_value,
+                _ => false,
+            }
+        },
+    )
 }
 
 fn expression_integer(expression: &Expression) -> i64 {
@@ -421,7 +461,10 @@ fn source_domains_match(row: &SourceRow, domains: &CaseSourceDomains) -> bool {
             .any(|alternative| alternative_matches(row, alternative.column_domains())),
         CaseSourceDomains::Unreachable => false,
         CaseSourceDomains::Unknown(unknown) => {
-            panic!("CASE conformance fixture has unknown source domains: {}", unknown.reason())
+            panic!(
+                "CASE conformance fixture has unknown source domains: {}",
+                unknown.reason()
+            )
         }
         _ => panic!("new CASE source-domain variant needs conformance support"),
     }
@@ -433,10 +476,7 @@ fn query_optional_i64_by_row_id(connection: &Connection, sql: &str) -> BTreeMap<
         .unwrap_or_else(|error| panic!("prepare oracle query: {sql}\n{error}"));
     statement
         .query_map([], |row| {
-            Ok((
-                row.get::<_, i64>(0)?,
-                row.get::<_, Option<i64>>(1)?,
-            ))
+            Ok((row.get::<_, i64>(0)?, row.get::<_, Option<i64>>(1)?))
         })
         .unwrap_or_else(|error| panic!("execute oracle query: {sql}\n{error}"))
         .map(|row| row.expect("read oracle output"))
@@ -539,8 +579,14 @@ fn exact_join_domains_and_equalities_match_duckdb() {
         }
     }
 
-    assert!(violated_domain, "fixture must exercise a one-domain violation");
-    assert!(violated_equality, "fixture must exercise an equality violation");
+    assert!(
+        violated_domain,
+        "fixture must exercise a one-domain violation"
+    );
+    assert!(
+        violated_equality,
+        "fixture must exercise an equality violation"
+    );
     assert_eq!(predicted, row_pairs(&connection, sql));
 }
 
@@ -596,13 +642,12 @@ fn case_branch_source_domains_select_the_engine_branch() {
             .filter(|branch| source_domains_match(&row, branch.source_domains()))
             .map(|branch| expression_integer(branch.result()))
             .chain(
-                source_domains_match(&row, case_expression.else_source_domains())
-                    .then(|| {
-                        case_expression
-                            .else_result()
-                            .map(expression_integer)
-                            .expect("fixture has explicit ELSE")
-                    }),
+                source_domains_match(&row, case_expression.else_source_domains()).then(|| {
+                    case_expression
+                        .else_result()
+                        .map(expression_integer)
+                        .expect("fixture has explicit ELSE")
+                }),
             )
             .collect::<Vec<_>>();
 
@@ -740,11 +785,7 @@ fn random_atom(rng: &mut DeterministicRng) -> String {
             };
             format!("{column} NOT BETWEEN {lower} AND {upper}")
         }
-        8 => format!(
-            "{column} IN ({}, {})",
-            random_value(rng),
-            random_value(rng)
-        ),
+        8 => format!("{column} IN ({}, {})", random_value(rng), random_value(rng)),
         9 => format!(
             "{column} NOT IN ({}, {})",
             random_value(rng),
