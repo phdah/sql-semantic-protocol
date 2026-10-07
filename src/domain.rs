@@ -516,6 +516,11 @@ fn derive_comparison(predicate: &ComparisonPredicate, sources: &[SourceRelation]
             resolve_column(column, sources),
             comparison_domain(predicate.operator().reversed(), literal),
         )]),
+        (Expression::Column(_), Expression::Column(_))
+            if predicate.operator() == ComparisonOperator::Eq =>
+        {
+            DomainMap::new()
+        }
         (left, right) => unknown_for_expressions(
             [left, right],
             sources,
