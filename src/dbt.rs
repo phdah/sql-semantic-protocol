@@ -2029,17 +2029,17 @@ fn parse_unquoted_dbt_constraint_value(value: &str) -> Option<ConstraintValue> {
 }
 
 fn parse_portable_sql_string_literal(value: &str) -> Option<String> {
-    let inner = value.strip_prefix('\\'')?.strip_suffix('\\'')?;
+    let inner = value.strip_prefix('\'')?.strip_suffix('\'')?;
     let mut parsed = String::with_capacity(inner.len());
     let mut chars = inner.chars().peekable();
 
     while let Some(character) = chars.next() {
-        if character != '\\'' {
+        if character != '\'' {
             parsed.push(character);
             continue;
         }
-        if chars.next_if_eq(&'\\'').is_some() {
-            parsed.push('\\'');
+        if chars.next_if_eq(&'\'').is_some() {
+            parsed.push('\'');
         } else {
             return None;
         }
