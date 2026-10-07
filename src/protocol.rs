@@ -1142,6 +1142,7 @@ pub enum Expression {
 pub struct SubquerySemantics {
     dependencies: Vec<String>,
     correlations: Vec<LineageSource>,
+    joins: Vec<Join>,
     output: Output,
     predicates: Box<Predicates>,
     column_domains: Vec<ColumnDomain>,
@@ -1153,6 +1154,7 @@ impl SubquerySemantics {
     pub(crate) fn new(
         mut dependencies: Vec<String>,
         mut correlations: Vec<LineageSource>,
+        joins: Vec<Join>,
         output: Output,
         predicates: Predicates,
         mut column_domains: Vec<ColumnDomain>,
@@ -1167,6 +1169,7 @@ impl SubquerySemantics {
         Self {
             dependencies,
             correlations,
+            joins,
             output,
             predicates: Box::new(predicates),
             column_domains,
@@ -1183,6 +1186,11 @@ impl SubquerySemantics {
     /// Return physical outer-scope columns referenced by the nested query.
     pub fn correlations(&self) -> &[LineageSource] {
         &self.correlations
+    }
+
+    /// Return joins whose row-membership equalities belong to the nested query.
+    pub fn joins(&self) -> &[Join] {
+        &self.joins
     }
 
     /// Return projected nested-query output semantics.
