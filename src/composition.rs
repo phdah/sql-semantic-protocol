@@ -210,6 +210,7 @@ impl<'a> Composer<'a> {
         let composed = ComposedSemantics::resolved(
             dependencies.into_iter().collect(),
             column_domains,
+            query.condition_exactness().clone(),
             output,
             diagnostics,
         );
