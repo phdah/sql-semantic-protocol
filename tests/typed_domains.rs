@@ -1,6 +1,7 @@
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, ComposedSemantics, ConfiguredSqlInput, LiteralType,
-    RelationCatalog, RelationSchema, ResolvedComposedSemantics, SchemaColumn, SqlInput, ValueDomain,
+    RelationCatalog, RelationSchema, ResolvedComposedSemantics, SchemaColumn, SqlInput,
+    ValueDomain,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -68,7 +69,10 @@ fn decimal_literal_against_integer_is_unknown() {
         matches!(domain, ValueDomain::Unknown(_)),
         "lossy decimal-to-integer coercion must not be exact: {domain:?}"
     );
-    assert!(!semantics.condition_exactness().residual_conditions().is_empty());
+    assert!(!semantics
+        .condition_exactness()
+        .residual_conditions()
+        .is_empty());
 }
 
 #[test]
