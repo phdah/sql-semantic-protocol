@@ -120,9 +120,11 @@ impl ConstraintEvidence {
 
 /// Scalar value accepted by a canonical column constraint.
 ///
-/// The variant preserves the literal type supplied by metadata adapters. Non-integral numeric
-/// values retain their source text so emission is deterministic and does not introduce floating
-/// point rounding.
+/// The variant describes the canonical scalar literal after adapter normalization. Metadata
+/// adapters must not place opaque SQL expressions in `String`; syntax that cannot be reduced to
+/// one of these scalar values must remain explicit as unsupported metadata. Non-integral numeric
+/// values retain normalized source text so emission is deterministic and does not introduce
+/// floating point rounding.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[non_exhaustive]
 pub enum ConstraintValue {
@@ -172,6 +174,9 @@ impl NotNullConstraint {
 }
 
 /// A canonical finite accepted-values constraint on one column.
+///
+/// The finite set constrains non-NULL values. SQL NULL remains admissible unless a separate
+/// `NotNull` constraint applies to the same column.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AcceptedValuesConstraint {
     column: String,
@@ -329,15 +334,17 @@ impl ForeignKeyConstraint {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[non_exhaustive]
 pub enum RelationConstraint {
-    /// Declared primary key.
+    /// Declared primary key. Primary-key columns do not admit SQL NULL.
     PrimaryKey(KeyConstraint),
-    /// Declared unique key.
+    /// Declared unique key. SQL NULL is admitted unless a separate non-null constraint applies.
     UniqueKey(KeyConstraint),
-    /// Declared foreign-key relationship.
+    /// Declared foreign-key relationship. SQL NULL is admitted unless a separate non-null
+    /// constraint applies.
     ForeignKey(ForeignKeyConstraint),
     /// Declared non-null column constraint.
     NotNull(NotNullConstraint),
-    /// Declared finite accepted-values column constraint.
+    /// Declared finite accepted-values column constraint. SQL NULL is admitted unless a separate
+    /// non-null constraint applies.
     AcceptedValues(AcceptedValuesConstraint),
 }
 
@@ -416,6 +423,18 @@ impl RelationConstraint {
             Self::ForeignKey(key) => key.evidence(),
             Self::NotNull(constraint) => constraint.evidence(),
             Self::AcceptedValues(constraint) => constraint.evidence(),
+        }
+    }
+
+    /// Return whether this constraint admits SQL NULL in its constrained column or columns.
+    ///
+    /// Unique keys, foreign keys, and accepted-values constraints describe non-NULL values and
+    /// therefore admit NULL unless a separate `NotNull` constraint is also present. Primary keys
+    /// and `NotNull` constraints reject NULL.
+    pub const fn admits_null(&self) -> bool {
+        match self {
+            Self::PrimaryKey(_) | Self::NotNull(_) => false,
+            Self::UniqueKey(_) | Self::ForeignKey(_) | Self::AcceptedValues(_) => true,
         }
     }
 
@@ -862,5 +881,37 @@ mod tests {
             error,
             ConstraintMetadataError::InvalidForeignKey { .. }
         ));
+    }
+
+    #[test]
+    fn canonical_constraints_define_null_admission() {
+        let primary =
+            RelationConstraint::primary_key(vec!["id".to_string()], vec![evidence("primary")])
+                .expect("primary key");
+        let unique =
+            RelationConstraint::unique_key(vec!["email".to_string()], vec![evidence("unique")])
+                .expect("unique key");
+        let foreign = RelationConstraint::foreign_key(
+            vec!["parent_id".to_string()],
+            "parents",
+            vec!["id".to_string()],
+            vec![evidence("foreign")],
+        )
+        .expect("foreign key");
+        let not_null =
+            RelationConstraint::not_null("email", vec![evidence("not-null")]).expect("not null");
+        let accepted = RelationConstraint::accepted_values(
+            "status",
+            vec![ConstraintValue::String("ready".to_string())],
+            true,
+            vec![evidence("accepted")],
+        )
+        .expect("accepted values");
+
+        assert!(!primary.admits_null());
+        assert!(unique.admits_null());
+        assert!(foreign.admits_null());
+        assert!(!not_null.admits_null());
+        assert!(accepted.admits_null());
     }
 }

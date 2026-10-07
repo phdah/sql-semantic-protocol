@@ -115,9 +115,7 @@ fn dbt_not_null_and_accepted_values_use_canonical_column_constraints() {
     assert!(accepted.values().contains(&ConstraintValue::Integer(20)));
     assert!(accepted.values().contains(&ConstraintValue::Boolean(true)));
     assert!(accepted.values().contains(&ConstraintValue::Null));
-    assert!(accepted
-        .values()
-        .contains(&ConstraintValue::String("30".to_string())));
+    assert!(accepted.values().contains(&ConstraintValue::Integer(30)));
     assert!(accepted
         .values()
         .contains(&ConstraintValue::Number("3.5".to_string())));

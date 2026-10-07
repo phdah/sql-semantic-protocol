@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_dbt_manifest, parse_dbt_manifest, to_bundle_json, ConstraintSourceKind,
-    RelationConstraint,
+    ConstraintValue, RelationConstraint,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -73,6 +73,82 @@ fn manifest_with_constraints() -> String {
     );
 
     serde_json::to_string(&manifest).expect("manifest should serialize")
+}
+
+fn manifest_with_source_accepted_values(
+    column: &str,
+    data_type: &str,
+    values: Value,
+    quote: bool,
+) -> String {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest should parse");
+
+    manifest["sources"]["source.demo.orders"]["columns"][column] = json!({
+        "name": column,
+        "data_type": data_type
+    });
+
+    let test_id = format!("test.demo.accepted_values_{column}");
+    manifest["nodes"]
+        .as_object_mut()
+        .expect("manifest nodes should be an object")
+        .insert(
+            test_id.clone(),
+            json!({
+                "unique_id": test_id,
+                "resource_type": "test",
+                "relation_name": null,
+                "attached_node": "source.demo.orders",
+                "column_name": column,
+                "test_metadata": {
+                    "name": "accepted_values",
+                    "kwargs": {
+                        "column_name": column,
+                        "values": values,
+                        "quote": quote
+                    },
+                    "namespace": null
+                },
+                "depends_on": {"nodes": ["source.demo.orders"]}
+            }),
+        );
+
+    serde_json::to_string(&manifest).expect("manifest should serialize")
+}
+
+fn source_accepted_values(
+    column: &str,
+    data_type: &str,
+    values: Value,
+    quote: bool,
+) -> (Vec<ConstraintValue>, Vec<String>) {
+    let json = manifest_with_source_accepted_values(column, data_type, values, quote);
+    let manifest = parse_dbt_manifest(&json).expect("manifest should parse");
+    let metadata = manifest
+        .relation_constraints()
+        .iter()
+        .find(|metadata| metadata.relation() == "warehouse.raw.orders")
+        .expect("source constraint metadata");
+    let values = metadata
+        .constraints()
+        .iter()
+        .find_map(|constraint| match constraint {
+            RelationConstraint::AcceptedValues(accepted)
+                if accepted.column() == column && accepted.quote() == quote =>
+            {
+                Some(accepted.values().to_vec())
+            }
+            _ => None,
+        })
+        .unwrap_or_default();
+    let diagnostics = metadata
+        .diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.code().to_string())
+        .collect();
+
+    (values, diagnostics)
 }
 
 #[test]
@@ -461,6 +537,90 @@ fn dbt_check_and_custom_constraints_are_reported() {
         .diagnostics()
         .iter()
         .any(|diagnostic| diagnostic.code() == "unsupported_dbt_constraint"));
+}
+
+#[test]
+fn dbt_accepted_values_normalize_quoted_and_unquoted_literals() {
+    let (quoted_strings, diagnostics) =
+        source_accepted_values("status", "VARCHAR", json!(["new", "done"]), true);
+    assert_eq!(
+        quoted_strings,
+        vec![
+            ConstraintValue::String("done".to_string()),
+            ConstraintValue::String("new".to_string()),
+        ]
+    );
+    assert!(diagnostics.is_empty());
+
+    let (unquoted_strings, diagnostics) =
+        source_accepted_values("status", "VARCHAR", json!(["'new'", "'done'"]), false);
+    assert_eq!(
+        unquoted_strings,
+        vec![
+            ConstraintValue::String("done".to_string()),
+            ConstraintValue::String("new".to_string()),
+        ]
+    );
+    assert!(diagnostics.is_empty());
+
+    let (quoted_numbers, diagnostics) =
+        source_accepted_values("amount", "BIGINT", json!([1, 2]), true);
+    assert_eq!(
+        quoted_numbers,
+        vec![ConstraintValue::Integer(1), ConstraintValue::Integer(2)]
+    );
+    assert!(diagnostics.is_empty());
+
+    let (unquoted_numbers, diagnostics) =
+        source_accepted_values("amount", "BIGINT", json!(["1", "2"]), false);
+    assert_eq!(
+        unquoted_numbers,
+        vec![ConstraintValue::Integer(1), ConstraintValue::Integer(2)]
+    );
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn dbt_unquoted_accepted_value_that_is_not_a_scalar_literal_is_reported() {
+    let (values, diagnostics) =
+        source_accepted_values("status", "VARCHAR", json!(["current_date"]), false);
+
+    assert!(values.is_empty());
+    assert_eq!(
+        diagnostics,
+        vec!["unsupported_dbt_accepted_value".to_string()]
+    );
+}
+
+#[test]
+fn dbt_unquoted_accepted_values_emit_normalized_scalar_types() {
+    let json = manifest_with_source_accepted_values("amount", "BIGINT", json!(["1", "2"]), false);
+    let manifest = parse_dbt_manifest(&json).expect("manifest should parse");
+    let bundle = analyze_dbt_manifest(&manifest, "postgresql", &PostgreSqlDialect {})
+        .expect("dbt manifest should analyze");
+    let emitted: Value =
+        serde_json::from_str(&to_bundle_json(&bundle)).expect("bundle JSON should parse");
+    let constraint = emitted["relation_constraints"]
+        .as_array()
+        .expect("relation constraints")
+        .iter()
+        .find(|metadata| metadata["relation"] == "warehouse.raw.orders")
+        .and_then(|metadata| metadata["constraints"].as_array())
+        .and_then(|constraints| {
+            constraints
+                .iter()
+                .find(|constraint| constraint["kind"] == "accepted_values")
+        })
+        .expect("accepted-values constraint");
+
+    assert_eq!(
+        constraint["values"],
+        json!([
+            {"type": "integer", "value": 1},
+            {"type": "integer", "value": 2}
+        ])
+    );
+    assert_eq!(constraint["quote"], false);
 }
 
 #[test]

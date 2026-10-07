@@ -141,8 +141,17 @@ Identical facts from multiple sources coalesce their evidence. Different unique 
 keys coexist, while contradictory primary-key declarations remain visible with an explicit
 `conflicting_primary_key` diagnostic. Independent accepted-value declarations for the same column
 combine by intersection. An empty intersection is retained as an explicit unsatisfiable constraint
-with an `unsatisfiable_accepted_values` diagnostic rather than choosing one source. Accepted
-values preserve scalar literal types and the dbt `quote` setting.
+with an `unsatisfiable_accepted_values` diagnostic rather than choosing one source.
+
+NULL semantics are explicit: primary-key and `not_null` constraints reject NULL, while unique-key,
+foreign-key, and accepted-values constraints admit NULL unless a separate `not_null` constraint
+applies. Library consumers can query this through `RelationConstraint::admits_null`.
+
+Accepted values preserve canonical scalar literal types and the dbt `quote` setting. A dbt
+`quote: false` string is treated as SQL syntax, not as a string value. Portable scalar literals
+are normalized into `ConstraintValue`; raw expressions that cannot be reduced safely produce
+`unsupported_dbt_accepted_value` instead of being exposed as strings that consumers would need
+to parse.
 
 The analyzer does not infer primary keys from `unique + not_null`, and it does not invent or
 propagate keys through transformations unless a future analyzer can prove that property.
