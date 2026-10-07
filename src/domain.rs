@@ -964,11 +964,57 @@ pub(crate) fn union_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDom
             }
             ValueDomain::ranges(combined)
         }
-        (ValueDomain::Ranges(_), ValueDomain::Set(_))
-        | (ValueDomain::Set(_), ValueDomain::Ranges(_)) => ValueDomain::unknown(
-            "range union with an exclusion set cannot be represented precisely by protocol v0",
-        ),
+        (ValueDomain::Ranges(ranges), ValueDomain::Set(set))
+        | (ValueDomain::Set(set), ValueDomain::Ranges(ranges)) => {
+            union_ranges_and_exclusion_set(ranges.ranges(), set.values())
+        }
     }
+}
+
+fn union_ranges_and_exclusion_set(
+    ranges: &[ValueRange],
+    excluded_values: &[LiteralExpression],
+) -> ValueDomain {
+    let mut excluded = Vec::new();
+
+    for value in excluded_values {
+        if matches!(value.value(), LiteralValue::Null) {
+            excluded.push(value.clone());
+            continue;
+        }
+
+        let mut comparison_unknown = false;
+        let included_by_range = ranges
+            .iter()
+            .any(|range| match literal_in_range(value, range) {
+                Some(included) => included,
+                None => {
+                    comparison_unknown = true;
+                    false
+                }
+            });
+
+        if included_by_range {
+            continue;
+        }
+        if comparison_unknown {
+            return ValueDomain::unknown(
+                "range union with an exclusion set contains incomparable scalar values",
+            );
+        }
+        excluded.push(value.clone());
+    }
+
+    ValueDomain::set(SetMode::Exclude, excluded)
+}
+
+pub(crate) fn predicate_domains_contain_unknown(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+) -> bool {
+    derive_predicate_domains(predicate, sources)
+        .values()
+        .any(|domain| matches!(domain, ValueDomain::Unknown(_)))
 }
 
 fn intersect_set_domains(

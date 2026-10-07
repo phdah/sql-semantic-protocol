@@ -31,7 +31,8 @@ use crate::constraints::{
 };
 use crate::domain::{
     derive_case_source_domains, derive_column_domains, intersect_case_domain_values,
-    intersect_domains, refine_column_domains_from_equalities, resolve_column, union_domains,
+    intersect_domains, predicate_domains_contain_unknown, refine_column_domains_from_equalities,
+    resolve_column, union_domains,
 };
 use crate::parser::ParsedSql;
 use crate::protocol::{
@@ -924,6 +925,8 @@ fn predicate_residual_reasons(
             collect_predicate_column_refs(predicate, sources, &mut columns);
             if columns.len() > 1 {
                 vec![ResidualConditionReason::CrossColumnDisjunction]
+            } else if predicate_domains_contain_unknown(predicate, sources) {
+                vec![ResidualConditionReason::UnsupportedPredicate]
             } else {
                 Vec::new()
             }

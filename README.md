@@ -465,6 +465,19 @@ QUALIFY, named windows, UNION/INTERSECT/EXCEPT, aggregation, HAVING, DISTINCT, R
 derived/lateral tables, transitive composition, disconnected components, incremental model
 configuration, terminal outcome snapshots, and warehouse source-schema datatype emission.
 
+## Differential conformance
+
+The standard Rust test suite includes a deterministic differential oracle in
+`tests/differential_conformance.rs`. It runs protocol exactness, source-domain, output-domain,
+join-equality, and CASE-branch claims against DuckDB. The suite combines a curated matrix with
+3,000 seeded AND/OR/NOT predicate trees; failures report the reproducing query and seed.
+
+DuckDB is a development-only dependency with default features disabled. The repository does not
+enable duckdb-rs's `bundled` feature, so it never compiles DuckDB from source. Cargo config sets
+`DUCKDB_DOWNLOAD_LIB=1`, which makes duckdb-rs download and link the matching prebuilt DuckDB
+library. Set `DUCKDB_DOWNLOAD_LIB=0` in the environment to use an already installed compatible
+system library instead.
+
 ## OpenLineage export
 
 The SQL Semantic Protocol remains the authoritative semantic representation. The library function `to_openlineage_json` maps resolved named layers to OpenLineage 2.0.2 DatasetEvents using the current Lineage Dataset Facet for dataset-level and field-level lineage. OpenLineage types do not appear in the core protocol model.

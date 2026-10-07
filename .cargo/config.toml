@@ -1,2 +1,6 @@
 [build]
 rustflags = ["-C", "force-frame-pointers=yes"]
+
+[env]
+# Use duckdb-rs's matching prebuilt library instead of enabling its source-building "bundled" feature.
+DUCKDB_DOWNLOAD_LIB = "1"
