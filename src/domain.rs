@@ -516,12 +516,31 @@ fn derive_comparison(predicate: &ComparisonPredicate, sources: &[SourceRelation]
             resolve_column(column, sources),
             comparison_domain(predicate.operator().reversed(), literal),
         )]),
+        (Expression::Column(left), Expression::Column(right))
+            if predicate.operator() == ComparisonOperator::Eq
+                && columns_reference_distinct_sources(left, right, sources) =>
+        {
+            DomainMap::new()
+        }
         (left, right) => unknown_for_expressions(
             [left, right],
             sources,
             "comparison bound is not a scalar literal",
         ),
     }
+}
+
+fn columns_reference_distinct_sources(
+    left: &ColumnExpression,
+    right: &ColumnExpression,
+    sources: &[SourceRelation],
+) -> bool {
+    let left = resolve_column(left, sources);
+    let right = resolve_column(right, sources);
+    matches!(
+        (left.relation(), right.relation()),
+        (Some(left), Some(right)) if left != right
+    )
 }
 
 fn comparison_domain(operator: ComparisonOperator, literal: &LiteralExpression) -> ValueDomain {
