@@ -97,6 +97,21 @@ Constraint `kind` is one of:
 Accepted values are emitted as typed scalar objects so strings, booleans, integers, unsigned
 integers, non-integral numbers, and null remain distinguishable. Non-integral numbers retain a
 deterministic textual representation instead of being round-tripped through floating point.
+Canonical values contain literal semantics, never opaque SQL expressions. For dbt
+`accepted_values`, `quote: true` preserves JSON scalar typing and string values as strings.
+With `quote: false`, string metadata is SQL syntax and is normalized only when it is a portable
+scalar literal: NULL, TRUE/FALSE, signed or unsigned integers, JSON-compatible non-integral
+numbers, or standard single-quoted SQL strings with doubled-quote escaping. Any other raw
+expression emits `unsupported_dbt_accepted_value` and the adapter does not emit that
+accepted-values constraint. Consumers can therefore compare `ConstraintValue` directly with the
+canonical column `DataType` without parsing SQL.
+
+NULL admission is part of the canonical constraint semantics. Primary-key and `not_null`
+constraints reject NULL. Unique-key, foreign-key, and accepted-values constraints apply to
+non-NULL values and admit NULL unless a separate `not_null` constraint applies to the same
+column. For accepted values, a `ConstraintValue::Null` entry records literal metadata but is not
+required for NULL to be admissible. The public `RelationConstraint::admits_null` method exposes
+this rule directly to library consumers.
 
 Composite keys are not flattened into independent single-column facts. Multiple different unique
 keys and foreign keys can coexist. Distinct primary-key definitions for the same relation are not
