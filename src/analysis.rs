@@ -868,7 +868,7 @@ fn collect_table_sample_residuals(
 
 fn table_factor_has_sample(factor: &TableFactor) -> bool {
     match factor {
-        TableFactor::Table { sample, .. } | TableFactor::Derived { sample, .. } => sample.is_some(),
+        TableFactor::Table { sample, .. } => sample.is_some(),
         _ => false,
     }
 }
@@ -1747,7 +1747,9 @@ fn remap_expression_for_domain_derivation(
     }
 }
 
-fn intersect_column_domain_sets<const N: usize>(sets: [Vec<ColumnDomain>; N]) -> Vec<ColumnDomain> {
+fn intersect_column_domain_sets(
+    sets: impl IntoIterator<Item = Vec<ColumnDomain>>,
+) -> Vec<ColumnDomain> {
     let mut domains = BTreeMap::<ColumnRef, ValueDomain>::new();
     for column_domain in sets.into_iter().flatten() {
         let column = column_domain.column().clone();
