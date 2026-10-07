@@ -10,10 +10,11 @@ use crate::bundle::{
     AnalysisGraph, AnalyzedInput, ComposedSemantics, CompositionDiagnostic,
     CompositionFailureReason, GraphEdge, RelationResolution, TransformationLayer,
 };
-use crate::domain::intersect_domains;
+use crate::domain::{intersect_case_domain_values, intersect_domains};
 use crate::protocol::{
-    ColumnDomain, ColumnRef, Expression, LineageSource, Output, OutputColumn, ProtocolStatement,
-    QueryStatement, ValueDomain, WriteKind,
+    CaseBranch, CaseExpression, CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain,
+    ColumnRef, Expression, LineageSource, Output, OutputColumn, ProtocolStatement, QueryStatement,
+    ValueDomain, WriteKind,
 };
 
 pub(crate) fn compose_layers(
@@ -402,15 +403,166 @@ impl<'a> Composer<'a> {
             }
 
             let domain = self.compose_output_domain(layer, column);
+            let expression = self.compose_output_expression(layer, column);
             columns.push(OutputColumn::new(
                 column.name().to_string(),
-                column.expression().clone(),
+                expression,
                 domain,
                 lineage.into_iter().collect(),
             ));
         }
 
         Output::new(columns)
+    }
+
+    fn compose_output_expression(
+        &mut self,
+        consumer: &TransformationLayer,
+        column: &OutputColumn,
+    ) -> Expression {
+        if let Some(source) = column.plain_copy_source() {
+            if let Some(expression) = self.inherited_composed_case_expression(consumer, source) {
+                return expression;
+            }
+        }
+
+        match column.expression() {
+            Expression::Case(case_expression) => {
+                Expression::Case(self.compose_case_expression(consumer, case_expression))
+            }
+            expression => expression.clone(),
+        }
+    }
+
+    fn inherited_composed_case_expression(
+        &mut self,
+        consumer: &TransformationLayer,
+        source: &LineageSource,
+    ) -> Option<Expression> {
+        let edge = self
+            .edge_for_source(consumer.id(), source.relation())
+            .cloned()?;
+        if edge.resolution() != RelationResolution::Resolved {
+            return None;
+        }
+        let producer_id = edge.producer_layer_ids().first()?.clone();
+        let ComposedSemantics::Resolved(producer) = self.compose_layer(&producer_id) else {
+            return None;
+        };
+        let matches = producer
+            .output()
+            .columns()
+            .iter()
+            .filter(|candidate| candidate.name() == source.column())
+            .collect::<Vec<_>>();
+        let [producer_column] = matches.as_slice() else {
+            return None;
+        };
+
+        matches!(producer_column.expression(), Expression::Case(_))
+            .then(|| producer_column.expression().clone())
+    }
+
+    fn compose_case_expression(
+        &self,
+        consumer: &TransformationLayer,
+        case_expression: &CaseExpression,
+    ) -> CaseExpression {
+        let branches = case_expression
+            .branches()
+            .iter()
+            .map(|branch| {
+                CaseBranch::new(
+                    branch.condition().clone(),
+                    branch.result().clone(),
+                    self.compose_case_source_domains(consumer, branch.source_domains()),
+                )
+            })
+            .collect();
+
+        CaseExpression::new(
+            case_expression.operand().cloned(),
+            branches,
+            case_expression.else_result().cloned(),
+            self.compose_case_source_domains(consumer, case_expression.else_source_domains()),
+        )
+    }
+
+    fn compose_case_source_domains(
+        &self,
+        consumer: &TransformationLayer,
+        source_domains: &CaseSourceDomains,
+    ) -> CaseSourceDomains {
+        let CaseSourceDomains::Reachable { alternatives } = source_domains else {
+            return source_domains.clone();
+        };
+
+        let mut mapped_alternatives = Vec::new();
+        for alternative in alternatives {
+            let mut mapped_domains = BTreeMap::<ColumnRef, ValueDomain>::new();
+            let mut impossible = false;
+
+            for column_domain in alternative.column_domains() {
+                let Some(relation) = column_domain.column().relation() else {
+                    return CaseSourceDomains::unknown(format!(
+                        "CASE branch source column '{}' has no relation and cannot be mapped through composition",
+                        column_domain.column().name()
+                    ));
+                };
+                let source = LineageSource::new(
+                    relation.to_string(),
+                    column_domain.column().name().to_string(),
+                );
+                let mapped_source = match self.resolve_source_identity(consumer, &source) {
+                    Ok(source) => source,
+                    Err(diagnostic) => {
+                        return CaseSourceDomains::unknown(format!(
+                            "CASE branch source '{}.{}' cannot be mapped through composition: {}",
+                            relation,
+                            column_domain.column().name(),
+                            diagnostic.message()
+                        ));
+                    }
+                };
+                let column = ColumnRef::new(
+                    Some(mapped_source.relation().to_string()),
+                    mapped_source.column().to_string(),
+                );
+                let domain = column_domain.domain().clone();
+
+                mapped_domains
+                    .entry(column)
+                    .and_modify(|existing| {
+                        *existing = intersect_case_domain_values(existing, &domain);
+                    })
+                    .or_insert(domain);
+
+                if mapped_domains
+                    .values()
+                    .any(|domain| matches!(domain, ValueDomain::Empty))
+                {
+                    impossible = true;
+                    break;
+                }
+            }
+
+            if impossible {
+                continue;
+            }
+
+            mapped_domains.retain(|_, domain| !matches!(domain, ValueDomain::Unbounded));
+            let mapped = CaseSourceDomainAlternative::new(
+                mapped_domains
+                    .into_iter()
+                    .map(|(column, domain)| ColumnDomain::new(column, domain))
+                    .collect(),
+            );
+            if !mapped_alternatives.contains(&mapped) {
+                mapped_alternatives.push(mapped);
+            }
+        }
+
+        CaseSourceDomains::reachable(mapped_alternatives)
     }
 
     fn compose_output_domain(
