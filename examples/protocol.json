@@ -109,6 +109,10 @@
             "target_columns": [],
             "match_condition": null,
             "merge_clauses": []
+          },
+          "condition_exactness": {
+            "status": "exact",
+            "residual_conditions": []
           }
         }
       ]
@@ -221,6 +225,10 @@
             "target_columns": [],
             "match_condition": null,
             "merge_clauses": []
+          },
+          "condition_exactness": {
+            "status": "exact",
+            "residual_conditions": []
           }
         }
       ]
@@ -316,7 +324,11 @@
               }
             ]
           },
-          "diagnostics": []
+          "diagnostics": [],
+          "condition_exactness": {
+            "status": "exact",
+            "residual_conditions": []
+          }
         }
       ]
     }
@@ -404,7 +416,11 @@
             }
           ]
         },
-        "diagnostics": []
+        "diagnostics": [],
+        "condition_exactness": {
+          "status": "exact",
+          "residual_conditions": []
+        }
       },
       "write_kind": "definition"
     },
@@ -497,7 +513,11 @@
             }
           ]
         },
-        "diagnostics": []
+        "diagnostics": [],
+        "condition_exactness": {
+          "status": "exact",
+          "residual_conditions": []
+        }
       },
       "write_kind": "definition"
     },
@@ -566,7 +586,11 @@
             }
           ]
         },
-        "diagnostics": []
+        "diagnostics": [],
+        "condition_exactness": {
+          "status": "exact",
+          "residual_conditions": []
+        }
       }
     }
   ],
