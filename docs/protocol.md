@@ -97,7 +97,11 @@ Composite keys are not flattened into independent single-column facts. Multiple 
 keys and foreign keys can coexist. Distinct primary-key definitions for the same relation are not
 silently resolved: both facts remain present and the relation emits a
 `conflicting_primary_key` diagnostic. Invalid or unresolved foreign-key metadata fails or emits
-an explicit diagnostic at the adapter boundary rather than guessing a target.
+an explicit diagnostic at the adapter boundary rather than guessing a target. The dbt adapter
+normalizes foreign-key and `relationships` targets from manifest resource unique IDs, exact
+canonical relation names, and dbt `ref(...)` or `source(...)` references. Self-referencing
+relationships resolve to the attached canonical relation. A target that cannot be mapped to a
+relation present in the manifest is rejected rather than emitted as raw Jinja or unmatched text.
 
 Independent accepted-value constraints for the same column and quoting semantics are conjunctive,
 so their canonical value set is the deterministic intersection. An empty intersection remains

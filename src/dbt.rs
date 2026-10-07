@@ -1013,14 +1013,23 @@ fn analyze_dbt_with_catalog(
     for constraints in &manifest.relation_constraints {
         let relation = constraints.relation().to_string();
         let resolved = constraints.map_relations(relation.clone(), |reference| {
-            catalog
+            let resolved = catalog
                 .resolve(reference, dialect_name, None)
                 .map_err(|error| DbtManifestError::RelationMetadata {
                     resource_id: relation.clone(),
                     message: format!(
                         "constraint reference '{reference}' cannot be resolved: {error}"
                     ),
-                })
+                })?;
+            if !catalog.relation_names().contains(&resolved.as_str()) {
+                return Err(DbtManifestError::RelationMetadata {
+                    resource_id: relation.clone(),
+                    message: format!(
+                        "constraint reference '{reference}' resolved to '{resolved}', which is not a canonical relation in the dbt manifest"
+                    ),
+                });
+            }
+            Ok(resolved)
         })?;
         resolved_constraints.push(resolved);
     }
@@ -1648,7 +1657,7 @@ fn parse_manifest_relation_constraints(
                     &format!("{path}.test_metadata.kwargs.field"),
                 )?
                 .to_string();
-                let referenced_resources = dependencies
+                let mut referenced_resources = dependencies
                     .iter()
                     .filter(|dependency| dependency.as_str() != attached_node)
                     .filter_map(|dependency| {
@@ -1657,14 +1666,20 @@ fn parse_manifest_relation_constraints(
                             .and_then(|resource| resource.relation_name.as_deref())
                     })
                     .collect::<Vec<_>>();
+                referenced_resources.sort();
+                referenced_resources.dedup();
+                let reference_path = format!("{path}.test_metadata.kwargs.to");
+                let reference = required_string(arguments, "to", &reference_path)?;
                 let referenced_relation = match referenced_resources.as_slice() {
                     [relation] => (*relation).to_string(),
-                    [] => required_string(
-                        arguments,
-                        "to",
-                        &format!("{path}.test_metadata.kwargs.to"),
-                    )?
-                    .to_string(),
+                    [] => dbt_constraint_reference(reference, resources).ok_or_else(|| {
+                        invalid_field(
+                            &reference_path,
+                            format!(
+                                "relationships test target '{reference}' does not resolve to a canonical dbt relation"
+                            ),
+                        )
+                    })?,
                     _ => {
                         return Err(invalid_field(
                             format!("{path}.depends_on.nodes"),
@@ -1764,8 +1779,17 @@ fn parse_dbt_constraint_array(
             "primary_key" => RelationConstraint::primary_key(columns, evidence),
             "unique" => RelationConstraint::unique_key(columns, evidence),
             "foreign_key" => {
-                let reference = required_string(object, "to", &format!("{constraint_path}.to"))?;
-                let referenced_relation = dbt_constraint_reference(reference, resources);
+                let reference_path = format!("{constraint_path}.to");
+                let reference = required_string(object, "to", &reference_path)?;
+                let referenced_relation =
+                    dbt_constraint_reference(reference, resources).ok_or_else(|| {
+                        invalid_field(
+                            &reference_path,
+                            format!(
+                                "foreign_key target '{reference}' does not resolve to a canonical dbt relation"
+                            ),
+                        )
+                    })?;
                 let referenced_columns = required_string_array(
                     object,
                     "to_columns",
@@ -1811,21 +1835,154 @@ fn dbt_constraint_value(value: &Value, path: &str) -> Result<ConstraintValue, Db
     }
 }
 
-fn dbt_constraint_reference(reference: &str, resources: &BTreeMap<String, DbtResource>) -> String {
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum DbtRelationReference {
+    Ref {
+        package: Option<String>,
+        name: String,
+    },
+    Source {
+        source: String,
+        name: String,
+    },
+}
+
+fn dbt_constraint_reference(
+    reference: &str,
+    resources: &BTreeMap<String, DbtResource>,
+) -> Option<String> {
     if let Some(relation) = resources
         .get(reference)
         .and_then(|resource| resource.relation_name.as_deref())
     {
-        return relation.to_string();
+        return Some(relation.to_string());
     }
 
-    let mut exact = resources
+    let exact = resources
         .values()
         .filter_map(|resource| resource.relation_name.as_deref())
-        .filter(|relation| *relation == reference);
+        .filter(|relation| *relation == reference)
+        .map(ToString::to_string)
+        .collect::<BTreeSet<_>>();
+    let mut exact = exact.into_iter();
     match (exact.next(), exact.next()) {
-        (Some(relation), None) => relation.to_string(),
-        _ => reference.to_string(),
+        (Some(relation), None) => return Some(relation),
+        (Some(_), Some(_)) => return None,
+        (None, _) => {}
+    }
+
+    let parsed = parse_dbt_relation_reference(reference)?;
+    let matches = resources
+        .iter()
+        .filter_map(|(resource_id, resource)| {
+            if !dbt_reference_matches_resource(&parsed, resource_id) {
+                return None;
+            }
+            resource
+                .relation_name
+                .as_ref()
+                .filter(|relation| !relation.trim().is_empty())
+                .cloned()
+        })
+        .collect::<BTreeSet<_>>();
+    let mut matches = matches.into_iter();
+    match (matches.next(), matches.next()) {
+        (Some(relation), None) => Some(relation),
+        _ => None,
+    }
+}
+
+fn parse_dbt_relation_reference(reference: &str) -> Option<DbtRelationReference> {
+    let reference = reference.trim();
+    let reference = reference
+        .strip_prefix("{{")
+        .and_then(|inner| inner.strip_suffix("}}"))
+        .map(str::trim)
+        .unwrap_or(reference);
+
+    if let Some(arguments) = reference
+        .strip_prefix("ref(")
+        .and_then(|inner| inner.strip_suffix(')'))
+    {
+        let arguments = parse_dbt_reference_arguments(arguments)?;
+        return match arguments.as_slice() {
+            [name] => Some(DbtRelationReference::Ref {
+                package: None,
+                name: name.clone(),
+            }),
+            [package, name] => Some(DbtRelationReference::Ref {
+                package: Some(package.clone()),
+                name: name.clone(),
+            }),
+            _ => None,
+        };
+    }
+
+    if let Some(arguments) = reference
+        .strip_prefix("source(")
+        .and_then(|inner| inner.strip_suffix(')'))
+    {
+        let arguments = parse_dbt_reference_arguments(arguments)?;
+        return match arguments.as_slice() {
+            [source, name] => Some(DbtRelationReference::Source {
+                source: source.clone(),
+                name: name.clone(),
+            }),
+            _ => None,
+        };
+    }
+
+    None
+}
+
+fn parse_dbt_reference_arguments(arguments: &str) -> Option<Vec<String>> {
+    let mut rest = arguments.trim();
+    let mut values = Vec::new();
+
+    while !rest.is_empty() {
+        let quote = rest.chars().next()?;
+        if !matches!(quote, '\'' | '"') {
+            return None;
+        }
+        let quoted = &rest[quote.len_utf8()..];
+        let end = quoted.find(quote)?;
+        let value = &quoted[..end];
+        if value.is_empty() {
+            return None;
+        }
+        values.push(value.to_string());
+
+        rest = quoted[end + quote.len_utf8()..].trim_start();
+        if rest.is_empty() {
+            break;
+        }
+        rest = rest.strip_prefix(',')?.trim_start();
+        if rest.is_empty() {
+            return None;
+        }
+    }
+
+    Some(values)
+}
+
+fn dbt_reference_matches_resource(reference: &DbtRelationReference, resource_id: &str) -> bool {
+    let parts = resource_id.split('.').collect::<Vec<_>>();
+    match reference {
+        DbtRelationReference::Ref { package, name } => {
+            !resource_id.starts_with("source.")
+                && parts.last().is_some_and(|part| *part == name.as_str())
+                && package
+                    .as_deref()
+                    .is_none_or(|package| parts.get(1).is_some_and(|part| *part == package))
+        }
+        DbtRelationReference::Source { source, name } => {
+            resource_id.starts_with("source.")
+                && parts.len() >= 3
+                && parts
+                    .get(parts.len() - 2)
+                    .is_some_and(|part| *part == source.as_str())
+                && parts.last().is_some_and(|part| *part == name.as_str())
+        }
     }
 }
 

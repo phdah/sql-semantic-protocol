@@ -1,9 +1,10 @@
 ---
 id: TASK-40
 title: Report unresolved dbt relationship and foreign key targets
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 09:27'
+updated_date: '2026-10-07'
 labels: []
 milestone: m-2
 dependencies: []
@@ -30,8 +31,8 @@ Consumers such as sql-tdg (TASK-22) need foreign-key targets that match source s
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Self-referencing dbt relationships tests resolve to the attached relation
-- [ ] #2 A relationships test or foreign_key constraint whose target cannot be resolved to a canonical relation fails or emits an explicit constraint diagnostic, never raw Jinja or unmatched text
-- [ ] #3 Every emitted foreign key referenced relation equals a canonical relation name known to the bundle
-- [ ] #4 Tests cover self-references, ref and source targets, and unresolvable targets on the dbt path
+- [x] #1 Self-referencing dbt relationships tests resolve to the attached relation
+- [x] #2 A relationships test or foreign_key constraint whose target cannot be resolved to a canonical relation fails or emits an explicit constraint diagnostic, never raw Jinja or unmatched text
+- [x] #3 Every emitted foreign key referenced relation equals a canonical relation name known to the bundle
+- [x] #4 Tests cover self-references, ref and source targets, and unresolvable targets on the dbt path
 <!-- AC:END -->
