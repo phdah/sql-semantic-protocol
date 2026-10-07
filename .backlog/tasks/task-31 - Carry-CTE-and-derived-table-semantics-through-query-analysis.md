@@ -4,6 +4,7 @@ title: Carry CTE and derived-table semantics through query analysis
 status: Done
 assignee: []
 created_date: '2026-10-06 13:25'
+updated_date: '2026-10-07 18:18'
 labels: []
 milestone: m-2
 dependencies: []
@@ -21,12 +22,18 @@ Local relations must be analyzed as first-class semantic scopes so that their jo
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Joins inside CTEs and derived tables are represented and resolve to physical source columns through lineage
-- [ ] #2 WHERE, HAVING, and QUALIFY predicates inside CTEs and derived tables contribute column domains on physical source columns
-- [ ] #3 Output column lineage resolves through CTE chains, nested CTEs, and derived tables to physical source columns
-- [ ] #4 Wildcard projections over CTEs and physical relations resolve when catalog schema metadata is available, including the dbt adapter path
-- [ ] #5 Composed semantics for a query reading local relations equal those of the equivalent query with the local relations inlined, for supported constructs
-- [ ] #6 Local-relation constructs that cannot be carried produce an explicit diagnostic or unresolved composition rather than resolved semantics
-- [ ] #7 Integration tests cover single and chained CTEs, derived tables, joins and filters inside CTEs, wildcard resolution, and a dbt-style CTE model end to end
-- [ ] #8 JSON Schema, protocol documentation, and public API docs reflect the new representation
+- [x] #1 Joins inside CTEs and derived tables are represented and resolve to physical source columns through lineage
+- [x] #2 WHERE, HAVING, and QUALIFY predicates inside CTEs and derived tables contribute column domains on physical source columns
+- [x] #3 Output column lineage resolves through CTE chains, nested CTEs, and derived tables to physical source columns
+- [x] #4 Wildcard projections over CTEs and physical relations resolve when catalog schema metadata is available, including the dbt adapter path
+- [x] #5 Composed semantics for a query reading local relations equal those of the equivalent query with the local relations inlined, for supported constructs
+- [x] #6 Local-relation constructs that cannot be carried produce an explicit diagnostic or unresolved composition rather than resolved semantics
+- [x] #7 Integration tests cover single and chained CTEs, derived tables, joins and filters inside CTEs, wildcard resolution, and a dbt-style CTE model end to end
+- [x] #8 JSON Schema, protocol documentation, and public API docs reflect the new representation
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Acceptance criteria verified on 2026-10-07 against 2e6998e. #1-#4, #7, #8 are met by #40 and follow-ups TASK-36 to TASK-39 (tests/local_relations.rs, docs/protocol.md). #5 and #6 are met for the shapes covered here, but a later review found remaining gaps: Unknown domains lost in intersections, outer predicates on computed local columns without diagnostics, derived-table output domain narrowing, and unreferenced-CTE diagnostic leaks. Those are re-specified under the exactness contract in TASK-44 rather than reopening this task.
+<!-- SECTION:NOTES:END -->
