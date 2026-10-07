@@ -17,7 +17,8 @@ use crate::data_type::DataType;
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, Bound, CaseExpression, CaseSourceDomains, ColumnDomain, ColumnExpression,
-    ColumnRef, ComparisonPredicate, Diagnostic, ExistsPredicate, Expression, FunctionExpression,
+    ColumnRef, ComparisonPredicate, ConditionExactness, Diagnostic, ExistsPredicate, Expression,
+    FunctionExpression,
     GroupBy, GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join,
     LineageSource, LiteralExpression, LiteralValue, LogicalPredicate, MergeAction, MergeClause,
     NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolStatement,
@@ -369,6 +370,7 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .iter()
             .map(column_domain_to_value)
             .collect::<Vec<_>>(),
+        "condition_exactness": condition_exactness_to_value(semantics.condition_exactness()),
         "output": output_to_value(semantics.output()),
         "diagnostics": semantics
             .diagnostics()
@@ -504,6 +506,7 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
             .iter()
             .map(column_domain_to_value)
             .collect::<Vec<_>>(),
+        "condition_exactness": condition_exactness_to_value(statement.condition_exactness()),
         "output": output_to_value(statement.output()),
         "diagnostics": diagnostics
     });
@@ -942,12 +945,34 @@ fn subquery_semantics_to_value(subquery: &SubquerySemantics) -> Value {
             .iter()
             .map(lineage_source_to_value)
             .collect::<Vec<_>>(),
+        "joins": subquery.joins().iter().map(join_to_value).collect::<Vec<_>>(),
         "output": output_to_value(subquery.output()),
         "predicates": predicates_to_value(subquery.predicates()),
+        "column_domains": subquery
+            .column_domains()
+            .iter()
+            .map(column_domain_to_value)
+            .collect::<Vec<_>>(),
+        "condition_exactness": condition_exactness_to_value(subquery.condition_exactness()),
         "diagnostics": subquery
             .diagnostics()
             .iter()
             .map(diagnostic_to_value)
+            .collect::<Vec<_>>()
+    })
+}
+
+fn condition_exactness_to_value(exactness: &ConditionExactness) -> Value {
+    json!({
+        "status": exactness.status().as_str(),
+        "residual_conditions": exactness
+            .residual_conditions()
+            .iter()
+            .map(|residual| json!({
+                "reason": residual.reason().as_str(),
+                "clause": residual.clause().as_str(),
+                "identity": residual.identity()
+            }))
             .collect::<Vec<_>>()
     })
 }
