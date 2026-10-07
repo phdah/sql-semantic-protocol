@@ -335,7 +335,6 @@ fn dbt_relationships_with_unresolved_target_fails_explicitly() {
     assert!(error.to_string().contains("ref('missing_orders')"));
 }
 
-
 #[test]
 fn dbt_singular_test_attached_to_relation_is_reported() {
     let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
@@ -413,7 +412,14 @@ fn dbt_test_config_that_changes_semantics_is_reported_and_not_promoted() {
         .find(|diagnostic| diagnostic.code() == "unsupported_dbt_test_config")
         .expect("configured test diagnostic");
 
-    for key in ["where", "severity", "warn_if", "error_if", "limit", "fail_calc"] {
+    for key in [
+        "where",
+        "severity",
+        "warn_if",
+        "error_if",
+        "limit",
+        "fail_calc",
+    ] {
         assert!(diagnostic.message().contains(key));
     }
     assert!(!metadata.constraints().iter().any(|constraint| {
