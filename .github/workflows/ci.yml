@@ -33,5 +33,12 @@ jobs:
       - name: Run checks
         run: make check
 
+      - name: Capture resolved Cargo lockfile
+        if: always()
+        run: |
+          printf 'LOCKFILE_BASE64='
+          base64 -w0 Cargo.lock
+          printf '\\n'
+
       - name: Run dbt Core end-to-end test
         run: make dbt-e2e
