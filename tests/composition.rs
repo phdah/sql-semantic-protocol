@@ -2,8 +2,9 @@ mod common;
 
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_inputs, AnalysisBundle, ComposedSemantics, CompositionFailureReason, DatasetRef,
-    LiteralValue, ResolvedComposedSemantics, SqlInput, TransformationLayer, ValueDomain,
+    analyze_inputs, AnalysisBundle, CaseSourceDomains, ComposedSemantics,
+    CompositionFailureReason, DatasetRef, Expression, LiteralValue, ResolvedComposedSemantics,
+    SqlInput, TransformationLayer, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
@@ -366,4 +367,136 @@ fn bare_query_remains_a_resolved_anonymous_outcome() {
         bundle.layers()[0].composed_semantics(),
         ComposedSemantics::Resolved(_)
     ));
+}
+
+#[test]
+fn case_branch_domains_compose_to_physical_sources_and_survive_copy_layers() {
+    let dialect = GenericDialect {};
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline(
+                "CREATE TABLE stage.orders AS
+                 SELECT amount AS value
+                 FROM raw.orders",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE mart.orders AS
+                 SELECT CASE WHEN value > 10 THEN 'high' ELSE 'low' END AS bucket
+                 FROM stage.orders",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE final.orders AS
+                 SELECT bucket
+                 FROM mart.orders",
+            ),
+        ],
+        "generic",
+        &dialect,
+    )
+    .expect("CASE composition chain should analyze");
+
+    let semantics = resolved(layer_for_relation(&bundle, "final.orders"));
+    let Expression::Case(case_expression) = semantics.output().columns()[0].expression() else {
+        panic!("copied composed output should preserve CASE expression");
+    };
+    let CaseSourceDomains::Reachable { alternatives } =
+        case_expression.branches()[0].source_domains()
+    else {
+        panic!("expected reachable composed CASE branch");
+    };
+    let [alternative] = alternatives.as_slice() else {
+        panic!("expected one CASE branch alternative");
+    };
+    let [domain] = alternative.column_domains() else {
+        panic!("expected one CASE branch source domain");
+    };
+    assert_eq!(domain.column().relation(), Some("raw.orders"));
+    assert_eq!(domain.column().name(), "amount");
+
+    let CaseSourceDomains::Reachable {
+        alternatives: else_alternatives,
+    } = case_expression.else_source_domains()
+    else {
+        panic!("expected reachable composed CASE ELSE");
+    };
+    assert!(else_alternatives
+        .iter()
+        .flat_map(|alternative| alternative.column_domains())
+        .all(|domain| domain.column().relation() == Some("raw.orders")));
+}
+
+#[test]
+fn computed_composition_hop_makes_case_branch_domains_unknown() {
+    let dialect = GenericDialect {};
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline(
+                "CREATE TABLE stage.orders AS
+                 SELECT amount + 1 AS adjusted
+                 FROM raw.orders",
+            ),
+            SqlInput::inline(
+                "CREATE TABLE mart.orders AS
+                 SELECT CASE WHEN adjusted > 10 THEN 'high' ELSE 'low' END AS bucket
+                 FROM stage.orders",
+            ),
+        ],
+        "generic",
+        &dialect,
+    )
+    .expect("computed CASE composition should analyze");
+
+    let semantics = resolved(layer_for_relation(&bundle, "mart.orders"));
+    let Expression::Case(case_expression) = semantics.output().columns()[0].expression() else {
+        panic!("expected CASE expression");
+    };
+    let CaseSourceDomains::Unknown(reason) = case_expression.branches()[0].source_domains() else {
+        panic!("computed composition hop should make branch domains unknown");
+    };
+    assert!(reason.reason().contains("non-identity expression"));
+    assert!(matches!(
+        case_expression.else_source_domains(),
+        CaseSourceDomains::Unknown(_)
+    ));
+}
+
+#[test]
+fn case_branch_domain_composition_is_consistent_across_exposed_dialects() {
+    for dialect_name in DIALECTS {
+        let dialect =
+            dialect_from_str(dialect_name).expect("documented dialect should be recognized");
+        let bundle = analyze_inputs(
+            &[
+                SqlInput::inline(
+                    "CREATE TABLE stage_orders AS
+                     SELECT amount
+                     FROM raw_orders",
+                ),
+                SqlInput::inline(
+                    "CREATE TABLE mart_orders AS
+                     SELECT CASE WHEN amount > 10 THEN 'high' ELSE 'low' END AS bucket
+                     FROM stage_orders",
+                ),
+            ],
+            dialect_name,
+            dialect.as_ref(),
+        )
+        .unwrap_or_else(|error| {
+            panic!("dialect {dialect_name} failed CASE domain composition: {error}")
+        });
+
+        let semantics = resolved(layer_for_relation(&bundle, "mart_orders"));
+        let Expression::Case(case_expression) = semantics.output().columns()[0].expression() else {
+            panic!("dialect {dialect_name} should preserve CASE expression");
+        };
+        let CaseSourceDomains::Reachable { alternatives } =
+            case_expression.branches()[0].source_domains()
+        else {
+            panic!("dialect {dialect_name} should compose reachable CASE domains");
+        };
+        assert!(alternatives
+            .iter()
+            .flat_map(|alternative| alternative.column_domains())
+            .all(|domain| domain.column().relation() == Some("raw_orders")));
+    }
 }
