@@ -391,15 +391,16 @@ fn analyze_merge_clause(
     });
 
     let branch_predicate = merge_branch_predicate(match_kind, match_condition, predicate.as_ref());
-    let branch_domains = branch_predicate
-        .as_ref()
-        .map_or_else(Vec::new, |predicate| {
-            let domains = derive_column_domains(
-                &Predicates::new(Some(predicate.clone()), None, None),
-                sources,
-            );
-            refine_column_domains_from_equalities(domains, predicate, sources)
-        });
+    let mut branch_domains = predicate.as_ref().map_or_else(Vec::new, |predicate| {
+        derive_column_domains(
+            &Predicates::new(Some(predicate.clone()), None, None),
+            sources,
+        )
+    });
+    if let Some(branch_predicate) = &branch_predicate {
+        branch_domains =
+            refine_column_domains_from_equalities(branch_domains, branch_predicate, sources);
+    }
 
     let action = match &clause.action {
         SqlMergeAction::Delete => ProtocolMergeAction::Delete,
@@ -513,6 +514,7 @@ fn analyze_query(
         &BTreeSet::new(),
         &mut diagnostics,
         &mut derived_index,
+        Some(metadata),
     );
 
     let set_operation = analyze_set_operation(query.body.as_ref());
@@ -557,7 +559,11 @@ fn analyze_query(
         &relation_analysis.joins,
         &diagnostics,
         false,
-    );
+    )
+    .merged_with(&unknown_column_domain_exactness(&column_domains))
+    .merged_with(&ConditionExactness::from_residuals(
+        relation_analysis.residual_conditions.clone(),
+    ));
     sort_diagnostics(&mut diagnostics);
 
     QueryStatement::new(
@@ -571,6 +577,28 @@ fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_produced_relation(produced_relation)
+}
+
+fn unknown_column_domain_exactness(column_domains: &[ColumnDomain]) -> ConditionExactness {
+    ConditionExactness::from_residuals(
+        column_domains
+            .iter()
+            .filter(|column_domain| matches!(column_domain.domain(), ValueDomain::Unknown(_)))
+            .map(|column_domain| {
+                ResidualCondition::new(
+                    ResidualConditionReason::ComputedExpression,
+                    ConditionClause::Where,
+                    format!(
+                        "column_domain:{}",
+                        qualified_column_name(
+                            column_domain.column().relation(),
+                            column_domain.column().name()
+                        )
+                    ),
+                )
+            })
+            .collect(),
+    )
 }
 
 fn analyze_query_condition_exactness(
@@ -1409,7 +1437,8 @@ fn analyze_set_expr_column_domains(
                 derive_inner_join_column_domains(&relations.joins, &relations.sources);
             let own_domains = remap_local_column_domains(
                 intersect_column_domain_sets([predicate_domains, join_domains]),
-                local_outputs,
+                &scope,
+                &relations.sources,
             );
             let source_domains = collect_select_local_domains(
                 select,
@@ -1577,25 +1606,54 @@ fn collect_table_factor_local_domains(
 
 fn remap_local_column_domains(
     domains: Vec<ColumnDomain>,
-    local_outputs: &LocalOutputMap,
+    scope: &[OutputRelation],
+    sources: &[SourceRelation],
 ) -> Vec<ColumnDomain> {
     domains
         .into_iter()
         .flat_map(|column_domain| {
-            let Some(relation) = column_domain.column().relation() else {
-                return vec![column_domain];
-            };
-            let Some(output) = local_outputs.get(relation) else {
-                return vec![column_domain];
-            };
-            let mut candidates = output
-                .columns()
+            let scoped_column = scoped_column_ref(column_domain.column(), sources);
+            if let Ok(source) = resolve_plain_source_column(&scoped_column, scope) {
+                return vec![ColumnDomain::new(
+                    ColumnRef::new(
+                        Some(source.relation().to_string()),
+                        source.column().to_string(),
+                    ),
+                    column_domain.domain().clone(),
+                )];
+            }
+
+            let local_matches = scope
                 .iter()
-                .filter(|column| column.name() == column_domain.column().name());
-            let Some(output_column) = candidates.next() else {
-                return vec![column_domain];
-            };
-            if candidates.next().is_some() {
+                .filter(|relation| {
+                    scoped_column.relation().is_none_or(|qualifier| {
+                        relation
+                            .qualifiers
+                            .iter()
+                            .any(|candidate| candidate == qualifier)
+                    })
+                })
+                .filter_map(|relation| match &relation.source {
+                    OutputRelationSource::Local(output) => {
+                        let matches = output
+                            .columns()
+                            .iter()
+                            .filter(|candidate| candidate.name() == scoped_column.name())
+                            .collect::<Vec<_>>();
+                        match matches.as_slice() {
+                            [column] => Some(Ok(*column)),
+                            [] => None,
+                            _ => Some(Err(())),
+                        }
+                    }
+                    OutputRelationSource::Physical { .. } => None,
+                })
+                .collect::<Vec<_>>();
+
+            let [Ok(output_column)] = local_matches.as_slice() else {
+                if local_matches.is_empty() {
+                    return vec![column_domain];
+                }
                 return vec![ColumnDomain::new(
                     column_domain.column().clone(),
                     ValueDomain::unknown(format!(
@@ -1606,45 +1664,55 @@ fn remap_local_column_domains(
                         )
                     )),
                 )];
-            }
-            let Some(source) = output_column.plain_copy_source() else {
-                let reason = format!(
-                    "predicate on computed local column {} cannot be mapped safely to physical source columns",
-                    qualified_column_name(
-                        column_domain.column().relation(),
-                        column_domain.column().name()
-                    )
-                );
-                if output_column.lineage().is_empty() {
-                    return vec![ColumnDomain::new(
-                        column_domain.column().clone(),
-                        ValueDomain::unknown(reason),
-                    )];
-                }
-                return output_column
-                    .lineage()
-                    .iter()
-                    .map(|source| {
-                        ColumnDomain::new(
-                            ColumnRef::new(
-                                Some(source.relation().to_string()),
-                                source.column().to_string(),
-                            ),
-                            ValueDomain::unknown(reason.clone()),
-                        )
-                    })
-                    .collect();
             };
 
-            vec![ColumnDomain::new(
-                ColumnRef::new(
-                    Some(source.relation().to_string()),
-                    source.column().to_string(),
-                ),
-                column_domain.domain().clone(),
-            )]
+            let reason = format!(
+                "predicate on computed local column {} cannot be mapped safely to physical source columns",
+                qualified_column_name(
+                    column_domain.column().relation(),
+                    column_domain.column().name()
+                )
+            );
+            if output_column.lineage().is_empty() {
+                return vec![ColumnDomain::new(
+                    column_domain.column().clone(),
+                    ValueDomain::unknown(reason),
+                )];
+            }
+
+            output_column
+                .lineage()
+                .iter()
+                .map(|source| {
+                    ColumnDomain::new(
+                        ColumnRef::new(
+                            Some(source.relation().to_string()),
+                            source.column().to_string(),
+                        ),
+                        ValueDomain::unknown(reason.clone()),
+                    )
+                })
+                .collect()
         })
         .collect()
+}
+
+fn scoped_column_ref(column: &ColumnRef, sources: &[SourceRelation]) -> ColumnRef {
+    let Some(relation) = column.relation() else {
+        return column.clone();
+    };
+    let candidates = sources
+        .iter()
+        .filter(|source| source.name() == relation)
+        .collect::<Vec<_>>();
+
+    match candidates.as_slice() {
+        [source] => match source.alias() {
+            Some(alias) => ColumnRef::new(Some(alias.to_string()), column.name().to_string()),
+            None => column.clone(),
+        },
+        _ => column.clone(),
+    }
 }
 
 fn remap_predicates_for_domain_derivation(
@@ -1805,6 +1873,7 @@ struct RelationAnalysis {
     sources: Vec<SourceRelation>,
     dependencies: BTreeSet<String>,
     joins: Vec<ProtocolJoin>,
+    residual_conditions: Vec<ResidualCondition>,
 }
 
 #[derive(Clone)]
@@ -1827,48 +1896,60 @@ struct AnalyzedRelation {
     reference: RelationRef,
     dependencies: BTreeSet<String>,
     joins: Vec<ProtocolJoin>,
+    residual_conditions: Vec<ResidualCondition>,
 }
 
 fn diagnose_local_query_predicates(
     query: &SqlQuery,
     inherited_local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) {
     let mut local_outputs = inherited_local_outputs.clone();
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
             let mut output_diagnostics = Vec::new();
-            let output =
-                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
+            let output = analyze_query_output(
+                &cte.query,
+                &local_outputs,
+                &mut output_diagnostics,
+                metadata,
+            );
             local_outputs.insert(cte.alias.name.to_string(), output);
         }
     }
 
-    diagnose_local_set_expr_predicates(query.body.as_ref(), &local_outputs, diagnostics);
+    diagnose_local_set_expr_predicates(query.body.as_ref(), &local_outputs, diagnostics, metadata);
 }
 
 fn diagnose_local_set_expr_predicates(
     expression: &SetExpr,
     local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) {
     match expression {
         SetExpr::Select(select) => {
             let mut predicate_diagnostics = Vec::new();
-            let scope =
-                build_output_scope(select, local_outputs, &[], &mut predicate_diagnostics, None);
+            let scope = build_output_scope(
+                select,
+                local_outputs,
+                &[],
+                &mut predicate_diagnostics,
+                metadata,
+            );
             let predicates =
                 analyze_select_predicates_with_scope(select, &scope, &mut predicate_diagnostics);
             extend_unique_diagnostics(diagnostics, &predicate_diagnostics);
             diagnose_uncarried_local_predicates(&predicates, &scope, diagnostics);
         }
         SetExpr::Query(query) => {
-            diagnose_local_query_predicates(query, local_outputs, diagnostics);
+            diagnose_local_query_predicates(query, local_outputs, diagnostics, metadata);
         }
         SetExpr::SetOperation { left, right, .. } => {
-            diagnose_local_set_expr_predicates(left, local_outputs, diagnostics);
-            diagnose_local_set_expr_predicates(right, local_outputs, diagnostics);
+            diagnose_local_set_expr_predicates(left, local_outputs, diagnostics, metadata);
+            diagnose_local_set_expr_predicates(right, local_outputs, diagnostics, metadata);
         }
         SetExpr::Values(_)
         | SetExpr::Insert(_)
@@ -1925,10 +2006,24 @@ fn uncarried_local_predicate_reason(
             .operands()
             .iter()
             .find_map(|predicate| uncarried_local_predicate_reason(predicate, scope)),
-        Predicate::Or(_) => Some(
-            "logical OR cannot be preserved as one conjunction of independent physical column domains"
-                .to_string(),
-        ),
+        Predicate::Or(logical) => {
+            if let Some(reason) = logical
+                .operands()
+                .iter()
+                .find_map(|predicate| uncarried_local_predicate_reason(predicate, scope))
+            {
+                return Some(reason);
+            }
+
+            let mut columns = BTreeSet::new();
+            for operand in logical.operands() {
+                collect_local_predicate_source_columns(operand, scope, &mut columns);
+            }
+            (columns.len() > 1).then(|| {
+                "logical OR spans multiple physical source columns and cannot be preserved as independent domains"
+                    .to_string()
+            })
+        }
         Predicate::Not(_) => Some(
             "logical NOT cannot always be reduced safely to independent physical column domains"
                 .to_string(),
@@ -1945,7 +2040,9 @@ fn uncarried_local_predicate_reason(
         {
             match predicate.expression() {
                 Expression::Column(column) => unresolved_domain_column_reason(column, scope),
-                _ => Some("IN-list predicate targets a computed or unresolved expression".to_string()),
+                _ => Some(
+                    "IN-list predicate targets a computed or unresolved expression".to_string(),
+                ),
             }
         }
         Predicate::In(_) => {
@@ -1954,32 +2051,91 @@ fn uncarried_local_predicate_reason(
         Predicate::Exists(_) => {
             Some("EXISTS semantics depend on nested-row existence, not a scalar domain".to_string())
         }
-        Predicate::InSubquery(_) => {
-            Some("IN-subquery semantics depend on nested rows, not only a scalar domain".to_string())
-        }
+        Predicate::InSubquery(_) => Some(
+            "IN-subquery semantics depend on nested rows, not only a scalar domain".to_string(),
+        ),
         Predicate::Between(predicate)
             if matches!(predicate.lower(), Expression::Literal(_))
                 && matches!(predicate.upper(), Expression::Literal(_)) =>
         {
             match predicate.expression() {
                 Expression::Column(column) => unresolved_domain_column_reason(column, scope),
-                _ => Some("BETWEEN predicate targets a computed or unresolved expression".to_string()),
+                _ => Some(
+                    "BETWEEN predicate targets a computed or unresolved expression".to_string(),
+                ),
             }
         }
         Predicate::Between(_) => {
             Some("BETWEEN predicate bounds are not both scalar literals".to_string())
         }
-        Predicate::BooleanExpression(_) => {
-            Some("boolean predicate expression cannot be reduced safely to a scalar domain".to_string())
-        }
+        Predicate::BooleanExpression(_) => Some(
+            "boolean predicate expression cannot be reduced safely to a scalar domain".to_string(),
+        ),
         Predicate::Unknown(semantic) => Some(format!(
             "predicate semantics are unresolved: {}",
             semantic.reason()
         )),
         Predicate::Unsupported(semantic) => Some(match semantic.reason() {
-            Some(reason) => format!("unsupported {} predicate semantics: {reason}", semantic.feature()),
+            Some(reason) => format!(
+                "unsupported {} predicate semantics: {reason}",
+                semantic.feature()
+            ),
             None => format!("unsupported {} predicate semantics", semantic.feature()),
         }),
+    }
+}
+
+fn collect_local_predicate_source_columns(
+    predicate: &Predicate,
+    scope: &[OutputRelation],
+    columns: &mut BTreeSet<LineageSource>,
+) {
+    match predicate {
+        Predicate::Comparison(comparison) => {
+            collect_local_expression_source_column(comparison.left(), scope, columns);
+            collect_local_expression_source_column(comparison.right(), scope, columns);
+        }
+        Predicate::And(logical) | Predicate::Or(logical) => {
+            for operand in logical.operands() {
+                collect_local_predicate_source_columns(operand, scope, columns);
+            }
+        }
+        Predicate::Not(not) => {
+            collect_local_predicate_source_columns(not.operand(), scope, columns);
+        }
+        Predicate::IsNull(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
+        Predicate::In(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
+        Predicate::InSubquery(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
+        Predicate::Between(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
+        Predicate::BooleanExpression(expression) => {
+            collect_local_expression_source_column(expression, scope, columns);
+        }
+        Predicate::Exists(_) | Predicate::Unknown(_) | Predicate::Unsupported(_) => {}
+    }
+}
+
+fn collect_local_expression_source_column(
+    expression: &Expression,
+    scope: &[OutputRelation],
+    columns: &mut BTreeSet<LineageSource>,
+) {
+    let Expression::Column(column) = expression else {
+        return;
+    };
+    let reference = ColumnRef::new(
+        column.relation().map(ToString::to_string),
+        column.name().to_string(),
+    );
+    if let Ok(source) = resolve_plain_source_column(&reference, scope) {
+        columns.insert(source);
     }
 }
 
@@ -1998,11 +2154,68 @@ fn unresolved_domain_column_reason(
         })
 }
 
+fn analyze_local_query_condition_exactness(
+    query: &SqlQuery,
+    local_outputs: &LocalOutputMap,
+    relation_analysis: &RelationAnalysis,
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> ConditionExactness {
+    let mut diagnostics = Vec::new();
+    let predicates = analyze_query_predicates_with_local_outputs(
+        query,
+        local_outputs,
+        &mut diagnostics,
+        metadata,
+    );
+    diagnose_local_set_expr_predicates(
+        query.body.as_ref(),
+        local_outputs,
+        &mut diagnostics,
+        metadata,
+    );
+    if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
+        inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
+    }
+    inspect_query_features(query, &mut diagnostics);
+
+    analyze_query_condition_exactness(
+        query,
+        &predicates,
+        &relation_analysis.sources,
+        &relation_analysis.joins,
+        &diagnostics,
+        false,
+    )
+}
+
+fn analyze_query_predicates_with_local_outputs(
+    query: &SqlQuery,
+    local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> Predicates {
+    match query.body.as_ref() {
+        SetExpr::Select(select) => {
+            let mut scope_diagnostics = Vec::new();
+            let scope =
+                build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, metadata);
+            extend_unique_diagnostics(diagnostics, &scope_diagnostics);
+            analyze_select_predicates_with_scope(select, &scope, diagnostics)
+        }
+        SetExpr::Query(query) => {
+            analyze_query_predicates_with_local_outputs(query, local_outputs, diagnostics, metadata)
+        }
+        SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
+        _ => Predicates::new(None, None, None),
+    }
+}
+
 fn analyze_query_relations(
     query: &SqlQuery,
     inherited_local_relations: &BTreeSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> RelationAnalysis {
     analyze_query_relations_with_locals(
         query,
@@ -2011,6 +2224,7 @@ fn analyze_query_relations(
         &BTreeMap::new(),
         diagnostics,
         derived_index,
+        metadata,
     )
 }
 
@@ -2021,6 +2235,7 @@ fn analyze_query_relations_with_locals(
     inherited_local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> RelationAnalysis {
     let mut local_relations = inherited_local_relations.clone();
     let mut local_outputs = inherited_local_outputs.clone();
@@ -2034,18 +2249,39 @@ fn analyze_query_relations_with_locals(
         for cte in &with.cte_tables {
             let name = cte.alias.name.to_string();
             let mut cte_diagnostics = Vec::new();
-            let nested = analyze_query_relations_with_locals(
+            let mut nested = analyze_query_relations_with_locals(
                 &cte.query,
                 &local_relations,
                 &local_outputs,
                 &local_analyses,
                 &mut cte_diagnostics,
                 derived_index,
+                metadata,
             );
-            diagnose_local_query_predicates(&cte.query, &local_outputs, &mut cte_diagnostics);
+            diagnose_local_query_predicates(
+                &cte.query,
+                &local_outputs,
+                &mut cte_diagnostics,
+                metadata,
+            );
+            let local_exactness = analyze_local_query_condition_exactness(
+                &cte.query,
+                &local_outputs,
+                &nested,
+                metadata,
+            )
+            .with_scope(format!("cte:{name}"));
+            nested
+                .residual_conditions
+                .extend(local_exactness.residual_conditions().iter().cloned());
             let mut output_diagnostics = Vec::new();
-            let output =
-                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
+            let output = analyze_query_output(
+                &cte.query,
+                &local_outputs,
+                &mut output_diagnostics,
+                metadata,
+            );
+            extend_unique_diagnostics(&mut cte_diagnostics, &output_diagnostics);
             local_outputs.insert(name.clone(), output);
             local_analyses.insert(
                 name,
@@ -2064,6 +2300,7 @@ fn analyze_query_relations_with_locals(
         &local_analyses,
         diagnostics,
         derived_index,
+        metadata,
     )
 }
 
@@ -2074,6 +2311,7 @@ fn analyze_set_expr_relations_with_locals(
     local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> RelationAnalysis {
     match expression {
         SetExpr::Select(select) => analyze_select_relations_with_locals(
@@ -2083,6 +2321,7 @@ fn analyze_set_expr_relations_with_locals(
             local_analyses,
             diagnostics,
             derived_index,
+            metadata,
         ),
         SetExpr::Query(query) => analyze_query_relations_with_locals(
             query,
@@ -2091,6 +2330,7 @@ fn analyze_set_expr_relations_with_locals(
             local_analyses,
             diagnostics,
             derived_index,
+            metadata,
         ),
         SetExpr::SetOperation { left, right, .. } => {
             let mut analysis = analyze_set_expr_relations_with_locals(
@@ -2100,6 +2340,7 @@ fn analyze_set_expr_relations_with_locals(
                 local_analyses,
                 diagnostics,
                 derived_index,
+                metadata,
             );
             let right = analyze_set_expr_relations_with_locals(
                 right,
@@ -2108,6 +2349,7 @@ fn analyze_set_expr_relations_with_locals(
                 local_analyses,
                 diagnostics,
                 derived_index,
+                metadata,
             );
             merge_relation_analysis(&mut analysis, right);
             analysis
@@ -2129,6 +2371,7 @@ fn analyze_select_relations(
         &BTreeMap::new(),
         diagnostics,
         derived_index,
+        None,
     )
 }
 
@@ -2139,10 +2382,12 @@ fn analyze_select_relations_with_locals(
     local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> RelationAnalysis {
     let mut analysis = RelationAnalysis::default();
     let mut scope_diagnostics = Vec::new();
-    let output_scope = build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
+    let output_scope =
+        build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, metadata);
     let relation_scope = RelationAnalysisScope {
         local_relations,
         local_outputs,
@@ -2157,6 +2402,7 @@ fn analyze_select_relations_with_locals(
             diagnostics,
             derived_index,
             &mut analysis,
+            metadata,
         );
     }
 
@@ -2276,6 +2522,7 @@ fn analyze_table_with_joins(
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     analysis: &mut RelationAnalysis,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) {
     let mut left = register_table_factor(
         &source.relation,
@@ -2283,11 +2530,18 @@ fn analyze_table_with_joins(
         diagnostics,
         derived_index,
         analysis,
+        metadata,
     );
 
     for join in &source.joins {
-        let right =
-            register_table_factor(&join.relation, scope, diagnostics, derived_index, analysis);
+        let right = register_table_factor(
+            &join.relation,
+            scope,
+            diagnostics,
+            derived_index,
+            analysis,
+            metadata,
+        );
 
         if let (Some(left_ref), Some(right_ref)) = (left.as_ref(), right.as_ref()) {
             analysis.joins.push(analyze_join(
@@ -2319,6 +2573,7 @@ fn register_table_factor(
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     analysis: &mut RelationAnalysis,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Option<RelationRef> {
     let relation = analyze_table_factor_with_locals(
         factor,
@@ -2327,12 +2582,16 @@ fn register_table_factor(
         scope.local_analyses,
         diagnostics,
         derived_index,
+        metadata,
     )?;
 
     for dependency in relation.dependencies {
         analysis.dependencies.insert(dependency);
     }
     analysis.joins.extend(relation.joins);
+    analysis
+        .residual_conditions
+        .extend(relation.residual_conditions);
 
     if !analysis.sources.iter().any(|existing| {
         existing.name() == relation.source.name() && existing.alias() == relation.source.alias()
@@ -2356,6 +2615,7 @@ fn analyze_table_factor(
         &BTreeMap::new(),
         diagnostics,
         derived_index,
+        None,
     )
 }
 
@@ -2366,6 +2626,7 @@ fn analyze_table_factor_with_locals(
     local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Option<AnalyzedRelation> {
     match factor {
         TableFactor::Table {
@@ -2376,13 +2637,14 @@ fn analyze_table_factor_with_locals(
         } => {
             let name = name.to_string();
             let alias = alias.as_ref().map(|alias| alias.name.to_string());
-            let (dependencies, joins) = if local_relations.contains(&name) {
+            let (dependencies, joins, residual_conditions) = if local_relations.contains(&name) {
                 match local_analyses.get(&name) {
                     Some(local) => {
                         extend_unique_diagnostics(diagnostics, &local.diagnostics);
                         (
                             local.analysis.dependencies.clone(),
                             local.analysis.joins.clone(),
+                            local.analysis.residual_conditions.clone(),
                         )
                     }
                     None => {
@@ -2393,11 +2655,11 @@ fn analyze_table_factor_with_locals(
                                 "local relation {name} is referenced before its relation semantics can be resolved"
                             ),
                         ));
-                        (BTreeSet::new(), Vec::new())
+                        (BTreeSet::new(), Vec::new(), Vec::new())
                     }
                 }
             } else {
-                (BTreeSet::from([name.clone()]), Vec::new())
+                (BTreeSet::from([name.clone()]), Vec::new(), Vec::new())
             };
 
             Some(AnalyzedRelation {
@@ -2405,20 +2667,22 @@ fn analyze_table_factor_with_locals(
                 reference: RelationRef::new(name, alias),
                 dependencies,
                 joins,
+                residual_conditions,
             })
         }
         TableFactor::Derived {
             subquery, alias, ..
         } => {
-            let nested = analyze_query_relations_with_locals(
+            let mut nested = analyze_query_relations_with_locals(
                 subquery,
                 local_relations,
                 local_outputs,
                 local_analyses,
                 diagnostics,
                 derived_index,
+                metadata,
             );
-            diagnose_local_query_predicates(subquery, local_outputs, diagnostics);
+            diagnose_local_query_predicates(subquery, local_outputs, diagnostics, metadata);
             let alias = alias.as_ref().map(|alias| alias.name.to_string());
             let name = match &alias {
                 Some(_) => "subquery".to_string(),
@@ -2427,12 +2691,23 @@ fn analyze_table_factor_with_locals(
                     format!("subquery#{}", derived_index)
                 }
             };
+            let scope = alias.as_ref().map_or_else(
+                || format!("derived:{name}"),
+                |alias| format!("derived:{alias}"),
+            );
+            let local_exactness =
+                analyze_local_query_condition_exactness(subquery, local_outputs, &nested, metadata)
+                    .with_scope(scope);
+            nested
+                .residual_conditions
+                .extend(local_exactness.residual_conditions().iter().cloned());
 
             Some(AnalyzedRelation {
                 source: SourceRelation::new(name.clone(), alias.clone()),
                 reference: RelationRef::new(name, alias),
                 dependencies: nested.dependencies,
                 joins: nested.joins,
+                residual_conditions: nested.residual_conditions,
             })
         }
         _ => {
@@ -2699,7 +2974,7 @@ fn collect_expression_dependencies_with_windows(
             subquery: query, ..
         } => {
             let nested =
-                analyze_query_relations(query, local_relations, diagnostics, derived_index);
+                analyze_query_relations(query, local_relations, diagnostics, derived_index, None);
             dependencies.extend(nested.dependencies);
         }
         Expr::InSubquery { expr, subquery, .. } => {
@@ -2711,8 +2986,13 @@ fn collect_expression_dependencies_with_windows(
                 derived_index,
                 dependencies,
             );
-            let nested =
-                analyze_query_relations(subquery, local_relations, diagnostics, derived_index);
+            let nested = analyze_query_relations(
+                subquery,
+                local_relations,
+                diagnostics,
+                derived_index,
+                None,
+            );
             dependencies.extend(nested.dependencies);
         }
         Expr::BinaryOp { left, right, .. }
@@ -2879,7 +3159,7 @@ fn collect_function_argument_dependencies(
         FunctionArguments::None => {}
         FunctionArguments::Subquery(query) => {
             let nested =
-                analyze_query_relations(query, local_relations, diagnostics, derived_index);
+                analyze_query_relations(query, local_relations, diagnostics, derived_index, None);
             dependencies.extend(nested.dependencies);
         }
         FunctionArguments::List(arguments) => {
@@ -3049,6 +3329,9 @@ fn merge_relation_analysis(target: &mut RelationAnalysis, source: RelationAnalys
     }
     target.dependencies.extend(source.dependencies);
     target.joins.extend(source.joins);
+    target
+        .residual_conditions
+        .extend(source.residual_conditions);
 }
 
 fn analyze_predicate(expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Predicate {
@@ -4220,11 +4503,12 @@ fn analyze_query_output_with_outer_scope(
 
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
+            let mut cte_diagnostics = Vec::new();
             let output = analyze_query_output_with_outer_scope(
                 &cte.query,
                 &local_outputs,
                 &[],
-                diagnostics,
+                &mut cte_diagnostics,
                 metadata,
             );
             local_outputs.insert(cte.alias.name.to_string(), output);
@@ -4902,6 +5186,7 @@ fn analyze_subquery_semantics(
         &BTreeSet::new(),
         &mut diagnostics,
         &mut derived_index,
+        None,
     );
     let output = analyze_query_output_with_outer_scope(
         query,

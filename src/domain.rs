@@ -915,10 +915,10 @@ fn union_maps(left: DomainMap, right: DomainMap) -> DomainMap {
 
 pub(crate) fn intersect_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
     match (left, right) {
+        (ValueDomain::Unknown(_), _) => left.clone(),
+        (_, ValueDomain::Unknown(_)) => right.clone(),
         (ValueDomain::Empty, _) | (_, ValueDomain::Empty) => ValueDomain::Empty,
         (ValueDomain::Unbounded, domain) | (domain, ValueDomain::Unbounded) => domain.clone(),
-        (ValueDomain::Unknown(_), ValueDomain::Unknown(_)) => left.clone(),
-        (ValueDomain::Unknown(_), domain) | (domain, ValueDomain::Unknown(_)) => domain.clone(),
         (ValueDomain::Ranges(left), ValueDomain::Ranges(right)) => {
             intersect_range_domains(left.ranges(), right.ranges())
         }

@@ -10,8 +10,17 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  rust-checks:
+    name: Rust / ${{ matrix.check }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - fmt
+          - lint
+          - test
+          - doc
 
     steps:
       - name: Check out repository
@@ -22,6 +31,22 @@ jobs:
           rustup toolchain install stable --profile minimal --component rustfmt,clippy
           rustup default stable
 
+      - name: Run ${{ matrix.check }}
+        run: make ${{ matrix.check }}
+
+  dbt-e2e:
+    name: dbt Core E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -29,9 +54,6 @@ jobs:
 
       - name: Install dbt Core test dependencies
         run: python -m pip install -r tests/requirements-dbt-e2e.txt
-
-      - name: Run checks
-        run: make check
 
       - name: Run dbt Core end-to-end test
         run: make dbt-e2e

@@ -967,13 +967,26 @@ fn condition_exactness_to_value(exactness: &ConditionExactness) -> Value {
         "residual_conditions": exactness
             .residual_conditions()
             .iter()
-            .map(|residual| json!({
-                "reason": residual.reason().as_str(),
-                "clause": residual.clause().as_str(),
-                "identity": residual.identity()
-            }))
+            .map(residual_condition_to_value)
             .collect::<Vec<_>>()
     })
+}
+
+fn residual_condition_to_value(residual: &crate::protocol::ResidualCondition) -> Value {
+    let mut value = json!({
+        "reason": residual.reason().as_str(),
+        "clause": residual.clause().as_str(),
+        "identity": residual.identity()
+    });
+
+    if let (Some(layer_id), Some(scope)) = (residual.origin_layer_id(), residual.origin_scope()) {
+        value["origin"] = json!({
+            "layer_id": layer_id,
+            "scope": scope
+        });
+    }
+
+    value
 }
 
 fn column_expression_to_value(expression: &ColumnExpression) -> Value {

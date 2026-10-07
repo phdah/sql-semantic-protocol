@@ -1,10 +1,10 @@
 ---
 id: TASK-44
 title: Carry the exactness contract through local relations and composition
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 18:11'
-updated_date: '2026-10-07 18:11'
+updated_date: '2026-10-07 21:00'
 labels: []
 milestone: m-2
 dependencies:
@@ -40,12 +40,19 @@ Composed semantics are exact only when every contributing scope (every reference
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Intersecting Unknown with any domain never yields a domain that presents as known; the composed domain stays Unknown with a reason
-- [ ] #2 Predicates on computed, aggregate, window, or CASE columns of a local relation, whether written inside or outside the local relation, are residual on the composed semantics
-- [ ] #3 Composed semantics of a layer are exact only if every contributing scope across all ancestor layers is exact, and they list every residual condition with its originating layer and scope
-- [ ] #4 Output domains of computed columns in CTEs, derived tables, and producer layers never exclude a value the expression can produce for rows satisfying the conditions
-- [ ] #5 Unreferenced CTEs contribute no diagnostics, residual conditions, dependencies, or joins
-- [ ] #6 Composed semantics for a query reading local relations equal those of the equivalent query with the local relations inlined, for every allow-listed shape
-- [ ] #7 Each reproduction listed in the description has a regression test at the composed level
-- [ ] #8 Protocol docs describe how exactness and residual conditions compose
+- [x] #1 Intersecting Unknown with any domain never yields a domain that presents as known; the composed domain stays Unknown with a reason
+- [x] #2 Predicates on computed, aggregate, window, or CASE columns of a local relation, whether written inside or outside the local relation, are residual on the composed semantics
+- [x] #3 Composed semantics of a layer are exact only if every contributing scope across all ancestor layers is exact, and they list every residual condition with its originating layer and scope
+- [x] #4 Output domains of computed columns in CTEs, derived tables, and producer layers never exclude a value the expression can produce for rows satisfying the conditions
+- [x] #5 Unreferenced CTEs contribute no diagnostics, residual conditions, dependencies, or joins
+- [x] #6 Composed semantics for a query reading local relations equal those of the equivalent query with the local relations inlined, for every allow-listed shape
+- [x] #7 Each reproduction listed in the description has a regression test at the composed level
+- [x] #8 Protocol docs describe how exactness and residual conditions compose
 <!-- AC:END -->
+
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Implemented in PR #57. Unknown-domain intersections remain unknown, residual exactness now composes through referenced local scopes and ancestor layers with origin metadata, derived-table and computed-column domain propagation is conservative, unreferenced CTE semantics do not leak, and regression coverage includes the listed reproductions and equivalent inlined semantics.
+<!-- SECTION:NOTES:END -->

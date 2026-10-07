@@ -3326,6 +3326,22 @@
         },
         "identity": {
           "$ref": "#/$defs/nonEmptyString"
+        },
+        "origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "layer_id",
+            "scope"
+          ],
+          "properties": {
+            "layer_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "scope": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
         }
       }
     }
