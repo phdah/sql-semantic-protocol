@@ -8,7 +8,9 @@ use std::fmt;
 
 use sqlparser::dialect::Dialect;
 
-use crate::constraints::{merge_relation_constraint_sets, RelationConstraintSet};
+use crate::constraints::{
+    merge_relation_constraint_sets, ConstraintDiagnostic, RelationConstraintSet,
+};
 use crate::protocol::{
     ColumnDomain, DiagnosticSeverity, Output, Protocol, ProtocolStatement, WriteKind,
     PROTOCOL_VERSION,
@@ -601,6 +603,7 @@ pub struct AnalysisBundle {
     graph: AnalysisGraph,
     source_schemas: Vec<RelationSchema>,
     relation_constraints: Vec<RelationConstraintSet>,
+    constraint_diagnostics: Vec<ConstraintDiagnostic>,
 }
 
 impl AnalysisBundle {
@@ -634,11 +637,23 @@ impl AnalysisBundle {
         &self.relation_constraints
     }
 
+    /// Return constraint diagnostics that cannot be scoped to one canonical relation.
+    pub fn constraint_diagnostics(&self) -> &[ConstraintDiagnostic] {
+        &self.constraint_diagnostics
+    }
+
     /// Merge adapter-neutral canonical constraint evidence into this bundle.
     ///
     /// Identical facts coalesce evidence. Conflicting primary keys remain explicit diagnostics.
     pub fn enrich_relation_constraints(&mut self, constraints: &[RelationConstraintSet]) {
         merge_relation_constraint_sets(&mut self.relation_constraints, constraints);
+    }
+
+    /// Merge adapter diagnostics that cannot be scoped to one canonical relation.
+    pub fn enrich_constraint_diagnostics(&mut self, diagnostics: &[ConstraintDiagnostic]) {
+        self.constraint_diagnostics.extend(diagnostics.iter().cloned());
+        self.constraint_diagnostics.sort();
+        self.constraint_diagnostics.dedup();
     }
 
     pub(crate) fn replace_source_schemas(&mut self, mut schemas: Vec<RelationSchema>) {
@@ -694,6 +709,7 @@ impl AnalysisBundle {
             graph,
             source_schemas: Vec::new(),
             relation_constraints,
+            constraint_diagnostics: Vec::new(),
         })
     }
 }
@@ -1283,6 +1299,7 @@ pub fn select_targets(
         graph,
         source_schemas: bundle.source_schemas.clone(),
         relation_constraints: bundle.relation_constraints.clone(),
+        constraint_diagnostics: bundle.constraint_diagnostics.clone(),
     })
 }
 
