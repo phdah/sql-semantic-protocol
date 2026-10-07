@@ -446,11 +446,7 @@ pub struct ComposedJoinColumn {
 }
 
 impl ComposedJoinColumn {
-    pub(crate) fn new(
-        relation: String,
-        column: String,
-        relation_instance: String,
-    ) -> Self {
+    pub(crate) fn new(relation: String, column: String, relation_instance: String) -> Self {
         Self {
             relation,
             column,
