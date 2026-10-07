@@ -213,16 +213,15 @@ impl<'a> Composer<'a> {
                         )
                     );
                     diagnostics.push(*diagnostic);
-                    condition_exactness = condition_exactness.merged_with(
-                        &ConditionExactness::from_residuals(vec![
+                    condition_exactness =
+                        condition_exactness.merged_with(&ConditionExactness::from_residuals(vec![
                             ResidualCondition::new(
                                 ResidualConditionReason::ComputedExpression,
                                 ConditionClause::Where,
                                 identity,
                             )
                             .with_layer_origin(layer.id().to_string()),
-                        ]),
-                    );
+                        ]));
                 }
             }
         }
