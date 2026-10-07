@@ -1678,20 +1678,6 @@ fn parse_manifest_relation_constraints(
             "unique" => RelationConstraint::unique_key(vec![column_name], evidence),
             "not_null" => RelationConstraint::not_null(column_name, evidence),
             "accepted_values" => {
-                let values_path = format!("{path}.test_metadata.kwargs.values");
-                let values = arguments
-                    .get("values")
-                    .ok_or_else(|| invalid_field(&values_path, "field is required"))?
-                    .as_array()
-                    .ok_or_else(|| {
-                        invalid_field(&values_path, "expected an array of scalar values")
-                    })?
-                    .iter()
-                    .enumerate()
-                    .map(|(index, value)| {
-                        dbt_constraint_value(value, &format!("{values_path}[{index}]"))
-                    })
-                    .collect::<Result<Vec<_>, _>>()?;
                 let quote = match arguments.get("quote") {
                     Some(value) => value.as_bool().ok_or_else(|| {
                         invalid_field(
@@ -1701,6 +1687,41 @@ fn parse_manifest_relation_constraints(
                     })?,
                     None => true,
                 };
+                let values_path = format!("{path}.test_metadata.kwargs.values");
+                let raw_values = arguments
+                    .get("values")
+                    .ok_or_else(|| invalid_field(&values_path, "field is required"))?
+                    .as_array()
+                    .ok_or_else(|| {
+                        invalid_field(&values_path, "expected an array of scalar values")
+                    })?;
+                let mut values = Vec::with_capacity(raw_values.len());
+                let mut unsupported_value_path = None;
+                for (index, value) in raw_values.iter().enumerate() {
+                    let value_path = format!("{values_path}[{index}]");
+                    match dbt_constraint_value(value, quote, &value_path)? {
+                        Some(value) => values.push(value),
+                        None => {
+                            unsupported_value_path = Some(value_path);
+                            break;
+                        }
+                    }
+                }
+                if let Some(value_path) = unsupported_value_path {
+                    record_constraint_diagnostic(
+                        &mut result,
+                        &mut unscoped_diagnostics,
+                        Some(local_relation),
+                        test_id,
+                        ConstraintDiagnostic::new(
+                            "unsupported_dbt_accepted_value",
+                            format!(
+                                "dbt accepted_values test '{test_id}' uses quote: false value at '{value_path}' that is not a portable scalar SQL literal; the constraint was not emitted"
+                            ),
+                        ),
+                    )?;
+                    continue;
+                }
                 RelationConstraint::accepted_values(column_name, values, quote, evidence)
             }
             "relationships" => {
@@ -1957,25 +1978,74 @@ fn parse_dbt_constraint_array(
     Ok(())
 }
 
-fn dbt_constraint_value(value: &Value, path: &str) -> Result<ConstraintValue, DbtManifestError> {
+fn dbt_constraint_value(
+    value: &Value,
+    quote: bool,
+    path: &str,
+) -> Result<Option<ConstraintValue>, DbtManifestError> {
     match value {
-        Value::Null => Ok(ConstraintValue::Null),
-        Value::Bool(value) => Ok(ConstraintValue::Boolean(*value)),
+        Value::Null => Ok(Some(ConstraintValue::Null)),
+        Value::Bool(value) => Ok(Some(ConstraintValue::Boolean(*value))),
         Value::Number(value) => {
             if let Some(value) = value.as_i64() {
-                Ok(ConstraintValue::Integer(value))
+                Ok(Some(ConstraintValue::Integer(value)))
             } else if let Some(value) = value.as_u64() {
-                Ok(ConstraintValue::UnsignedInteger(value))
+                Ok(Some(ConstraintValue::UnsignedInteger(value)))
             } else {
-                Ok(ConstraintValue::Number(value.to_string()))
+                Ok(Some(ConstraintValue::Number(value.to_string())))
             }
         }
-        Value::String(value) => Ok(ConstraintValue::String(value.clone())),
+        Value::String(value) if quote => Ok(Some(ConstraintValue::String(value.clone()))),
+        Value::String(value) => Ok(parse_unquoted_dbt_constraint_value(value)),
         Value::Array(_) | Value::Object(_) => Err(invalid_field(
             path,
             "accepted_values entries must be scalar JSON values",
         )),
     }
+}
+
+fn parse_unquoted_dbt_constraint_value(value: &str) -> Option<ConstraintValue> {
+    let value = value.trim();
+    if value.eq_ignore_ascii_case("null") {
+        return Some(ConstraintValue::Null);
+    }
+    if value.eq_ignore_ascii_case("true") {
+        return Some(ConstraintValue::Boolean(true));
+    }
+    if value.eq_ignore_ascii_case("false") {
+        return Some(ConstraintValue::Boolean(false));
+    }
+    if let Ok(value) = value.parse::<i64>() {
+        return Some(ConstraintValue::Integer(value));
+    }
+    if let Ok(value) = value.parse::<u64>() {
+        return Some(ConstraintValue::UnsignedInteger(value));
+    }
+    if let Ok(Value::Number(value)) = serde_json::from_str::<Value>(value) {
+        return Some(ConstraintValue::Number(value.to_string()));
+    }
+
+    parse_portable_sql_string_literal(value).map(ConstraintValue::String)
+}
+
+fn parse_portable_sql_string_literal(value: &str) -> Option<String> {
+    let inner = value.strip_prefix('\\'')?.strip_suffix('\\'')?;
+    let mut parsed = String::with_capacity(inner.len());
+    let mut chars = inner.chars().peekable();
+
+    while let Some(character) = chars.next() {
+        if character != '\\'' {
+            parsed.push(character);
+            continue;
+        }
+        if chars.next_if_eq(&'\\'').is_some() {
+            parsed.push('\\'');
+        } else {
+            return None;
+        }
+    }
+
+    Some(parsed)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
