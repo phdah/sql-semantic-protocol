@@ -426,7 +426,7 @@ fn relation_sources_preserve_multi_part_names_aliases_and_sorted_dependencies() 
 }
 
 #[test]
-fn using_join_is_normalized_with_relation_identity() {
+fn using_join_is_normalized_with_physical_column_identity() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(
         "SELECT x.id FROM warehouse.orders AS x LEFT JOIN crm.customers AS y USING (id)",
@@ -450,14 +450,14 @@ fn using_join_is_normalized_with_relation_identity() {
 
     match comparison.left() {
         Expression::Column(column) => {
-            assert_eq!(column.relation(), Some("x"));
+            assert_eq!(column.relation(), Some("warehouse.orders"));
             assert_eq!(column.name(), "id");
         }
         other => panic!("expected left USING column, got {other:?}"),
     }
     match comparison.right() {
         Expression::Column(column) => {
-            assert_eq!(column.relation(), Some("y"));
+            assert_eq!(column.relation(), Some("crm.customers"));
             assert_eq!(column.name(), "id");
         }
         other => panic!("expected right USING column, got {other:?}"),
