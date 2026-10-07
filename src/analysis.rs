@@ -1268,8 +1268,7 @@ fn analyze_select_relations_with_locals(
 ) -> RelationAnalysis {
     let mut analysis = RelationAnalysis::default();
     let mut scope_diagnostics = Vec::new();
-    let output_scope =
-        build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
+    let output_scope = build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
     let relation_scope = RelationAnalysisScope {
         local_relations,
         local_outputs,
@@ -1413,13 +1412,8 @@ fn analyze_table_with_joins(
     );
 
     for join in &source.joins {
-        let right = register_table_factor(
-            &join.relation,
-            scope,
-            diagnostics,
-            derived_index,
-            analysis,
-        );
+        let right =
+            register_table_factor(&join.relation, scope, diagnostics, derived_index, analysis);
 
         if let (Some(left_ref), Some(right_ref)) = (left.as_ref(), right.as_ref()) {
             analysis.joins.push(analyze_join(
