@@ -12,8 +12,8 @@ use crate::constraints::{
     merge_relation_constraint_sets, ConstraintDiagnostic, RelationConstraintSet,
 };
 use crate::protocol::{
-    ColumnDomain, ConditionExactness, DiagnosticSeverity, Output, Protocol, ProtocolStatement,
-    WriteKind, PROTOCOL_VERSION,
+    ColumnDomain, ConditionExactness, DiagnosticSeverity, JoinKind, Output, Protocol,
+    ProtocolStatement, WriteKind, PROTOCOL_VERSION,
 };
 use crate::relation::{
     RelationCatalog, RelationContext, RelationResolutionError, RelationResolver, RelationSchema,
@@ -405,15 +405,19 @@ impl ComposedSemantics {
     pub(crate) fn resolved(
         dependencies: Vec<String>,
         column_domains: Vec<ColumnDomain>,
+        mut join_equalities: Vec<ComposedJoinEquality>,
         condition_exactness: ConditionExactness,
         output: Output,
         mut diagnostics: Vec<CompositionDiagnostic>,
     ) -> Self {
+        join_equalities.sort_by(composed_join_equality_cmp);
+        join_equalities.dedup();
         diagnostics.sort_by(diagnostic_cmp);
         diagnostics.dedup();
         Self::Resolved(ResolvedComposedSemantics {
             dependencies,
             column_domains,
+            join_equalities,
             condition_exactness,
             output,
             diagnostics,
@@ -433,11 +437,112 @@ impl ComposedSemantics {
     }
 }
 
+/// One physical column endpoint of a composed join equality.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ComposedJoinColumn {
+    relation: String,
+    column: String,
+    relation_instance: String,
+}
+
+impl ComposedJoinColumn {
+    pub(crate) fn new(
+        relation: String,
+        column: String,
+        relation_instance: String,
+    ) -> Self {
+        Self {
+            relation,
+            column,
+            relation_instance,
+        }
+    }
+
+    /// Return the physical leaf relation.
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
+
+    /// Return the physical leaf column.
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+
+    /// Return the stable relation-instance identity within the originating layer.
+    pub fn relation_instance(&self) -> &str {
+        &self.relation_instance
+    }
+}
+
+/// A physical column equality required by a composed row-condition contract.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComposedJoinEquality {
+    left: ComposedJoinColumn,
+    right: ComposedJoinColumn,
+    join_kind: JoinKind,
+    origin_layer_id: String,
+}
+
+impl ComposedJoinEquality {
+    pub(crate) fn new(
+        left: ComposedJoinColumn,
+        right: ComposedJoinColumn,
+        join_kind: JoinKind,
+        origin_layer_id: String,
+    ) -> Self {
+        Self {
+            left,
+            right,
+            join_kind,
+            origin_layer_id,
+        }
+    }
+
+    /// Return the left physical equality endpoint.
+    pub fn left(&self) -> &ComposedJoinColumn {
+        &self.left
+    }
+
+    /// Return the right physical equality endpoint.
+    pub fn right(&self) -> &ComposedJoinColumn {
+        &self.right
+    }
+
+    /// Return the join kind that introduced the equality.
+    pub fn join_kind(&self) -> JoinKind {
+        self.join_kind
+    }
+
+    /// Return the transformation layer where this equality originated.
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
+}
+
+fn composed_join_equality_cmp(
+    left: &ComposedJoinEquality,
+    right: &ComposedJoinEquality,
+) -> std::cmp::Ordering {
+    (
+        left.origin_layer_id(),
+        left.join_kind().as_str(),
+        left.left(),
+        left.right(),
+    )
+        .cmp(&(
+            right.origin_layer_id(),
+            right.join_kind().as_str(),
+            right.left(),
+            right.right(),
+        ))
+}
+
 /// Successfully composed transitive semantics for a transformation layer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedComposedSemantics {
     dependencies: Vec<String>,
     column_domains: Vec<ColumnDomain>,
+    join_equalities: Vec<ComposedJoinEquality>,
     condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
@@ -452,6 +557,11 @@ impl ResolvedComposedSemantics {
     /// Return value domains mapped back to physical source columns.
     pub fn column_domains(&self) -> &[ColumnDomain] {
         &self.column_domains
+    }
+
+    /// Return physical join equalities required by the composed row-condition contract.
+    pub fn join_equalities(&self) -> &[ComposedJoinEquality] {
+        &self.join_equalities
     }
 
     /// Return transitive row-condition exactness for this resolved layer.
