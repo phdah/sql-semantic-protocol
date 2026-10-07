@@ -43,6 +43,13 @@
       "items": {
         "$ref": "#/$defs/relationConstraintSet"
       }
+    },
+    "constraint_diagnostics": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/constraintDiagnostic"
+      }
     }
   },
   "$defs": {

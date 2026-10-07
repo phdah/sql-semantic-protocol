@@ -281,6 +281,7 @@ pub struct DbtManifest {
     resources: BTreeMap<String, DbtResource>,
     catalog_relations: Vec<String>,
     relation_constraints: Vec<RelationConstraintSet>,
+    constraint_diagnostics: Vec<ConstraintDiagnostic>,
 }
 
 impl DbtManifest {
@@ -305,6 +306,11 @@ impl DbtManifest {
     /// Return canonical key constraints declared by dbt metadata and generic tests.
     pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
         &self.relation_constraints
+    }
+
+    /// Return dbt constraint diagnostics that cannot be scoped to one canonical relation.
+    pub fn constraint_diagnostics(&self) -> &[ConstraintDiagnostic] {
+        &self.constraint_diagnostics
     }
 }
 
@@ -873,7 +879,8 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
     }
 
     let models = topologically_order_models(models)?;
-    let relation_constraints = parse_manifest_relation_constraints(nodes, sources, &resources)?;
+    let (relation_constraints, constraint_diagnostics) =
+        parse_manifest_relation_constraints(nodes, sources, &resources)?;
     let mut catalog_relations = resources
         .values()
         .filter_map(|resource| resource.relation_name.as_ref())
@@ -891,6 +898,7 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
         resources,
         catalog_relations,
         relation_constraints,
+        constraint_diagnostics,
     })
 }
 
@@ -1034,6 +1042,7 @@ fn analyze_dbt_with_catalog(
         resolved_constraints.push(resolved);
     }
     bundle.enrich_relation_constraints(&resolved_constraints);
+    bundle.enrich_constraint_diagnostics(manifest.constraint_diagnostics());
     Ok(bundle)
 }
 
@@ -1444,8 +1453,9 @@ fn parse_manifest_relation_constraints(
     nodes: &Map<String, Value>,
     sources: Option<&Map<String, Value>>,
     resources: &BTreeMap<String, DbtResource>,
-) -> Result<Vec<RelationConstraintSet>, DbtManifestError> {
+) -> Result<(Vec<RelationConstraintSet>, Vec<ConstraintDiagnostic>), DbtManifestError> {
     let mut result = Vec::new();
+    let mut unscoped_diagnostics = Vec::new();
 
     for (resource_id, value) in nodes
         .iter()
@@ -1465,6 +1475,7 @@ fn parse_manifest_relation_constraints(
         };
         let object = as_object(value, &path)?;
         let mut constraints = Vec::new();
+        let mut relation_diagnostics = Vec::new();
 
         parse_dbt_constraint_array(
             object.get("constraints"),
@@ -1474,6 +1485,7 @@ fn parse_manifest_relation_constraints(
             None,
             resources,
             &mut constraints,
+            &mut relation_diagnostics,
         )?;
 
         if let Some(columns) = optional_object(object, "columns", &format!("{path}.columns"))? {
@@ -1490,17 +1502,21 @@ fn parse_manifest_relation_constraints(
                     Some(&column_name),
                     resources,
                     &mut constraints,
+                    &mut relation_diagnostics,
                 )?;
             }
         }
 
-        if !constraints.is_empty() {
-            let set = RelationConstraintSet::new(relation, constraints).map_err(|error| {
+        if !constraints.is_empty() || !relation_diagnostics.is_empty() {
+            let mut set = RelationConstraintSet::new(relation, constraints).map_err(|error| {
                 DbtManifestError::RelationMetadata {
                     resource_id: resource_id.clone(),
                     message: error.to_string(),
                 }
             })?;
+            for diagnostic in relation_diagnostics {
+                set.add_diagnostic(diagnostic);
+            }
             merge_relation_constraint_sets(&mut result, &[set]);
         }
     }
@@ -1511,9 +1527,35 @@ fn parse_manifest_relation_constraints(
         if required_string(object, "resource_type", &format!("{path}.resource_type"))? != "test" {
             continue;
         }
+        let dependencies = dependency_ids(object, &path)?;
+        let explicit_attached_node =
+            optional_string(object, "attached_node", &format!("{path}.attached_node"))?
+                .filter(|node| !node.trim().is_empty());
+
         let Some(test_metadata) =
             optional_object(object, "test_metadata", &format!("{path}.test_metadata"))?
         else {
+            let attached_node = explicit_attached_node
+                .clone()
+                .or_else(|| (dependencies.len() == 1).then(|| dependencies[0].clone()));
+            let local_relation = attached_node.as_deref().and_then(|node| {
+                resources
+                    .get(node)
+                    .and_then(|resource| resource.relation_name.as_deref())
+                    .filter(|relation| !relation.trim().is_empty())
+            });
+            record_constraint_diagnostic(
+                &mut result,
+                &mut unscoped_diagnostics,
+                local_relation,
+                test_id,
+                ConstraintDiagnostic::new(
+                    "unsupported_dbt_singular_test",
+                    format!(
+                        "dbt singular test '{test_id}' has no generic test_metadata and cannot be represented as a canonical constraint"
+                    ),
+                ),
+            )?;
             continue;
         };
         let test_name =
@@ -1531,14 +1573,10 @@ fn parse_manifest_relation_constraints(
             "unique" | "relationships" | "not_null" | "accepted_values"
         );
 
-        let dependencies = dependency_ids(object, &path)?;
-        let attached_node =
-            optional_string(object, "attached_node", &format!("{path}.attached_node"))?
-                .filter(|node| !node.trim().is_empty())
-                .or_else(|| {
-                    (test_name != "relationships" && dependencies.len() == 1)
-                        .then(|| dependencies[0].clone())
-                });
+        let attached_node = explicit_attached_node.clone().or_else(|| {
+            (test_name != "relationships" && dependencies.len() == 1)
+                .then(|| dependencies[0].clone())
+        });
         let local_relation = attached_node.as_deref().and_then(|node| {
             resources
                 .get(node)
@@ -1547,15 +1585,12 @@ fn parse_manifest_relation_constraints(
         });
 
         if !is_builtin_namespace || !is_supported_test {
-            if let Some(relation) = local_relation {
-                let mut set =
-                    RelationConstraintSet::new(relation, Vec::new()).map_err(|error| {
-                        DbtManifestError::RelationMetadata {
-                            resource_id: test_id.clone(),
-                            message: error.to_string(),
-                        }
-                    })?;
-                set.add_diagnostic(ConstraintDiagnostic::new(
+            record_constraint_diagnostic(
+                &mut result,
+                &mut unscoped_diagnostics,
+                local_relation,
+                test_id,
+                ConstraintDiagnostic::new(
                     "unsupported_dbt_test",
                     format!(
                         "dbt test '{test_id}' uses unsupported test kind '{}{}'",
@@ -1566,9 +1601,8 @@ fn parse_manifest_relation_constraints(
                             .unwrap_or_default(),
                         test_name
                     ),
-                ));
-                merge_relation_constraint_sets(&mut result, &[set]);
-            }
+                ),
+            )?;
             continue;
         }
 
@@ -1595,6 +1629,25 @@ fn parse_manifest_relation_constraints(
             Some(value) => as_object(value, &format!("{path}.test_metadata.kwargs.arguments"))?,
             None => kwargs,
         };
+
+        let unsupported_config = unsupported_dbt_test_config_keys(object, &path)?;
+        if !unsupported_config.is_empty() {
+            record_constraint_diagnostic(
+                &mut result,
+                &mut unscoped_diagnostics,
+                Some(local_relation),
+                test_id,
+                ConstraintDiagnostic::new(
+                    "unsupported_dbt_test_config",
+                    format!(
+                        "dbt test '{test_id}' uses unsupported config that changes constraint semantics: {}",
+                        unsupported_config.join(", ")
+                    ),
+                ),
+            )?;
+            continue;
+        }
+
         let column_name = optional_string(object, "column_name", &format!("{path}.column_name"))?
             .or_else(|| {
                 kwargs
@@ -1716,7 +1769,85 @@ fn parse_manifest_relation_constraints(
         merge_relation_constraint_sets(&mut result, &[set]);
     }
 
-    Ok(result)
+    unscoped_diagnostics.sort();
+    unscoped_diagnostics.dedup();
+    Ok((result, unscoped_diagnostics))
+}
+
+fn record_constraint_diagnostic(
+    result: &mut Vec<RelationConstraintSet>,
+    unscoped: &mut Vec<ConstraintDiagnostic>,
+    relation: Option<&str>,
+    resource_id: &str,
+    diagnostic: ConstraintDiagnostic,
+) -> Result<(), DbtManifestError> {
+    match relation {
+        Some(relation) => {
+            let mut set = RelationConstraintSet::new(relation, Vec::new()).map_err(|error| {
+                DbtManifestError::RelationMetadata {
+                    resource_id: resource_id.to_string(),
+                    message: error.to_string(),
+                }
+            })?;
+            set.add_diagnostic(diagnostic);
+            merge_relation_constraint_sets(result, &[set]);
+        }
+        None => unscoped.push(diagnostic),
+    }
+    Ok(())
+}
+
+fn unsupported_dbt_test_config_keys(
+    object: &Map<String, Value>,
+    path: &str,
+) -> Result<Vec<&'static str>, DbtManifestError> {
+    let Some(config) = optional_object(object, "config", &format!("{path}.config"))? else {
+        return Ok(Vec::new());
+    };
+
+    let mut keys = Vec::new();
+    if dbt_test_config_string_is_non_default(config, "where", None, false) {
+        keys.push("where");
+    }
+    if dbt_test_config_string_is_non_default(config, "severity", Some("error"), true) {
+        keys.push("severity");
+    }
+    if dbt_test_config_string_is_non_default(config, "warn_if", Some("!= 0"), false) {
+        keys.push("warn_if");
+    }
+    if dbt_test_config_string_is_non_default(config, "error_if", Some("!= 0"), false) {
+        keys.push("error_if");
+    }
+    if config.get("limit").is_some_and(|value| !value.is_null()) {
+        keys.push("limit");
+    }
+    if dbt_test_config_string_is_non_default(config, "fail_calc", Some("count(*)"), false) {
+        keys.push("fail_calc");
+    }
+    Ok(keys)
+}
+
+fn dbt_test_config_string_is_non_default(
+    config: &Map<String, Value>,
+    key: &str,
+    default: Option<&str>,
+    case_insensitive: bool,
+) -> bool {
+    let Some(value) = config.get(key) else {
+        return false;
+    };
+    if value.is_null() {
+        return false;
+    }
+    let Some(value) = value.as_str() else {
+        return true;
+    };
+    let value = value.trim();
+    match default {
+        None => !value.is_empty(),
+        Some(default) if case_insensitive => !value.eq_ignore_ascii_case(default),
+        Some(default) => value != default,
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1728,6 +1859,7 @@ fn parse_dbt_constraint_array(
     implied_column: Option<&str>,
     resources: &BTreeMap<String, DbtResource>,
     output: &mut Vec<RelationConstraint>,
+    diagnostics: &mut Vec<ConstraintDiagnostic>,
 ) -> Result<(), DbtManifestError> {
     let Some(value) = value else {
         return Ok(());
@@ -1747,6 +1879,17 @@ fn parse_dbt_constraint_array(
             constraint_type,
             "primary_key" | "unique" | "foreign_key" | "not_null"
         ) {
+            let code = if constraint_type == "check" {
+                "unsupported_check_constraint"
+            } else {
+                "unsupported_dbt_constraint"
+            };
+            diagnostics.push(ConstraintDiagnostic::new(
+                code,
+                format!(
+                    "dbt constraint '{resource_id}:{constraint_path}' uses unsupported constraint type '{constraint_type}'"
+                ),
+            ));
             continue;
         }
 
