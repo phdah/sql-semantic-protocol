@@ -72,6 +72,25 @@ the canonical `relation_constraints` representation. ODCS declarations use
 references are resolved only from contracts explicitly supplied to the adapter; the adapter does
 not perform network or filesystem fetching.
 
+## Typed predicate-domain literals
+
+When typed source-schema evidence is available, predicate-domain literals are checked against the
+canonical datatype before a domain can participate in the exact row-condition contract. Exact
+boolean, integer, date, time, and interval literals retain their canonical literal type; integer
+literals used with decimal columns normalize to decimal literals. Integer bounds are range-checked
+against declared signedness and bit width. Lossy numeric coercions are never treated as exact.
+
+Comparison semantics are conservative where warehouse settings are not represented. String domains
+are residual because collation, case sensitivity, and fixed-width CHAR padding can change equality
+or ordering. Floating-point domains are residual because NaN and signed zero are not represented.
+Timestamp domains are residual because timezone variants normalize to one canonical datatype without
+enough literal timezone semantics. Binary, document, collection, geometry, search, vendor-defined,
+and otherwise opaque types remain residual until the contract defines exact scalar comparisons.
+
+Lexical strings are never implicitly converted to typed DATE, TIME, TIMESTAMP, or numeric domains.
+Without schema evidence, lexical-literal domain derivation is preserved without claiming
+datatype-aware coercion semantics.
+
 ## Relation constraints
 
 Optional `relation_constraints` metadata records parser-independent relation and column
