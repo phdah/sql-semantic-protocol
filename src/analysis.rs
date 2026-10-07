@@ -1076,16 +1076,12 @@ fn remap_predicate_for_domain_derivation(
             comparison.operator(),
             remap_expression_for_domain_derivation(comparison.right(), scope),
         )),
-        Predicate::And(logical) => remap_logical_predicate_for_domain_derivation(
-            logical,
-            scope,
-            Predicate::And,
-        ),
-        Predicate::Or(logical) => remap_logical_predicate_for_domain_derivation(
-            logical,
-            scope,
-            Predicate::Or,
-        ),
+        Predicate::And(logical) => {
+            remap_logical_predicate_for_domain_derivation(logical, scope, Predicate::And)
+        }
+        Predicate::Or(logical) => {
+            remap_logical_predicate_for_domain_derivation(logical, scope, Predicate::Or)
+        }
         Predicate::Not(not) => Predicate::Not(NotPredicate::new(
             remap_predicate_for_domain_derivation(not.operand(), scope),
         )),
@@ -1114,9 +1110,9 @@ fn remap_predicate_for_domain_derivation(
             remap_expression_for_domain_derivation(predicate.upper(), scope),
             predicate.negated(),
         )),
-        Predicate::BooleanExpression(expression) => Predicate::BooleanExpression(
-            remap_expression_for_domain_derivation(expression, scope),
-        ),
+        Predicate::BooleanExpression(expression) => {
+            Predicate::BooleanExpression(remap_expression_for_domain_derivation(expression, scope))
+        }
         Predicate::Unknown(semantic) => Predicate::Unknown(semantic.clone()),
         Predicate::Unsupported(semantic) => Predicate::Unsupported(semantic.clone()),
     }
@@ -1243,12 +1239,8 @@ fn diagnose_local_query_predicates(
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
             let mut output_diagnostics = Vec::new();
-            let output = analyze_query_output(
-                &cte.query,
-                &local_outputs,
-                &mut output_diagnostics,
-                None,
-            );
+            let output =
+                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
             local_outputs.insert(cte.alias.name.to_string(), output);
         }
     }
@@ -1401,7 +1393,9 @@ fn unresolved_domain_column_reason(
     );
     resolve_plain_source_column(&reference, scope)
         .err()
-        .map(|reason| format!("source column cannot be mapped safely to physical lineage: {reason}"))
+        .map(|reason| {
+            format!("source column cannot be mapped safely to physical lineage: {reason}")
+        })
 }
 
 fn analyze_query_relations(
