@@ -391,15 +391,16 @@ fn analyze_merge_clause(
     });
 
     let branch_predicate = merge_branch_predicate(match_kind, match_condition, predicate.as_ref());
-    let branch_domains = branch_predicate
-        .as_ref()
-        .map_or_else(Vec::new, |predicate| {
-            let domains = derive_column_domains(
-                &Predicates::new(Some(predicate.clone()), None, None),
-                sources,
-            );
-            refine_column_domains_from_equalities(domains, predicate, sources)
-        });
+    let mut branch_domains = predicate.as_ref().map_or_else(Vec::new, |predicate| {
+        derive_column_domains(
+            &Predicates::new(Some(predicate.clone()), None, None),
+            sources,
+        )
+    });
+    if let Some(branch_predicate) = &branch_predicate {
+        branch_domains =
+            refine_column_domains_from_equalities(branch_domains, branch_predicate, sources);
+    }
 
     let action = match &clause.action {
         SqlMergeAction::Delete => ProtocolMergeAction::Delete,
