@@ -159,7 +159,6 @@ fn dbt_constraint_metadata_survives_bundle_emission() {
         .contains("\"enforcement\":\"enforced\""));
 }
 
-
 #[test]
 fn dbt_relationships_self_reference_resolves_to_attached_relation() {
     let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
@@ -293,11 +292,9 @@ fn dbt_foreign_key_with_unresolved_target_fails_explicitly() {
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
     let error = parse_dbt_manifest(&json).expect_err("unresolved target should fail");
 
-    assert!(
-        error
-            .to_string()
-            .contains("does not resolve to a canonical dbt relation")
-    );
+    assert!(error
+        .to_string()
+        .contains("does not resolve to a canonical dbt relation"));
     assert!(error.to_string().contains("ref('missing_orders')"));
 }
 
@@ -332,10 +329,8 @@ fn dbt_relationships_with_unresolved_target_fails_explicitly() {
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
     let error = parse_dbt_manifest(&json).expect_err("unresolved target should fail");
 
-    assert!(
-        error
-            .to_string()
-            .contains("does not resolve to a canonical dbt relation")
-    );
+    assert!(error
+        .to_string()
+        .contains("does not resolve to a canonical dbt relation"));
     assert!(error.to_string().contains("ref('missing_orders')"));
 }
