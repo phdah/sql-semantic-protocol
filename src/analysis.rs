@@ -2157,11 +2157,21 @@ fn analyze_local_query_condition_exactness(
     query: &SqlQuery,
     local_outputs: &LocalOutputMap,
     relation_analysis: &RelationAnalysis,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> ConditionExactness {
     let mut diagnostics = Vec::new();
-    let predicates =
-        analyze_query_predicates_with_local_outputs(query, local_outputs, &mut diagnostics);
-    diagnose_local_set_expr_predicates(query.body.as_ref(), local_outputs, &mut diagnostics);
+    let predicates = analyze_query_predicates_with_local_outputs(
+        query,
+        local_outputs,
+        &mut diagnostics,
+        metadata,
+    );
+    diagnose_local_set_expr_predicates(
+        query.body.as_ref(),
+        local_outputs,
+        &mut diagnostics,
+        metadata,
+    );
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
     }
@@ -2181,17 +2191,18 @@ fn analyze_query_predicates_with_local_outputs(
     query: &SqlQuery,
     local_outputs: &LocalOutputMap,
     diagnostics: &mut Vec<Diagnostic>,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> Predicates {
     match query.body.as_ref() {
         SetExpr::Select(select) => {
             let mut scope_diagnostics = Vec::new();
             let scope =
-                build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
+                build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, metadata);
             extend_unique_diagnostics(diagnostics, &scope_diagnostics);
             analyze_select_predicates_with_scope(select, &scope, diagnostics)
         }
         SetExpr::Query(query) => {
-            analyze_query_predicates_with_local_outputs(query, local_outputs, diagnostics)
+            analyze_query_predicates_with_local_outputs(query, local_outputs, diagnostics, metadata)
         }
         SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
         _ => Predicates::new(None, None, None),
@@ -2253,8 +2264,13 @@ fn analyze_query_relations_with_locals(
                 metadata,
             );
             let local_exactness =
-                analyze_local_query_condition_exactness(&cte.query, &local_outputs, &nested)
-                    .with_scope(format!("cte:{name}"));
+                analyze_local_query_condition_exactness(
+                    &cte.query,
+                    &local_outputs,
+                    &nested,
+                    metadata,
+                )
+                .with_scope(format!("cte:{name}"));
             nested
                 .residual_conditions
                 .extend(local_exactness.residual_conditions().iter().cloned());
@@ -2680,8 +2696,13 @@ fn analyze_table_factor_with_locals(
                 |alias| format!("derived:{alias}"),
             );
             let local_exactness =
-                analyze_local_query_condition_exactness(subquery, local_outputs, &nested)
-                    .with_scope(scope);
+                analyze_local_query_condition_exactness(
+                    subquery,
+                    local_outputs,
+                    &nested,
+                    metadata,
+                )
+                .with_scope(scope);
             nested
                 .residual_conditions
                 .extend(local_exactness.residual_conditions().iter().cloned());
