@@ -454,10 +454,10 @@ impl ResolvedComposedSemantics {
         &self.column_domains
     }
 
-    /// Return row-condition exactness for this resolved layer.
+    /// Return transitive row-condition exactness for this resolved layer.
     ///
-    /// TASK-44 will compose residual conditions across ancestor layers. Until then this carries
-    /// the exactness contract of the layer's own analyzed query.
+    /// Residual conditions include every referenced local scope and resolved ancestor layer,
+    /// with origin metadata identifying where each residual was introduced.
     pub fn condition_exactness(&self) -> &ConditionExactness {
         &self.condition_exactness
     }
