@@ -1,10 +1,10 @@
 ---
 id: TASK-43
 title: Define and emit an exactness contract for row conditions
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 18:11'
-updated_date: '2026-10-07 18:11'
+updated_date: '2026-10-07'
 labels: []
 milestone: m-2
 dependencies: []
@@ -43,14 +43,14 @@ This task covers single-statement scopes (top-level WHERE, inner-join ON, HAVING
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Protocol docs define the exactness guarantee, the row-set shaping vs residual operator classification, and the allow-list of exactly represented condition shapes
-- [ ] #2 Every query scope exposes an exactness status and a deterministic list of residual conditions, each with a stable reason code, its clause (WHERE, ON, HAVING, QUALIFY, set operation, row-set operator), and enough identity to locate it
-- [ ] #3 Cross-column disjunctions, mixed AND/OR trees that are not reducible to independent per-column domains, NOT over non-invertible operands, column-vs-column comparisons outside equi-joins, computed-expression comparisons, LIKE/ILIKE/SIMILAR/regex, CAST and other functions in conditions, and subquery predicates are residual
-- [ ] #4 HAVING, QUALIFY, LIMIT, OFFSET, FETCH, DISTINCT ON, TABLESAMPLE, EXCEPT, INTERSECT, and UNION branches with differing constraints are residual; ORDER BY, plain projection, GROUP BY without HAVING, and DISTINCT are not
-- [ ] #5 Non-equality conditions in an inner-join ON clause are carried as column domains when they reduce safely, otherwise residual; outer-join ON clauses are residual
-- [ ] #6 A query that reads the same physical relation through more than one instance (self-join, repeated derived table) is residual unless domains and equalities identify the instance they apply to
-- [ ] #7 Every statement-level and nested-subquery diagnostic either maps to a residual condition or is on a documented list of diagnostics that cannot affect row membership
-- [ ] #8 Each reproduction listed in the description has a test asserting it is residual, and each allow-listed shape has a test asserting exactness with its domain
-- [ ] #9 JSON Schema, protocol docs, README, and public API docs describe the exactness status and residual conditions
-- [ ] #10 Protocol docs define NULL membership for every domain kind (unbounded, ranges, include and exclude sets, empty, unknown), and tests assert it for IS NULL, IS NOT NULL, <>, NOT IN, IS DISTINCT FROM, and ranges
+- [x] #1 Protocol docs define the exactness guarantee, the row-set shaping vs residual operator classification, and the allow-list of exactly represented condition shapes
+- [x] #2 Every query scope exposes an exactness status and a deterministic list of residual conditions, each with a stable reason code, its clause (WHERE, ON, HAVING, QUALIFY, set operation, row-set operator), and enough identity to locate it
+- [x] #3 Cross-column disjunctions, mixed AND/OR trees that are not reducible to independent per-column domains, NOT over non-invertible operands, column-vs-column comparisons outside equi-joins, computed-expression comparisons, LIKE/ILIKE/SIMILAR/regex, CAST and other functions in conditions, and subquery predicates are residual
+- [x] #4 HAVING, QUALIFY, LIMIT, OFFSET, FETCH, DISTINCT ON, TABLESAMPLE, EXCEPT, INTERSECT, and UNION branches with differing constraints are residual; ORDER BY, plain projection, GROUP BY without HAVING, and DISTINCT are not
+- [x] #5 Non-equality conditions in an inner-join ON clause are carried as column domains when they reduce safely, otherwise residual; outer-join ON clauses are residual
+- [x] #6 A query that reads the same physical relation through more than one instance (self-join, repeated derived table) is residual unless domains and equalities identify the instance they apply to
+- [x] #7 Every statement-level and nested-subquery diagnostic either maps to a residual condition or is on a documented list of diagnostics that cannot affect row membership
+- [x] #8 Each reproduction listed in the description has a test asserting it is residual, and each allow-listed shape has a test asserting exactness with its domain
+- [x] #9 JSON Schema, protocol docs, README, and public API docs describe the exactness status and residual conditions
+- [x] #10 Protocol docs define NULL membership for every domain kind (unbounded, ranges, include and exclude sets, empty, unknown), and tests assert it for IS NULL, IS NOT NULL, <>, NOT IN, IS DISTINCT FROM, and ranges
 <!-- AC:END -->
