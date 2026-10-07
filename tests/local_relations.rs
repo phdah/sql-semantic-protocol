@@ -331,8 +331,7 @@ fn reducible_local_predicates_do_not_emit_unresolved_diagnostics() {
 
 #[test]
 fn local_predicate_diagnostics_are_shared_across_supported_dialects() {
-    let sql =
-        "WITH x AS (SELECT a FROM t WHERE a > 5 OR a < 0) SELECT a FROM x";
+    let sql = "WITH x AS (SELECT a FROM t WHERE a > 5 OR a < 0) SELECT a FROM x";
 
     for dialect_name in DIALECTS {
         let dialect = dialect_from_str(dialect_name)
