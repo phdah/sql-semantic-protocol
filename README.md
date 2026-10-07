@@ -120,6 +120,30 @@ and accepted-values constraints. Evidence uses `external_metadata` provenance wi
 enforcement. Same-contract and explicitly supplied cross-contract foreign-key references resolve
 deterministically; missing, ambiguous, or unsupported references fail rather than being guessed.
 
+
+### Typed predicate-domain literals
+
+When typed source-schema evidence is available, predicate-domain literals are checked against the
+canonical datatype before a domain can participate in the exact row-condition contract. Exact
+boolean, integer, date, time, and interval literals retain their canonical literal type; integer
+literals used with decimal columns normalize to decimal literals. Integer bounds are range-checked
+against declared signedness and bit width. Lossy numeric coercions are never treated as exact.
+
+Comparison semantics are deliberately conservative where warehouse settings are not represented by
+the protocol. String domains are residual because collation, case sensitivity, and fixed-width CHAR
+padding can change equality or ordering. Floating-point domains are residual because NaN and signed
+zero are not represented. Timestamp domains are residual because the canonical datatype currently
+normalizes timezone variants without preserving enough literal timezone semantics. Decimal values
+preserve exact numeric text; declared precision and scale describe the source type, but the protocol
+does not round predicate literals to fit them. Binary, document, collection, geometry, search,
+vendor-defined, and otherwise opaque types remain residual unless a future contract defines exact
+scalar comparison semantics for them.
+
+A lexical string is never implicitly converted to DATE, TIME, TIMESTAMP, numeric, or another typed
+domain. If SQL parsing produced a typed DATE/TIME/INTERVAL literal, that literal may be exact for the
+matching canonical family. Without schema evidence, existing lexical-literal domain derivation is
+preserved, but it does not claim datatype-aware coercion semantics.
+
 ## Relation constraint metadata
 
 Relation constraints are canonical and source-independent: any supported adapter that can prove an equivalent fact must emit the same canonical constraint. Direct SQL DDL, dbt metadata/tests, and future external metadata adapters therefore converge on one representation rather than owning separate semantics.
