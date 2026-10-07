@@ -698,26 +698,66 @@ fn analyze_query_condition_exactness(
     }
 
     for diagnostic in diagnostics {
-        let clause = match diagnostic.code() {
-            "unsupported_natural_join_condition"
-            | "unsupported_join_constraint"
-            | "unsupported_join_operator"
-            | "unresolved_join_column_lineage" => Some(ConditionClause::JoinOn),
-            "unsupported_table_factor" | "unsupported_lateral_view" => {
-                Some(ConditionClause::RowSetOperator)
-            }
-            _ => None,
-        };
-        if let Some(clause) = clause {
-            residuals.push(ResidualCondition::new(
-                ResidualConditionReason::AnalysisDiagnostic,
-                clause,
-                format!("diagnostic:{}", diagnostic.code()),
-            ));
+        if diagnostic_is_non_membership_or_already_classified(diagnostic.code()) {
+            continue;
         }
+
+        let clause = if diagnostic.code().contains("join") {
+            ConditionClause::JoinOn
+        } else if diagnostic.code().contains("predicate")
+            || diagnostic.code() == "unsupported_query_body"
+        {
+            ConditionClause::Where
+        } else {
+            ConditionClause::RowSetOperator
+        };
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::AnalysisDiagnostic,
+            clause,
+            format!("diagnostic:{}", diagnostic.code()),
+        ));
     }
 
     ConditionExactness::from_residuals(residuals)
+}
+
+fn diagnostic_is_non_membership_or_already_classified(code: &str) -> bool {
+    matches!(
+        code,
+        "unsupported_order_by"
+            | "unsupported_cluster_by"
+            | "unsupported_distribute_by"
+            | "unsupported_sort_by"
+            | "unsupported_exclude"
+            | "unsupported_select_into"
+            | "unsupported_value_table_mode"
+            | "ambiguous_output_lineage"
+            | "unresolved_output_lineage"
+            | "unresolved_wildcard"
+            | "unsupported_expression"
+            | "unsupported_function"
+            | "ambiguous_named_window"
+            | "cyclic_named_window"
+            | "unresolved_named_window"
+            | "unsupported_window_order_option"
+            | "unsupported_window_override"
+            | "unsupported_group_by_modifier"
+            | "unsupported_lock"
+            | "unsupported_for_clause"
+            | "unsupported_settings"
+            | "unsupported_format_clause"
+            | "unsupported_merge_output"
+            | "unsupported_merge_insert_row"
+            | "unsupported_queryless_create_table"
+            | "unsupported_top"
+            | "unsupported_prewhere"
+            | "unsupported_connect_by"
+            | "unsupported_limit"
+            | "unsupported_fetch"
+            | "set_operation_arity_mismatch"
+            | "unresolved_set_operation_output"
+            | "unsupported_set_operation_alignment"
+    )
 }
 
 fn collect_set_expr_exactness_residuals(
