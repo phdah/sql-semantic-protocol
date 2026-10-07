@@ -1,10 +1,10 @@
 ---
 id: TASK-46
 title: Type domain literals against source column datatypes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-07 18:11'
-updated_date: '2026-10-07 18:11'
+updated_date: '2026-10-08'
 labels: []
 milestone: m-2
 dependencies:
