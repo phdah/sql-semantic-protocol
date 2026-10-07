@@ -1,9 +1,10 @@
 ---
 id: TASK-42
 title: Define NULL and typing semantics for canonical constraints
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-07 09:27'
+updated_date: '2026-10-07'
 labels: []
 milestone: m-2
 dependencies: []
