@@ -79,12 +79,10 @@ fn unused_ctes_do_not_contribute_semantics_or_diagnostics() {
     assert_eq!(query.dependencies(), &["t".to_string()]);
     assert!(query.joins().is_empty());
     assert!(query.condition_exactness().is_exact());
-    assert!(
-        query
-            .diagnostics()
-            .iter()
-            .all(|diagnostic| diagnostic.code() != "unresolved_wildcard")
-    );
+    assert!(query
+        .diagnostics()
+        .iter()
+        .all(|diagnostic| diagnostic.code() != "unresolved_wildcard"));
 }
 
 #[test]
@@ -96,12 +94,8 @@ fn safe_local_relations_match_their_inlined_form() {
         &dialect,
     )
     .expect("local query should analyze");
-    let inlined = analyze_sql(
-        "SELECT a FROM t WHERE a > 3 AND a < 5",
-        "generic",
-        &dialect,
-    )
-    .expect("inlined query should analyze");
+    let inlined = analyze_sql("SELECT a FROM t WHERE a > 3 AND a < 5", "generic", &dialect)
+        .expect("inlined query should analyze");
 
     let local = first_query(&local);
     let inlined = first_query(&inlined);
@@ -117,9 +111,7 @@ fn composed_exactness_includes_upstream_layer_origins() {
     let dialect = GenericDialect {};
     let bundle = analyze_inputs(
         &[
-            SqlInput::inline(
-                "CREATE VIEW stage AS SELECT a FROM t WHERE a = 1 OR b = 2",
-            ),
+            SqlInput::inline("CREATE VIEW stage AS SELECT a FROM t WHERE a = 1 OR b = 2"),
             SqlInput::inline("SELECT a FROM stage"),
         ],
         "generic",
