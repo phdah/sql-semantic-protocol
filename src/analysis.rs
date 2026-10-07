@@ -1919,12 +1919,7 @@ fn diagnose_local_query_predicates(
         }
     }
 
-    diagnose_local_set_expr_predicates(
-        query.body.as_ref(),
-        &local_outputs,
-        diagnostics,
-        metadata,
-    );
+    diagnose_local_set_expr_predicates(query.body.as_ref(), &local_outputs, diagnostics, metadata);
 }
 
 fn diagnose_local_set_expr_predicates(
@@ -2523,15 +2518,14 @@ fn analyze_table_with_joins(
     );
 
     for join in &source.joins {
-        let right =
-            register_table_factor(
-                &join.relation,
-                scope,
-                diagnostics,
-                derived_index,
-                analysis,
-                metadata,
-            );
+        let right = register_table_factor(
+            &join.relation,
+            scope,
+            diagnostics,
+            derived_index,
+            analysis,
+            metadata,
+        );
 
         if let (Some(left_ref), Some(right_ref)) = (left.as_ref(), right.as_ref()) {
             analysis.joins.push(analyze_join(
@@ -2976,8 +2970,13 @@ fn collect_expression_dependencies_with_windows(
                 derived_index,
                 dependencies,
             );
-            let nested =
-                analyze_query_relations(subquery, local_relations, diagnostics, derived_index, None);
+            let nested = analyze_query_relations(
+                subquery,
+                local_relations,
+                diagnostics,
+                derived_index,
+                None,
+            );
             dependencies.extend(nested.dependencies);
         }
         Expr::BinaryOp { left, right, .. }
