@@ -641,6 +641,17 @@ impl OutputColumn {
         self
     }
 
+    pub(crate) fn plain_copy_source(&self) -> Option<&LineageSource> {
+        if !matches!(self.expression, Expression::Column(_)) {
+            return None;
+        }
+
+        match self.lineage.as_slice() {
+            [source] => Some(source),
+            _ => None,
+        }
+    }
+
     /// Return the final output column name or unresolved projection label.
     pub fn name(&self) -> &str {
         &self.name
