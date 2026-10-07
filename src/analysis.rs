@@ -39,18 +39,17 @@ use crate::protocol::{
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
     ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness, Diagnostic,
-    DiagnosticArea, DiagnosticSeverity,
-    ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
-    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
-    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
+    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin,
+    JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
     ScalarSubqueryExpression, SetMode, SetOperand, SetOperation, SetOperator, SetQuantifier,
-    SourceRelation, SubquerySemantics, UnaryExpression,
-    UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
-    ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
+    SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
+    WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
+    WindowSpecification, WriteOperation, WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext};
 
@@ -649,7 +648,9 @@ fn analyze_query_condition_exactness(
 
     let mut source_counts = BTreeMap::new();
     for source in sources {
-        *source_counts.entry(source.name().to_string()).or_insert(0usize) += 1;
+        *source_counts
+            .entry(source.name().to_string())
+            .or_insert(0usize) += 1;
     }
     for (source, count) in source_counts {
         if count > 1 {
@@ -819,26 +820,15 @@ fn collect_set_expr_exactness_residuals(
             }
         }
         SetExpr::SetOperation {
-            left,
-            op,
-            right,
-            ..
+            left, op, right, ..
         } => {
             residuals.push(ResidualCondition::new(
                 ResidualConditionReason::SetOperation,
                 ConditionClause::SetOperation,
                 format!("{identity}:{}", analyze_set_operator(*op).as_str()),
             ));
-            collect_set_expr_exactness_residuals(
-                left,
-                &format!("{identity}:left"),
-                residuals,
-            );
-            collect_set_expr_exactness_residuals(
-                right,
-                &format!("{identity}:right"),
-                residuals,
-            );
+            collect_set_expr_exactness_residuals(left, &format!("{identity}:left"), residuals);
+            collect_set_expr_exactness_residuals(right, &format!("{identity}:right"), residuals);
         }
         SetExpr::Values(_)
         | SetExpr::Insert(_)
@@ -903,27 +893,22 @@ fn predicate_residual_reasons(
     allow_join_equality: bool,
 ) -> Vec<ResidualConditionReason> {
     match predicate {
-        Predicate::Comparison(comparison) => {
-            match (comparison.left(), comparison.right()) {
-                (Expression::Column(_), Expression::Literal(_))
-                | (Expression::Literal(_), Expression::Column(_)) => Vec::new(),
-                (Expression::Column(_), Expression::Column(_))
-                    if allow_join_equality && comparison.operator() == ComparisonOperator::Eq =>
-                {
-                    Vec::new()
-                }
-                (Expression::Column(_), Expression::Column(_)) => {
-                    vec![ResidualConditionReason::ColumnComparison]
-                }
-                _ => vec![ResidualConditionReason::ComputedExpression],
+        Predicate::Comparison(comparison) => match (comparison.left(), comparison.right()) {
+            (Expression::Column(_), Expression::Literal(_))
+            | (Expression::Literal(_), Expression::Column(_)) => Vec::new(),
+            (Expression::Column(_), Expression::Column(_))
+                if allow_join_equality && comparison.operator() == ComparisonOperator::Eq =>
+            {
+                Vec::new()
             }
+            (Expression::Column(_), Expression::Column(_)) => {
+                vec![ResidualConditionReason::ColumnComparison]
+            }
+            _ => vec![ResidualConditionReason::ComputedExpression],
+        },
+        Predicate::And(logical) => {
+            collect_logical_residual_reasons(logical, clause, sources, allow_join_equality)
         }
-        Predicate::And(logical) => collect_logical_residual_reasons(
-            logical,
-            clause,
-            sources,
-            allow_join_equality,
-        ),
         Predicate::Or(logical) => {
             if clause == ConditionClause::JoinOn {
                 return vec![ResidualConditionReason::UnsupportedPredicate];
@@ -1499,9 +1484,7 @@ fn derive_inner_join_predicate_domains(
                 sources,
             )
         }
-        Predicate::IsNull(predicate)
-            if matches!(predicate.expression(), Expression::Column(_)) =>
-        {
+        Predicate::IsNull(predicate) if matches!(predicate.expression(), Expression::Column(_)) => {
             derive_column_domains(
                 &Predicates::new(Some(Predicate::IsNull(predicate.clone())), None, None),
                 sources,
