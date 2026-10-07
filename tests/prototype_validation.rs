@@ -62,13 +62,13 @@ fn representative_generic_query_matches_complete_protocol_document() {
                             "kind": "comparison",
                             "left": {
                                 "kind": "column",
-                                "relation": "o",
+                                "relation": "sales.orders",
                                 "name": "customer_id"
                             },
                             "operator": "eq",
                             "right": {
                                 "kind": "column",
-                                "relation": "c",
+                                "relation": "crm.customers",
                                 "name": "id"
                             }
                         }
