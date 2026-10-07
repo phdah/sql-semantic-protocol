@@ -79,6 +79,28 @@ pub enum ProtocolStatement {
     Unsupported(UnsupportedStatement),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct RowConditions {
+    predicates: Box<Predicates>,
+    column_domains: Vec<ColumnDomain>,
+    exactness: ConditionExactness,
+}
+
+impl RowConditions {
+    pub(crate) fn new(
+        predicates: Predicates,
+        mut column_domains: Vec<ColumnDomain>,
+        exactness: ConditionExactness,
+    ) -> Self {
+        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
+        Self {
+            predicates: Box::new(predicates),
+            column_domains,
+            exactness,
+        }
+    }
+}
+
 /// Partially analyzed query semantics.
 ///
 /// Supported CTE and derived-table semantics are resolved through local scopes so physical joins,
@@ -89,9 +111,7 @@ pub struct QueryStatement {
     sources: Vec<SourceRelation>,
     dependencies: Vec<String>,
     joins: Vec<Join>,
-    predicates: Box<Predicates>,
-    column_domains: Vec<ColumnDomain>,
-    condition_exactness: ConditionExactness,
+    row_conditions: RowConditions,
     output: Output,
     aggregation: Option<Box<Aggregation>>,
     set_operation: Option<SetOperation>,
@@ -105,20 +125,15 @@ impl QueryStatement {
         sources: Vec<SourceRelation>,
         dependencies: Vec<String>,
         joins: Vec<Join>,
-        predicates: Predicates,
-        mut column_domains: Vec<ColumnDomain>,
-        condition_exactness: ConditionExactness,
+        row_conditions: RowConditions,
         output: Output,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
-        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
         Self {
             sources,
             dependencies,
             joins,
-            predicates: Box::new(predicates),
-            column_domains,
-            condition_exactness,
+            row_conditions,
             output,
             aggregation: None,
             set_operation: None,
@@ -169,17 +184,17 @@ impl QueryStatement {
 
     /// Return WHERE, HAVING, and QUALIFY semantics known for the query.
     pub fn predicates(&self) -> &Predicates {
-        &self.predicates
+        &self.row_conditions.predicates
     }
 
     /// Return derived source-column value domains in deterministic column order.
     pub fn column_domains(&self) -> &[ColumnDomain] {
-        &self.column_domains
+        &self.row_conditions.column_domains
     }
 
     /// Return whether row-membership conditions are represented exactly by domains and joins.
     pub fn condition_exactness(&self) -> &ConditionExactness {
-        &self.condition_exactness
+        &self.row_conditions.exactness
     }
 
     /// Return final query output columns in SELECT-list order.
@@ -1138,9 +1153,7 @@ pub struct SubquerySemantics {
     correlations: Vec<LineageSource>,
     joins: Vec<Join>,
     output: Output,
-    predicates: Box<Predicates>,
-    column_domains: Vec<ColumnDomain>,
-    condition_exactness: ConditionExactness,
+    row_conditions: RowConditions,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -1150,24 +1163,19 @@ impl SubquerySemantics {
         mut correlations: Vec<LineageSource>,
         joins: Vec<Join>,
         output: Output,
-        predicates: Predicates,
-        mut column_domains: Vec<ColumnDomain>,
-        condition_exactness: ConditionExactness,
+        row_conditions: RowConditions,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
         dependencies.sort();
         dependencies.dedup();
         correlations.sort();
         correlations.dedup();
-        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
         Self {
             dependencies,
             correlations,
             joins,
             output,
-            predicates: Box::new(predicates),
-            column_domains,
-            condition_exactness,
+            row_conditions,
             diagnostics,
         }
     }
@@ -1194,17 +1202,17 @@ impl SubquerySemantics {
 
     /// Return WHERE, HAVING, and QUALIFY semantics inside the nested query.
     pub fn predicates(&self) -> &Predicates {
-        &self.predicates
+        &self.row_conditions.predicates
     }
 
     /// Return source-column domains derived inside the nested query.
     pub fn column_domains(&self) -> &[ColumnDomain] {
-        &self.column_domains
+        &self.row_conditions.column_domains
     }
 
     /// Return row-condition exactness for the nested query scope.
     pub fn condition_exactness(&self) -> &ConditionExactness {
-        &self.condition_exactness
+        &self.row_conditions.exactness
     }
 
     /// Return diagnostics scoped to the nested query.
