@@ -3818,10 +3818,7 @@ fn analyze_output_item(
     }
 }
 
-fn inherit_local_case_expression(
-    expression: Expression,
-    scope: &[OutputRelation],
-) -> Expression {
+fn inherit_local_case_expression(expression: Expression, scope: &[OutputRelation]) -> Expression {
     let Expression::Column(column) = &expression else {
         return expression;
     };
