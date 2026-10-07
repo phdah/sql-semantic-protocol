@@ -2320,7 +2320,6 @@ fn analyze_select_relations(
         &BTreeMap::new(),
         diagnostics,
         derived_index,
-        None,
     )
 }
 
