@@ -984,13 +984,15 @@ fn union_ranges_and_exclusion_set(
         }
 
         let mut comparison_unknown = false;
-        let included_by_range = ranges.iter().any(|range| match literal_in_range(value, range) {
-            Some(included) => included,
-            None => {
-                comparison_unknown = true;
-                false
-            }
-        });
+        let included_by_range = ranges
+            .iter()
+            .any(|range| match literal_in_range(value, range) {
+                Some(included) => included,
+                None => {
+                    comparison_unknown = true;
+                    false
+                }
+            });
 
         if included_by_range {
             continue;
