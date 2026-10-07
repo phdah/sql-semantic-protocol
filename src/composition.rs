@@ -912,17 +912,17 @@ fn resolve_query_column_instance(
         .into_iter()
         .filter(|participant| relation_ref_matches(participant, qualifier))
         .collect::<Vec<_>>();
-    let [participant] = matches.as_slice() else {
-        return Err(());
-    };
-
-    Ok((
-        participant.relation().to_string(),
-        participant
-            .alias()
-            .unwrap_or(participant.relation())
-            .to_string(),
-    ))
+    match matches.as_slice() {
+        [participant] => Ok((
+            participant.relation().to_string(),
+            participant
+                .alias()
+                .unwrap_or(participant.relation())
+                .to_string(),
+        )),
+        [] => Ok((qualifier.to_string(), qualifier.to_string())),
+        _ => Err(()),
+    }
 }
 
 fn resolve_query_source<'a>(
