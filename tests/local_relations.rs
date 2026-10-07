@@ -167,6 +167,188 @@ fn derived_table_filters_propagate_to_physical_columns() {
 }
 
 #[test]
+fn outer_filter_on_plain_derived_column_maps_to_physical_source() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT d.a FROM (SELECT a FROM t) AS d WHERE d.a > 5",
+        "generic",
+        &dialect,
+    )
+    .expect("derived-table outer filter should analyze");
+    let query = first_query(&protocol);
+
+    let domain = query
+        .column_domains()
+        .iter()
+        .find(|domain| domain.column().relation() == Some("t") && domain.column().name() == "a")
+        .expect("outer derived-table filter should constrain t.a");
+    assert_number_range(domain.domain(), Some(("5", false)), None);
+    assert!(query
+        .column_domains()
+        .iter()
+        .all(|domain| domain.column().relation() != Some("subquery")));
+}
+
+#[test]
+fn unsupported_cte_predicates_are_reported_explicitly() {
+    let dialect = GenericDialect {};
+    let cases = [
+        (
+            "exists",
+            "WITH x AS (
+                SELECT a FROM t
+                WHERE EXISTS (SELECT 1 FROM u WHERE u.id = t.a)
+             )
+             SELECT a FROM x",
+        ),
+        (
+            "in subquery",
+            "WITH x AS (
+                SELECT a FROM t
+                WHERE a IN (SELECT b FROM u)
+             )
+             SELECT a FROM x",
+        ),
+        (
+            "logical or",
+            "WITH x AS (
+                SELECT a FROM t
+                WHERE a > 5 OR a < 0
+             )
+             SELECT a FROM x",
+        ),
+        (
+            "aggregate having",
+            "WITH x AS (
+                SELECT a FROM t
+                GROUP BY a
+                HAVING SUM(a) > 5
+             )
+             SELECT a FROM x",
+        ),
+        (
+            "window qualify",
+            "WITH x AS (
+                SELECT a, ROW_NUMBER() OVER (ORDER BY a) AS rn
+                FROM t
+                QUALIFY rn = 1
+             )
+             SELECT a FROM x",
+        ),
+    ];
+
+    for (label, sql) in cases {
+        let protocol = analyze_sql(sql, "generic", &dialect)
+            .unwrap_or_else(|error| panic!("{label} CTE should analyze: {error}"));
+        let query = first_query(&protocol);
+        assert!(
+            query
+                .diagnostics()
+                .iter()
+                .any(|diagnostic| diagnostic.code() == "unresolved_local_predicate"),
+            "{label} CTE must report the local predicate instead of dropping it"
+        );
+    }
+}
+
+#[test]
+fn unsupported_derived_table_predicates_are_reported_explicitly() {
+    let dialect = GenericDialect {};
+    let cases = [
+        (
+            "exists",
+            "SELECT d.a
+             FROM (
+                 SELECT a FROM t
+                 WHERE EXISTS (SELECT 1 FROM u WHERE u.id = t.a)
+             ) AS d",
+        ),
+        (
+            "in subquery",
+            "SELECT d.a
+             FROM (
+                 SELECT a FROM t
+                 WHERE a IN (SELECT b FROM u)
+             ) AS d",
+        ),
+        (
+            "logical or",
+            "SELECT d.a
+             FROM (
+                 SELECT a FROM t
+                 WHERE a > 5 OR a < 0
+             ) AS d",
+        ),
+        (
+            "aggregate having",
+            "SELECT d.a
+             FROM (
+                 SELECT a FROM t
+                 GROUP BY a
+                 HAVING SUM(a) > 5
+             ) AS d",
+        ),
+        (
+            "window qualify",
+            "SELECT d.a
+             FROM (
+                 SELECT a, ROW_NUMBER() OVER (ORDER BY a) AS rn
+                 FROM t
+                 QUALIFY rn = 1
+             ) AS d",
+        ),
+    ];
+
+    for (label, sql) in cases {
+        let protocol = analyze_sql(sql, "generic", &dialect)
+            .unwrap_or_else(|error| panic!("{label} derived table should analyze: {error}"));
+        let query = first_query(&protocol);
+        assert!(
+            query
+                .diagnostics()
+                .iter()
+                .any(|diagnostic| diagnostic.code() == "unresolved_local_predicate"),
+            "{label} derived-table predicate must be reported instead of dropped"
+        );
+    }
+}
+
+#[test]
+fn reducible_local_predicates_do_not_emit_unresolved_diagnostics() {
+    let dialect = GenericDialect {};
+    for sql in [
+        "WITH x AS (SELECT a FROM t WHERE a > 5 AND a < 10) SELECT a FROM x",
+        "SELECT d.a FROM (SELECT a FROM t WHERE a BETWEEN 5 AND 10) AS d",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect)
+            .unwrap_or_else(|error| panic!("reducible local predicate should analyze: {error}"));
+        assert!(first_query(&protocol)
+            .diagnostics()
+            .iter()
+            .all(|diagnostic| diagnostic.code() != "unresolved_local_predicate"));
+    }
+}
+
+#[test]
+fn local_predicate_diagnostics_are_shared_across_supported_dialects() {
+    let sql = "WITH x AS (SELECT a FROM t WHERE a > 5 OR a < 0) SELECT a FROM x";
+
+    for dialect_name in DIALECTS {
+        let dialect = dialect_from_str(dialect_name)
+            .unwrap_or_else(|| panic!("dialect {dialect_name} should resolve"));
+        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
+            .unwrap_or_else(|error| panic!("dialect {dialect_name} should analyze: {error}"));
+        assert!(
+            first_query(&protocol)
+                .diagnostics()
+                .iter()
+                .any(|diagnostic| diagnostic.code() == "unresolved_local_predicate"),
+            "dialect {dialect_name}"
+        );
+    }
+}
+
+#[test]
 fn joins_inside_ctes_resolve_equality_columns_to_physical_sources() {
     let dialect = GenericDialect {};
     let protocol = analyze_sql(

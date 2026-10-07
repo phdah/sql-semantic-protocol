@@ -868,6 +868,7 @@ fn analyze_set_expr_column_domains(
             );
             let predicates =
                 analyze_select_predicates_with_scope(select, &scope, &mut predicate_diagnostics);
+            let domain_predicates = remap_predicates_for_domain_derivation(&predicates, &scope);
             let mut relation_diagnostics = Vec::new();
             let mut derived_index = 0;
             let relations = analyze_select_relations(
@@ -877,7 +878,7 @@ fn analyze_set_expr_column_domains(
                 &mut derived_index,
             );
             let own_domains = remap_local_column_domains(
-                derive_column_domains(&predicates, &relations.sources),
+                derive_column_domains(&domain_predicates, &relations.sources),
                 local_outputs,
             );
             let source_domains = collect_select_local_domains(
@@ -1048,6 +1049,109 @@ fn remap_local_column_domains(
         .collect()
 }
 
+fn remap_predicates_for_domain_derivation(
+    predicates: &Predicates,
+    scope: &[OutputRelation],
+) -> Predicates {
+    Predicates::new(
+        predicates
+            .where_predicate()
+            .map(|predicate| remap_predicate_for_domain_derivation(predicate, scope)),
+        predicates
+            .having_predicate()
+            .map(|predicate| remap_predicate_for_domain_derivation(predicate, scope)),
+        predicates
+            .qualify_predicate()
+            .map(|predicate| remap_predicate_for_domain_derivation(predicate, scope)),
+    )
+}
+
+fn remap_predicate_for_domain_derivation(
+    predicate: &Predicate,
+    scope: &[OutputRelation],
+) -> Predicate {
+    match predicate {
+        Predicate::Comparison(comparison) => Predicate::Comparison(ComparisonPredicate::new(
+            remap_expression_for_domain_derivation(comparison.left(), scope),
+            comparison.operator(),
+            remap_expression_for_domain_derivation(comparison.right(), scope),
+        )),
+        Predicate::And(logical) => {
+            remap_logical_predicate_for_domain_derivation(logical, scope, Predicate::And)
+        }
+        Predicate::Or(logical) => {
+            remap_logical_predicate_for_domain_derivation(logical, scope, Predicate::Or)
+        }
+        Predicate::Not(not) => Predicate::Not(NotPredicate::new(
+            remap_predicate_for_domain_derivation(not.operand(), scope),
+        )),
+        Predicate::IsNull(predicate) => Predicate::IsNull(IsNullPredicate::new(
+            remap_expression_for_domain_derivation(predicate.expression(), scope),
+            predicate.negated(),
+        )),
+        Predicate::In(predicate) => Predicate::In(InPredicate::new(
+            remap_expression_for_domain_derivation(predicate.expression(), scope),
+            predicate
+                .values()
+                .iter()
+                .map(|value| remap_expression_for_domain_derivation(value, scope))
+                .collect(),
+            predicate.negated(),
+        )),
+        Predicate::Exists(predicate) => Predicate::Exists(predicate.clone()),
+        Predicate::InSubquery(predicate) => Predicate::InSubquery(InSubqueryPredicate::new(
+            remap_expression_for_domain_derivation(predicate.expression(), scope),
+            predicate.subquery().clone(),
+            predicate.negated(),
+        )),
+        Predicate::Between(predicate) => Predicate::Between(BetweenPredicate::new(
+            remap_expression_for_domain_derivation(predicate.expression(), scope),
+            remap_expression_for_domain_derivation(predicate.lower(), scope),
+            remap_expression_for_domain_derivation(predicate.upper(), scope),
+            predicate.negated(),
+        )),
+        Predicate::BooleanExpression(expression) => {
+            Predicate::BooleanExpression(remap_expression_for_domain_derivation(expression, scope))
+        }
+        Predicate::Unknown(semantic) => Predicate::Unknown(semantic.clone()),
+        Predicate::Unsupported(semantic) => Predicate::Unsupported(semantic.clone()),
+    }
+}
+
+fn remap_logical_predicate_for_domain_derivation(
+    logical: &LogicalPredicate,
+    scope: &[OutputRelation],
+    constructor: fn(LogicalPredicate) -> Predicate,
+) -> Predicate {
+    match logical.operands() {
+        [left, right] => constructor(LogicalPredicate::pair(
+            remap_predicate_for_domain_derivation(left, scope),
+            remap_predicate_for_domain_derivation(right, scope),
+        )),
+        _ => constructor(logical.clone()),
+    }
+}
+
+fn remap_expression_for_domain_derivation(
+    expression: &Expression,
+    scope: &[OutputRelation],
+) -> Expression {
+    let Expression::Column(column) = expression else {
+        return expression.clone();
+    };
+    let reference = ColumnRef::new(
+        column.relation().map(ToString::to_string),
+        column.name().to_string(),
+    );
+    match resolve_plain_source_column(&reference, scope) {
+        Ok(source) => Expression::Column(ColumnExpression::new(
+            Some(source.relation().to_string()),
+            source.column().to_string(),
+        )),
+        Err(_) => expression.clone(),
+    }
+}
+
 fn intersect_column_domain_sets<const N: usize>(sets: [Vec<ColumnDomain>; N]) -> Vec<ColumnDomain> {
     let mut domains = BTreeMap::<ColumnRef, ValueDomain>::new();
     for column_domain in sets.into_iter().flatten() {
@@ -1125,6 +1229,175 @@ struct AnalyzedRelation {
     joins: Vec<ProtocolJoin>,
 }
 
+fn diagnose_local_query_predicates(
+    query: &SqlQuery,
+    inherited_local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut local_outputs = inherited_local_outputs.clone();
+
+    if let Some(with) = &query.with {
+        for cte in &with.cte_tables {
+            let mut output_diagnostics = Vec::new();
+            let output =
+                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
+            local_outputs.insert(cte.alias.name.to_string(), output);
+        }
+    }
+
+    diagnose_local_set_expr_predicates(query.body.as_ref(), &local_outputs, diagnostics);
+}
+
+fn diagnose_local_set_expr_predicates(
+    expression: &SetExpr,
+    local_outputs: &LocalOutputMap,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    match expression {
+        SetExpr::Select(select) => {
+            let mut predicate_diagnostics = Vec::new();
+            let scope =
+                build_output_scope(select, local_outputs, &[], &mut predicate_diagnostics, None);
+            let predicates =
+                analyze_select_predicates_with_scope(select, &scope, &mut predicate_diagnostics);
+            extend_unique_diagnostics(diagnostics, &predicate_diagnostics);
+            diagnose_uncarried_local_predicates(&predicates, &scope, diagnostics);
+        }
+        SetExpr::Query(query) => {
+            diagnose_local_query_predicates(query, local_outputs, diagnostics);
+        }
+        SetExpr::SetOperation { left, right, .. } => {
+            diagnose_local_set_expr_predicates(left, local_outputs, diagnostics);
+            diagnose_local_set_expr_predicates(right, local_outputs, diagnostics);
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => {}
+    }
+}
+
+fn diagnose_uncarried_local_predicates(
+    predicates: &Predicates,
+    scope: &[OutputRelation],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for (clause, predicate) in [
+        ("WHERE", predicates.where_predicate()),
+        ("HAVING", predicates.having_predicate()),
+        ("QUALIFY", predicates.qualify_predicate()),
+    ] {
+        let Some(predicate) = predicate else {
+            continue;
+        };
+        let Some(reason) = uncarried_local_predicate_reason(predicate, scope) else {
+            continue;
+        };
+        let diagnostic = warning(
+            "unresolved_local_predicate",
+            DiagnosticArea::Predicate,
+            &format!(
+                "{clause} predicate inside a local relation cannot be carried completely through physical column domains: {reason}"
+            ),
+        );
+        if !diagnostics.contains(&diagnostic) {
+            diagnostics.push(diagnostic);
+        }
+    }
+}
+
+fn uncarried_local_predicate_reason(
+    predicate: &Predicate,
+    scope: &[OutputRelation],
+) -> Option<String> {
+    match predicate {
+        Predicate::Comparison(comparison) => match (comparison.left(), comparison.right()) {
+            (Expression::Column(column), Expression::Literal(_))
+            | (Expression::Literal(_), Expression::Column(column)) => {
+                unresolved_domain_column_reason(column, scope)
+            }
+            _ => Some(
+                "comparison is not between one source column and one scalar literal".to_string(),
+            ),
+        },
+        Predicate::And(logical) => logical
+            .operands()
+            .iter()
+            .find_map(|predicate| uncarried_local_predicate_reason(predicate, scope)),
+        Predicate::Or(_) => Some(
+            "logical OR cannot be preserved as one conjunction of independent physical column domains"
+                .to_string(),
+        ),
+        Predicate::Not(_) => Some(
+            "logical NOT cannot always be reduced safely to independent physical column domains"
+                .to_string(),
+        ),
+        Predicate::IsNull(predicate) => match predicate.expression() {
+            Expression::Column(column) => unresolved_domain_column_reason(column, scope),
+            _ => Some("null predicate targets a computed or unresolved expression".to_string()),
+        },
+        Predicate::In(predicate)
+            if predicate
+                .values()
+                .iter()
+                .all(|value| matches!(value, Expression::Literal(_))) =>
+        {
+            match predicate.expression() {
+                Expression::Column(column) => unresolved_domain_column_reason(column, scope),
+                _ => Some("IN-list predicate targets a computed or unresolved expression".to_string()),
+            }
+        }
+        Predicate::In(_) => {
+            Some("IN-list predicate contains values that are not scalar literals".to_string())
+        }
+        Predicate::Exists(_) => {
+            Some("EXISTS semantics depend on nested-row existence, not a scalar domain".to_string())
+        }
+        Predicate::InSubquery(_) => {
+            Some("IN-subquery semantics depend on nested rows, not only a scalar domain".to_string())
+        }
+        Predicate::Between(predicate)
+            if matches!(predicate.lower(), Expression::Literal(_))
+                && matches!(predicate.upper(), Expression::Literal(_)) =>
+        {
+            match predicate.expression() {
+                Expression::Column(column) => unresolved_domain_column_reason(column, scope),
+                _ => Some("BETWEEN predicate targets a computed or unresolved expression".to_string()),
+            }
+        }
+        Predicate::Between(_) => {
+            Some("BETWEEN predicate bounds are not both scalar literals".to_string())
+        }
+        Predicate::BooleanExpression(_) => {
+            Some("boolean predicate expression cannot be reduced safely to a scalar domain".to_string())
+        }
+        Predicate::Unknown(semantic) => Some(format!(
+            "predicate semantics are unresolved: {}",
+            semantic.reason()
+        )),
+        Predicate::Unsupported(semantic) => Some(match semantic.reason() {
+            Some(reason) => format!("unsupported {} predicate semantics: {reason}", semantic.feature()),
+            None => format!("unsupported {} predicate semantics", semantic.feature()),
+        }),
+    }
+}
+
+fn unresolved_domain_column_reason(
+    column: &ColumnExpression,
+    scope: &[OutputRelation],
+) -> Option<String> {
+    let reference = ColumnRef::new(
+        column.relation().map(ToString::to_string),
+        column.name().to_string(),
+    );
+    resolve_plain_source_column(&reference, scope)
+        .err()
+        .map(|reason| {
+            format!("source column cannot be mapped safely to physical lineage: {reason}")
+        })
+}
+
 fn analyze_query_relations(
     query: &SqlQuery,
     inherited_local_relations: &BTreeSet<String>,
@@ -1169,6 +1442,7 @@ fn analyze_query_relations_with_locals(
                 &mut cte_diagnostics,
                 derived_index,
             );
+            diagnose_local_query_predicates(&cte.query, &local_outputs, &mut cte_diagnostics);
             let mut output_diagnostics = Vec::new();
             let output =
                 analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
@@ -1544,6 +1818,7 @@ fn analyze_table_factor_with_locals(
                 diagnostics,
                 derived_index,
             );
+            diagnose_local_query_predicates(subquery, local_outputs, diagnostics);
             let alias = alias.as_ref().map(|alias| alias.name.to_string());
             let name = match &alias {
                 Some(_) => "subquery".to_string(),
