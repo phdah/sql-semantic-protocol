@@ -13,8 +13,7 @@ use crate::constraints::{
 };
 use crate::protocol::{
     ColumnDomain, ConditionExactness, DiagnosticSeverity, Output, Protocol, ProtocolStatement,
-    WriteKind,
-    PROTOCOL_VERSION,
+    WriteKind, PROTOCOL_VERSION,
 };
 use crate::relation::{
     RelationCatalog, RelationContext, RelationResolutionError, RelationResolver, RelationSchema,
