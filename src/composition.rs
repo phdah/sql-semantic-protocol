@@ -13,8 +13,9 @@ use crate::bundle::{
 use crate::domain::{intersect_case_domain_values, intersect_domains};
 use crate::protocol::{
     CaseBranch, CaseExpression, CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain,
-    ColumnRef, ConditionExactness, Expression, LineageSource, Output, OutputColumn,
-    ProtocolStatement, QueryStatement, ValueDomain, WriteKind,
+    ColumnRef, ConditionClause, ConditionExactness, Expression, LineageSource, Output,
+    OutputColumn, ProtocolStatement, QueryStatement, ResidualCondition, ResidualConditionReason,
+    ValueDomain, WriteKind,
 };
 
 pub(crate) fn compose_layers(
@@ -203,7 +204,26 @@ impl<'a> Composer<'a> {
                     );
                     merge_domain(&mut domain_map, column, column_domain.domain().clone());
                 }
-                Err(diagnostic) => diagnostics.push(*diagnostic),
+                Err(diagnostic) => {
+                    let identity = format!(
+                        "composition_domain:{}",
+                        column_domain.column().relation().map_or_else(
+                            || column_domain.column().name().to_string(),
+                            |relation| format!("{relation}.{}", column_domain.column().name()),
+                        )
+                    );
+                    diagnostics.push(*diagnostic);
+                    condition_exactness = condition_exactness.merged_with(
+                        &ConditionExactness::from_residuals(vec![
+                            ResidualCondition::new(
+                                ResidualConditionReason::ComputedExpression,
+                                ConditionClause::Where,
+                                identity,
+                            )
+                            .with_layer_origin(layer.id().to_string()),
+                        ]),
+                    );
+                }
             }
         }
 
