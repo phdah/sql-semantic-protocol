@@ -1,10 +1,10 @@
 ---
 id: TASK-47
 title: Add a differential conformance suite against a SQL engine
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-07 18:11'
-updated_date: '2026-10-07 18:11'
+updated_date: '2026-10-07'
 labels: []
 milestone: m-2
 dependencies:
@@ -40,3 +40,9 @@ DuckDB as a dev-only dependency is the proposed engine (sql-tdg already uses `du
 - [ ] #7 Every reproduction from TASK-36 to TASK-42 and the exactness, composition, join-equality, and literal-typing tasks is part of the suite
 - [ ] #8 The suite is deterministic, runs in the standard CI check, and is documented in the README
 <!-- AC:END -->
+
+
+## Progress
+
+- Maintainer approved DuckDB as a dev-only dependency on 2026-10-07, with the explicit requirement that DuckDB is not compiled from source.
+- The implementation keeps duckdb-rs default features disabled and uses `DUCKDB_DOWNLOAD_LIB=1` to link its prebuilt library.
