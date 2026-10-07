@@ -1907,6 +1907,7 @@
       }
     },
     "caseSourceDomains": {
+      "description": "CASE-local branch-selection domains. Direct local-relation copies preserve them, and multi-layer composition remaps them to physical source columns only through proven plain-copy identity hops. Unsafe composition hops become unknown. Query-level WHERE, HAVING, and QUALIFY domains remain separate and are not folded into CASE reachability.",
       "oneOf": [
         {
           "type": "object",
