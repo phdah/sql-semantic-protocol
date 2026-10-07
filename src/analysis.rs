@@ -1381,12 +1381,8 @@ fn analyze_query_column_domains(
                 metadata,
             );
             let mut output_diagnostics = Vec::new();
-            let output = analyze_query_output(
-                &cte.query,
-                &local_outputs,
-                &mut output_diagnostics,
-                metadata,
-            );
+            let output =
+                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
 
             local_relations.insert(name.clone());
             local_outputs.insert(name.clone(), output);
@@ -2567,7 +2563,6 @@ fn analyze_table_factor(
     local_relations: &BTreeSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
-    metadata: Option<&'a AnalysisMetadata<'a>>,
 ) -> Option<AnalyzedRelation> {
     analyze_table_factor_with_locals(
         factor,
@@ -2587,6 +2582,7 @@ fn analyze_table_factor_with_locals<'a>(
     local_analyses: &LocalRelationAnalysisMap,
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
+    metadata: Option<&'a AnalysisMetadata<'a>>,
 ) -> Option<AnalyzedRelation> {
     match factor {
         TableFactor::Table {
@@ -2934,7 +2930,7 @@ fn collect_expression_dependencies_with_windows(
             subquery: query, ..
         } => {
             let nested =
-                analyze_query_relations(query, local_relations, diagnostics, derived_index);
+                analyze_query_relations(query, local_relations, diagnostics, derived_index, None);
             dependencies.extend(nested.dependencies);
         }
         Expr::InSubquery { expr, subquery, .. } => {
@@ -2947,7 +2943,7 @@ fn collect_expression_dependencies_with_windows(
                 dependencies,
             );
             let nested =
-                analyze_query_relations(subquery, local_relations, diagnostics, derived_index);
+                analyze_query_relations(subquery, local_relations, diagnostics, derived_index, None);
             dependencies.extend(nested.dependencies);
         }
         Expr::BinaryOp { left, right, .. }
@@ -3114,7 +3110,7 @@ fn collect_function_argument_dependencies(
         FunctionArguments::None => {}
         FunctionArguments::Subquery(query) => {
             let nested =
-                analyze_query_relations(query, local_relations, diagnostics, derived_index);
+                analyze_query_relations(query, local_relations, diagnostics, derived_index, None);
             dependencies.extend(nested.dependencies);
         }
         FunctionArguments::List(arguments) => {
@@ -5141,6 +5137,7 @@ fn analyze_subquery_semantics(
         &BTreeSet::new(),
         &mut diagnostics,
         &mut derived_index,
+        None,
     );
     let output = analyze_query_output_with_outer_scope(
         query,
