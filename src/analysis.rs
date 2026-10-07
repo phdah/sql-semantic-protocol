@@ -3092,7 +3092,7 @@ fn collect_function_argument_dependencies(
         FunctionArguments::None => {}
         FunctionArguments::Subquery(query) => {
             let nested =
-                analyze_query_relations(query, local_relations, diagnostics, derived_index, None);
+                analyze_query_relations(query, local_relations, diagnostics, derived_index);
             dependencies.extend(nested.dependencies);
         }
         FunctionArguments::List(arguments) => {
