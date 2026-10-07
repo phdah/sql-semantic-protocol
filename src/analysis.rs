@@ -740,7 +740,6 @@ fn type_literal(
             data_type.kind()
         )),
         DataType::Nullable(_) => unreachable!("nullable datatype was unwrapped above"),
-        _ => incompatible(),
     }
 }
 
@@ -755,16 +754,14 @@ fn type_integer_literal(
     let LiteralValue::Number(value) = literal.value() else {
         return Err("integer literal does not contain a numeric payload".to_string());
     };
-    let number = Number::from_str(value)
-        .map_err(|_| "integer literal is outside the canonical JSON numeric domain".to_string())?;
     let in_range = if unsigned {
-        number
-            .as_u64()
-            .is_some_and(|value| integer_fits_unsigned(value, bits))
+        value
+            .parse::<u128>()
+            .is_ok_and(|value| integer_fits_unsigned(value, bits))
     } else {
-        number
-            .as_i64()
-            .is_some_and(|value| integer_fits_signed(value, bits))
+        value
+            .parse::<i128>()
+            .is_ok_and(|value| integer_fits_signed(value, bits))
     };
     if !in_range {
         return Err(format!(
@@ -779,22 +776,22 @@ fn type_integer_literal(
     ))
 }
 
-fn integer_fits_signed(value: i64, bits: Option<u16>) -> bool {
+fn integer_fits_signed(value: i128, bits: Option<u16>) -> bool {
     match bits {
-        None | Some(64..=u16::MAX) => true,
+        None | Some(128..=u16::MAX) => true,
         Some(0) => false,
         Some(bits) => {
             let limit = 1_i128 << (bits - 1);
-            i128::from(value) >= -limit && i128::from(value) < limit
+            value >= -limit && value < limit
         }
     }
 }
 
-fn integer_fits_unsigned(value: u64, bits: Option<u16>) -> bool {
+fn integer_fits_unsigned(value: u128, bits: Option<u16>) -> bool {
     match bits {
-        None | Some(64..=u16::MAX) => true,
+        None | Some(128..=u16::MAX) => true,
         Some(0) => false,
-        Some(bits) => u128::from(value) < (1_u128 << bits),
+        Some(bits) => value < (1_u128 << bits),
     }
 }
 
