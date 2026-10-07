@@ -300,7 +300,6 @@ fn dbt_artifacts_preserve_cte_domains_and_expand_wildcards() {
     assert_number_range(amount.domain(), Some(("10", false)), Some(("20", false)));
 }
 
-
 #[test]
 fn computed_cte_filters_do_not_map_as_plain_source_constraints() {
     let dialect = GenericDialect {};
@@ -355,7 +354,8 @@ fn case_branch_domains_stop_at_computed_local_columns() {
     ] {
         let protocol = analyze_sql(sql, "generic", &dialect)
             .unwrap_or_else(|error| panic!("computed CASE source should analyze: {error}"));
-        let Expression::Case(case_expression) = first_query(&protocol).output().columns()[0].expression()
+        let Expression::Case(case_expression) =
+            first_query(&protocol).output().columns()[0].expression()
         else {
             panic!("expected CASE output");
         };
