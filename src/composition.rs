@@ -419,11 +419,7 @@ impl<'a> Composer<'a> {
         column: &OutputColumn,
     ) -> ValueDomain {
         let domain = column.domain().clone();
-        if !matches!(column.expression(), Expression::Column(_)) {
-            return domain;
-        }
-
-        let [source] = column.lineage() else {
+        let Some(source) = column.plain_copy_source() else {
             return domain;
         };
         let Some(edge) = self

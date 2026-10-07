@@ -400,3 +400,138 @@ fn case_branch_domains_resolve_through_cte_lineage() {
     assert_eq!(domain.column().relation(), Some("raw.orders"));
     assert_eq!(domain.column().name(), "amount");
 }
+
+#[test]
+fn computed_outputs_do_not_inherit_source_predicate_domains() {
+    let dialect = GenericDialect {};
+
+    let arithmetic = analyze_sql(
+        "SELECT amount + 1 AS adjusted FROM orders WHERE amount = 100",
+        "generic",
+        &dialect,
+    )
+    .expect("arithmetic output should analyze");
+    assert!(matches!(
+        first_query(&arithmetic).output().columns()[0].domain(),
+        ValueDomain::Unknown(_)
+    ));
+
+    let function = analyze_sql(
+        "SELECT UPPER(name) AS normalized FROM users WHERE name = 'x'",
+        "generic",
+        &dialect,
+    )
+    .expect("function output should analyze");
+    assert!(matches!(
+        first_query(&function).output().columns()[0].domain(),
+        ValueDomain::Unknown(_)
+    ));
+
+    let aggregate = analyze_sql(
+        "SELECT SUM(amount) AS total FROM orders WHERE amount > 100",
+        "generic",
+        &dialect,
+    )
+    .expect("aggregate output should analyze");
+    assert!(matches!(
+        first_query(&aggregate).output().columns()[0].domain(),
+        ValueDomain::Unknown(_)
+    ));
+
+    let window = analyze_sql(
+        "SELECT ROW_NUMBER() OVER (ORDER BY amount) AS rn FROM orders WHERE amount > 10",
+        "generic",
+        &dialect,
+    )
+    .expect("window output should analyze");
+    assert_eq!(
+        integer_bounds(first_query(&window).output().columns()[0].domain()),
+        (Some(("1".to_string(), true)), None)
+    );
+}
+
+#[test]
+fn filtered_case_output_keeps_its_expression_domain() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT CASE WHEN amount >= 100 THEN 'high' ELSE 'standard' END AS bucket
+         FROM orders
+         WHERE amount = 100",
+        "generic",
+        &dialect,
+    )
+    .expect("filtered CASE should analyze");
+
+    let ValueDomain::Set(domain) = first_query(&protocol).output().columns()[0].domain() else {
+        panic!("expected CASE output set");
+    };
+    assert_eq!(domain.mode(), SetMode::Include);
+    assert_eq!(domain.values().len(), 2);
+    assert!(domain
+        .values()
+        .iter()
+        .any(|value| value.value() == &LiteralValue::Text("high".to_string())));
+    assert!(domain
+        .values()
+        .iter()
+        .any(|value| value.value() == &LiteralValue::Text("standard".to_string())));
+}
+
+#[test]
+fn filtered_case_domain_survives_composition_without_becoming_empty() {
+    let dialect = GenericDialect {};
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline(
+                "CREATE TABLE stage.orders AS
+                 SELECT CASE WHEN amount >= 100 THEN 'high' ELSE 'standard' END AS bucket
+                 FROM raw.orders
+                 WHERE amount = 100",
+            ),
+            SqlInput::inline("CREATE TABLE mart.orders AS SELECT bucket FROM stage.orders"),
+        ],
+        "generic",
+        &dialect,
+    )
+    .expect("filtered CASE chain should analyze");
+
+    let mart = bundle
+        .layers()
+        .iter()
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|dataset| dataset.relation_name() == Some("mart.orders"))
+        })
+        .expect("mart layer");
+    let sql_semantic_protocol::ComposedSemantics::Resolved(semantics) = mart.composed_semantics()
+    else {
+        panic!("mart composition should resolve");
+    };
+
+    let ValueDomain::Set(domain) = semantics.output().columns()[0].domain() else {
+        panic!("expected composed CASE output set");
+    };
+    assert_eq!(domain.values().len(), 2);
+}
+
+#[test]
+fn computed_domain_guard_is_consistent_across_exposed_dialects() {
+    let sql = "SELECT amount + 1 AS adjusted FROM orders WHERE amount = 100";
+
+    for dialect_name in DIALECTS {
+        let dialect =
+            dialect_from_str(dialect_name).expect("documented dialect should be recognized");
+        let protocol = analyze_sql(sql, dialect_name, dialect.as_ref()).unwrap_or_else(|error| {
+            panic!("dialect {dialect_name} failed arithmetic syntax: {error}")
+        });
+        assert!(
+            matches!(
+                first_query(&protocol).output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
+            "dialect {dialect_name}"
+        );
+    }
+}

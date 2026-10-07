@@ -982,34 +982,68 @@ fn remap_local_column_domains(
 ) -> Vec<ColumnDomain> {
     domains
         .into_iter()
-        .map(|column_domain| {
+        .flat_map(|column_domain| {
             let Some(relation) = column_domain.column().relation() else {
-                return column_domain;
+                return vec![column_domain];
             };
             let Some(output) = local_outputs.get(relation) else {
-                return column_domain;
+                return vec![column_domain];
             };
             let mut candidates = output
                 .columns()
                 .iter()
                 .filter(|column| column.name() == column_domain.column().name());
             let Some(output_column) = candidates.next() else {
-                return column_domain;
+                return vec![column_domain];
             };
             if candidates.next().is_some() {
-                return column_domain;
+                return vec![ColumnDomain::new(
+                    column_domain.column().clone(),
+                    ValueDomain::unknown(format!(
+                        "local column {} is ambiguous and cannot be mapped safely to physical source columns",
+                        qualified_column_name(
+                            column_domain.column().relation(),
+                            column_domain.column().name()
+                        )
+                    )),
+                )];
             }
-            let [source] = output_column.lineage() else {
-                return column_domain;
+            let Some(source) = output_column.plain_copy_source() else {
+                let reason = format!(
+                    "predicate on computed local column {} cannot be mapped safely to physical source columns",
+                    qualified_column_name(
+                        column_domain.column().relation(),
+                        column_domain.column().name()
+                    )
+                );
+                if output_column.lineage().is_empty() {
+                    return vec![ColumnDomain::new(
+                        column_domain.column().clone(),
+                        ValueDomain::unknown(reason),
+                    )];
+                }
+                return output_column
+                    .lineage()
+                    .iter()
+                    .map(|source| {
+                        ColumnDomain::new(
+                            ColumnRef::new(
+                                Some(source.relation().to_string()),
+                                source.column().to_string(),
+                            ),
+                            ValueDomain::unknown(reason.clone()),
+                        )
+                    })
+                    .collect();
             };
 
-            ColumnDomain::new(
+            vec![ColumnDomain::new(
                 ColumnRef::new(
                     Some(source.relation().to_string()),
                     source.column().to_string(),
                 ),
                 column_domain.domain().clone(),
-            )
+            )]
         })
         .collect()
 }
@@ -2284,19 +2318,50 @@ fn resolve_case_source_column(
     column: &ColumnRef,
     scope: &[OutputRelation],
 ) -> Result<LineageSource, String> {
-    let candidates = output_column_candidates(column.relation(), column.name(), scope);
+    let candidates = scope
+        .iter()
+        .filter(|relation| {
+            column.relation().is_none_or(|qualifier| {
+                relation
+                    .qualifiers
+                    .iter()
+                    .any(|candidate| candidate == qualifier)
+            })
+        })
+        .filter_map(|relation| match &relation.source {
+            OutputRelationSource::Physical {
+                relation,
+                columns: Some(columns),
+            } if !columns.iter().any(|candidate| candidate == column.name()) => None,
+            OutputRelationSource::Physical { relation, .. } => Some(Ok(LineageSource::new(
+                relation.clone(),
+                column.name().to_string(),
+            ))),
+            OutputRelationSource::Local(output) => {
+                let mut matches = output
+                    .columns()
+                    .iter()
+                    .filter(|candidate| candidate.name() == column.name());
+                let candidate = matches.next()?;
+                if matches.next().is_some() {
+                    return Some(Err(format!(
+                        "CASE branch source column {} is ambiguous within the local relation",
+                        qualified_column_name(column.relation(), column.name())
+                    )));
+                }
+                Some(candidate.plain_copy_source().cloned().ok_or_else(|| {
+                    format!(
+                        "CASE branch source column {} is produced by a computed local expression and cannot be mapped safely to physical lineage",
+                        qualified_column_name(column.relation(), column.name())
+                    )
+                }))
+            }
+        })
+        .collect::<Vec<_>>();
+
     match candidates.as_slice() {
-        [candidate] => match candidate.as_slice() {
-            [source] => Ok(source.clone()),
-            [] => Err(format!(
-                "CASE branch source column {} has no physical lineage",
-                qualified_column_name(column.relation(), column.name())
-            )),
-            _ => Err(format!(
-                "CASE branch source column {} maps to multiple physical source columns",
-                qualified_column_name(column.relation(), column.name())
-            )),
-        },
+        [Ok(source)] => Ok(source.clone()),
+        [Err(reason)] => Err(reason.clone()),
         [] => Err(format!(
             "CASE branch source column {} could not be resolved to physical lineage",
             qualified_column_name(column.relation(), column.name())
@@ -3329,18 +3394,20 @@ fn refine_output_domains_from_column_domains(
                     column_domains,
                     sources,
                 );
-                let lineage_domain = match column.lineage() {
-                    [source] => column_domains
-                        .iter()
-                        .find(|candidate| {
-                            candidate.column().relation() == Some(source.relation())
-                                && candidate.column().name() == source.column()
-                        })
-                        .map_or(ValueDomain::Unbounded, |candidate| {
-                            candidate.domain().clone()
-                        }),
-                    _ => ValueDomain::Unbounded,
-                };
+                let lineage_domain =
+                    column
+                        .plain_copy_source()
+                        .map_or(ValueDomain::Unbounded, |source| {
+                            column_domains
+                                .iter()
+                                .find(|candidate| {
+                                    candidate.column().relation() == Some(source.relation())
+                                        && candidate.column().name() == source.column()
+                                })
+                                .map_or(ValueDomain::Unbounded, |candidate| {
+                                    candidate.domain().clone()
+                                })
+                        });
                 let domain = intersect_domains(column.domain(), &derived);
                 let domain = intersect_domains(&domain, &lineage_domain);
                 column.with_domain(domain)
