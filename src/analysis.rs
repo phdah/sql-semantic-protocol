@@ -1269,7 +1269,7 @@ fn diagnose_local_set_expr_predicates(
             let predicates =
                 analyze_select_predicates_with_scope(select, &scope, &mut predicate_diagnostics);
             extend_unique_diagnostics(diagnostics, &predicate_diagnostics);
-            diagnose_uncarried_local_predicates(&predicates, diagnostics);
+            diagnose_uncarried_local_predicates(&predicates, &scope, diagnostics);
         }
         SetExpr::Query(query) => {
             diagnose_local_query_predicates(query, local_outputs, diagnostics);
@@ -1288,6 +1288,7 @@ fn diagnose_local_set_expr_predicates(
 
 fn diagnose_uncarried_local_predicates(
     predicates: &Predicates,
+    scope: &[OutputRelation],
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     for (clause, predicate) in [
@@ -1298,7 +1299,7 @@ fn diagnose_uncarried_local_predicates(
         let Some(predicate) = predicate else {
             continue;
         };
-        let Some(reason) = uncarried_local_predicate_reason(predicate) else {
+        let Some(reason) = uncarried_local_predicate_reason(predicate, scope) else {
             continue;
         };
         let diagnostic = warning(
@@ -1314,24 +1315,24 @@ fn diagnose_uncarried_local_predicates(
     }
 }
 
-fn uncarried_local_predicate_reason(predicate: &Predicate) -> Option<String> {
+fn uncarried_local_predicate_reason(
+    predicate: &Predicate,
+    scope: &[OutputRelation],
+) -> Option<String> {
     match predicate {
-        Predicate::Comparison(comparison)
-            if matches!(
-                (comparison.left(), comparison.right()),
-                (Expression::Column(_), Expression::Literal(_))
-                    | (Expression::Literal(_), Expression::Column(_))
-            ) =>
-        {
-            None
-        }
-        Predicate::Comparison(_) => {
-            Some("comparison is not between one source column and one scalar literal".to_string())
-        }
+        Predicate::Comparison(comparison) => match (comparison.left(), comparison.right()) {
+            (Expression::Column(column), Expression::Literal(_))
+            | (Expression::Literal(_), Expression::Column(column)) => {
+                unresolved_domain_column_reason(column, scope)
+            }
+            _ => Some(
+                "comparison is not between one source column and one scalar literal".to_string(),
+            ),
+        },
         Predicate::And(logical) => logical
             .operands()
             .iter()
-            .find_map(uncarried_local_predicate_reason),
+            .find_map(|predicate| uncarried_local_predicate_reason(predicate, scope)),
         Predicate::Or(_) => Some(
             "logical OR cannot be preserved as one conjunction of independent physical column domains"
                 .to_string(),
@@ -1340,25 +1341,23 @@ fn uncarried_local_predicate_reason(predicate: &Predicate) -> Option<String> {
             "logical NOT cannot always be reduced safely to independent physical column domains"
                 .to_string(),
         ),
-        Predicate::IsNull(predicate)
-            if matches!(predicate.expression(), Expression::Column(_)) =>
-        {
-            None
-        }
-        Predicate::IsNull(_) => {
-            Some("null predicate targets a computed or unresolved expression".to_string())
-        }
+        Predicate::IsNull(predicate) => match predicate.expression() {
+            Expression::Column(column) => unresolved_domain_column_reason(column, scope),
+            _ => Some("null predicate targets a computed or unresolved expression".to_string()),
+        },
         Predicate::In(predicate)
-            if matches!(predicate.expression(), Expression::Column(_))
-                && predicate
-                    .values()
-                    .iter()
-                    .all(|value| matches!(value, Expression::Literal(_))) =>
+            if predicate
+                .values()
+                .iter()
+                .all(|value| matches!(value, Expression::Literal(_))) =>
         {
-            None
+            match predicate.expression() {
+                Expression::Column(column) => unresolved_domain_column_reason(column, scope),
+                _ => Some("IN-list predicate targets a computed or unresolved expression".to_string()),
+            }
         }
         Predicate::In(_) => {
-            Some("IN-list predicate is not reducible to one source-column domain".to_string())
+            Some("IN-list predicate contains values that are not scalar literals".to_string())
         }
         Predicate::Exists(_) => {
             Some("EXISTS semantics depend on nested-row existence, not a scalar domain".to_string())
@@ -1367,14 +1366,16 @@ fn uncarried_local_predicate_reason(predicate: &Predicate) -> Option<String> {
             Some("IN-subquery semantics depend on nested rows, not only a scalar domain".to_string())
         }
         Predicate::Between(predicate)
-            if matches!(predicate.expression(), Expression::Column(_))
-                && matches!(predicate.lower(), Expression::Literal(_))
+            if matches!(predicate.lower(), Expression::Literal(_))
                 && matches!(predicate.upper(), Expression::Literal(_)) =>
         {
-            None
+            match predicate.expression() {
+                Expression::Column(column) => unresolved_domain_column_reason(column, scope),
+                _ => Some("BETWEEN predicate targets a computed or unresolved expression".to_string()),
+            }
         }
         Predicate::Between(_) => {
-            Some("BETWEEN predicate is not reducible to one source-column interval".to_string())
+            Some("BETWEEN predicate bounds are not both scalar literals".to_string())
         }
         Predicate::BooleanExpression(_) => {
             Some("boolean predicate expression cannot be reduced safely to a scalar domain".to_string())
@@ -1388,6 +1389,19 @@ fn uncarried_local_predicate_reason(predicate: &Predicate) -> Option<String> {
             None => format!("unsupported {} predicate semantics", semantic.feature()),
         }),
     }
+}
+
+fn unresolved_domain_column_reason(
+    column: &ColumnExpression,
+    scope: &[OutputRelation],
+) -> Option<String> {
+    let reference = ColumnRef::new(
+        column.relation().map(ToString::to_string),
+        column.name().to_string(),
+    );
+    resolve_plain_source_column(&reference, scope)
+        .err()
+        .map(|reason| format!("source column cannot be mapped safely to physical lineage: {reason}"))
 }
 
 fn analyze_query_relations(
