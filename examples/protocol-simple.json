@@ -85,7 +85,11 @@
               }
             ]
           },
-          "diagnostics": []
+          "diagnostics": [],
+          "condition_exactness": {
+            "status": "exact",
+            "residual_conditions": []
+          }
         }
       ]
     }
@@ -156,7 +160,11 @@
             }
           ]
         },
-        "diagnostics": []
+        "diagnostics": [],
+        "condition_exactness": {
+          "status": "exact",
+          "residual_conditions": []
+        }
       }
     }
   ],
