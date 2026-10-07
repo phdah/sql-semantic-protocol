@@ -1,9 +1,10 @@
 ---
 id: TASK-38
 title: Surface predicates inside local relations that cannot be carried
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 09:27'
+updated_date: '2026-10-07 13:17'
 labels: []
 milestone: m-2
 dependencies: []
@@ -30,9 +31,9 @@ Completes TASK-31 AC #2 and #6.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 WHERE, HAVING, and QUALIFY predicates inside CTEs and derived tables are either carried as domains on physical columns or reported through an explicit diagnostic or unresolved composition
-- [ ] #2 EXISTS, IN-subquery, OR, and aggregate predicates inside local relations are visible to consumers in the same way as at the top level of a query
-- [ ] #3 Outer filters on derived-table columns that are plain copies map to physical source columns
-- [ ] #4 Tests assert a diagnostic for each unsupported predicate kind inside a CTE and inside a derived table
-- [ ] #5 Protocol documentation lists which local-relation predicates are carried and which are diagnosed
+- [x] #1 WHERE, HAVING, and QUALIFY predicates inside CTEs and derived tables are either carried as domains on physical columns or reported through an explicit diagnostic or unresolved composition
+- [x] #2 EXISTS, IN-subquery, OR, and aggregate predicates inside local relations are visible to consumers in the same way as at the top level of a query
+- [x] #3 Outer filters on derived-table columns that are plain copies map to physical source columns
+- [x] #4 Tests assert a diagnostic for each unsupported predicate kind inside a CTE and inside a derived table
+- [x] #5 Protocol documentation lists which local-relation predicates are carried and which are diagnosed
 <!-- AC:END -->
