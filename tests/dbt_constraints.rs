@@ -594,8 +594,7 @@ fn dbt_unquoted_accepted_value_that_is_not_a_scalar_literal_is_reported() {
 
 #[test]
 fn dbt_unquoted_accepted_values_emit_normalized_scalar_types() {
-    let json =
-        manifest_with_source_accepted_values("amount", "BIGINT", json!(["1", "2"]), false);
+    let json = manifest_with_source_accepted_values("amount", "BIGINT", json!(["1", "2"]), false);
     let manifest = parse_dbt_manifest(&json).expect("manifest should parse");
     let bundle = analyze_dbt_manifest(&manifest, "postgresql", &PostgreSqlDialect {})
         .expect("dbt manifest should analyze");
