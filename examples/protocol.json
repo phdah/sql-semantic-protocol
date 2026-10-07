@@ -378,6 +378,7 @@
             }
           }
         ],
+        "join_equalities": [],
         "output": {
           "columns": [
             {
@@ -475,6 +476,7 @@
             }
           }
         ],
+        "join_equalities": [],
         "output": {
           "columns": [
             {
@@ -565,6 +567,7 @@
             }
           }
         ],
+        "join_equalities": [],
         "output": {
           "columns": [
             {
