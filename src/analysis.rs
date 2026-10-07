@@ -1973,7 +1973,9 @@ fn uncarried_local_predicate_reason(
         {
             match predicate.expression() {
                 Expression::Column(column) => unresolved_domain_column_reason(column, scope),
-                _ => Some("IN-list predicate targets a computed or unresolved expression".to_string()),
+                _ => Some(
+                    "IN-list predicate targets a computed or unresolved expression".to_string(),
+                ),
             }
         }
         Predicate::In(_) => {
@@ -1982,30 +1984,35 @@ fn uncarried_local_predicate_reason(
         Predicate::Exists(_) => {
             Some("EXISTS semantics depend on nested-row existence, not a scalar domain".to_string())
         }
-        Predicate::InSubquery(_) => {
-            Some("IN-subquery semantics depend on nested rows, not only a scalar domain".to_string())
-        }
+        Predicate::InSubquery(_) => Some(
+            "IN-subquery semantics depend on nested rows, not only a scalar domain".to_string(),
+        ),
         Predicate::Between(predicate)
             if matches!(predicate.lower(), Expression::Literal(_))
                 && matches!(predicate.upper(), Expression::Literal(_)) =>
         {
             match predicate.expression() {
                 Expression::Column(column) => unresolved_domain_column_reason(column, scope),
-                _ => Some("BETWEEN predicate targets a computed or unresolved expression".to_string()),
+                _ => Some(
+                    "BETWEEN predicate targets a computed or unresolved expression".to_string(),
+                ),
             }
         }
         Predicate::Between(_) => {
             Some("BETWEEN predicate bounds are not both scalar literals".to_string())
         }
-        Predicate::BooleanExpression(_) => {
-            Some("boolean predicate expression cannot be reduced safely to a scalar domain".to_string())
-        }
+        Predicate::BooleanExpression(_) => Some(
+            "boolean predicate expression cannot be reduced safely to a scalar domain".to_string(),
+        ),
         Predicate::Unknown(semantic) => Some(format!(
             "predicate semantics are unresolved: {}",
             semantic.reason()
         )),
         Predicate::Unsupported(semantic) => Some(match semantic.reason() {
-            Some(reason) => format!("unsupported {} predicate semantics: {reason}", semantic.feature()),
+            Some(reason) => format!(
+                "unsupported {} predicate semantics: {reason}",
+                semantic.feature()
+            ),
             None => format!("unsupported {} predicate semantics", semantic.feature()),
         }),
     }
