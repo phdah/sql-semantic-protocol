@@ -107,10 +107,15 @@ fn final_outcome_snapshot(protocol: &Value) -> Value {
                 .find(|layer| produced_relation(layer) == Some(relation))
                 .unwrap_or_else(|| panic!("missing producer layer for final outcome {relation}"));
 
+            let mut composed_semantics = layer["composed_semantics"].clone();
+            composed_semantics
+                .as_object_mut()
+                .expect("composed semantics should be an object")
+                .remove("join_equalities");
             outcomes.push(serde_json::json!({
                 "relation": relation,
                 "model_id": layer["statement"]["input_id"].clone(),
-                "composed_semantics": layer["composed_semantics"].clone()
+                "composed_semantics": composed_semantics
             }));
         }
     }
@@ -570,6 +575,23 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         2
     );
     assert!(contains_string(enriched, "binary"));
+
+    let enriched_equalities =
+        &layer_for_model(&protocol, "enriched_orders")["composed_semantics"]["join_equalities"];
+    let enriched_equalities = enriched_equalities
+        .as_array()
+        .expect("composed join equalities should be an array");
+    assert_eq!(enriched_equalities.len(), 2);
+    assert!(enriched_equalities.iter().any(|equality| {
+        equality["join_kind"] == "inner"
+            && contains_string(equality, "customer_id")
+            && contains_string(equality, "raw")
+    }));
+    assert!(enriched_equalities.iter().any(|equality| {
+        equality["join_kind"] == "left"
+            && contains_string(equality, "order_id")
+            && contains_string(equality, "returns")
+    }));
 
     let ranked = input_statement(&protocol, "ranked_orders");
     assert!(contains_string(ranked, "window_function"));
