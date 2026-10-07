@@ -30,8 +30,36 @@ jobs:
       - name: Install dbt Core test dependencies
         run: python -m pip install -r tests/requirements-dbt-e2e.txt
 
-      - name: Run checks
-        run: make check
+      - name: Check formatting
+        id: fmt
+        continue-on-error: true
+        run: make fmt
+
+      - name: Run Clippy
+        id: lint
+        continue-on-error: true
+        run: make lint
+
+      - name: Run tests
+        id: test
+        continue-on-error: true
+        run: make test
+
+      - name: Build documentation
+        id: doc
+        continue-on-error: true
+        run: make doc
 
       - name: Run dbt Core end-to-end test
+        id: dbt_e2e
+        continue-on-error: true
         run: make dbt-e2e
+
+      - name: Verify all checks passed
+        if: always()
+        run: |
+          test "${{ steps.fmt.outcome }}" = "success"
+          test "${{ steps.lint.outcome }}" = "success"
+          test "${{ steps.test.outcome }}" = "success"
+          test "${{ steps.doc.outcome }}" = "success"
+          test "${{ steps.dbt_e2e.outcome }}" = "success"
