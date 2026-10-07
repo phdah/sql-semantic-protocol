@@ -696,11 +696,16 @@ fn type_literal(
         DataType::UnsignedInteger { bits } => {
             type_integer_literal(literal, *bits, true)
         }
-        DataType::Decimal { .. } => match literal.value() {
-            LiteralValue::Number(value) => Ok(LiteralExpression::new(
-                LiteralType::Decimal,
-                LiteralValue::Number(value.clone()),
-            )),
+        DataType::Decimal { precision, scale } => match literal.value() {
+            LiteralValue::Number(value) if decimal_literal_fits(value, *precision, *scale) => {
+                Ok(LiteralExpression::new(
+                    LiteralType::Decimal,
+                    LiteralValue::Number(value.clone()),
+                ))
+            }
+            LiteralValue::Number(_) => Err(
+                "numeric literal exceeds the declared decimal precision or scale".to_string(),
+            ),
             _ => incompatible(),
         },
         DataType::FloatingPoint { .. } => Err(
@@ -741,6 +746,24 @@ fn type_literal(
         )),
         DataType::Nullable(_) => unreachable!("nullable datatype was unwrapped above"),
     }
+}
+
+fn decimal_literal_fits(value: &str, precision: Option<u64>, scale: Option<u64>) -> bool {
+    let mantissa = value
+        .split(['e', 'E'])
+        .next()
+        .unwrap_or(value)
+        .trim_start_matches(['+', '-']);
+    let mut parts = mantissa.split('.');
+    let integer = parts.next().unwrap_or_default().trim_start_matches('0');
+    let fraction = parts.next().unwrap_or_default().trim_end_matches('0');
+    if parts.next().is_some() {
+        return false;
+    }
+    let used_scale = fraction.len() as u64;
+    let used_precision = integer.len().max(1) as u64 + used_scale;
+    scale.is_none_or(|scale| used_scale <= scale)
+        && precision.is_none_or(|precision| used_precision <= precision)
 }
 
 fn type_integer_literal(
