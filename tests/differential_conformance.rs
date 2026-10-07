@@ -868,12 +868,14 @@ fn known_soundness_reproductions_stay_in_the_conformance_matrix() {
     let protocol = analyze_duckdb(exists);
     assert!(!first_query(&protocol).condition_exactness().is_exact());
 
-    // TASK-45: implicit column equality is not allowed to masquerade as independent exact domains
-    // until canonical composed equality relationships exist.
+    // TASK-45: implicit cross-relation equality is a canonical join correlation, not a
+    // scalar domain, so the row-condition contract remains exact.
     let implicit =
         "SELECT left_rows.row_id FROM left_rows, right_rows WHERE left_rows.x = right_rows.y";
     let protocol = analyze_duckdb(implicit);
-    assert!(!first_query(&protocol).condition_exactness().is_exact());
+    let query = first_query(&protocol);
+    assert!(query.condition_exactness().is_exact());
+    assert!(query.column_domains().is_empty());
 
     // TASK-43: cross-column correlation stays residual.
     let correlated =
