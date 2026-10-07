@@ -501,7 +501,6 @@ fn case_branch_domain_composition_is_consistent_across_exposed_dialects() {
     }
 }
 
-
 #[test]
 fn composed_join_equalities_map_multi_column_join_through_producer_layers() {
     let dialect = GenericDialect {};
