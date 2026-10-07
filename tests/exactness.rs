@@ -69,6 +69,11 @@ fn same_column_disjunction_is_exact_but_cross_column_disjunction_is_residual() {
         ResidualConditionReason::CrossColumnDisjunction,
         ConditionClause::Where,
     ));
+    assert!(query
+        .condition_exactness()
+        .residual_conditions()
+        .iter()
+        .any(|residual| residual.identity() == "where"));
 }
 
 #[test]
@@ -110,6 +115,50 @@ fn computed_and_pattern_predicates_are_residual() {
             "{sql}"
         );
     }
+}
+
+#[test]
+fn pattern_function_and_not_predicates_are_default_denied() {
+    let postgres = dialect_from_str("postgres").expect("postgres dialect");
+    for sql in [
+        "SELECT name FROM t WHERE name LIKE 'x%'",
+        "SELECT name FROM t WHERE name ILIKE 'x%'",
+        "SELECT name FROM t WHERE name SIMILAR TO 'x%'",
+        "SELECT name FROM t WHERE name ~ '^x'",
+        "SELECT name FROM t WHERE LENGTH(name) > 2",
+    ] {
+        let protocol = analyze_sql(sql, "postgres", postgres.as_ref())
+            .unwrap_or_else(|error| panic!("postgres should parse {sql}: {error}"));
+        assert!(has_residual(
+            first_query(&protocol),
+            ResidualConditionReason::ComputedExpression,
+            ConditionClause::Where,
+        ));
+    }
+
+    let negated = analyze_generic("SELECT a FROM t WHERE NOT (a + 1 > 5)");
+    assert!(has_residual(
+        first_query(&negated),
+        ResidualConditionReason::LogicalNot,
+        ConditionClause::Where,
+    ));
+}
+
+#[test]
+fn non_join_column_comparisons_and_in_subqueries_are_residual() {
+    let comparison = analyze_generic("SELECT a, b FROM t WHERE a = b");
+    assert!(has_residual(
+        first_query(&comparison),
+        ResidualConditionReason::ColumnComparison,
+        ConditionClause::Where,
+    ));
+
+    let in_subquery = analyze_generic("SELECT id FROM t WHERE id IN (SELECT id FROM u)");
+    assert!(has_residual(
+        first_query(&in_subquery),
+        ResidualConditionReason::SubqueryPredicate,
+        ConditionClause::Where,
+    ));
 }
 
 #[test]
@@ -272,6 +321,38 @@ fn outer_joins_and_self_joins_are_default_denied() {
     assert!(has_residual(
         first_query(&self_join),
         ResidualConditionReason::RepeatedSourceInstance,
+        ConditionClause::RowSetOperator,
+    ));
+}
+
+#[test]
+fn non_equality_column_join_is_residual() {
+    let protocol = analyze_generic("SELECT t.id FROM t JOIN u ON t.score > u.score");
+    assert!(has_residual(
+        first_query(&protocol),
+        ResidualConditionReason::ColumnComparison,
+        ConditionClause::JoinOn,
+    ));
+}
+
+#[test]
+fn condition_affecting_diagnostics_default_to_residual() {
+    let bigquery = dialect_from_str("bigquery").expect("bigquery dialect");
+    let protocol = analyze_sql(
+        "SELECT * FROM UNNEST([1, 2, 3]) AS value",
+        "bigquery",
+        bigquery.as_ref(),
+    )
+    .expect("UNNEST should remain analyzable");
+    let query = first_query(&protocol);
+
+    assert!(query
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_table_factor"));
+    assert!(has_residual(
+        query,
+        ResidualConditionReason::AnalysisDiagnostic,
         ConditionClause::RowSetOperator,
     ));
 }
