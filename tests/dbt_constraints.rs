@@ -334,3 +334,179 @@ fn dbt_relationships_with_unresolved_target_fails_explicitly() {
         .contains("does not resolve to a canonical dbt relation"));
     assert!(error.to_string().contains("ref('missing_orders')"));
 }
+
+
+#[test]
+fn dbt_singular_test_attached_to_relation_is_reported() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest should parse");
+    manifest["nodes"]
+        .as_object_mut()
+        .expect("manifest nodes should be an object")
+        .insert(
+            "test.demo.singular_stg_orders".to_string(),
+            json!({
+                "unique_id": "test.demo.singular_stg_orders",
+                "resource_type": "test",
+                "relation_name": null,
+                "attached_node": "model.demo.stg_orders",
+                "depends_on": {"nodes": ["model.demo.stg_orders"]}
+            }),
+        );
+
+    let json = serde_json::to_string(&manifest).expect("manifest should serialize");
+    let manifest = parse_dbt_manifest(&json).expect("manifest should parse");
+    let metadata = manifest
+        .relation_constraints()
+        .iter()
+        .find(|metadata| metadata.relation() == "warehouse.analytics.stg_orders")
+        .expect("stg_orders diagnostic metadata");
+
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_dbt_singular_test"));
+}
+
+#[test]
+fn dbt_test_config_that_changes_semantics_is_reported_and_not_promoted() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest should parse");
+    manifest["nodes"]
+        .as_object_mut()
+        .expect("manifest nodes should be an object")
+        .insert(
+            "test.demo.configured_unique_stg_orders_id".to_string(),
+            json!({
+                "unique_id": "test.demo.configured_unique_stg_orders_id",
+                "resource_type": "test",
+                "relation_name": null,
+                "attached_node": "model.demo.stg_orders",
+                "column_name": "id",
+                "config": {
+                    "where": "id > 5",
+                    "severity": "warn",
+                    "warn_if": "> 1",
+                    "error_if": "> 2",
+                    "limit": 10,
+                    "fail_calc": "sum(failures)"
+                },
+                "test_metadata": {
+                    "name": "unique",
+                    "kwargs": {"column_name": "id"},
+                    "namespace": null
+                },
+                "depends_on": {"nodes": ["model.demo.stg_orders"]}
+            }),
+        );
+
+    let json = serde_json::to_string(&manifest).expect("manifest should serialize");
+    let manifest = parse_dbt_manifest(&json).expect("manifest should parse");
+    let metadata = manifest
+        .relation_constraints()
+        .iter()
+        .find(|metadata| metadata.relation() == "warehouse.analytics.stg_orders")
+        .expect("stg_orders diagnostic metadata");
+    let diagnostic = metadata
+        .diagnostics()
+        .iter()
+        .find(|diagnostic| diagnostic.code() == "unsupported_dbt_test_config")
+        .expect("configured test diagnostic");
+
+    for key in ["where", "severity", "warn_if", "error_if", "limit", "fail_calc"] {
+        assert!(diagnostic.message().contains(key));
+    }
+    assert!(!metadata.constraints().iter().any(|constraint| {
+        matches!(
+            constraint,
+            RelationConstraint::UniqueKey(key)
+                if key.columns() == ["id"]
+                    && key.evidence().iter().any(|evidence| {
+                        evidence.provenance().source_kind() == ConstraintSourceKind::DbtTest
+                            && evidence.provenance().source_id()
+                                == "test.demo.configured_unique_stg_orders_id"
+                    })
+        )
+    }));
+}
+
+#[test]
+fn dbt_check_and_custom_constraints_are_reported() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest should parse");
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type": "check", "expression": "amount > 0"},
+        {"type": "custom", "name": "warehouse_specific"}
+    ]);
+
+    let json = serde_json::to_string(&manifest).expect("manifest should serialize");
+    let manifest = parse_dbt_manifest(&json).expect("manifest should parse");
+    let metadata = manifest
+        .relation_constraints()
+        .iter()
+        .find(|metadata| metadata.relation() == "warehouse.analytics.stg_orders")
+        .expect("stg_orders diagnostic metadata");
+
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_dbt_constraint"));
+}
+
+#[test]
+fn relationless_unsupported_dbt_test_is_emitted_at_bundle_level() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest should parse");
+    let nodes = manifest["nodes"]
+        .as_object_mut()
+        .expect("manifest nodes should be an object");
+    nodes.insert(
+        "seed.demo.relationless".to_string(),
+        json!({
+            "unique_id": "seed.demo.relationless",
+            "resource_type": "seed",
+            "relation_name": null,
+            "columns": {}
+        }),
+    );
+    nodes.insert(
+        "test.demo.unscoped_custom".to_string(),
+        json!({
+            "unique_id": "test.demo.unscoped_custom",
+            "resource_type": "test",
+            "relation_name": null,
+            "attached_node": "seed.demo.relationless",
+            "test_metadata": {
+                "name": "expression_is_true",
+                "kwargs": {},
+                "namespace": "dbt_utils"
+            },
+            "depends_on": {"nodes": ["seed.demo.relationless"]}
+        }),
+    );
+
+    let json = serde_json::to_string(&manifest).expect("manifest should serialize");
+    let manifest = parse_dbt_manifest(&json).expect("manifest should parse");
+    assert!(manifest
+        .constraint_diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_dbt_test"));
+
+    let bundle = analyze_dbt_manifest(&manifest, "postgresql", &PostgreSqlDialect {})
+        .expect("dbt manifest should analyze");
+    assert!(bundle
+        .constraint_diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_dbt_test"));
+
+    let emitted: Value =
+        serde_json::from_str(&to_bundle_json(&bundle)).expect("bundle JSON should parse");
+    assert_eq!(
+        emitted["constraint_diagnostics"][0]["code"],
+        "unsupported_dbt_test"
+    );
+}
