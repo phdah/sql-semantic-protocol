@@ -1903,12 +1903,8 @@ fn diagnose_local_query_predicates(
     if let Some(with) = &query.with {
         for cte in &with.cte_tables {
             let mut output_diagnostics = Vec::new();
-            let output = analyze_query_output(
-                &cte.query,
-                &local_outputs,
-                &mut output_diagnostics,
-                None,
-            );
+            let output =
+                analyze_query_output(&cte.query, &local_outputs, &mut output_diagnostics, None);
             local_outputs.insert(cte.alias.name.to_string(), output);
         }
     }
@@ -2338,8 +2334,7 @@ fn analyze_select_relations_with_locals(
 ) -> RelationAnalysis {
     let mut analysis = RelationAnalysis::default();
     let mut scope_diagnostics = Vec::new();
-    let output_scope =
-        build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
+    let output_scope = build_output_scope(select, local_outputs, &[], &mut scope_diagnostics, None);
     let relation_scope = RelationAnalysisScope {
         local_relations,
         local_outputs,
