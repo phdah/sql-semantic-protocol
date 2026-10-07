@@ -979,9 +979,7 @@ fn residual_condition_to_value(residual: &crate::protocol::ResidualCondition) ->
         "identity": residual.identity()
     });
 
-    if let (Some(layer_id), Some(scope)) =
-        (residual.origin_layer_id(), residual.origin_scope())
-    {
+    if let (Some(layer_id), Some(scope)) = (residual.origin_layer_id(), residual.origin_scope()) {
         value["origin"] = json!({
             "layer_id": layer_id,
             "scope": scope
