@@ -8,6 +8,9 @@ use sql_semantic_protocol::{
     ValueDomain,
 };
 
+type ColumnIdentity<'a> = (&'a str, &'a str);
+type ColumnEquality<'a> = (ColumnIdentity<'a>, ColumnIdentity<'a>);
+
 #[derive(Debug, Clone, Copy)]
 struct SourceRow {
     row_id: i64,
@@ -354,7 +357,7 @@ fn assert_exact_matches_oracle(connection: &Connection, predicate: &str) {
     );
 }
 
-fn column_pair(predicate: &Predicate) -> Option<((&str, &str), (&str, &str))> {
+fn column_pair(predicate: &Predicate) -> Option<ColumnEquality<'_>> {
     let Predicate::Comparison(comparison) = predicate else {
         return None;
     };
@@ -381,7 +384,7 @@ fn column_pair(predicate: &Predicate) -> Option<((&str, &str), (&str, &str))> {
 
 fn collect_join_equalities<'a>(
     predicate: &'a Predicate,
-    equalities: &mut Vec<((&'a str, &'a str), (&'a str, &'a str))>,
+    equalities: &mut Vec<ColumnEquality<'a>>,
 ) {
     if let Some(equality) = column_pair(predicate) {
         equalities.push(equality);
@@ -395,7 +398,7 @@ fn collect_join_equalities<'a>(
     }
 }
 
-fn join_equalities(joins: &[Join]) -> Vec<((&str, &str), (&str, &str))> {
+fn join_equalities(joins: &[Join]) -> Vec<ColumnEquality<'_>> {
     let mut equalities = Vec::new();
     for join in joins {
         if let Some(condition) = join.condition() {
@@ -429,7 +432,7 @@ fn pair_matches_domains(left: &LeftRow, right: &RightRow, domains: &[ColumnDomai
 fn pair_matches_equalities(
     left: &LeftRow,
     right: &RightRow,
-    equalities: &[((&str, &str), (&str, &str))],
+    equalities: &[ColumnEquality<'_>],
 ) -> bool {
     equalities.iter().all(
         |((left_relation, left_column), (right_relation, right_column))| {
