@@ -230,6 +230,61 @@
         }
       }
     },
+    "composedJoinColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "column",
+        "relation_instance"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
+        "column": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation_instance": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "composedJoinEquality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "left",
+        "right",
+        "join_kind",
+        "origin_layer_id"
+      ],
+      "properties": {
+        "left": {
+          "$ref": "#/$defs/composedJoinColumn"
+        },
+        "right": {
+          "$ref": "#/$defs/composedJoinColumn"
+        },
+        "join_kind": {
+          "enum": [
+            "inner",
+            "left",
+            "right",
+            "full",
+            "cross",
+            "left_semi",
+            "right_semi",
+            "left_anti",
+            "right_anti",
+            "unknown"
+          ]
+        },
+        "origin_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
     "resolvedComposedSemantics": {
       "type": "object",
       "additionalProperties": false,
@@ -237,6 +292,7 @@
         "status",
         "dependencies",
         "column_domains",
+        "join_equalities",
         "condition_exactness",
         "output",
         "diagnostics"
@@ -256,6 +312,14 @@
           "type": "array",
           "items": {
             "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
+        },
+        "join_equalities": {
+          "description": "Physical source-column equalities required by the composed row-condition contract, including their source relation instances, join kind, and originating layer.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/composedJoinEquality"
           }
         },
         "output": {
