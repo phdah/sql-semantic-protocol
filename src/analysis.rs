@@ -38,14 +38,16 @@ use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonOperator, ComparisonPredicate, Diagnostic, DiagnosticArea, DiagnosticSeverity,
+    ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness, Diagnostic,
+    DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
     InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
     LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
-    ProtocolStatement, QueryStatement, RelationRef, ScalarSubqueryExpression, SetMode, SetOperand,
-    SetOperation, SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression,
+    ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
+    ScalarSubqueryExpression, SetMode, SetOperand, SetOperation, SetOperator, SetQuantifier,
+    SourceRelation, SubquerySemantics, UnaryExpression,
     UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
     ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
     WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
@@ -327,6 +329,11 @@ fn analyze_merge(
         Vec::new(),
         Predicates::new(None, None, None),
         Vec::new(),
+        ConditionExactness::from_residuals(vec![ResidualCondition::new(
+            ResidualConditionReason::AnalysisDiagnostic,
+            ConditionClause::RowSetOperator,
+            "merge",
+        )]),
         Output::new(Vec::new()),
         diagnostics,
     )
@@ -541,6 +548,14 @@ fn analyze_query(
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
     }
     inspect_query_features(query, &mut diagnostics);
+    let condition_exactness = analyze_query_condition_exactness(
+        query,
+        &predicates,
+        &relation_analysis.sources,
+        &relation_analysis.joins,
+        &diagnostics,
+        false,
+    );
     sort_diagnostics(&mut diagnostics);
 
     QueryStatement::new(
@@ -549,12 +564,496 @@ fn analyze_query(
         relation_analysis.joins,
         predicates,
         column_domains,
+        condition_exactness,
         output,
         diagnostics,
     )
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_produced_relation(produced_relation)
+}
+
+fn analyze_query_condition_exactness(
+    query: &SqlQuery,
+    predicates: &Predicates,
+    sources: &[SourceRelation],
+    joins: &[ProtocolJoin],
+    diagnostics: &[Diagnostic],
+    correlated: bool,
+) -> ConditionExactness {
+    let mut residuals = Vec::new();
+
+    if let Some(predicate) = predicates.where_predicate() {
+        append_predicate_residuals(
+            predicate,
+            ConditionClause::Where,
+            "where",
+            sources,
+            false,
+            &mut residuals,
+        );
+    }
+
+    if predicates.having_predicate().is_some() {
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::Having,
+            ConditionClause::Having,
+            "having",
+        ));
+    }
+
+    if predicates.qualify_predicate().is_some() {
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::Qualify,
+            ConditionClause::Qualify,
+            "qualify",
+        ));
+    }
+
+    for (index, join) in joins.iter().enumerate() {
+        let identity = format!("join:{index}");
+        match join.kind() {
+            JoinKind::Inner => {
+                if let Some(predicate) = join.condition() {
+                    append_predicate_residuals(
+                        predicate,
+                        ConditionClause::JoinOn,
+                        &identity,
+                        sources,
+                        true,
+                        &mut residuals,
+                    );
+                }
+            }
+            JoinKind::Cross => {}
+            JoinKind::Left | JoinKind::Right | JoinKind::Full => {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::OuterJoin,
+                    ConditionClause::JoinOn,
+                    identity,
+                ));
+            }
+            JoinKind::LeftSemi
+            | JoinKind::RightSemi
+            | JoinKind::LeftAnti
+            | JoinKind::RightAnti
+            | JoinKind::Unknown => {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::UnsupportedJoinKind,
+                    ConditionClause::JoinOn,
+                    identity,
+                ));
+            }
+        }
+    }
+
+    let mut source_counts = BTreeMap::new();
+    for source in sources {
+        *source_counts.entry(source.name().to_string()).or_insert(0usize) += 1;
+    }
+    for (source, count) in source_counts {
+        if count > 1 {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::RepeatedSourceInstance,
+                ConditionClause::RowSetOperator,
+                format!("source:{source}"),
+            ));
+        }
+    }
+
+    collect_set_expr_exactness_residuals(query.body.as_ref(), "body", &mut residuals);
+
+    if let Some(limit_clause) = &query.limit_clause {
+        let text = limit_clause.to_string().to_ascii_uppercase();
+        if text.contains("OFFSET") {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::Offset,
+                ConditionClause::RowSetOperator,
+                "offset",
+            ));
+        }
+        if text.contains("LIMIT") || !text.contains("OFFSET") {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::Limit,
+                ConditionClause::RowSetOperator,
+                "limit",
+            ));
+        }
+    }
+
+    if query.fetch.is_some() {
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::Fetch,
+            ConditionClause::RowSetOperator,
+            "fetch",
+        ));
+    }
+
+    if correlated {
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::CorrelatedSubquery,
+            ConditionClause::Where,
+            "correlation",
+        ));
+    }
+
+    for diagnostic in diagnostics {
+        let clause = match diagnostic.code() {
+            "unsupported_natural_join_condition"
+            | "unsupported_join_constraint"
+            | "unsupported_join_operator"
+            | "unresolved_join_column_lineage" => Some(ConditionClause::JoinOn),
+            "unsupported_table_factor" | "unsupported_lateral_view" => {
+                Some(ConditionClause::RowSetOperator)
+            }
+            _ => None,
+        };
+        if let Some(clause) = clause {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::AnalysisDiagnostic,
+                clause,
+                format!("diagnostic:{}", diagnostic.code()),
+            ));
+        }
+    }
+
+    ConditionExactness::from_residuals(residuals)
+}
+
+fn collect_set_expr_exactness_residuals(
+    expression: &SetExpr,
+    identity: &str,
+    residuals: &mut Vec<ResidualCondition>,
+) {
+    match expression {
+        SetExpr::Select(select) => {
+            if matches!(select.distinct, Some(SqlDistinct::On(_))) {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::DistinctOn,
+                    ConditionClause::RowSetOperator,
+                    format!("{identity}:distinct_on"),
+                ));
+            }
+            if select.top.is_some() {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::Top,
+                    ConditionClause::RowSetOperator,
+                    format!("{identity}:top"),
+                ));
+            }
+            if select.prewhere.is_some() {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::Prewhere,
+                    ConditionClause::Where,
+                    format!("{identity}:prewhere"),
+                ));
+            }
+            if select.connect_by.is_some() {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::ConnectBy,
+                    ConditionClause::RowSetOperator,
+                    format!("{identity}:connect_by"),
+                ));
+            }
+            collect_table_sample_residuals(select, identity, residuals);
+        }
+        SetExpr::Query(query) => {
+            collect_set_expr_exactness_residuals(
+                query.body.as_ref(),
+                &format!("{identity}:query"),
+                residuals,
+            );
+            if query.limit_clause.is_some() {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::Limit,
+                    ConditionClause::RowSetOperator,
+                    format!("{identity}:query:limit"),
+                ));
+            }
+            if query.fetch.is_some() {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::Fetch,
+                    ConditionClause::RowSetOperator,
+                    format!("{identity}:query:fetch"),
+                ));
+            }
+        }
+        SetExpr::SetOperation {
+            left,
+            op,
+            right,
+            ..
+        } => {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::SetOperation,
+                ConditionClause::SetOperation,
+                format!("{identity}:{}", analyze_set_operator(*op).as_str()),
+            ));
+            collect_set_expr_exactness_residuals(
+                left,
+                &format!("{identity}:left"),
+                residuals,
+            );
+            collect_set_expr_exactness_residuals(
+                right,
+                &format!("{identity}:right"),
+                residuals,
+            );
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => {}
+    }
+}
+
+fn collect_table_sample_residuals(
+    select: &Select,
+    identity: &str,
+    residuals: &mut Vec<ResidualCondition>,
+) {
+    let mut index = 0usize;
+    for source in &select.from {
+        if table_factor_has_sample(&source.relation) {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::TableSample,
+                ConditionClause::RowSetOperator,
+                format!("{identity}:tablesample:{index}"),
+            ));
+        }
+        index += 1;
+        for join in &source.joins {
+            if table_factor_has_sample(&join.relation) {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::TableSample,
+                    ConditionClause::RowSetOperator,
+                    format!("{identity}:tablesample:{index}"),
+                ));
+            }
+            index += 1;
+        }
+    }
+}
+
+fn table_factor_has_sample(factor: &TableFactor) -> bool {
+    match factor {
+        TableFactor::Table { sample, .. } | TableFactor::Derived { sample, .. } => sample.is_some(),
+        _ => false,
+    }
+}
+
+fn append_predicate_residuals(
+    predicate: &Predicate,
+    clause: ConditionClause,
+    identity: &str,
+    sources: &[SourceRelation],
+    allow_join_equality: bool,
+    residuals: &mut Vec<ResidualCondition>,
+) {
+    for reason in predicate_residual_reasons(predicate, clause, sources, allow_join_equality) {
+        residuals.push(ResidualCondition::new(reason, clause, identity));
+    }
+}
+
+fn predicate_residual_reasons(
+    predicate: &Predicate,
+    clause: ConditionClause,
+    sources: &[SourceRelation],
+    allow_join_equality: bool,
+) -> Vec<ResidualConditionReason> {
+    match predicate {
+        Predicate::Comparison(comparison) => {
+            match (comparison.left(), comparison.right()) {
+                (Expression::Column(_), Expression::Literal(_))
+                | (Expression::Literal(_), Expression::Column(_)) => Vec::new(),
+                (Expression::Column(_), Expression::Column(_))
+                    if allow_join_equality && comparison.operator() == ComparisonOperator::Eq =>
+                {
+                    Vec::new()
+                }
+                (Expression::Column(_), Expression::Column(_)) => {
+                    vec![ResidualConditionReason::ColumnComparison]
+                }
+                _ => vec![ResidualConditionReason::ComputedExpression],
+            }
+        }
+        Predicate::And(logical) => collect_logical_residual_reasons(
+            logical,
+            clause,
+            sources,
+            allow_join_equality,
+        ),
+        Predicate::Or(logical) => {
+            if clause == ConditionClause::JoinOn {
+                return vec![ResidualConditionReason::UnsupportedPredicate];
+            }
+
+            let child_reasons =
+                collect_logical_residual_reasons(logical, clause, sources, allow_join_equality);
+            if !child_reasons.is_empty() {
+                return child_reasons;
+            }
+
+            let mut columns = BTreeSet::new();
+            collect_predicate_column_refs(predicate, sources, &mut columns);
+            if columns.len() > 1 {
+                vec![ResidualConditionReason::CrossColumnDisjunction]
+            } else {
+                Vec::new()
+            }
+        }
+        Predicate::Not(_) => vec![ResidualConditionReason::LogicalNot],
+        Predicate::IsNull(predicate) => {
+            if matches!(predicate.expression(), Expression::Column(_)) {
+                Vec::new()
+            } else {
+                vec![ResidualConditionReason::ComputedExpression]
+            }
+        }
+        Predicate::In(predicate) => {
+            if matches!(predicate.expression(), Expression::Column(_))
+                && predicate
+                    .values()
+                    .iter()
+                    .all(|value| matches!(value, Expression::Literal(_)))
+            {
+                Vec::new()
+            } else {
+                vec![ResidualConditionReason::ComputedExpression]
+            }
+        }
+        Predicate::Between(predicate) => {
+            if matches!(predicate.expression(), Expression::Column(_))
+                && matches!(predicate.lower(), Expression::Literal(_))
+                && matches!(predicate.upper(), Expression::Literal(_))
+            {
+                Vec::new()
+            } else {
+                vec![ResidualConditionReason::ComputedExpression]
+            }
+        }
+        Predicate::Exists(_) | Predicate::InSubquery(_) => {
+            vec![ResidualConditionReason::SubqueryPredicate]
+        }
+        Predicate::BooleanExpression(Expression::Literal(literal)) => match literal.value() {
+            LiteralValue::Boolean(true) => Vec::new(),
+            LiteralValue::Boolean(false) | LiteralValue::Null => {
+                vec![ResidualConditionReason::ConstantFalseOrNull]
+            }
+            LiteralValue::Number(_) | LiteralValue::Text(_) => {
+                vec![ResidualConditionReason::UnsupportedPredicate]
+            }
+        },
+        Predicate::BooleanExpression(_) => vec![ResidualConditionReason::ComputedExpression],
+        Predicate::Unknown(_) | Predicate::Unsupported(_) => {
+            vec![ResidualConditionReason::UnsupportedPredicate]
+        }
+    }
+}
+
+fn collect_logical_residual_reasons(
+    logical: &LogicalPredicate,
+    clause: ConditionClause,
+    sources: &[SourceRelation],
+    allow_join_equality: bool,
+) -> Vec<ResidualConditionReason> {
+    let mut reasons = Vec::new();
+    for operand in logical.operands() {
+        for reason in predicate_residual_reasons(operand, clause, sources, allow_join_equality) {
+            if !reasons.contains(&reason) {
+                reasons.push(reason);
+            }
+        }
+    }
+    reasons
+}
+
+fn collect_predicate_column_refs(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+    columns: &mut BTreeSet<ColumnRef>,
+) {
+    match predicate {
+        Predicate::Comparison(comparison) => {
+            collect_expression_column_refs(comparison.left(), sources, columns);
+            collect_expression_column_refs(comparison.right(), sources, columns);
+        }
+        Predicate::And(logical) | Predicate::Or(logical) => {
+            for operand in logical.operands() {
+                collect_predicate_column_refs(operand, sources, columns);
+            }
+        }
+        Predicate::Not(predicate) => {
+            collect_predicate_column_refs(predicate.operand(), sources, columns)
+        }
+        Predicate::IsNull(predicate) => {
+            collect_expression_column_refs(predicate.expression(), sources, columns)
+        }
+        Predicate::In(predicate) => {
+            collect_expression_column_refs(predicate.expression(), sources, columns);
+            for value in predicate.values() {
+                collect_expression_column_refs(value, sources, columns);
+            }
+        }
+        Predicate::InSubquery(predicate) => {
+            collect_expression_column_refs(predicate.expression(), sources, columns)
+        }
+        Predicate::Between(predicate) => {
+            collect_expression_column_refs(predicate.expression(), sources, columns);
+            collect_expression_column_refs(predicate.lower(), sources, columns);
+            collect_expression_column_refs(predicate.upper(), sources, columns);
+        }
+        Predicate::BooleanExpression(expression) => {
+            collect_expression_column_refs(expression, sources, columns)
+        }
+        Predicate::Exists(_) | Predicate::Unknown(_) | Predicate::Unsupported(_) => {}
+    }
+}
+
+fn collect_expression_column_refs(
+    expression: &Expression,
+    sources: &[SourceRelation],
+    columns: &mut BTreeSet<ColumnRef>,
+) {
+    match expression {
+        Expression::Column(column) => {
+            columns.insert(resolve_column(column, sources));
+        }
+        Expression::Function(function) => {
+            for argument in function.arguments() {
+                collect_expression_column_refs(argument, sources, columns);
+            }
+        }
+        Expression::Case(case) => {
+            if let Some(operand) = case.operand() {
+                collect_expression_column_refs(operand, sources, columns);
+            }
+            for branch in case.branches() {
+                collect_expression_column_refs(branch.condition(), sources, columns);
+                collect_expression_column_refs(branch.result(), sources, columns);
+            }
+            if let Some(else_result) = case.else_result() {
+                collect_expression_column_refs(else_result, sources, columns);
+            }
+        }
+        Expression::BooleanPredicate(predicate) => {
+            collect_predicate_column_refs(predicate, sources, columns)
+        }
+        Expression::Unary(unary) => {
+            collect_expression_column_refs(unary.operand(), sources, columns)
+        }
+        Expression::Binary(binary) => {
+            collect_expression_column_refs(binary.left(), sources, columns);
+            collect_expression_column_refs(binary.right(), sources, columns);
+        }
+        Expression::AggregateFunction(_)
+        | Expression::WindowFunction(_)
+        | Expression::Literal(_)
+        | Expression::ScalarSubquery(_)
+        | Expression::Unknown(_)
+        | Expression::Unsupported(_) => {}
+    }
 }
 
 fn analyze_query_predicates(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
@@ -877,8 +1376,11 @@ fn analyze_set_expr_column_domains(
                 &mut relation_diagnostics,
                 &mut derived_index,
             );
+            let predicate_domains = derive_column_domains(&domain_predicates, &relations.sources);
+            let join_domains =
+                derive_inner_join_column_domains(&relations.joins, &relations.sources);
             let own_domains = remap_local_column_domains(
-                derive_column_domains(&domain_predicates, &relations.sources),
+                intersect_column_domain_sets([predicate_domains, join_domains]),
                 local_outputs,
             );
             let source_domains = collect_select_local_domains(
@@ -918,6 +1420,76 @@ fn analyze_set_expr_column_domains(
         | SetExpr::Update(_)
         | SetExpr::Delete(_)
         | SetExpr::Table(_) => Vec::new(),
+    }
+}
+
+fn derive_inner_join_column_domains(
+    joins: &[ProtocolJoin],
+    sources: &[SourceRelation],
+) -> Vec<ColumnDomain> {
+    intersect_column_domain_sets(
+        joins
+            .iter()
+            .filter(|join| join.kind() == JoinKind::Inner)
+            .filter_map(ProtocolJoin::condition)
+            .map(|predicate| derive_inner_join_predicate_domains(predicate, sources)),
+    )
+}
+
+fn derive_inner_join_predicate_domains(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+) -> Vec<ColumnDomain> {
+    match predicate {
+        Predicate::And(logical) => intersect_column_domain_sets(
+            logical
+                .operands()
+                .iter()
+                .map(|operand| derive_inner_join_predicate_domains(operand, sources)),
+        ),
+        Predicate::Comparison(comparison)
+            if matches!(
+                (comparison.left(), comparison.right()),
+                (Expression::Column(_), Expression::Literal(_))
+                    | (Expression::Literal(_), Expression::Column(_))
+            ) =>
+        {
+            derive_column_domains(
+                &Predicates::new(Some(predicate.clone()), None, None),
+                sources,
+            )
+        }
+        Predicate::IsNull(predicate)
+            if matches!(predicate.expression(), Expression::Column(_)) =>
+        {
+            derive_column_domains(
+                &Predicates::new(Some(Predicate::IsNull(predicate.clone())), None, None),
+                sources,
+            )
+        }
+        Predicate::In(predicate)
+            if matches!(predicate.expression(), Expression::Column(_))
+                && predicate
+                    .values()
+                    .iter()
+                    .all(|value| matches!(value, Expression::Literal(_))) =>
+        {
+            derive_column_domains(
+                &Predicates::new(Some(Predicate::In(predicate.clone())), None, None),
+                sources,
+            )
+        }
+        Predicate::Between(predicate)
+            if matches!(predicate.expression(), Expression::Column(_))
+                && matches!(predicate.lower(), Expression::Literal(_))
+                && matches!(predicate.upper(), Expression::Literal(_)) =>
+        {
+            derive_column_domains(
+                &Predicates::new(Some(Predicate::Between(predicate.clone())), None, None),
+                sources,
+            )
+        }
+        _ => Vec::new(),
     }
 }
 
@@ -4312,9 +4884,24 @@ fn analyze_subquery_semantics(
     );
     let predicates =
         analyze_query_predicates_with_outer_scope(query, outer_scope, &mut diagnostics);
+    let column_domains = analyze_query_column_domains(
+        query,
+        &BTreeSet::new(),
+        &BTreeMap::new(),
+        &BTreeMap::new(),
+        None,
+    );
     let correlations = collect_query_correlations(query, outer_scope);
 
     inspect_query_features(query, &mut diagnostics);
+    let condition_exactness = analyze_query_condition_exactness(
+        query,
+        &predicates,
+        &relations.sources,
+        &relations.joins,
+        &diagnostics,
+        !correlations.is_empty(),
+    );
     sort_diagnostics(&mut diagnostics);
 
     SubquerySemantics::new(
@@ -4322,6 +4909,8 @@ fn analyze_subquery_semantics(
         correlations,
         output,
         predicates,
+        column_domains,
+        condition_exactness,
         diagnostics,
     )
 }
