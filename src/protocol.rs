@@ -1400,7 +1400,11 @@ impl CaseExpression {
         self.else_result.as_deref()
     }
 
-    /// Return physical source-column domains selecting the explicit or implicit ELSE branch.
+    /// Return source-column domains selecting the explicit or implicit ELSE branch.
+    ///
+    /// Local-relation copies preserve these domains, and composed layers remap them to physical
+    /// sources only through proven plain-copy identity paths. Query-level filters are represented
+    /// separately in column domains and are not folded into CASE branch reachability.
     pub fn else_source_domains(&self) -> &CaseSourceDomains {
         &self.else_source_domains
     }
@@ -1437,7 +1441,11 @@ impl CaseBranch {
         &self.result
     }
 
-    /// Return physical source-column domains selecting this branch after earlier branches fail.
+    /// Return source-column domains selecting this branch after earlier branches fail.
+    ///
+    /// Local-relation copies preserve these domains, and composed layers remap them to physical
+    /// sources only through proven plain-copy identity paths. Query-level filters are represented
+    /// separately in column domains and are not folded into CASE branch reachability.
     pub fn source_domains(&self) -> &CaseSourceDomains {
         &self.source_domains
     }
@@ -1464,7 +1472,11 @@ impl CaseSourceDomainAlternative {
     }
 }
 
-/// Physical source-column domains controlling CASE branch selection.
+/// Source-column domains controlling CASE branch selection.
+///
+/// Reachability reflects CASE control flow, including prior branches, but does not intersect
+/// query-level WHERE, HAVING, or QUALIFY domains. During composition, reachable domains are
+/// rewritten to physical sources only through proven identity columns; unsafe hops become Unknown.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum CaseSourceDomains {
