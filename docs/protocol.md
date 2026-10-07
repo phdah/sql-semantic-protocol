@@ -79,7 +79,12 @@ constraints for named relations. It is separate from transformation semantics an
 `source_schemas`; a relation can therefore carry metadata even when a queryless `CREATE TABLE`
 produces no transformation layer.
 
-Each relation entry contains a deterministic `constraints` array. Constraint `kind` is one of:
+Each relation entry contains a deterministic `constraints` array. Relation-scoped unsupported
+metadata remains in that entry's optional `diagnostics` array. Diagnostics that cannot be
+assigned to a canonical relation are emitted once in the optional top-level
+`constraint_diagnostics` array.
+
+Constraint `kind` is one of:
 
 - `primary_key`: ordered `columns` forming the declared primary key.
 - `unique_key`: ordered `columns` forming one declared unique key.
@@ -130,9 +135,20 @@ non-negated `CHECK (column IN (...))` constraints. CHECK expressions that cannot
 safely as a finite accepted-value set emit an `unsupported_check_constraint` diagnostic instead
 of being guessed or silently dropped. The dbt adapter normalizes explicit `primary_key`, `unique`,
 `foreign_key`, and `not_null` declarations plus built-in `unique`, `relationships`,
-`not_null`, and `accepted_values` tests from `manifest.json`. Unsupported attached dbt test
-kinds are reported with an `unsupported_dbt_test` diagnostic rather than silently disappearing.
-The catalog artifact does not contribute constraint facts.
+`not_null`, and `accepted_values` tests from `manifest.json`. Unsupported attached dbt generic test kinds are reported with an `unsupported_dbt_test`
+diagnostic rather than silently disappearing. Singular tests, which do not carry
+`test_metadata`, are reported as `unsupported_dbt_singular_test`. If a test cannot be scoped
+to a canonical relation, its diagnostic is emitted in the bundle-level
+`constraint_diagnostics` array instead of being dropped.
+
+Built-in dbt tests are carried only when their execution config preserves the canonical constraint
+meaning. The default `severity: error`, `warn_if: "!= 0"`, `error_if: "!= 0"`, and
+`fail_calc: "count(*)"` are compatible. A non-empty `where`, non-default severity or threshold,
+non-null `limit`, or non-default `fail_calc` produces `unsupported_dbt_test_config` and the
+adapter does not emit a stronger unconditional constraint. dbt `check` constraints use the same
+`unsupported_check_constraint` diagnostic as unsupported SQL CHECK semantics; other unsupported
+dbt constraint types, including `custom`, use `unsupported_dbt_constraint`. The catalog artifact
+does not contribute constraint facts.
 
 Constraint metadata is preserved through target selection. Key facts are not propagated through
 projection, join, aggregation, set operations, INSERT, or MERGE simply because a source key exists.
