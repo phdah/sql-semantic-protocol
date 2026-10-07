@@ -2549,9 +2549,13 @@ fn remap_case_source_domains_to_physical(
     for alternative in alternatives {
         let mut mapped_domains = BTreeMap::<ColumnRef, ValueDomain>::new();
         for column_domain in alternative.column_domains() {
-            let source = match resolve_case_source_column(column_domain.column(), scope) {
+            let source = match resolve_plain_source_column(column_domain.column(), scope) {
                 Ok(source) => source,
-                Err(reason) => return CaseSourceDomains::unknown(reason),
+                Err(reason) => {
+                    return CaseSourceDomains::unknown(format!(
+                        "CASE branch source {reason}"
+                    ));
+                }
             };
             let column = ColumnRef::new(
                 Some(source.relation().to_string()),
@@ -2587,7 +2591,7 @@ fn remap_case_source_domains_to_physical(
     CaseSourceDomains::reachable(mapped_alternatives)
 }
 
-fn resolve_case_source_column(
+fn resolve_plain_source_column(
     column: &ColumnRef,
     scope: &[OutputRelation],
 ) -> Result<LineageSource, String> {
@@ -2618,13 +2622,13 @@ fn resolve_case_source_column(
                 let candidate = matches.next()?;
                 if matches.next().is_some() {
                     return Some(Err(format!(
-                        "CASE branch source column {} is ambiguous within the local relation",
+                        "column {} is ambiguous within the local relation",
                         qualified_column_name(column.relation(), column.name())
                     )));
                 }
                 Some(candidate.plain_copy_source().cloned().ok_or_else(|| {
                     format!(
-                        "CASE branch source column {} is produced by a computed local expression and cannot be mapped safely to physical lineage",
+                        "column {} is produced by a computed local expression and cannot be mapped safely to physical lineage",
                         qualified_column_name(column.relation(), column.name())
                     )
                 }))
@@ -2636,11 +2640,11 @@ fn resolve_case_source_column(
         [Ok(source)] => Ok(source.clone()),
         [Err(reason)] => Err(reason.clone()),
         [] => Err(format!(
-            "CASE branch source column {} could not be resolved to physical lineage",
+            "column {} could not be resolved to physical lineage",
             qualified_column_name(column.relation(), column.name())
         )),
         _ => Err(format!(
-            "CASE branch source column {} is ambiguous without source schema information",
+            "column {} is ambiguous without source schema information",
             qualified_column_name(column.relation(), column.name())
         )),
     }
