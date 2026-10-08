@@ -770,6 +770,9 @@
         "condition_exactness": {
           "description": "States whether domains plus reported join equalities exactly characterize row membership before row-set shaping.",
           "$ref": "#/$defs/conditionExactness"
+        },
+        "group_witness": {
+          "$ref": "#/$defs/groupWitness"
         }
       }
     },
@@ -3571,35 +3574,69 @@
     "setWitnessBoundary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "relation", "tuple_columns"],
+      "required": [
+        "kind",
+        "relation",
+        "tuple_columns"
+      ],
       "properties": {
-        "kind": { "enum": ["physical", "intermediate"] },
-        "relation": { "$ref": "#/$defs/relationName" },
+        "kind": {
+          "enum": [
+            "physical",
+            "intermediate"
+          ]
+        },
+        "relation": {
+          "$ref": "#/$defs/relationName"
+        },
         "tuple_columns": {
-          "type": "array", "minItems": 1,
-          "items": { "$ref": "#/$defs/nonEmptyString" }
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
         }
       }
     },
     "setWitnessObligation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["branch_identity", "boundary", "matching_tuple_count"],
+      "required": [
+        "branch_identity",
+        "boundary",
+        "matching_tuple_count"
+      ],
       "properties": {
-        "branch_identity": { "$ref": "#/$defs/nonEmptyString" },
-        "boundary": { "$ref": "#/$defs/setWitnessBoundary" },
-        "matching_tuple_count": { "type": "integer", "minimum": 0 }
+        "branch_identity": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "boundary": {
+          "$ref": "#/$defs/setWitnessBoundary"
+        },
+        "matching_tuple_count": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "setWitnessCase": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["output_tuple_count", "obligations"],
+      "required": [
+        "output_tuple_count",
+        "obligations"
+      ],
       "properties": {
-        "output_tuple_count": { "type": "integer", "minimum": 0 },
+        "output_tuple_count": {
+          "type": "integer",
+          "minimum": 0
+        },
         "obligations": {
-          "type": "array", "minItems": 1,
-          "items": { "$ref": "#/$defs/setWitnessObligation" }
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/setWitnessObligation"
+          }
         }
       }
     },
@@ -3608,23 +3645,44 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["status", "cases"],
+          "required": [
+            "status",
+            "cases"
+          ],
           "properties": {
-            "status": { "const": "exact" },
+            "status": {
+              "const": "exact"
+            },
             "cases": {
-              "type": "array", "minItems": 1,
-              "items": { "$ref": "#/$defs/setWitnessCase" }
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/setWitnessCase"
+              }
             }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["status", "reason", "origin"],
+          "required": [
+            "status",
+            "reason",
+            "origin"
+          ],
           "properties": {
-            "status": { "const": "residual" },
-            "reason": { "$ref": "#/$defs/nonEmptyString" },
-            "origin": { "type": ["string", "null"] }
+            "status": {
+              "const": "residual"
+            },
+            "reason": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "origin": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
           }
         }
       ]
@@ -3683,6 +3741,232 @@
         },
         "operation": {
           "$ref": "#/$defs/setOperation"
+        }
+      }
+    },
+    "groupWitnessColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "name"
+      ],
+      "properties": {
+        "relation": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "groupWitnessTest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "operator",
+        "bound"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "every",
+            "some",
+            "sum"
+          ]
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "neq",
+            "lt",
+            "lte",
+            "gt",
+            "gte"
+          ]
+        },
+        "bound": {
+          "$ref": "#/$defs/literalExpression"
+        }
+      }
+    },
+    "groupWitnessCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min_rows",
+        "max_rows",
+        "min_non_null",
+        "max_non_null",
+        "tests"
+      ],
+      "properties": {
+        "min_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_rows": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "min_non_null": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_non_null": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/groupWitnessTest"
+          }
+        }
+      }
+    },
+    "groupWitnessDirection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "cases"
+          ],
+          "properties": {
+            "status": {
+              "const": "exact"
+            },
+            "cases": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/groupWitnessCase"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reason"
+          ],
+          "properties": {
+            "status": {
+              "const": "residual"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "groupWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boundary",
+        "group_keys",
+        "aggregate",
+        "argument",
+        "predicate",
+        "qualifying",
+        "rejected"
+      ],
+      "properties": {
+        "boundary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/groupWitnessColumn"
+          }
+        },
+        "aggregate": {
+          "anyOf": [
+            {
+              "enum": [
+                "count_rows",
+                "count_values",
+                "sum",
+                "min",
+                "max"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "argument": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/groupWitnessColumn"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "predicate": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "operator",
+                "bound"
+              ],
+              "properties": {
+                "operator": {
+                  "enum": [
+                    "eq",
+                    "neq",
+                    "lt",
+                    "lte",
+                    "gt",
+                    "gte"
+                  ]
+                },
+                "bound": {
+                  "$ref": "#/$defs/literalExpression"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualifying": {
+          "$ref": "#/$defs/groupWitnessDirection"
+        },
+        "rejected": {
+          "$ref": "#/$defs/groupWitnessDirection"
         }
       }
     }
