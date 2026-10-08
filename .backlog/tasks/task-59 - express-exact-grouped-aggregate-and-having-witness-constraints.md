@@ -31,4 +31,5 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 - [ ] #3 Prove exactness only for explicitly supported constraint classes; disjunctive and noninvertible cases remain residual, not approximated.
 - [ ] #4 Test computed output-domain bounds, physical lineage and group witness constraints with DuckDB differential comparisons, including impossible outcomes.
 - [ ] #5 Document the canonical contract and evaluate dbt, direct SQL and other adapters; sql-tdg TASK-28 consumes it.
+- [ ] #6 Expose sufficient typed source-group obligations to construct qualifying and provably HAVING-rejected groups, including row contribution counts, aggregate bounds and group identity; mark any unprovable matching or rejected class residual instead of delegating aggregate interpretation to sql-tdg.
 <!-- AC:END -->
