@@ -680,6 +680,17 @@ fn validate_schema_column_references(
             DiagnosticArea::Source,
             &format!("column '{reference}' is absent from available typed schema evidence"),
         ));
+        if output.columns().iter().any(|projected| {
+            let mut references = BTreeSet::new();
+            collect_expression_column_refs(projected.expression(), sources, &mut references);
+            references.contains(&column)
+        }) {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::UnknownSchemaColumn,
+                ConditionClause::Select,
+                format!("select:unknown_schema_column:{reference}"),
+            ));
+        }
         for (clause, identity) in
             condition_locations_for_column(&column, predicates, joins, sources)
         {
