@@ -1421,3 +1421,72 @@ fn seeded_two_and_three_source_joins_preserve_exact_equalities() {
         }
     }
 }
+
+
+#[test]
+fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
+    let connection = duckdb_connection();
+    connection
+        .execute_batch(
+            "CREATE TABLE third_rows (row_id BIGINT NOT NULL, c BIGINT, z BIGINT);
+             INSERT INTO third_rows VALUES (21, 1, 1), (22, 2, 2), (23, 3, 3), (24, NULL, 2);",
+        )
+        .expect("populate revenue source");
+    let inlined = "
+        SELECT l.row_id AS order_id,
+               CASE WHEN SUM(r.b * t.c) > 0 THEN SUM(r.b * t.c) ELSE 0 END AS revenue
+        FROM left_rows l
+        JOIN right_rows r ON l.x = r.y
+        JOIN third_rows t ON r.y = t.z
+        WHERE l.a > 0 AND r.b <= 2 AND t.c > 0
+        GROUP BY l.row_id
+    ";
+    let with_ctes = "
+        WITH orders AS (
+            SELECT row_id AS order_id, x AS product_id, a FROM left_rows WHERE a > 0
+        ),
+        items AS (
+            SELECT row_id AS item_id, y AS product_id, b FROM right_rows WHERE b <= 2
+        ),
+        products AS (
+            SELECT row_id AS product_row_id, z AS product_id, c FROM third_rows WHERE c > 0
+        ),
+        line_items AS (
+            SELECT o.order_id, i.b, p.c
+            FROM orders o
+            JOIN items i ON o.product_id = i.product_id
+            JOIN products p ON i.product_id = p.product_id
+        )
+        SELECT order_id,
+               CASE WHEN SUM(b * c) > 0 THEN SUM(b * c) ELSE 0 END AS revenue
+        FROM line_items
+        GROUP BY order_id
+    ";
+    let expected = resolved_query(inlined);
+    let actual = resolved_query(with_ctes);
+    assert!(
+        expected.condition_exactness().is_exact(),
+        "inlined revenue query must be exact: {:?}",
+        expected.condition_exactness().residual_conditions()
+    );
+    assert!(
+        actual.condition_exactness().is_exact(),
+        "daily-revenue CTE chain must be exact; query={with_ctes}; residuals={:?}",
+        actual.condition_exactness().residual_conditions()
+    );
+    assert_eq!(
+        canonical_composed_equalities(&actual),
+        canonical_composed_equalities(&expected),
+        "CTE revenue chain must preserve both physical equalities"
+    );
+    assert_eq!(
+        actual.column_domains(),
+        expected.column_domains(),
+        "CTE revenue chain must preserve source filter domains"
+    );
+    assert_eq!(
+        query_optional_i64(&connection, &format!("SELECT revenue FROM ({inlined}) q")),
+        query_optional_i64(&connection, &format!("SELECT revenue FROM ({with_ctes}) q")),
+        "CTE revenue chain must compute the same aggregates as DuckDB"
+    );
+}
