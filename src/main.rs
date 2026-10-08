@@ -85,8 +85,13 @@ fn render_help(color: bool) -> String {
             text.push_str("\x1b[0m");
         } else if matches!(
             line,
-            "USAGE" | "INPUT SOURCES" | "ANALYSIS OPTIONS" | "OUTPUT OPTIONS"
-                | "GENERAL" | "EXAMPLES" | "NOTES"
+            "USAGE"
+                | "INPUT SOURCES"
+                | "ANALYSIS OPTIONS"
+                | "OUTPUT OPTIONS"
+                | "GENERAL"
+                | "EXAMPLES"
+                | "NOTES"
         ) {
             text.push_str("\x1b[1;36m");
             text.push_str(line);
@@ -1006,7 +1011,6 @@ mod tests {
         assert!(!help_color_enabled(true, true, Some("xterm-256color")));
         assert!(!help_color_enabled(true, false, Some("dumb")));
     }
-
 
     #[test]
     fn parses_dbt_manifest_with_catalog_override() {
