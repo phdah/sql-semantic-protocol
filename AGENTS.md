@@ -109,8 +109,16 @@ let `HashMap` iteration order leak into the protocol.
 
 **The protocol format is a public contract** Changes to the emitted format are breaking
 changes for consumers. Make them deliberately, cover them with tests that assert the full
-output for representative queries, and update the README when the documented shape
-changes.
+output for representative queries, and update the active schema and [protocol contract](docs/protocol.md)
+when the documented shape changes. Update the public README only when the overview or
+getting-started workflow changes.
+
+**Public documentation hierarchy** Keep `README.md` short, approachable, and focused on
+purpose, installation, quickstart, and links. Put detailed CLI instructions in `docs/cli.md`,
+semantic behavior in `docs/semantics.md`, adapters in `docs/adapters.md`, and release guidance
+in `docs/releasing.md`. Maintain `docs/README.md` as the documentation index and
+`docs/protocol.md` as the authoritative active contract. Do not duplicate long reference sections
+in the root README.
 
 **One application/protocol version** The application/crate version and emitted protocol version are one shared version identity. Every supported invocation and public emission path emits that version and the same root document shape. `PROTOCOL_VERSION` must derive from the Cargo package version rather than being independently hard-coded. Historical schemas and documentation may remain in the repository, but current runtime code must not emit historical versions. When a new version becomes active, migrate all active protocol artifacts together.
 

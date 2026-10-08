@@ -1,6 +1,6 @@
 # Analysis manifest v1
 
-The analysis manifest is a declarative input contract for larger SQL Semantic Protocol bundles. It configures analysis only; the emitted semantic protocol remains the active protocol contract documented in `docs/protocol-v0.2.md`.
+The analysis manifest is a declarative input contract for larger SQL Semantic Protocol bundles. It configures analysis only; the emitted semantic protocol remains the active protocol contract documented in [the active protocol contract](protocol.md).
 
 The manifest is JSON and is validated against `schema/analysis-manifest-v1.schema.json`. The active manifest version is `1`.
 

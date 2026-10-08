@@ -2,7 +2,7 @@
 
 `schema/protocol-v0.2.schema.json` defines SQL Semantic Protocol version `0.2.0`. It extends the single-input 0.1.0 semantics with an explicit composition model for an arbitrary number of SQL inputs while keeping sqlparser types outside the public contract.
 
-Version 0.2.0 is the single active runtime contract. A one-input invocation and a many-input invocation use the same root document shape and protocol version. Version 0.1.0 remains only as historical reference material and is not emitted by current runtime code. Version 0.2.0 reuses the earlier statement, column-domain, and output definitions for local analysis and adds input identity, transformation layers, relation-resolution edges, graph components, composed semantics, and final outcomes.
+Version 0.2.0 is a historical runtime contract; see [the current protocol](protocol.md) for the active contract. A one-input invocation and a many-input invocation use the same root document shape and protocol version. Versions 0.1.0 and 0.2.0 remain historical references and are not emitted by current runtime code. Version 0.2.0 reuses the earlier statement, column-domain, and output definitions for local analysis and adds input identity, transformation layers, relation-resolution edges, graph components, composed semantics, and final outcomes.
 
 ## Inputs and deterministic identity
 

@@ -1,6 +1,6 @@
 # Protocol v0 contract
 
-> Historical contract: version `0.1.0` is retained for reference only. The current application does not emit it; see `docs/protocol-v0.2.md` for the active contract.
+> Historical contract: version `0.1.0` is retained for reference only. The current application does not emit it; see [the current protocol](protocol.md) for the active contract. Version 0.2 is also historical.
 
 `schema/protocol-v0.schema.json` is the public contract for SQL Semantic Protocol version `0.1.0`. The schema models query semantics, not parser syntax, and protocol producers must not expose sqlparser AST types through it.
 
