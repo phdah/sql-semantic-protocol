@@ -1569,7 +1569,8 @@ fn seeded_portable_typed_scalar_families_keep_exactness() {
 fn declared_comparison_settings_are_consistent_with_duckdb_row_membership() {
     use sql_semantic_protocol::{ComparisonAssumption as A, ValueDomain as D};
     // Each declaration is a fact about the fixture's warehouse and dataset, not a dialect default.
-    let cases: &[(&str, &str, &[A], &[&str], usize)] = &[
+    type DeclaredCase<'a> = (&'a str, &'a str, &'a [A], &'a [&'a str], usize);
+    let cases: &[DeclaredCase<'_>] = &[
         (
             "VARCHAR",
             "value IN ('keep', 'hold')",
