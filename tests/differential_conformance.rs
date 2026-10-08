@@ -1493,7 +1493,6 @@ fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
     );
 }
 
-
 #[test]
 fn seeded_portable_typed_scalar_families_keep_exactness() {
     const CASES: u64 = 120;
@@ -1501,7 +1500,10 @@ fn seeded_portable_typed_scalar_families_keep_exactness() {
         let mut rng = DeterministicRng::new(seed);
         let literal = rng.index(4);
         let (data_type, predicate) = match rng.index(6) {
-            0 => ("BOOLEAN", format!("value = {}", if rng.bool() { "TRUE" } else { "FALSE" })),
+            0 => (
+                "BOOLEAN",
+                format!("value = {}", if rng.bool() { "TRUE" } else { "FALSE" }),
+            ),
             1 => ("INTEGER", format!("value >= {literal}")),
             2 => ("BIGINT", format!("value < {literal}")),
             3 => ("DECIMAL(10,2)", format!("value <= {literal}.5")),
