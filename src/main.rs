@@ -1,7 +1,7 @@
 use std::env;
 use std::fmt;
 use std::fs;
-use std::io::{self, Read};
+use std::io::{self, IsTerminal, Read};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -16,7 +16,107 @@ use sql_semantic_protocol::{
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dbt-manifest <path> [--dbt-catalog <path>] | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]... [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>] [--assume <comparison-setting>]...\n\nUse --dbt-manifest for a dbt manifest.json artifact. The complete dbt path also consumes catalog.json for warehouse-introspected column schemas and datatypes. If catalog.json exists beside manifest.json it is loaded automatically; otherwise complete manifest-declared source column types are required. Use --dbt-catalog to override the default path (an explicit missing catalog is an error).\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, optional catalog metadata, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, --target, and --catalog-relation as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nUse --default-catalog and --default-schema to qualify otherwise partial direct-input relation identities before graph linking.\nLegacy positional SQL remains one input. If no direct input, dbt manifest, or analysis manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser. dbt analysis uses the artifact adapter_type as the sqlparser dialect name.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nUse repeatable --assume to attest comparison settings: binary_collation, no_char_padding, no_nan, signed_zero_equivalent, or session_time_zone. Assumptions are never inferred from a dialect name.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
+const HELP: &str = r#"sql-semantic-protocol
+Analyze SQL into deterministic, parser-independent protocol JSON.
+
+USAGE
+  sql-semantic-protocol [OPTIONS] [SQL ...]
+  sql-semantic-protocol --manifest <path> [OUTPUT OPTIONS]
+  sql-semantic-protocol --dbt-manifest <path> [--dbt-catalog <path>]
+                        [OUTPUT OPTIONS]
+
+INPUT SOURCES
+  -s, --sql <SQL>                   Inline SQL (repeatable)
+  -f, --file <path>                 SQL file (repeatable)
+  --dir <path>                      Recursively discover .sql files (repeatable)
+  --manifest <path>                 Declarative analysis manifest
+  --dbt-manifest <path>             dbt manifest.json artifact
+  --dbt-catalog <path>              Override dbt catalog.json path
+
+ANALYSIS OPTIONS
+  -d, --dialect <name>              SQL dialect (default: generic)
+  --catalog-relation <relation>     Known relation (repeatable)
+  --default-catalog <name>          Catalog for unqualified direct inputs
+  --default-schema <name>           Schema for unqualified direct inputs
+  --target <relation>               Select outcome and ancestors (repeatable)
+  --assume <setting>                Comparison assumption (repeatable)
+
+OUTPUT OPTIONS
+  --format <name>                   protocol (default) or openlineage
+  --namespace <name>                Required for OpenLineage output
+  --event-time <RFC3339>            OpenLineage timestamp (default: now UTC)
+
+GENERAL
+  -h, --help                        Show this help
+  --                                Treat following arguments as positional SQL
+
+EXAMPLES
+  sql-semantic-protocol -d postgres 'SELECT a FROM t WHERE a > 10'
+  sql-semantic-protocol -f stage.sql -f mart.sql --target mart.orders
+  sql-semantic-protocol --dbt-manifest target/manifest.json
+  sql-semantic-protocol --file query.sql --format openlineage \
+                        --namespace postgresql://warehouse
+
+NOTES
+  Provide direct input as positional SQL, --sql, --file, or --dir.
+  Without an input, SQL is read from stdin.
+  Positional SQL cannot be combined with --sql, --file, or --dir.
+  --manifest and --dbt-manifest are alternatives to direct SQL inputs.
+  dbt uses the adapter_type as its dialect and automatically loads an
+  adjacent catalog.json when present. Otherwise, complete declared
+  source column datatypes are required.
+  --assume: binary_collation, no_char_padding, no_nan,
+            signed_zero_equivalent, session_time_zone
+  Targets are selected after full analysis, preserving their ancestors.
+  More: https://github.com/phdah/sql-semantic-protocol/blob/main/docs/cli.md
+"#;
+
+/// Add ANSI emphasis only for interactive terminal output.
+fn render_help(color: bool) -> String {
+    if !color {
+        return HELP.to_owned();
+    }
+
+    let mut text = String::with_capacity(HELP.len() + 256);
+    for line in HELP.lines() {
+        if line == "sql-semantic-protocol" {
+            text.push_str("\x1b[1m");
+            text.push_str(line);
+            text.push_str("\x1b[0m");
+        } else if matches!(
+            line,
+            "USAGE"
+                | "INPUT SOURCES"
+                | "ANALYSIS OPTIONS"
+                | "OUTPUT OPTIONS"
+                | "GENERAL"
+                | "EXAMPLES"
+                | "NOTES"
+        ) {
+            text.push_str("\x1b[1;36m");
+            text.push_str(line);
+            text.push_str("\x1b[0m");
+        } else if line.starts_with("  -") {
+            if let Some(index) = line[2..].find("  ") {
+                let end = index + 2;
+                text.push_str("\x1b[32m");
+                text.push_str(&line[..end]);
+                text.push_str("\x1b[0m");
+                text.push_str(&line[end..]);
+            } else {
+                text.push_str(line);
+            }
+        } else {
+            text.push_str(line);
+        }
+        text.push('\n');
+    }
+    text
+}
+
+fn help_color_enabled(is_terminal: bool, no_color: bool, term: Option<&str>) -> bool {
+    is_terminal && !no_color && term != Some("dumb")
+}
 
 fn main() -> ExitCode {
     match run() {
@@ -31,7 +131,13 @@ fn main() -> ExitCode {
 fn run() -> Result<(), CliError> {
     match parse_args(env::args().skip(1))? {
         Command::Help => {
-            println!("{USAGE}");
+            let term = env::var("TERM").ok();
+            let colored = help_color_enabled(
+                io::stdout().is_terminal(),
+                env::var_os("NO_COLOR").is_some(),
+                term.as_deref(),
+            );
+            print!("{}", render_help(colored));
             Ok(())
         }
         Command::Analyze(options) => {
@@ -872,6 +978,39 @@ impl fmt::Display for CliError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn help_is_plain_text_without_a_terminal() {
+        let plain = render_help(false);
+        assert_eq!(plain, HELP);
+        assert!(!plain.contains("\x1b["));
+        assert!(plain.contains("INPUT SOURCES\n"));
+        assert!(plain.contains("ANALYSIS OPTIONS\n"));
+        assert!(plain.contains("OUTPUT OPTIONS\n"));
+        assert!(plain.contains("EXAMPLES\n"));
+        assert!(plain.lines().all(|line| line.len() <= 80));
+    }
+
+    #[test]
+    fn colored_help_preserves_the_plain_text() {
+        let colored = render_help(true);
+        assert!(colored.contains("\x1b[1;36mUSAGE\x1b[0m"));
+        assert!(colored.contains("\x1b[32m  -h, --help\x1b[0m"));
+        let plain = colored
+            .replace("\x1b[1;36m", "")
+            .replace("\x1b[32m", "")
+            .replace("\x1b[1m", "")
+            .replace("\x1b[0m", "");
+        assert_eq!(plain, HELP);
+    }
+
+    #[test]
+    fn help_colors_respect_terminal_and_environment() {
+        assert!(help_color_enabled(true, false, Some("xterm-256color")));
+        assert!(!help_color_enabled(false, false, Some("xterm-256color")));
+        assert!(!help_color_enabled(true, true, Some("xterm-256color")));
+        assert!(!help_color_enabled(true, false, Some("dumb")));
+    }
 
     #[test]
     fn parses_dbt_manifest_with_catalog_override() {
