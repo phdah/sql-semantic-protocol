@@ -1330,3 +1330,94 @@ fn typed_comparison_exceptions_remain_explicit_until_assumptions_are_modeled() {
         );
     }
 }
+
+
+#[test]
+fn seeded_two_and_three_source_joins_preserve_exact_equalities() {
+    const CASES: u64 = 120;
+    let connection = duckdb_connection();
+    connection
+        .execute_batch(
+            "CREATE TABLE third_rows (row_id BIGINT NOT NULL, c BIGINT, z BIGINT);
+             INSERT INTO third_rows VALUES (21, 1, 1), (22, 2, 2), (23, 3, 3), (24, NULL, 2);",
+        )
+        .expect("populate three-way oracle");
+
+    for seed in 1..=CASES {
+        let mut rng = DeterministicRng::new(seed);
+        let two_relation_equality = if rng.bool() {
+            "l.x = r.y"
+        } else {
+            "l.a = r.b"
+        };
+        let third_relation_equality = if rng.bool() {
+            "r.b = t.c"
+        } else {
+            "l.x = t.z"
+        };
+        let lower = rng.index(3);
+        let upper = rng.index(3) + 1;
+        let triple = rng.bool();
+        let (explicit, implicit, expected_count) = if triple {
+            (
+                format!("SELECT l.row_id, r.row_id, t.row_id FROM left_rows l JOIN right_rows r ON {two_relation_equality} JOIN third_rows t ON {third_relation_equality} WHERE l.a >= {lower} AND r.b <= {upper}"),
+                format!("SELECT l.row_id, r.row_id, t.row_id FROM left_rows l, right_rows r, third_rows t WHERE {two_relation_equality} AND {third_relation_equality} AND l.a >= {lower} AND r.b <= {upper}"),
+                2,
+            )
+        } else {
+            (
+                format!("SELECT l.row_id, r.row_id FROM left_rows l JOIN right_rows r ON {two_relation_equality} WHERE l.a >= {lower} AND r.b <= {upper}"),
+                format!("SELECT l.row_id, r.row_id FROM left_rows l, right_rows r WHERE {two_relation_equality} AND l.a >= {lower} AND r.b <= {upper}"),
+                1,
+            )
+        };
+        let baseline = resolved_query(&explicit);
+        assert!(
+            baseline.condition_exactness().is_exact(),
+            "seed={seed}; explicit query={explicit}; residuals={:?}",
+            baseline.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            canonical_composed_equalities(&baseline).len(),
+            expected_count,
+            "seed={seed}; explicit query={explicit}"
+        );
+        let wrapped = [
+            ("implicit", implicit),
+            ("cte", format!("WITH j AS ({explicit}) SELECT * FROM j")),
+            ("chained_cte", format!("WITH j AS ({explicit}), k AS (SELECT * FROM j) SELECT * FROM k")),
+            ("derived", format!("SELECT * FROM ({explicit}) j")),
+        ];
+        for (location, sql) in wrapped {
+            let actual = resolved_query(&sql);
+            assert!(
+                actual.condition_exactness().is_exact(),
+                "seed={seed}; location={location}; query={sql}; residuals={:?}",
+                actual.condition_exactness().residual_conditions()
+            );
+            assert_eq!(
+                canonical_composed_equalities(&actual),
+                canonical_composed_equalities(&baseline),
+                "seed={seed}; location={location}; query={sql}; equality mismatch"
+            );
+            assert_eq!(
+                actual.column_domains(),
+                baseline.column_domains(),
+                "seed={seed}; location={location}; query={sql}; domain mismatch"
+            );
+            if triple {
+                assert_eq!(
+                    row_triples(&connection, &sql),
+                    row_triples(&connection, &explicit),
+                    "seed={seed}; location={location}; three-source oracle mismatch"
+                );
+            } else {
+                assert_eq!(
+                    row_pairs(&connection, &sql),
+                    row_pairs(&connection, &explicit),
+                    "seed={seed}; location={location}; two-source oracle mismatch"
+                );
+            }
+        }
+    }
+}
