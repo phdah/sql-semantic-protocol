@@ -139,9 +139,15 @@ impl<'a> Composer<'a> {
                 )]
             })
             .unwrap_or_default();
-        let mut group_witnesses = query.group_witness().map(|witness| {
-            vec![crate::bundle::ComposedGroupWitness::new(layer.id().to_string(), witness.clone())]
-        }).unwrap_or_default();
+        let mut group_witnesses = query
+            .group_witness()
+            .map(|witness| {
+                vec![crate::bundle::ComposedGroupWitness::new(
+                    layer.id().to_string(),
+                    witness.clone(),
+                )]
+            })
+            .unwrap_or_default();
         let mut diagnostics = Vec::<CompositionDiagnostic>::new();
         let mut condition_exactness: ConditionExactness = query
             .condition_exactness()
