@@ -49,11 +49,11 @@ use crate::protocol::{
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
     RowConditions, ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation,
-    SetWitnessBoundary,
-    SetOperator, SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
-    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
-    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
+    SetOperator, SetQuantifier, SetWitnessBoundary, SourceRelation, SubquerySemantics,
+    UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
+    ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
+    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteOperation,
+    WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 
@@ -547,9 +547,9 @@ fn analyze_query(
     let set_operation = analyze_set_operation(query.body.as_ref()).map(|operation| {
         let mut branches = Vec::new();
         collect_set_branch_evidence(query.body.as_ref(), query, "body", metadata, &mut branches);
-        operation.with_branches(branches).with_set_level_safety(
-            query.limit_clause.is_none() && query.fetch.is_none(),
-        )
+        operation
+            .with_branches(branches)
+            .with_set_level_safety(query.limit_clause.is_none() && query.fetch.is_none())
     });
     let aggregation = analyze_query_aggregation(query, &mut diagnostics);
     let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics, Some(metadata));
@@ -2218,25 +2218,49 @@ fn analyze_set_leaf_boundary(
     expression: &SetExpr,
     query: &QueryStatement,
 ) -> Option<SetWitnessBoundary> {
-    let SetExpr::Select(select) = expression else { return None; };
-    let [table] = select.from.as_slice() else { return None; };
+    let SetExpr::Select(select) = expression else {
+        return None;
+    };
+    let [table] = select.from.as_slice() else {
+        return None;
+    };
     if !table.joins.is_empty() || !matches!(table.relation, TableFactor::Table { .. }) {
         return None;
     }
-    if query.aggregation().is_some_and(|agg| agg.distinct() || agg.group_by().is_some()) {
+    if query
+        .aggregation()
+        .is_some_and(|agg| agg.distinct() || agg.group_by().is_some())
+    {
         return None;
     }
-    let [source] = query.sources() else { return None; };
-    if !query.joins().is_empty() { return None; }
-    let columns = query.output().columns().iter().map(|column| {
-        // The immediate input column, not the transitive physical lineage, is
-        // the correct coordinate system for a CTE/intermediate boundary.
-        let Expression::Column(expression) = column.expression() else { return None; };
-        Some(expression.name().to_string())
-    }).collect::<Option<Vec<_>>>()?;
-    if columns.is_empty() { return None; }
+    let [source] = query.sources() else {
+        return None;
+    };
+    if !query.joins().is_empty() {
+        return None;
+    }
+    let columns = query
+        .output()
+        .columns()
+        .iter()
+        .map(|column| {
+            // The immediate input column, not the transitive physical lineage, is
+            // the correct coordinate system for a CTE/intermediate boundary.
+            let Expression::Column(expression) = column.expression() else {
+                return None;
+            };
+            Some(expression.name().to_string())
+        })
+        .collect::<Option<Vec<_>>>()?;
+    if columns.is_empty() {
+        return None;
+    }
     let intermediate = !query.dependencies().iter().any(|dep| dep == source.name());
-    Some(SetWitnessBoundary::new(source.name().to_string(), columns, intermediate))
+    Some(SetWitnessBoundary::new(
+        source.name().to_string(),
+        columns,
+        intermediate,
+    ))
 }
 
 fn analyze_set_operation(expression: &SetExpr) -> Option<SetOperation> {
