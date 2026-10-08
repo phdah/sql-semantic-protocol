@@ -586,14 +586,19 @@ impl RelationConstraintSet {
         &self,
         schemas: &[crate::relation::RelationSchema],
     ) -> Self {
-        let local = schemas.iter().find(|schema| schema.relation() == self.relation);
+        let local = schemas
+            .iter()
+            .find(|schema| schema.relation() == self.relation);
         let mut valid = Vec::new();
         let mut diagnostics = self.diagnostics.clone();
 
         for constraint in &self.constraints {
             let missing_local = local.and_then(|schema| {
                 constraint.columns().iter().find(|column| {
-                    !schema.columns().iter().any(|declared| declared.name() == column.as_str())
+                    !schema
+                        .columns()
+                        .iter()
+                        .any(|declared| declared.name() == column.as_str())
                 })
             });
             if let Some(column) = missing_local {
@@ -613,13 +618,18 @@ impl RelationConstraintSet {
                     .find(|schema| schema.relation() == key.referenced_relation())
                 {
                     if let Some(column) = key.referenced_columns().iter().find(|column| {
-                        !target.columns().iter().any(|declared| declared.name() == column.as_str())
+                        !target
+                            .columns()
+                            .iter()
+                            .any(|declared| declared.name() == column.as_str())
                     }) {
                         diagnostics.push(ConstraintDiagnostic::new(
                             "invalid_constraint_column",
                             format!(
                                 "foreign key from '{}' references undeclared column '{}.{}'",
-                                self.relation, key.referenced_relation(), column
+                                self.relation,
+                                key.referenced_relation(),
+                                column
                             ),
                         ));
                         continue;
@@ -826,8 +836,8 @@ fn constraint_value_fits_type(
                 _ => return false,
             };
             bits.is_none_or(|bits| {
-                bits >= 128 || (integer >= -(1_i128 << (bits - 1))
-                    && integer < (1_i128 << (bits - 1)))
+                bits >= 128
+                    || (integer >= -(1_i128 << (bits - 1)) && integer < (1_i128 << (bits - 1)))
             })
         }
         DataType::UnsignedInteger { bits } => {
