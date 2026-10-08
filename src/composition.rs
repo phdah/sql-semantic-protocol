@@ -412,7 +412,11 @@ impl<'a> Composer<'a> {
             .collect::<BTreeSet<_>>();
         if let Some(physical_relation) = candidates.iter().next().filter(|_| candidates.len() == 1)
         {
-            if query.dependencies().iter().any(|dependency| dependency == physical_relation) {
+            if query
+                .dependencies()
+                .iter()
+                .any(|dependency| dependency == physical_relation)
+            {
                 return self.resolve_source_identity(
                     layer,
                     &LineageSource::new(
