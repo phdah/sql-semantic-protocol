@@ -2,12 +2,11 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_inputs, analyze_sql, dialect_from_name, CaseSourceDomains, ColumnDomain,
-    ComparisonOperator, ComposedSemantics, ConditionExactnessStatus, Expression, Join,
-    ResolvedComposedSemantics, RelationCatalog, RelationSchema, SchemaColumn,
-    ConfiguredSqlInput, analyze_configured_inputs_with_catalog,
-    LiteralValue, Predicate, Protocol, ProtocolStatement, QueryStatement, SetMode, SqlInput,
-    ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, dialect_from_name,
+    CaseSourceDomains, ColumnDomain, ComparisonOperator, ComposedSemantics,
+    ConditionExactnessStatus, ConfiguredSqlInput, Expression, Join, LiteralValue, Predicate,
+    Protocol, ProtocolStatement, QueryStatement, RelationCatalog, RelationSchema,
+    ResolvedComposedSemantics, SchemaColumn, SetMode, SqlInput, ValueDomain,
 };
 
 type ColumnIdentity<'a> = (&'a str, &'a str);
@@ -886,12 +885,16 @@ fn known_soundness_reproductions_stay_in_the_conformance_matrix() {
     assert!(!first_query(&protocol).condition_exactness().is_exact());
 }
 
-
 fn resolved_query(sql: &str) -> ResolvedComposedSemantics {
     let dialect = dialect_from_name("duckdb").expect("DuckDB dialect");
     let bundle = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref())
         .unwrap_or_else(|error| panic!("conformance fixture failed: {sql}\n{error}"));
-    match bundle.layers().last().expect("conformance query layer").composed_semantics() {
+    match bundle
+        .layers()
+        .last()
+        .expect("conformance query layer")
+        .composed_semantics()
+    {
         ComposedSemantics::Resolved(semantics) => semantics.clone(),
         other => panic!("conformance fixture could not compose {sql}: {other:?}"),
     }
@@ -1093,7 +1096,6 @@ fn seeded_plain_copy_equivalence_checks_exact_and_residual_predicates() {
     }
 }
 
-
 fn canonical_composed_equalities(
     semantics: &ResolvedComposedSemantics,
 ) -> BTreeSet<(String, String, String, String)> {
@@ -1101,16 +1103,28 @@ fn canonical_composed_equalities(
         .join_equalities()
         .iter()
         .map(|join| {
-            let left = (join.left().relation().to_string(), join.left().column().to_string());
-            let right = (join.right().relation().to_string(), join.right().column().to_string());
-            let (left, right) = if left <= right { (left, right) } else { (right, left) };
+            let left = (
+                join.left().relation().to_string(),
+                join.left().column().to_string(),
+            );
+            let right = (
+                join.right().relation().to_string(),
+                join.right().column().to_string(),
+            );
+            let (left, right) = if left <= right {
+                (left, right)
+            } else {
+                (right, left)
+            };
             (left.0, left.1, right.0, right.1)
         })
         .collect()
 }
 
 fn row_triples(connection: &Connection, sql: &str) -> BTreeSet<(i64, i64, i64)> {
-    let mut statement = connection.prepare(sql).expect("prepare three-source oracle");
+    let mut statement = connection
+        .prepare(sql)
+        .expect("prepare three-source oracle");
     statement
         .query_map([], |row| {
             Ok((
@@ -1180,10 +1194,12 @@ fn explicit_and_implicit_two_source_join_claims_are_complete() {
 #[test]
 fn three_source_join_shapes_are_complete_against_duckdb() {
     let connection = duckdb_connection();
-    connection.execute_batch(
-        "CREATE TABLE third_rows (row_id BIGINT NOT NULL, c BIGINT, z BIGINT);
-         INSERT INTO third_rows VALUES (21, 1, 1), (22, 2, 2), (23, 3, 3), (24, NULL, 2);"
-    ).expect("populate third source");
+    connection
+        .execute_batch(
+            "CREATE TABLE third_rows (row_id BIGINT NOT NULL, c BIGINT, z BIGINT);
+         INSERT INTO third_rows VALUES (21, 1, 1), (22, 2, 2), (23, 3, 3), (24, NULL, 2);",
+        )
+        .expect("populate third source");
 
     let explicit = "SELECT l.row_id, r.row_id, t.row_id FROM left_rows l JOIN right_rows r ON l.x = r.y JOIN third_rows t ON r.b = t.c WHERE l.a > 0";
     let implicit = "SELECT l.row_id, r.row_id, t.row_id FROM left_rows l, right_rows r, third_rows t WHERE l.x = r.y AND r.b = t.c AND l.a > 0";
@@ -1193,14 +1209,21 @@ fn three_source_join_shapes_are_complete_against_duckdb() {
         "three-source baseline residuals={:?}",
         expected.condition_exactness().residual_conditions()
     );
-    assert_eq!(expected.join_equalities().len(), 2, "both physical equalities must be emitted");
+    assert_eq!(
+        expected.join_equalities().len(),
+        2,
+        "both physical equalities must be emitted"
+    );
     let expected_rows = row_triples(&connection, explicit);
     assert_eq!(expected_rows, row_triples(&connection, implicit));
 
     for (location, sql) in [
         ("implicit_where", implicit.to_string()),
         ("cte", format!("WITH j AS ({explicit}) SELECT * FROM j")),
-        ("chained_cte", format!("WITH j AS ({explicit}), k AS (SELECT * FROM j) SELECT * FROM k")),
+        (
+            "chained_cte",
+            format!("WITH j AS ({explicit}), k AS (SELECT * FROM j) SELECT * FROM k"),
+        ),
         ("derived", format!("SELECT * FROM ({explicit}) j")),
     ] {
         let actual = resolved_query(&sql);
@@ -1227,13 +1250,11 @@ fn three_source_join_shapes_are_complete_against_duckdb() {
     }
 }
 
-
 fn typed_conformance(sql: &str, sql_type: &str) -> ResolvedComposedSemantics {
     let schema = RelationSchema::new(
         "typed_rows",
         vec![
-            SchemaColumn::from_sql_type("row_id", "BIGINT", "duckdb")
-                .expect("row ID type"),
+            SchemaColumn::from_sql_type("row_id", "BIGINT", "duckdb").expect("row ID type"),
             SchemaColumn::from_sql_type("value", sql_type, "duckdb")
                 .expect("typed conformance column"),
         ],
@@ -1279,10 +1300,10 @@ fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable(
             "typed/untyped completeness: type={data_type}; query={sql}"
         );
         assert!(
-            typed.column_domains().iter().all(|domain| !matches!(
-                domain.domain(),
-                ValueDomain::Unknown(_)
-            )),
+            typed
+                .column_domains()
+                .iter()
+                .all(|domain| !matches!(domain.domain(), ValueDomain::Unknown(_))),
             "portable typed predicates must not silently lose domains: {sql}"
         );
     }
