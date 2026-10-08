@@ -10,8 +10,18 @@ sources:
             data_type: BIGINT
             data_tests:
               - not_null
+              - unique
+              - relationships:
+                  arguments:
+                    to: source('raw', 'orders')
+                    field: id
           - name: customer_id
             data_type: BIGINT
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'customers')
+                    field: id
           - name: amount
             data_type: BIGINT
           - name: status

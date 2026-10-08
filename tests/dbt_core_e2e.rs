@@ -439,6 +439,41 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
             constraint["kind"] == "accepted_values" && constraint["column"] == "status"
         }));
 
+    // dbt leaves attached_node empty for source tests; ownership comes from the test's
+    // rendered model argument, including for a self-referencing relationships test.
+    let raw_customers_relation = manifest_json["sources"]
+        .as_object()
+        .expect("manifest sources should be an object")
+        .values()
+        .find(|source| source["source_name"] == "raw" && source["name"] == "customers")
+        .and_then(|source| source["relation_name"].as_str())
+        .expect("raw customers source should have a relation identity");
+    let raw_order_constraint_list = raw_order_constraints["constraints"]
+        .as_array()
+        .expect("raw order constraints should be an array");
+    assert!(raw_order_constraint_list.iter().any(|constraint| {
+        constraint["kind"] == "unique_key" && constraint["columns"] == serde_json::json!(["id"])
+    }));
+    for (column, referenced_relation) in [
+        ("customer_id", raw_customers_relation),
+        ("id", raw_orders_relation),
+    ] {
+        assert!(
+            raw_order_constraint_list.iter().any(|constraint| {
+                constraint["kind"] == "foreign_key"
+                    && constraint["columns"] == serde_json::json!([column])
+                    && constraint["referenced_relation"] == referenced_relation
+                    && constraint["referenced_columns"] == serde_json::json!(["id"])
+            }),
+            "raw orders {column} source relationships test should emit a foreign key to {referenced_relation}"
+        );
+    }
+    assert!(protocol["constraint_diagnostics"]
+        .as_array()
+        .is_none_or(|diagnostics| diagnostics
+            .iter()
+            .all(|diagnostic| { diagnostic["code"] != "unattributed_dbt_test" })));
+
     let source_schemas = protocol["source_schemas"]
         .as_array()
         .expect("dbt protocol should include warehouse source schemas");
