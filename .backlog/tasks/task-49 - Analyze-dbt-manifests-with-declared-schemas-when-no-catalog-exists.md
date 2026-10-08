@@ -1,9 +1,10 @@
 ---
 id: TASK-49
 title: Analyze dbt manifests with declared schemas when no catalog exists
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 18:11'
+updated_date: '2026-10-08'
 labels: []
 milestone: m-2
 dependencies: []
@@ -26,9 +27,15 @@ A supported library and CLI path analyzes a dbt manifest with typed source schem
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The library exposes a way to analyze dbt artifacts with an absent catalog that uses manifest-declared datatypes as schema evidence, without callers constructing a placeholder catalog
-- [ ] #2 The CLI supports the same path when catalog.json is absent, and errors name each relation or column lacking declared types
-- [ ] #3 Results equal those of analyze_dbt_artifacts with an empty catalog
-- [ ] #4 Tests cover a YAML-only project, partially declared relations, and a relation without declared columns
-- [ ] #5 README and protocol docs describe catalog-less dbt analysis
+- [x] #1 The library exposes a way to analyze dbt artifacts with an absent catalog that uses manifest-declared datatypes as schema evidence, without callers constructing a placeholder catalog
+- [x] #2 The CLI supports the same path when catalog.json is absent, and errors name each relation or column lacking declared types
+- [x] #3 Results equal those of analyze_dbt_artifacts with an empty catalog
+- [x] #4 Tests cover a YAML-only project, partially declared relations, and a relation without declared columns
+- [x] #5 README and protocol docs describe catalog-less dbt analysis
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+The public `analyze_dbt_manifest_with_schemas` API reuses the schema collection, SQL analysis, and completeness validation from `analyze_dbt_artifacts` without an artificial catalog. CLI analysis uses it when the default adjacent catalog is missing, but explicitly requested catalogs must exist. Tests assert equality to the empty-catalog path, manifest-only source provenance, outcome domains, incomplete datatype and column errors, and CLI behavior. Rust tests, clippy, docs, and dbt Core E2E succeeded on PR #61; formatting corrections were subsequently applied and all CI jobs must pass on the final commit.
+<!-- SECTION:NOTES:END -->
