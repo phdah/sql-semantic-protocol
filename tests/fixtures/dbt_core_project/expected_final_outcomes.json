@@ -6552,7 +6552,87 @@
           "origin_layer_id": "layer-0014"
         }
       ],
-      "status": "resolved"
+      "status": "resolved",
+      "group_witnesses": [
+        {
+          "origin_layer_id": "layer-0015",
+          "witness": {
+            "aggregate": "sum",
+            "argument": {
+              "name": "amount",
+              "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+            },
+            "boundary": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+            "group_keys": [
+              {
+                "name": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+              }
+            ],
+            "predicate": {
+              "bound": {
+                "kind": "literal",
+                "type": "integer",
+                "value": 20
+              },
+              "operator": "gt"
+            },
+            "qualifying": {
+              "cases": [
+                {
+                  "max_non_null": null,
+                  "max_rows": null,
+                  "min_non_null": 1,
+                  "min_rows": 1,
+                  "tests": [
+                    {
+                      "bound": {
+                        "kind": "literal",
+                        "type": "integer",
+                        "value": 20
+                      },
+                      "kind": "sum",
+                      "operator": "gt"
+                    }
+                  ]
+                }
+              ],
+              "status": "exact"
+            },
+            "rejected": {
+              "cases": [
+                {
+                  "max_non_null": null,
+                  "max_rows": null,
+                  "min_non_null": 1,
+                  "min_rows": 1,
+                  "tests": [
+                    {
+                      "bound": {
+                        "kind": "literal",
+                        "type": "integer",
+                        "value": 20
+                      },
+                      "kind": "sum",
+                      "operator": "lte"
+                    }
+                  ]
+                },
+                {
+                  "max_non_null": 0,
+                  "max_rows": null,
+                  "min_non_null": 0,
+                  "min_rows": 1,
+                  "tests": []
+                }
+              ],
+              "status": "exact"
+            },
+            "distinct": false
+          },
+          "boundary_kind": "intermediate"
+        }
+      ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.subquery_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"subquery_orders\""
