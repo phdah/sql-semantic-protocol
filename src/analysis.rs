@@ -711,7 +711,10 @@ fn validate_schema_column_references(
                         let Some(schema_columns) = metadata.schema_columns(relation) else {
                             continue;
                         };
-                        if schema_columns.iter().any(|declared| declared == column.name()) {
+                        if schema_columns
+                            .iter()
+                            .any(|declared| declared == column.name())
+                        {
                             continue;
                         }
                         let reference = format!("{relation}.{}", column.name());
