@@ -1331,7 +1331,6 @@ fn typed_comparison_exceptions_remain_explicit_until_assumptions_are_modeled() {
     }
 }
 
-
 #[test]
 fn seeded_two_and_three_source_joins_preserve_exact_equalities() {
     const CASES: u64 = 120;
@@ -1345,16 +1344,8 @@ fn seeded_two_and_three_source_joins_preserve_exact_equalities() {
 
     for seed in 1..=CASES {
         let mut rng = DeterministicRng::new(seed);
-        let two_relation_equality = if rng.bool() {
-            "l.x = r.y"
-        } else {
-            "l.a = r.b"
-        };
-        let third_relation_equality = if rng.bool() {
-            "r.b = t.c"
-        } else {
-            "l.x = t.z"
-        };
+        let two_relation_equality = if rng.bool() { "l.x = r.y" } else { "l.a = r.b" };
+        let third_relation_equality = if rng.bool() { "r.b = t.c" } else { "l.x = t.z" };
         let lower = rng.index(3);
         let upper = rng.index(3) + 1;
         let triple = rng.bool();
@@ -1385,7 +1376,10 @@ fn seeded_two_and_three_source_joins_preserve_exact_equalities() {
         let wrapped = [
             ("implicit", implicit),
             ("cte", format!("WITH j AS ({explicit}) SELECT * FROM j")),
-            ("chained_cte", format!("WITH j AS ({explicit}), k AS (SELECT * FROM j) SELECT * FROM k")),
+            (
+                "chained_cte",
+                format!("WITH j AS ({explicit}), k AS (SELECT * FROM j) SELECT * FROM k"),
+            ),
             ("derived", format!("SELECT * FROM ({explicit}) j")),
         ];
         for (location, sql) in wrapped {
@@ -1421,7 +1415,6 @@ fn seeded_two_and_three_source_joins_preserve_exact_equalities() {
         }
     }
 }
-
 
 #[test]
 fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
