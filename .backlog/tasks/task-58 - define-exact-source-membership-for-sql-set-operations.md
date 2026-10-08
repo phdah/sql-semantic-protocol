@@ -1,7 +1,7 @@
 ---
 id: TASK-58
 title: Define exact source membership for SQL set operations
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-08'
 labels: []
@@ -26,10 +26,10 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Define a canonical, typed branch-aware semantic contract for UNION ALL, UNION, INTERSECT and EXCEPT, including branch identity, positional alignment, duplicate semantics and NULL behavior.
+- [x] #1 Define a canonical, typed branch-aware semantic contract for UNION ALL, UNION, INTERSECT and EXCEPT, including branch identity, positional alignment, duplicate semantics and NULL behavior.
 - [ ] #2 Emit exactness only where membership can be proven for full branch combinations; conflicting, missing or ambiguous evidence remains an explicit residual with origin.
 - [ ] #3 Compose the contract through CTEs, producer layers and dbt compiled model graphs; preserve strong output domains.
 - [ ] #4 Add paired exact and residual tests, including DuckDB differential tests for overlapping and disjoint branches, duplicates and NULL, plus applicable dialect variants.
-- [ ] #5 Update schema, protocol docs and consumer compatibility/versioning guidance; sql-tdg TASK-24 consumes this contract.
+- [x] #5 Update schema, protocol docs and consumer compatibility/versioning guidance; sql-tdg TASK-24 consumes this contract.
 - [ ] #6 Expose typed qualifying and, where provable, non-qualifying branch witness obligations at physical-source or intermediate boundaries, including branch identity and duplicate counts; do not make consumers infer set-operation semantics to generate rejected rows. Report unsupported witness directions as residual with a reason.
 <!-- AC:END -->
