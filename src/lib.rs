@@ -39,11 +39,10 @@ pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
     AnalysisGraph, AnalyzedInput, ComposedJoinColumn, ComposedJoinEquality, ComposedSemantics,
-    ComposedSetOperation,
-    CompositionDiagnostic, CompositionFailureReason, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge, InputAnalysisError,
-    RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError,
-    TransformationLayer, UnresolvedComposedSemantics,
+    ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
+    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
+    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
