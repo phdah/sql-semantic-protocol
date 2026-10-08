@@ -31,4 +31,5 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 - [ ] #3 Retain default-deny residual diagnostics for unknown, noninvertible or dialect-sensitive cases instead of producing false exactness.
 - [ ] #4 Assert minimal safe output domains and exact constraints through composition and physical lineage, using DuckDB differential cases.
 - [ ] #5 Document the representation and tests for dialect variants; sql-tdg TASK-27 depends on this contract.
+- [ ] #6 Supply typed, jointly satisfiable positive and provably rejected source witness obligations for supported expressions, retaining cross-column coupling and explicit complement/NULL semantics; mark directions that cannot be inverted exactly as residual so sql-tdg never infers correlated predicates itself.
 <!-- AC:END -->
