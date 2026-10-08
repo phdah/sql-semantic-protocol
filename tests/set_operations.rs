@@ -228,15 +228,13 @@ fn branch_specific_predicate_domains_are_not_collapsed_into_one_witness() {
     assert_eq!(branches[1].sources()[0].name(), "t");
     assert_eq!(branches[0].output().columns()[0].name(), "a");
 
-    let emitted: serde_json::Value =
-        serde_json::from_str(&to_json(&protocol)).expect("valid json");
+    let emitted: serde_json::Value = serde_json::from_str(&to_json(&protocol)).expect("valid json");
     let membership = &emitted["inputs"][0]["statements"][0]["set_operation"]["membership"];
     assert_eq!(membership["tuple_equality"], "not_distinct");
     assert_eq!(membership["multiplicity_rule"], "sum");
     assert_eq!(membership["branches"].as_array().unwrap().len(), 2);
     assert_ne!(
-        membership["branches"][0]["column_domains"],
-        membership["branches"][1]["column_domains"],
+        membership["branches"][0]["column_domains"], membership["branches"][1]["column_domains"],
         "opposing branch source domains must remain independent"
     );
     assert_eq!(membership["qualifying_witness"]["status"], "residual");
@@ -259,7 +257,11 @@ fn nested_set_operations_keep_stable_leaf_branch_identities() {
         .branches();
     assert_eq!(
         branches.iter().map(|b| b.identity()).collect::<Vec<_>>(),
-        vec!["body:left:query:left", "body:left:query:right", "body:right"]
+        vec![
+            "body:left:query:left",
+            "body:left:query:right",
+            "body:right"
+        ]
     );
 }
 
@@ -269,11 +271,13 @@ fn set_tuple_multiplicity_rules_match_duckdb_with_duplicates_and_null() {
     use sql_semantic_protocol::SetMultiplicityRule;
 
     let connection = Connection::open_in_memory().expect("DuckDB");
-    connection.execute_batch(
-        "CREATE TABLE l (v INTEGER); CREATE TABLE r (v INTEGER);
+    connection
+        .execute_batch(
+            "CREATE TABLE l (v INTEGER); CREATE TABLE r (v INTEGER);
          INSERT INTO l VALUES (1), (1), (NULL), (NULL), (2);
          INSERT INTO r VALUES (1), (NULL), (NULL), (3);",
-    ).expect("seed fixture");
+        )
+        .expect("seed fixture");
 
     let cases = [
         ("UNION ALL", SetMultiplicityRule::Sum),
