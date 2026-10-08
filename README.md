@@ -217,6 +217,19 @@ built-in `unique`, `relationships`, `not_null`, and `accepted_values` tests from
 instead of being silently treated as supported. `catalog.json` remains authoritative only for
 warehouse-introspected columns and datatypes.
 
+### Validating declared schema evidence
+
+Typed relation schemas supplied by a catalog, dbt manifest/catalog, ODCS, or
+directly by a caller are also used to validate physical column references.
+A column missing from an available schema produces an `unknown_schema_column`
+diagnostic and prevents an exact composed row-condition claim. Constraint facts
+with undeclared key/foreign-key columns or values incompatible with their
+declared datatype are withheld and reported through relation-scoped
+`invalid_constraint_column` or `incompatible_accepted_value` diagnostics.
+A dbt relationships test with conflicting `to` and `depends_on` targets
+produces `inconsistent_relationship_target`. Missing schema evidence does
+not itself prove a constraint or column invalid.
+
 ## Outcome selection
 
 `analyze_inputs` always analyzes and composes the complete supplied bundle. Each entry in `layers` carries its own composed semantics, while `graph.components[].final_outcomes` identifies the terminal datasets for each independent graph component.
