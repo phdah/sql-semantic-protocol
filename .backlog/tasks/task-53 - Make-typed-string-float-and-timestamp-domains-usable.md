@@ -1,7 +1,7 @@
 ---
 id: TASK-53
 title: 'Make typed string, float, and timestamp domains usable'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-08 09:06'
 updated_date: '2026-10-08 09:06'

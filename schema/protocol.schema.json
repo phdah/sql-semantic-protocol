@@ -50,6 +50,13 @@
       "items": {
         "$ref": "#/$defs/constraintDiagnostic"
       }
+    },
+    "declared_comparison_assumptions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/comparisonAssumption"
+      }
     }
   },
   "$defs": {
@@ -3297,6 +3304,7 @@
         "status": {
           "enum": [
             "exact",
+            "conditional",
             "residual"
           ]
         },
@@ -3304,6 +3312,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/residualCondition"
+          }
+        },
+        "comparison_assumptions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/conditionalCondition"
           }
         }
       },
@@ -3336,6 +3350,25 @@
             "properties": {
               "residual_conditions": {
                 "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "conditional"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "comparison_assumptions": {
+                "minItems": 1
+              },
+              "residual_conditions": {
+                "maxItems": 0
               }
             }
           }
@@ -3406,6 +3439,49 @@
               "$ref": "#/$defs/nonEmptyString"
             }
           }
+        }
+      }
+    },
+    "comparisonAssumption": {
+      "enum": [
+        "binary_collation",
+        "no_char_padding",
+        "no_nan",
+        "signed_zero_equivalent",
+        "session_time_zone"
+      ]
+    },
+    "conditionalCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "clause",
+        "identity",
+        "declared"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/comparisonAssumption"
+        },
+        "clause": {
+          "enum": [
+            "where",
+            "on",
+            "having",
+            "qualify",
+            "set_operation",
+            "row_set_operator"
+          ]
+        },
+        "identity": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "declared": {
+          "type": "boolean"
+        },
+        "origin": {
+          "$ref": "#/$defs/residualOrigin"
         }
       }
     }
