@@ -1,10 +1,10 @@
 ---
 id: TASK-54
 title: Report accurate residual reasons and normalize boolean predicates
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-08 09:06'
-updated_date: '2026-10-08 09:06'
+updated_date: '2026-10-08'
 labels: []
 milestone: m-2
 dependencies:
@@ -35,9 +35,22 @@ Each residual names its true cause through a documented stable reason code and t
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Every residual reason code is documented with its cause, and typed-literal residuals (comparison semantics, literal type mismatch, lossy coercion, out-of-range literal, unknown schema column) each have a distinct code
-- [ ] #2 Residual clauses always name the clause containing the condition
-- [ ] #3 Residual lists contain no duplicate entries; distinct conditions with the same reason have distinct identities
-- [ ] #4 Bare boolean column predicates, their negation, and IS TRUE / IS FALSE / IS NOT TRUE / IS NOT FALSE forms on boolean columns are exact with the same domains as the equivalent comparison, including NULL membership
-- [ ] #5 Tests assert reason code, clause, and identity for every residual path in the analyzer
+- [x] #1 Every residual reason code is documented with its cause, and typed-literal residuals (comparison semantics, literal type mismatch, lossy coercion, out-of-range literal, unknown schema column) each have a distinct code
+- [x] #2 Residual clauses always name the clause containing the condition
+- [x] #3 Residual lists contain no duplicate entries; distinct conditions with the same reason have distinct identities
+- [x] #4 Bare boolean column predicates, their negation, and IS TRUE / IS FALSE / IS NOT TRUE / IS NOT FALSE forms on boolean columns are exact with the same domains as the equivalent comparison, including NULL membership
+- [x] #5 Tests assert reason code, clause, and identity for every residual path in the analyzer
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Boolean truth tests and bare-column predicates normalize to exact comparison domains,
+including explicit NULL membership for IS NOT TRUE / IS NOT FALSE. Typed-domain failures
+retain strongly typed residual reason categories rather than reporting computed expressions.
+Unknown schema references are attributed only to the actual condition clauses. Logical
+predicate paths distinguish unsupported sibling conditions; structural domain failures
+already classified by their predicate are not duplicated. Integration tests cover
+reason codes, clause attribution, deterministic identities, dialect parity, and CTE
+composition. Protocol documentation lists all residual reason codes and their causes.
+<!-- SECTION:NOTES:END -->
