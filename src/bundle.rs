@@ -586,15 +586,25 @@ pub struct ComposedGroupWitness {
 }
 
 impl ComposedGroupWitness {
-    pub(crate) fn new(origin_layer_id: String, witness: crate::group_witness::GroupWitness) -> Self {
-        Self { origin_layer_id, witness }
+    pub(crate) fn new(
+        origin_layer_id: String,
+        witness: crate::group_witness::GroupWitness,
+    ) -> Self {
+        Self {
+            origin_layer_id,
+            witness,
+        }
     }
 
     /// Layer introducing these HAVING obligations.
-    pub fn origin_layer_id(&self) -> &str { &self.origin_layer_id }
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
 
     /// Local witness proof and its source group boundary.
-    pub fn witness(&self) -> &crate::group_witness::GroupWitness { &self.witness }
+    pub fn witness(&self) -> &crate::group_witness::GroupWitness {
+        &self.witness
+    }
 }
 
 /// Successfully composed transitive semantics for a transformation layer.
