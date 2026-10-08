@@ -31,4 +31,5 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 - [ ] #3 Compose the contract through CTEs, producer layers and dbt compiled model graphs; preserve strong output domains.
 - [ ] #4 Add paired exact and residual tests, including DuckDB differential tests for overlapping and disjoint branches, duplicates and NULL, plus applicable dialect variants.
 - [ ] #5 Update schema, protocol docs and consumer compatibility/versioning guidance; sql-tdg TASK-24 consumes this contract.
+- [ ] #6 Expose typed qualifying and, where provable, non-qualifying branch witness obligations at physical-source or intermediate boundaries, including branch identity and duplicate counts; do not make consumers infer set-operation semantics to generate rejected rows. Report unsupported witness directions as residual with a reason.
 <!-- AC:END -->
