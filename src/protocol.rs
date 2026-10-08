@@ -676,15 +676,25 @@ pub struct SetWitnessBoundary {
 
 impl SetWitnessBoundary {
     pub(crate) fn new(relation: String, tuple_columns: Vec<String>, intermediate: bool) -> Self {
-        Self { relation, tuple_columns, intermediate }
+        Self {
+            relation,
+            tuple_columns,
+            intermediate,
+        }
     }
 
     /// Source table or named intermediate relation read by this branch.
-    pub fn relation(&self) -> &str { &self.relation }
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
     /// Positional input columns corresponding to the candidate output tuple.
-    pub fn tuple_columns(&self) -> &[String] { &self.tuple_columns }
+    pub fn tuple_columns(&self) -> &[String] {
+        &self.tuple_columns
+    }
     /// Whether this boundary requires upstream producer realization rather than direct source loading.
-    pub fn is_intermediate(&self) -> bool { self.intermediate }
+    pub fn is_intermediate(&self) -> bool {
+        self.intermediate
+    }
 }
 
 /// Exact tuple-count requirement for one independent branch input.
@@ -697,11 +707,17 @@ pub struct SetWitnessObligation {
 
 impl SetWitnessObligation {
     /// Stable leaf identity in the parent set-operation tree.
-    pub fn branch_identity(&self) -> &str { &self.branch_identity }
+    pub fn branch_identity(&self) -> &str {
+        &self.branch_identity
+    }
     /// Physical or intermediate boundary to which the requirement applies.
-    pub fn boundary(&self) -> &SetWitnessBoundary { &self.boundary }
+    pub fn boundary(&self) -> &SetWitnessBoundary {
+        &self.boundary
+    }
     /// Exact number of rows satisfying branch predicates and matching the output tuple using NULL-safe equality.
-    pub fn matching_tuple_count(&self) -> u64 { self.matching_tuple_count }
+    pub fn matching_tuple_count(&self) -> u64 {
+        self.matching_tuple_count
+    }
 }
 
 /// A complete, mutually dependent set of row-count obligations for one output tuple.
@@ -713,9 +729,13 @@ pub struct SetWitnessCase {
 
 impl SetWitnessCase {
     /// Result multiplicity under the operation tree when obligations hold.
-    pub fn output_tuple_count(&self) -> u64 { self.output_tuple_count }
+    pub fn output_tuple_count(&self) -> u64 {
+        self.output_tuple_count
+    }
     /// All obligations must hold simultaneously; zero counts are closed-world absence proofs.
-    pub fn obligations(&self) -> &[SetWitnessObligation] { &self.obligations }
+    pub fn obligations(&self) -> &[SetWitnessObligation] {
+        &self.obligations
+    }
 }
 
 /// Proof outcome for a qualifying or non-qualifying tuple witness.
@@ -724,7 +744,10 @@ pub enum SetWitnessDirection {
     /// Exact count plans, each sufficient on its own to establish the advertised result.
     Exact(Vec<SetWitnessCase>),
     /// A stable, explicit reason preventing generator-safe witness construction.
-    Residual { reason: &'static str, origin: Option<String> },
+    Residual {
+        reason: &'static str,
+        origin: Option<String>,
+    },
 }
 
 /// One UNION, INTERSECT, or EXCEPT operation.
@@ -799,8 +822,13 @@ impl SetOperation {
     /// A zero count requires proving that no other matching rows exist at that boundary.
     pub fn witness_directions(&self) -> (SetWitnessDirection, SetWitnessDirection) {
         let residual = |reason: &'static str, origin: Option<String>| {
-            (SetWitnessDirection::Residual { reason, origin: origin.clone() },
-             SetWitnessDirection::Residual { reason, origin })
+            (
+                SetWitnessDirection::Residual {
+                    reason,
+                    origin: origin.clone(),
+                },
+                SetWitnessDirection::Residual { reason, origin },
+            )
         };
         if !self.set_level_safe {
             return residual("set_level_membership_modifier", Some("body".to_string()));
@@ -811,22 +839,32 @@ impl SetOperation {
         if !self.has_supported_tree() {
             return residual("unsupported_alignment", Some("body".to_string()));
         }
-        if self.branches.iter().any(|branch| branch.output().columns().len() != self.branches[0].output().columns().len())
-            || self.branches[0].output().columns().is_empty()
+        if self.branches.iter().any(|branch| {
+            branch.output().columns().len() != self.branches[0].output().columns().len()
+        }) || self.branches[0].output().columns().is_empty()
         {
             return residual("unresolved_positional_alignment", Some("body".to_string()));
         }
         let mut physical_dependencies = std::collections::BTreeSet::new();
         for branch in &self.branches {
             if !branch.condition_exactness().is_exact() {
-                return residual("inexact_branch_conditions", Some(branch.identity().to_string()));
+                return residual(
+                    "inexact_branch_conditions",
+                    Some(branch.identity().to_string()),
+                );
             }
             if branch.witness_boundary().is_none() || branch.dependencies().is_empty() {
-                return residual("unresolved_branch_boundary", Some(branch.identity().to_string()));
+                return residual(
+                    "unresolved_branch_boundary",
+                    Some(branch.identity().to_string()),
+                );
             }
             for relation in branch.dependencies() {
                 if !physical_dependencies.insert(relation) {
-                    return residual("shared_physical_dependency", Some(branch.identity().to_string()));
+                    return residual(
+                        "shared_physical_dependency",
+                        Some(branch.identity().to_string()),
+                    );
                 }
             }
         }
@@ -837,11 +875,13 @@ impl SetOperation {
         let mut non_qualifying = Vec::new();
         for number in 0..total {
             let mut n = number;
-            let counts = (0..self.branches.len()).map(|_| {
-                let count = (n % 3) as u64;
-                n /= 3;
-                count
-            }).collect::<Vec<_>>();
+            let counts = (0..self.branches.len())
+                .map(|_| {
+                    let count = (n % 3) as u64;
+                    n /= 3;
+                    count
+                })
+                .collect::<Vec<_>>();
             if !self.candidate_domains_compatible(&counts) {
                 continue;
             }
@@ -849,15 +889,26 @@ impl SetOperation {
             let Some(output_tuple_count) = self.count_for_leaves(&counts, &mut cursor) else {
                 continue;
             };
-            if cursor != counts.len() { continue; }
-            let obligations = self.branches.iter().zip(counts).map(|(branch, count)| {
-                SetWitnessObligation {
+            if cursor != counts.len() {
+                continue;
+            }
+            let obligations = self
+                .branches
+                .iter()
+                .zip(counts)
+                .map(|(branch, count)| SetWitnessObligation {
                     branch_identity: branch.identity().to_string(),
-                    boundary: branch.witness_boundary().expect("validated branch boundary").clone(),
+                    boundary: branch
+                        .witness_boundary()
+                        .expect("validated branch boundary")
+                        .clone(),
                     matching_tuple_count: count,
-                }
-            }).collect();
-            let case = SetWitnessCase { output_tuple_count, obligations };
+                })
+                .collect();
+            let case = SetWitnessCase {
+                output_tuple_count,
+                obligations,
+            };
             if output_tuple_count > 0 {
                 qualifying.push(case);
             } else {
@@ -866,21 +917,28 @@ impl SetOperation {
         }
         let direction = |cases: Vec<SetWitnessCase>, reason| {
             if cases.is_empty() {
-                SetWitnessDirection::Residual { reason, origin: Some("body".to_string()) }
+                SetWitnessDirection::Residual {
+                    reason,
+                    origin: Some("body".to_string()),
+                }
             } else {
                 SetWitnessDirection::Exact(cases)
             }
         };
-        (direction(qualifying, "no_feasible_qualifying_counts"),
-         direction(non_qualifying, "no_feasible_non_qualifying_counts"))
+        (
+            direction(qualifying, "no_feasible_qualifying_counts"),
+            direction(non_qualifying, "no_feasible_non_qualifying_counts"),
+        )
     }
 
     fn has_supported_tree(&self) -> bool {
         self.multiplicity_rule().is_some()
-            && [self.left(), self.right()].iter().all(|operand| match operand {
-                SetOperand::Query => true,
-                SetOperand::Operation(operation) => operation.has_supported_tree(),
-            })
+            && [self.left(), self.right()]
+                .iter()
+                .all(|operand| match operand {
+                    SetOperand::Query => true,
+                    SetOperand::Operation(operation) => operation.has_supported_tree(),
+                })
     }
 
     fn count_for_leaves(&self, counts: &[u64], cursor: &mut usize) -> Option<u64> {
@@ -901,9 +959,16 @@ impl SetOperation {
         for index in 0..self.branches[0].output().columns().len() {
             let mut domain = ValueDomain::Unbounded;
             for (branch, count) in self.branches.iter().zip(counts) {
-                if *count == 0 { continue; }
-                domain = crate::domain::intersect_domains(&domain, branch.output().columns()[index].domain());
-                if matches!(domain, ValueDomain::Empty) { return false; }
+                if *count == 0 {
+                    continue;
+                }
+                domain = crate::domain::intersect_domains(
+                    &domain,
+                    branch.output().columns()[index].domain(),
+                );
+                if matches!(domain, ValueDomain::Empty) {
+                    return false;
+                }
             }
         }
         true
