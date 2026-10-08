@@ -177,6 +177,9 @@ impl QueryStatement {
 
     pub(crate) fn with_group_witness(mut self) -> Self {
         self.group_witness = crate::group_witness::analyze(&self).map(Box::new);
+        if self.group_witness.is_some() {
+            self.output = crate::group_witness::refine_output(&self);
+        }
         self
     }
 
