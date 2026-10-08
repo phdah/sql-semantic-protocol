@@ -745,6 +745,7 @@ fn type_literal(
             data_type.kind()
         )),
         DataType::Nullable(_) => unreachable!("nullable datatype was unwrapped above"),
+        _ => incompatible(),
     }
 }
 
