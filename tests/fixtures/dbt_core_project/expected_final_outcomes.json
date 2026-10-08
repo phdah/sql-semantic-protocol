@@ -2254,24 +2254,6 @@
           },
           {
             "clause": "where",
-            "identity": "column_domain:\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\".customer_id",
-            "origin": {
-              "layer_id": "layer-0020",
-              "scope": "query"
-            },
-            "reason": "computed_expression"
-          },
-          {
-            "clause": "where",
-            "identity": "column_domain:\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\".order_id",
-            "origin": {
-              "layer_id": "layer-0020",
-              "scope": "query"
-            },
-            "reason": "computed_expression"
-          },
-          {
-            "clause": "where",
             "identity": "composition_domain:\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\".customer_id",
             "origin": {
               "layer_id": "layer-0020",
@@ -2290,7 +2272,25 @@
           },
           {
             "clause": "where",
-            "identity": "where",
+            "identity": "where:and:0:and:0",
+            "origin": {
+              "layer_id": "layer-0020",
+              "scope": "query"
+            },
+            "reason": "subquery_predicate"
+          },
+          {
+            "clause": "where",
+            "identity": "where:and:0:and:1",
+            "origin": {
+              "layer_id": "layer-0020",
+              "scope": "query"
+            },
+            "reason": "subquery_predicate"
+          },
+          {
+            "clause": "where",
+            "identity": "where:and:1",
             "origin": {
               "layer_id": "layer-0020",
               "scope": "query"
