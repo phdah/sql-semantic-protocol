@@ -2522,6 +2522,18 @@ fn analyze_local_query_condition_exactness(
     }
     inspect_query_features(query, &mut diagnostics);
 
+    let missing_columns = metadata.map_or_else(Vec::new, |metadata| {
+        let output = analyze_query_output(query, local_outputs, &mut diagnostics, Some(metadata));
+        validate_schema_column_references(
+            &predicates,
+            &output,
+            &relation_analysis.joins,
+            &relation_analysis.sources,
+            metadata,
+            &mut diagnostics,
+        )
+    });
+
     analyze_query_condition_exactness(
         query,
         &predicates,
@@ -2530,6 +2542,7 @@ fn analyze_local_query_condition_exactness(
         &diagnostics,
         false,
     )
+    .merged_with(&ConditionExactness::from_residuals(missing_columns))
 }
 
 fn analyze_query_predicates_with_local_outputs(
