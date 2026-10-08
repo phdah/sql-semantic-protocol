@@ -302,7 +302,8 @@
         "join_equalities",
         "condition_exactness",
         "output",
-        "diagnostics"
+        "diagnostics",
+        "set_operations"
       ],
       "properties": {
         "status": {
@@ -340,6 +341,13 @@
         },
         "condition_exactness": {
           "$ref": "#/$defs/conditionExactness"
+        },
+        "set_operations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/composedSetOperation"
+          }
         }
       }
     },
@@ -3615,6 +3623,22 @@
         },
         "non_qualifying_witness": {
           "$ref": "#/$defs/setWitnessDirection"
+        }
+      }
+    },
+    "composedSetOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_layer_id",
+        "operation"
+      ],
+      "properties": {
+        "origin_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "operation": {
+          "$ref": "#/$defs/setOperation"
         }
       }
     }
