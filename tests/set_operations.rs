@@ -730,7 +730,9 @@ fn mixed_numeric_branch_domains_do_not_discard_valid_intersect_witnesses() {
         &dialect,
     )
     .expect("analyze numeric set operation");
-    let operation = first_query(&protocol).set_operation().expect("set operation");
+    let operation = first_query(&protocol)
+        .set_operation()
+        .expect("set operation");
     let (positive, _) = operation.witness_directions();
     let SetWitnessDirection::Exact(cases) = positive else {
         panic!("numerically equivalent predicates must not prevent a qualifying plan");
@@ -755,7 +757,9 @@ fn nested_set_membership_has_its_own_exact_branch_evidence() {
         &dialect,
     )
     .expect("analyze nested set operation");
-    let root = first_query(&protocol).set_operation().expect("root operation");
+    let root = first_query(&protocol)
+        .set_operation()
+        .expect("root operation");
     let SetOperand::Operation(nested) = root.left() else {
         panic!("expected nested left operand");
     };
@@ -770,7 +774,10 @@ fn nested_set_membership_has_its_own_exact_branch_evidence() {
         &emitted["inputs"][0]["statements"][0]["set_operation"]["left"]["membership"];
     assert_eq!(nested_membership["branches"].as_array().unwrap().len(), 2);
     assert_eq!(nested_membership["qualifying_witness"]["status"], "exact");
-    assert_eq!(nested_membership["non_qualifying_witness"]["status"], "exact");
+    assert_eq!(
+        nested_membership["non_qualifying_witness"]["status"],
+        "exact"
+    );
 }
 
 #[test]
@@ -783,7 +790,9 @@ fn nested_set_limit_remains_residual_without_poisoning_unlimited_siblings() {
         &dialect,
     )
     .expect("analyze limited nested set operation");
-    let root = first_query(&protocol).set_operation().expect("root operation");
+    let root = first_query(&protocol)
+        .set_operation()
+        .expect("root operation");
     let SetOperand::Operation(nested) = root.left() else {
         panic!("expected nested left operand");
     };
