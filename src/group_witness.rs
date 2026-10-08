@@ -43,11 +43,20 @@ impl GroupAggregate {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GroupValueTest {
     /// Every contributing value satisfies the comparison.
-    Every { operator: ComparisonOperator, bound: LiteralExpression },
+    Every {
+        operator: ComparisonOperator,
+        bound: LiteralExpression,
+    },
     /// At least one contributing value satisfies the comparison.
-    Some { operator: ComparisonOperator, bound: LiteralExpression },
+    Some {
+        operator: ComparisonOperator,
+        bound: LiteralExpression,
+    },
     /// The sum of non-NULL contributing values satisfies the comparison.
-    Sum { operator: ComparisonOperator, bound: LiteralExpression },
+    Sum {
+        operator: ComparisonOperator,
+        bound: LiteralExpression,
+    },
 }
 
 impl GroupValueTest {
@@ -63,9 +72,7 @@ impl GroupValueTest {
     /// Return the bound in this scalar comparison.
     pub fn bound(&self) -> &LiteralExpression {
         match self {
-            Self::Every { bound, .. }
-            | Self::Some { bound, .. }
-            | Self::Sum { bound, .. } => bound,
+            Self::Every { bound, .. } | Self::Some { bound, .. } | Self::Sum { bound, .. } => bound,
         }
     }
 
@@ -79,7 +86,7 @@ impl GroupValueTest {
 }
 
 /// One independently sufficient input-group construction.
-/// 
+///
 /// A consumer must create a group with the indicated identity and exactly the
 /// prescribed bounds; any unspecified upper bound is unbounded. When the
 /// aggregate uses a column, non-NULL counts refer only to that column.
@@ -93,19 +100,41 @@ pub struct GroupWitnessCase {
 }
 
 impl GroupWitnessCase {
-    fn new(min_rows: u64, max_rows: Option<u64>, min_non_null: u64, max_non_null: Option<u64>, tests: Vec<GroupValueTest>) -> Self {
-        Self { min_rows, max_rows, min_non_null, max_non_null, tests }
+    fn new(
+        min_rows: u64,
+        max_rows: Option<u64>,
+        min_non_null: u64,
+        max_non_null: Option<u64>,
+        tests: Vec<GroupValueTest>,
+    ) -> Self {
+        Self {
+            min_rows,
+            max_rows,
+            min_non_null,
+            max_non_null,
+            tests,
+        }
     }
     /// Minimum number of rows with this group key.
-    pub fn min_rows(&self) -> u64 { self.min_rows }
+    pub fn min_rows(&self) -> u64 {
+        self.min_rows
+    }
     /// Optional maximum number of rows with this group key.
-    pub fn max_rows(&self) -> Option<u64> { self.max_rows }
+    pub fn max_rows(&self) -> Option<u64> {
+        self.max_rows
+    }
     /// Minimum number of non-NULL values for the aggregate's argument.
-    pub fn min_non_null(&self) -> u64 { self.min_non_null }
+    pub fn min_non_null(&self) -> u64 {
+        self.min_non_null
+    }
     /// Optional maximum number of non-NULL values for the aggregate's argument.
-    pub fn max_non_null(&self) -> Option<u64> { self.max_non_null }
+    pub fn max_non_null(&self) -> Option<u64> {
+        self.max_non_null
+    }
     /// Conjunctive contributor constraints; distinct cases are alternatives.
-    pub fn tests(&self) -> &[GroupValueTest] { &self.tests }
+    pub fn tests(&self) -> &[GroupValueTest] {
+        &self.tests
+    }
 }
 
 /// Proof status for one direction of HAVING group membership.
@@ -131,21 +160,35 @@ pub struct GroupWitness {
 
 impl GroupWitness {
     /// Physical source identity. None means no independent physical input was proven.
-    pub fn boundary(&self) -> Option<&str> { self.boundary.as_deref() }
+    pub fn boundary(&self) -> Option<&str> {
+        self.boundary.as_deref()
+    }
     /// Physical group key columns, in GROUP BY order.
-    pub fn group_keys(&self) -> &[ColumnRef] { &self.group_keys }
+    pub fn group_keys(&self) -> &[ColumnRef] {
+        &self.group_keys
+    }
     /// Aggregate reduction to perform over the input group.
-    pub fn aggregate(&self) -> Option<GroupAggregate> { self.aggregate }
+    pub fn aggregate(&self) -> Option<GroupAggregate> {
+        self.aggregate
+    }
     /// Source column for COUNT(column), SUM, MIN, or MAX. None for COUNT(*).
-    pub fn argument(&self) -> Option<&ColumnRef> { self.argument.as_ref() }
+    pub fn argument(&self) -> Option<&ColumnRef> {
+        self.argument.as_ref()
+    }
     /// The normalized aggregate-result comparison, when supported.
     pub fn predicate(&self) -> Option<(ComparisonOperator, &LiteralExpression)> {
-        self.predicate.as_ref().map(|(operator, bound)| (*operator, bound))
+        self.predicate
+            .as_ref()
+            .map(|(operator, bound)| (*operator, bound))
     }
     /// Sufficient constructions for groups which survive HAVING.
-    pub fn qualifying(&self) -> &GroupWitnessDirection { &self.qualifying }
+    pub fn qualifying(&self) -> &GroupWitnessDirection {
+        &self.qualifying
+    }
     /// Sufficient constructions for groups which are rejected by HAVING, including SQL UNKNOWN.
-    pub fn rejected(&self) -> &GroupWitnessDirection { &self.rejected }
+    pub fn rejected(&self) -> &GroupWitnessDirection {
+        &self.rejected
+    }
 }
 
 fn residual(reason: &'static str) -> GroupWitnessDirection {
@@ -164,77 +207,144 @@ fn negated(operator: ComparisonOperator) -> Option<ComparisonOperator> {
     }
 }
 
-fn integer_intervals(operator: ComparisonOperator, bound: u64, floor: u64) -> Vec<(u64, Option<u64>)> {
+fn integer_intervals(
+    operator: ComparisonOperator,
+    bound: u64,
+    floor: u64,
+) -> Vec<(u64, Option<u64>)> {
     let mut candidates = Vec::new();
     match operator {
         ComparisonOperator::Eq => candidates.push((bound, Some(bound))),
         ComparisonOperator::Neq => {
-            if let Some(below) = bound.checked_sub(1) { candidates.push((0, Some(below))); }
-            if let Some(above) = bound.checked_add(1) { candidates.push((above, None)); }
+            if let Some(below) = bound.checked_sub(1) {
+                candidates.push((0, Some(below)));
+            }
+            if let Some(above) = bound.checked_add(1) {
+                candidates.push((above, None));
+            }
         }
         ComparisonOperator::Lt => {
-            if let Some(below) = bound.checked_sub(1) { candidates.push((0, Some(below))); }
+            if let Some(below) = bound.checked_sub(1) {
+                candidates.push((0, Some(below)));
+            }
         }
         ComparisonOperator::Lte => candidates.push((0, Some(bound))),
         ComparisonOperator::Gt => {
-            if let Some(above) = bound.checked_add(1) { candidates.push((above, None)); }
+            if let Some(above) = bound.checked_add(1) {
+                candidates.push((above, None));
+            }
         }
         ComparisonOperator::Gte => candidates.push((bound, None)),
         ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {}
     }
-    candidates.into_iter().filter_map(|(min, max)| {
-        let min = min.max(floor);
-        if max.is_some_and(|upper| upper < min) { None } else { Some((min, max)) }
-    }).collect()
+    candidates
+        .into_iter()
+        .filter_map(|(min, max)| {
+            let min = min.max(floor);
+            if max.is_some_and(|upper| upper < min) {
+                None
+            } else {
+                Some((min, max))
+            }
+        })
+        .collect()
 }
 
-fn count_cases(aggregate: GroupAggregate, operator: ComparisonOperator, bound: &LiteralExpression, grouped: bool) -> Option<Vec<GroupWitnessCase>> {
-    let LiteralValue::Number(value) = bound.value() else { return None; };
-    if bound.literal_type() != LiteralType::Integer { return None; }
+fn count_cases(
+    aggregate: GroupAggregate,
+    operator: ComparisonOperator,
+    bound: &LiteralExpression,
+    grouped: bool,
+) -> Option<Vec<GroupWitnessCase>> {
+    let LiteralValue::Number(value) = bound.value() else {
+        return None;
+    };
+    if bound.literal_type() != LiteralType::Integer {
+        return None;
+    }
     let threshold = value.parse::<u64>().ok()?;
-    let floor = if grouped && aggregate == GroupAggregate::CountRows { 1 } else { 0 };
+    let floor = if grouped && aggregate == GroupAggregate::CountRows {
+        1
+    } else {
+        0
+    };
     let mut cases = Vec::new();
     for (min, max) in integer_intervals(operator, threshold, floor) {
         let case = if aggregate == GroupAggregate::CountRows {
             GroupWitnessCase::new(min, max, 0, None, Vec::new())
         } else {
-            GroupWitnessCase::new(if grouped { min.max(1) } else { min }, None, min, max, Vec::new())
+            GroupWitnessCase::new(
+                if grouped { min.max(1) } else { min },
+                None,
+                min,
+                max,
+                Vec::new(),
+            )
         };
         cases.push(case);
     }
     Some(cases)
 }
 
-fn aggregate_tests(kind: GroupAggregate, operator: ComparisonOperator, bound: &LiteralExpression) -> Vec<Vec<GroupValueTest>> {
+fn aggregate_tests(
+    kind: GroupAggregate,
+    operator: ComparisonOperator,
+    bound: &LiteralExpression,
+) -> Vec<Vec<GroupValueTest>> {
     use ComparisonOperator::{Eq, Gt, Gte, Lt, Lte, Neq};
-    let every = |operator| GroupValueTest::Every { operator, bound: bound.clone() };
-    let some = |operator| GroupValueTest::Some { operator, bound: bound.clone() };
+    let every = |operator| GroupValueTest::Every {
+        operator,
+        bound: bound.clone(),
+    };
+    let some = |operator| GroupValueTest::Some {
+        operator,
+        bound: bound.clone(),
+    };
     match kind {
-        GroupAggregate::Sum => vec![vec![GroupValueTest::Sum { operator, bound: bound.clone() }]],
+        GroupAggregate::Sum => vec![vec![GroupValueTest::Sum {
+            operator,
+            bound: bound.clone(),
+        }]],
         GroupAggregate::Min => match operator {
             Lt | Lte => vec![vec![some(operator)]],
             Gt | Gte => vec![vec![every(operator)]],
             Eq => vec![vec![every(Gte), some(Eq)]],
             Neq => vec![vec![some(Lt)], vec![every(Gt)]],
-            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => Vec::new(),
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
+                Vec::new()
+            }
         },
         GroupAggregate::Max => match operator {
             Gt | Gte => vec![vec![some(operator)]],
             Lt | Lte => vec![vec![every(operator)]],
             Eq => vec![vec![every(Lte), some(Eq)]],
             Neq => vec![vec![some(Gt)], vec![every(Lt)]],
-            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => Vec::new(),
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
+                Vec::new()
+            }
         },
         GroupAggregate::CountRows | GroupAggregate::CountValues => Vec::new(),
     }
 }
 
-fn value_cases(kind: GroupAggregate, operator: ComparisonOperator, bound: &LiteralExpression) -> Option<Vec<GroupWitnessCase>> {
-    if !matches!(bound.literal_type(), LiteralType::Integer | LiteralType::Decimal) {
+fn value_cases(
+    kind: GroupAggregate,
+    operator: ComparisonOperator,
+    bound: &LiteralExpression,
+) -> Option<Vec<GroupWitnessCase>> {
+    if !matches!(
+        bound.literal_type(),
+        LiteralType::Integer | LiteralType::Decimal
+    ) {
         return None;
     }
     let tests = aggregate_tests(kind, operator, bound);
-    Some(tests.into_iter().map(|tests| GroupWitnessCase::new(1, None, 1, None, tests)).collect())
+    Some(
+        tests
+            .into_iter()
+            .map(|tests| GroupWitnessCase::new(1, None, 1, None, tests))
+            .collect(),
+    )
 }
 
 /// Analyze the normalized HAVING predicate without depending on sqlparser AST types.
@@ -245,36 +355,58 @@ fn value_cases(kind: GroupAggregate, operator: ComparisonOperator, bound: &Liter
 pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
     let having = query.predicates().having_predicate()?;
     let source = match (query.sources(), query.dependencies()) {
-        ([source], [dependency]) if source.name() == dependency && query.joins().is_empty() => Some(source.name().to_string()),
+        ([source], [dependency]) if source.name() == dependency && query.joins().is_empty() => {
+            Some(source.name().to_string())
+        }
         _ => None,
     };
     let group_keys = match query.aggregation().and_then(|a| a.group_by()) {
-        Some(GroupBy::Expressions(grouping)) => grouping.iter().map(|item| {
-            match item {
-                GroupingExpression::Expression(Expression::Column(column)) => source.as_ref().map(|table| ColumnRef::new(Some(table.clone()), column.name().to_string())),
+        Some(GroupBy::Expressions(grouping)) => grouping
+            .iter()
+            .map(|item| match item {
+                GroupingExpression::Expression(Expression::Column(column)) => source
+                    .as_ref()
+                    .map(|table| ColumnRef::new(Some(table.clone()), column.name().to_string())),
                 _ => None,
-            }
-        }).collect::<Option<Vec<_>>>(),
+            })
+            .collect::<Option<Vec<_>>>(),
         None => Some(Vec::new()),
         Some(GroupBy::All) => None,
     };
     let mut result = GroupWitness {
-        boundary: source.clone(), group_keys: group_keys.clone().unwrap_or_default(),
-        aggregate: None, argument: None, predicate: None,
-        qualifying: residual("unsupported_having"), rejected: residual("unsupported_having"),
+        boundary: source.clone(),
+        group_keys: group_keys.clone().unwrap_or_default(),
+        aggregate: None,
+        argument: None,
+        predicate: None,
+        qualifying: residual("unsupported_having"),
+        rejected: residual("unsupported_having"),
     };
-    let Predicate::Comparison(compare) = having else { return Some(result); };
+    let Predicate::Comparison(compare) = having else {
+        return Some(result);
+    };
     let (function, op, bound) = match (compare.left(), compare.right()) {
-        (Expression::AggregateFunction(function), Expression::Literal(bound)) =>
-            (function, compare.operator(), bound.clone()),
-        (Expression::Literal(bound), Expression::AggregateFunction(function)) =>
-            (function, compare.operator().reversed(), bound.clone()),
+        (Expression::AggregateFunction(function), Expression::Literal(bound)) => {
+            (function, compare.operator(), bound.clone())
+        }
+        (Expression::Literal(bound), Expression::AggregateFunction(function)) => {
+            (function, compare.operator().reversed(), bound.clone())
+        }
         _ => return Some(result),
     };
     result.predicate = Some((op, bound.clone()));
     let kind = match function.name().to_ascii_uppercase().as_str() {
-        "COUNT" if matches!(function.arguments(), [AggregateArgument::Wildcard]) => GroupAggregate::CountRows,
-        "COUNT" if matches!(function.arguments(), [AggregateArgument::Expression(Expression::Column(_))]) => GroupAggregate::CountValues,
+        "COUNT" if matches!(function.arguments(), [AggregateArgument::Wildcard]) => {
+            GroupAggregate::CountRows
+        }
+        "COUNT"
+            if matches!(
+                function.arguments(),
+                [AggregateArgument::Expression(Expression::Column(_))]
+            ) =>
+        {
+            GroupAggregate::CountValues
+        }
         "SUM" => GroupAggregate::Sum,
         "MIN" => GroupAggregate::Min,
         "MAX" => GroupAggregate::Max,
@@ -282,8 +414,9 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
     };
     result.aggregate = Some(kind);
     result.argument = match function.arguments() {
-        [AggregateArgument::Expression(Expression::Column(column))] =>
-            source.as_ref().map(|table| ColumnRef::new(Some(table.clone()), column.name().to_string())),
+        [AggregateArgument::Expression(Expression::Column(column))] => source
+            .as_ref()
+            .map(|table| ColumnRef::new(Some(table.clone()), column.name().to_string())),
         [AggregateArgument::Wildcard] if kind == GroupAggregate::CountRows => None,
         _ => return Some(result),
     };
@@ -292,14 +425,22 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
         result.rejected = residual("distinct_or_filtered_aggregate");
         return Some(result);
     }
-    if source.is_none() || group_keys.is_none() || query.predicates().where_predicate().is_some()
-        || query.predicates().qualify_predicate().is_some() || query.set_operation().is_some()
-        || !query.diagnostics().is_empty() {
+    if source.is_none()
+        || group_keys.is_none()
+        || query.predicates().where_predicate().is_some()
+        || query.predicates().qualify_predicate().is_some()
+        || query.set_operation().is_some()
+        || !query.diagnostics().is_empty()
+    {
         result.qualifying = residual("unproven_source_group_boundary");
         result.rejected = residual("unproven_source_group_boundary");
         return Some(result);
     }
-    if matches!(kind, GroupAggregate::Sum | GroupAggregate::Min | GroupAggregate::Max) && result.argument.is_none() {
+    if matches!(
+        kind,
+        GroupAggregate::Sum | GroupAggregate::Min | GroupAggregate::Max
+    ) && result.argument.is_none()
+    {
         result.qualifying = residual("unsupported_aggregate_argument");
         result.rejected = residual("unsupported_aggregate_argument");
         return Some(result);
@@ -311,7 +452,10 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
     };
     if kind == GroupAggregate::CountRows || kind == GroupAggregate::CountValues {
         let grouped = query.aggregation().and_then(|a| a.group_by()).is_some();
-        match (count_cases(kind, op, &bound, grouped), count_cases(kind, reversed, &bound, grouped)) {
+        match (
+            count_cases(kind, op, &bound, grouped),
+            count_cases(kind, reversed, &bound, grouped),
+        ) {
             (Some(positive), Some(negative)) => {
                 result.qualifying = GroupWitnessDirection::Exact(positive);
                 result.rejected = GroupWitnessDirection::Exact(negative);
@@ -322,7 +466,10 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
             }
         }
     } else {
-        match (value_cases(kind, op, &bound), value_cases(kind, reversed, &bound)) {
+        match (
+            value_cases(kind, op, &bound),
+            value_cases(kind, reversed, &bound),
+        ) {
             (Some(positive), Some(mut negative)) => {
                 // SQL SUM/MIN/MAX over only NULL inputs returns NULL. HAVING rejects UNKNOWN.
                 negative.push(GroupWitnessCase::new(1, None, 0, Some(0), Vec::new()));
@@ -341,7 +488,12 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
 /// Refine only a projected aggregate identical to the HAVING operand.
 /// HAVING excludes SQL NULL, so a supported scalar comparison bounds its surviving result.
 pub(crate) fn refine_output(query: &QueryStatement) -> Output {
-    let Some(GroupWitness { predicate: Some((operator, bound)), aggregate: Some(kind), .. }) = query.group_witness() else {
+    let Some(GroupWitness {
+        predicate: Some((operator, bound)),
+        aggregate: Some(kind),
+        ..
+    }) = query.group_witness()
+    else {
         return query.output().clone();
     };
     let Some(Predicate::Comparison(compare)) = query.predicates().having_predicate() else {
@@ -352,16 +504,41 @@ pub(crate) fn refine_output(query: &QueryStatement) -> Output {
         | (Expression::Literal(_), Expression::AggregateFunction(function)) => function,
         _ => return query.output().clone(),
     };
-    let domain = if matches!(kind, GroupAggregate::CountRows | GroupAggregate::CountValues) {
-        let LiteralValue::Number(number) = bound.value() else { return query.output().clone(); };
-        let Ok(threshold) = number.parse::<u64>() else { return query.output().clone(); };
+    let domain = if matches!(
+        kind,
+        GroupAggregate::CountRows | GroupAggregate::CountValues
+    ) {
+        let LiteralValue::Number(number) = bound.value() else {
+            return query.output().clone();
+        };
+        let Ok(threshold) = number.parse::<u64>() else {
+            return query.output().clone();
+        };
         let grouped = query.aggregation().and_then(|a| a.group_by()).is_some();
-        let floor = if *kind == GroupAggregate::CountRows && grouped { 1 } else { 0 };
-        let ranges = integer_intervals(*operator, threshold, floor).into_iter().map(|(min, max)| {
-            let min = LiteralExpression::new(LiteralType::Integer, LiteralValue::Number(min.to_string()));
-            let max = max.map(|max| Bound::new(LiteralExpression::new(LiteralType::Integer, LiteralValue::Number(max.to_string())), true));
-            ValueRange::new(Some(Bound::new(min, true)), max)
-        }).collect();
+        let floor = if *kind == GroupAggregate::CountRows && grouped {
+            1
+        } else {
+            0
+        };
+        let ranges = integer_intervals(*operator, threshold, floor)
+            .into_iter()
+            .map(|(min, max)| {
+                let min = LiteralExpression::new(
+                    LiteralType::Integer,
+                    LiteralValue::Number(min.to_string()),
+                );
+                let max = max.map(|max| {
+                    Bound::new(
+                        LiteralExpression::new(
+                            LiteralType::Integer,
+                            LiteralValue::Number(max.to_string()),
+                        ),
+                        true,
+                    )
+                });
+                ValueRange::new(Some(Bound::new(min, true)), max)
+            })
+            .collect();
         ValueDomain::ranges(ranges)
     } else {
         match operator {
@@ -370,13 +547,27 @@ pub(crate) fn refine_output(query: &QueryStatement) -> Output {
                 ValueRange::new(None, Some(Bound::new(bound.clone(), false))),
                 ValueRange::new(Some(Bound::new(bound.clone(), false)), None),
             ]),
-            ComparisonOperator::Lt | ComparisonOperator::Lte => ValueDomain::ranges(vec![
-                ValueRange::new(None, Some(Bound::new(bound.clone(), *operator == ComparisonOperator::Lte)))
-            ]),
-            ComparisonOperator::Gt | ComparisonOperator::Gte => ValueDomain::ranges(vec![
-                ValueRange::new(Some(Bound::new(bound.clone(), *operator == ComparisonOperator::Gte)), None)
-            ]),
-            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => return query.output().clone(),
+            ComparisonOperator::Lt | ComparisonOperator::Lte => {
+                ValueDomain::ranges(vec![ValueRange::new(
+                    None,
+                    Some(Bound::new(
+                        bound.clone(),
+                        *operator == ComparisonOperator::Lte,
+                    )),
+                )])
+            }
+            ComparisonOperator::Gt | ComparisonOperator::Gte => {
+                ValueDomain::ranges(vec![ValueRange::new(
+                    Some(Bound::new(
+                        bound.clone(),
+                        *operator == ComparisonOperator::Gte,
+                    )),
+                    None,
+                )])
+            }
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
+                return query.output().clone()
+            }
         }
     };
     Output::new(query.output().columns().iter().cloned().map(|column| {
