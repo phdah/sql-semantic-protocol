@@ -54,10 +54,15 @@ optionally `catalog.json`, using each artifact only for the evidence it authorit
 - `catalog.json`: warehouse-introspected physical columns and database datatypes for models,
   seeds, snapshots, and sources.
 
-For source-level dbt `relationships` tests where `attached_node` is absent, the adapter
-uses the declared `to` reference to distinguish the parent relation from the single
-remaining child dependency. Ambiguous or unresolved ownership fails explicitly rather
-than assigning a foreign key to an arbitrary source.
+dbt leaves `attached_node` empty for tests declared on sources. The adapter then identifies the
+tested resource from the test's rendered `kwargs.model` argument (for example
+`{{ get_where_subquery(source('raw', 'orders')) }}`), which must resolve to exactly one declared
+dependency; this also covers self-referencing `relationships` tests. Without a usable `model`
+argument, a single-dependency test uses that dependency, and a `relationships` test uses its
+declared `to` reference to separate the parent from exactly one remaining child dependency. A
+built-in test whose tested resource still cannot be identified is reported as
+`unattributed_dbt_test` in the bundle-level `constraint_diagnostics` and contributes no
+constraint, rather than aborting analysis or assigning the constraint to a guessed relation.
 
 The adapter joins the artifacts by dbt resource `unique_id`, normalizes catalog datatypes into the
 same parser-independent `DataType` model used by direct callers, and runs compiled model SQL

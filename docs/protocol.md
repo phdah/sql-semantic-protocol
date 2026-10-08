@@ -248,7 +248,9 @@ of being guessed or silently dropped. The dbt adapter normalizes explicit `prima
 `foreign_key`, and `not_null` declarations plus built-in `unique`, `relationships`,
 `not_null`, and `accepted_values` tests from `manifest.json`. Unsupported attached dbt generic test kinds are reported with an `unsupported_dbt_test`
 diagnostic rather than silently disappearing. Singular tests, which do not carry
-`test_metadata`, are reported as `unsupported_dbt_singular_test`. If a test cannot be scoped
+`test_metadata`, are reported as `unsupported_dbt_singular_test`. A built-in test whose tested
+resource cannot be identified is reported as `unattributed_dbt_test` and emits no constraint. If
+a test cannot be scoped
 to a canonical relation, its diagnostic is emitted in the bundle-level
 `constraint_diagnostics` array instead of being dropped.
 
