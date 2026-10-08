@@ -1,6 +1,6 @@
 [package]
 name = "sql-semantic-protocol"
-version = "2.0.0"
+version = "2.0.1"
 edition = "2021"
 description = "Parser-independent semantic protocol and analyzer for SQL queries"
 license = "MIT"

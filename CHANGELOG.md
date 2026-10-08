@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/phdah/sql-semantic-protocol/compare/v2.0.0...v2.0.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* **cli:** present grouped, terminal-aware help ([#71](https://github.com/phdah/sql-semantic-protocol/issues/71)) ([be711f0](https://github.com/phdah/sql-semantic-protocol/commit/be711f0f40d2cfe97e589008b685b517bf9f192b))
+
 ## [2.0.0](https://github.com/phdah/sql-semantic-protocol/compare/v1.0.1...v2.0.0) (2026-10-08)
 
 
