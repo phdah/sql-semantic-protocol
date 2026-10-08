@@ -546,7 +546,7 @@ fn analyze_query(
 
     let set_operation = analyze_set_operation(query.body.as_ref()).map(|operation| {
         let mut branches = Vec::new();
-        collect_set_branch_evidence(query.body.as_ref(), query, "body", metadata, &mut branches);
+        collect_set_branch_evidence(query.body.as_ref(), query, "body", metadata, true, &mut branches);
         operation
             .with_branches(branches)
             .with_set_level_safety(query.limit_clause.is_none() && query.fetch.is_none())
@@ -2160,6 +2160,7 @@ fn collect_set_branch_evidence(
     context: &SqlQuery,
     identity: &str,
     metadata: &AnalysisMetadata<'_>,
+    strip_outer_set_modifiers: bool,
     branches: &mut Vec<SetBranch>,
 ) {
     match expression {
@@ -2169,6 +2170,7 @@ fn collect_set_branch_evidence(
                 context,
                 &format!("{identity}:left"),
                 metadata,
+                strip_outer_set_modifiers,
                 branches,
             );
             collect_set_branch_evidence(
@@ -2176,6 +2178,7 @@ fn collect_set_branch_evidence(
                 context,
                 &format!("{identity}:right"),
                 metadata,
+                strip_outer_set_modifiers,
                 branches,
             );
         }
@@ -2187,6 +2190,7 @@ fn collect_set_branch_evidence(
                 query,
                 &format!("{identity}:query"),
                 metadata,
+                false,
                 branches,
             );
         }
@@ -2195,8 +2199,10 @@ fn collect_set_branch_evidence(
             *branch_query.body = expression.clone();
             // Set-level shaping is not a filter on an individual branch. Nested
             // query-level shaping remains residual at the enclosing set scope.
-            branch_query.limit_clause = None;
-            branch_query.fetch = None;
+            if strip_outer_set_modifiers {
+                branch_query.limit_clause = None;
+                branch_query.fetch = None;
+            }
             let analyzed = analyze_query(&branch_query, None, metadata);
             let boundary = analyze_set_leaf_boundary(expression, &analyzed);
             branches.push(SetBranch::new(identity.to_string(), &analyzed, boundary));
