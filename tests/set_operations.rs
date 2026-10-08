@@ -403,10 +403,7 @@ fn complete_set_witnesses_are_exact_only_for_independent_row_preserving_branches
         assert_eq!(membership["qualifying_witness"]["status"], "exact");
         assert_eq!(membership["non_qualifying_witness"]["status"], "exact");
         // Set-level independent-column domains still cannot claim complete exactness.
-        assert_eq!(
-            first_query(&protocol).condition_exactness().is_exact(),
-            false
-        );
+        assert!(!first_query(&protocol).condition_exactness().is_exact());
     }
 }
 
