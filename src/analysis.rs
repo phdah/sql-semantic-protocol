@@ -5737,7 +5737,12 @@ fn analyze_set_expr_output_with_outer_scope(
                 diagnostics,
                 metadata,
             );
-            merge_set_operation_output(left_output, right_output, analyze_set_operator(*op), diagnostics)
+            merge_set_operation_output(
+                left_output,
+                right_output,
+                analyze_set_operator(*op),
+                diagnostics,
+            )
         }
         SetExpr::Values(_)
         | SetExpr::Insert(_)
