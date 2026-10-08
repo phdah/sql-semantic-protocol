@@ -927,7 +927,10 @@ fn analyze_query_condition_exactness(
     // normalized physical equalities are not misclassified as column comparisons.
     let mut equality_sources = sources.to_vec();
     for dependency in dependencies {
-        if !equality_sources.iter().any(|source| source.name() == dependency) {
+        if !equality_sources
+            .iter()
+            .any(|source| source.name() == dependency)
+        {
             equality_sources.push(SourceRelation::new(dependency.clone(), None));
         }
     }
