@@ -29,6 +29,7 @@ use crate::constraints::{
     ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, RelationConstraint, RelationConstraintSet,
 };
+use crate::data_type::DataType;
 use crate::domain::{
     derive_case_source_domains, derive_column_domains, intersect_case_domain_values,
     intersect_domains, predicate_domains_contain_unknown, refine_column_domains_from_equalities,
@@ -108,6 +109,22 @@ impl AnalysisMetadata<'_> {
                     .map(|column| column.name().to_string())
                     .collect()
             })
+    }
+
+    fn column_data_type(&self, column: &ColumnRef) -> Option<&DataType> {
+        let relation = column.relation()?;
+        let catalog = self.catalog?;
+        let canonical = catalog
+            .resolve(relation, self.dialect_name, self.relation_context)
+            .ok()?;
+        catalog
+            .schemas()
+            .iter()
+            .find(|schema| schema.relation() == canonical)?
+            .columns()
+            .iter()
+            .find(|schema_column| schema_column.name() == column.name())
+            .map(|schema_column| schema_column.data_type())
     }
 }
 
@@ -535,12 +552,15 @@ fn analyze_query(
         }
     };
 
-    let column_domains = analyze_query_column_domains(
-        query,
-        &BTreeSet::new(),
-        &BTreeMap::new(),
-        &BTreeMap::new(),
-        Some(metadata),
+    let column_domains = type_column_domains(
+        analyze_query_column_domains(
+            query,
+            &BTreeSet::new(),
+            &BTreeMap::new(),
+            &BTreeMap::new(),
+            Some(metadata),
+        ),
+        metadata,
     );
     let output = refine_output_domains_from_column_domains(
         output,
@@ -577,6 +597,226 @@ fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_produced_relation(produced_relation)
+}
+
+fn type_column_domains(
+    column_domains: Vec<ColumnDomain>,
+    metadata: &AnalysisMetadata<'_>,
+) -> Vec<ColumnDomain> {
+    column_domains
+        .into_iter()
+        .map(|column_domain| {
+            let Some(data_type) = metadata.column_data_type(column_domain.column()) else {
+                return column_domain;
+            };
+            let domain = type_value_domain(column_domain.domain(), data_type);
+            ColumnDomain::new(column_domain.column().clone(), domain)
+        })
+        .collect()
+}
+
+fn type_value_domain(domain: &ValueDomain, data_type: &DataType) -> ValueDomain {
+    match domain {
+        ValueDomain::Ranges(ranges) => {
+            let typed = ranges
+                .ranges()
+                .iter()
+                .map(|range| {
+                    let lower = range
+                        .lower()
+                        .map(|bound| type_bound(bound, data_type))
+                        .transpose()?;
+                    let upper = range
+                        .upper()
+                        .map(|bound| type_bound(bound, data_type))
+                        .transpose()?;
+                    Ok(ValueRange::new(lower, upper))
+                })
+                .collect::<Result<Vec<_>, String>>();
+            match typed {
+                Ok(ranges) => ValueDomain::ranges(ranges),
+                Err(reason) => ValueDomain::unknown(reason),
+            }
+        }
+        ValueDomain::Set(set) => {
+            let typed = set
+                .values()
+                .iter()
+                .map(|literal| type_literal(literal, data_type))
+                .collect::<Result<Vec<_>, String>>();
+            match typed {
+                Ok(values) => ValueDomain::set(set.mode(), values),
+                Err(reason) => ValueDomain::unknown(reason),
+            }
+        }
+        ValueDomain::Unbounded => ValueDomain::Unbounded,
+        ValueDomain::Empty => ValueDomain::Empty,
+        ValueDomain::Unknown(unknown) => ValueDomain::unknown(unknown.reason()),
+    }
+}
+
+fn type_bound(bound: &Bound, data_type: &DataType) -> Result<Bound, String> {
+    Ok(Bound::new(
+        type_literal(bound.value(), data_type)?,
+        bound.inclusive(),
+    ))
+}
+
+fn type_literal(
+    literal: &LiteralExpression,
+    data_type: &DataType,
+) -> Result<LiteralExpression, String> {
+    if literal.literal_type() == LiteralType::Null {
+        return Ok(literal.clone());
+    }
+
+    let data_type = match data_type {
+        DataType::Nullable(inner) => inner.as_ref(),
+        other => other,
+    };
+    let incompatible = || {
+        Err(format!(
+            "literal type '{}' cannot be compared exactly with canonical '{}' column semantics",
+            literal.literal_type().as_str(),
+            data_type.kind()
+        ))
+    };
+
+    match data_type {
+        DataType::Boolean => match literal.value() {
+            LiteralValue::Boolean(value) => Ok(LiteralExpression::new(
+                LiteralType::Boolean,
+                LiteralValue::Boolean(*value),
+            )),
+            _ => incompatible(),
+        },
+        DataType::SignedInteger { bits } => {
+            type_integer_literal(literal, *bits, false)
+        }
+        DataType::UnsignedInteger { bits } => {
+            type_integer_literal(literal, *bits, true)
+        }
+        DataType::Decimal { precision, scale } => match literal.value() {
+            LiteralValue::Number(value) if decimal_literal_fits(value, *precision, *scale) => {
+                Ok(LiteralExpression::new(
+                    LiteralType::Decimal,
+                    LiteralValue::Number(value.clone()),
+                ))
+            }
+            LiteralValue::Number(_) => Err(
+                "numeric literal exceeds the declared decimal precision or scale".to_string(),
+            ),
+            _ => incompatible(),
+        },
+        DataType::FloatingPoint { .. } => Err(
+            "floating-point predicate domains are residual because NaN and signed-zero comparison semantics are not represented by the protocol".to_string(),
+        ),
+        DataType::Date if literal.literal_type() == LiteralType::Date => Ok(literal.clone()),
+        DataType::Time { .. } if literal.literal_type() == LiteralType::Time => Ok(literal.clone()),
+        DataType::Timestamp { .. } if literal.literal_type() == LiteralType::Timestamp => {
+            Err("timestamp predicate domains are residual because timezone normalization is not represented by the canonical timestamp literal".to_string())
+        }
+        DataType::Interval if literal.literal_type() == LiteralType::Interval => Ok(literal.clone()),
+        DataType::String { .. } => Err(
+            "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol".to_string(),
+        ),
+        DataType::Enum { .. } | DataType::Set { .. } => Err(
+            "enum and set predicate domains are residual because comparison semantics are dialect-dependent".to_string(),
+        ),
+        DataType::Any | DataType::Unspecified | DataType::Custom { .. } => Err(format!(
+            "canonical '{}' datatype does not define exact comparison semantics",
+            data_type.kind()
+        )),
+        DataType::Binary { .. }
+        | DataType::Uuid
+        | DataType::Json
+        | DataType::BitString { .. }
+        | DataType::Array { .. }
+        | DataType::Map { .. }
+        | DataType::Struct { .. }
+        | DataType::Union { .. }
+        | DataType::Table { .. }
+        | DataType::Geometry { .. }
+        | DataType::Regclass
+        | DataType::TextSearchVector
+        | DataType::TextSearchQuery
+        | DataType::Trigger => Err(format!(
+            "canonical '{}' datatype has no protocol-defined ordered scalar comparison semantics",
+            data_type.kind()
+        )),
+        DataType::Nullable(_) => unreachable!("nullable datatype was unwrapped above"),
+        _ => incompatible(),
+    }
+}
+
+fn decimal_literal_fits(value: &str, precision: Option<u64>, scale: Option<u64>) -> bool {
+    let mantissa = value
+        .split(['e', 'E'])
+        .next()
+        .unwrap_or(value)
+        .trim_start_matches(['+', '-']);
+    let mut parts = mantissa.split('.');
+    let integer = parts.next().unwrap_or_default().trim_start_matches('0');
+    let fraction = parts.next().unwrap_or_default().trim_end_matches('0');
+    if parts.next().is_some() {
+        return false;
+    }
+    let used_scale = fraction.len() as u64;
+    let used_precision = integer.len().max(1) as u64 + used_scale;
+    scale.is_none_or(|scale| used_scale <= scale)
+        && precision.is_none_or(|precision| used_precision <= precision)
+}
+
+fn type_integer_literal(
+    literal: &LiteralExpression,
+    bits: Option<u16>,
+    unsigned: bool,
+) -> Result<LiteralExpression, String> {
+    if literal.literal_type() != LiteralType::Integer {
+        return Err("lossy numeric coercion to an integer column is not exact".to_string());
+    }
+    let LiteralValue::Number(value) = literal.value() else {
+        return Err("integer literal does not contain a numeric payload".to_string());
+    };
+    let in_range = if unsigned {
+        value
+            .parse::<u128>()
+            .is_ok_and(|value| integer_fits_unsigned(value, bits))
+    } else {
+        value
+            .parse::<i128>()
+            .is_ok_and(|value| integer_fits_signed(value, bits))
+    };
+    if !in_range {
+        return Err(format!(
+            "integer literal '{value}' is outside the canonical {}-bit {}integer range",
+            bits.map_or_else(|| "unbounded".to_string(), |bits| bits.to_string()),
+            if unsigned { "unsigned " } else { "" }
+        ));
+    }
+    Ok(LiteralExpression::new(
+        LiteralType::Integer,
+        LiteralValue::Number(value.clone()),
+    ))
+}
+
+fn integer_fits_signed(value: i128, bits: Option<u16>) -> bool {
+    match bits {
+        None | Some(128..=u16::MAX) => true,
+        Some(0) => false,
+        Some(bits) => {
+            let limit = 1_i128 << (bits - 1);
+            value >= -limit && value < limit
+        }
+    }
+}
+
+fn integer_fits_unsigned(value: u128, bits: Option<u16>) -> bool {
+    match bits {
+        None | Some(128..=u16::MAX) => true,
+        Some(0) => false,
+        Some(bits) => value < (1_u128 << bits),
+    }
 }
 
 fn unknown_column_domain_exactness(column_domains: &[ColumnDomain]) -> ConditionExactness {

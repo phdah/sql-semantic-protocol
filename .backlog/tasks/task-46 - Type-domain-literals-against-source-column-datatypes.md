@@ -1,10 +1,10 @@
 ---
 id: TASK-46
 title: Type domain literals against source column datatypes
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 18:11'
-updated_date: '2026-10-07 18:11'
+updated_date: '2026-10-08'
 labels: []
 milestone: m-2
 dependencies:
@@ -35,10 +35,10 @@ When typed schema evidence exists for a constrained column, every literal in its
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 With schema evidence, domain literals are expressed in the constrained column canonical datatype, or the condition is residual or Unknown with a reason
-- [ ] #2 Lossy or dialect-dependent coercions (string to date or timestamp, decimal to integer, out-of-range values, offset timestamps vs normalized timestamps) are never presented as exact
-- [ ] #3 Protocol docs state the equality and ordering semantics assumed per datatype family, including string collation and case sensitivity, CHAR padding, float NaN and signed zero, decimal scale, and timestamp time zone handling
-- [ ] #4 String range comparisons and other comparisons whose result depends on unknown warehouse settings are residual unless the contract defines them exactly
-- [ ] #5 Without schema evidence, behavior is documented and never claims more than the lexical literal supports
-- [ ] #6 Tests cover every datatype family with exact, coerced, and residual cases
+- [x] #1 With schema evidence, domain literals are expressed in the constrained column canonical datatype, or the condition is residual or Unknown with a reason
+- [x] #2 Lossy or dialect-dependent coercions (string to date or timestamp, decimal to integer, out-of-range values, offset timestamps vs normalized timestamps) are never presented as exact
+- [x] #3 Protocol docs state the equality and ordering semantics assumed per datatype family, including string collation and case sensitivity, CHAR padding, float NaN and signed zero, decimal scale, and timestamp time zone handling
+- [x] #4 String range comparisons and other comparisons whose result depends on unknown warehouse settings are residual unless the contract defines them exactly
+- [x] #5 Without schema evidence, behavior is documented and never claims more than the lexical literal supports
+- [x] #6 Tests cover every datatype family with exact, coerced, and residual cases
 <!-- AC:END -->
