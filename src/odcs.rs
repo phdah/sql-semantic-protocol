@@ -511,15 +511,19 @@ fn parse_schema(
             diagnostics,
         )?;
         if let Some(data_type) = parsed.1 {
-            columns.push(
-                SchemaColumn::new(parsed.0.column.clone(), data_type).map_err(|error| {
-                    invalid(
-                        source,
-                        format!("{path}.properties[{property_index}]"),
-                        error.to_string(),
-                    )
-                })?,
-            );
+            let mut column = SchemaColumn::new(parsed.0.column.clone(), data_type)
+                .map_err(|error| invalid(source, format!("{path}.properties[{property_index}]"), error.to_string()))?;
+            let zone = property_value.as_object()
+                .and_then(|property| property.get("physicalType"))
+                .and_then(Value::as_str)
+                .and_then(crate::relation::TimestampZone::from_sql_type);
+            if let Some(zone) = zone {
+                if matches!(column.data_type(), DataType::Timestamp { .. }) {
+                    column = column.with_timestamp_zone(zone)
+                        .map_err(|error| invalid(source, format!("{path}.properties[{property_index}]"), error.to_string()))?;
+                }
+            }
+            columns.push(column);
         } else {
             complete_types = false;
         }

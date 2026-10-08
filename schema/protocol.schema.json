@@ -2327,6 +2327,17 @@
         },
         "data_type": {
           "$ref": "#/$defs/dataType"
+        },
+        "timestamp_zone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "with_time_zone",
+            "without_time_zone",
+            null
+          ]
         }
       }
     },
@@ -3481,7 +3492,20 @@
           "type": "boolean"
         },
         "origin": {
-          "$ref": "#/$defs/residualOrigin"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "layer_id",
+            "scope"
+          ],
+          "properties": {
+            "layer_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "scope": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
         }
       }
     }

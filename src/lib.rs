@@ -88,7 +88,7 @@ pub use protocol::{
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
-    RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind,
+    RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TimestampZone,
 };
 
 /// Error returned when SQL cannot be converted into protocol domain values.

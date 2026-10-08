@@ -102,7 +102,8 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                     "columns": schema.columns().iter().map(|column| {
                         json!({
                             "name": column.name(),
-                            "data_type": data_type_to_value(column.data_type())
+                            "data_type": data_type_to_value(column.data_type()),
+                            "timestamp_zone": column.timestamp_zone().map(|zone| zone.as_str())
                         })
                     }).collect::<Vec<_>>()
                 });
