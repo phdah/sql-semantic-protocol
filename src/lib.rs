@@ -81,12 +81,11 @@ pub use protocol::{
     Predicates, Protocol, ProtocolSource, ProtocolStatement, QueryStatement, RangesDomain,
     RelationRef, ResidualCondition, ResidualConditionReason, ScalarSubqueryExpression, SetBranch,
     SetDomain, SetMode, SetMultiplicityRule, SetOperand, SetOperation, SetOperator, SetQuantifier,
-    SetWitnessBoundary, SetWitnessCase, SetWitnessDirection, SetWitnessObligation,
-    SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator, UnknownDomain,
-    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
-    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
-    WindowOrderExpression, WindowSpecification, WriteKind, WriteOperation, WriteValue,
-    PROTOCOL_VERSION,
+    SetWitnessBoundary, SetWitnessCase, SetWitnessDirection, SetWitnessObligation, SourceRelation,
+    SubquerySemantics, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
+    UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
+    WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
+    WindowSpecification, WriteKind, WriteOperation, WriteValue, PROTOCOL_VERSION,
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
