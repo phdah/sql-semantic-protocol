@@ -1,7 +1,7 @@
 # SQL Semantic Protocol
 
 [![CI](https://github.com/phdah/sql-semantic-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/phdah/sql-semantic-protocol/actions/workflows/ci.yml)
-[![crates.io](https://img.shields.io/crates/v/sql-semantic-protocol.svg)](https://crates.io/crates/sql-semantic-protocol)
+[![crates.io](https://img.shields.io/crates/v/sql-semantic-protocol.svg?cacheSeconds=300)](https://crates.io/crates/sql-semantic-protocol)
 [![docs.rs](https://docs.rs/sql-semantic-protocol/badge.svg)](https://docs.rs/sql-semantic-protocol)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
