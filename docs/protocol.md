@@ -345,7 +345,7 @@ Table-producing factors that do not yet have a trustworthy output-schema represe
 
 ## Row-condition exactness
 
-Source-column `column_domains` are useful only when a consumer knows whether they preserve the correlations needed to decide which source-row combinations qualify. Every query scope therefore emits `condition_exactness` with `status: "exact" | "conditional" | "residual"` and a deterministic `residual_conditions` list. A residual identifies a stable `reason`, its clause (`where`, `on`, `having`, `qualify`, `set_operation`, or `row_set_operator`), and a deterministic identity inside the scope.
+Source-column `column_domains` are useful only when a consumer knows whether they preserve the correlations needed to decide which source-row combinations qualify. Every query scope therefore emits `condition_exactness` with `status: "exact" | "conditional" | "residual"` and a deterministic `residual_conditions` list. A residual identifies a stable `reason`, its clause (`select`, `where`, `on`, `having`, `qualify`, `set_operation`, or `row_set_operator`), and a deterministic identity inside the scope.
 
 Residual reason codes are stable consumer-facing identifiers. An individual residual is
 emitted once for each distinct predicate-tree location, so two unsupported conditions
@@ -388,8 +388,10 @@ use `comparison_assumptions` instead of residuals when comparison settings are
 unknown. `comparison_semantics` applies only when no representable conditional
 comparison semantics exists. Typed literal failures use `literal_type_mismatch`,
 `lossy_coercion`, or `out_of_range_literal` as appropriate. An undeclared physical
-column is classified as `unknown_schema_column` in the predicate's actual clause,
-not as a generic row-set diagnostic.
+column is classified as `unknown_schema_column` in the clause containing the
+invalid reference, including `select` for projection-only references. Even
+a projection-only invalid column prevents claiming exact row semantics,
+rather than hiding an invalid schema reference as an exact result.
 
 A bare boolean column, `NOT flag`, `IS TRUE`, `IS FALSE`,
 `IS NOT TRUE`, and `IS NOT FALSE` are normalized to literal comparisons.
