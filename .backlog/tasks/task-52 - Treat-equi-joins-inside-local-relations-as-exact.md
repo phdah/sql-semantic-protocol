@@ -1,7 +1,7 @@
 ---
 id: TASK-52
 title: Treat equi-joins inside local relations as exact
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-08 09:06'
 updated_date: '2026-10-08 09:06'
@@ -36,10 +36,16 @@ Composed exactness for queries reading local relations is identical to that of t
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Inner equi-joins inside CTEs, chained CTEs, nested CTEs, and derived tables whose columns map through plain-copy lineage are exact and appear only in join_equalities
-- [ ] #2 Every reproduction in the description is exact with the expected join equalities and column domains
-- [ ] #3 The daily-revenue chain with integer filters is exact; its GROUP BY and its CASE over an aggregate in the projection do not make conditions residual
-- [ ] #4 An equality reported in join_equalities is never also reported as a residual condition, in any scope or composed result
-- [ ] #5 Equi-joins over computed, aggregated, or ambiguous local columns remain residual with a reason naming the unmappable column
-- [ ] #6 Tests cover each case and pass in the completeness suite
+- [x] #1 Inner equi-joins inside CTEs, chained CTEs, nested CTEs, and derived tables whose columns map through plain-copy lineage are exact and appear only in join_equalities
+- [x] #2 Every reproduction in the description is exact with the expected join equalities and column domains
+- [x] #3 The daily-revenue chain with integer filters is exact; its GROUP BY and its CASE over an aggregate in the projection do not make conditions residual
+- [x] #4 An equality reported in join_equalities is never also reported as a residual condition, in any scope or composed result
+- [x] #5 Equi-joins over computed, aggregated, or ambiguous local columns remain residual with a reason naming the unmappable column
+- [x] #6 Tests cover each case and pass in the completeness suite
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+The analyzer's physical-column remapping and dependency-aware exactness classification were corrected during TASK-51 (PR #63). This task locks in those guarantees with targeted typed-schema regressions for inner joins inside CTEs, CTE chains, nested CTEs, derived tables, and a three-source daily-revenue aggregation. The tests assert exact status, physical join equalities, and identical source domains to inlined SQL. Negative cases verify that computed, aggregate, and ambiguous projected join columns remain residual with a diagnostic identifying the unmappable column, and mixed supported/unsupported ON predicates cannot report a proven equality as residual.
+<!-- SECTION:NOTES:END -->
