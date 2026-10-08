@@ -1,9 +1,10 @@
 ---
 id: TASK-48
 title: Validate column and constraint references against schema evidence
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-07 18:11'
+updated_date: '2026-10-08'
 labels: []
 milestone: m-2
 dependencies: []
@@ -35,10 +36,16 @@ Whenever schema evidence exists for a relation, every column the analysis or a c
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A query column reference absent from available schema evidence for its physical relation makes the composed semantics unresolved or carries a blocking diagnostic, for every schema source kind
-- [ ] #2 Constraints naming a column absent from the relation schema, or naming an expression rather than a column, produce a constraint diagnostic and are not emitted as valid constraints
-- [ ] #3 Accepted values that cannot be represented in the column datatype produce a constraint diagnostic
-- [ ] #4 A relationships test whose to target disagrees with its dependency target fails or produces a diagnostic
-- [ ] #5 Tests cover each case for catalog, manifest-declared, ODCS, and caller-supplied schemas
-- [ ] #6 Protocol docs describe reference validation
+- [x] #1 A query column reference absent from available schema evidence for its physical relation makes the composed semantics unresolved or carries a blocking diagnostic, for every schema source kind
+- [x] #2 Constraints naming a column absent from the relation schema, or naming an expression rather than a column, produce a constraint diagnostic and are not emitted as valid constraints
+- [x] #3 Accepted values that cannot be represented in the column datatype produce a constraint diagnostic
+- [x] #4 A relationships test whose to target disagrees with its dependency target fails or produces a diagnostic
+- [x] #5 Tests cover each case for catalog, manifest-declared, ODCS, and caller-supplied schemas
+- [x] #6 Protocol docs describe reference validation
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Schema-backed column references now emit blocking row-condition residuals. Canonical constraint enrichment rejects missing local/foreign-key columns and incompatible accepted-value scalars irrespective of their source adapter. dbt relationship metadata with contradictory target evidence yields an explicit diagnostic. Integration tests cover every schema provenance and dbt artifact enrichment.
+<!-- SECTION:NOTES:END -->

@@ -91,6 +91,27 @@ Lexical strings are never implicitly converted to typed DATE, TIME, TIMESTAMP, o
 Without schema evidence, lexical-literal domain derivation is preserved without claiming
 datatype-aware coercion semantics.
 
+### Schema-reference validation
+
+When typed schema evidence exists for a physical relation (caller-supplied, dbt
+catalog, manifest-declared, or ODCS), a query reference to a column absent
+from that schema produces `unknown_schema_column` and a row-condition
+`analysis_diagnostic` residual. Such a query must not be treated as an
+exact composed outcome. Without schema evidence, lack of a declaration alone
+does not prove the reference invalid.
+
+Constraint enrichment validates local key and column references and referenced
+foreign-key columns against every available relation schema. Constraints with
+missing columns are not emitted as valid facts; they instead produce
+`invalid_constraint_column` on the relation's constraint metadata. Accepted
+values incompatible with a declared scalar datatype similarly produce
+`incompatible_accepted_value` without emitting that constraint. Opaque
+types are not rejected based on unsupported conversion guesses. For dbt
+relationships tests, when the resolvable `to` target contradicts the
+`depends_on` target, `inconsistent_relationship_target` is emitted and
+the foreign key is withheld. Validation applies to canonical constraints
+regardless of their original adapter or SQL DDL source.
+
 ## Relation constraints
 
 Optional `relation_constraints` metadata records parser-independent relation and column
