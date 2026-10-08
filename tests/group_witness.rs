@@ -129,7 +129,13 @@ fn sum_min_max_emit_rejected_null_and_value_proofs_with_oracle_checks() {
         let query = first_query(&protocol);
         let witness = query.group_witness().unwrap();
         assert_eq!(witness.aggregate(), Some(kind));
-        assert!(query.output().columns()[1].lineage().iter().any(|lineage| lineage.relation() == "sales" && lineage.column() == "amount"), "missing physical lineage: {function}");
+        assert!(
+            query.output().columns()[1]
+                .lineage()
+                .iter()
+                .any(|lineage| lineage.relation() == "sales" && lineage.column() == "amount"),
+            "missing physical lineage: {function}"
+        );
         match witness.qualifying() {
             GroupWitnessDirection::Exact(cases) => {
                 assert!(!cases.is_empty());
