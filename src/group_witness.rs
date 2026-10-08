@@ -174,7 +174,9 @@ impl GroupWitness {
         self.aggregate
     }
     /// Whether the aggregate applies DISTINCT to its arguments.
-    pub fn distinct(&self) -> bool { self.distinct }
+    pub fn distinct(&self) -> bool {
+        self.distinct
+    }
     /// Input relation column for COUNT(column), SUM, MIN, or MAX. None for COUNT(*).
     pub fn argument(&self) -> Option<&ColumnRef> {
         self.argument.as_ref()
