@@ -41,11 +41,12 @@ sql-semantic-protocol --dialect postgresql \
 
 The JSON result has `inputs` (source statements), `layers` (local and composed outcomes), and `graph` (dependencies and terminal outcomes). In this example, the analyzer records the lower bound on `orders.amount` and the projected `customer_id` lineage. It does not mistake the filtered input domain for the output column's own value domain.
 
-Analyze multiple files, or target only one output after the full dependency graph is built:
+Analyze multiple SQL statements and target one output after the full dependency graph is built:
 
 ```sh
-sql-semantic-protocol --dialect snowflake \
-  --file sql/stage.sql --file sql/mart.sql \
+sql-semantic-protocol --dialect generic \
+  --sql 'CREATE TABLE stage.orders AS SELECT id, amount FROM raw.orders WHERE amount > 0' \
+  --sql 'CREATE TABLE mart.orders AS SELECT id, amount FROM stage.orders WHERE amount >= 100' \
   --target mart.orders
 ```
 
