@@ -667,6 +667,7 @@ fn grouping_sets_to_value(kind: &str, sets: &[Vec<crate::protocol::Expression>])
 }
 
 fn set_operation_to_value(operation: &SetOperation) -> Value {
+    let (qualifying, non_qualifying) = operation.witness_directions();
     json!({
         "operator": operation.operator().as_str(),
         "quantifier": operation.quantifier().as_str(),
@@ -683,16 +684,35 @@ fn set_operation_to_value(operation: &SetOperation) -> Value {
                 "output": output_to_value(branch.output()),
                 "condition_exactness": condition_exactness_to_value(branch.condition_exactness()),
             })).collect::<Vec<_>>(),
-            "qualifying_witness": {
-                "status": "residual",
-                "reason": "source_witness_obligations_not_proven"
-            },
-            "non_qualifying_witness": {
-                "status": "residual",
-                "reason": "source_witness_obligations_not_proven"
-            }
+            "qualifying_witness": set_witness_direction_to_value(&qualifying),
+            "non_qualifying_witness": set_witness_direction_to_value(&non_qualifying)
         }
     })
+}
+
+fn set_witness_direction_to_value(direction: &crate::protocol::SetWitnessDirection) -> Value {
+    match direction {
+        crate::protocol::SetWitnessDirection::Residual { reason, origin } => json!({
+            "status": "residual",
+            "reason": reason,
+            "origin": origin
+        }),
+        crate::protocol::SetWitnessDirection::Exact(cases) => json!({
+            "status": "exact",
+            "cases": cases.iter().map(|case| json!({
+                "output_tuple_count": case.output_tuple_count(),
+                "obligations": case.obligations().iter().map(|obligation| json!({
+                    "branch_identity": obligation.branch_identity(),
+                    "boundary": {
+                        "kind": if obligation.boundary().is_intermediate() { "intermediate" } else { "physical" },
+                        "relation": obligation.boundary().relation(),
+                        "tuple_columns": obligation.boundary().tuple_columns()
+                    },
+                    "matching_tuple_count": obligation.matching_tuple_count()
+                })).collect::<Vec<_>>()
+            })).collect::<Vec<_>>()
+        })
+    }
 }
 
 fn set_operand_to_value(operand: &SetOperand) -> Value {
