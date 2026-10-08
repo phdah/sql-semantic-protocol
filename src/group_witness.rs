@@ -4,7 +4,7 @@
 //! Unsupported grouping and non-row-preserving inputs stay explicitly residual.
 
 use crate::protocol::{
-    AggregateArgument, AggregateFunctionExpression, ColumnRef, ComparisonOperator, Expression,
+    AggregateArgument, ColumnRef, ComparisonOperator, Expression,
     GroupBy, GroupingExpression, LiteralExpression, LiteralType, LiteralValue, Predicate,
     QueryStatement, Bound, Output, ValueDomain, ValueRange, SetMode,
 };
