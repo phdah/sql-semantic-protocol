@@ -48,7 +48,7 @@ fn missing_select_and_predicate_columns_block_composed_exactness_for_each_schema
     ];
     for schema in cases {
         for sql in ["SELECT ghost FROM t", "SELECT id FROM t WHERE ghost = 1"] {
-            let bundle = analyzed(sql, &[schema.clone()]);
+            let bundle = analyzed(sql, std::slice::from_ref(&schema));
             let query = match &bundle.inputs()[0].statements()[0] {
                 sql_semantic_protocol::ProtocolStatement::Query(query) => query,
                 other => panic!("expected query: {other:?}"),
