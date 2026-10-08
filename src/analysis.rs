@@ -2188,8 +2188,7 @@ fn populate_set_operation_evidence(
         SetExpr::SetOperation { left, right, .. } => {
             let left_count = count_set_select_leaves(left).min(branches.len());
             let (left_branches, right_branches) = branches.split_at(left_count);
-            let left_operand =
-                populate_set_operand_evidence(left, operation.left(), left_branches);
+            let left_operand = populate_set_operand_evidence(left, operation.left(), left_branches);
             let right_operand =
                 populate_set_operand_evidence(right, operation.right(), right_branches);
             SetOperation::new(
