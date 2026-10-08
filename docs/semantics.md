@@ -14,6 +14,9 @@ The analyzer resolves transformation layers into a deterministic relation depend
 
 ### Set operations
 
+An additive branch-evidence contract retains each SELECT operand's predicates, source-column domains and output lineage independently. A typed tuple-multiplicity rule makes UNION/INTERSECT/EXCEPT (DISTINCT and ALL) duplicate counts explicit and uses NULL-safe tuple equality. This is structural evidence only: both qualifying and non-qualifying source witness obligations remain residual until exact invertible source constraints, composition and execution-backed proof are implemented. Consumers must not treat the presence of this contract as an exactness assertion.
+
+
 UNION, UNION ALL, INTERSECT, and EXCEPT are analyzed as parser-independent set-operation semantics. Non-standard SQL MINUS syntax is normalized to EXCEPT when the selected sqlparser dialect accepts it.
 
 Set outputs align columns positionally. Output names come from the left branch, while field lineage includes the corresponding columns from every contributing branch. Nested and chained operations retain their recursive operator tree in the optional `set_operation` field. Omitted set quantifiers normalize to DISTINCT semantics.
