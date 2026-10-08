@@ -19,4 +19,4 @@ Capabilities may be implemented and released independently once their own proof 
 
 ## Downstream status and mapping
 
-The post-1.0 sql-tdg milestone m-3 already tracks TASK-24 through TASK-31, paired with protocol TASK-58 through TASK-65 respectively by feature (see each task's `sql-tdg TASK-*` reference). sql-tdg TASK-32 (conflicting-outcome scenarios) is independent of these new protocol contracts, while TASK-33 (dialect conformance matrix) is already Done. The generator's dialect matrix and E2E fixtures must be updated as each newly supported semantic feature lands.
+The post-1.0 sql-tdg milestone m-3 already tracks the consumers: sql-tdg TASK-24 -> protocol TASK-58; TASK-25 -> TASK-61; TASK-26 -> TASK-62; TASK-27 -> TASK-63; TASK-28 -> TASK-59; TASK-29 -> TASK-60; TASK-30 -> TASK-64; and TASK-31 -> TASK-65. sql-tdg TASK-32 (conflicting-outcome scenarios) is independent of these new protocol contracts, while TASK-33 (dialect conformance matrix) is already Done. The generator's dialect matrix and E2E fixtures must be updated as each newly supported semantic feature lands.
