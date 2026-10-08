@@ -4,7 +4,8 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_inputs, analyze_sql, dialect_from_name, CaseSourceDomains, ColumnDomain,
     ComparisonOperator, ComposedSemantics, ConditionExactnessStatus, Expression, Join,
-    ResolvedComposedSemantics,
+    ResolvedComposedSemantics, RelationCatalog, RelationSchema, SchemaColumn,
+    ConfiguredSqlInput, analyze_configured_inputs_with_catalog,
     LiteralValue, Predicate, Protocol, ProtocolStatement, QueryStatement, SetMode, SqlInput,
     ValueDomain,
 };
@@ -1222,6 +1223,89 @@ fn three_source_join_shapes_are_complete_against_duckdb() {
             expected_rows,
             row_triples(&connection, &sql),
             "three-way oracle: location={location}; query={sql}"
+        );
+    }
+}
+
+
+fn typed_conformance(sql: &str, sql_type: &str) -> ResolvedComposedSemantics {
+    let schema = RelationSchema::new(
+        "typed_rows",
+        vec![
+            SchemaColumn::from_sql_type("row_id", "BIGINT", "duckdb")
+                .expect("row ID type"),
+            SchemaColumn::from_sql_type("value", sql_type, "duckdb")
+                .expect("typed conformance column"),
+        ],
+    )
+    .expect("typed conformance relation");
+    let catalog = RelationCatalog::from_schemas(&[schema]).expect("typed catalog");
+    let dialect = dialect_from_name("duckdb").expect("DuckDB dialect");
+    let input = SqlInput::inline(sql);
+    let configured = [ConfiguredSqlInput::new(
+        "typed-conformance",
+        &input,
+        "duckdb",
+        dialect.as_ref(),
+    )];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+        .expect("typed conformance query should analyze");
+    match bundle.layers()[0].composed_semantics() {
+        ComposedSemantics::Resolved(semantics) => semantics.clone(),
+        other => panic!("typed conformance could not compose: {other:?}"),
+    }
+}
+
+#[test]
+fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable() {
+    for (data_type, predicate) in [
+        ("INTEGER", "value >= 1"),
+        ("BIGINT", "value BETWEEN -2 AND 2"),
+        ("DECIMAL(10,2)", "value > 1.5"),
+        ("DATE", "value >= DATE '2024-01-01'"),
+        ("BOOLEAN", "value = TRUE"),
+    ] {
+        let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
+        let typed = typed_conformance(&sql, data_type);
+        let untyped = resolved_query(&sql);
+        assert!(
+            typed.condition_exactness().is_exact(),
+            "typed completeness: type={data_type}; query={sql}; residuals={:?}",
+            typed.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            typed.condition_exactness().status(),
+            untyped.condition_exactness().status(),
+            "typed/untyped completeness: type={data_type}; query={sql}"
+        );
+        assert!(
+            typed.column_domains().iter().all(|domain| !matches!(
+                domain.domain(),
+                ValueDomain::Unknown(_)
+            )),
+            "portable typed predicates must not silently lose domains: {sql}"
+        );
+    }
+}
+
+#[test]
+fn typed_comparison_exceptions_remain_explicit_until_assumptions_are_modeled() {
+    // TASK-53 will replace these residual exceptions with preserved, conditional domains.
+    // Until then, an unconditional exactness claim would be unsound.
+    for (data_type, predicate) in [
+        ("VARCHAR", "value = 'keep'"),
+        ("DOUBLE", "value > 1.5"),
+        ("TIMESTAMP", "value >= TIMESTAMP '2024-01-01 00:00:00'"),
+    ] {
+        let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
+        let typed = typed_conformance(&sql, data_type);
+        assert!(
+            !typed.condition_exactness().is_exact(),
+            "typed comparison must remain conditional: type={data_type}; query={sql}"
+        );
+        assert!(
+            !typed.condition_exactness().residual_conditions().is_empty(),
+            "typed comparison residual must explain unsupported semantics: {sql}"
         );
     }
 }
