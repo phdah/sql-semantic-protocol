@@ -1319,14 +1319,42 @@ fn typed_comparison_exceptions_remain_explicit_until_assumptions_are_modeled() {
     ] {
         let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
         let typed = typed_conformance(&sql, data_type);
-        assert_eq!(typed.condition_exactness().status(), ConditionExactnessStatus::Conditional, "expected conditional exactness: {sql}");
-        assert!(typed.condition_exactness().residual_conditions().is_empty(), "representable comparisons must not be residual: {sql}");
-        assert!(!typed.condition_exactness().required_assumptions().is_empty(), "assumption must be explicit: {sql}");
-        assert!(typed.column_domains().iter().all(|domain| !matches!(domain.domain(), ValueDomain::Unknown(_))), "typed domains must be retained: {sql}");
+        assert_eq!(
+            typed.condition_exactness().status(),
+            ConditionExactnessStatus::Conditional,
+            "expected conditional exactness: {sql}"
+        );
+        assert!(
+            typed.condition_exactness().residual_conditions().is_empty(),
+            "representable comparisons must not be residual: {sql}"
+        );
+        assert!(
+            !typed
+                .condition_exactness()
+                .required_assumptions()
+                .is_empty(),
+            "assumption must be explicit: {sql}"
+        );
+        assert!(
+            typed
+                .column_domains()
+                .iter()
+                .all(|domain| !matches!(domain.domain(), ValueDomain::Unknown(_))),
+            "typed domains must be retained: {sql}"
+        );
     }
-    let interval = typed_conformance("SELECT row_id FROM typed_rows WHERE value >= INTERVAL '1 day'", "INTERVAL");
+    let interval = typed_conformance(
+        "SELECT row_id FROM typed_rows WHERE value >= INTERVAL '1 day'",
+        "INTERVAL",
+    );
     assert!(!interval.condition_exactness().is_exact());
-    assert!(!interval.condition_exactness().residual_conditions().is_empty(), "unsupported interval normalization must be residual");
+    assert!(
+        !interval
+            .condition_exactness()
+            .residual_conditions()
+            .is_empty(),
+        "unsupported interval normalization must be residual"
+    );
 }
 
 #[test]

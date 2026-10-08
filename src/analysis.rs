@@ -117,7 +117,8 @@ impl AnalysisMetadata<'_> {
     }
 
     fn column_timestamp_zone(&self, column: &ColumnRef) -> Option<TimestampZone> {
-        self.schema_column(column).and_then(SchemaColumn::timestamp_zone)
+        self.schema_column(column)
+            .and_then(SchemaColumn::timestamp_zone)
     }
 
     fn schema_column(&self, column: &ColumnRef) -> Option<&SchemaColumn> {
@@ -688,13 +689,21 @@ fn type_column_domains(
             let Some(data_type) = metadata.column_data_type(column_domain.column()) else {
                 return column_domain;
             };
-            let domain = type_value_domain(column_domain.domain(), data_type, metadata.column_timestamp_zone(column_domain.column()));
+            let domain = type_value_domain(
+                column_domain.domain(),
+                data_type,
+                metadata.column_timestamp_zone(column_domain.column()),
+            );
             ColumnDomain::new(column_domain.column().clone(), domain)
         })
         .collect()
 }
 
-fn type_value_domain(domain: &ValueDomain, data_type: &DataType, zone: Option<TimestampZone>) -> ValueDomain {
+fn type_value_domain(
+    domain: &ValueDomain,
+    data_type: &DataType,
+    zone: Option<TimestampZone>,
+) -> ValueDomain {
     match domain {
         ValueDomain::Ranges(ranges) => {
             let typed = ranges
@@ -734,7 +743,11 @@ fn type_value_domain(domain: &ValueDomain, data_type: &DataType, zone: Option<Ti
     }
 }
 
-fn type_bound(bound: &Bound, data_type: &DataType, zone: Option<TimestampZone>) -> Result<Bound, String> {
+fn type_bound(
+    bound: &Bound,
+    data_type: &DataType,
+    zone: Option<TimestampZone>,
+) -> Result<Bound, String> {
     Ok(Bound::new(
         type_literal(bound.value(), data_type, zone)?,
         bound.inclusive(),
@@ -902,14 +915,27 @@ fn integer_fits_unsigned(value: u128, bits: Option<u16>) -> bool {
 }
 
 fn timestamp_literal_has_offset(literal: &LiteralExpression) -> bool {
-    let LiteralValue::Text(text) = literal.value() else { return false };
+    let LiteralValue::Text(text) = literal.value() else {
+        return false;
+    };
     let value = text.trim();
-    if value.ends_with('Z') || value.ends_with('z') { return true; }
-    let Some(rest) = value.get(10..) else { return false };
-    let Some(position) = rest.rfind(['+', '-']) else { return false };
+    if value.ends_with('Z') || value.ends_with('z') {
+        return true;
+    }
+    let Some(rest) = value.get(10..) else {
+        return false;
+    };
+    let Some(position) = rest.rfind(['+', '-']) else {
+        return false;
+    };
     let suffix = &rest[position + 1..];
     let bytes = suffix.as_bytes();
-    bytes.len() == 5 && bytes[2] == b':' && bytes.iter().enumerate().all(|(index, byte)| index == 2 || byte.is_ascii_digit())
+    bytes.len() == 5
+        && bytes[2] == b':'
+        && bytes
+            .iter()
+            .enumerate()
+            .all(|(index, byte)| index == 2 || byte.is_ascii_digit())
 }
 
 // Preserve representable domains while making warehouse-dependent comparisons conditional.
@@ -958,7 +984,9 @@ fn comparison_domain_exactness(
             Some(DataType::Timestamp { .. }) => {
                 let zone = metadata.column_timestamp_zone(column_domain.column());
                 if zone != Some(TimestampZone::WithoutTimeZone)
-                    && (zone != Some(TimestampZone::WithTimeZone) || !timestamp_literal_has_offset(literal)) {
+                    && (zone != Some(TimestampZone::WithTimeZone)
+                        || !timestamp_literal_has_offset(literal))
+                {
                     assumptions.insert(ComparisonAssumption::SessionTimeZone);
                 }
             }

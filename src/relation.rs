@@ -100,12 +100,14 @@ impl TimestampZone {
         let normalized = sql_type.trim().to_ascii_uppercase();
         if normalized.contains("WITHOUT TIME ZONE")
             || normalized.starts_with("TIMESTAMP_NTZ")
-            || normalized.starts_with("DATETIME") {
+            || normalized.starts_with("DATETIME")
+        {
             Some(Self::WithoutTimeZone)
         } else if normalized.contains("WITH TIME ZONE")
             || normalized.starts_with("TIMESTAMPTZ")
             || normalized.starts_with("TIMESTAMP_TZ")
-            || normalized.starts_with("TIMESTAMP_LTZ") {
+            || normalized.starts_with("TIMESTAMP_LTZ")
+        {
             Some(Self::WithTimeZone)
         } else {
             None
@@ -135,7 +137,11 @@ impl SchemaColumn {
             });
         }
 
-        Ok(Self { name, data_type, timestamp_zone: None })
+        Ok(Self {
+            name,
+            data_type,
+            timestamp_zone: None,
+        })
     }
 
     /// Construct a schema column from dialect-specific SQL datatype syntax.
@@ -155,13 +161,18 @@ impl SchemaColumn {
         let zone = TimestampZone::from_sql_type(sql_type);
         let column = Self::new(name, data_type)?;
         match zone {
-            Some(zone) if matches!(column.data_type, DataType::Timestamp { .. }) => column.with_timestamp_zone(zone),
+            Some(zone) if matches!(column.data_type, DataType::Timestamp { .. }) => {
+                column.with_timestamp_zone(zone)
+            }
             _ => Ok(column),
         }
     }
 
     /// Attach explicit physical time-zone evidence without changing the canonical datatype.
-    pub fn with_timestamp_zone(mut self, zone: TimestampZone) -> Result<Self, RelationMetadataError> {
+    pub fn with_timestamp_zone(
+        mut self,
+        zone: TimestampZone,
+    ) -> Result<Self, RelationMetadataError> {
         if !matches!(self.data_type, DataType::Timestamp { .. }) {
             return Err(RelationMetadataError::InvalidSchema {
                 relation: String::new(),
@@ -173,7 +184,9 @@ impl SchemaColumn {
     }
 
     /// Return physical time-zone awareness, or None when metadata cannot prove it.
-    pub fn timestamp_zone(&self) -> Option<TimestampZone> { self.timestamp_zone }
+    pub fn timestamp_zone(&self) -> Option<TimestampZone> {
+        self.timestamp_zone
+    }
 
     /// Return the column name.
     pub fn name(&self) -> &str {
