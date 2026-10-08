@@ -1,8 +1,8 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, parse_dbt_catalog,
-    parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, RelationCatalog,
-    RelationSchema, SchemaColumn, SchemaSourceKind, SqlInput,
+    parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, RelationCatalog, RelationSchema,
+    SchemaColumn, SchemaSourceKind, SqlInput,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -11,7 +11,12 @@ fn analyzed(sql: &str, schemas: &[RelationSchema]) -> sql_semantic_protocol::Ana
     let input = SqlInput::inline(sql);
     let dialect = PostgreSqlDialect {};
     analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("schema-check", &input, "postgresql", &dialect)],
+        &[ConfiguredSqlInput::new(
+            "schema-check",
+            &input,
+            "postgresql",
+            &dialect,
+        )],
         &catalog,
     )
     .expect("analysis")
@@ -33,8 +38,12 @@ fn missing_select_and_predicate_columns_block_composed_exactness_for_each_schema
     let schema = schema("t", &[("id", "INTEGER")]);
     let cases = [
         schema.clone(),
-        schema.clone().with_source_kind(SchemaSourceKind::DbtCatalog),
-        schema.clone().with_source_kind(SchemaSourceKind::DbtManifest),
+        schema
+            .clone()
+            .with_source_kind(SchemaSourceKind::DbtCatalog),
+        schema
+            .clone()
+            .with_source_kind(SchemaSourceKind::DbtManifest),
         schema.with_source_kind(SchemaSourceKind::ExternalMetadata),
     ];
     for schema in cases {
@@ -45,7 +54,10 @@ fn missing_select_and_predicate_columns_block_composed_exactness_for_each_schema
                 other => panic!("expected query: {other:?}"),
             };
             assert!(
-                query.diagnostics().iter().any(|item| item.code() == "unknown_schema_column"),
+                query
+                    .diagnostics()
+                    .iter()
+                    .any(|item| item.code() == "unknown_schema_column"),
                 "{sql} schema kind {:?}",
                 schema.source_kind()
             );
@@ -62,12 +74,18 @@ fn missing_select_and_predicate_columns_block_composed_exactness_for_each_schema
 
 #[test]
 fn existing_columns_do_not_create_reference_diagnostics() {
-    let bundle = analyzed("SELECT id FROM t WHERE id > 1", &[schema("t", &[("id", "INTEGER")])]);
+    let bundle = analyzed(
+        "SELECT id FROM t WHERE id > 1",
+        &[schema("t", &[("id", "INTEGER")])],
+    );
     let query = match &bundle.inputs()[0].statements()[0] {
         sql_semantic_protocol::ProtocolStatement::Query(query) => query,
         other => panic!("expected query: {other:?}"),
     };
-    assert!(!query.diagnostics().iter().any(|item| item.code() == "unknown_schema_column"));
+    assert!(!query
+        .diagnostics()
+        .iter()
+        .any(|item| item.code() == "unknown_schema_column"));
 }
 
 #[test]
@@ -76,17 +94,29 @@ fn nonexistent_key_column_and_incompatible_accepted_values_are_rejected() {
         "CREATE TABLE t (id INTEGER, UNIQUE (ghost), CONSTRAINT allowed CHECK (id IN ('bad')))",
         &[schema("t", &[("id", "INTEGER")])],
     );
-    let constraints = bundle.relation_constraints().first().expect("constraint set");
+    let constraints = bundle
+        .relation_constraints()
+        .first()
+        .expect("constraint set");
     assert!(constraints.constraints().is_empty());
-    assert!(constraints.diagnostics().iter().any(|d| d.code() == "invalid_constraint_column"));
-    assert!(constraints.diagnostics().iter().any(|d| d.code() == "incompatible_accepted_value"));
+    assert!(constraints
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "invalid_constraint_column"));
+    assert!(constraints
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "incompatible_accepted_value"));
 }
 
 #[test]
 fn foreign_key_target_column_is_checked_when_target_schema_exists() {
     let bundle = analyzed(
         "CREATE TABLE child (id INTEGER, pid INTEGER, FOREIGN KEY (pid) REFERENCES parent (ghost))",
-        &[schema("child", &[("id", "INTEGER"), ("pid", "INTEGER")]), schema("parent", &[("id", "INTEGER")])],
+        &[
+            schema("child", &[("id", "INTEGER"), ("pid", "INTEGER")]),
+            schema("parent", &[("id", "INTEGER")]),
+        ],
     );
     let constraints = bundle
         .relation_constraints()
@@ -94,7 +124,10 @@ fn foreign_key_target_column_is_checked_when_target_schema_exists() {
         .find(|set| set.relation() == "child")
         .expect("child constraints");
     assert!(constraints.constraints().is_empty());
-    assert!(constraints.diagnostics().iter().any(|d| d.code() == "invalid_constraint_column"));
+    assert!(constraints
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "invalid_constraint_column"));
 }
 
 fn manifest_with_test(test: Value) -> sql_semantic_protocol::DbtManifest {
@@ -104,8 +137,7 @@ fn manifest_with_test(test: Value) -> sql_semantic_protocol::DbtManifest {
         .as_object_mut()
         .expect("nodes")
         .insert("test.demo.reference".to_owned(), test);
-    parse_dbt_manifest(&serde_json::to_string(&manifest).expect("json"))
-        .expect("manifest parse")
+    parse_dbt_manifest(&serde_json::to_string(&manifest).expect("json")).expect("manifest parse")
 }
 
 #[test]
@@ -128,7 +160,10 @@ fn dbt_relationship_disagreement_does_not_emit_a_foreign_key() {
         .find(|set| set.relation() == "warehouse.analytics.stg_orders")
         .expect("relation");
     assert!(set.constraints().is_empty());
-    assert!(set.diagnostics().iter().any(|d| d.code() == "inconsistent_relationship_target"));
+    assert!(set
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "inconsistent_relationship_target"));
 }
 
 #[test]
@@ -145,16 +180,18 @@ fn dbt_accepted_values_are_validated_against_catalog_datatypes() {
         },
         "depends_on": {"nodes": ["source.demo.orders"]}
     }));
-    let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json"))
-        .expect("catalog");
+    let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).expect("catalog");
     let dialect = PostgreSqlDialect {};
-    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect)
-        .expect("dbt analysis");
+    let bundle =
+        analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect).expect("dbt analysis");
     let set = bundle
         .relation_constraints()
         .iter()
         .find(|set| set.relation() == "warehouse.raw.orders")
         .expect("source metadata");
     assert!(set.constraints().is_empty());
-    assert!(set.diagnostics().iter().any(|d| d.code() == "incompatible_accepted_value"));
+    assert!(set
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "incompatible_accepted_value"));
 }
