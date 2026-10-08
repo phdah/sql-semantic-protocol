@@ -85,7 +85,11 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
     });
 
     if !bundle.comparison_declarations().is_empty() {
-        value["declared_comparison_assumptions"] = json!(bundle.comparison_declarations().iter().map(|assumption| assumption.as_str()).collect::<Vec<_>>());
+        value["declared_comparison_assumptions"] = json!(bundle
+            .comparison_declarations()
+            .iter()
+            .map(|assumption| assumption.as_str())
+            .collect::<Vec<_>>());
     }
 
     if !bundle.source_schemas().is_empty() {

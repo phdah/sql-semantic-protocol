@@ -12,8 +12,8 @@ use crate::constraints::{
     merge_relation_constraint_sets, ConstraintDiagnostic, RelationConstraintSet,
 };
 use crate::protocol::{
-    ColumnDomain, ComparisonAssumption, ConditionExactness, DiagnosticSeverity, JoinKind, Output, Protocol,
-    ProtocolStatement, WriteKind, PROTOCOL_VERSION,
+    ColumnDomain, ComparisonAssumption, ConditionExactness, DiagnosticSeverity, JoinKind, Output,
+    Protocol, ProtocolStatement, WriteKind, PROTOCOL_VERSION,
 };
 use crate::relation::{
     RelationCatalog, RelationContext, RelationResolutionError, RelationResolver, RelationSchema,
@@ -761,12 +761,15 @@ impl AnalysisBundle {
     }
 
     /// Return the explicitly declared comparison settings, in deterministic order.
-    pub fn comparison_declarations(&self) -> &[ComparisonAssumption] { &self.comparison_declarations }
+    pub fn comparison_declarations(&self) -> &[ComparisonAssumption] {
+        &self.comparison_declarations
+    }
 
     /// Attest warehouse comparison settings and apply them to local and composed scopes.
     /// No assumption is silently supplied by default.
     pub fn declare_comparison_assumptions(&mut self, declared: &[ComparisonAssumption]) {
-        self.comparison_declarations.extend(declared.iter().copied());
+        self.comparison_declarations
+            .extend(declared.iter().copied());
         self.comparison_declarations.sort();
         self.comparison_declarations.dedup();
         for input in &mut self.inputs {
@@ -778,7 +781,10 @@ impl AnalysisBundle {
         }
         for layer in &mut self.layers {
             if let ComposedSemantics::Resolved(ref mut semantics) = layer.composed_semantics {
-                semantics.condition_exactness = semantics.condition_exactness.clone().with_declarations(&self.comparison_declarations);
+                semantics.condition_exactness = semantics
+                    .condition_exactness
+                    .clone()
+                    .with_declarations(&self.comparison_declarations);
             }
         }
     }

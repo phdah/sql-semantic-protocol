@@ -200,7 +200,11 @@ impl QueryStatement {
     }
 
     pub(crate) fn declare_comparison_assumptions(&mut self, declared: &[ComparisonAssumption]) {
-        self.row_conditions.exactness = self.row_conditions.exactness.clone().with_declarations(declared);
+        self.row_conditions.exactness = self
+            .row_conditions
+            .exactness
+            .clone()
+            .with_declarations(declared);
     }
 
     /// Return final query output columns in SELECT-list order.
@@ -978,20 +982,40 @@ pub struct ConditionalCondition {
 }
 
 impl ConditionalCondition {
-    pub(crate) fn new(assumption: ComparisonAssumption, clause: ConditionClause, identity: impl Into<String>) -> Self {
-        Self { assumption, clause, identity: identity.into(), origin_layer_id: None, origin_scope: None }
+    pub(crate) fn new(
+        assumption: ComparisonAssumption,
+        clause: ConditionClause,
+        identity: impl Into<String>,
+    ) -> Self {
+        Self {
+            assumption,
+            clause,
+            identity: identity.into(),
+            origin_layer_id: None,
+            origin_scope: None,
+        }
     }
 
     /// Required comparison setting.
-    pub fn assumption(&self) -> ComparisonAssumption { self.assumption }
+    pub fn assumption(&self) -> ComparisonAssumption {
+        self.assumption
+    }
     /// SQL clause containing the condition.
-    pub fn clause(&self) -> ConditionClause { self.clause }
+    pub fn clause(&self) -> ConditionClause {
+        self.clause
+    }
     /// Stable condition identity.
-    pub fn identity(&self) -> &str { &self.identity }
+    pub fn identity(&self) -> &str {
+        &self.identity
+    }
     /// Composed layer that introduced the condition.
-    pub fn origin_layer_id(&self) -> Option<&str> { self.origin_layer_id.as_deref() }
+    pub fn origin_layer_id(&self) -> Option<&str> {
+        self.origin_layer_id.as_deref()
+    }
     /// Original query or local-relation scope.
-    pub fn origin_scope(&self) -> Option<&str> { self.origin_scope.as_deref() }
+    pub fn origin_scope(&self) -> Option<&str> {
+        self.origin_scope.as_deref()
+    }
 
     fn with_scope(mut self, scope: &str) -> Self {
         self.origin_scope = Some(scope.to_string());
@@ -999,13 +1023,15 @@ impl ConditionalCondition {
     }
     fn with_layer_origin(mut self, layer_id: &str) -> Self {
         self.origin_layer_id = Some(layer_id.to_string());
-        if self.origin_scope.is_none() { self.origin_scope = Some("query".to_string()); }
+        if self.origin_scope.is_none() {
+            self.origin_scope = Some("query".to_string());
+        }
         self
     }
 }
 
 /// SQL clause that owns a residual row-membership condition.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ConditionClause {
     /// WHERE clause.
     Where,
@@ -1216,7 +1242,11 @@ impl ConditionExactness {
     pub(crate) fn from_requirements(mut requirements: Vec<ConditionalCondition>) -> Self {
         requirements.sort();
         requirements.dedup();
-        Self { residual_conditions: Vec::new(), required_assumptions: requirements, declared_assumptions: BTreeSet::new() }
+        Self {
+            residual_conditions: Vec::new(),
+            required_assumptions: requirements,
+            declared_assumptions: BTreeSet::new(),
+        }
     }
 
     pub(crate) fn with_declarations(mut self, declared: &[ComparisonAssumption]) -> Self {
@@ -1233,7 +1263,12 @@ impl ConditionExactness {
                 .map(|residual| residual.with_scope(scope.clone()))
                 .collect(),
         );
-        result.required_assumptions = self.required_assumptions.iter().cloned().map(|requirement| requirement.with_scope(&scope)).collect();
+        result.required_assumptions = self
+            .required_assumptions
+            .iter()
+            .cloned()
+            .map(|requirement| requirement.with_scope(&scope))
+            .collect();
         result.declared_assumptions = self.declared_assumptions.clone();
         result
     }
@@ -1247,7 +1282,12 @@ impl ConditionExactness {
                 .map(|residual| residual.with_layer_origin(layer_id.clone()))
                 .collect(),
         );
-        result.required_assumptions = self.required_assumptions.iter().cloned().map(|requirement| requirement.with_layer_origin(&layer_id)).collect();
+        result.required_assumptions = self
+            .required_assumptions
+            .iter()
+            .cloned()
+            .map(|requirement| requirement.with_layer_origin(&layer_id))
+            .collect();
         result.declared_assumptions = self.declared_assumptions.clone();
         result
     }
@@ -1260,10 +1300,19 @@ impl ConditionExactness {
                 .cloned()
                 .collect(),
         );
-        merged.required_assumptions = self.required_assumptions.iter().chain(&other.required_assumptions).cloned().collect();
+        merged.required_assumptions = self
+            .required_assumptions
+            .iter()
+            .chain(&other.required_assumptions)
+            .cloned()
+            .collect();
         merged.required_assumptions.sort();
         merged.required_assumptions.dedup();
-        merged.declared_assumptions = self.declared_assumptions.union(&other.declared_assumptions).copied().collect();
+        merged.declared_assumptions = self
+            .declared_assumptions
+            .union(&other.declared_assumptions)
+            .copied()
+            .collect();
         merged
     }
 
@@ -1271,7 +1320,11 @@ impl ConditionExactness {
     pub fn status(&self) -> ConditionExactnessStatus {
         if !self.residual_conditions.is_empty() {
             ConditionExactnessStatus::Residual
-        } else if self.required_assumptions.iter().any(|item| !self.declared_assumptions.contains(&item.assumption)) {
+        } else if self
+            .required_assumptions
+            .iter()
+            .any(|item| !self.declared_assumptions.contains(&item.assumption))
+        {
             ConditionExactnessStatus::Conditional
         } else {
             ConditionExactnessStatus::Exact
@@ -1284,10 +1337,14 @@ impl ConditionExactness {
     }
 
     /// Return the assumptions each condition depends on, including those already declared.
-    pub fn required_assumptions(&self) -> &[ConditionalCondition] { &self.required_assumptions }
+    pub fn required_assumptions(&self) -> &[ConditionalCondition] {
+        &self.required_assumptions
+    }
 
     /// Return the settings currently attested by the caller.
-    pub fn declared_assumptions(&self) -> &BTreeSet<ComparisonAssumption> { &self.declared_assumptions }
+    pub fn declared_assumptions(&self) -> &BTreeSet<ComparisonAssumption> {
+        &self.declared_assumptions
+    }
 
     /// Return true only when no residual condition or undeclared assumption remains.
     pub fn is_exact(&self) -> bool {

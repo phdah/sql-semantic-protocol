@@ -40,10 +40,11 @@ use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonAssumption, ConditionalCondition, ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness, Diagnostic,
-    DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
-    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin,
-    JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
+    ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
+    ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
+    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
@@ -896,10 +897,20 @@ fn comparison_domain_exactness(
     for column_domain in column_domains {
         let domain = column_domain.domain();
         let literal = match domain {
-            ValueDomain::Ranges(ranges) => ranges.ranges().iter().flat_map(|range| {
-                [range.lower(), range.upper()].into_iter().flatten().map(|bound| bound.value())
-            }).next(),
-            ValueDomain::Set(set) => set.values().iter().find(|value| value.literal_type() != LiteralType::Null),
+            ValueDomain::Ranges(ranges) => ranges
+                .ranges()
+                .iter()
+                .flat_map(|range| {
+                    [range.lower(), range.upper()]
+                        .into_iter()
+                        .flatten()
+                        .map(|bound| bound.value())
+                })
+                .next(),
+            ValueDomain::Set(set) => set
+                .values()
+                .iter()
+                .find(|value| value.literal_type() != LiteralType::Null),
             ValueDomain::Unbounded | ValueDomain::Empty | ValueDomain::Unknown(_) => None,
         };
         let Some(literal) = literal else { continue };
@@ -908,7 +919,9 @@ fn comparison_domain_exactness(
         match data_type {
             Some(DataType::String { fixed, .. }) => {
                 assumptions.insert(ComparisonAssumption::BinaryCollation);
-                if *fixed { assumptions.insert(ComparisonAssumption::NoCharPadding); }
+                if *fixed {
+                    assumptions.insert(ComparisonAssumption::NoCharPadding);
+                }
             }
             Some(DataType::FloatingPoint { .. }) => {
                 assumptions.insert(ComparisonAssumption::NoNan);
@@ -929,7 +942,13 @@ fn comparison_domain_exactness(
             requirements.push(ConditionalCondition::new(
                 assumption,
                 ConditionClause::Where,
-                format!("column_domain:{}", qualified_column_name(column_domain.column().relation(), column_domain.column().name())),
+                format!(
+                    "column_domain:{}",
+                    qualified_column_name(
+                        column_domain.column().relation(),
+                        column_domain.column().name()
+                    )
+                ),
             ));
         }
     }
