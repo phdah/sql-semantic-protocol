@@ -1284,6 +1284,8 @@ fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable(
         ("BIGINT", "value BETWEEN 0 AND 2"),
         ("DECIMAL(10,2)", "value > 1.5"),
         ("DATE", "value >= DATE '2024-01-01'"),
+        ("TIME", "value < TIME '12:00:00'"),
+        ("INTERVAL", "value >= INTERVAL '1 day'"),
         ("BOOLEAN", "value = TRUE"),
     ] {
         let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
