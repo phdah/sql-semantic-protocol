@@ -5709,9 +5709,9 @@ fn analyze_set_expr_output_with_outer_scope(
         ),
         SetExpr::SetOperation {
             left,
+            op,
             set_quantifier,
             right,
-            ..
         } => {
             let quantifier = analyze_set_quantifier(*set_quantifier);
             if quantifier.uses_name_alignment() {
@@ -5737,7 +5737,7 @@ fn analyze_set_expr_output_with_outer_scope(
                 diagnostics,
                 metadata,
             );
-            merge_set_operation_output(left_output, right_output, diagnostics)
+            merge_set_operation_output(left_output, right_output, analyze_set_operator(*op), diagnostics)
         }
         SetExpr::Values(_)
         | SetExpr::Insert(_)
@@ -5750,6 +5750,7 @@ fn analyze_set_expr_output_with_outer_scope(
 fn merge_set_operation_output(
     left: Output,
     right: Output,
+    operator: SetOperator,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Output {
     if left.columns().is_empty() || right.columns().is_empty() {
@@ -5788,7 +5789,11 @@ fn merge_set_operation_output(
                     "set-operation output value is determined positionally by multiple query branches"
                         .to_string(),
                 )),
-                union_domains(left_column.domain(), right_column.domain()),
+                match operator {
+                    SetOperator::Union => union_domains(left_column.domain(), right_column.domain()),
+                    SetOperator::Intersect => intersect_domains(left_column.domain(), right_column.domain()),
+                    SetOperator::Except => left_column.domain().clone(),
+                },
                 lineage,
             )
         })
