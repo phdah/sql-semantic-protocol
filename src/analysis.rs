@@ -599,21 +599,21 @@ fn analyze_query(
         false,
     );
     let condition_exactness = predicate_exactness
-    .merged_with(&unknown_column_domain_exactness(
-        &column_domains,
-        &typing_failures,
-        &predicates,
-        &relation_analysis.joins,
-        &relation_analysis.sources,
-        &predicate_exactness,
-    ))
-    .merged_with(&comparison_domain_exactness(&column_domains, metadata))
-    .merged_with(&ConditionExactness::from_residuals(
-        relation_analysis.residual_conditions.clone(),
-    ))
-    .merged_with(&ConditionExactness::from_residuals(
-        missing_column_residuals,
-    ));
+        .merged_with(&unknown_column_domain_exactness(
+            &column_domains,
+            &typing_failures,
+            &predicates,
+            &relation_analysis.joins,
+            &relation_analysis.sources,
+            &predicate_exactness,
+        ))
+        .merged_with(&comparison_domain_exactness(&column_domains, metadata))
+        .merged_with(&ConditionExactness::from_residuals(
+            relation_analysis.residual_conditions.clone(),
+        ))
+        .merged_with(&ConditionExactness::from_residuals(
+            missing_column_residuals,
+        ));
     sort_diagnostics(&mut diagnostics);
 
     QueryStatement::new(
@@ -678,9 +678,9 @@ fn validate_schema_column_references(
             DiagnosticArea::Source,
             &format!("column '{reference}' is absent from available typed schema evidence"),
         ));
-        for (clause, identity) in condition_locations_for_column(
-            &column, predicates, joins, sources,
-        ) {
+        for (clause, identity) in
+            condition_locations_for_column(&column, predicates, joins, sources)
+        {
             residuals.push(ResidualCondition::new(
                 ResidualConditionReason::UnknownSchemaColumn,
                 clause,
@@ -716,9 +716,21 @@ fn condition_locations_for_column(
 ) -> Vec<(ConditionClause, String)> {
     let mut locations = Vec::new();
     for (clause, identity, predicate) in [
-        (ConditionClause::Where, "where", predicates.where_predicate()),
-        (ConditionClause::Having, "having", predicates.having_predicate()),
-        (ConditionClause::Qualify, "qualify", predicates.qualify_predicate()),
+        (
+            ConditionClause::Where,
+            "where",
+            predicates.where_predicate(),
+        ),
+        (
+            ConditionClause::Having,
+            "having",
+            predicates.having_predicate(),
+        ),
+        (
+            ConditionClause::Qualify,
+            "qualify",
+            predicates.qualify_predicate(),
+        ),
     ] {
         if let Some(predicate) = predicate {
             let mut columns = BTreeSet::new();
@@ -1120,9 +1132,9 @@ fn unknown_column_domain_exactness(
             .iter()
             .find(|(column, _)| column == column_domain.column())
             .map(|(_, reason)| *reason);
-        for (clause, identity) in condition_locations_for_column(
-            column_domain.column(), predicates, joins, sources,
-        ) {
+        for (clause, identity) in
+            condition_locations_for_column(column_domain.column(), predicates, joins, sources)
+        {
             // A structural unknown explained by the predicate classifier is already
             // represented with the predicate's own identity. Do not report it again.
             if typed_failure.is_none()
@@ -1488,12 +1500,12 @@ fn append_predicate_residuals(
                 );
             }
         }
-        Predicate::Or(logical) if clause != ConditionClause::JoinOn
-            && logical.operands().iter().any(|operand| {
-                !predicate_residual_reasons(
-                    operand, clause, sources, allow_join_equality,
-                ).is_empty()
-            }) =>
+        Predicate::Or(logical)
+            if clause != ConditionClause::JoinOn
+                && logical.operands().iter().any(|operand| {
+                    !predicate_residual_reasons(operand, clause, sources, allow_join_equality)
+                        .is_empty()
+                }) =>
         {
             for (index, operand) in logical.operands().iter().enumerate() {
                 append_predicate_residuals(
@@ -1507,9 +1519,9 @@ fn append_predicate_residuals(
             }
         }
         _ => {
-            for reason in predicate_residual_reasons(
-                predicate, clause, sources, allow_join_equality,
-            ) {
+            for reason in
+                predicate_residual_reasons(predicate, clause, sources, allow_join_equality)
+            {
                 residuals.push(ResidualCondition::new(reason, clause, identity));
             }
         }
@@ -4182,8 +4194,10 @@ fn analyze_predicate_with_windows(
             analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             true,
         )),
-        Expr::IsTrue(inner) | Expr::IsFalse(inner)
-        | Expr::IsNotTrue(inner) | Expr::IsNotFalse(inner) => {
+        Expr::IsTrue(inner)
+        | Expr::IsFalse(inner)
+        | Expr::IsNotTrue(inner)
+        | Expr::IsNotFalse(inner) => {
             let (value, include_null) = match expression {
                 Expr::IsTrue(_) => (true, false),
                 Expr::IsFalse(_) => (false, false),
@@ -4193,7 +4207,11 @@ fn analyze_predicate_with_windows(
             };
             normalize_boolean_test(
                 analyze_predicate_expression(
-                    inner, named_windows, output_aliases, scope, diagnostics,
+                    inner,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
                 ),
                 value,
                 include_null,
@@ -4246,9 +4264,7 @@ fn analyze_predicate_with_windows(
             op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
             expr,
         } if is_plain_boolean_column(expr) => normalize_boolean_test(
-            analyze_predicate_expression(
-                expr, named_windows, output_aliases, scope, diagnostics,
-            ),
+            analyze_predicate_expression(expr, named_windows, output_aliases, scope, diagnostics),
             false,
             false,
         ),
@@ -4264,7 +4280,11 @@ fn analyze_predicate_with_windows(
         ))),
         Expr::Identifier(_) | Expr::CompoundIdentifier(_) => normalize_boolean_test(
             analyze_predicate_expression(
-                expression, named_windows, output_aliases, scope, diagnostics,
+                expression,
+                named_windows,
+                output_aliases,
+                scope,
+                diagnostics,
             ),
             true,
             false,
