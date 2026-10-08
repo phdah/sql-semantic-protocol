@@ -128,9 +128,14 @@ println!("{}", to_bundle_json(&bundle));
 The manifest adapter accepts schema versions v10, v11, and v12. The catalog adapter accepts v0 and
 v1. Catalog columns are ordered by their warehouse ordinal and their dialect-specific type strings
 are normalized through the selected dbt adapter dialect. Catalog schema evidence takes precedence
-when present. If a physical dependency is absent from `catalog.json`, the adapter falls back to
-column `data_type` declarations in `manifest.json` when the declared schema is complete. Missing
-declared datatypes are reported with the relation and affected columns. Catalog-reported metadata
+when present. If a physical dependency or physical relation named only by a canonical
+constraint is absent from `catalog.json`, the adapter falls back to column `data_type`
+declarations in `manifest.json` when the declared schema is complete. This includes both sides
+of a foreign key defined by a built-in `relationships` test or a declared constraint, even if
+neither source appears in compiled model SQL. Missing declared datatypes are reported with the
+relation and affected columns. A constraint-required physical column missing from the chosen
+schema also fails with its relation and column names, rather than silently losing the foreign key.
+Produced dbt models remain transformation outcomes, not newly synthesized physical sources. Catalog-reported metadata
 query errors, catalog resources absent from the paired manifest, missing relation identities,
 invalid datatypes, or dependencies with neither usable catalog nor manifest schema evidence fail
 explicitly rather than producing an apparently complete protocol.
