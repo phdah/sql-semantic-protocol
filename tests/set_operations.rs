@@ -655,3 +655,37 @@ fn disjoint_positive_branch_domains_do_not_generate_false_intersect_membership()
         "{negative:?}"
     );
 }
+
+#[test]
+fn intersect_and_except_retain_the_strongest_safe_output_value_domains() {
+    let dialect = GenericDialect {};
+    let left = "SELECT v FROM l WHERE v > 10";
+    let right = "SELECT v FROM r WHERE v < 0";
+    let left_protocol = analyze_sql(left, "generic", &dialect).expect("left branch");
+    let left_domain = first_query(&left_protocol).output().columns()[0].domain().clone();
+
+    let except = analyze_sql(
+        &format!("{left} EXCEPT {right}"), "generic", &dialect,
+    ).expect("difference");
+    assert_eq!(
+        first_query(&except).output().columns()[0].domain(),
+        &left_domain,
+        "EXCEPT output cannot contain values outside its left input"
+    );
+
+    let intersect = analyze_sql(
+        &format!("{left} INTERSECT {right}"), "generic", &dialect,
+    ).expect("intersection");
+    assert!(matches!(
+        first_query(&intersect).output().columns()[0].domain(),
+        ValueDomain::Empty
+    ), "disjoint ranges must produce an empty output value domain");
+
+    let union = analyze_sql(
+        &format!("{left} UNION ALL {right}"), "generic", &dialect,
+    ).expect("union");
+    assert!(!matches!(
+        first_query(&union).output().columns()[0].domain(),
+        ValueDomain::Empty
+    ), "UNION ALL must retain both independently permitted branches");
+}
