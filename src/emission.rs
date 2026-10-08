@@ -400,6 +400,7 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .iter()
             .map(|item| json!({
                 "origin_layer_id": item.origin_layer_id(),
+                "boundary_kind": item.boundary_kind().as_str(),
                 "witness": group_witness_to_value(item.witness())
             }))
             .collect::<Vec<_>>());
