@@ -1312,8 +1312,8 @@ fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable(
 
 #[test]
 fn typed_comparison_exceptions_remain_explicit_until_assumptions_are_modeled() {
-    // TASK-53 will replace these residual exceptions with preserved, conditional domains.
-    // INTERVAL literal expressions remain a separate parser-normalization boundary.
+    // TASK-53 will add conditional comparison semantics for strings, floats, and timestamps.
+    // INTERVAL literals remain a distinct parser-normalization boundary.
     // Until then, an unconditional exactness claim would be unsound.
     for (data_type, predicate) in [
         ("VARCHAR", "value = 'keep'"),
