@@ -642,6 +642,7 @@ fn group_witness_to_value(witness: &crate::group_witness::GroupWitness) -> Value
         "boundary": witness.boundary(),
         "group_keys": witness.group_keys().iter().map(column_ref_to_value).collect::<Vec<_>>(),
         "aggregate": witness.aggregate().map(|aggregate| aggregate.as_str()),
+        "distinct": witness.distinct(),
         "argument": witness.argument().map_or(Value::Null, column_ref_to_value),
         "predicate": witness.predicate().map(|(operator, bound)| json!({
             "operator": operator.as_str(), "bound": literal_expression_to_value(bound)
