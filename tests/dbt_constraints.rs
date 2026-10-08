@@ -251,10 +251,12 @@ fn dbt_source_relationships_without_attached_node_reject_ambiguous_children() {
         ]);
 
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
-    let error = parse_dbt_manifest(&json)
-        .expect_err("multiple candidate children must not be guessed");
+    let error =
+        parse_dbt_manifest(&json).expect_err("multiple candidate children must not be guessed");
     assert!(error.to_string().contains("attached_node"));
-    assert!(error.to_string().contains("must identify its attached resource"));
+    assert!(error
+        .to_string()
+        .contains("must identify its attached resource"));
 }
 
 #[test]
