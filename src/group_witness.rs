@@ -552,7 +552,10 @@ pub(crate) fn refine_output(query: &QueryStatement) -> Output {
     } else {
         // Without a numeric bound the warehouse may apply unknown coercions.
         // Do not claim a numerical aggregate output interval for string/NULL literals.
-        if !matches!(bound.literal_type(), LiteralType::Integer | LiteralType::Decimal) {
+        if !matches!(
+            bound.literal_type(),
+            LiteralType::Integer | LiteralType::Decimal
+        ) {
             return query.output().clone();
         }
         match operator {
