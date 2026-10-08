@@ -67,6 +67,7 @@ fn missing_select_and_predicate_columns_block_composed_exactness_for_each_schema
                     assert!(!composed.condition_exactness().is_exact());
                 }
                 ComposedSemantics::Unresolved(_) => {}
+                other => panic!("unexpected composed status: {other:?}"),
             }
         }
     }
