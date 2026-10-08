@@ -13,7 +13,7 @@ use crate::constraints::{
 };
 use crate::protocol::{
     ColumnDomain, ComparisonAssumption, ConditionExactness, DiagnosticSeverity, JoinKind, Output,
-    Protocol, ProtocolStatement, WriteKind, PROTOCOL_VERSION,
+    Protocol, ProtocolStatement, SetOperation, WriteKind, PROTOCOL_VERSION,
 };
 use crate::relation::{
     RelationCatalog, RelationContext, RelationResolutionError, RelationResolver, RelationSchema,
@@ -406,18 +406,22 @@ impl ComposedSemantics {
         dependencies: Vec<String>,
         column_domains: Vec<ColumnDomain>,
         mut join_equalities: Vec<ComposedJoinEquality>,
+        mut set_operations: Vec<ComposedSetOperation>,
         condition_exactness: ConditionExactness,
         output: Output,
         mut diagnostics: Vec<CompositionDiagnostic>,
     ) -> Self {
         join_equalities.sort_by(composed_join_equality_cmp);
         join_equalities.dedup();
+        set_operations.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
+        set_operations.dedup();
         diagnostics.sort_by(diagnostic_cmp);
         diagnostics.dedup();
         Self::Resolved(ResolvedComposedSemantics {
             dependencies,
             column_domains,
             join_equalities,
+            set_operations,
             condition_exactness,
             output,
             diagnostics,
@@ -533,12 +537,40 @@ fn composed_join_equality_cmp(
         ))
 }
 
+/// One set-operation tree retained from an input or an upstream producer layer.
+/// This is evidence with provenance, not a guarantee of generatable source witnesses.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComposedSetOperation {
+    origin_layer_id: String,
+    operation: SetOperation,
+}
+
+impl ComposedSetOperation {
+    pub(crate) fn new(origin_layer_id: String, operation: SetOperation) -> Self {
+        Self {
+            origin_layer_id,
+            operation,
+        }
+    }
+
+    /// Layer where this SQL set operation was introduced.
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
+
+    /// Parser-independent operation and its branch-local evidence.
+    pub fn operation(&self) -> &SetOperation {
+        &self.operation
+    }
+}
+
 /// Successfully composed transitive semantics for a transformation layer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedComposedSemantics {
     dependencies: Vec<String>,
     column_domains: Vec<ColumnDomain>,
     join_equalities: Vec<ComposedJoinEquality>,
+    set_operations: Vec<ComposedSetOperation>,
     condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
@@ -558,6 +590,12 @@ impl ResolvedComposedSemantics {
     /// Return physical join equalities required by the composed row-condition contract.
     pub fn join_equalities(&self) -> &[ComposedJoinEquality] {
         &self.join_equalities
+    }
+
+    /// Set-operation evidence introduced locally or inherited from upstream layers.
+    /// This does not grant exactness or a proven physical-source witness direction.
+    pub fn set_operations(&self) -> &[ComposedSetOperation] {
+        &self.set_operations
     }
 
     /// Return transitive row-condition exactness for this resolved layer.

@@ -14,11 +14,15 @@ The analyzer resolves transformation layers into a deterministic relation depend
 
 ### Set operations
 
+The branch-aware contract preserves each SELECT operand's row predicates, source domains and positional output evidence independently. Duplicate counts follow one typed operator rule per node, with NULL-safe equality for entire aligned tuples. A separate `membership` proof emits qualifying and non-qualifying witness directions, each exact only when the full branch-count combination is proven. The direct supported class is a row-preserving, one-relation SELECT of plain input columns without correlated or unknown filters, joins, aggregation, DISTINCT or row limits, with disjoint physical source dependencies across branches. The proof enumerates small source tuple counts (0, 1, and 2) to cover duplicate semantics and zero-result cancellation. More complex branches, shared physical inputs, unresolved positional alignment and unsupported tree shapes remain residual with explicit reasons.
+
+A witness case is a conjunction of exact per-branch counts for a candidate tuple at the named physical or intermediate relation boundary. The generator must enforce these counts using NULL-safe tuple matching, honor branch conditions and domain constraints, and verify zero-count obligations against existing as well as inserted rows. Intermediate/CTE boundaries cannot be treated as physical source insertion targets without an independently proven producer plan. Resolved composition retains originating operation evidence across SQL layer and dbt compiled-query producer graphs. For full details and consumer versioning, see [the set operation protocol contract](protocol.md#set-operations).
+
 UNION, UNION ALL, INTERSECT, and EXCEPT are analyzed as parser-independent set-operation semantics. Non-standard SQL MINUS syntax is normalized to EXCEPT when the selected sqlparser dialect accepts it.
 
 Set outputs align columns positionally. Output names come from the left branch, while field lineage includes the corresponding columns from every contributing branch. Nested and chained operations retain their recursive operator tree in the optional `set_operation` field. Omitted set quantifiers normalize to DISTINCT semantics.
 
-If branches expose incompatible arity, output semantics remain unresolved and an explicit diagnostic is emitted. Branch-local value constraints are retained when compatible; conflicting constraints on the same source column degrade to an explicit unknown domain rather than being guessed. BY NAME alignment is represented in the operation tree but output composition remains explicitly unsupported.
+If branches expose incompatible arity, output semantics remain unresolved and an explicit diagnostic is emitted. For proven positional domains, UNION preserves the union of possible output values, INTERSECT narrows to their intersection, and EXCEPT retains the left operand's domain. These operators do not flatten branch-specific physical source predicates into one conjunction: conflicting constraints on the same source column degrade to an explicit unknown source domain instead of being guessed. BY NAME alignment is represented in the operation tree but output composition remains explicitly unsupported.
 
 ### Aggregation and grouping
 

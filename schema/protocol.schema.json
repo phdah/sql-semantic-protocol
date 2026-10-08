@@ -340,6 +340,13 @@
         },
         "condition_exactness": {
           "$ref": "#/$defs/conditionExactness"
+        },
+        "set_operations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/composedSetOperation"
+          }
         }
       }
     },
@@ -773,7 +780,8 @@
         "operator",
         "quantifier",
         "left",
-        "right"
+        "right",
+        "membership"
       ],
       "properties": {
         "operator": {
@@ -797,6 +805,9 @@
         },
         "right": {
           "$ref": "#/$defs/setOperand"
+        },
+        "membership": {
+          "$ref": "#/$defs/setMembership"
         }
       }
     },
@@ -822,7 +833,8 @@
             "operator",
             "quantifier",
             "left",
-            "right"
+            "right",
+            "membership"
           ],
           "properties": {
             "kind": {
@@ -849,6 +861,9 @@
             },
             "right": {
               "$ref": "#/$defs/setOperand"
+            },
+            "membership": {
+              "$ref": "#/$defs/setMembership"
             }
           }
         }
@@ -3512,6 +3527,162 @@
               "$ref": "#/$defs/nonEmptyString"
             }
           }
+        }
+      }
+    },
+    "setBranchEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "sources",
+        "predicates",
+        "column_domains",
+        "output",
+        "condition_exactness"
+      ],
+      "properties": {
+        "identity": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/sourceRelation"
+          }
+        },
+        "predicates": {
+          "$ref": "#/$defs/predicates"
+        },
+        "column_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
+        },
+        "output": {
+          "$ref": "#/$defs/output"
+        },
+        "condition_exactness": {
+          "$ref": "#/$defs/conditionExactness"
+        }
+      }
+    },
+    "setWitnessBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "relation", "tuple_columns"],
+      "properties": {
+        "kind": { "enum": ["physical", "intermediate"] },
+        "relation": { "$ref": "#/$defs/relationName" },
+        "tuple_columns": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "setWitnessObligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch_identity", "boundary", "matching_tuple_count"],
+      "properties": {
+        "branch_identity": { "$ref": "#/$defs/nonEmptyString" },
+        "boundary": { "$ref": "#/$defs/setWitnessBoundary" },
+        "matching_tuple_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "setWitnessCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["output_tuple_count", "obligations"],
+      "properties": {
+        "output_tuple_count": { "type": "integer", "minimum": 0 },
+        "obligations": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/$defs/setWitnessObligation" }
+        }
+      }
+    },
+    "setWitnessDirection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "cases"],
+          "properties": {
+            "status": { "const": "exact" },
+            "cases": {
+              "type": "array", "minItems": 1,
+              "items": { "$ref": "#/$defs/setWitnessCase" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason", "origin"],
+          "properties": {
+            "status": { "const": "residual" },
+            "reason": { "$ref": "#/$defs/nonEmptyString" },
+            "origin": { "type": ["string", "null"] }
+          }
+        }
+      ]
+    },
+    "setMembership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tuple_equality",
+        "multiplicity_rule",
+        "branches",
+        "qualifying_witness",
+        "non_qualifying_witness"
+      ],
+      "properties": {
+        "tuple_equality": {
+          "const": "not_distinct",
+          "description": "Rows are aligned positionally and NULLs compare as equal for set membership."
+        },
+        "multiplicity_rule": {
+          "enum": [
+            "sum",
+            "union_distinct",
+            "minimum",
+            "intersect_distinct",
+            "saturating_difference",
+            "except_distinct",
+            null
+          ],
+          "description": "Number of occurrences of the aligned tuple. Null means name alignment has no proven positional contract."
+        },
+        "branches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/setBranchEvidence"
+          }
+        },
+        "qualifying_witness": {
+          "$ref": "#/$defs/setWitnessDirection"
+        },
+        "non_qualifying_witness": {
+          "$ref": "#/$defs/setWitnessDirection"
+        }
+      }
+    },
+    "composedSetOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_layer_id",
+        "operation"
+      ],
+      "properties": {
+        "origin_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "operation": {
+          "$ref": "#/$defs/setOperation"
         }
       }
     }

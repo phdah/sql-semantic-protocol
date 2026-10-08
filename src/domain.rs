@@ -951,6 +951,46 @@ fn union_maps(left: DomainMap, right: DomainMap) -> DomainMap {
         .collect()
 }
 
+/// Intersect candidate set-operation outputs without treating unproven SQL coercions
+/// or collation rules as evidence that two literals cannot represent the same value.
+pub(crate) fn intersect_set_operation_domains(
+    left: &ValueDomain,
+    right: &ValueDomain,
+) -> ValueDomain {
+    if let (ValueDomain::Set(left_set), ValueDomain::Set(right_set)) = (left, right) {
+        if left_set.mode() == SetMode::Include
+            && right_set.mode() == SetMode::Include
+            && left_set.values().iter().any(|left_value| {
+                right_set.values().iter().any(|right_value| {
+                    left_value != right_value
+                        && !set_literals_provably_distinct(left_value, right_value)
+                })
+            })
+        {
+            return ValueDomain::unknown(
+                "set-operation literal equality requires unproven type coercion or collation",
+            );
+        }
+    }
+    intersect_domains(left, right)
+}
+
+fn set_literals_provably_distinct(left: &LiteralExpression, right: &LiteralExpression) -> bool {
+    match (left.value(), right.value()) {
+        (LiteralValue::Null, _) | (_, LiteralValue::Null) => true,
+        (LiteralValue::Number(_), LiteralValue::Number(_)) => {
+            matches!(
+                compare_literals(left, right),
+                Some(Ordering::Less | Ordering::Greater)
+            )
+        }
+        (LiteralValue::Boolean(left), LiteralValue::Boolean(right)) => left != right,
+        // String collation and mixed-type coercion are dialect-dependent. They cannot
+        // be used to prove that an INTERSECT is empty.
+        _ => false,
+    }
+}
+
 pub(crate) fn intersect_domains(left: &ValueDomain, right: &ValueDomain) -> ValueDomain {
     match (left, right) {
         (ValueDomain::Unknown(_), _) => left.clone(),

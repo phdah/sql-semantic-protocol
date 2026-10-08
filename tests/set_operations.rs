@@ -209,3 +209,598 @@ fn snowflake_minus_is_normalized_to_except() {
     assert_eq!(operation.operator(), SetOperator::Except);
     assert_eq!(operation.quantifier(), SetQuantifier::Distinct);
 }
+
+#[test]
+fn branch_specific_predicate_domains_are_not_collapsed_into_one_witness() {
+    let dialect = GenericDialect {};
+    let sql = "SELECT a FROM t WHERE a > 10 UNION ALL SELECT a FROM t WHERE a < 0";
+    let protocol = analyze_sql(sql, "generic", &dialect).expect("set operation");
+    let query = first_query(&protocol);
+    let operation = query.set_operation().expect("set operation");
+    let branches = operation.branches();
+
+    assert_eq!(branches.len(), 2);
+    assert_eq!(branches[0].identity(), "body:left");
+    assert_eq!(branches[1].identity(), "body:right");
+    assert!(branches[0].predicates().where_predicate().is_some());
+    assert!(branches[1].predicates().where_predicate().is_some());
+    assert_eq!(branches[0].sources()[0].name(), "t");
+    assert_eq!(branches[1].sources()[0].name(), "t");
+    assert_eq!(branches[0].output().columns()[0].name(), "a");
+
+    let emitted: serde_json::Value = serde_json::from_str(&to_json(&protocol)).expect("valid json");
+    let membership = &emitted["inputs"][0]["statements"][0]["set_operation"]["membership"];
+    assert_eq!(membership["tuple_equality"], "not_distinct");
+    assert_eq!(membership["multiplicity_rule"], "sum");
+    assert_eq!(membership["branches"].as_array().unwrap().len(), 2);
+    assert_ne!(
+        membership["branches"][0]["column_domains"], membership["branches"][1]["column_domains"],
+        "opposing branch source domains must remain independent"
+    );
+    assert_eq!(membership["qualifying_witness"]["status"], "residual");
+    assert_eq!(membership["non_qualifying_witness"]["status"], "residual");
+    assert!(!query.condition_exactness().is_exact());
+}
+
+#[test]
+fn nested_set_operations_keep_stable_leaf_branch_identities() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "(SELECT a FROM x UNION ALL SELECT a FROM y) EXCEPT SELECT a FROM z",
+        "generic",
+        &dialect,
+    )
+    .expect("nested set operation");
+    let branches = first_query(&protocol)
+        .set_operation()
+        .expect("set operation")
+        .branches();
+    assert_eq!(
+        branches.iter().map(|b| b.identity()).collect::<Vec<_>>(),
+        vec![
+            "body:left:query:left",
+            "body:left:query:right",
+            "body:right"
+        ]
+    );
+}
+
+#[test]
+fn set_tuple_multiplicity_rules_match_duckdb_with_duplicates_and_null() {
+    use duckdb::Connection;
+    use sql_semantic_protocol::SetMultiplicityRule;
+
+    let connection = Connection::open_in_memory().expect("DuckDB");
+    connection
+        .execute_batch(
+            "CREATE TABLE l (v INTEGER); CREATE TABLE r (v INTEGER);
+         INSERT INTO l VALUES (1), (1), (NULL), (NULL), (2);
+         INSERT INTO r VALUES (1), (NULL), (NULL), (3);",
+        )
+        .expect("seed fixture");
+
+    let cases = [
+        ("UNION ALL", SetMultiplicityRule::Sum),
+        ("UNION", SetMultiplicityRule::UnionDistinct),
+        ("INTERSECT ALL", SetMultiplicityRule::Minimum),
+        ("INTERSECT", SetMultiplicityRule::IntersectDistinct),
+        ("EXCEPT ALL", SetMultiplicityRule::SaturatingDifference),
+        ("EXCEPT", SetMultiplicityRule::ExceptDistinct),
+    ];
+    let dialect = GenericDialect {};
+    for (operator, rule) in cases {
+        let sql = format!("SELECT v FROM l {operator} SELECT v FROM r");
+        let protocol = analyze_sql(&sql, "generic", &dialect).expect("analyze SQL");
+        let actual_rule = first_query(&protocol)
+            .set_operation()
+            .expect("operation")
+            .multiplicity_rule()
+            .expect("positional set rule");
+        assert_eq!(actual_rule, rule, "{operator}");
+
+        let mut statement = connection
+            .prepare(&format!(
+                "SELECT v, COUNT(*) FROM ({sql}) x GROUP BY v ORDER BY v NULLS FIRST"
+            ))
+            .expect("prepare oracle query");
+        let results = statement
+            .query_map([], |row| {
+                Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, u64>(1)?))
+            })
+            .expect("query oracle")
+            .collect::<Result<Vec<_>, _>>()
+            .expect("collect rows");
+
+        for (value, observed_count) in results {
+            let left_count = match value {
+                None => 2,
+                Some(1) => 2,
+                Some(2) => 1,
+                _ => 0,
+            };
+            let right_count = match value {
+                None => 2,
+                Some(1) => 1,
+                Some(3) => 1,
+                _ => 0,
+            };
+            assert_eq!(
+                rule.evaluate(left_count, right_count),
+                observed_count,
+                "{operator} value {value:?}"
+            );
+        }
+        for (left, right) in [(0, 0), (1, 0), (0, 1), (3, 2), (0, 4)] {
+            assert!(rule.evaluate(left, right) <= left.saturating_add(right));
+        }
+    }
+}
+
+#[test]
+fn set_operators_share_null_safe_positional_multiplicity_contract() {
+    use sql_semantic_protocol::SetMultiplicityRule;
+    assert_eq!(SetMultiplicityRule::Sum.evaluate(2, 3), 5);
+    assert_eq!(SetMultiplicityRule::UnionDistinct.evaluate(2, 3), 1);
+    assert_eq!(SetMultiplicityRule::Minimum.evaluate(2, 3), 2);
+    assert_eq!(SetMultiplicityRule::IntersectDistinct.evaluate(2, 0), 0);
+    assert_eq!(SetMultiplicityRule::SaturatingDifference.evaluate(2, 3), 0);
+    assert_eq!(SetMultiplicityRule::ExceptDistinct.evaluate(2, 0), 1);
+}
+
+#[test]
+fn complete_set_witnesses_are_exact_only_for_independent_row_preserving_branches() {
+    use sql_semantic_protocol::SetWitnessDirection;
+    let dialect = GenericDialect {};
+    for operator in [
+        "UNION ALL",
+        "UNION",
+        "INTERSECT ALL",
+        "INTERSECT",
+        "EXCEPT ALL",
+        "EXCEPT",
+    ] {
+        let sql = format!("SELECT v FROM l {operator} SELECT v FROM r");
+        let protocol = analyze_sql(&sql, "generic", &dialect).expect("analyzed set operator");
+        let operation = first_query(&protocol)
+            .set_operation()
+            .expect("set operation");
+        let (positive, negative) = operation.witness_directions();
+        for (direction, should_be_present) in [(positive, true), (negative, false)] {
+            let SetWitnessDirection::Exact(cases) = direction else {
+                panic!("both witness directions should be exact for {operator}");
+            };
+            assert!(!cases.is_empty(), "{operator}");
+            for case in &cases {
+                assert_eq!(
+                    case.output_tuple_count() > 0,
+                    should_be_present,
+                    "{operator}"
+                );
+                assert_eq!(case.obligations().len(), 2);
+                let mut input_counts = case
+                    .obligations()
+                    .iter()
+                    .map(|item| item.matching_tuple_count());
+                assert_eq!(
+                    case.output_tuple_count(),
+                    operation
+                        .multiplicity_rule()
+                        .expect("positional rule")
+                        .evaluate(
+                            input_counts.next().expect("left count"),
+                            input_counts.next().expect("right count"),
+                        ),
+                );
+                for (name, obligation) in ["l", "r"].iter().zip(case.obligations()) {
+                    assert_eq!(obligation.boundary().relation(), *name);
+                    assert_eq!(obligation.boundary().tuple_columns(), &["v"]);
+                    assert!(!obligation.boundary().is_intermediate());
+                }
+            }
+        }
+        let emitted: serde_json::Value = serde_json::from_str(&to_json(&protocol)).expect("json");
+        let membership = &emitted["inputs"][0]["statements"][0]["set_operation"]["membership"];
+        assert_eq!(membership["qualifying_witness"]["status"], "exact");
+        assert_eq!(membership["non_qualifying_witness"]["status"], "exact");
+        // Set-level independent-column domains still cannot claim complete exactness.
+        assert!(!first_query(&protocol).condition_exactness().is_exact());
+    }
+}
+
+#[test]
+fn witness_obligations_match_duckdb_actual_counts_including_null_and_duplicates() {
+    use duckdb::Connection;
+    use sql_semantic_protocol::SetWitnessDirection;
+    let connection = Connection::open_in_memory().expect("DuckDB");
+    connection
+        .execute_batch("CREATE TABLE l(v INTEGER); CREATE TABLE r(v INTEGER);")
+        .expect("create sources");
+    let dialect = GenericDialect {};
+    for operator in [
+        "UNION ALL",
+        "UNION",
+        "INTERSECT ALL",
+        "INTERSECT",
+        "EXCEPT ALL",
+        "EXCEPT",
+    ] {
+        let sql = format!("SELECT v FROM l {operator} SELECT v FROM r");
+        let protocol = analyze_sql(&sql, "generic", &dialect).expect("analyze");
+        let operation = first_query(&protocol)
+            .set_operation()
+            .expect("set operation");
+        let (positive, negative) = operation.witness_directions();
+        for direction in [positive, negative] {
+            let SetWitnessDirection::Exact(cases) = direction else {
+                panic!("exact contract");
+            };
+            for case in cases {
+                connection
+                    .execute_batch("DELETE FROM l; DELETE FROM r;")
+                    .expect("clear");
+                for obligation in case.obligations() {
+                    for _ in 0..obligation.matching_tuple_count() {
+                        connection
+                            .execute_batch(&format!(
+                                "INSERT INTO {} VALUES (NULL)",
+                                obligation.boundary().relation()
+                            ))
+                            .expect("insert null tuple");
+                    }
+                }
+                let count: i64 = connection
+                    .query_row(
+                        &format!("SELECT COUNT(*) FROM ({sql}) AS output WHERE v IS NULL"),
+                        [],
+                        |row| row.get(0),
+                    )
+                    .expect("query SQL oracle");
+                assert_eq!(count as u64, case.output_tuple_count(), "{operator}");
+            }
+        }
+    }
+}
+
+#[test]
+fn witness_exactness_fails_closed_for_shared_sources_aggregation_limits_and_unknown_alignment() {
+    let dialect = GenericDialect {};
+    for (sql, expected) in [
+        (
+            "SELECT v FROM t UNION SELECT v FROM t",
+            "shared_physical_dependency",
+        ),
+        (
+            "SELECT DISTINCT v FROM l UNION SELECT v FROM r",
+            "unresolved_branch_boundary",
+        ),
+        (
+            "SELECT v + 1 FROM l UNION SELECT v FROM r",
+            "unresolved_branch_boundary",
+        ),
+        (
+            "SELECT v FROM l UNION SELECT v FROM r LIMIT 1",
+            "set_level_membership_modifier",
+        ),
+        (
+            "SELECT v FROM l UNION BY NAME SELECT v FROM r",
+            "unsupported_alignment",
+        ),
+    ] {
+        let Ok(protocol) = analyze_sql(sql, "generic", &dialect) else {
+            // Parser rejection of dialect-specific syntax is a separate explicit boundary.
+            assert!(
+                sql.contains("BY NAME"),
+                "unexpected parse failure for {sql}"
+            );
+            continue;
+        };
+        let operation = first_query(&protocol).set_operation().expect("operation");
+        let (qualifying, non_qualifying) = operation.witness_directions();
+        for direction in [qualifying, non_qualifying] {
+            assert!(
+                matches!(
+                    direction, sql_semantic_protocol::SetWitnessDirection::Residual { reason, .. }
+                        if reason == expected
+                ),
+                "{sql}: {direction:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn intermediate_cte_witnesses_are_never_mislabelled_physical() {
+    use sql_semantic_protocol::SetWitnessDirection;
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "WITH left_cte AS (SELECT v FROM l WHERE v > 0), right_cte AS (SELECT v FROM r) \
+         SELECT v FROM left_cte UNION ALL SELECT v FROM right_cte",
+        "generic",
+        &dialect,
+    )
+    .expect("cte set operation");
+    let operation = first_query(&protocol).set_operation().expect("operation");
+    let (positive, negative) = operation.witness_directions();
+    if let (SetWitnessDirection::Exact(qualifying), SetWitnessDirection::Exact(rejecting)) =
+        (positive, negative)
+    {
+        assert!(!qualifying.is_empty());
+        assert!(!rejecting.is_empty());
+        for case in qualifying.iter().chain(rejecting.iter()) {
+            assert!(case
+                .obligations()
+                .iter()
+                .all(|item| item.boundary().is_intermediate()));
+        }
+    } else {
+        // Local-scope remapping is allowed to remain residual; never pretend
+        // an upstream physical table has the same tuple count as a filtered CTE.
+        let emitted: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
+        assert_ne!(
+            emitted["inputs"][0]["statements"][0]["set_operation"]["membership"]
+                ["qualifying_witness"]["status"],
+            "exact"
+        );
+    }
+}
+
+#[test]
+fn simple_set_witnesses_are_dialect_independent_for_shared_syntax() {
+    let sql = "SELECT v FROM l UNION ALL SELECT v FROM r";
+    for name in DIALECTS {
+        let dialect = dialect_from_str(name).expect("known dialect");
+        let protocol = analyze_sql(sql, name, dialect.as_ref()).expect("parse dialect");
+        let operation = first_query(&protocol)
+            .set_operation()
+            .expect("set operation");
+        assert!(
+            matches!(
+                operation.witness_directions().0,
+                sql_semantic_protocol::SetWitnessDirection::Exact(_)
+            ),
+            "{name}"
+        );
+    }
+}
+
+#[test]
+fn parenthesized_branch_limits_cannot_be_erased_from_witness_proofs() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT v FROM l UNION ALL (SELECT v FROM r LIMIT 1)",
+        "generic",
+        &dialect,
+    )
+    .expect("nested operand limit should parse");
+    let operation = first_query(&protocol).set_operation().expect("operation");
+    let (positive, negative) = operation.witness_directions();
+    for direction in [positive, negative] {
+        assert!(
+            matches!(
+                direction,
+                sql_semantic_protocol::SetWitnessDirection::Residual {
+                    reason: "inexact_branch_conditions",
+                    ..
+                }
+            ),
+            "{direction:?}"
+        );
+    }
+}
+
+#[test]
+fn nested_set_count_witnesses_match_duckdb_for_three_distinct_sources() {
+    use duckdb::Connection;
+    use sql_semantic_protocol::SetWitnessDirection;
+    let dialect = GenericDialect {};
+    let sql = "(SELECT v FROM l UNION ALL SELECT v FROM r) EXCEPT ALL SELECT v FROM s";
+    let protocol = analyze_sql(sql, "generic", &dialect).expect("nested set query");
+    let operation = first_query(&protocol).set_operation().expect("operation");
+    let (positive, negative) = operation.witness_directions();
+    let connection = Connection::open_in_memory().expect("DuckDB");
+    connection
+        .execute_batch(
+            "CREATE TABLE l (v INTEGER); CREATE TABLE r (v INTEGER); CREATE TABLE s (v INTEGER);",
+        )
+        .expect("create source relations");
+    for direction in [positive, negative] {
+        let SetWitnessDirection::Exact(cases) = direction else {
+            panic!("nested proof expected");
+        };
+        assert!(!cases.is_empty());
+        for case in cases {
+            connection
+                .execute_batch("DELETE FROM l; DELETE FROM r; DELETE FROM s;")
+                .unwrap();
+            for obligation in case.obligations() {
+                for _ in 0..obligation.matching_tuple_count() {
+                    connection
+                        .execute_batch(&format!(
+                            "INSERT INTO {} VALUES (NULL)",
+                            obligation.boundary().relation()
+                        ))
+                        .expect("insert tuple");
+                }
+            }
+            let observed: i64 = connection
+                .query_row(
+                    &format!("SELECT COUNT(*) FROM ({sql}) x WHERE v IS NULL"),
+                    [],
+                    |row| row.get(0),
+                )
+                .expect("evaluate SQL");
+            assert_eq!(observed as u64, case.output_tuple_count());
+        }
+    }
+}
+
+#[test]
+fn disjoint_positive_branch_domains_do_not_generate_false_intersect_membership() {
+    use sql_semantic_protocol::SetWitnessDirection;
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT v FROM l WHERE v < 0 INTERSECT SELECT v FROM r WHERE v > 100",
+        "generic",
+        &dialect,
+    )
+    .expect("analyze contradictory branch outputs");
+    let operation = first_query(&protocol).set_operation().expect("operation");
+    let (positive, negative) = operation.witness_directions();
+    assert!(
+        matches!(positive, SetWitnessDirection::Residual { .. }),
+        "{positive:?}"
+    );
+    assert!(
+        matches!(negative, SetWitnessDirection::Exact(_)),
+        "{negative:?}"
+    );
+}
+
+#[test]
+fn intersect_and_except_retain_the_strongest_safe_output_value_domains() {
+    let dialect = GenericDialect {};
+    let left = "SELECT v FROM l WHERE v > 10";
+    let right = "SELECT v FROM r WHERE v < 0";
+    let left_protocol = analyze_sql(left, "generic", &dialect).expect("left branch");
+    let left_domain = first_query(&left_protocol).output().columns()[0]
+        .domain()
+        .clone();
+
+    let except =
+        analyze_sql(&format!("{left} EXCEPT {right}"), "generic", &dialect).expect("difference");
+    assert_eq!(
+        first_query(&except).output().columns()[0].domain(),
+        &left_domain,
+        "EXCEPT output cannot contain values outside its left input"
+    );
+
+    let intersect = analyze_sql(&format!("{left} INTERSECT {right}"), "generic", &dialect)
+        .expect("intersection");
+    assert!(
+        matches!(
+            first_query(&intersect).output().columns()[0].domain(),
+            ValueDomain::Empty
+        ),
+        "disjoint ranges must produce an empty output value domain"
+    );
+
+    let union =
+        analyze_sql(&format!("{left} UNION ALL {right}"), "generic", &dialect).expect("union");
+    assert!(
+        !matches!(
+            first_query(&union).output().columns()[0].domain(),
+            ValueDomain::Empty
+        ),
+        "UNION ALL must retain both independently permitted branches"
+    );
+}
+
+#[test]
+fn intersect_numeric_literal_coercion_does_not_invent_an_empty_output() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT 1 AS v INTERSECT SELECT 1.0 AS v",
+        "generic",
+        &dialect,
+    )
+    .expect("analyze numeric set operation");
+    assert!(
+        !matches!(
+            first_query(&protocol).output().columns()[0].domain(),
+            ValueDomain::Empty
+        ),
+        "different numeric literal representations can be SQL-equal"
+    );
+    assert!(
+        matches!(
+            first_query(&protocol).output().columns()[0].domain(),
+            ValueDomain::Unknown(_)
+        ),
+        "without dialect-specific coercion rules, retain an explicit unknown domain"
+    );
+}
+
+#[test]
+fn mixed_numeric_branch_domains_do_not_discard_valid_intersect_witnesses() {
+    use sql_semantic_protocol::SetWitnessDirection;
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT v FROM l WHERE v = 1 INTERSECT SELECT v FROM r WHERE v = 1.0",
+        "generic",
+        &dialect,
+    )
+    .expect("analyze numeric set operation");
+    let operation = first_query(&protocol)
+        .set_operation()
+        .expect("set operation");
+    let (positive, _) = operation.witness_directions();
+    let SetWitnessDirection::Exact(cases) = positive else {
+        panic!("numerically equivalent predicates must not prevent a qualifying plan");
+    };
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations()
+                .iter()
+                .all(|obligation| obligation.matching_tuple_count() > 0)
+        }),
+        "a matching numeric tuple must be allowed in both branches"
+    );
+}
+
+#[test]
+fn nested_set_membership_has_its_own_exact_branch_evidence() {
+    use sql_semantic_protocol::{SetOperand, SetWitnessDirection};
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "(SELECT v FROM l UNION ALL SELECT v FROM r) EXCEPT ALL SELECT v FROM s",
+        "generic",
+        &dialect,
+    )
+    .expect("analyze nested set operation");
+    let root = first_query(&protocol)
+        .set_operation()
+        .expect("root operation");
+    let SetOperand::Operation(nested) = root.left() else {
+        panic!("expected nested left operand");
+    };
+    assert_eq!(root.branches().len(), 3);
+    assert_eq!(nested.branches().len(), 2);
+    assert!(matches!(
+        nested.witness_directions().0,
+        SetWitnessDirection::Exact(_)
+    ));
+    let emitted: serde_json::Value = serde_json::from_str(&to_json(&protocol)).expect("json");
+    let nested_membership =
+        &emitted["inputs"][0]["statements"][0]["set_operation"]["left"]["membership"];
+    assert_eq!(nested_membership["branches"].as_array().unwrap().len(), 2);
+    assert_eq!(nested_membership["qualifying_witness"]["status"], "exact");
+    assert_eq!(
+        nested_membership["non_qualifying_witness"]["status"],
+        "exact"
+    );
+}
+
+#[test]
+fn nested_set_limit_remains_residual_without_poisoning_unlimited_siblings() {
+    use sql_semantic_protocol::{SetOperand, SetWitnessDirection};
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "(SELECT v FROM l UNION ALL SELECT v FROM r LIMIT 1) EXCEPT SELECT v FROM s",
+        "generic",
+        &dialect,
+    )
+    .expect("analyze limited nested set operation");
+    let root = first_query(&protocol)
+        .set_operation()
+        .expect("root operation");
+    let SetOperand::Operation(nested) = root.left() else {
+        panic!("expected nested left operand");
+    };
+    assert!(matches!(
+        nested.witness_directions().0,
+        SetWitnessDirection::Residual {
+            reason: "set_level_membership_modifier",
+            ..
+        }
+    ));
+}

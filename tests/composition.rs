@@ -678,3 +678,49 @@ fn outer_and_self_join_equalities_remain_conservative() {
     assert!(self_join.join_equalities().is_empty());
     assert!(!self_join.condition_exactness().is_exact());
 }
+
+#[test]
+fn set_branch_evidence_survives_a_downstream_producer_layer() {
+    let dialect = GenericDialect {};
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline(
+                "CREATE TABLE stage_union AS
+                 SELECT id FROM raw_a WHERE id > 10
+                 UNION ALL
+                 SELECT id FROM raw_b WHERE id < 0",
+            ),
+            SqlInput::inline("CREATE TABLE mart_union AS SELECT id FROM stage_union"),
+        ],
+        "generic",
+        &dialect,
+    )
+    .expect("analyze and compose set producer");
+
+    let stage = layer_for_relation(&bundle, "stage_union");
+    let mart = resolved(layer_for_relation(&bundle, "mart_union"));
+    assert_eq!(mart.set_operations().len(), 1);
+    let inherited = &mart.set_operations()[0];
+    assert_eq!(inherited.origin_layer_id(), stage.id());
+    assert_eq!(inherited.operation().branches().len(), 2);
+    assert_ne!(
+        inherited.operation().branches()[0].column_domains(),
+        inherited.operation().branches()[1].column_domains()
+    );
+    assert!(!mart.condition_exactness().is_exact());
+
+    let json: serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&bundle))
+            .expect("valid protocol JSON");
+    let layers = json["layers"].as_array().expect("layers");
+    let mart_layer = layers
+        .iter()
+        .find(|layer| layer["id"] == layer_for_relation(&bundle, "mart_union").id())
+        .expect("mart layer");
+    let inherited_json = &mart_layer["composed_semantics"]["set_operations"][0];
+    assert_eq!(inherited_json["origin_layer_id"], stage.id());
+    assert_eq!(
+        inherited_json["operation"]["membership"]["branches"][0]["identity"],
+        "body:left"
+    );
+}
