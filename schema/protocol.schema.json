@@ -302,8 +302,7 @@
         "join_equalities",
         "condition_exactness",
         "output",
-        "diagnostics",
-        "set_operations"
+        "diagnostics"
       ],
       "properties": {
         "status": {
