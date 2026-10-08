@@ -474,6 +474,107 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
             .iter()
             .all(|diagnostic| { diagnostic["code"] != "unattributed_dbt_test" })));
 
+    // These sources are only linked by a dbt relationships test. No compiled model
+    // consumes either relation, so dependency-only schema discovery misses both.
+    let isolated_sources = ["constraint_only_order_items", "constraint_only_orders"]
+        .into_iter()
+        .map(|name| {
+            manifest_json["sources"]
+                .as_object()
+                .expect("manifest sources should be an object")
+                .iter()
+                .find(|(_, source)| source["source_name"] == "raw" && source["name"] == name)
+                .map(|(id, source)| (id.clone(), source["relation_name"].as_str().expect("physical source identity").to_string()))
+                .unwrap_or_else(|| panic!("missing dbt Core source {name}"))
+        })
+        .collect::<Vec<_>>();
+    for (source_id, _) in &isolated_sources {
+        assert!(
+            manifest_json["nodes"]
+                .as_object()
+                .expect("manifest nodes should be an object")
+                .values()
+                .filter(|node| node["resource_type"] == "model")
+                .all(|node| !node["depends_on"]["nodes"]
+                    .as_array()
+                    .is_some_and(|deps| deps.iter().any(|dep| dep == source_id))),
+            "{source_id} should not be a compiled model dependency"
+        );
+    }
+    let (child_id, child_relation) = &isolated_sources[0];
+    let (parent_id, parent_relation) = &isolated_sources[1];
+    let relationship_test = manifest_json["nodes"]
+        .as_object()
+        .expect("manifest nodes should be an object")
+        .iter()
+        .find(|(_, node)| {
+            node["resource_type"] == "test"
+                && node["test_metadata"]["name"] == "relationships"
+                && node["depends_on"]["nodes"]
+                    .as_array()
+                    .is_some_and(|deps| deps.contains(&Value::String(child_id.clone()))
+                        && deps.contains(&Value::String(parent_id.clone())))
+        })
+        .map(|(id, _)| id.clone())
+        .expect("dbt Core should compile the constraint-only relationships test");
+    let constraint_set = protocol["relation_constraints"]
+        .as_array()
+        .expect("relation constraints should be emitted")
+        .iter()
+        .find(|set| set["relation"] == *child_relation)
+        .expect("constraint-only source foreign key should be emitted");
+    assert!(constraint_set["constraints"]
+        .as_array()
+        .expect("constraints should be an array")
+        .iter()
+        .any(|constraint| {
+            constraint["kind"] == "foreign_key"
+                && constraint["columns"] == serde_json::json!(["order_id"])
+                && constraint["referenced_relation"] == *parent_relation
+                && constraint["referenced_columns"] == serde_json::json!(["id"])
+        }));
+    for (_, relation) in &isolated_sources {
+        let source_schema = protocol["source_schemas"]
+            .as_array()
+            .expect("typed source schemas")
+            .iter()
+            .find(|schema| schema["relation"] == *relation)
+            .expect("constraint-only source should have an introspected schema");
+        assert_eq!(source_schema["source_kind"], "dbt_catalog");
+    }
+
+    // Reuse actual dbt-generated artifacts with only the constraint-only sources/test,
+    // so catalog-less schema coverage does not depend on unrelated model inputs.
+    let mut isolated_manifest_json = manifest_json.clone();
+    isolated_manifest_json["sources"]
+        .as_object_mut()
+        .expect("manifest sources should be an object")
+        .retain(|id, _| id == child_id || id == parent_id);
+    isolated_manifest_json["nodes"]
+        .as_object_mut()
+        .expect("manifest nodes should be an object")
+        .retain(|id, _| id == &relationship_test);
+    let isolated_manifest = parse_dbt_manifest(&isolated_manifest_json.to_string())
+        .expect("isolated dbt Core artifacts should parse");
+    let isolated_bundle = sql_semantic_protocol::analyze_dbt_manifest_with_schemas(
+        &isolated_manifest,
+        manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .expect("unconsumed dbt Core sources should use declared datatypes without catalog");
+    let isolated_json: Value = serde_json::from_str(&to_bundle_json(&isolated_bundle))
+        .expect("isolated protocol should serialize");
+    for (_, relation) in &isolated_sources {
+        let source_schema = isolated_json["source_schemas"]
+            .as_array()
+            .expect("typed source schemas")
+            .iter()
+            .find(|schema| schema["relation"] == *relation)
+            .expect("constraint-only source should be emitted without catalog");
+        assert_eq!(source_schema["source_kind"], "dbt_manifest");
+        assert_eq!(source_schema["columns"][0]["data_type"]["kind"], "signed_integer");
+    }
+
     let source_schemas = protocol["source_schemas"]
         .as_array()
         .expect("dbt protocol should include warehouse source schemas");
