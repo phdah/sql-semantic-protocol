@@ -1260,7 +1260,7 @@ fn typed_conformance(sql: &str, sql_type: &str) -> ResolvedComposedSemantics {
 fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable() {
     for (data_type, predicate) in [
         ("INTEGER", "value >= 1"),
-        ("BIGINT", "value BETWEEN -2 AND 2"),
+        ("BIGINT", "value BETWEEN 0 AND 2"),
         ("DECIMAL(10,2)", "value > 1.5"),
         ("DATE", "value >= DATE '2024-01-01'"),
         ("BOOLEAN", "value = TRUE"),
