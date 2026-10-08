@@ -3,7 +3,7 @@
 //! - analyze_sql parses one SQL string with a caller-supplied dialect.
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
 //! - analyze_configured_inputs_with_catalog adds optional catalog/schema-aware relation resolution and typed source schemas.
-//! - parse_dbt_manifest, parse_dbt_catalog, and analyze_dbt_artifacts adapt dbt artifacts, including canonical key and column constraints, into the same core analysis path.
+//! - parse_dbt_manifest, parse_dbt_catalog, analyze_dbt_artifacts, and analyze_dbt_manifest_with_schemas adapt dbt artifacts, including canonical key and column constraints, into the same core analysis path.
 //! - parse_odcs_yaml and parse_odcs_documents adapt ODCS v3.2 YAML contracts into canonical schema and constraint evidence.
 //! - canonical constraint types expose primary, unique, foreign-key, not-null, and accepted-values metadata with provenance.
 //! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
@@ -51,7 +51,8 @@ pub use constraints::{
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{
-    analyze_dbt_artifacts, analyze_dbt_manifest, parse_dbt_catalog, parse_dbt_manifest,
+    analyze_dbt_artifacts, analyze_dbt_manifest, analyze_dbt_manifest_with_schemas,
+    parse_dbt_catalog, parse_dbt_manifest,
     DbtArtifactsError, DbtCatalog, DbtCatalogError, DbtManifest, DbtManifestError,
     SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
