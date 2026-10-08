@@ -49,7 +49,7 @@ use crate::protocol::{
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
     RowConditions, ScalarSubqueryExpression, SetMode, SetOperand, SetOperation, SetOperator,
-    SetQuantifier, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
+    SetQuantifier, SetBranch, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
     UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
     WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
     WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
@@ -543,7 +543,11 @@ fn analyze_query(
         Some(metadata),
     );
 
-    let set_operation = analyze_set_operation(query.body.as_ref());
+    let set_operation = analyze_set_operation(query.body.as_ref()).map(|operation| {
+        let mut branches = Vec::new();
+        collect_set_branch_evidence(query.body.as_ref(), query, "body", metadata, &mut branches);
+        operation.with_branches(branches)
+    });
     let aggregation = analyze_query_aggregation(query, &mut diagnostics);
     let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics, Some(metadata));
 
@@ -2143,6 +2147,63 @@ fn diagnose_group_by_modifiers(
             DiagnosticArea::Other,
             &format!("GROUP BY modifier {modifier} is not represented safely"),
         ));
+    }
+}
+
+// Evaluate each leaf in its own query scope. In particular, do not collapse WHERE a > 10
+// on one side of UNION ALL with WHERE a < 0 on the other side.
+fn collect_set_branch_evidence(
+    expression: &SetExpr,
+    context: &SqlQuery,
+    identity: &str,
+    metadata: &AnalysisMetadata<'_>,
+    branches: &mut Vec<SetBranch>,
+) {
+    match expression {
+        SetExpr::SetOperation { left, right, .. } => {
+            collect_set_branch_evidence(
+                left,
+                context,
+                &format!("{identity}:left"),
+                metadata,
+                branches,
+            );
+            collect_set_branch_evidence(
+                right,
+                context,
+                &format!("{identity}:right"),
+                metadata,
+                branches,
+            );
+        }
+        SetExpr::Query(query) => {
+            // A parenthesized query's own LIMIT/FETCH and CTE declarations belong to
+            // this operand and must not be discarded with the outer set query's clauses.
+            collect_set_branch_evidence(
+                query.body.as_ref(),
+                query,
+                &format!("{identity}:query"),
+                metadata,
+                branches,
+            );
+        }
+        SetExpr::Select(_) => {
+            let mut branch_query = context.clone();
+            branch_query.body = Box::new(expression.clone());
+            // Set-level shaping is not a filter on an individual branch. Nested
+            // query-level shaping remains residual at the enclosing set scope.
+            branch_query.limit_clause = None;
+            branch_query.fetch = None;
+            let analyzed = analyze_query(&branch_query, None, metadata);
+            branches.push(SetBranch::new(identity.to_string(), &analyzed));
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => {
+            // These operands still have a set-operation residual on the outer query.
+        }
     }
 }
 
