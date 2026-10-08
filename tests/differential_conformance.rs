@@ -1662,6 +1662,55 @@ fn timestamp_offset_exactness_and_canonical_bounds_match_duckdb() {
 }
 
 #[test]
+fn timezone_aware_literal_aliases_match_duckdb_and_canonical_bounds() {
+    let connection = Connection::open_in_memory().unwrap();
+    connection
+        .execute_batch(
+            "SET TimeZone='UTC';
+             CREATE TABLE typed_rows (row_id BIGINT, value TIMESTAMP WITH TIME ZONE);
+             INSERT INTO typed_rows VALUES
+                 (1, '2023-12-31 23:59:59+00:00'),
+                 (2, '2024-01-01 00:00:00+00:00'),
+                 (3, '2024-01-02 00:00:00+00:00');",
+        )
+        .unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let expected = BTreeSet::from([2, 3]);
+
+    for spelling in ["TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP"] {
+        let mut supported = 0;
+        for offset in ["Z", "+00", "+0000", "+00:00"] {
+            let sql = format!(
+                "SELECT row_id FROM typed_rows WHERE value >= {spelling} '2024-01-01 00:00:00{offset}'"
+            );
+            if sqlparser::parser::Parser::parse_sql(dialect.as_ref(), &sql).is_err()
+                || connection.prepare(&sql).is_err()
+            {
+                continue;
+            }
+            supported += 1;
+            let semantics = typed_conformance(&sql, "TIMESTAMP WITH TIME ZONE");
+            assert_eq!(
+                semantics.condition_exactness().status(),
+                ConditionExactnessStatus::Exact,
+                "{sql}: expected exact, got {:?}",
+                semantics.condition_exactness().residual_conditions()
+            );
+            let ValueDomain::Ranges(ranges) = semantics.column_domains()[0].domain() else {
+                panic!("expected canonical range: {sql}");
+            };
+            let LiteralValue::Text(bound) = ranges.ranges()[0].lower().unwrap().value().value()
+            else {
+                panic!("expected canonical timestamp bound: {sql}");
+            };
+            assert_eq!(bound, "2024-01-01 00:00:00+00:00", "{sql}");
+            assert_eq!(row_ids(&connection, &sql), expected, "{sql}");
+        }
+        assert!(supported > 0, "DuckDB did not accept {spelling}");
+    }
+}
+
+#[test]
 fn declared_comparison_settings_are_consistent_with_duckdb_row_membership() {
     use sql_semantic_protocol::{ComparisonAssumption as A, ValueDomain as D};
     // Each declaration is a fact about the fixture's warehouse and dataset, not a dialect default.

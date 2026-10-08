@@ -1,3 +1,5 @@
+mod common;
+
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, ComposedSemantics, ConfiguredSqlInput, LiteralType,
     RelationCatalog, RelationSchema, ResolvedComposedSemantics, SchemaColumn, SqlInput,
@@ -331,6 +333,107 @@ fn timestamp_offset_normalization_is_independent_of_parser_dialect() {
             "2024-01-01 00:00:00+00:00",
             "{dialect_name}"
         );
+    }
+}
+
+fn analyze_zoned_timestamp_for_dialect(
+    sql: &str,
+    dialect_name: &str,
+) -> Option<ResolvedComposedSemantics> {
+    use sql_semantic_protocol::{DataType, TimestampZone};
+
+    let dialect = sql_semantic_protocol::dialect_from_name(dialect_name).unwrap();
+    if sqlparser::parser::Parser::parse_sql(dialect.as_ref(), sql).is_err() {
+        return None;
+    }
+    let schema = RelationSchema::new(
+        "t",
+        vec![
+            SchemaColumn::new("ts", DataType::Timestamp { precision: None })
+                .unwrap()
+                .with_timestamp_zone(TimestampZone::WithTimeZone)
+                .unwrap(),
+        ],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let input = SqlInput::inline(sql);
+    let configured = [ConfiguredSqlInput::new(
+        "timestamp-spelling",
+        &input,
+        dialect_name,
+        dialect.as_ref(),
+    )];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    match bundle.layers()[0].composed_semantics() {
+        ComposedSemantics::Resolved(semantics) => Some(semantics.clone()),
+        other => panic!("unresolved {sql} ({dialect_name}): {other:?}"),
+    }
+}
+
+#[test]
+fn equivalent_timestamp_literal_spellings_normalize_across_parsing_dialects() {
+    use sql_semantic_protocol::ConditionExactnessStatus;
+
+    for spelling in ["TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP"] {
+        let mut parsed = 0;
+        for (offset, canonical_offset) in [
+            ("Z", "+00:00"),
+            ("+00", "+00:00"),
+            ("+0000", "+00:00"),
+            ("+00:00", "+00:00"),
+            ("+02", "+02:00"),
+            ("+0230", "+02:30"),
+            ("+02:30", "+02:30"),
+        ] {
+            let sql =
+                format!("SELECT ts FROM t WHERE ts >= {spelling} '2024-01-01 12:34:56{offset}'");
+            for dialect_name in common::DIALECTS {
+                let Some(semantics) = analyze_zoned_timestamp_for_dialect(&sql, dialect_name)
+                else {
+                    continue;
+                };
+                parsed += 1;
+                assert_eq!(
+                    semantics.condition_exactness().status(),
+                    ConditionExactnessStatus::Exact,
+                    "{dialect_name}: {sql}"
+                );
+                assert_eq!(
+                    timestamp_lower_bound(&semantics),
+                    format!("2024-01-01 12:34:56{canonical_offset}"),
+                    "{dialect_name}: {sql}"
+                );
+            }
+        }
+        assert!(parsed > 0, "no dialect accepted {spelling}");
+    }
+}
+
+#[test]
+fn offset_free_timestamp_spelling_remains_session_dependent() {
+    use sql_semantic_protocol::ConditionExactnessStatus;
+
+    for spelling in ["TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP"] {
+        let sql = format!("SELECT ts FROM t WHERE ts >= {spelling} '2024-01-01 12:34:56'");
+        let mut parsed = 0;
+        for dialect_name in common::DIALECTS {
+            let Some(semantics) = analyze_zoned_timestamp_for_dialect(&sql, dialect_name) else {
+                continue;
+            };
+            parsed += 1;
+            assert_eq!(
+                semantics.condition_exactness().status(),
+                ConditionExactnessStatus::Conditional,
+                "{dialect_name}: {sql}"
+            );
+            assert_eq!(
+                timestamp_lower_bound(&semantics),
+                "2024-01-01 12:34:56",
+                "{dialect_name}: {sql}"
+            );
+        }
+        assert!(parsed > 0, "no dialect accepted {spelling}");
     }
 }
 

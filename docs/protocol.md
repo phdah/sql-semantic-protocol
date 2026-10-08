@@ -108,6 +108,16 @@ Unqualified timestamp types remain conditional. Contradictory timezone-free sche
 and an offset-bearing literal produce Unknown with a `literal_type_mismatch` residual,
 never an invented domain; declaring `session_time_zone` cannot override that conflict.
 
+SQL typed literals recognized by sqlparser include `TIMESTAMP '...'`,
+`TIMESTAMP WITH TIME ZONE '...'`, and the `TIMESTAMPTZ '...'` alias.
+Other dialect-specific timestamp aliases are treated equivalently when sqlparser
+recognizes them. The spelling alone does not grant exactness: an explicit UTC offset
+and timezone-aware *column* schema evidence are required for unconditional exactness.
+With no literal offset, a timezone-aware column requires `session_time_zone`
+regardless of the typed literal spelling. Accepted offset spellings are `Z`/`z`,
+`+HH`/`-HH`, `+HHMM`/`-HHMM`, and `+HH:MM`/`-HH:MM`; these all
+normalize to signed `HH:MM` form.
+
 Timestamp bounds use a single parser-independent textual value contract:
 `YYYY-MM-DD HH:MM:SS[.fraction][offset]`. A literal `T` separator is normalized
 to a space; seconds are required; trailing fractional zeros are dropped, including
