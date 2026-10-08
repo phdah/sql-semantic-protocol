@@ -789,8 +789,12 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert!(contains_string(aggregated, "aggregate_function"));
     assert!(!aggregated["predicates"]["having"].is_null());
     assert_eq!(aggregated["group_witness"]["aggregate"], "sum");
-    assert_eq!(aggregated["group_witness"]["qualifying"]["status"], "residual");
-    assert_eq!(aggregated["group_witness"]["rejected"]["status"], "residual");
+    assert_eq!(aggregated["group_witness"]["qualifying"]["status"], "exact");
+    assert_eq!(aggregated["group_witness"]["rejected"]["status"], "exact");
+    assert_eq!(
+        layer_for_model(&protocol, "aggregated_orders")["composed_semantics"]["group_witnesses"][0]["boundary_kind"],
+        "intermediate"
+    );
     assert_lower_bounded_number_range(
         &output_column(layer_for_model(&protocol, "aggregated_orders"), "total_amount")["domain"],
         "20",
