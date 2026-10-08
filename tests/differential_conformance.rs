@@ -1481,8 +1481,14 @@ fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
         "CTE revenue chain must preserve source filter domains"
     );
     assert_eq!(
-        query_optional_i64(&connection, &format!("SELECT revenue FROM ({inlined}) q ORDER BY order_id")),
-        query_optional_i64(&connection, &format!("SELECT revenue FROM ({with_ctes}) q ORDER BY order_id")),
+        query_optional_i64(
+            &connection,
+            &format!("SELECT revenue FROM ({inlined}) q ORDER BY order_id")
+        ),
+        query_optional_i64(
+            &connection,
+            &format!("SELECT revenue FROM ({with_ctes}) q ORDER BY order_id")
+        ),
         "CTE revenue chain must compute the same aggregates as DuckDB"
     );
 }
