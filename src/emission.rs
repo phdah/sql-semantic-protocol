@@ -373,7 +373,7 @@ fn composed_semantics_to_value(semantics: &ComposedSemantics) -> Value {
 }
 
 fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -> Value {
-    json!({
+    let mut value = json!({
         "status": "resolved",
         "dependencies": semantics.dependencies(),
         "column_domains": semantics
@@ -387,10 +387,6 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .map(composed_join_equality_to_value)
             .collect::<Vec<_>>(),
         "condition_exactness": condition_exactness_to_value(semantics.condition_exactness()),
-        "set_operations": semantics.set_operations().iter().map(|item| json!({
-            "origin_layer_id": item.origin_layer_id(),
-            "operation": set_operation_to_value(item.operation()),
-        })).collect::<Vec<_>>(),
         "output": output_to_value(semantics.output()),
         "diagnostics": semantics
             .diagnostics()
