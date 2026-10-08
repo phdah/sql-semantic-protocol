@@ -546,7 +546,14 @@ fn analyze_query(
 
     let set_operation = analyze_set_operation(query.body.as_ref()).map(|operation| {
         let mut branches = Vec::new();
-        collect_set_branch_evidence(query.body.as_ref(), query, "body", metadata, true, &mut branches);
+        collect_set_branch_evidence(
+            query.body.as_ref(),
+            query,
+            "body",
+            metadata,
+            true,
+            &mut branches,
+        );
         operation
             .with_branches(branches)
             .with_set_level_safety(query.limit_clause.is_none() && query.fetch.is_none())
