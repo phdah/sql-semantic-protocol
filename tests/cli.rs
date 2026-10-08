@@ -1,5 +1,32 @@
 mod common;
 
+#[test]
+fn help_flags_emit_readable_plain_text_when_redirected() {
+    for flag in ["--help", "-h"] {
+        let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
+            .arg(flag)
+            .env("TERM", "xterm-256color")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .expect("help should run");
+
+        assert!(output.status.success(), "{flag} should exit successfully");
+        assert!(output.stderr.is_empty(), "{flag} should not write stderr");
+        let stdout = String::from_utf8(output.stdout).expect("help should be UTF-8");
+        assert!(!stdout.contains("\x1b["), "{flag} should not color piped output");
+        assert!(stdout.contains("USAGE\n"));
+        assert!(stdout.contains("INPUT SOURCES\n"));
+        assert!(stdout.contains("ANALYSIS OPTIONS\n"));
+        assert!(stdout.contains("OUTPUT OPTIONS\n"));
+        assert!(stdout.contains("EXAMPLES\n"));
+        assert!(stdout.contains("--dbt-manifest"));
+        assert!(stdout.contains("--assume"));
+        assert!(stdout.contains("--format"));
+        assert!(stdout.lines().all(|line| line.len() <= 80));
+    }
+}
+
 use common::DIALECTS;
 use std::fs;
 use std::io::Write;
