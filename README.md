@@ -102,6 +102,26 @@ sqlparser while keeping consumers independent from sqlparser AST types.
 
 ### ODCS v3.2 metadata
 
+The ODCS YAML adapter is enabled by the default Cargo feature `odcs`.
+It is the only part of the library that needs the optional `saphyr` dependency.
+Consumers that do not read ODCS contracts can exclude the adapter and its YAML
+dependencies:
+
+```toml
+sql-semantic-protocol = { version = "1", default-features = false }
+```
+
+To enable ODCS explicitly when default features are disabled:
+
+```toml
+sql-semantic-protocol = { version = "1", default-features = false, features = ["odcs"] }
+```
+
+The ODCS public API (`parse_odcs_yaml`, `parse_odcs_documents`, and
+`OdcsDocument` and related types) is only available when `odcs` is enabled.
+All other analysis, dbt, and protocol APIs work without it.
+
+
 Open Data Contract Standard v3.2 YAML can enrich the same canonical schema and constraint model
 used by SQL and dbt. Use `parse_odcs_yaml` for one self-contained contract or
 `parse_odcs_documents` with explicitly named `OdcsDocument` values when relationships cross

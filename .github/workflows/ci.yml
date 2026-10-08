@@ -57,3 +57,45 @@ jobs:
 
       - name: Run dbt Core end-to-end test
         run: make dbt-e2e
+
+  no-default-features:
+    name: Rust (no default features) / ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - lint
+          - test
+          - doc
+          - dependencies
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
+
+      - name: Check without default features
+        if: matrix.check == 'lint'
+        run: cargo clippy --all-targets --no-default-features -- -D warnings
+
+      - name: Test without default features
+        if: matrix.check == 'test'
+        run: cargo test --no-default-features
+
+      - name: Document without default features
+        if: matrix.check == 'doc'
+        run: cargo doc --no-deps --no-default-features
+
+      - name: Assert saphyr is absent from normal dependencies
+        if: matrix.check == 'dependencies'
+        run: |
+          cargo tree --no-default-features --edges normal > /tmp/dependencies.txt
+          if grep -qE 'saphyr v' /tmp/dependencies.txt; then
+            echo 'saphyr must not be included without the odcs feature'
+            exit 1
+          fi
