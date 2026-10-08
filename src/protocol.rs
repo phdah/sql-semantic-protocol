@@ -962,7 +962,7 @@ impl SetOperation {
                 if *count == 0 {
                     continue;
                 }
-                domain = crate::domain::intersect_domains(
+                domain = crate::domain::intersect_set_operation_domains(
                     &domain,
                     branch.output().columns()[index].domain(),
                 );
