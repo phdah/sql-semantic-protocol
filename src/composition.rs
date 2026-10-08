@@ -8,9 +8,8 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::bundle::{
     AnalysisGraph, AnalyzedInput, ComposedJoinColumn, ComposedJoinEquality, ComposedSemantics,
-    ComposedSetOperation,
-    CompositionDiagnostic, CompositionFailureReason, GraphEdge, RelationResolution,
-    TransformationLayer,
+    ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason, GraphEdge,
+    RelationResolution, TransformationLayer,
 };
 use crate::domain::{intersect_case_domain_values, intersect_domains};
 use crate::protocol::{
