@@ -484,7 +484,15 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
                 .expect("manifest sources should be an object")
                 .iter()
                 .find(|(_, source)| source["source_name"] == "raw" && source["name"] == name)
-                .map(|(id, source)| (id.clone(), source["relation_name"].as_str().expect("physical source identity").to_string()))
+                .map(|(id, source)| {
+                    (
+                        id.clone(),
+                        source["relation_name"]
+                            .as_str()
+                            .expect("physical source identity")
+                            .to_string(),
+                    )
+                })
                 .unwrap_or_else(|| panic!("missing dbt Core source {name}"))
         })
         .collect::<Vec<_>>();
@@ -510,10 +518,10 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
         .find(|(_, node)| {
             node["resource_type"] == "test"
                 && node["test_metadata"]["name"] == "relationships"
-                && node["depends_on"]["nodes"]
-                    .as_array()
-                    .is_some_and(|deps| deps.contains(&Value::String(child_id.clone()))
-                        && deps.contains(&Value::String(parent_id.clone())))
+                && node["depends_on"]["nodes"].as_array().is_some_and(|deps| {
+                    deps.contains(&Value::String(child_id.clone()))
+                        && deps.contains(&Value::String(parent_id.clone()))
+                })
         })
         .map(|(id, _)| id.clone())
         .expect("dbt Core should compile the constraint-only relationships test");
@@ -572,7 +580,10 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
             .find(|schema| schema["relation"] == *relation)
             .expect("constraint-only source should be emitted without catalog");
         assert_eq!(source_schema["source_kind"], "dbt_manifest");
-        assert_eq!(source_schema["columns"][0]["data_type"]["kind"], "signed_integer");
+        assert_eq!(
+            source_schema["columns"][0]["data_type"]["kind"],
+            "signed_integer"
+        );
     }
 
     let source_schemas = protocol["source_schemas"]
