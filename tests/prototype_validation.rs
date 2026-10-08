@@ -144,7 +144,8 @@ fn representative_generic_query_matches_complete_protocol_document() {
                 ],
                 "condition_exactness": {
                     "status": "exact",
-                    "residual_conditions": []
+                    "residual_conditions": [],
+                    "comparison_assumptions": []
                 },
                 "output": {
                     "columns": [
@@ -261,7 +262,8 @@ fn representative_generic_query_matches_complete_protocol_document() {
                     ],
                     "condition_exactness": {
                         "status": "exact",
-                        "residual_conditions": []
+                        "residual_conditions": [],
+                        "comparison_assumptions": []
                     },
                     "output": {
                         "columns": [
