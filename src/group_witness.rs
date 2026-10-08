@@ -152,6 +152,7 @@ pub struct GroupWitness {
     boundary: Option<String>,
     group_keys: Vec<ColumnRef>,
     aggregate: Option<GroupAggregate>,
+    distinct: bool,
     argument: Option<ColumnRef>,
     predicate: Option<(ComparisonOperator, LiteralExpression)>,
     qualifying: GroupWitnessDirection,
@@ -171,6 +172,8 @@ impl GroupWitness {
     pub fn aggregate(&self) -> Option<GroupAggregate> {
         self.aggregate
     }
+    /// Whether the aggregate applies DISTINCT to its arguments.
+    pub fn distinct(&self) -> bool { self.distinct }
     /// Source column for COUNT(column), SUM, MIN, or MAX. None for COUNT(*).
     pub fn argument(&self) -> Option<&ColumnRef> {
         self.argument.as_ref()
@@ -377,6 +380,7 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
         boundary: source.clone(),
         group_keys: group_keys.clone().unwrap_or_default(),
         aggregate: None,
+        distinct: false,
         argument: None,
         predicate: None,
         qualifying: residual("unsupported_having"),
@@ -413,6 +417,7 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
         _ => return Some(result),
     };
     result.aggregate = Some(kind);
+    result.distinct = function.distinct();
     result.argument = match function.arguments() {
         [AggregateArgument::Expression(Expression::Column(column))] => source
             .as_ref()
