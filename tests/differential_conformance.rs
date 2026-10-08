@@ -4,7 +4,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_inputs, analyze_sql, dialect_from_name, CaseSourceDomains, ColumnDomain,
     ComparisonOperator, ComposedSemantics, ConditionExactnessStatus, Expression, Join,
-    ResolvedComposedSemantics, ResidualConditionReason,
+    ResolvedComposedSemantics,
     LiteralValue, Predicate, Protocol, ProtocolStatement, QueryStatement, SetMode, SqlInput,
     ValueDomain,
 };
@@ -896,12 +896,12 @@ fn resolved_query(sql: &str) -> ResolvedComposedSemantics {
     }
 }
 
-fn residual_reasons(semantics: &ResolvedComposedSemantics) -> BTreeSet<ResidualConditionReason> {
+fn residual_reasons(semantics: &ResolvedComposedSemantics) -> BTreeSet<String> {
     semantics
         .condition_exactness()
         .residual_conditions()
         .iter()
-        .map(|residual| residual.reason())
+        .map(|residual| format!("{:?}", residual.reason()))
         .collect()
 }
 
