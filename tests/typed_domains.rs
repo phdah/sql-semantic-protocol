@@ -386,9 +386,8 @@ fn equivalent_timestamp_literal_spellings_normalize_across_parsing_dialects() {
             ("+0230", "+02:30"),
             ("+02:30", "+02:30"),
         ] {
-            let sql = format!(
-                "SELECT ts FROM t WHERE ts >= {spelling} '2024-01-01 12:34:56{offset}'"
-            );
+            let sql =
+                format!("SELECT ts FROM t WHERE ts >= {spelling} '2024-01-01 12:34:56{offset}'");
             for dialect_name in common::DIALECTS {
                 let Some(semantics) = analyze_zoned_timestamp_for_dialect(&sql, dialect_name)
                 else {
@@ -416,9 +415,7 @@ fn offset_free_timestamp_spelling_remains_session_dependent() {
     use sql_semantic_protocol::ConditionExactnessStatus;
 
     for spelling in ["TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP"] {
-        let sql = format!(
-            "SELECT ts FROM t WHERE ts >= {spelling} '2024-01-01 12:34:56'"
-        );
+        let sql = format!("SELECT ts FROM t WHERE ts >= {spelling} '2024-01-01 12:34:56'");
         let mut parsed = 0;
         for dialect_name in common::DIALECTS {
             let Some(semantics) = analyze_zoned_timestamp_for_dialect(&sql, dialect_name) else {
