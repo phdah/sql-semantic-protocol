@@ -1569,29 +1569,67 @@ fn seeded_portable_typed_scalar_families_keep_exactness() {
 fn timestamp_offset_exactness_and_canonical_bounds_match_duckdb() {
     use sql_semantic_protocol::{ConditionExactnessStatus, LiteralValue};
     let cases = [
-        ("TIMESTAMP WITHOUT TIME ZONE", "", ConditionExactnessStatus::Exact, Some("2024-01-01 00:00:00")),
-        ("TIMESTAMP WITHOUT TIME ZONE", "+02", ConditionExactnessStatus::Residual, None),
-        ("TIMESTAMP WITHOUT TIME ZONE", "Z", ConditionExactnessStatus::Residual, None),
-        ("TIMESTAMP WITH TIME ZONE", "+00:00", ConditionExactnessStatus::Exact, Some("2024-01-01 00:00:00+00:00")),
-        ("TIMESTAMP WITH TIME ZONE", "", ConditionExactnessStatus::Conditional, Some("2024-01-01 00:00:00")),
-        ("TIMESTAMP", "+00", ConditionExactnessStatus::Conditional, Some("2024-01-01 00:00:00+00:00")),
+        (
+            "TIMESTAMP WITHOUT TIME ZONE",
+            "",
+            ConditionExactnessStatus::Exact,
+            Some("2024-01-01 00:00:00"),
+        ),
+        (
+            "TIMESTAMP WITHOUT TIME ZONE",
+            "+02",
+            ConditionExactnessStatus::Residual,
+            None,
+        ),
+        (
+            "TIMESTAMP WITHOUT TIME ZONE",
+            "Z",
+            ConditionExactnessStatus::Residual,
+            None,
+        ),
+        (
+            "TIMESTAMP WITH TIME ZONE",
+            "+00:00",
+            ConditionExactnessStatus::Exact,
+            Some("2024-01-01 00:00:00+00:00"),
+        ),
+        (
+            "TIMESTAMP WITH TIME ZONE",
+            "",
+            ConditionExactnessStatus::Conditional,
+            Some("2024-01-01 00:00:00"),
+        ),
+        (
+            "TIMESTAMP",
+            "+00",
+            ConditionExactnessStatus::Conditional,
+            Some("2024-01-01 00:00:00+00:00"),
+        ),
     ];
     for (data_type, offset, expected, canonical) in cases {
         let predicate = format!("value >= TIMESTAMP '2024-01-01 00:00:00{offset}'");
         let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
         let semantics = typed_conformance(&sql, data_type);
-        assert_eq!(semantics.condition_exactness().status(), expected, "{sql}: {data_type}");
+        assert_eq!(
+            semantics.condition_exactness().status(),
+            expected,
+            "{sql}: {data_type}"
+        );
         let domain = semantics.column_domains()[0].domain();
         if let Some(expected_bound) = canonical {
             let ValueDomain::Ranges(ranges) = domain else {
                 panic!("expected range for {sql}, got {domain:?}");
             };
-            let LiteralValue::Text(bound) = ranges.ranges()[0].lower().unwrap().value().value() else {
+            let LiteralValue::Text(bound) = ranges.ranges()[0].lower().unwrap().value().value()
+            else {
                 panic!("expected canonical timestamp bound");
             };
             assert_eq!(bound, expected_bound, "{sql}: {data_type}");
         } else {
-            assert!(matches!(domain, ValueDomain::Unknown(_)), "{sql}: {data_type}");
+            assert!(
+                matches!(domain, ValueDomain::Unknown(_)),
+                "{sql}: {data_type}"
+            );
         }
         if expected != ConditionExactnessStatus::Exact {
             continue;
@@ -1614,7 +1652,11 @@ fn timestamp_offset_exactness_and_canonical_bounds_match_duckdb() {
             "SELECT row_id FROM typed_rows WHERE value >= {literal_type} '{expected_bound}'",
             expected_bound = canonical.unwrap(),
         );
-        assert_eq!(actual, row_ids(&connection, &reconstructed), "{sql}: {data_type}");
+        assert_eq!(
+            actual,
+            row_ids(&connection, &reconstructed),
+            "{sql}: {data_type}"
+        );
         assert_eq!(actual, BTreeSet::from([2, 3]), "{sql}: {data_type}");
     }
 }
