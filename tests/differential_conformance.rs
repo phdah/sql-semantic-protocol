@@ -1492,3 +1492,41 @@ fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
         "CTE revenue chain must compute the same aggregates as DuckDB"
     );
 }
+
+
+#[test]
+fn seeded_portable_typed_scalar_families_keep_exactness() {
+    const CASES: u64 = 120;
+    for seed in 1..=CASES {
+        let mut rng = DeterministicRng::new(seed);
+        let literal = rng.index(4);
+        let (data_type, predicate) = match rng.index(6) {
+            0 => ("BOOLEAN", format!("value = {}", if rng.bool() { "TRUE" } else { "FALSE" })),
+            1 => ("INTEGER", format!("value >= {literal}")),
+            2 => ("BIGINT", format!("value < {literal}")),
+            3 => ("DECIMAL(10,2)", format!("value <= {literal}.5")),
+            4 => ("DATE", format!("value >= DATE '2024-01-0{}'", literal + 1)),
+            _ => ("TIME", format!("value <= TIME '12:0{literal}:00'")),
+        };
+        let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
+        let typed = typed_conformance(&sql, data_type);
+        let untyped = resolved_query(&sql);
+        assert!(
+            typed.condition_exactness().is_exact(),
+            "seed={seed}; type={data_type}; query={sql}; expected exact; actual residuals={:?}",
+            typed.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            typed.condition_exactness().status(),
+            untyped.condition_exactness().status(),
+            "seed={seed}; type={data_type}; query={sql}; typed/untyped exactness mismatch"
+        );
+        assert!(
+            typed
+                .column_domains()
+                .iter()
+                .all(|domain| !matches!(domain.domain(), ValueDomain::Unknown(_))),
+            "seed={seed}; type={data_type}; query={sql}; domain became unknown"
+        );
+    }
+}
