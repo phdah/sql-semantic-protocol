@@ -4182,6 +4182,23 @@ fn analyze_predicate_with_windows(
             analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             true,
         )),
+        Expr::IsTrue(inner) | Expr::IsFalse(inner)
+        | Expr::IsNotTrue(inner) | Expr::IsNotFalse(inner) => {
+            let (value, include_null) = match expression {
+                Expr::IsTrue(_) => (true, false),
+                Expr::IsFalse(_) => (false, false),
+                Expr::IsNotTrue(_) => (true, true),
+                Expr::IsNotFalse(_) => (false, true),
+                _ => unreachable!("matched boolean truth-test variants"),
+            };
+            normalize_boolean_test(
+                analyze_predicate_expression(
+                    inner, named_windows, output_aliases, scope, diagnostics,
+                ),
+                value,
+                include_null,
+            )
+        }
         Expr::InList {
             expr,
             list,
@@ -4228,6 +4245,16 @@ fn analyze_predicate_with_windows(
         Expr::UnaryOp {
             op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
             expr,
+        } if is_plain_boolean_column(expr) => normalize_boolean_test(
+            analyze_predicate_expression(
+                expr, named_windows, output_aliases, scope, diagnostics,
+            ),
+            false,
+            false,
+        ),
+        Expr::UnaryOp {
+            op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
+            expr,
         } => Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
             expr,
             named_windows,
@@ -4235,6 +4262,13 @@ fn analyze_predicate_with_windows(
             scope,
             diagnostics,
         ))),
+        Expr::Identifier(_) | Expr::CompoundIdentifier(_) => normalize_boolean_test(
+            analyze_predicate_expression(
+                expression, named_windows, output_aliases, scope, diagnostics,
+            ),
+            true,
+            false,
+        ),
         _ => Predicate::BooleanExpression(analyze_predicate_expression(
             expression,
             named_windows,
@@ -4243,6 +4277,29 @@ fn analyze_predicate_with_windows(
             diagnostics,
         )),
     }
+}
+
+fn is_plain_boolean_column(expression: &Expr) -> bool {
+    match expression {
+        Expr::Identifier(_) | Expr::CompoundIdentifier(_) => true,
+        Expr::Nested(inner) => is_plain_boolean_column(inner),
+        _ => false,
+    }
+}
+
+fn normalize_boolean_test(expression: Expression, value: bool, include_null: bool) -> Predicate {
+    normalize_comparison(
+        expression,
+        if include_null {
+            ComparisonOperator::IsDistinctFrom
+        } else {
+            ComparisonOperator::Eq
+        },
+        Expression::Literal(LiteralExpression::new(
+            LiteralType::Boolean,
+            LiteralValue::Boolean(value),
+        )),
+    )
 }
 
 fn analyze_predicate_expression(
@@ -4336,6 +4393,10 @@ fn is_boolean_value_expression(expression: &Expr) -> bool {
         | Expr::IsNotDistinctFrom(_, _)
         | Expr::IsNull(_)
         | Expr::IsNotNull(_)
+        | Expr::IsTrue(_)
+        | Expr::IsFalse(_)
+        | Expr::IsNotTrue(_)
+        | Expr::IsNotFalse(_)
         | Expr::InList { .. }
         | Expr::Exists { .. }
         | Expr::InSubquery { .. }
