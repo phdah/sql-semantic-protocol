@@ -240,35 +240,164 @@ fn dbt_source_relationships_without_attached_node_resolve_child_from_target() {
         .any(|evidence| evidence.provenance().source_kind() == ConstraintSourceKind::DbtTest));
 }
 
-#[test]
-fn dbt_source_relationships_without_attached_node_reject_ambiguous_children() {
-    let mut manifest = manifest_with_unattached_source_relationships();
-    manifest["nodes"]["test.demo.source_relationships_order_items"]["depends_on"]["nodes"] =
-        json!([
-            "source.demo.target.orders",
-            "source.demo.target.order_items",
-            "source.demo.orders"
-        ]);
+fn unattached_source_relationships_test(manifest: &mut Value) -> &mut Value {
+    &mut manifest["nodes"]["test.demo.source_relationships_order_items"]
+}
 
-    let json = serde_json::to_string(&manifest).expect("manifest should serialize");
-    let error =
-        parse_dbt_manifest(&json).expect_err("multiple candidate children must not be guessed");
-    assert!(error.to_string().contains("attached_node"));
-    assert!(error
-        .to_string()
-        .contains("must identify its attached resource"));
+fn source_foreign_keys(manifest: &Value, relation: &str) -> Vec<(Vec<String>, String)> {
+    let json = serde_json::to_string(manifest).expect("manifest should serialize");
+    let manifest = parse_dbt_manifest(&json).expect("source tests should parse");
+    manifest
+        .relation_constraints()
+        .iter()
+        .filter(|metadata| metadata.relation() == relation)
+        .flat_map(|metadata| metadata.constraints())
+        .filter_map(|constraint| match constraint {
+            RelationConstraint::ForeignKey(key) => Some((
+                key.columns().to_vec(),
+                key.referenced_relation().to_string(),
+            )),
+            _ => None,
+        })
+        .collect()
+}
+
+fn unscoped_constraint_diagnostic_codes(manifest: &Value) -> Vec<String> {
+    let json = serde_json::to_string(manifest).expect("manifest should serialize");
+    parse_dbt_manifest(&json)
+        .expect("unattributed tests must not abort manifest parsing")
+        .constraint_diagnostics()
+        .iter()
+        .map(|diagnostic| diagnostic.code().to_string())
+        .collect()
 }
 
 #[test]
-fn dbt_source_relationships_without_attached_node_reject_unknown_target() {
+fn dbt_source_relationships_with_extra_dependencies_reject_multiple_referenced_candidates() {
     let mut manifest = manifest_with_unattached_source_relationships();
-    manifest["nodes"]["test.demo.source_relationships_order_items"]["test_metadata"]["kwargs"]
-        ["arguments"]["to"] = json!("source('target', 'missing')");
+    unattached_source_relationships_test(&mut manifest)["depends_on"]["nodes"] = json!([
+        "source.demo.target.orders",
+        "source.demo.target.order_items",
+        "source.demo.orders"
+    ]);
 
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
     let error = parse_dbt_manifest(&json)
-        .expect_err("unknown target must not infer the child from dependency order");
-    assert!(error.to_string().contains("attached_node"));
+        .expect_err("a third dependency leaves more than one referenced candidate");
+    assert!(error
+        .to_string()
+        .contains("multiple candidate referenced relations"));
+}
+
+#[test]
+fn dbt_source_relationships_resolve_self_reference_from_model_argument() {
+    let mut manifest = manifest_with_unattached_source_relationships();
+    let test = unattached_source_relationships_test(&mut manifest);
+    test["depends_on"]["nodes"] = json!(["source.demo.target.order_items"]);
+    test["test_metadata"]["kwargs"]["arguments"]["to"] = json!("source('target', 'order_items')");
+
+    assert_eq!(
+        source_foreign_keys(&manifest, "warehouse.target.order_items"),
+        [(
+            vec!["order_id".to_string()],
+            "warehouse.target.order_items".to_string()
+        )]
+    );
+}
+
+#[test]
+fn dbt_source_relationships_without_model_argument_fall_back_to_declared_target() {
+    let mut manifest = manifest_with_unattached_source_relationships();
+    unattached_source_relationships_test(&mut manifest)["test_metadata"]["kwargs"]
+        .as_object_mut()
+        .expect("kwargs should be an object")
+        .remove("model");
+
+    assert_eq!(
+        source_foreign_keys(&manifest, "warehouse.target.order_items"),
+        [(
+            vec!["order_id".to_string()],
+            "warehouse.target.orders".to_string()
+        )]
+    );
+}
+
+#[test]
+fn dbt_source_relationships_with_ambiguous_children_are_reported_not_guessed() {
+    let mut manifest = manifest_with_unattached_source_relationships();
+    let test = unattached_source_relationships_test(&mut manifest);
+    test["test_metadata"]["kwargs"]
+        .as_object_mut()
+        .expect("kwargs should be an object")
+        .remove("model");
+    test["depends_on"]["nodes"] = json!([
+        "source.demo.target.orders",
+        "source.demo.target.order_items",
+        "source.demo.orders"
+    ]);
+
+    assert_eq!(
+        unscoped_constraint_diagnostic_codes(&manifest),
+        ["unattributed_dbt_test"]
+    );
+    assert!(source_foreign_keys(&manifest, "warehouse.target.order_items").is_empty());
+    assert!(source_foreign_keys(&manifest, "warehouse.raw.orders").is_empty());
+}
+
+#[test]
+fn dbt_source_relationships_with_unknown_target_are_reported_not_guessed() {
+    let mut manifest = manifest_with_unattached_source_relationships();
+    let test = unattached_source_relationships_test(&mut manifest);
+    test["test_metadata"]["kwargs"]
+        .as_object_mut()
+        .expect("kwargs should be an object")
+        .remove("model");
+    test["test_metadata"]["kwargs"]["arguments"]["to"] = json!("source('target', 'missing')");
+
+    assert_eq!(
+        unscoped_constraint_diagnostic_codes(&manifest),
+        ["unattributed_dbt_test"]
+    );
+    assert!(source_foreign_keys(&manifest, "warehouse.target.order_items").is_empty());
+}
+
+#[test]
+fn dbt_source_tests_without_attached_node_resolve_from_model_argument() {
+    let mut manifest = manifest_with_unattached_source_relationships();
+    manifest["nodes"]
+        .as_object_mut()
+        .expect("manifest nodes should be an object")
+        .insert(
+            "test.demo.source_not_null_order_items_order_id".to_string(),
+            json!({
+                "unique_id": "test.demo.source_not_null_order_items_order_id",
+                "resource_type": "test",
+                "relation_name": null,
+                "attached_node": null,
+                "column_name": "order_id",
+                "test_metadata": {
+                    "name": "not_null",
+                    "namespace": null,
+                    "kwargs": {
+                        "model": "{{ get_where_subquery(source('target', 'order_items')) }}",
+                        "column_name": "order_id"
+                    }
+                },
+                "depends_on": {"nodes": ["source.demo.target.order_items"]}
+            }),
+        );
+
+    let json = serde_json::to_string(&manifest).expect("manifest should serialize");
+    let manifest = parse_dbt_manifest(&json).expect("source tests should parse");
+    assert!(manifest
+        .relation_constraints()
+        .iter()
+        .filter(|metadata| metadata.relation() == "warehouse.target.order_items")
+        .flat_map(|metadata| metadata.constraints())
+        .any(|constraint| matches!(
+            constraint,
+            RelationConstraint::NotNull(not_null) if not_null.column() == "order_id"
+        )));
 }
 
 #[test]

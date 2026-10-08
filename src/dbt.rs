@@ -1471,6 +1471,53 @@ fn dependency_ids(
     Ok(dependencies)
 }
 
+/// Identify the tested resource of a generic dbt test from its `model` argument.
+///
+/// dbt renders the tested relation into `test_metadata.kwargs.model`, for example
+/// `{{ get_where_subquery(source('raw', 'orders')) }}`, including for source tests where
+/// dbt leaves `attached_node` empty. The rendered reference must resolve to exactly one
+/// declared dependency, so a self-referencing relationships test resolves as well.
+fn tested_resource_from_model_argument(
+    test_metadata: &Map<String, Value>,
+    dependencies: &[String],
+    resources: &BTreeMap<String, DbtResource>,
+) -> Option<String> {
+    let kwargs = test_metadata.get("kwargs")?.as_object()?;
+    let model = kwargs
+        .get("model")
+        .or_else(|| {
+            kwargs
+                .get("arguments")
+                .and_then(Value::as_object)
+                .and_then(|arguments| arguments.get("model"))
+        })?
+        .as_str()?
+        .trim();
+    let model = model
+        .strip_prefix("{{")
+        .and_then(|inner| inner.strip_suffix("}}"))
+        .map(str::trim)
+        .unwrap_or(model);
+    let reference = model
+        .strip_prefix("get_where_subquery(")
+        .and_then(|inner| inner.strip_suffix(')'))
+        .map(str::trim)
+        .unwrap_or(model);
+    let tested_relation = dbt_constraint_reference(reference, resources)?;
+
+    let mut tested = dependencies.iter().filter(|dependency| {
+        resources
+            .get(*dependency)
+            .and_then(|resource| resource.relation_name.as_deref())
+            == Some(tested_relation.as_str())
+    });
+    let resource = tested.next()?;
+    if tested.next().is_some() {
+        return None;
+    }
+    Some(resource.clone())
+}
+
 /// Derive the child resource of a dbt relationships test when dbt omits attached_node.
 ///
 /// depends_on includes both the tested and referenced resources. Only infer the
@@ -1635,13 +1682,18 @@ fn parse_manifest_relation_constraints(
             "unique" | "relationships" | "not_null" | "accepted_values"
         );
 
-        let attached_node = explicit_attached_node.clone().or_else(|| {
-            if test_name == "relationships" {
-                infer_relationship_test_attached_node(test_metadata, &dependencies, resources)
-            } else {
-                (dependencies.len() == 1).then(|| dependencies[0].clone())
-            }
-        });
+        let attached_node = explicit_attached_node
+            .clone()
+            .or_else(|| {
+                tested_resource_from_model_argument(test_metadata, &dependencies, resources)
+            })
+            .or_else(|| {
+                if test_name == "relationships" {
+                    infer_relationship_test_attached_node(test_metadata, &dependencies, resources)
+                } else {
+                    (dependencies.len() == 1).then(|| dependencies[0].clone())
+                }
+            });
         let local_relation = attached_node.as_deref().and_then(|node| {
             resources
                 .get(node)
@@ -1671,12 +1723,23 @@ fn parse_manifest_relation_constraints(
             continue;
         }
 
-        let attached_node = attached_node.ok_or_else(|| {
-            invalid_field(
-                format!("{path}.attached_node"),
-                format!("built-in {test_name} test must identify its attached resource"),
-            )
-        })?;
+        // An unattributable test must not abort analysis of the whole project, and its
+        // constraint must not be assigned to a guessed relation; report it instead.
+        let Some(attached_node) = attached_node else {
+            record_constraint_diagnostic(
+                &mut result,
+                &mut unscoped_diagnostics,
+                None,
+                test_id,
+                ConstraintDiagnostic::new(
+                    "unattributed_dbt_test",
+                    format!(
+                        "dbt {test_name} test '{test_id}' does not identify the resource it tests; no constraint was emitted"
+                    ),
+                ),
+            )?;
+            continue;
+        };
         let local_relation = local_relation.ok_or_else(|| {
             invalid_field(
                 format!("{path}.attached_node"),
