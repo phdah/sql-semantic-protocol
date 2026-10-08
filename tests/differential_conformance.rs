@@ -1285,7 +1285,6 @@ fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable(
         ("DECIMAL(10,2)", "value > 1.5"),
         ("DATE", "value >= DATE '2024-01-01'"),
         ("TIME", "value < TIME '12:00:00'"),
-        ("INTERVAL", "value >= INTERVAL '1 day'"),
         ("BOOLEAN", "value = TRUE"),
     ] {
         let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
@@ -1314,11 +1313,13 @@ fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable(
 #[test]
 fn typed_comparison_exceptions_remain_explicit_until_assumptions_are_modeled() {
     // TASK-53 will replace these residual exceptions with preserved, conditional domains.
+    // INTERVAL literal expressions remain a separate parser-normalization boundary.
     // Until then, an unconditional exactness claim would be unsound.
     for (data_type, predicate) in [
         ("VARCHAR", "value = 'keep'"),
         ("DOUBLE", "value > 1.5"),
         ("TIMESTAMP", "value >= TIMESTAMP '2024-01-01 00:00:00'"),
+        ("INTERVAL", "value >= INTERVAL '1 day'"),
     ] {
         let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
         let typed = typed_conformance(&sql, data_type);
