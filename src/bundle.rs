@@ -575,36 +575,55 @@ pub(crate) struct ComposedWitnessEvidence {
     pub(crate) group_witnesses: Vec<ComposedGroupWitness>,
 }
 
+/// Relation class of an originating grouped witness boundary.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GroupBoundaryKind {
+    /// The grouped relation is an external physical input.
+    Physical,
+    /// The grouped relation is an upstream producer's output.
+    Intermediate,
+    /// A single controllable boundary could not be established.
+    Unresolved,
+}
+
+impl GroupBoundaryKind {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Physical => "physical",
+            Self::Intermediate => "intermediate",
+            Self::Unresolved => "unresolved",
+        }
+    }
+}
+
 /// A grouped HAVING witness introduced at one SQL or dbt transformation layer.
 ///
-/// This is provenance-bearing local evidence, not a proof that an arbitrary
-/// downstream transformation preserves that group membership.
+/// This is provenance-bearing local evidence, not a claim that an arbitrary
+/// downstream transformation preserves the group membership.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ComposedGroupWitness {
     origin_layer_id: String,
     witness: crate::group_witness::GroupWitness,
+    boundary_kind: GroupBoundaryKind,
 }
 
 impl ComposedGroupWitness {
     pub(crate) fn new(
         origin_layer_id: String,
         witness: crate::group_witness::GroupWitness,
+        boundary_kind: GroupBoundaryKind,
     ) -> Self {
-        Self {
-            origin_layer_id,
-            witness,
-        }
+        Self { origin_layer_id, witness, boundary_kind }
     }
 
     /// Layer introducing these HAVING obligations.
-    pub fn origin_layer_id(&self) -> &str {
-        &self.origin_layer_id
-    }
+    pub fn origin_layer_id(&self) -> &str { &self.origin_layer_id }
 
-    /// Local witness proof and its source group boundary.
-    pub fn witness(&self) -> &crate::group_witness::GroupWitness {
-        &self.witness
-    }
+    /// Local HAVING proof at its origin boundary.
+    pub fn witness(&self) -> &crate::group_witness::GroupWitness { &self.witness }
+
+    /// Whether that boundary is physical, intermediate, or unresolved.
+    pub fn boundary_kind(&self) -> GroupBoundaryKind { self.boundary_kind }
 }
 
 /// Successfully composed transitive semantics for a transformation layer.
