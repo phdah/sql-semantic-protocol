@@ -182,3 +182,23 @@ fn declared_comparison_assumptions_make_string_predicate_exact() {
         _ => panic!("unresolved query"),
     }
 }
+
+#[test]
+fn timestamp_without_zone_and_offset_free_literal_is_exact() {
+    let semantics = analyze("SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 00:00:00'", &[("ts", "TIMESTAMP WITHOUT TIME ZONE")]);
+    assert!(semantics.condition_exactness().is_exact());
+    assert!(matches!(semantics.column_domains()[0].domain(), ValueDomain::Ranges(_)));
+}
+
+#[test]
+fn timestamp_with_zone_requires_session_setting_if_literal_has_no_offset() {
+    let semantics = analyze("SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 00:00:00'", &[("ts", "TIMESTAMP WITH TIME ZONE")]);
+    assert_eq!(semantics.condition_exactness().status(), sql_semantic_protocol::ConditionExactnessStatus::Conditional);
+}
+
+#[test]
+fn varchar_set_preserves_membership_after_typing() {
+    let semantics = analyze("SELECT name FROM t WHERE name IN ('x', 'y')", &[("name", "VARCHAR")]);
+    assert!(matches!(semantics.column_domains()[0].domain(), ValueDomain::Set(_)));
+    assert_eq!(semantics.condition_exactness().status(), sql_semantic_protocol::ConditionExactnessStatus::Conditional);
+}

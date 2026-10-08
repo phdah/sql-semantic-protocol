@@ -38,10 +38,13 @@ table-valued types; geometry/geography; PostgreSQL regclass and text-search valu
 custom, any, unspecified, and trigger types. Nested fields carry their own canonical datatype.
 
 Dialect syntax is normalized at the protocol boundary. Equivalent storage aliases intentionally
-collapse to one logical type. Timestamp timezone variants normalize to `timestamp` because
-consumers can use one UTC representation; JSON, JSONB, Snowflake VARIANT/OBJECT, and Redshift
-SUPER normalize to `json`; and representation-only wrappers such as ClickHouse LowCardinality
-normalize to the underlying logical type. Semantically relevant nullability remains explicit.
+collapse to one logical type. Timestamp variants retain a common `timestamp` datatype for 1.x
+compatibility, with optional `timestamp_zone` on each schema column (`with_time_zone` or
+`without_time_zone`). When SQL metadata does not explicitly prove a timezone, the field is
+omitted. Catalog, manifest, ODCS physical-type, and caller-supplied schema evidence use this
+same representation. JSON, JSONB, Snowflake VARIANT/OBJECT, and Redshift SUPER normalize
+to `json`; representation-only wrappers such as ClickHouse LowCardinality normalize to the
+underlying logical type. Semantically relevant nullability remains explicit.
 Unrecognized vendor or user-defined types are preserved as `custom` with their name and
 modifiers.
 
@@ -85,12 +88,30 @@ boolean, integer, date, time, and interval literals retain their canonical liter
 literals used with decimal columns normalize to decimal literals. Integer bounds are range-checked
 against declared signedness and bit width. Lossy numeric coercions are never treated as exact.
 
-Comparison semantics are conservative where warehouse settings are not represented. String domains
-are residual because collation, case sensitivity, and fixed-width CHAR padding can change equality
-or ordering. Floating-point domains are residual because NaN and signed zero are not represented.
-Timestamp domains are residual because timezone variants normalize to one canonical datatype without
-enough literal timezone semantics. Binary, document, collection, geometry, search, vendor-defined,
-and otherwise opaque types remain residual until the contract defines exact scalar comparisons.
+Comparison domains remain available for typed string, floating point and timestamp predicates,
+but row-condition exactness is `conditional` while warehouse settings have not been declared.
+The `comparison_assumptions` array identifies each assumption and its dependent condition:
+`binary_collation` for case-sensitive binary string comparison, `no_char_padding` for CHAR,
+`no_nan` and `signed_zero_equivalent` for numeric comparison, and `session_time_zone`
+for timestamps whose literal needs session interpretation. A caller may attest settings using
+the library `AnalysisBundle::declare_comparison_assumptions` API, repeatable CLI
+`--assume <name>`, or `comparison_assumptions` in analysis-manifest JSON. The dbt CLI path
+accepts the same CLI option. Each requirement is retained with its condition identity and a
+`declared` boolean; declared assumptions are also listed at the root. `exact` means all
+requirements were attested, `conditional` means requirements remain open and no residuals
+exist, and `residual` means at least one predicate still cannot be represented.
+
+A timestamp without time zone compared to an offset-free typed literal is unconditional exact
+when schema evidence explicitly identifies the column as timezone-free. A timezone-aware
+timestamp comparison with an explicit literal UTC offset is also unconditional exact.
+Unqualified timestamp types remain conditional. Contradictory timezone-free schema evidence
+and an offset-bearing literal produce Unknown, never an invented domain.
+String comparisons lacking a typed schema use the same binary-collation requirement as
+typed strings, so no schema path is silently declared exact. NULL-only conditions
+do not depend on any comparison setting. NaN is excluded by the declared `no_nan`
+assumption; signed zeros compare equal under `signed_zero_equivalent`.
+Binary, document, collection, geometry, search, vendor-defined, and otherwise opaque
+types remain residual until exact scalar comparisons are specified.
 
 Lexical strings are never implicitly converted to typed DATE, TIME, TIMESTAMP, or numeric domains.
 Without schema evidence, lexical-literal domain derivation is preserved without claiming

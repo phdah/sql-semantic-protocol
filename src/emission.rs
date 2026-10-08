@@ -100,11 +100,14 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                 let mut value = json!({
                     "relation": schema.relation(),
                     "columns": schema.columns().iter().map(|column| {
-                        json!({
+                        let mut column_value = json!({
                             "name": column.name(),
-                            "data_type": data_type_to_value(column.data_type()),
-                            "timestamp_zone": column.timestamp_zone().map(|zone| zone.as_str())
-                        })
+                            "data_type": data_type_to_value(column.data_type())
+                        });
+                        if let Some(zone) = column.timestamp_zone() {
+                            column_value["timestamp_zone"] = json!(zone.as_str());
+                        }
+                        column_value
                     }).collect::<Vec<_>>()
                 });
                 if let Some(source_kind) = schema.source_kind() {
