@@ -751,10 +751,10 @@ fn type_literal(
 
 fn decimal_literal_fits(value: &str, precision: Option<u64>, scale: Option<u64>) -> bool {
     let mantissa = value
-        .split(|character| character == 'e' || character == 'E')
+        .split(['e', 'E'])
         .next()
         .unwrap_or(value)
-        .trim_start_matches(|character| character == '+' || character == '-');
+        .trim_start_matches(['+', '-']);
     let mut parts = mantissa.split('.');
     let integer = parts.next().unwrap_or_default().trim_start_matches('0');
     let fraction = parts.next().unwrap_or_default().trim_end_matches('0');
