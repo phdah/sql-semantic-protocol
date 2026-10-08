@@ -550,6 +550,11 @@ pub(crate) fn refine_output(query: &QueryStatement) -> Output {
             .collect();
         ValueDomain::ranges(ranges)
     } else {
+        // Without a numeric bound the warehouse may apply unknown coercions.
+        // Do not claim a numerical aggregate output interval for string/NULL literals.
+        if !matches!(bound.literal_type(), LiteralType::Integer | LiteralType::Decimal) {
+            return query.output().clone();
+        }
         match operator {
             ComparisonOperator::Eq => ValueDomain::set(SetMode::Include, vec![bound.clone()]),
             ComparisonOperator::Neq => ValueDomain::ranges(vec![
