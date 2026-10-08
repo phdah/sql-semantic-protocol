@@ -5771,9 +5771,13 @@ fn refine_set_operation_output_domains(output: Output, operation: &SetOperation)
         return output;
     }
     Output::new(
-        output.columns().iter().cloned().zip(domains).map(|(column, domain)| {
-            column.with_domain(domain)
-        }).collect(),
+        output
+            .columns()
+            .iter()
+            .cloned()
+            .zip(domains)
+            .map(|(column, domain)| column.with_domain(domain))
+            .collect(),
     )
 }
 
@@ -5786,7 +5790,14 @@ fn operation_output_domains(
         SetOperand::Query => {
             let branch = branches.get(*next_branch)?;
             *next_branch += 1;
-            Some(branch.output().columns().iter().map(|column| column.domain().clone()).collect::<Vec<_>>())
+            Some(
+                branch
+                    .output()
+                    .columns()
+                    .iter()
+                    .map(|column| column.domain().clone())
+                    .collect::<Vec<_>>(),
+            )
         }
         SetOperand::Operation(nested) => operation_output_domains(nested, branches, next_branch),
     };
@@ -5795,11 +5806,16 @@ fn operation_output_domains(
     if left.is_empty() || left.len() != right.len() || operation.multiplicity_rule().is_none() {
         return None;
     }
-    Some(left.iter().zip(&right).map(|(l, r)| match operation.operator() {
-        SetOperator::Union => union_domains(l, r),
-        SetOperator::Intersect => intersect_domains(l, r),
-        SetOperator::Except => l.clone(),
-    }).collect())
+    Some(
+        left.iter()
+            .zip(&right)
+            .map(|(l, r)| match operation.operator() {
+                SetOperator::Union => union_domains(l, r),
+                SetOperator::Intersect => intersect_domains(l, r),
+                SetOperator::Except => l.clone(),
+            })
+            .collect(),
+    )
 }
 
 fn merge_set_operation_output(
