@@ -6,7 +6,7 @@
 use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, ColumnRef, ComparisonOperator, Expression,
     GroupBy, GroupingExpression, LiteralExpression, LiteralType, LiteralValue, Predicate,
-    QueryStatement,
+    QueryStatement, Bound, Output, ValueDomain, ValueRange, SetMode,
 };
 
 /// Aggregate computation whose source-row contributions a consumer must construct.
@@ -165,37 +165,40 @@ fn negated(operator: ComparisonOperator) -> Option<ComparisonOperator> {
 }
 
 fn integer_intervals(operator: ComparisonOperator, bound: u64, floor: u64) -> Vec<(u64, Option<u64>)> {
-    let above = bound.checked_add(1);
-    let below = bound.checked_sub(1);
-    let candidates = match operator {
-        ComparisonOperator::Eq => vec![(bound, Some(bound))],
-        ComparisonOperator::Neq => vec![(0, below), (above.unwrap_or(u64::MAX), None)],
-        ComparisonOperator::Lt => vec![(0, below)],
-        ComparisonOperator::Lte => vec![(0, Some(bound))],
-        ComparisonOperator::Gt => above.map_or_else(Vec::new, |start| vec![(start, None)]),
-        ComparisonOperator::Gte => vec![(bound, None)],
-        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => Vec::new(),
-    };
-    candidates.into_iter().filter_map(|(min, max)| {
-        // An empty interval must not be converted into an unbounded one.
-        if matches!(operator, ComparisonOperator::Lt | ComparisonOperator::Neq) && min == 0 && bound == 0 && max.is_none() {
-            return None;
+    let mut candidates = Vec::new();
+    match operator {
+        ComparisonOperator::Eq => candidates.push((bound, Some(bound))),
+        ComparisonOperator::Neq => {
+            if let Some(below) = bound.checked_sub(1) { candidates.push((0, Some(below))); }
+            if let Some(above) = bound.checked_add(1) { candidates.push((above, None)); }
         }
+        ComparisonOperator::Lt => {
+            if let Some(below) = bound.checked_sub(1) { candidates.push((0, Some(below))); }
+        }
+        ComparisonOperator::Lte => candidates.push((0, Some(bound))),
+        ComparisonOperator::Gt => {
+            if let Some(above) = bound.checked_add(1) { candidates.push((above, None)); }
+        }
+        ComparisonOperator::Gte => candidates.push((bound, None)),
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {}
+    }
+    candidates.into_iter().filter_map(|(min, max)| {
         let min = min.max(floor);
         if max.is_some_and(|upper| upper < min) { None } else { Some((min, max)) }
     }).collect()
 }
 
-fn count_cases(aggregate: GroupAggregate, operator: ComparisonOperator, bound: &LiteralExpression) -> Option<Vec<GroupWitnessCase>> {
+fn count_cases(aggregate: GroupAggregate, operator: ComparisonOperator, bound: &LiteralExpression, grouped: bool) -> Option<Vec<GroupWitnessCase>> {
     let LiteralValue::Number(value) = bound.value() else { return None; };
     if bound.literal_type() != LiteralType::Integer { return None; }
     let threshold = value.parse::<u64>().ok()?;
+    let floor = if grouped && aggregate == GroupAggregate::CountRows { 1 } else { 0 };
     let mut cases = Vec::new();
-    for (min, max) in integer_intervals(operator, threshold, if aggregate == GroupAggregate::CountRows { 1 } else { 0 }) {
+    for (min, max) in integer_intervals(operator, threshold, floor) {
         let case = if aggregate == GroupAggregate::CountRows {
             GroupWitnessCase::new(min, max, 0, None, Vec::new())
         } else {
-            GroupWitnessCase::new(min.max(1), None, min, max, Vec::new())
+            GroupWitnessCase::new(if grouped { min.max(1) } else { min }, None, min, max, Vec::new())
         };
         cases.push(case);
     }
@@ -307,7 +310,8 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
         return Some(result);
     };
     if kind == GroupAggregate::CountRows || kind == GroupAggregate::CountValues {
-        match (count_cases(kind, op, &bound), count_cases(kind, reversed, &bound)) {
+        let grouped = query.aggregation().and_then(|a| a.group_by()).is_some();
+        match (count_cases(kind, op, &bound, grouped), count_cases(kind, reversed, &bound, grouped)) {
             (Some(positive), Some(negative)) => {
                 result.qualifying = GroupWitnessDirection::Exact(positive);
                 result.rejected = GroupWitnessDirection::Exact(negative);
@@ -332,4 +336,58 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
         }
     }
     Some(result)
+}
+
+/// Refine only a projected aggregate identical to the HAVING operand.
+/// HAVING excludes SQL NULL, so a supported scalar comparison bounds its surviving result.
+pub(crate) fn refine_output(query: &QueryStatement) -> Output {
+    let Some(GroupWitness { predicate: Some((operator, bound)), aggregate: Some(kind), .. }) = query.group_witness() else {
+        return query.output().clone();
+    };
+    let Some(Predicate::Comparison(compare)) = query.predicates().having_predicate() else {
+        return query.output().clone();
+    };
+    let function = match (compare.left(), compare.right()) {
+        (Expression::AggregateFunction(function), Expression::Literal(_))
+        | (Expression::Literal(_), Expression::AggregateFunction(function)) => function,
+        _ => return query.output().clone(),
+    };
+    let domain = if matches!(kind, GroupAggregate::CountRows | GroupAggregate::CountValues) {
+        let LiteralValue::Number(number) = bound.value() else { return query.output().clone(); };
+        let Ok(threshold) = number.parse::<u64>() else { return query.output().clone(); };
+        let grouped = query.aggregation().and_then(|a| a.group_by()).is_some();
+        let floor = if *kind == GroupAggregate::CountRows && grouped { 1 } else { 0 };
+        let ranges = integer_intervals(*operator, threshold, floor).into_iter().map(|(min, max)| {
+            let min = LiteralExpression::new(LiteralType::Integer, LiteralValue::Number(min.to_string()));
+            let max = max.map(|max| Bound::new(LiteralExpression::new(LiteralType::Integer, LiteralValue::Number(max.to_string())), true));
+            ValueRange::new(Some(Bound::new(min, true)), max)
+        }).collect();
+        ValueDomain::ranges(ranges)
+    } else {
+        match operator {
+            ComparisonOperator::Eq => ValueDomain::set(SetMode::Include, vec![bound.clone()]),
+            ComparisonOperator::Neq => ValueDomain::ranges(vec![
+                ValueRange::new(None, Some(Bound::new(bound.clone(), false))),
+                ValueRange::new(Some(Bound::new(bound.clone(), false)), None),
+            ]),
+            ComparisonOperator::Lt | ComparisonOperator::Lte => ValueDomain::ranges(vec![
+                ValueRange::new(None, Some(Bound::new(bound.clone(), *operator == ComparisonOperator::Lte)))
+            ]),
+            ComparisonOperator::Gt | ComparisonOperator::Gte => ValueDomain::ranges(vec![
+                ValueRange::new(Some(Bound::new(bound.clone(), *operator == ComparisonOperator::Gte)), None)
+            ]),
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => return query.output().clone(),
+        }
+    };
+    Output::new(query.output().columns().iter().cloned().map(|column| {
+        if matches!(column.expression(), Expression::AggregateFunction(candidate) if candidate == function) {
+            // Existing aggregate domains are Unknown for SUM/MIN/MAX; the HAVING bound is known.
+            let domain = if matches!(column.domain(), ValueDomain::Unknown(_)) {
+                domain.clone()
+            } else {
+                crate::domain::intersect_domains(column.domain(), &domain)
+            };
+            column.with_domain(domain)
+        } else { column }
+    }).collect())
 }
