@@ -18,6 +18,4 @@ cargo install sql-semantic-protocol
 
 To add the library dependency at the latest published release, run `cargo add sql-semantic-protocol`.
 
-## Upcoming 2.0.0 release
-
-The [Release Please PR #41](https://github.com/phdah/sql-semantic-protocol/pull/41) proposes version **2.0.0**, not 1.1.0: its normalized boolean predicates and residual-cause classification are a breaking protocol change. Until the release PR is merged and the release workflow publishes the crate, the latest published version remains the correct installation target. See the [changelog](../CHANGELOG.md) for the precise migration surface.
+For published versions and migration notes, see [GitHub releases](https://github.com/phdah/sql-semantic-protocol/releases) and the [changelog](../CHANGELOG.md).
