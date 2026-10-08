@@ -1,7 +1,7 @@
 ---
 id: TASK-57
 title: Emit typed schemas for constraint-only dbt source relations
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-08'
 updated_date: '2026-10-08'
@@ -42,18 +42,27 @@ If required schema evidence is absent, incomplete, contradictory, or ambiguous, 
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 A catalog-less dbt manifest with a source-to-source `relationships` test emits typed `source_schemas` for a parent relation referenced *only* by the test, with no compiled model SQL dependency on that parent.
-- [ ] #2 The same constraint-only coverage holds for declared foreign keys and for relevant physical child/source relations whose constraint evidence is otherwise disconnected from model SQL.
-- [ ] #3 With a `catalog.json`, referenced-only physical relations use warehouse-introspected column types; when absent from the catalog, complete manifest-declared source column types provide the fallback, preserving the existing authority order and provenance.
-- [ ] #4 Missing or incomplete evidence for a required physical relation names the relation and affected column(s) in a deterministic failure/diagnostic. Unresolved, ambiguous, or unattributed constraint targets remain explicit and never become guessed schema identities.
-- [ ] #5 Canonical foreign-key identities and typed referenced columns agree with emitted source schemas; produced models are not incorrectly emitted as independent physical sources. Outcomes, value domains, constraint semantics, and deterministic JSON remain intact.
-- [ ] #6 Focused library tests cover a parent referenced only by a `relationships` test, a declared foreign key, the catalog and catalog-less paths, and missing/contradictory schema evidence. Assert both canonical constraints and serialized `source_schemas`.
-- [ ] #7 A dbt Core fixture using actual compiled manifest artifacts reproduces the no-SQL-dependency relationship and validates library and CLI output, providing an upstream regression case for sql-tdg TASK-22.
-- [ ] #8 Update adapter/protocol documentation as appropriate and evaluate equivalent canonical schema-coverage semantics across the supported SQL and ODCS evidence adapters; do not introduce a dbt-only protocol representation.
+- [x] #1 A catalog-less dbt manifest with a source-to-source `relationships` test emits typed `source_schemas` for a parent relation referenced *only* by the test, with no compiled model SQL dependency on that parent.
+- [x] #2 The same constraint-only coverage holds for declared foreign keys and for relevant physical child/source relations whose constraint evidence is otherwise disconnected from model SQL.
+- [x] #3 With a `catalog.json`, referenced-only physical relations use warehouse-introspected column types; when absent from the catalog, complete manifest-declared source column types provide the fallback, preserving the existing authority order and provenance.
+- [x] #4 Missing or incomplete evidence for a required physical relation names the relation and affected column(s) in a deterministic failure/diagnostic. Unresolved, ambiguous, or unattributed constraint targets remain explicit and never become guessed schema identities.
+- [x] #5 Canonical foreign-key identities and typed referenced columns agree with emitted source schemas; produced models are not incorrectly emitted as independent physical sources. Outcomes, value domains, constraint semantics, and deterministic JSON remain intact.
+- [x] #6 Focused library tests cover a parent referenced only by a `relationships` test, a declared foreign key, the catalog and catalog-less paths, and missing/contradictory schema evidence. Assert both canonical constraints and serialized `source_schemas`.
+- [x] #7 A dbt Core fixture using actual compiled manifest artifacts reproduces the no-SQL-dependency relationship and validates library and CLI output, providing an upstream regression case for sql-tdg TASK-22.
+- [x] #8 Update adapter/protocol documentation as appropriate and evaluate equivalent canonical schema-coverage semantics across the supported SQL and ODCS evidence adapters; do not introduce a dbt-only protocol representation.
 <!-- AC:END -->
 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
 The objective is an upstream protocol fix. Do not change sql-tdg here; after this task ships in a released protocol version, sql-tdg can update its dependency and rerun TASK-22 acceptance tests, including the original paper_trail fixture.
+
+Implemented in PR #75:
+- Discover physical schema requirements from canonical relation constraints, including disconnected child and foreign-key target relations, while excluding model-produced relations.
+- Preserve catalog precedence and manifest-declared fallback provenance; reject missing referenced columns, missing datatypes, and contradictory aliases deterministically.
+- Added focused relationship, declared-foreign-key, catalog/fallback, missing-evidence, contradictory, and produced-model regression tests.
+- Extended the dbt Core fixture with two source-only seeded relations joined exclusively by a relationships test, covering generated artifacts, catalog-less library semantics, and paired library/CLI output.
+- Evaluated SQL and ODCS parity: generic SQL takes caller-supplied canonical schemas; ODCS already gathers typed schemas for all declared contract relations independently of SQL usage. No new adapter-specific protocol field is needed.
+- Verified Rust lint, test, docs, no-default-feature checks and dbt Core E2E in GitHub CI; formatted the changes.
+
 <!-- SECTION:NOTES:END -->
