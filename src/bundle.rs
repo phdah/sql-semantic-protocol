@@ -763,7 +763,11 @@ impl AnalysisBundle {
     ///
     /// Identical facts coalesce evidence. Conflicting primary keys remain explicit diagnostics.
     pub fn enrich_relation_constraints(&mut self, constraints: &[RelationConstraintSet]) {
-        merge_relation_constraint_sets(&mut self.relation_constraints, constraints);
+        let validated = constraints
+            .iter()
+            .map(|set| set.validated_against_schemas(&self.source_schemas))
+            .collect::<Vec<_>>();
+        merge_relation_constraint_sets(&mut self.relation_constraints, &validated);
     }
 
     /// Merge adapter diagnostics that cannot be scoped to one canonical relation.
@@ -777,6 +781,15 @@ impl AnalysisBundle {
     pub(crate) fn replace_source_schemas(&mut self, mut schemas: Vec<RelationSchema>) {
         schemas.sort_by(|left, right| left.relation().cmp(right.relation()));
         self.source_schemas = schemas;
+        self.validate_existing_constraints();
+    }
+
+    fn validate_existing_constraints(&mut self) {
+        self.relation_constraints = self
+            .relation_constraints
+            .iter()
+            .map(|set| set.validated_against_schemas(&self.source_schemas))
+            .collect();
     }
 
     pub(crate) fn from_protocol(protocol: &Protocol) -> Self {
@@ -1671,7 +1684,7 @@ pub fn analyze_configured_inputs_with_catalog(
                 error: failure.error,
             }
         })?;
-    bundle.source_schemas = catalog.schemas().to_vec();
+    bundle.replace_source_schemas(catalog.schemas().to_vec());
     Ok(bundle)
 }
 
