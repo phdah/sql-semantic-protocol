@@ -350,17 +350,12 @@ fn dbt_manifest_with_schemas_matches_empty_catalog() {
     };
     assert_eq!(source.relation(), "warehouse.raw.orders");
     assert_eq!(source.source_kind(), Some(SchemaSourceKind::DbtManifest));
-    assert_closed_number_range(
-        layer_for_relation(without_catalog.layers(), "warehouse.analytics.final_orders")
-            .composed_semantics()
-            .resolved()
-            .expect("resolved outcome")
-            .output()
-            .columns()[1]
-            .domain(),
-        "10",
-        "50",
-    );
+    let final_orders =
+        layer_for_relation(without_catalog.layers(), "warehouse.analytics.final_orders");
+    let ComposedSemantics::Resolved(semantics) = final_orders.composed_semantics() else {
+        panic!("final dbt model should compose");
+    };
+    assert_closed_number_range(semantics.output().columns()[1].domain(), "10", "50");
 }
 
 #[test]
