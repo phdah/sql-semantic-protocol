@@ -345,7 +345,58 @@ Table-producing factors that do not yet have a trustworthy output-schema represe
 
 ## Row-condition exactness
 
-Source-column `column_domains` are useful only when a consumer knows whether they preserve the correlations needed to decide which source-row combinations qualify. Every query scope therefore emits `condition_exactness` with `status: "exact" | "residual"` and a deterministic `residual_conditions` list. A residual identifies a stable `reason`, its clause (`where`, `on`, `having`, `qualify`, `set_operation`, or `row_set_operator`), and a deterministic identity inside the scope.
+Source-column `column_domains` are useful only when a consumer knows whether they preserve the correlations needed to decide which source-row combinations qualify. Every query scope therefore emits `condition_exactness` with `status: "exact" | "conditional" | "residual"` and a deterministic `residual_conditions` list. A residual identifies a stable `reason`, its clause (`where`, `on`, `having`, `qualify`, `set_operation`, or `row_set_operator`), and a deterministic identity inside the scope.
+
+Residual reason codes are stable consumer-facing identifiers. An individual residual is
+emitted once for each distinct predicate-tree location, so two unsupported conditions
+with the same code are not collapsed. The `identity` denotes the condition's path
+within its owning SQL clause, while `origin` identifies the local scope or layer.
+
+| Reason | Cause |
+| --- | --- |
+| `cross_column_disjunction` | OR spans multiple source columns and therefore carries correlation not representable by independent domains. |
+| `logical_not` | Logical NOT is not on the exactness allow-list. |
+| `column_comparison` | A comparison relates source columns outside an equi-join. |
+| `computed_expression` | A condition depends on a computed expression rather than a plain source column. |
+| `comparison_semantics` | Comparison semantics are not established for the source datatype. |
+| `literal_type_mismatch` | A scalar literal has an incompatible canonical type. |
+| `lossy_coercion` | Numeric coercion would lose precision. |
+| `out_of_range_literal` | A literal exceeds the source datatype's allowed range or precision. |
+| `unknown_schema_column` | A referenced physical column is absent from available schema evidence. |
+| `subquery_predicate` | A condition uses a subquery predicate. |
+| `unsupported_predicate` | A normalized predicate is unknown or unsupported. |
+| `constant_false_or_null` | A constant FALSE or NULL condition cannot be represented as independent column domains. |
+| `having` | HAVING drops groups based on aggregate or grouped results. |
+| `qualify` | QUALIFY drops rows based on window results. |
+| `outer_join` | An outer-join condition cannot constrain both inputs as an inner-row equality contract. |
+| `unsupported_join_kind` | A non-inner join kind decides membership through semantics not represented by domains/equalities. |
+| `repeated_source_instance` | The same physical relation is read through multiple instances whose identities collapse in column domains. |
+| `limit` | LIMIT affects which otherwise qualifying rows survive. |
+| `offset` | OFFSET affects which otherwise qualifying rows survive. |
+| `fetch` | FETCH affects which otherwise qualifying rows survive. |
+| `distinct_on` | DISTINCT ON selects rows based on ordering within duplicate groups. |
+| `table_sample` | TABLESAMPLE drops otherwise qualifying source rows. |
+| `set_operation` | Set-operation row membership is not represented exactly. |
+| `top` | TOP limits the qualifying row set. |
+| `prewhere` | PREWHERE is parsed but not represented as an exact source predicate. |
+| `connect_by` | CONNECT BY changes row membership through recursive traversal. |
+| `analysis_diagnostic` | A condition-affecting analysis diagnostic prevents an exact guarantee. |
+| `correlated_subquery` | A correlated subquery depends on an outer row outside the local domain contract. |
+
+Typed string, floating-point, and timestamp domains normally retain their values and
+use `comparison_assumptions` instead of residuals when comparison settings are
+unknown. `comparison_semantics` applies only when no representable conditional
+comparison semantics exists. Typed literal failures use `literal_type_mismatch`,
+`lossy_coercion`, or `out_of_range_literal` as appropriate. An undeclared physical
+column is classified as `unknown_schema_column` in the predicate's actual clause,
+not as a generic row-set diagnostic.
+
+A bare boolean column, `NOT flag`, `IS TRUE`, `IS FALSE`,
+`IS NOT TRUE`, and `IS NOT FALSE` are normalized to literal comparisons.
+`IS NOT TRUE` and `IS NOT FALSE` use null-safe inequality and therefore
+**admit SQL NULL**, unlike `NOT flag` and ordinary `= FALSE`.
+When typed schema evidence is present, it must identify the column as boolean;
+an incompatible datatype produces an explicit typed-literal residual.
 
 For one query scope, `exact` means that before row-set shaping, a combination of source rows qualifies exactly when every emitted source-column domain is satisfied and every reported inner-join equality is satisfied. It does not mean that projection, ordering, grouping, or duplicate elimination preserve individual rows. Plain projection, `ORDER BY`, `GROUP BY` without `HAVING`, and ordinary `DISTINCT` therefore do not make the row-condition contract residual.
 
@@ -358,8 +409,8 @@ layers. Two- and three-relation equality joins must preserve physical equality e
 explicit and implicit join syntax. Seeded predicate and join fixtures compare those claims with
 DuckDB, and verify that unsupported shapes continue to report residual conditions rather than
 claiming unsafe precision. Typed comparison checks cover portable scalar types, while string,
-floating-point, and timestamp comparisons without the required semantics remain explicit
-residual cases pending conditional-comparison metadata.
+floating-point, and timestamp comparisons remain conditional until their comparison
+assumptions are declared.
 
 Resolved `composed_semantics.join_equalities` is the canonical consumer-facing representation of those correlations. Each entry names both physical leaf relation/column endpoints, a relation-instance identity, the join kind, and the originating transformation layer. Equalities from referenced CTEs, derived tables, and resolved producer layers compose transitively through plain-copy lineage. A column equality in `WHERE` between distinct relation instances, including comma/CROSS-join syntax, is represented as an implicit inner equality rather than an `unknown` scalar domain. Outer-join equalities are listed with their join kind while the scope remains residual. Repeated/self-joins remain residual when physical instance identity cannot be proven safely.
 
