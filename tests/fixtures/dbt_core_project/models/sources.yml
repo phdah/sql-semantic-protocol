@@ -37,3 +37,19 @@ sources:
       - name: customers
       - name: legacy_orders
       - name: returns
+      # No model consumes either source: the relationship is the only reference.
+      - name: constraint_only_orders
+        columns:
+          - name: id
+            data_type: BIGINT
+      - name: constraint_only_order_items
+        columns:
+          - name: id
+            data_type: BIGINT
+          - name: order_id
+            data_type: BIGINT
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'constraint_only_orders')
+                    field: id

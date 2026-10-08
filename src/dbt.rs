@@ -185,6 +185,13 @@ pub enum DbtArtifactsError {
         /// Canonical physical relation identity.
         relation: String,
     },
+    /// A constraint references physical columns without complete typed schema evidence.
+    MissingConstraintSchema {
+        /// Canonical physical relation identity.
+        relation: String,
+        /// Columns for which a typed schema is required.
+        columns: Vec<String>,
+    },
 }
 
 impl DbtArtifactsError {
@@ -244,6 +251,11 @@ impl fmt::Display for DbtArtifactsError {
             Self::MissingCatalogSchema { relation } => write!(
                 formatter,
                 "dbt metadata has no typed schema for physical dependency '{relation}'; provide catalog.json coverage or manifest column data_type declarations"
+            ),
+            Self::MissingConstraintSchema { relation, columns } => write!(
+                formatter,
+                "dbt constraint relation '{relation}' has no typed schema evidence for columns: {}; provide catalog.json coverage or complete manifest column data_type declarations",
+                columns.join(", ")
             ),
         }
     }
@@ -961,6 +973,7 @@ fn analyze_dbt_with_schema_evidence(
     dialect: &dyn Dialect,
 ) -> Result<AnalysisBundle, DbtArtifactsError> {
     let schemas = relation_schemas_from_artifacts(manifest, catalog_resources, dialect_name)?;
+    validate_constraint_schema_coverage(manifest, &schemas)?;
     let catalog_relations = manifest
         .catalog_relations
         .iter()
@@ -1068,6 +1081,63 @@ fn analyze_dbt_with_catalog(
     Ok(bundle)
 }
 
+fn required_physical_constraint_columns(
+    manifest: &DbtManifest,
+) -> BTreeMap<String, BTreeSet<String>> {
+    let produced = manifest
+        .models
+        .iter()
+        .map(|model| model.relation_name.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut required = BTreeMap::<String, BTreeSet<String>>::new();
+    for set in &manifest.relation_constraints {
+        if !produced.contains(set.relation()) {
+            let columns = required.entry(set.relation().to_string()).or_default();
+            for constraint in set.constraints() {
+                columns.extend(constraint.columns().iter().cloned());
+            }
+        }
+        for constraint in set.constraints() {
+            if let RelationConstraint::ForeignKey(key) = constraint {
+                if !produced.contains(key.referenced_relation()) {
+                    required
+                        .entry(key.referenced_relation().to_string())
+                        .or_default()
+                        .extend(key.referenced_columns().iter().cloned());
+                }
+            }
+        }
+    }
+    required
+}
+
+fn validate_constraint_schema_coverage(
+    manifest: &DbtManifest,
+    schemas: &[RelationSchema],
+) -> Result<(), DbtArtifactsError> {
+    for (relation, columns) in required_physical_constraint_columns(manifest) {
+        let schema = schemas.iter().find(|schema| schema.relation() == relation);
+        let missing = columns
+            .into_iter()
+            .filter(|column| {
+                schema.is_none_or(|schema| {
+                    !schema
+                        .columns()
+                        .iter()
+                        .any(|declared| declared.name() == column)
+                })
+            })
+            .collect::<Vec<_>>();
+        if !missing.is_empty() {
+            return Err(DbtArtifactsError::MissingConstraintSchema {
+                relation,
+                columns: missing,
+            });
+        }
+    }
+    Ok(())
+}
+
 fn relation_schemas_from_artifacts(
     manifest: &DbtManifest,
     catalog_resources: &BTreeMap<String, DbtCatalogResource>,
@@ -1133,16 +1203,24 @@ fn relation_schemas_from_artifacts(
         .iter()
         .map(|model| model.unique_id.as_str())
         .collect::<BTreeSet<_>>();
-    let manifest_only_dependencies = manifest
+    let required_constraints = required_physical_constraint_columns(manifest);
+    let manifest_only_sources = manifest
         .models
         .iter()
         .flat_map(|model| model.dependencies.iter())
-        .filter(|dependency_id| !model_ids.contains(dependency_id.as_str()))
-        .filter(|dependency_id| !catalog_resources.contains_key(dependency_id.as_str()))
+        .chain(manifest.resources.iter().filter_map(|(id, resource)| {
+            resource
+                .relation_name
+                .as_deref()
+                .filter(|relation| required_constraints.contains_key(*relation))
+                .map(|_| id)
+        }))
+        .filter(|id| !model_ids.contains(id.as_str()))
+        .filter(|id| !catalog_resources.contains_key(id.as_str()))
         .cloned()
         .collect::<BTreeSet<_>>();
 
-    for unique_id in manifest_only_dependencies {
+    for unique_id in manifest_only_sources {
         let resource = manifest
             .resources
             .get(&unique_id)
@@ -1155,9 +1233,15 @@ fn relation_schemas_from_artifacts(
                 unique_id: unique_id.clone(),
             })?;
 
-        // Warehouse-introspected catalog evidence is authoritative for the relation even if
-        // the manifest dependency is represented by a different dbt resource ID.
-        if schemas.contains_key(relation) || resource.columns.is_empty() {
+        // Warehouse-introspected catalog evidence takes precedence, even when the
+        // manifest represents the same physical relation under a different resource ID.
+        if schemas
+            .get(relation)
+            .is_some_and(|(_, schema)| schema.source_kind() == Some(SchemaSourceKind::DbtCatalog))
+        {
+            continue;
+        }
+        if resource.columns.is_empty() {
             continue;
         }
 
@@ -1201,7 +1285,19 @@ fn relation_schemas_from_artifacts(
                 relation: relation.to_string(),
                 message: error.to_string(),
             })?;
-        schemas.insert(relation.to_string(), (unique_id, schema));
+        match schemas.get(relation) {
+            None => {
+                schemas.insert(relation.to_string(), (unique_id, schema));
+            }
+            Some((_, existing)) if existing == &schema => {}
+            Some((first_unique_id, _)) => {
+                return Err(DbtArtifactsError::ConflictingCatalogSchemas {
+                    relation: relation.to_string(),
+                    first_unique_id: first_unique_id.clone(),
+                    second_unique_id: unique_id,
+                });
+            }
+        }
     }
 
     Ok(schemas.into_values().map(|(_, schema)| schema).collect())

@@ -14,9 +14,12 @@ Inline source labels are optional. File sources retain their path. Raw SQL text 
 
 ## Source schemas
 For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
-types when a relation is present there. When a physical dependency is absent from the catalog,
-`manifest.json` column `data_type` declarations are accepted as lower-authority schema evidence
-when the declared schema is complete. The adapter never lets a manifest declaration override
+types when a relation is present there. When a physical dependency or a physical relation referenced only by a canonical constraint
+is absent from the catalog, `manifest.json` column `data_type` declarations are accepted as
+lower-authority schema evidence when the declared schema is complete. Both the local and
+referenced physical sides of a foreign key require typed schemas even without any consuming SQL
+layer. Constraint-required columns missing from a selected schema are reported explicitly;
+model-produced relations are not synthesized as new physical sources. The adapter never lets a manifest declaration override
 catalog evidence. Missing declared datatypes fail explicitly with the affected relation and column
 names rather than being guessed. `analyze_dbt_manifest_with_schemas` supports the same
 typed schema validation and `dbt_manifest` provenance without a catalog; it is equivalent
