@@ -160,11 +160,12 @@ pub struct GroupWitness {
 }
 
 impl GroupWitness {
-    /// Physical source identity. None means no independent physical input was proven.
+    /// Input relation at which group obligations hold, physical or intermediate.
+    /// The composed graph classifies the boundary before physical generation.
     pub fn boundary(&self) -> Option<&str> {
         self.boundary.as_deref()
     }
-    /// Physical group key columns, in GROUP BY order.
+    /// Group key columns at the input relation boundary, in GROUP BY order.
     pub fn group_keys(&self) -> &[ColumnRef] {
         &self.group_keys
     }
@@ -174,7 +175,7 @@ impl GroupWitness {
     }
     /// Whether the aggregate applies DISTINCT to its arguments.
     pub fn distinct(&self) -> bool { self.distinct }
-    /// Source column for COUNT(column), SUM, MIN, or MAX. None for COUNT(*).
+    /// Input relation column for COUNT(column), SUM, MIN, or MAX. None for COUNT(*).
     pub fn argument(&self) -> Option<&ColumnRef> {
         self.argument.as_ref()
     }
@@ -352,9 +353,10 @@ fn value_cases(
 
 /// Analyze the normalized HAVING predicate without depending on sqlparser AST types.
 ///
-/// Exact plans currently require one direct, independently controlled physical table,
-/// plain grouping columns and an isolated aggregate comparison. All more complex
-/// query shapes are residual, including local producers that are not freely writable.
+/// Exact plans require one direct relation boundary, plain grouping columns
+/// and an isolated aggregate comparison. The composed graph distinguishes external
+/// physical relations from intermediate producer outputs. Realizing the latter
+/// at physical sources requires additional upstream proof; the plans are local.
 pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
     let having = query.predicates().having_predicate()?;
     let source = match (query.sources(), query.dependencies()) {
