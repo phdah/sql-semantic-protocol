@@ -3986,7 +3986,8 @@
       "additionalProperties": false,
       "required": [
         "origin_layer_id",
-        "witness"
+        "witness",
+        "boundary_kind"
       ],
       "properties": {
         "origin_layer_id": {
@@ -3994,6 +3995,13 @@
         },
         "witness": {
           "$ref": "#/$defs/groupWitness"
+        },
+        "boundary_kind": {
+          "enum": [
+            "physical",
+            "intermediate",
+            "unresolved"
+          ]
         }
       }
     }
