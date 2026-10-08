@@ -14,7 +14,10 @@ fn help_flags_emit_readable_plain_text_when_redirected() {
         assert!(output.status.success(), "{flag} should exit successfully");
         assert!(output.stderr.is_empty(), "{flag} should not write stderr");
         let stdout = String::from_utf8(output.stdout).expect("help should be UTF-8");
-        assert!(!stdout.contains("\x1b["), "{flag} should not color piped output");
+        assert!(
+            !stdout.contains("\x1b["),
+            "{flag} should not color piped output"
+        );
         assert!(stdout.contains("USAGE\n"));
         assert!(stdout.contains("INPUT SOURCES\n"));
         assert!(stdout.contains("ANALYSIS OPTIONS\n"));
