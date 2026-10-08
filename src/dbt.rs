@@ -1081,7 +1081,6 @@ fn analyze_dbt_with_catalog(
     Ok(bundle)
 }
 
-
 fn required_physical_constraint_columns(
     manifest: &DbtManifest,
 ) -> BTreeMap<String, BTreeSet<String>> {
@@ -1236,9 +1235,10 @@ fn relation_schemas_from_artifacts(
 
         // Warehouse-introspected catalog evidence takes precedence, even when the
         // manifest represents the same physical relation under a different resource ID.
-        if schemas.get(relation).is_some_and(|(_, schema)| {
-            schema.source_kind() == Some(SchemaSourceKind::DbtCatalog)
-        }) {
+        if schemas
+            .get(relation)
+            .is_some_and(|(_, schema)| schema.source_kind() == Some(SchemaSourceKind::DbtCatalog))
+        {
             continue;
         }
         if resource.columns.is_empty() {
