@@ -395,10 +395,14 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .collect::<Vec<_>>()
     });
     if !semantics.group_witnesses().is_empty() {
-        value["group_witnesses"] = json!(semantics.group_witnesses().iter().map(|item| json!({
-            "origin_layer_id": item.origin_layer_id(),
-            "witness": group_witness_to_value(item.witness())
-        })).collect::<Vec<_>>());
+        value["group_witnesses"] = json!(semantics
+            .group_witnesses()
+            .iter()
+            .map(|item| json!({
+                "origin_layer_id": item.origin_layer_id(),
+                "witness": group_witness_to_value(item.witness())
+            }))
+            .collect::<Vec<_>>());
     }
     if !semantics.set_operations().is_empty() {
         value["set_operations"] = json!(semantics
