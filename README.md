@@ -409,8 +409,8 @@ The full fixture preserves every layer and identifies terminal outcomes in `grap
 
 ## dbt artifact adapter
 
-dbt is a first-class protocol input. The complete adapter consumes both `manifest.json` and
-`catalog.json`, using each artifact only for the evidence it authoritatively owns:
+dbt is a first-class protocol input. The complete adapter consumes `manifest.json` and
+optionally `catalog.json`, using each artifact only for the evidence it authoritatively owns:
 
 - `manifest.json`: model unique IDs, canonical relation identities, compiled SQL, relation context,
   declared dependency metadata, explicit model/column key constraints, and built-in `unique` /
@@ -423,7 +423,10 @@ same parser-independent `DataType` model used by direct callers, and runs compil
 through the ordinary analyzer, graph builder, composition, and outcome-domain pipeline. dbt-specific
 artifact types never appear in the emitted protocol.
 
-The CLI expects `catalog.json` next to `manifest.json` by default:
+The CLI looks for `catalog.json` next to `manifest.json` by default. When it is absent,
+complete manifest-declared column `data_type` values for each physical source suffice,
+including sources declared in dbt YAML without a warehouse. An explicitly supplied
+`--dbt-catalog` path must exist:
 
 ```sh
 cargo run -- --dbt-manifest target/manifest.json
@@ -466,6 +469,13 @@ let bundle = analyze_dbt_artifacts(
     dialect.as_ref(),
 )?;
 
+// For catalog-less projects, use the same typed analysis without a placeholder catalog:
+let bundle = sql_semantic_protocol::analyze_dbt_manifest_with_schemas(
+    &manifest,
+    manifest.adapter_type(),
+    dialect.as_ref(),
+)?;
+
 println!("{}", to_bundle_json(&bundle));
 ```
 
@@ -480,8 +490,11 @@ invalid datatypes, or dependencies with neither usable catalog nor manifest sche
 explicitly rather than producing an apparently complete protocol.
 
 `analyze_dbt_manifest` remains available as a compatibility API for manifest-only semantic
-analysis, but it cannot emit complete typed relation schemas. New consumers that need the full
-protocol contract should use `analyze_dbt_artifacts`.
+analysis, but it cannot emit complete typed relation schemas. For typed analysis without a
+catalog, use `analyze_dbt_manifest_with_schemas`; this produces the same output and
+missing-schema errors as `analyze_dbt_artifacts` with an empty catalog. With a catalog,
+use `analyze_dbt_artifacts`. Both typed paths require complete schema evidence for all
+physical dependencies and preserve `source_kind: dbt_manifest` on manifest-only sources.
 
 Model identity comes from dbt `unique_id`, and produced dataset identity comes from
 `relation_name`; filenames are retained only as source metadata. `compiled_code` is preferred.
