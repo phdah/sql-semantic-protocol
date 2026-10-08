@@ -208,6 +208,149 @@ fn timestamp_with_zone_requires_session_setting_if_literal_has_no_offset() {
     );
 }
 
+fn timestamp_lower_bound(semantics: &ResolvedComposedSemantics) -> String {
+    use sql_semantic_protocol::LiteralValue;
+    let ValueDomain::Ranges(ranges) = semantics.column_domains()[0].domain() else {
+        panic!("expected timestamp range");
+    };
+    let LiteralValue::Text(value) = ranges.ranges()[0].lower().unwrap().value().value() else {
+        panic!("expected timestamp text");
+    };
+    value.clone()
+}
+
+#[test]
+fn offset_bearing_literals_never_constrain_timezone_free_timestamp_columns() {
+    use sql_semantic_protocol::{ConditionExactnessStatus, ResidualConditionReason};
+    for offset in ["Z", "+02", "+0230", "+02:30", "-07:45"] {
+        let sql = format!("SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 12:34:56{offset}'");
+        let semantics = analyze(&sql, &[("ts", "TIMESTAMP WITHOUT TIME ZONE")]);
+        assert!(
+            matches!(
+                semantics.column_domains()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
+            "{sql}"
+        );
+        assert_eq!(
+            semantics.condition_exactness().status(),
+            ConditionExactnessStatus::Residual,
+            "{sql}"
+        );
+        assert!(
+            semantics
+                .condition_exactness()
+                .residual_conditions()
+                .iter()
+                .any(|residual| residual.reason() == ResidualConditionReason::LiteralTypeMismatch),
+            "{sql}"
+        );
+    }
+}
+
+#[test]
+fn timestamp_domain_bounds_are_canonical_for_every_known_zone_kind() {
+    use sql_semantic_protocol::ConditionExactnessStatus;
+    for (schema_type, suffix, bound, status) in [
+        (
+            "TIMESTAMP WITHOUT TIME ZONE",
+            "",
+            "2024-01-01 12:34:56.12",
+            ConditionExactnessStatus::Exact,
+        ),
+        (
+            "TIMESTAMP WITH TIME ZONE",
+            "+02",
+            "2024-01-01 12:34:56.12+02:00",
+            ConditionExactnessStatus::Exact,
+        ),
+        (
+            "TIMESTAMP WITH TIME ZONE",
+            "",
+            "2024-01-01 12:34:56.12",
+            ConditionExactnessStatus::Conditional,
+        ),
+        (
+            "TIMESTAMP",
+            "+02:30",
+            "2024-01-01 12:34:56.12+02:30",
+            ConditionExactnessStatus::Conditional,
+        ),
+        (
+            "TIMESTAMP",
+            "",
+            "2024-01-01 12:34:56.12",
+            ConditionExactnessStatus::Conditional,
+        ),
+    ] {
+        let sql =
+            format!("SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01T12:34:56.1200{suffix}'");
+        let semantics = analyze(&sql, &[("ts", schema_type)]);
+        assert_eq!(
+            semantics.condition_exactness().status(),
+            status,
+            "{sql} with {schema_type}"
+        );
+        assert_eq!(
+            timestamp_lower_bound(&semantics),
+            bound,
+            "{sql} with {schema_type}"
+        );
+    }
+}
+
+#[test]
+fn timestamp_offset_normalization_is_independent_of_parser_dialect() {
+    // The shared TIMESTAMP typed-string AST should have identical semantics across dialects.
+    for dialect_name in ["postgresql", "duckdb"] {
+        let schema = RelationSchema::new(
+            "t",
+            vec![
+                SchemaColumn::from_sql_type("ts", "TIMESTAMP WITH TIME ZONE", dialect_name)
+                    .unwrap(),
+            ],
+        )
+        .unwrap();
+        let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+        let input =
+            SqlInput::inline("SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 00:00:00Z'");
+        let dialect = sql_semantic_protocol::dialect_from_name(dialect_name).unwrap();
+        let configured = [ConfiguredSqlInput::new(
+            "tz-test",
+            &input,
+            dialect_name,
+            dialect.as_ref(),
+        )];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("unresolved: {dialect_name}");
+        };
+        assert!(semantics.condition_exactness().is_exact(), "{dialect_name}");
+        assert_eq!(
+            timestamp_lower_bound(semantics),
+            "2024-01-01 00:00:00+00:00",
+            "{dialect_name}"
+        );
+    }
+}
+
+#[test]
+fn unsupported_timestamp_forms_do_not_claim_exactness() {
+    use sql_semantic_protocol::ConditionExactnessStatus;
+    let semantics = analyze(
+        "SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-02-30 12:00:00'",
+        &[("ts", "TIMESTAMP WITHOUT TIME ZONE")],
+    );
+    assert!(matches!(
+        semantics.column_domains()[0].domain(),
+        ValueDomain::Unknown(_)
+    ));
+    assert_eq!(
+        semantics.condition_exactness().status(),
+        ConditionExactnessStatus::Residual
+    );
+}
+
 #[test]
 fn varchar_set_preserves_membership_after_typing() {
     let semantics = analyze(

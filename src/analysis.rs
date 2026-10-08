@@ -949,13 +949,25 @@ fn type_literal(
         DataType::Date if literal.literal_type() == LiteralType::Date => Ok(literal.clone()),
         DataType::Time { .. } if literal.literal_type() == LiteralType::Time => Ok(literal.clone()),
         DataType::Timestamp { .. } if literal.literal_type() == LiteralType::Timestamp => {
-            if zone == Some(TimestampZone::WithoutTimeZone) && timestamp_literal_has_offset(literal) {
+            let LiteralValue::Text(text) = literal.value() else {
+                return incompatible();
+            };
+            let Some((canonical, has_offset)) = canonical_timestamp_text(text) else {
+                return Err(TypedLiteralError::new(
+                    ResidualConditionReason::ComparisonSemantics,
+                    "timestamp literal cannot be normalized to the protocol's canonical format",
+                ));
+            };
+            if zone == Some(TimestampZone::WithoutTimeZone) && has_offset {
                 return Err(TypedLiteralError::new(
                     ResidualConditionReason::LiteralTypeMismatch,
                     "offset-bearing timestamp literal conflicts with timestamp without time zone",
                 ));
             }
-            Ok(literal.clone())
+            Ok(LiteralExpression::new(
+                LiteralType::Timestamp,
+                LiteralValue::Text(canonical),
+            ))
         },
         DataType::Interval if literal.literal_type() == LiteralType::Interval => Ok(literal.clone()),
         DataType::String { .. } if literal.literal_type() == LiteralType::String => Ok(literal.clone()),
@@ -1076,28 +1088,109 @@ fn integer_fits_unsigned(value: u128, bits: Option<u16>) -> bool {
     }
 }
 
-fn timestamp_literal_has_offset(literal: &LiteralExpression) -> bool {
-    let LiteralValue::Text(text) = literal.value() else {
-        return false;
-    };
-    let value = text.trim();
-    if value.ends_with('Z') || value.ends_with('z') {
-        return true;
-    }
-    let Some(rest) = value.get(10..) else {
-        return false;
-    };
-    let Some(position) = rest.rfind(['+', '-']) else {
-        return false;
-    };
-    let suffix = &rest[position + 1..];
-    let bytes = suffix.as_bytes();
-    bytes.len() == 5
-        && bytes[2] == b':'
-        && bytes
+/// Canonicalize a timestamp without applying any warehouse-specific timezone conversion.
+///
+/// Explicit offsets are normalized to +HH:MM/-HH:MM; Z is written as +00:00.
+/// The local wall-clock portion is not shifted because its interpretation belongs to
+/// the physical column type and, when necessary, a declared session setting.
+fn canonical_timestamp_text(input: &str) -> Option<(String, bool)> {
+    let value = input.trim();
+    let bytes = value.as_bytes();
+    if bytes.len() < 19
+        || ![0, 1, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18]
             .iter()
-            .enumerate()
-            .all(|(index, byte)| index == 2 || byte.is_ascii_digit())
+            .all(|index| bytes[*index].is_ascii_digit())
+        || bytes[4] != b'-'
+        || bytes[7] != b'-'
+        || !matches!(bytes[10], b' ' | b'T' | b't')
+        || bytes[13] != b':'
+        || bytes[16] != b':'
+    {
+        return None;
+    }
+
+    let year = value.get(0..4)?.parse::<u16>().ok()?;
+    let month = value.get(5..7)?.parse::<u8>().ok()?;
+    let day = value.get(8..10)?.parse::<u8>().ok()?;
+    let hour = value.get(11..13)?.parse::<u8>().ok()?;
+    let minute = value.get(14..16)?.parse::<u8>().ok()?;
+    let second = value.get(17..19)?.parse::<u8>().ok()?;
+    let leap_year = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    let max_day = match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 if leap_year => 29,
+        2 => 28,
+        _ => return None,
+    };
+    if year == 0 || day == 0 || day > max_day || hour > 23 || minute > 59 || second > 59 {
+        return None;
+    }
+
+    let mut suffix = value.get(19..)?;
+    let mut fraction = "";
+    if let Some(after_dot) = suffix.strip_prefix('.') {
+        let count = after_dot.bytes().take_while(u8::is_ascii_digit).count();
+        if count == 0 {
+            return None;
+        }
+        fraction = after_dot.get(..count)?.trim_end_matches('0');
+        suffix = after_dot.get(count..)?;
+    }
+    suffix = suffix.trim_start();
+
+    let (offset, has_offset) = if suffix.is_empty() {
+        (String::new(), false)
+    } else if suffix.eq_ignore_ascii_case("z") {
+        ("+00:00".to_string(), true)
+    } else {
+        let (sign, digits) = suffix.split_at(1);
+        if sign != "+" && sign != "-" {
+            return None;
+        }
+        let (hours, minutes) = match digits.len() {
+            2 if digits.bytes().all(|byte| byte.is_ascii_digit()) => {
+                (digits.parse::<u8>().ok()?, 0)
+            }
+            4 if digits.bytes().all(|byte| byte.is_ascii_digit()) => (
+                digits.get(..2)?.parse::<u8>().ok()?,
+                digits.get(2..)?.parse::<u8>().ok()?,
+            ),
+            5 if digits.as_bytes()[2] == b':'
+                && digits.get(..2)?.bytes().all(|byte| byte.is_ascii_digit())
+                && digits.get(3..)?.bytes().all(|byte| byte.is_ascii_digit()) =>
+            {
+                (
+                    digits.get(..2)?.parse::<u8>().ok()?,
+                    digits.get(3..)?.parse::<u8>().ok()?,
+                )
+            }
+            _ => return None,
+        };
+        if hours > 14 || minutes > 59 || (hours == 14 && minutes != 0) {
+            return None;
+        }
+        (format!("{sign}{hours:02}:{minutes:02}"), true)
+    };
+
+    let fraction = if fraction.is_empty() {
+        String::new()
+    } else {
+        format!(".{fraction}")
+    };
+    Some((
+        format!("{} {}{fraction}{offset}", &value[..10], &value[11..19]),
+        has_offset,
+    ))
+}
+
+fn timestamp_literal_has_offset(literal: &LiteralExpression) -> bool {
+    match literal.value() {
+        LiteralValue::Text(text) => {
+            canonical_timestamp_text(text).is_some_and(|(_, has_offset)| has_offset)
+        }
+        _ => false,
+    }
 }
 
 // Preserve representable domains while making warehouse-dependent comparisons conditional.

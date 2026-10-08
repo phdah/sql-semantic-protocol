@@ -105,7 +105,27 @@ A timestamp without time zone compared to an offset-free typed literal is uncond
 when schema evidence explicitly identifies the column as timezone-free. A timezone-aware
 timestamp comparison with an explicit literal UTC offset is also unconditional exact.
 Unqualified timestamp types remain conditional. Contradictory timezone-free schema evidence
-and an offset-bearing literal produce Unknown, never an invented domain.
+and an offset-bearing literal produce Unknown with a `literal_type_mismatch` residual,
+never an invented domain; declaring `session_time_zone` cannot override that conflict.
+
+Timestamp bounds use a single parser-independent textual value contract:
+`YYYY-MM-DD HH:MM:SS[.fraction][offset]`. A literal `T` separator is normalized
+to a space; seconds are required; trailing fractional zeros are dropped, including
+the decimal point if the fraction becomes empty. The wall-clock portion is not shifted
+by the analyzer. An explicit offset is normalized to `+HH:MM` or `-HH:MM`;
+`Z` and `z` normalize to `+00:00`, and `+HH` / `+HHMM` normalize to
+`+HH:00` / `+HH:MM`. Offsets beyond 14 hours are not accepted.
+
+- `timestamp_zone: without_time_zone` only emits offset-free bounds; an offset-bearing
+  literal instead gives Unknown and a residual.
+- `timestamp_zone: with_time_zone` emits the normalized offset when explicit. An
+  offset-free bound represents local wall time and requires `session_time_zone`
+  evidence before the condition can be exact.
+- An unqualified timestamp column preserves a normalized literal, but remains
+  conditional on `session_time_zone` because its storage timezone semantics are unknown.
+
+Malformed or noncanonicalizable timestamp values produce Unknown with the
+`comparison_semantics` residual rather than a misleading exact domain.
 String comparisons lacking a typed schema use the same binary-collation requirement as
 typed strings, so no schema path is silently declared exact. NULL-only conditions
 do not depend on any comparison setting. NaN is excluded by the declared `no_nan`

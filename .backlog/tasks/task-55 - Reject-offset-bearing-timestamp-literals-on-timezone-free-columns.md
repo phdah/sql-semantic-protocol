@@ -1,7 +1,8 @@
 ---
 id: TASK-55
 title: Reject offset-bearing timestamp literals on timezone-free columns
-status: To Do
+status: Done
+updated_date: '2026-10-08'
 assignee: []
 created_date: '2026-10-08 11:35'
 labels: []
@@ -30,9 +31,20 @@ More generally, consumers must parse timestamp literal values, but the contract 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A comparison between a timezone-free timestamp column and a literal carrying a UTC offset yields Unknown with a documented residual reason, or a dialect-proven normalized value without offset text; it is never exact with the raw literal text
-- [ ] #2 Protocol docs define the canonical literal value format for timestamps without time zone and with time zone, including how offsets are represented
-- [ ] #3 Every emitted timestamp domain bound uses the canonical format matching the constrained column kind
-- [ ] #4 Tests cover offset-bearing and offset-free literals against timezone-free, timezone-aware, and unqualified timestamp columns
-- [ ] #5 The differential suite includes offset-bearing timestamp literals and confirms every exact claim with the engine
+- [x] #1 A comparison between a timezone-free timestamp column and a literal carrying a UTC offset yields Unknown with a documented residual reason, or a dialect-proven normalized value without offset text; it is never exact with the raw literal text
+- [x] #2 Protocol docs define the canonical literal value format for timestamps without time zone and with time zone, including how offsets are represented
+- [x] #3 Every emitted timestamp domain bound uses the canonical format matching the constrained column kind
+- [x] #4 Tests cover offset-bearing and offset-free literals against timezone-free, timezone-aware, and unqualified timestamp columns
+- [x] #5 The differential suite includes offset-bearing timestamp literals and confirms every exact claim with the engine
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Timestamp bounds now normalize into canonical wall-clock text with optional +HH:MM/-HH:MM
+offsets. Explicit timezone-free schema evidence rejects offset-bearing literals as
+Unknown with a literal_type_mismatch residual; malformed timestamp strings also remain
+residual. Dialect-agnostic regression tests cover offset spellings, timezone-qualified
+and unqualified schemas, and canonical bounds. DuckDB differential cases re-evaluate
+exact bounds against physical rows.
+<!-- SECTION:NOTES:END -->

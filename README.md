@@ -560,6 +560,10 @@ in direct, dbt, or manifest CLI analysis. Manifest JSON can declare
 Library callers can use `AnalysisBundle::declare_comparison_assumptions`.
 Explicitly timezone-qualified physical schemas preserve `timestamp_zone` on source columns,
 without changing the canonical `DataType::Timestamp` public shape.
+Typed timestamp bounds use canonical `YYYY-MM-DD HH:MM:SS[.fraction][offset]` values,
+with explicit offsets normalized to `+HH:MM` or `-HH:MM`. An offset-bearing literal
+against an explicitly timezone-free column yields Unknown and a residual, never an
+exact comparison. See the protocol docs for timezone-qualified and unqualified semantics.
 No comparison setting is assumed solely from a SQL dialect or metadata source.
 See [the protocol contract](docs/protocol.md#typed-predicate-domain-literals) for guarantees.
 
