@@ -660,7 +660,27 @@ fn set_operation_to_value(operation: &SetOperation) -> Value {
         "operator": operation.operator().as_str(),
         "quantifier": operation.quantifier().as_str(),
         "left": set_operand_to_value(operation.left()),
-        "right": set_operand_to_value(operation.right())
+        "right": set_operand_to_value(operation.right()),
+        "membership": {
+            "tuple_equality": "not_distinct",
+            "multiplicity_rule": operation.multiplicity_rule().map(|rule| rule.as_str()),
+            "branches": operation.branches().iter().map(|branch| json!({
+                "identity": branch.identity(),
+                "sources": branch.sources().iter().map(source_relation_to_value).collect::<Vec<_>>(),
+                "predicates": predicates_to_value(branch.predicates()),
+                "column_domains": branch.column_domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
+                "output": output_to_value(branch.output()),
+                "condition_exactness": condition_exactness_to_value(branch.condition_exactness()),
+            })).collect::<Vec<_>>(),
+            "qualifying_witness": {
+                "status": "residual",
+                "reason": "source_witness_obligations_not_proven"
+            },
+            "non_qualifying_witness": {
+                "status": "residual",
+                "reason": "source_witness_obligations_not_proven"
+            }
+        }
     })
 }
 
