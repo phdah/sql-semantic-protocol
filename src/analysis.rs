@@ -592,7 +592,9 @@ fn analyze_query(
     .merged_with(&ConditionExactness::from_residuals(
         relation_analysis.residual_conditions.clone(),
     ))
-    .merged_with(&ConditionExactness::from_residuals(missing_column_residuals));
+    .merged_with(&ConditionExactness::from_residuals(
+        missing_column_residuals,
+    ));
     sort_diagnostics(&mut diagnostics);
 
     QueryStatement::new(
@@ -645,7 +647,10 @@ fn validate_schema_column_references(
         let Some(schema_columns) = metadata.schema_columns(relation) else {
             continue;
         };
-        if schema_columns.iter().any(|declared| declared == column.name()) {
+        if schema_columns
+            .iter()
+            .any(|declared| declared == column.name())
+        {
             continue;
         }
         let reference = format!("{relation}.{}", column.name());
