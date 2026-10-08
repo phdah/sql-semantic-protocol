@@ -796,11 +796,19 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
             ["boundary_kind"],
         "intermediate"
     );
-    let total_amount_domain =
-        &output_column(layer_for_model(&protocol, "aggregated_orders"), "total_amount")["domain"];
+    let total_amount_domain = &output_column(
+        layer_for_model(&protocol, "aggregated_orders"),
+        "total_amount",
+    )["domain"];
     assert_eq!(total_amount_domain["kind"], "ranges");
-    assert_eq!(literal_text(&total_amount_domain["ranges"][0]["lower"]), "20");
-    assert_eq!(total_amount_domain["ranges"][0]["lower"]["inclusive"], false);
+    assert_eq!(
+        literal_text(&total_amount_domain["ranges"][0]["lower"]),
+        "20"
+    );
+    assert_eq!(
+        total_amount_domain["ranges"][0]["lower"]["inclusive"],
+        false
+    );
     assert!(total_amount_domain["ranges"][0]["upper"].is_null());
     assert!(contains_string(aggregated, "paid"));
     assert_lower_bounded_number_range(
