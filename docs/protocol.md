@@ -333,7 +333,7 @@ A query that contains UNION, INTERSECT, or EXCEPT carries an optional `set_opera
 
 UNION ALL keeps `all`; an omitted quantifier normalizes to `distinct`. Dialect-specific MINUS syntax normalizes to `except`. BY NAME quantifiers are retained so the parsed meaning is not lost, but output-column composition for name-based alignment remains explicitly unsupported.
 
-Set-operation outputs align positionally. Column names follow the left branch. Lineage combines the corresponding branch columns deterministically. An arity mismatch or an unresolved branch prevents the producer from inventing output columns and is reported with a diagnostic.
+Set-operation outputs align positionally. Column names follow the left branch. Lineage combines the corresponding branch columns deterministically. Output value domains use the union for UNION, the intersection for INTERSECT, and the left domain for EXCEPT, retaining the strongest supported outcome constraint instead of applying UNION rules to every operator. An arity mismatch or an unresolved branch prevents the producer from inventing output columns and is reported with a diagnostic.
 
 Column domains remain source-column constraints. Equal constraints from multiple branches can be retained. Different constraints on the same source column degrade to an explicit unknown domain because flattening branch-local alternatives into one scalar restriction would over-claim.
 
