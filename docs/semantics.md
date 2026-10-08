@@ -22,7 +22,7 @@ UNION, UNION ALL, INTERSECT, and EXCEPT are analyzed as parser-independent set-o
 
 Set outputs align columns positionally. Output names come from the left branch, while field lineage includes the corresponding columns from every contributing branch. Nested and chained operations retain their recursive operator tree in the optional `set_operation` field. Omitted set quantifiers normalize to DISTINCT semantics.
 
-If branches expose incompatible arity, output semantics remain unresolved and an explicit diagnostic is emitted. Branch-local value constraints are retained when compatible; conflicting constraints on the same source column degrade to an explicit unknown domain rather than being guessed. BY NAME alignment is represented in the operation tree but output composition remains explicitly unsupported.
+If branches expose incompatible arity, output semantics remain unresolved and an explicit diagnostic is emitted. For proven positional domains, UNION preserves the union of possible output values, INTERSECT narrows to their intersection, and EXCEPT retains the left operand's domain. These operators do not flatten branch-specific physical source predicates into one conjunction: conflicting constraints on the same source column degrade to an explicit unknown source domain instead of being guessed. BY NAME alignment is represented in the operation tree but output composition remains explicitly unsupported.
 
 ### Aggregation and grouping
 
