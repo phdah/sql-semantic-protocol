@@ -832,7 +832,9 @@ impl AnalysisBundle {
             relation_constraints: protocol.relation_constraints().to_vec(),
         }];
 
-        Self::from_inputs(inputs)
+        let mut bundle = Self::from_inputs(inputs);
+        bundle.declare_comparison_assumptions(protocol.comparison_declarations());
+        bundle
     }
 
     fn from_inputs(inputs: Vec<AnalyzedInput>) -> Self {

@@ -17,6 +17,7 @@ pub struct Protocol {
     source: ProtocolSource,
     statements: Vec<ProtocolStatement>,
     relation_constraints: Vec<RelationConstraintSet>,
+    comparison_declarations: Vec<ComparisonAssumption>,
 }
 
 impl Protocol {
@@ -26,7 +27,27 @@ impl Protocol {
             source: ProtocolSource { dialect },
             statements,
             relation_constraints: Vec::new(),
+            comparison_declarations: Vec::new(),
         }
+    }
+
+    /// Declare warehouse comparison settings for single-input analysis.
+    ///
+    /// Callers must attest only settings known to hold for the target warehouse.
+    pub fn declare_comparison_assumptions(&mut self, declared: &[ComparisonAssumption]) {
+        self.comparison_declarations.extend(declared.iter().copied());
+        self.comparison_declarations.sort();
+        self.comparison_declarations.dedup();
+        for statement in &mut self.statements {
+            if let ProtocolStatement::Query(query) = statement {
+                query.declare_comparison_assumptions(&self.comparison_declarations);
+            }
+        }
+    }
+
+    /// Return caller-declared comparison settings.
+    pub fn comparison_declarations(&self) -> &[ComparisonAssumption] {
+        &self.comparison_declarations
     }
 
     pub(crate) fn with_relation_constraints(
