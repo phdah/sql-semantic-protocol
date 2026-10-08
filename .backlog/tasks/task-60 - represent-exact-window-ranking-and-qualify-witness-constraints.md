@@ -26,9 +26,9 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Define canonical partition, ordering, tie and rank requirements for a minimal supported class such as ROW_NUMBER() = 1 and <= N.
+- [ ] #1 Define canonical partition, ordering and rank witness requirements for the initial exact class `ROW_NUMBER() = 1` and `ROW_NUMBER() <= N`. Keep `RANK` and `DENSE_RANK` residual until separate tie-aware source obligations and execution tests prove their exactness; do not imply they are covered by `ROW_NUMBER`.
 - [ ] #2 Connect QUALIFY and safe projected-window filters to source partitions and physical column lineage without guessing ordering or tie semantics.
 - [ ] #3 Describe exactness preconditions for null ordering, collation, frame and dialect-specific behavior; unsupported cases stay residual.
-- [ ] #4 Test positive, negative and impossible rank conditions against real SQL execution and across parser-supported dialects.
+- [ ] #4 Test positive, negative and impossible `ROW_NUMBER` witness conditions against real SQL execution and across parser-supported dialects, and assert explicit residuals for unproven `RANK`/`DENSE_RANK` cases.
 - [ ] #5 Preserve existing window expression and output-domain contracts, and document the new semantics; sql-tdg TASK-29 depends on it.
 <!-- AC:END -->
