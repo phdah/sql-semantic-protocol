@@ -1088,3 +1088,137 @@ fn seeded_plain_copy_equivalence_checks_exact_and_residual_predicates() {
         }
     }
 }
+
+
+fn canonical_composed_equalities(
+    semantics: &ResolvedComposedSemantics,
+) -> BTreeSet<(String, String, String, String)> {
+    semantics
+        .join_equalities()
+        .iter()
+        .map(|join| {
+            let left = (join.left().relation().to_string(), join.left().column().to_string());
+            let right = (join.right().relation().to_string(), join.right().column().to_string());
+            let (left, right) = if left <= right { (left, right) } else { (right, left) };
+            (left.0, left.1, right.0, right.1)
+        })
+        .collect()
+}
+
+fn row_triples(connection: &Connection, sql: &str) -> BTreeSet<(i64, i64, i64)> {
+    let mut statement = connection.prepare(sql).expect("prepare three-source oracle");
+    statement
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, i64>(1)?,
+                row.get::<_, i64>(2)?,
+            ))
+        })
+        .unwrap_or_else(|error| panic!("execute three-source oracle {sql}: {error}"))
+        .map(|row| row.expect("read oracle triple"))
+        .collect()
+}
+
+#[test]
+fn explicit_and_implicit_two_source_join_claims_are_complete() {
+    let connection = duckdb_connection();
+    let explicit = "SELECT l.row_id, r.row_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2";
+    let implicit = "SELECT l.row_id, r.row_id FROM left_rows l, right_rows r WHERE l.x = r.y AND l.a > 0 AND r.b <= 2";
+    let expected = resolved_query(explicit);
+    assert!(
+        expected.condition_exactness().is_exact(),
+        "explicit join baseline: {:?}",
+        expected.condition_exactness().residual_conditions()
+    );
+    assert_eq!(expected.join_equalities().len(), 1);
+    assert_eq!(
+        canonical_composed_equalities(&expected),
+        BTreeSet::from([(
+            "left_rows".to_string(),
+            "x".to_string(),
+            "right_rows".to_string(),
+            "y".to_string(),
+        )])
+    );
+    let expected_rows = row_pairs(&connection, explicit);
+    assert_eq!(expected_rows, row_pairs(&connection, implicit));
+    for (location, sql) in [
+        ("implicit_where", implicit.to_string()),
+        ("cte", format!("WITH j AS (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2) SELECT l_id, r_id FROM j")),
+        ("chained_cte", format!("WITH j AS (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2), k AS (SELECT l_id, r_id FROM j) SELECT l_id, r_id FROM k")),
+        ("derived", "SELECT l_id, r_id FROM (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2) j".to_string()),
+    ] {
+        let actual = resolved_query(&sql);
+        assert!(
+            actual.condition_exactness().is_exact(),
+            "join completeness failure: location={location}; query={sql}; residuals={:?}",
+            actual.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            canonical_composed_equalities(&actual),
+            canonical_composed_equalities(&expected),
+            "join equality completeness: location={location}; query={sql}"
+        );
+        assert_eq!(
+            actual.column_domains(),
+            expected.column_domains(),
+            "join domain completeness: location={location}; query={sql}"
+        );
+        assert_eq!(
+            expected_rows,
+            row_pairs(&connection, &sql),
+            "join oracle: location={location}; query={sql}"
+        );
+    }
+}
+
+#[test]
+fn three_source_join_shapes_are_complete_against_duckdb() {
+    let connection = duckdb_connection();
+    connection.execute_batch(
+        "CREATE TABLE third_rows (row_id BIGINT NOT NULL, c BIGINT, z BIGINT);
+         INSERT INTO third_rows VALUES (21, 1, 1), (22, 2, 2), (23, 3, 3), (24, NULL, 2);"
+    ).expect("populate third source");
+
+    let explicit = "SELECT l.row_id, r.row_id, t.row_id FROM left_rows l JOIN right_rows r ON l.x = r.y JOIN third_rows t ON r.b = t.c WHERE l.a > 0";
+    let implicit = "SELECT l.row_id, r.row_id, t.row_id FROM left_rows l, right_rows r, third_rows t WHERE l.x = r.y AND r.b = t.c AND l.a > 0";
+    let expected = resolved_query(explicit);
+    assert!(
+        expected.condition_exactness().is_exact(),
+        "three-source baseline residuals={:?}",
+        expected.condition_exactness().residual_conditions()
+    );
+    assert_eq!(expected.join_equalities().len(), 2, "both physical equalities must be emitted");
+    let expected_rows = row_triples(&connection, explicit);
+    assert_eq!(expected_rows, row_triples(&connection, implicit));
+
+    for (location, sql) in [
+        ("implicit_where", implicit.to_string()),
+        ("cte", format!("WITH j AS ({explicit}) SELECT * FROM j")),
+        ("chained_cte", format!("WITH j AS ({explicit}), k AS (SELECT * FROM j) SELECT * FROM k")),
+        ("derived", format!("SELECT * FROM ({explicit}) j")),
+    ] {
+        let actual = resolved_query(&sql);
+        assert!(
+            actual.condition_exactness().is_exact(),
+            "three-way join completeness: location={location}; query={sql}; residuals={:?}",
+            actual.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            canonical_composed_equalities(&actual),
+            canonical_composed_equalities(&expected),
+            "three-way equality completeness: location={location}; query={sql}"
+        );
+        assert_eq!(
+            actual.column_domains(),
+            expected.column_domains(),
+            "three-way domain completeness: location={location}; query={sql}"
+        );
+        assert_eq!(
+            expected_rows,
+            row_triples(&connection, &sql),
+            "three-way oracle: location={location}; query={sql}"
+        );
+    }
+}
