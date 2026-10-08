@@ -554,9 +554,12 @@ fn analyze_query(
             true,
             &mut branches,
         );
-        operation
-            .with_branches(branches)
-            .with_set_level_safety(query.limit_clause.is_none() && query.fetch.is_none())
+        populate_set_operation_evidence(
+            query.body.as_ref(),
+            operation,
+            &branches,
+            query.limit_clause.is_none() && query.fetch.is_none(),
+        )
     });
     let aggregation = analyze_query_aggregation(query, &mut diagnostics);
     let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics, Some(metadata));
@@ -2163,6 +2166,72 @@ fn diagnose_group_by_modifiers(
             DiagnosticArea::Other,
             &format!("GROUP BY modifier {modifier} is not represented safely"),
         ));
+    }
+}
+
+// Annotate each operation node with the leaves belonging to its own subtree.
+// Otherwise nested operations serialize an empty branch list and falsely report
+// set-level modifiers even when only the outer operation owns its LIMIT/FETCH.
+fn populate_set_operation_evidence(
+    expression: &SetExpr,
+    operation: SetOperation,
+    branches: &[SetBranch],
+    set_level_safe: bool,
+) -> SetOperation {
+    match expression {
+        SetExpr::Query(query) => populate_set_operation_evidence(
+            query.body.as_ref(),
+            operation,
+            branches,
+            set_level_safe && query.limit_clause.is_none() && query.fetch.is_none(),
+        ),
+        SetExpr::SetOperation { left, right, .. } => {
+            let left_count = count_set_select_leaves(left).min(branches.len());
+            let (left_branches, right_branches) = branches.split_at(left_count);
+            let left_operand =
+                populate_set_operand_evidence(left, operation.left(), left_branches);
+            let right_operand =
+                populate_set_operand_evidence(right, operation.right(), right_branches);
+            SetOperation::new(
+                operation.operator(),
+                operation.quantifier(),
+                left_operand,
+                right_operand,
+            )
+            .with_branches(branches.to_vec())
+            .with_set_level_safety(set_level_safe)
+        }
+        _ => operation
+            .with_branches(branches.to_vec())
+            .with_set_level_safety(set_level_safe),
+    }
+}
+
+fn populate_set_operand_evidence(
+    expression: &SetExpr,
+    operand: &SetOperand,
+    branches: &[SetBranch],
+) -> SetOperand {
+    match operand {
+        SetOperand::Query => SetOperand::Query,
+        SetOperand::Operation(nested) => SetOperand::Operation(Box::new(
+            populate_set_operation_evidence(expression, (**nested).clone(), branches, true),
+        )),
+    }
+}
+
+fn count_set_select_leaves(expression: &SetExpr) -> usize {
+    match expression {
+        SetExpr::Select(_) => 1,
+        SetExpr::Query(query) => count_set_select_leaves(query.body.as_ref()),
+        SetExpr::SetOperation { left, right, .. } => {
+            count_set_select_leaves(left) + count_set_select_leaves(right)
+        }
+        SetExpr::Values(_)
+        | SetExpr::Insert(_)
+        | SetExpr::Update(_)
+        | SetExpr::Delete(_)
+        | SetExpr::Table(_) => 0,
     }
 }
 
@@ -5811,7 +5880,7 @@ fn operation_output_domains(
             .zip(&right)
             .map(|(l, r)| match operation.operator() {
                 SetOperator::Union => union_domains(l, r),
-                SetOperator::Intersect => intersect_domains(l, r),
+                SetOperator::Intersect => crate::domain::intersect_set_operation_domains(l, r),
                 SetOperator::Except => l.clone(),
             })
             .collect(),
@@ -5862,7 +5931,7 @@ fn merge_set_operation_output(
                 )),
                 match operator {
                     SetOperator::Union => union_domains(left_column.domain(), right_column.domain()),
-                    SetOperator::Intersect => intersect_domains(left_column.domain(), right_column.domain()),
+                    SetOperator::Intersect => crate::domain::intersect_set_operation_domains(left_column.domain(), right_column.domain()),
                     SetOperator::Except => left_column.domain().clone(),
                 },
                 lineage,
