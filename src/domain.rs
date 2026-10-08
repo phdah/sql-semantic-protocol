@@ -979,7 +979,10 @@ fn set_literals_provably_distinct(left: &LiteralExpression, right: &LiteralExpre
     match (left.value(), right.value()) {
         (LiteralValue::Null, _) | (_, LiteralValue::Null) => true,
         (LiteralValue::Number(_), LiteralValue::Number(_)) => {
-            matches!(compare_literals(left, right), Some(Ordering::Less | Ordering::Greater))
+            matches!(
+                compare_literals(left, right),
+                Some(Ordering::Less | Ordering::Greater)
+            )
         }
         (LiteralValue::Boolean(left), LiteralValue::Boolean(right)) => left != right,
         // String collation and mixed-type coercion are dialect-dependent. They cannot
