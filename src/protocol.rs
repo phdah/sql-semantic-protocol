@@ -699,9 +699,10 @@ impl SetOperation {
             (SetOperator::Except, SetQuantifier::Distinct) => {
                 Some(SetMultiplicityRule::ExceptDistinct)
             }
-            (_, SetQuantifier::ByName | SetQuantifier::AllByName | SetQuantifier::DistinctByName) => {
-                None
-            }
+            (
+                _,
+                SetQuantifier::ByName | SetQuantifier::AllByName | SetQuantifier::DistinctByName,
+            ) => None,
         }
     }
 
