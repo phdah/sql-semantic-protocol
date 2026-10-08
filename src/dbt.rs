@@ -1237,7 +1237,7 @@ fn relation_schemas_from_artifacts(
         // Warehouse-introspected catalog evidence takes precedence, even when the
         // manifest represents the same physical relation under a different resource ID.
         if schemas.get(relation).is_some_and(|(_, schema)| {
-            schema.source_kind() == SchemaSourceKind::DbtCatalog
+            schema.source_kind() == Some(SchemaSourceKind::DbtCatalog)
         }) {
             continue;
         }
