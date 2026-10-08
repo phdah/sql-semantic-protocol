@@ -572,6 +572,14 @@ fn analyze_query(
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
     }
     inspect_query_features(query, &mut diagnostics);
+    let missing_column_residuals = validate_schema_column_references(
+        &predicates,
+        &output,
+        &relation_analysis.joins,
+        &relation_analysis.sources,
+        metadata,
+        &mut diagnostics,
+    );
     let condition_exactness = analyze_query_condition_exactness(
         query,
         &predicates,
@@ -583,7 +591,8 @@ fn analyze_query(
     .merged_with(&unknown_column_domain_exactness(&column_domains))
     .merged_with(&ConditionExactness::from_residuals(
         relation_analysis.residual_conditions.clone(),
-    ));
+    ))
+    .merged_with(&ConditionExactness::from_residuals(missing_column_residuals));
     sort_diagnostics(&mut diagnostics);
 
     QueryStatement::new(
@@ -597,6 +606,61 @@ fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_produced_relation(produced_relation)
+}
+
+/// Verify physical column references where typed source schema evidence exists.
+fn validate_schema_column_references(
+    predicates: &Predicates,
+    output: &Output,
+    joins: &[ProtocolJoin],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<ResidualCondition> {
+    let mut columns = BTreeSet::new();
+    for output_column in output.columns() {
+        collect_expression_column_refs(output_column.expression(), sources, &mut columns);
+    }
+    for predicate in [
+        predicates.where_predicate(),
+        predicates.having_predicate(),
+        predicates.qualify_predicate(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        collect_predicate_column_refs(predicate, sources, &mut columns);
+    }
+    for join in joins {
+        if let Some(predicate) = join.condition() {
+            collect_predicate_column_refs(predicate, sources, &mut columns);
+        }
+    }
+
+    let mut residuals = Vec::new();
+    for column in columns {
+        let Some(relation) = column.relation() else {
+            continue;
+        };
+        let Some(schema_columns) = metadata.schema_columns(relation) else {
+            continue;
+        };
+        if schema_columns.iter().any(|declared| declared == column.name()) {
+            continue;
+        }
+        let reference = format!("{relation}.{}", column.name());
+        diagnostics.push(warning(
+            "unknown_schema_column",
+            DiagnosticArea::Source,
+            &format!("column '{reference}' is absent from available typed schema evidence"),
+        ));
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::AnalysisDiagnostic,
+            ConditionClause::Where,
+            format!("unknown_schema_column:{reference}"),
+        ));
+    }
+    residuals
 }
 
 fn type_column_domains(
@@ -1359,9 +1423,28 @@ fn collect_expression_column_refs(
             collect_expression_column_refs(binary.left(), sources, columns);
             collect_expression_column_refs(binary.right(), sources, columns);
         }
-        Expression::AggregateFunction(_)
-        | Expression::WindowFunction(_)
-        | Expression::Literal(_)
+        Expression::AggregateFunction(aggregate) => {
+            for argument in aggregate.arguments() {
+                if let AggregateArgument::Expression(expression) = argument {
+                    collect_expression_column_refs(expression, sources, columns);
+                }
+            }
+            if let Some(filter) = aggregate.filter() {
+                collect_predicate_column_refs(filter, sources, columns);
+            }
+        }
+        Expression::WindowFunction(window) => {
+            for argument in window.function().arguments() {
+                collect_expression_column_refs(argument, sources, columns);
+            }
+            for partition in window.window().partition_by() {
+                collect_expression_column_refs(partition, sources, columns);
+            }
+            for ordering in window.window().order_by() {
+                collect_expression_column_refs(ordering.expression(), sources, columns);
+            }
+        }
+        Expression::Literal(_)
         | Expression::ScalarSubquery(_)
         | Expression::Unknown(_)
         | Expression::Unsupported(_) => {}
