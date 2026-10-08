@@ -582,6 +582,7 @@ fn analyze_query(
     }
     inspect_query_features(query, &mut diagnostics);
     let missing_column_residuals = validate_schema_column_references(
+        query,
         &predicates,
         &output,
         &relation_analysis.joins,
@@ -631,6 +632,7 @@ fn analyze_query(
 
 /// Verify physical column references where typed source schema evidence exists.
 fn validate_schema_column_references(
+    query: &SqlQuery,
     predicates: &Predicates,
     output: &Output,
     joins: &[ProtocolJoin],
@@ -688,7 +690,53 @@ fn validate_schema_column_references(
             ));
         }
     }
-    residuals
+
+    // Remapping an invalid physical equality can replace the missing column
+    // with Unknown before the normalized join reaches schema validation.
+    // Inspect the original ON expression for reference evidence only.
+    if let SetExpr::Select(select) = query.body.as_ref() {
+        let mut join_index = 0usize;
+        for table in &select.from {
+            for join in &table.joins {
+                if let (_, Some(JoinConstraint::On(expression)), _) =
+                    analyze_join_operator(&join.join_operator)
+                {
+                    let predicate = analyze_predicate(expression, &mut Vec::new());
+                    let mut raw_columns = BTreeSet::new();
+                    collect_predicate_column_refs(&predicate, sources, &mut raw_columns);
+                    for column in raw_columns {
+                        let Some(relation) = column.relation() else {
+                            continue;
+                        };
+                        let Some(schema_columns) = metadata.schema_columns(relation) else {
+                            continue;
+                        };
+                        if schema_columns.iter().any(|declared| declared == column.name()) {
+                            continue;
+                        }
+                        let reference = format!("{relation}.{}", column.name());
+                        let diagnostic = warning(
+                            "unknown_schema_column",
+                            DiagnosticArea::Source,
+                            &format!("column '{reference}' is absent from available typed schema evidence"),
+                        );
+                        if !diagnostics.contains(&diagnostic) {
+                            diagnostics.push(diagnostic);
+                        }
+                        residuals.push(ResidualCondition::new(
+                            ResidualConditionReason::UnknownSchemaColumn,
+                            ConditionClause::JoinOn,
+                            format!("join:{join_index}:unknown_schema_column:{reference}"),
+                        ));
+                    }
+                }
+                join_index += 1;
+            }
+        }
+    }
+    ConditionExactness::from_residuals(residuals)
+        .residual_conditions()
+        .to_vec()
 }
 
 /// Keep the category of a rejected typed comparison separate from its human-readable explanation.
@@ -2862,6 +2910,7 @@ fn analyze_local_query_condition_exactness(
     let missing_columns = metadata.map_or_else(Vec::new, |metadata| {
         let output = analyze_query_output(query, local_outputs, &mut diagnostics, Some(metadata));
         validate_schema_column_references(
+            query,
             &predicates,
             &output,
             &relation_analysis.joins,
