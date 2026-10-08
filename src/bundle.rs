@@ -411,7 +411,10 @@ impl ComposedSemantics {
         output: Output,
         mut diagnostics: Vec<CompositionDiagnostic>,
     ) -> Self {
-        let ComposedWitnessEvidence { mut set_operations, mut group_witnesses } = witnesses;
+        let ComposedWitnessEvidence {
+            mut set_operations,
+            mut group_witnesses,
+        } = witnesses;
         join_equalities.sort_by(composed_join_equality_cmp);
         join_equalities.dedup();
         set_operations.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
@@ -613,17 +616,27 @@ impl ComposedGroupWitness {
         witness: crate::group_witness::GroupWitness,
         boundary_kind: GroupBoundaryKind,
     ) -> Self {
-        Self { origin_layer_id, witness, boundary_kind }
+        Self {
+            origin_layer_id,
+            witness,
+            boundary_kind,
+        }
     }
 
     /// Layer introducing these HAVING obligations.
-    pub fn origin_layer_id(&self) -> &str { &self.origin_layer_id }
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
 
     /// Local HAVING proof at its origin boundary.
-    pub fn witness(&self) -> &crate::group_witness::GroupWitness { &self.witness }
+    pub fn witness(&self) -> &crate::group_witness::GroupWitness {
+        &self.witness
+    }
 
     /// Whether that boundary is physical, intermediate, or unresolved.
-    pub fn boundary_kind(&self) -> GroupBoundaryKind { self.boundary_kind }
+    pub fn boundary_kind(&self) -> GroupBoundaryKind {
+        self.boundary_kind
+    }
 }
 
 /// Successfully composed transitive semantics for a transformation layer.
