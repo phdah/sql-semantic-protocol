@@ -548,6 +548,106 @@ pub enum SetOperand {
     Operation(Box<SetOperation>),
 }
 
+/// The number of matching output tuples produced by an operation as a function of the
+/// left and right operand tuple counts. Tuples compare with SQL IS NOT DISTINCT FROM
+/// semantics, including NULL-to-NULL equality across every aligned output position.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SetMultiplicityRule {
+    /// UNION ALL: left + right.
+    Sum,
+    /// UNION DISTINCT: one if either operand contains the tuple, otherwise zero.
+    UnionDistinct,
+    /// INTERSECT ALL: minimum of the two counts.
+    Minimum,
+    /// INTERSECT DISTINCT: one if both operands contain the tuple.
+    IntersectDistinct,
+    /// EXCEPT ALL: maximum of left minus right and zero.
+    SaturatingDifference,
+    /// EXCEPT DISTINCT: one if left contains the tuple and right does not.
+    ExceptDistinct,
+}
+
+impl SetMultiplicityRule {
+    /// Stable count rule for consumers to apply without re-interpreting SQL syntax.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Sum => "sum",
+            Self::UnionDistinct => "union_distinct",
+            Self::Minimum => "minimum",
+            Self::IntersectDistinct => "intersect_distinct",
+            Self::SaturatingDifference => "saturating_difference",
+            Self::ExceptDistinct => "except_distinct",
+        }
+    }
+
+    /// Evaluate a tuple's output multiplicity from nonnegative operand counts.
+    pub fn evaluate(self, left: u64, right: u64) -> u64 {
+        match self {
+            Self::Sum => left.saturating_add(right),
+            Self::UnionDistinct => u64::from(left > 0 || right > 0),
+            Self::Minimum => left.min(right),
+            Self::IntersectDistinct => u64::from(left > 0 && right > 0),
+            Self::SaturatingDifference => left.saturating_sub(right),
+            Self::ExceptDistinct => u64::from(left > 0 && right == 0),
+        }
+    }
+}
+
+/// Branch-local facts, retained separately to avoid combining incompatible source-row
+/// alternatives into independent source-column domains.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SetBranch {
+    identity: String,
+    sources: Vec<SourceRelation>,
+    predicates: Predicates,
+    column_domains: Vec<ColumnDomain>,
+    output: Output,
+    condition_exactness: ConditionExactness,
+}
+
+impl SetBranch {
+    pub(crate) fn new(identity: String, query: &QueryStatement) -> Self {
+        Self {
+            identity,
+            sources: query.sources.clone(),
+            predicates: (*query.row_conditions.predicates).clone(),
+            column_domains: query.row_conditions.column_domains.clone(),
+            output: query.output.clone(),
+            condition_exactness: query.row_conditions.exactness.clone(),
+        }
+    }
+
+    /// Deterministic location of this leaf, such as body:left or body:right.
+    pub fn identity(&self) -> &str {
+        &self.identity
+    }
+
+    /// Source relations referenced within this branch.
+    pub fn sources(&self) -> &[SourceRelation] {
+        &self.sources
+    }
+
+    /// Predicates specific to this branch.
+    pub fn predicates(&self) -> &Predicates {
+        &self.predicates
+    }
+
+    /// Source-column domains specific to this branch, not an intersection with other branches.
+    pub fn column_domains(&self) -> &[ColumnDomain] {
+        &self.column_domains
+    }
+
+    /// Positionally aligned source expressions and lineage in this branch.
+    pub fn output(&self) -> &Output {
+        &self.output
+    }
+
+    /// Whether the branch's row filters were proven, independently of set membership.
+    pub fn condition_exactness(&self) -> &ConditionExactness {
+        &self.condition_exactness
+    }
+}
+
 /// One UNION, INTERSECT, or EXCEPT operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetOperation {
@@ -555,6 +655,7 @@ pub struct SetOperation {
     quantifier: SetQuantifier,
     left: SetOperand,
     right: SetOperand,
+    branches: Vec<SetBranch>,
 }
 
 impl SetOperation {
@@ -569,7 +670,44 @@ impl SetOperation {
             quantifier,
             left,
             right,
+            branches: Vec::new(),
         }
+    }
+
+    pub(crate) fn with_branches(mut self, branches: Vec<SetBranch>) -> Self {
+        self.branches = branches;
+        self
+    }
+
+    /// Return a typed duplicate-count rule, or None when BY NAME alignment is not modeled.
+    pub fn multiplicity_rule(&self) -> Option<SetMultiplicityRule> {
+        if self.quantifier.uses_name_alignment() {
+            return None;
+        }
+        match (self.operator, self.quantifier) {
+            (SetOperator::Union, SetQuantifier::All) => Some(SetMultiplicityRule::Sum),
+            (SetOperator::Union, SetQuantifier::Distinct) => {
+                Some(SetMultiplicityRule::UnionDistinct)
+            }
+            (SetOperator::Intersect, SetQuantifier::All) => Some(SetMultiplicityRule::Minimum),
+            (SetOperator::Intersect, SetQuantifier::Distinct) => {
+                Some(SetMultiplicityRule::IntersectDistinct)
+            }
+            (SetOperator::Except, SetQuantifier::All) => {
+                Some(SetMultiplicityRule::SaturatingDifference)
+            }
+            (SetOperator::Except, SetQuantifier::Distinct) => {
+                Some(SetMultiplicityRule::ExceptDistinct)
+            }
+            (_, SetQuantifier::ByName | SetQuantifier::AllByName | SetQuantifier::DistinctByName) => {
+                None
+            }
+        }
+    }
+
+    /// Return all leaf branches with deterministic identities; nested branches are flattened.
+    pub fn branches(&self) -> &[SetBranch] {
+        &self.branches
     }
 
     /// Return the set operator.
