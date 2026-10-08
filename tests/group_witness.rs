@@ -219,7 +219,9 @@ fn grouped_witness_provenance_is_preserved_across_producer_layers() {
     let proof = &producer["composed_semantics"]["group_witnesses"][0];
     assert_eq!(proof["witness"]["qualifying"]["status"], "exact");
     assert_eq!(proof["witness"]["boundary"], "raw.sales");
+    assert_eq!(proof["boundary_kind"], "physical");
     let inherited = &consumer["composed_semantics"]["group_witnesses"][0];
     assert_eq!(inherited["origin_layer_id"], proof["origin_layer_id"]);
     assert_eq!(inherited["witness"], proof["witness"]);
+    assert_eq!(inherited["boundary_kind"], "physical");
 }
