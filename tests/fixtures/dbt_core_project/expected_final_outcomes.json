@@ -718,12 +718,329 @@
               ],
               "multiplicity_rule": "sum",
               "non_qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  }
+                ],
+                "status": "exact"
               },
               "qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 4
+                  }
+                ],
+                "status": "exact"
               },
               "tuple_equality": "not_distinct"
             },
@@ -1266,12 +1583,329 @@
               ],
               "multiplicity_rule": "sum",
               "non_qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  }
+                ],
+                "status": "exact"
               },
               "qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 4
+                  }
+                ],
+                "status": "exact"
               },
               "tuple_equality": "not_distinct"
             },
@@ -1377,12 +2011,257 @@
               ],
               "multiplicity_rule": "except_distinct",
               "non_qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  }
+                ],
+                "status": "exact"
               },
               "qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  }
+                ],
+                "status": "exact"
               },
               "tuple_equality": "not_distinct"
             },
@@ -2438,12 +3317,329 @@
               ],
               "multiplicity_rule": "sum",
               "non_qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  }
+                ],
+                "status": "exact"
               },
               "qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 4
+                  }
+                ],
+                "status": "exact"
               },
               "tuple_equality": "not_distinct"
             },
@@ -2549,12 +3745,257 @@
               ],
               "multiplicity_rule": "intersect_distinct",
               "non_qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  }
+                ],
+                "status": "exact"
               },
               "qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\"",
+                          "tuple_columns": [
+                            "order_id"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"orders\"",
+                          "tuple_columns": [
+                            "id"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  }
+                ],
+                "status": "exact"
               },
               "tuple_equality": "not_distinct"
             },
@@ -3146,11 +4587,13 @@
               ],
               "multiplicity_rule": "sum",
               "non_qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
+                "origin": "body",
+                "reason": "set_level_membership_modifier",
                 "status": "residual"
               },
               "qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
+                "origin": "body",
+                "reason": "set_level_membership_modifier",
                 "status": "residual"
               },
               "tuple_equality": "not_distinct"
@@ -3715,12 +5158,329 @@
               ],
               "multiplicity_rule": "sum",
               "non_qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  }
+                ],
+                "status": "exact"
               },
               "qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 4
+                  }
+                ],
+                "status": "exact"
               },
               "tuple_equality": "not_distinct"
             },
@@ -4462,12 +6222,329 @@
               ],
               "multiplicity_rule": "sum",
               "non_qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 0
+                  }
+                ],
+                "status": "exact"
               },
               "qualifying_witness": {
-                "reason": "source_witness_obligations_not_proven",
-                "status": "residual"
+                "cases": [
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 0
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 1
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 1
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 0
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 2
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 1
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 3
+                  },
+                  {
+                    "obligations": [
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\"",
+                          "tuple_columns": [
+                            "order_id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:left",
+                        "matching_tuple_count": 2
+                      },
+                      {
+                        "boundary": {
+                          "kind": "physical",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+                          "tuple_columns": [
+                            "id",
+                            "customer_id",
+                            "amount",
+                            "status",
+                            "region"
+                          ]
+                        },
+                        "branch_identity": "body:right",
+                        "matching_tuple_count": 2
+                      }
+                    ],
+                    "output_tuple_count": 4
+                  }
+                ],
+                "status": "exact"
               },
               "tuple_equality": "not_distinct"
             },
