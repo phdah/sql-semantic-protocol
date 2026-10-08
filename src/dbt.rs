@@ -1471,6 +1471,46 @@ fn dependency_ids(
     Ok(dependencies)
 }
 
+/// Derive the child resource of a dbt relationships test when dbt omits attached_node.
+///
+/// depends_on includes both the tested and referenced resources. Only infer the
+/// child when the declared `to` reference identifies exactly one dependency and
+/// exactly one other dependency remains; never rely on dependency ordering.
+fn infer_relationship_test_attached_node(
+    test_metadata: &Map<String, Value>,
+    dependencies: &[String],
+    resources: &BTreeMap<String, DbtResource>,
+) -> Option<String> {
+    let kwargs = test_metadata.get("kwargs")?.as_object()?;
+    let arguments = match kwargs.get("arguments") {
+        Some(value) => value.as_object()?,
+        None => kwargs,
+    };
+    let reference = arguments.get("to")?.as_str()?;
+    let target_relation = dbt_constraint_reference(reference, resources)?;
+
+    let mut target_dependencies = dependencies.iter().filter(|dependency| {
+        resources
+            .get(*dependency)
+            .and_then(|resource| resource.relation_name.as_deref())
+            == Some(target_relation.as_str())
+    });
+    let target = target_dependencies.next()?;
+    if target_dependencies.next().is_some() {
+        return None;
+    }
+
+    let mut child_dependencies = dependencies
+        .iter()
+        .filter(|dependency| *dependency != target);
+    let child = child_dependencies.next()?;
+    if child_dependencies.next().is_some() {
+        return None;
+    }
+
+    Some(child.clone())
+}
+
 fn parse_manifest_relation_constraints(
     nodes: &Map<String, Value>,
     sources: Option<&Map<String, Value>>,
@@ -1596,8 +1636,11 @@ fn parse_manifest_relation_constraints(
         );
 
         let attached_node = explicit_attached_node.clone().or_else(|| {
-            (test_name != "relationships" && dependencies.len() == 1)
-                .then(|| dependencies[0].clone())
+            if test_name == "relationships" {
+                infer_relationship_test_attached_node(test_metadata, &dependencies, resources)
+            } else {
+                (dependencies.len() == 1).then(|| dependencies[0].clone())
+            }
         });
         let local_relation = attached_node.as_deref().and_then(|node| {
             resources
