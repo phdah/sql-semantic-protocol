@@ -3,8 +3,8 @@ mod common;
 use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_sql, to_json, GroupAggregate, GroupValueTest, GroupWitnessDirection,
-    ProtocolStatement, ValueDomain,
+    analyze_sql, to_json, GroupAggregate, GroupValueTest, GroupWitnessDirection, ProtocolStatement,
+    ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
@@ -12,7 +12,9 @@ fn analyze(sql: &str) -> sql_semantic_protocol::Protocol {
     analyze_sql(sql, "generic", &GenericDialect {}).expect("valid grouped SQL")
 }
 
-fn first_query(protocol: &sql_semantic_protocol::Protocol) -> &sql_semantic_protocol::QueryStatement {
+fn first_query(
+    protocol: &sql_semantic_protocol::Protocol,
+) -> &sql_semantic_protocol::QueryStatement {
     match protocol.statements().first() {
         Some(ProtocolStatement::Query(query)) => query,
         other => panic!("expected query: {other:?}"),
@@ -20,14 +22,19 @@ fn first_query(protocol: &sql_semantic_protocol::Protocol) -> &sql_semantic_prot
 }
 
 fn count_sql(connection: &Connection, sql: &str) -> i64 {
-    connection.query_row(sql, [], |row| row.get(0)).expect("oracle COUNT")
+    connection
+        .query_row(sql, [], |row| row.get(0))
+        .expect("oracle COUNT")
 }
 
 #[test]
 fn count_rows_group_witnesses_are_exact_and_impossible_cases_are_empty() {
-    let protocol = analyze("SELECT category, COUNT(*) AS n FROM sales GROUP BY category HAVING COUNT(*) >= 3");
+    let protocol =
+        analyze("SELECT category, COUNT(*) AS n FROM sales GROUP BY category HAVING COUNT(*) >= 3");
     let query = first_query(&protocol);
-    let witness = query.group_witness().expect("HAVING must emit group obligations");
+    let witness = query
+        .group_witness()
+        .expect("HAVING must emit group obligations");
     assert_eq!(witness.boundary(), Some("sales"));
     assert_eq!(witness.aggregate(), Some(GroupAggregate::CountRows));
     assert_eq!(witness.group_keys().len(), 1);
@@ -70,7 +77,9 @@ fn count_rows_group_witnesses_are_exact_and_impossible_cases_are_empty() {
 
 #[test]
 fn count_column_distinguishes_rows_and_non_null_contributions() {
-    let protocol = analyze("SELECT category, COUNT(amount) FROM sales GROUP BY category HAVING COUNT(amount) = 0");
+    let protocol = analyze(
+        "SELECT category, COUNT(amount) FROM sales GROUP BY category HAVING COUNT(amount) = 0",
+    );
     let witness = first_query(&protocol).group_witness().unwrap();
     assert_eq!(witness.aggregate(), Some(GroupAggregate::CountValues));
     assert_eq!(witness.argument().unwrap().name(), "amount");
@@ -83,8 +92,12 @@ fn count_column_distinguishes_rows_and_non_null_contributions() {
         other => panic!("unexpected witness: {other:?}"),
     }
     let connection = Connection::open_in_memory().unwrap();
-    connection.execute_batch("CREATE TABLE sales(category VARCHAR, amount BIGINT);
-        INSERT INTO sales VALUES ('nulls', NULL), ('nulls', NULL), ('nonnull', 4);").unwrap();
+    connection
+        .execute_batch(
+            "CREATE TABLE sales(category VARCHAR, amount BIGINT);
+        INSERT INTO sales VALUES ('nulls', NULL), ('nulls', NULL), ('nonnull', 4);",
+        )
+        .unwrap();
     assert_eq!(count_sql(&connection, "SELECT COUNT(*) FROM (SELECT category FROM sales GROUP BY category HAVING COUNT(amount) = 0)"), 1);
 }
 
@@ -107,8 +120,18 @@ fn sum_min_max_emit_rejected_null_and_value_proofs_with_oracle_checks() {
         match witness.qualifying() {
             GroupWitnessDirection::Exact(cases) => {
                 assert!(!cases.is_empty());
-                assert!(cases.iter().all(|case| case.min_non_null() == 1 && !case.tests().is_empty()));
-                assert!(cases.iter().flat_map(|case| case.tests()).all(|test| matches!(test, GroupValueTest::Every { .. } | GroupValueTest::Some { .. } | GroupValueTest::Sum { .. })));
+                assert!(cases
+                    .iter()
+                    .all(|case| case.min_non_null() == 1 && !case.tests().is_empty()));
+                assert!(cases
+                    .iter()
+                    .flat_map(|case| case.tests())
+                    .all(|test| matches!(
+                        test,
+                        GroupValueTest::Every { .. }
+                            | GroupValueTest::Some { .. }
+                            | GroupValueTest::Sum { .. }
+                    )));
             }
             other => panic!("unexpected proof: {other:?}"),
         }
@@ -120,7 +143,8 @@ fn sum_min_max_emit_rejected_null_and_value_proofs_with_oracle_checks() {
         }
         let oracle = format!("SELECT COUNT(*) FROM ({sql})");
         assert_eq!(count_sql(&connection, &oracle), expected, "{function}");
-        let output = &serde_json::from_str::<serde_json::Value>(&to_json(&protocol)).unwrap()["inputs"][0]["statements"][0]["output"]["columns"][1]["domain"];
+        let output = &serde_json::from_str::<serde_json::Value>(&to_json(&protocol)).unwrap()
+            ["inputs"][0]["statements"][0]["output"]["columns"][1]["domain"];
         assert_eq!(output["kind"], if op == "=" { "set" } else { "ranges" });
     }
 }
@@ -149,7 +173,14 @@ fn simple_count_contract_is_dialect_independent() {
             "SELECT category, COUNT(*) FROM sales GROUP BY category HAVING COUNT(*) > 2",
             dialect_name,
             dialect.as_ref(),
-        ).unwrap_or_else(|error| panic!("{dialect_name}: {error}"));
-        assert!(matches!(first_query(&protocol).group_witness().unwrap().qualifying(), GroupWitnessDirection::Exact(_)), "{dialect_name}");
+        )
+        .unwrap_or_else(|error| panic!("{dialect_name}: {error}"));
+        assert!(
+            matches!(
+                first_query(&protocol).group_witness().unwrap().qualifying(),
+                GroupWitnessDirection::Exact(_)
+            ),
+            "{dialect_name}"
+        );
     }
 }
