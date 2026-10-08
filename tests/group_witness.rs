@@ -184,3 +184,24 @@ fn simple_count_contract_is_dialect_independent() {
         );
     }
 }
+
+#[test]
+fn grouped_witness_provenance_is_preserved_across_producer_layers() {
+    use sql_semantic_protocol::{analyze_inputs, to_bundle_json, SqlInput};
+    let dialect = GenericDialect {};
+    let inputs = [
+        SqlInput::inline("CREATE TABLE mart.groups AS SELECT category, COUNT(*) AS total FROM raw.sales GROUP BY category HAVING COUNT(*) > 2"),
+        SqlInput::inline("SELECT category, total FROM mart.groups WHERE total > 4"),
+    ];
+    let bundle = analyze_inputs(&inputs, "generic", &dialect).expect("composed bundle");
+    let value: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+    let layers = value["layers"].as_array().expect("transformation layers");
+    let producer = layers.iter().find(|layer| layer["consumes"][0] == "raw.sales").expect("producer");
+    let consumer = layers.iter().find(|layer| layer["consumes"][0] == "mart.groups").expect("consumer");
+    let proof = &producer["composed_semantics"]["group_witnesses"][0];
+    assert_eq!(proof["witness"]["qualifying"]["status"], "exact");
+    assert_eq!(proof["witness"]["boundary"], "raw.sales");
+    let inherited = &consumer["composed_semantics"]["group_witnesses"][0];
+    assert_eq!(inherited["origin_layer_id"], proof["origin_layer_id"]);
+    assert_eq!(inherited["witness"], proof["witness"]);
+}
