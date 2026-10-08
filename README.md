@@ -21,7 +21,7 @@ The first downstream consumer is [sql-tdg](https://github.com/phdah/sql-tdg), wh
 - **Compositional:** resolve dependencies across multiple SQL statements, CTEs, derived tables, and named transformation layers.
 - **Honest about uncertainty:** unsupported constructs, missing schema evidence, and conditional comparison assumptions are surfaced rather than guessed.
 - **Extensible evidence:** analyze SQL directly, [dbt compiled artifacts](https://docs.getdbt.com/reference/artifacts/dbt-artifacts), or [Open Data Contract Standard (ODCS) v3.2](https://bitol-io.github.io/open-data-contract-standard/v3.2.0/home/) metadata.
-- **Interoperable:** deterministic JSON contract with an optional OpenLineage export.
+- **Interoperable:** deterministic JSON contract with an optional [OpenLineage](https://openlineage.io/) export.
 - **Library and CLI:** use the Rust API in a consumer or call the standalone binary.
 
 ## Quick start
