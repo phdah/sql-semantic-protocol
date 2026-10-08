@@ -22,6 +22,7 @@ mod data_type;
 mod dbt;
 mod domain;
 mod emission;
+mod group_witness;
 mod manifest;
 #[cfg(feature = "odcs")]
 mod odcs;
@@ -57,6 +58,7 @@ pub use dbt::{
     DbtManifest, DbtManifestError, SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
 pub use emission::{to_bundle_json, to_json};
+pub use group_witness::{GroupAggregate, GroupValueTest, GroupWitness, GroupWitnessCase, GroupWitnessDirection};
 pub use manifest::{
     parse_analysis_manifest, AnalysisManifest, ManifestError, ManifestInput, ManifestInputSource,
     ManifestOutputScope, ManifestRelationContext, ANALYSIS_MANIFEST_VERSION,
