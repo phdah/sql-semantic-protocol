@@ -54,7 +54,8 @@ fn count_rows_group_witnesses_are_exact_and_impossible_cases_are_empty() {
     assert_eq!(statement["group_witness"]["qualifying"]["status"], "exact");
     assert_eq!(statement["output"]["columns"][1]["domain"]["ranges"][0]["lower"]["value"]["value"], 3);
     assert_eq!(statement["output"]["columns"][1]["domain"]["ranges"][0]["lower"]["inclusive"], true);
-    assert_eq!(query.output().columns()[1].lineage()[0].relation(), "sales");
+    assert_eq!(query.dependencies(), &["sales"]);
+    assert!(query.output().columns()[1].lineage().is_empty());
 
     let impossible = analyze("SELECT category, COUNT(*) FROM sales GROUP BY category HAVING COUNT(*) < 1");
     assert!(matches!(first_query(&impossible).group_witness().unwrap().qualifying(), GroupWitnessDirection::Exact(cases) if cases.is_empty()));
