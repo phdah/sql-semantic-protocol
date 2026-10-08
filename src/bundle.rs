@@ -12,7 +12,7 @@ use crate::constraints::{
     merge_relation_constraint_sets, ConstraintDiagnostic, RelationConstraintSet,
 };
 use crate::protocol::{
-    ColumnDomain, ConditionExactness, DiagnosticSeverity, JoinKind, Output, Protocol,
+    ColumnDomain, ComparisonAssumption, ConditionExactness, DiagnosticSeverity, JoinKind, Output, Protocol,
     ProtocolStatement, WriteKind, PROTOCOL_VERSION,
 };
 use crate::relation::{
@@ -721,6 +721,7 @@ pub struct AnalysisBundle {
     source_schemas: Vec<RelationSchema>,
     relation_constraints: Vec<RelationConstraintSet>,
     constraint_diagnostics: Vec<ConstraintDiagnostic>,
+    comparison_declarations: Vec<ComparisonAssumption>,
 }
 
 impl AnalysisBundle {
@@ -757,6 +758,29 @@ impl AnalysisBundle {
     /// Return constraint diagnostics that cannot be scoped to one canonical relation.
     pub fn constraint_diagnostics(&self) -> &[ConstraintDiagnostic] {
         &self.constraint_diagnostics
+    }
+
+    /// Return the explicitly declared comparison settings, in deterministic order.
+    pub fn comparison_declarations(&self) -> &[ComparisonAssumption] { &self.comparison_declarations }
+
+    /// Attest warehouse comparison settings and apply them to local and composed scopes.
+    /// No assumption is silently supplied by default.
+    pub fn declare_comparison_assumptions(&mut self, declared: &[ComparisonAssumption]) {
+        self.comparison_declarations.extend(declared.iter().copied());
+        self.comparison_declarations.sort();
+        self.comparison_declarations.dedup();
+        for input in &mut self.inputs {
+            for statement in &mut input.statements {
+                if let ProtocolStatement::Query(query) = statement {
+                    query.declare_comparison_assumptions(&self.comparison_declarations);
+                }
+            }
+        }
+        for layer in &mut self.layers {
+            if let ComposedSemantics::Resolved(ref mut semantics) = layer.composed_semantics {
+                semantics.condition_exactness = semantics.condition_exactness.clone().with_declarations(&self.comparison_declarations);
+            }
+        }
     }
 
     /// Merge adapter-neutral canonical constraint evidence into this bundle.
@@ -841,6 +865,7 @@ impl AnalysisBundle {
             source_schemas: Vec::new(),
             relation_constraints,
             constraint_diagnostics: Vec::new(),
+            comparison_declarations: Vec::new(),
         })
     }
 }
@@ -1431,6 +1456,7 @@ pub fn select_targets(
         source_schemas: bundle.source_schemas.clone(),
         relation_constraints: bundle.relation_constraints.clone(),
         constraint_diagnostics: bundle.constraint_diagnostics.clone(),
+        comparison_declarations: bundle.comparison_declarations.clone(),
     })
 }
 

@@ -72,7 +72,7 @@ pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness,
+    ComparisonAssumption, ConditionalCondition, ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness,
     ConditionExactnessStatus, Diagnostic, DiagnosticArea, DiagnosticSeverity, ExistsPredicate,
     Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate, InSubqueryPredicate,
     IsNullPredicate, Join, JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue,

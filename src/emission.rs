@@ -84,6 +84,10 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         "graph": analysis_graph_to_value(bundle.graph())
     });
 
+    if !bundle.comparison_declarations().is_empty() {
+        value["declared_comparison_assumptions"] = json!(bundle.comparison_declarations().iter().map(|assumption| assumption.as_str()).collect::<Vec<_>>());
+    }
+
     if !bundle.source_schemas().is_empty() {
         value["source_schemas"] = json!(bundle
             .source_schemas()
@@ -990,7 +994,19 @@ fn condition_exactness_to_value(exactness: &ConditionExactness) -> Value {
             .residual_conditions()
             .iter()
             .map(residual_condition_to_value)
-            .collect::<Vec<_>>()
+            .collect::<Vec<_>>(),
+        "comparison_assumptions": exactness.required_assumptions().iter().map(|requirement| {
+            let mut value = json!({
+                "name": requirement.assumption().as_str(),
+                "clause": requirement.clause().as_str(),
+                "identity": requirement.identity(),
+                "declared": exactness.declared_assumptions().contains(&requirement.assumption())
+            });
+            if let (Some(layer), Some(scope)) = (requirement.origin_layer_id(), requirement.origin_scope()) {
+                value["origin"] = json!({"layer_id": layer, "scope": scope});
+            }
+            value
+        }).collect::<Vec<_>>()
     })
 }
 

@@ -76,13 +76,12 @@ fn decimal_literal_against_integer_is_unknown() {
 }
 
 #[test]
-fn string_comparison_is_unknown_without_collation_evidence() {
+fn string_comparison_retains_range_but_needs_collation_evidence() {
     let semantics = analyze("SELECT name FROM t WHERE name > 'b'", &[("name", "TEXT")]);
     let domain = semantics.column_domains()[0].domain();
-    assert!(
-        matches!(domain, ValueDomain::Unknown(_)),
-        "string ordering must be residual without collation evidence: {domain:?}"
-    );
+    assert!(matches!(domain, ValueDomain::Ranges(_)), "domain was discarded: {domain:?}");
+    assert_eq!(semantics.condition_exactness().status(), sql_semantic_protocol::ConditionExactnessStatus::Conditional);
+    assert!(semantics.condition_exactness().required_assumptions().iter().any(|requirement| requirement.assumption() == sql_semantic_protocol::ComparisonAssumption::BinaryCollation));
 }
 
 #[test]
@@ -116,13 +115,33 @@ fn typed_date_literal_remains_exact() {
 }
 
 #[test]
-fn timestamp_domain_is_residual_until_timezone_semantics_are_represented() {
+fn timestamp_domain_remains_conditional_on_timezone() {
     let semantics = analyze(
         "SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 00:00:00'",
         &[("ts", "TIMESTAMPTZ")],
     );
-    assert!(matches!(
-        semantics.column_domains()[0].domain(),
-        ValueDomain::Unknown(_)
-    ));
+    assert!(matches!(semantics.column_domains()[0].domain(), ValueDomain::Ranges(_)));
+    assert_eq!(semantics.condition_exactness().status(), sql_semantic_protocol::ConditionExactnessStatus::Conditional);
+}
+
+#[test]
+fn float_domain_remains_conditional_on_nan_semantics() {
+    let semantics = analyze("SELECT f FROM t WHERE f > 1.5", &[("f", "DOUBLE")]);
+    assert!(matches!(semantics.column_domains()[0].domain(), ValueDomain::Ranges(_)));
+    assert!(semantics.condition_exactness().required_assumptions().iter().any(|item| item.assumption() == sql_semantic_protocol::ComparisonAssumption::NoNan));
+}
+
+#[test]
+fn declared_comparison_assumptions_make_string_predicate_exact() {
+    let schema = RelationSchema::new("t", vec![SchemaColumn::from_sql_type("name", "VARCHAR", "postgresql").unwrap()]).unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let input = SqlInput::inline("SELECT name FROM t WHERE name = 'x'");
+    let dialect = PostgreSqlDialect {};
+    let configured = [ConfiguredSqlInput::new("sample", &input, "postgresql", &dialect)];
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    bundle.declare_comparison_assumptions(&[sql_semantic_protocol::ComparisonAssumption::BinaryCollation]);
+    match bundle.layers()[0].composed_semantics() {
+        ComposedSemantics::Resolved(semantics) => assert!(semantics.condition_exactness().is_exact()),
+        _ => panic!("unresolved query"),
+    }
 }

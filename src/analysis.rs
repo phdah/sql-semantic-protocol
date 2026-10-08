@@ -40,7 +40,7 @@ use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness, Diagnostic,
+    ComparisonAssumption, ConditionalCondition, ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness, Diagnostic,
     DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
     GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin,
     JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
@@ -590,6 +590,7 @@ fn analyze_query(
         false,
     )
     .merged_with(&unknown_column_domain_exactness(&column_domains))
+    .merged_with(&comparison_domain_exactness(&column_domains, metadata))
     .merged_with(&ConditionExactness::from_residuals(
         relation_analysis.residual_conditions.clone(),
     ))
@@ -778,18 +779,15 @@ fn type_literal(
             ),
             _ => incompatible(),
         },
-        DataType::FloatingPoint { .. } => Err(
-            "floating-point predicate domains are residual because NaN and signed-zero comparison semantics are not represented by the protocol".to_string(),
-        ),
+        DataType::FloatingPoint { .. } => match literal.value() {
+            LiteralValue::Number(_) => Ok(literal.clone()),
+            _ => incompatible(),
+        },
         DataType::Date if literal.literal_type() == LiteralType::Date => Ok(literal.clone()),
         DataType::Time { .. } if literal.literal_type() == LiteralType::Time => Ok(literal.clone()),
-        DataType::Timestamp { .. } if literal.literal_type() == LiteralType::Timestamp => {
-            Err("timestamp predicate domains are residual because timezone normalization is not represented by the canonical timestamp literal".to_string())
-        }
+        DataType::Timestamp { .. } if literal.literal_type() == LiteralType::Timestamp => Ok(literal.clone()),
         DataType::Interval if literal.literal_type() == LiteralType::Interval => Ok(literal.clone()),
-        DataType::String { .. } => Err(
-            "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol".to_string(),
-        ),
+        DataType::String { .. } if literal.literal_type() == LiteralType::String => Ok(literal.clone()),
         DataType::Enum { .. } | DataType::Set { .. } => Err(
             "enum and set predicate domains are residual because comparison semantics are dialect-dependent".to_string(),
         ),
@@ -887,6 +885,55 @@ fn integer_fits_unsigned(value: u128, bits: Option<u16>) -> bool {
         Some(0) => false,
         Some(bits) => value < (1_u128 << bits),
     }
+}
+
+// Preserve representable domains while making warehouse-dependent comparisons conditional.
+fn comparison_domain_exactness(
+    column_domains: &[ColumnDomain],
+    metadata: &AnalysisMetadata<'_>,
+) -> ConditionExactness {
+    let mut requirements = Vec::new();
+    for column_domain in column_domains {
+        let domain = column_domain.domain();
+        let literal = match domain {
+            ValueDomain::Ranges(ranges) => ranges.ranges().iter().flat_map(|range| {
+                [range.lower(), range.upper()].into_iter().flatten().map(|bound| bound.value())
+            }).next(),
+            ValueDomain::Set(set) => set.values().iter().find(|value| value.literal_type() != LiteralType::Null),
+            ValueDomain::Unbounded | ValueDomain::Empty | ValueDomain::Unknown(_) => None,
+        };
+        let Some(literal) = literal else { continue };
+        let data_type = metadata.column_data_type(column_domain.column());
+        let mut assumptions = BTreeSet::new();
+        match data_type {
+            Some(DataType::String { fixed, .. }) => {
+                assumptions.insert(ComparisonAssumption::BinaryCollation);
+                if *fixed { assumptions.insert(ComparisonAssumption::NoCharPadding); }
+            }
+            Some(DataType::FloatingPoint { .. }) => {
+                assumptions.insert(ComparisonAssumption::NoNan);
+                assumptions.insert(ComparisonAssumption::SignedZeroEquivalent);
+            }
+            Some(DataType::Timestamp { .. }) => {
+                assumptions.insert(ComparisonAssumption::SessionTimeZone);
+            }
+            None if literal.literal_type() == LiteralType::String => {
+                assumptions.insert(ComparisonAssumption::BinaryCollation);
+            }
+            None if literal.literal_type() == LiteralType::Timestamp => {
+                assumptions.insert(ComparisonAssumption::SessionTimeZone);
+            }
+            _ => {}
+        }
+        for assumption in assumptions {
+            requirements.push(ConditionalCondition::new(
+                assumption,
+                ConditionClause::Where,
+                format!("column_domain:{}", qualified_column_name(column_domain.column().relation(), column_domain.column().name())),
+            ));
+        }
+    }
+    ConditionExactness::from_requirements(requirements)
 }
 
 fn unknown_column_domain_exactness(column_domains: &[ColumnDomain]) -> ConditionExactness {
