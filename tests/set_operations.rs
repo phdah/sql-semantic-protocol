@@ -565,3 +565,68 @@ fn simple_set_witnesses_are_dialect_independent_for_shared_syntax() {
         );
     }
 }
+
+#[test]
+fn parenthesized_branch_limits_cannot_be_erased_from_witness_proofs() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT v FROM l UNION ALL (SELECT v FROM r LIMIT 1)",
+        "generic",
+        &dialect,
+    ).expect("nested operand limit should parse");
+    let operation = first_query(&protocol).set_operation().expect("operation");
+    let (positive, negative) = operation.witness_directions();
+    for direction in [positive, negative] {
+        assert!(matches!(
+            direction,
+            sql_semantic_protocol::SetWitnessDirection::Residual { reason: "inexact_branch_conditions", .. }
+        ), "{direction:?}");
+    }
+}
+
+#[test]
+fn nested_set_count_witnesses_match_duckdb_for_three_distinct_sources() {
+    use duckdb::Connection;
+    use sql_semantic_protocol::SetWitnessDirection;
+    let dialect = GenericDialect {};
+    let sql = "(SELECT v FROM l UNION ALL SELECT v FROM r) EXCEPT ALL SELECT v FROM s";
+    let protocol = analyze_sql(sql, "generic", &dialect).expect("nested set query");
+    let operation = first_query(&protocol).set_operation().expect("operation");
+    let (positive, negative) = operation.witness_directions();
+    let connection = Connection::open_in_memory().expect("DuckDB");
+    connection.execute_batch("CREATE TABLE l (v INTEGER); CREATE TABLE r (v INTEGER); CREATE TABLE s (v INTEGER);")
+        .expect("create source relations");
+    for direction in [positive, negative] {
+        let SetWitnessDirection::Exact(cases) = direction else { panic!("nested proof expected"); };
+        assert!(!cases.is_empty());
+        for case in cases {
+            connection.execute_batch("DELETE FROM l; DELETE FROM r; DELETE FROM s;").unwrap();
+            for obligation in case.obligations() {
+                for _ in 0..obligation.matching_tuple_count() {
+                    connection.execute_batch(&format!(
+                        "INSERT INTO {} VALUES (NULL)", obligation.boundary().relation()
+                    )).expect("insert tuple");
+                }
+            }
+            let observed: i64 = connection.query_row(
+                &format!("SELECT COUNT(*) FROM ({sql}) x WHERE v IS NULL"), [], |row| row.get(0),
+            ).expect("evaluate SQL");
+            assert_eq!(observed as u64, case.output_tuple_count());
+        }
+    }
+}
+
+#[test]
+fn disjoint_positive_branch_domains_do_not_generate_false_intersect_membership() {
+    use sql_semantic_protocol::SetWitnessDirection;
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "SELECT v FROM l WHERE v < 0 INTERSECT SELECT v FROM r WHERE v > 100",
+        "generic",
+        &dialect,
+    ).expect("analyze contradictory branch outputs");
+    let operation = first_query(&protocol).set_operation().expect("operation");
+    let (positive, negative) = operation.witness_directions();
+    assert!(matches!(positive, SetWitnessDirection::Residual { .. }), "{positive:?}");
+    assert!(matches!(negative, SetWitnessDirection::Exact(_)), "{negative:?}");
+}
