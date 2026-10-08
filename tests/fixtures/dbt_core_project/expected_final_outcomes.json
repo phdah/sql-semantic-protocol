@@ -405,6 +405,337 @@
           }
         ]
       },
+      "set_operations": [
+        {
+          "operation": {
+            "left": {
+              "kind": "query"
+            },
+            "membership": {
+              "branches": [
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:left",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    }
+                  ]
+                },
+                {
+                  "column_domains": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                      },
+                      "domain": {
+                        "kind": "ranges",
+                        "ranges": [
+                          {
+                            "lower": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 20
+                              }
+                            },
+                            "upper": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 80
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:right",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "gte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 20
+                          }
+                        },
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "lte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 80
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    }
+                  ]
+                }
+              ],
+              "multiplicity_rule": "sum",
+              "non_qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "tuple_equality": "not_distinct"
+            },
+            "operator": "union",
+            "quantifier": "all",
+            "right": {
+              "kind": "query"
+            }
+          },
+          "origin_layer_id": "layer-0014"
+        }
+      ],
       "status": "resolved"
     },
     "model_id": "model.sql_semantic_protocol_e2e.distinct_regions",
@@ -622,6 +953,448 @@
           }
         ]
       },
+      "set_operations": [
+        {
+          "operation": {
+            "left": {
+              "kind": "query"
+            },
+            "membership": {
+              "branches": [
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:left",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    }
+                  ]
+                },
+                {
+                  "column_domains": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                      },
+                      "domain": {
+                        "kind": "ranges",
+                        "ranges": [
+                          {
+                            "lower": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 20
+                              }
+                            },
+                            "upper": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 80
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:right",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "gte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 20
+                          }
+                        },
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "lte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 80
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    }
+                  ]
+                }
+              ],
+              "multiplicity_rule": "sum",
+              "non_qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "tuple_equality": "not_distinct"
+            },
+            "operator": "union",
+            "quantifier": "all",
+            "right": {
+              "kind": "query"
+            }
+          },
+          "origin_layer_id": "layer-0014"
+        },
+        {
+          "operation": {
+            "left": {
+              "kind": "query"
+            },
+            "membership": {
+              "branches": [
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:left",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    }
+                  ]
+                },
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:right",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                          }
+                        ],
+                        "name": "order_id"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    }
+                  ]
+                }
+              ],
+              "multiplicity_rule": "except_distinct",
+              "non_qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "tuple_equality": "not_distinct"
+            },
+            "operator": "except",
+            "quantifier": "distinct",
+            "right": {
+              "kind": "query"
+            }
+          },
+          "origin_layer_id": "layer-0017"
+        }
+      ],
       "status": "resolved"
     },
     "model_id": "model.sql_semantic_protocol_e2e.excluded_order_ids",
@@ -1352,6 +2125,448 @@
           }
         ]
       },
+      "set_operations": [
+        {
+          "operation": {
+            "left": {
+              "kind": "query"
+            },
+            "membership": {
+              "branches": [
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:left",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    }
+                  ]
+                },
+                {
+                  "column_domains": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                      },
+                      "domain": {
+                        "kind": "ranges",
+                        "ranges": [
+                          {
+                            "lower": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 20
+                              }
+                            },
+                            "upper": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 80
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:right",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "gte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 20
+                          }
+                        },
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "lte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 80
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    }
+                  ]
+                }
+              ],
+              "multiplicity_rule": "sum",
+              "non_qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "tuple_equality": "not_distinct"
+            },
+            "operator": "union",
+            "quantifier": "all",
+            "right": {
+              "kind": "query"
+            }
+          },
+          "origin_layer_id": "layer-0014"
+        },
+        {
+          "operation": {
+            "left": {
+              "kind": "query"
+            },
+            "membership": {
+              "branches": [
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:left",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    }
+                  ]
+                },
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:right",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    }
+                  ]
+                }
+              ],
+              "multiplicity_rule": "intersect_distinct",
+              "non_qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "tuple_equality": "not_distinct"
+            },
+            "operator": "intersect",
+            "quantifier": "distinct",
+            "right": {
+              "kind": "query"
+            }
+          },
+          "origin_layer_id": "layer-0018"
+        }
+      ],
       "status": "resolved"
     },
     "model_id": "model.sql_semantic_protocol_e2e.intersected_order_ids",
@@ -1836,6 +3051,119 @@
           }
         ]
       },
+      "set_operations": [
+        {
+          "operation": {
+            "left": {
+              "kind": "query"
+            },
+            "membership": {
+              "branches": [
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:left",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_orders\""
+                    }
+                  ]
+                },
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:right",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    }
+                  ]
+                }
+              ],
+              "multiplicity_rule": "sum",
+              "non_qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "tuple_equality": "not_distinct"
+            },
+            "operator": "union",
+            "quantifier": "all",
+            "right": {
+              "kind": "query"
+            }
+          },
+          "origin_layer_id": "layer-0012"
+        }
+      ],
       "status": "resolved"
     },
     "model_id": "model.sql_semantic_protocol_e2e.ordered_limited_union",
@@ -2074,6 +3402,337 @@
           }
         ]
       },
+      "set_operations": [
+        {
+          "operation": {
+            "left": {
+              "kind": "query"
+            },
+            "membership": {
+              "branches": [
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:left",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    }
+                  ]
+                },
+                {
+                  "column_domains": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                      },
+                      "domain": {
+                        "kind": "ranges",
+                        "ranges": [
+                          {
+                            "lower": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 20
+                              }
+                            },
+                            "upper": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 80
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:right",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "gte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 20
+                          }
+                        },
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "lte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 80
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    }
+                  ]
+                }
+              ],
+              "multiplicity_rule": "sum",
+              "non_qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "tuple_equality": "not_distinct"
+            },
+            "operator": "union",
+            "quantifier": "all",
+            "right": {
+              "kind": "query"
+            }
+          },
+          "origin_layer_id": "layer-0014"
+        }
+      ],
       "status": "resolved"
     },
     "model_id": "model.sql_semantic_protocol_e2e.rollup_orders",
@@ -2490,6 +4149,337 @@
           }
         ]
       },
+      "set_operations": [
+        {
+          "operation": {
+            "left": {
+              "kind": "query"
+            },
+            "membership": {
+              "branches": [
+                {
+                  "column_domains": [],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:left",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "order_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "order_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": null
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    }
+                  ]
+                },
+                {
+                  "column_domains": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                      },
+                      "domain": {
+                        "kind": "ranges",
+                        "ranges": [
+                          {
+                            "lower": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 20
+                              }
+                            },
+                            "upper": {
+                              "inclusive": true,
+                              "value": {
+                                "kind": "literal",
+                                "type": "integer",
+                                "value": 80
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "condition_exactness": {
+                    "comparison_assumptions": [],
+                    "residual_conditions": [],
+                    "status": "exact"
+                  },
+                  "identity": "body:right",
+                  "output": {
+                    "columns": [
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "order_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "customer_id",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "customer_id",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "customer_id"
+                      },
+                      {
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "amount",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "amount",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "amount"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "status",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "status",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "status"
+                      },
+                      {
+                        "domain": {
+                          "kind": "unbounded"
+                        },
+                        "expression": {
+                          "kind": "column",
+                          "name": "region",
+                          "relation": null
+                        },
+                        "lineage": [
+                          {
+                            "column": "region",
+                            "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                          }
+                        ],
+                        "name": "region"
+                      }
+                    ]
+                  },
+                  "predicates": {
+                    "having": null,
+                    "qualify": null,
+                    "where": {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "gte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 20
+                          }
+                        },
+                        {
+                          "kind": "comparison",
+                          "left": {
+                            "kind": "column",
+                            "name": "amount",
+                            "relation": null
+                          },
+                          "operator": "lte",
+                          "right": {
+                            "kind": "literal",
+                            "type": "integer",
+                            "value": 80
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "sources": [
+                    {
+                      "alias": null,
+                      "kind": "relation",
+                      "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    }
+                  ]
+                }
+              ],
+              "multiplicity_rule": "sum",
+              "non_qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "qualifying_witness": {
+                "reason": "source_witness_obligations_not_proven",
+                "status": "residual"
+              },
+              "tuple_equality": "not_distinct"
+            },
+            "operator": "union",
+            "quantifier": "all",
+            "right": {
+              "kind": "query"
+            }
+          },
+          "origin_layer_id": "layer-0014"
+        }
+      ],
       "status": "resolved"
     },
     "model_id": "model.sql_semantic_protocol_e2e.subquery_orders",
