@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::bundle::{
     AnalysisGraph, AnalyzedInput, ComposedJoinColumn, ComposedJoinEquality, ComposedSemantics,
+    ComposedSetOperation,
     CompositionDiagnostic, CompositionFailureReason, GraphEdge, RelationResolution,
     TransformationLayer,
 };
@@ -130,6 +131,15 @@ impl<'a> Composer<'a> {
         let mut dependencies = BTreeSet::<String>::new();
         let mut domain_map = BTreeMap::<ColumnRef, ValueDomain>::new();
         let mut join_equalities = Vec::<ComposedJoinEquality>::new();
+        let mut set_operations = query
+            .set_operation()
+            .map(|operation| {
+                vec![ComposedSetOperation::new(
+                    layer.id().to_string(),
+                    operation.clone(),
+                )]
+            })
+            .unwrap_or_default();
         let mut diagnostics = Vec::<CompositionDiagnostic>::new();
         let mut condition_exactness: ConditionExactness = query
             .condition_exactness()
@@ -164,6 +174,7 @@ impl<'a> Composer<'a> {
                             dependencies.extend(upstream.dependencies().iter().cloned());
                             merge_column_domains(&mut domain_map, upstream.column_domains());
                             join_equalities.extend(upstream.join_equalities().iter().cloned());
+                            set_operations.extend(upstream.set_operations().iter().cloned());
                             condition_exactness =
                                 condition_exactness.merged_with(upstream.condition_exactness());
                         }
@@ -245,6 +256,7 @@ impl<'a> Composer<'a> {
             dependencies.into_iter().collect(),
             column_domains,
             join_equalities,
+            set_operations,
             condition_exactness,
             output,
             diagnostics,
