@@ -570,14 +570,21 @@ fn parenthesized_branch_limits_cannot_be_erased_from_witness_proofs() {
         "SELECT v FROM l UNION ALL (SELECT v FROM r LIMIT 1)",
         "generic",
         &dialect,
-    ).expect("nested operand limit should parse");
+    )
+    .expect("nested operand limit should parse");
     let operation = first_query(&protocol).set_operation().expect("operation");
     let (positive, negative) = operation.witness_directions();
     for direction in [positive, negative] {
-        assert!(matches!(
-            direction,
-            sql_semantic_protocol::SetWitnessDirection::Residual { reason: "inexact_branch_conditions", .. }
-        ), "{direction:?}");
+        assert!(
+            matches!(
+                direction,
+                sql_semantic_protocol::SetWitnessDirection::Residual {
+                    reason: "inexact_branch_conditions",
+                    ..
+                }
+            ),
+            "{direction:?}"
+        );
     }
 }
 
@@ -591,23 +598,37 @@ fn nested_set_count_witnesses_match_duckdb_for_three_distinct_sources() {
     let operation = first_query(&protocol).set_operation().expect("operation");
     let (positive, negative) = operation.witness_directions();
     let connection = Connection::open_in_memory().expect("DuckDB");
-    connection.execute_batch("CREATE TABLE l (v INTEGER); CREATE TABLE r (v INTEGER); CREATE TABLE s (v INTEGER);")
+    connection
+        .execute_batch(
+            "CREATE TABLE l (v INTEGER); CREATE TABLE r (v INTEGER); CREATE TABLE s (v INTEGER);",
+        )
         .expect("create source relations");
     for direction in [positive, negative] {
-        let SetWitnessDirection::Exact(cases) = direction else { panic!("nested proof expected"); };
+        let SetWitnessDirection::Exact(cases) = direction else {
+            panic!("nested proof expected");
+        };
         assert!(!cases.is_empty());
         for case in cases {
-            connection.execute_batch("DELETE FROM l; DELETE FROM r; DELETE FROM s;").unwrap();
+            connection
+                .execute_batch("DELETE FROM l; DELETE FROM r; DELETE FROM s;")
+                .unwrap();
             for obligation in case.obligations() {
                 for _ in 0..obligation.matching_tuple_count() {
-                    connection.execute_batch(&format!(
-                        "INSERT INTO {} VALUES (NULL)", obligation.boundary().relation()
-                    )).expect("insert tuple");
+                    connection
+                        .execute_batch(&format!(
+                            "INSERT INTO {} VALUES (NULL)",
+                            obligation.boundary().relation()
+                        ))
+                        .expect("insert tuple");
                 }
             }
-            let observed: i64 = connection.query_row(
-                &format!("SELECT COUNT(*) FROM ({sql}) x WHERE v IS NULL"), [], |row| row.get(0),
-            ).expect("evaluate SQL");
+            let observed: i64 = connection
+                .query_row(
+                    &format!("SELECT COUNT(*) FROM ({sql}) x WHERE v IS NULL"),
+                    [],
+                    |row| row.get(0),
+                )
+                .expect("evaluate SQL");
             assert_eq!(observed as u64, case.output_tuple_count());
         }
     }
@@ -621,9 +642,16 @@ fn disjoint_positive_branch_domains_do_not_generate_false_intersect_membership()
         "SELECT v FROM l WHERE v < 0 INTERSECT SELECT v FROM r WHERE v > 100",
         "generic",
         &dialect,
-    ).expect("analyze contradictory branch outputs");
+    )
+    .expect("analyze contradictory branch outputs");
     let operation = first_query(&protocol).set_operation().expect("operation");
     let (positive, negative) = operation.witness_directions();
-    assert!(matches!(positive, SetWitnessDirection::Residual { .. }), "{positive:?}");
-    assert!(matches!(negative, SetWitnessDirection::Exact(_)), "{negative:?}");
+    assert!(
+        matches!(positive, SetWitnessDirection::Residual { .. }),
+        "{positive:?}"
+    );
+    assert!(
+        matches!(negative, SetWitnessDirection::Exact(_)),
+        "{negative:?}"
+    );
 }
