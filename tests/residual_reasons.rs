@@ -225,11 +225,15 @@ fn unknown_schema_columns_use_their_actual_clause_not_row_set_operator() {
 
     // A bad projection still blocks trust in the query, but belongs to SELECT.
     let projected = typed("SELECT ghost FROM t", &[("t", &[("a", "INTEGER")])]);
-    assert!(projected.condition_exactness().residual_conditions().iter().any(|residual| {
-        residual.reason() == ResidualConditionReason::UnknownSchemaColumn
-            && residual.clause() == ConditionClause::Select
-            && residual.identity().contains("ghost")
-    }));
+    assert!(projected
+        .condition_exactness()
+        .residual_conditions()
+        .iter()
+        .any(|residual| {
+            residual.reason() == ResidualConditionReason::UnknownSchemaColumn
+                && residual.clause() == ConditionClause::Select
+                && residual.identity().contains("ghost")
+        }));
 }
 
 #[test]
