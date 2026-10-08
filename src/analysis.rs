@@ -678,11 +678,15 @@ fn validate_schema_column_references(
             DiagnosticArea::Source,
             &format!("column '{reference}' is absent from available typed schema evidence"),
         ));
-        residuals.push(ResidualCondition::new(
-            ResidualConditionReason::AnalysisDiagnostic,
-            ConditionClause::Where,
-            format!("unknown_schema_column:{reference}"),
-        ));
+        for (clause, identity) in condition_locations_for_column(
+            &column, predicates, joins, sources,
+        ) {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::UnknownSchemaColumn,
+                clause,
+                format!("{identity}:unknown_schema_column:{reference}"),
+            ));
+        }
     }
     residuals
 }
@@ -701,6 +705,39 @@ impl TypedLiteralError {
             message: message.into(),
         }
     }
+}
+
+/// Find the actual membership clauses that reference a physical column.
+fn condition_locations_for_column(
+    column: &ColumnRef,
+    predicates: &Predicates,
+    joins: &[ProtocolJoin],
+    sources: &[SourceRelation],
+) -> Vec<(ConditionClause, String)> {
+    let mut locations = Vec::new();
+    for (clause, identity, predicate) in [
+        (ConditionClause::Where, "where", predicates.where_predicate()),
+        (ConditionClause::Having, "having", predicates.having_predicate()),
+        (ConditionClause::Qualify, "qualify", predicates.qualify_predicate()),
+    ] {
+        if let Some(predicate) = predicate {
+            let mut columns = BTreeSet::new();
+            collect_predicate_column_refs(predicate, sources, &mut columns);
+            if columns.contains(column) {
+                locations.push((clause, identity.to_string()));
+            }
+        }
+    }
+    for (index, join) in joins.iter().enumerate() {
+        if let Some(predicate) = join.condition() {
+            let mut columns = BTreeSet::new();
+            collect_predicate_column_refs(predicate, sources, &mut columns);
+            if columns.contains(column) {
+                locations.push((ConditionClause::JoinOn, format!("join:{index}")));
+            }
+        }
+    }
+    locations
 }
 
 fn type_column_domains(
@@ -1066,26 +1103,50 @@ fn comparison_domain_exactness(
     ConditionExactness::from_requirements(requirements)
 }
 
-fn unknown_column_domain_exactness(column_domains: &[ColumnDomain]) -> ConditionExactness {
-    ConditionExactness::from_residuals(
-        column_domains
+fn unknown_column_domain_exactness(
+    column_domains: &[ColumnDomain],
+    typing_failures: &[(ColumnRef, ResidualConditionReason)],
+    predicates: &Predicates,
+    joins: &[ProtocolJoin],
+    sources: &[SourceRelation],
+    predicate_exactness: &ConditionExactness,
+) -> ConditionExactness {
+    let mut residuals = Vec::new();
+    for column_domain in column_domains {
+        if !matches!(column_domain.domain(), ValueDomain::Unknown(_)) {
+            continue;
+        }
+        let typed_failure = typing_failures
             .iter()
-            .filter(|column_domain| matches!(column_domain.domain(), ValueDomain::Unknown(_)))
-            .map(|column_domain| {
-                ResidualCondition::new(
-                    ResidualConditionReason::ComputedExpression,
-                    ConditionClause::Where,
-                    format!(
-                        "column_domain:{}",
-                        qualified_column_name(
-                            column_domain.column().relation(),
-                            column_domain.column().name()
-                        )
-                    ),
-                )
-            })
-            .collect(),
-    )
+            .find(|(column, _)| column == column_domain.column())
+            .map(|(_, reason)| *reason);
+        for (clause, identity) in condition_locations_for_column(
+            column_domain.column(), predicates, joins, sources,
+        ) {
+            // A structural unknown explained by the predicate classifier is already
+            // represented with the predicate's own identity. Do not report it again.
+            if typed_failure.is_none()
+                && predicate_exactness
+                    .residual_conditions()
+                    .iter()
+                    .any(|residual| residual.clause() == clause)
+            {
+                continue;
+            }
+            residuals.push(ResidualCondition::new(
+                typed_failure.unwrap_or(ResidualConditionReason::ComputedExpression),
+                clause,
+                format!(
+                    "{identity}:column_domain:{}",
+                    qualified_column_name(
+                        column_domain.column().relation(),
+                        column_domain.column().name()
+                    )
+                ),
+            ));
+        }
+    }
+    ConditionExactness::from_residuals(residuals)
 }
 
 fn analyze_query_condition_exactness(
@@ -1288,6 +1349,7 @@ fn diagnostic_is_non_membership_or_already_classified(code: &str) -> bool {
             | "set_operation_arity_mismatch"
             | "unresolved_set_operation_output"
             | "unsupported_set_operation_alignment"
+            | "unknown_schema_column"
     )
 }
 
@@ -1411,8 +1473,46 @@ fn append_predicate_residuals(
     allow_join_equality: bool,
     residuals: &mut Vec<ResidualCondition>,
 ) {
-    for reason in predicate_residual_reasons(predicate, clause, sources, allow_join_equality) {
-        residuals.push(ResidualCondition::new(reason, clause, identity));
+    // A path through the logical tree identifies a condition, rather than only its
+    // reason. Two unsupported siblings must not collapse into one residual.
+    match predicate {
+        Predicate::And(logical) => {
+            for (index, operand) in logical.operands().iter().enumerate() {
+                append_predicate_residuals(
+                    operand,
+                    clause,
+                    &format!("{identity}:and:{index}"),
+                    sources,
+                    allow_join_equality,
+                    residuals,
+                );
+            }
+        }
+        Predicate::Or(logical) if clause != ConditionClause::JoinOn
+            && logical.operands().iter().any(|operand| {
+                !predicate_residual_reasons(
+                    operand, clause, sources, allow_join_equality,
+                ).is_empty()
+            }) =>
+        {
+            for (index, operand) in logical.operands().iter().enumerate() {
+                append_predicate_residuals(
+                    operand,
+                    clause,
+                    &format!("{identity}:or:{index}"),
+                    sources,
+                    allow_join_equality,
+                    residuals,
+                );
+            }
+        }
+        _ => {
+            for reason in predicate_residual_reasons(
+                predicate, clause, sources, allow_join_equality,
+            ) {
+                residuals.push(ResidualCondition::new(reason, clause, identity));
+            }
+        }
     }
 }
 
