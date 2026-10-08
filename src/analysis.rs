@@ -1152,14 +1152,18 @@ fn canonical_timestamp_text(input: &str) -> Option<(String, bool)> {
             2 if digits.bytes().all(|byte| byte.is_ascii_digit()) => {
                 (digits.parse::<u8>().ok()?, 0)
             }
-            4 if digits.bytes().all(|byte| byte.is_ascii_digit()) => {
-                (digits.get(..2)?.parse::<u8>().ok()?, digits.get(2..)?.parse::<u8>().ok()?)
-            }
+            4 if digits.bytes().all(|byte| byte.is_ascii_digit()) => (
+                digits.get(..2)?.parse::<u8>().ok()?,
+                digits.get(2..)?.parse::<u8>().ok()?,
+            ),
             5 if digits.as_bytes()[2] == b':'
                 && digits.get(..2)?.bytes().all(|byte| byte.is_ascii_digit())
                 && digits.get(3..)?.bytes().all(|byte| byte.is_ascii_digit()) =>
             {
-                (digits.get(..2)?.parse::<u8>().ok()?, digits.get(3..)?.parse::<u8>().ok()?)
+                (
+                    digits.get(..2)?.parse::<u8>().ok()?,
+                    digits.get(3..)?.parse::<u8>().ok()?,
+                )
             }
             _ => return None,
         };
@@ -1182,8 +1186,9 @@ fn canonical_timestamp_text(input: &str) -> Option<(String, bool)> {
 
 fn timestamp_literal_has_offset(literal: &LiteralExpression) -> bool {
     match literal.value() {
-        LiteralValue::Text(text) => canonical_timestamp_text(text)
-            .is_some_and(|(_, has_offset)| has_offset),
+        LiteralValue::Text(text) => {
+            canonical_timestamp_text(text).is_some_and(|(_, has_offset)| has_offset)
+        }
         _ => false,
     }
 }
