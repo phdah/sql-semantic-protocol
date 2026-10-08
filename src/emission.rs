@@ -711,7 +711,7 @@ fn set_witness_direction_to_value(direction: &crate::protocol::SetWitnessDirecti
                     "matching_tuple_count": obligation.matching_tuple_count()
                 })).collect::<Vec<_>>()
             })).collect::<Vec<_>>()
-        })
+        }),
     }
 }
 
