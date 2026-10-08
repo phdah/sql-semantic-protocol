@@ -1,7 +1,7 @@
 ---
 id: TASK-53
 title: 'Make typed string, float, and timestamp domains usable'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-08 09:06'
 updated_date: '2026-10-08 09:06'
@@ -41,14 +41,14 @@ Observed at 2bc99b3, with typed schemas and the duckdb dialect:
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Typed string, float, and timestamp predicates keep their include set, exclude set, or range domain instead of Unknown
-- [ ] #2 Exactness can be conditional on named comparison-semantics assumptions, listed deterministically on scopes and composed semantics with the conditions that depend on each
-- [ ] #3 Conditions whose result is the same under every supported collation, padding, NaN, and time-zone setting are exact without assumptions, and the docs state which forms qualify
-- [ ] #4 The library, CLI, analysis manifest, and dbt path accept caller-declared comparison semantics; declared assumptions are recorded in the emitted bundle and are not listed as open
-- [ ] #5 Analysis with and without schema evidence applies the same comparison-semantics rules to string literals, so the same predicate cannot be exact in one and residual in the other
-- [ ] #6 Canonical schema evidence distinguishes timestamps with and without time zone from catalog, manifest-declared, ODCS, and caller-supplied types, without breaking 1.x consumers
-- [ ] #7 Timestamp-without-time-zone comparisons with offset-free literals are exact; time-zone-aware comparisons are exact only when the literal carries an offset or a session time zone is declared
-- [ ] #8 Floating-point ranges and sets state NaN and signed-zero membership and are exact under the documented assumption
-- [ ] #9 Each observation in the description has a test for the undeclared case and the declared case, and the differential suite checks exact claims under declared assumptions
-- [ ] #10 JSON Schema, protocol docs, README, and public API docs describe comparison-semantics assumptions and declarations
+- [x] #1 Typed string, float, and timestamp predicates keep their include set, exclude set, or range domain instead of Unknown
+- [x] #2 Exactness can be conditional on named comparison-semantics assumptions, listed deterministically on scopes and composed semantics with the conditions that depend on each
+- [x] #3 Conditions whose result is the same under every supported collation, padding, NaN, and time-zone setting are exact without assumptions, and the docs state which forms qualify
+- [x] #4 The library, CLI, analysis manifest, and dbt path accept caller-declared comparison semantics; declared assumptions are recorded in the emitted bundle and are not listed as open
+- [x] #5 Analysis with and without schema evidence applies the same comparison-semantics rules to string literals, so the same predicate cannot be exact in one and residual in the other
+- [x] #6 Canonical schema evidence distinguishes timestamps with and without time zone from catalog, manifest-declared, ODCS, and caller-supplied types, without breaking 1.x consumers
+- [x] #7 Timestamp-without-time-zone comparisons with offset-free literals are exact; time-zone-aware comparisons are exact only when the literal carries an offset or a session time zone is declared
+- [x] #8 Floating-point ranges and sets state NaN and signed-zero membership and are exact under the documented assumption
+- [x] #9 Each observation in the description has a test for the undeclared case and the declared case, and the differential suite checks exact claims under declared assumptions
+- [x] #10 JSON Schema, protocol docs, README, and public API docs describe comparison-semantics assumptions and declarations
 <!-- AC:END -->
