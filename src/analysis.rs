@@ -584,6 +584,7 @@ fn analyze_query(
         query,
         &predicates,
         &relation_analysis.sources,
+        &relation_analysis.dependencies,
         &relation_analysis.joins,
         &diagnostics,
         false,
@@ -914,18 +915,29 @@ fn analyze_query_condition_exactness(
     query: &SqlQuery,
     predicates: &Predicates,
     sources: &[SourceRelation],
+    dependencies: &BTreeSet<String>,
     joins: &[ProtocolJoin],
     diagnostics: &[Diagnostic],
     correlated: bool,
 ) -> ConditionExactness {
     let mut residuals = Vec::new();
 
+    // Local relations carry inherited physical joins, but the enclosing scope
+    // only names the CTE/derived-table sources. Include proven dependencies so
+    // normalized physical equalities are not misclassified as column comparisons.
+    let mut equality_sources = sources.to_vec();
+    for dependency in dependencies {
+        if !equality_sources.iter().any(|source| source.name() == dependency) {
+            equality_sources.push(SourceRelation::new(dependency.clone(), None));
+        }
+    }
+
     if let Some(predicate) = predicates.where_predicate() {
         append_predicate_residuals(
             predicate,
             ConditionClause::Where,
             "where",
-            sources,
+            &equality_sources,
             true,
             &mut residuals,
         );
@@ -956,7 +968,7 @@ fn analyze_query_condition_exactness(
                         predicate,
                         ConditionClause::JoinOn,
                         &identity,
-                        sources,
+                        &equality_sources,
                         true,
                         &mut residuals,
                     );
@@ -2538,6 +2550,7 @@ fn analyze_local_query_condition_exactness(
         query,
         &predicates,
         &relation_analysis.sources,
+        &relation_analysis.dependencies,
         &relation_analysis.joins,
         &diagnostics,
         false,
@@ -5674,6 +5687,7 @@ fn analyze_subquery_semantics(
         query,
         &predicates,
         &relations.sources,
+        &relations.dependencies,
         &relations.joins,
         &diagnostics,
         !correlations.is_empty(),
