@@ -46,7 +46,12 @@ fn analyzed(sql: &str) -> AnalysisBundle {
 }
 
 fn resolved(bundle: &AnalysisBundle) -> &ResolvedComposedSemantics {
-    match bundle.layers().last().expect("query layer").composed_semantics() {
+    match bundle
+        .layers()
+        .last()
+        .expect("query layer")
+        .composed_semantics()
+    {
         ComposedSemantics::Resolved(semantics) => semantics,
         other => panic!("expected composed semantics: {other:?}"),
     }
