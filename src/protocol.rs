@@ -1055,6 +1055,8 @@ impl ConditionalCondition {
 /// SQL clause that owns a residual row-membership condition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ConditionClause {
+    /// SELECT output projection.
+    Select,
     /// WHERE clause.
     Where,
     /// JOIN ON or USING condition.
@@ -1072,6 +1074,7 @@ pub enum ConditionClause {
 impl ConditionClause {
     pub(crate) fn as_str(self) -> &'static str {
         match self {
+            Self::Select => "select",
             Self::Where => "where",
             Self::JoinOn => "on",
             Self::Having => "having",
@@ -1093,6 +1096,16 @@ pub enum ResidualConditionReason {
     ColumnComparison,
     /// A condition depends on a computed expression rather than a plain source column.
     ComputedExpression,
+    /// Comparison semantics are not established for the source datatype.
+    ComparisonSemantics,
+    /// A scalar literal has an incompatible canonical type.
+    LiteralTypeMismatch,
+    /// Numeric coercion would lose precision.
+    LossyCoercion,
+    /// A literal exceeds the source datatype's allowed range or precision.
+    OutOfRangeLiteral,
+    /// A referenced physical column is absent from available schema evidence.
+    UnknownSchemaColumn,
     /// A condition uses a subquery predicate.
     SubqueryPredicate,
     /// A normalized predicate is unknown or unsupported.
@@ -1140,6 +1153,11 @@ impl ResidualConditionReason {
             Self::LogicalNot => "logical_not",
             Self::ColumnComparison => "column_comparison",
             Self::ComputedExpression => "computed_expression",
+            Self::ComparisonSemantics => "comparison_semantics",
+            Self::LiteralTypeMismatch => "literal_type_mismatch",
+            Self::LossyCoercion => "lossy_coercion",
+            Self::OutOfRangeLiteral => "out_of_range_literal",
+            Self::UnknownSchemaColumn => "unknown_schema_column",
             Self::SubqueryPredicate => "subquery_predicate",
             Self::UnsupportedPredicate => "unsupported_predicate",
             Self::ConstantFalseOrNull => "constant_false_or_null",

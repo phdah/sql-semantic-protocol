@@ -561,7 +561,7 @@ fn analyze_query(
         }
     };
 
-    let column_domains = type_column_domains(
+    let (column_domains, typing_failures) = type_column_domains(
         analyze_query_column_domains(
             query,
             &BTreeSet::new(),
@@ -582,6 +582,7 @@ fn analyze_query(
     }
     inspect_query_features(query, &mut diagnostics);
     let missing_column_residuals = validate_schema_column_references(
+        query,
         &predicates,
         &output,
         &relation_analysis.joins,
@@ -589,7 +590,7 @@ fn analyze_query(
         metadata,
         &mut diagnostics,
     );
-    let condition_exactness = analyze_query_condition_exactness(
+    let predicate_exactness = analyze_query_condition_exactness(
         query,
         &predicates,
         &relation_analysis.sources,
@@ -597,15 +598,23 @@ fn analyze_query(
         &relation_analysis.joins,
         &diagnostics,
         false,
-    )
-    .merged_with(&unknown_column_domain_exactness(&column_domains))
-    .merged_with(&comparison_domain_exactness(&column_domains, metadata))
-    .merged_with(&ConditionExactness::from_residuals(
-        relation_analysis.residual_conditions.clone(),
-    ))
-    .merged_with(&ConditionExactness::from_residuals(
-        missing_column_residuals,
-    ));
+    );
+    let condition_exactness = predicate_exactness
+        .merged_with(&unknown_column_domain_exactness(
+            &column_domains,
+            &typing_failures,
+            &predicates,
+            &relation_analysis.joins,
+            &relation_analysis.sources,
+            &predicate_exactness,
+        ))
+        .merged_with(&comparison_domain_exactness(&column_domains, metadata))
+        .merged_with(&ConditionExactness::from_residuals(
+            relation_analysis.residual_conditions.clone(),
+        ))
+        .merged_with(&ConditionExactness::from_residuals(
+            missing_column_residuals,
+        ));
     sort_diagnostics(&mut diagnostics);
 
     QueryStatement::new(
@@ -623,6 +632,7 @@ fn analyze_query(
 
 /// Verify physical column references where typed source schema evidence exists.
 fn validate_schema_column_references(
+    query: &SqlQuery,
     predicates: &Predicates,
     output: &Output,
     joins: &[ProtocolJoin],
@@ -670,43 +680,176 @@ fn validate_schema_column_references(
             DiagnosticArea::Source,
             &format!("column '{reference}' is absent from available typed schema evidence"),
         ));
-        residuals.push(ResidualCondition::new(
-            ResidualConditionReason::AnalysisDiagnostic,
-            ConditionClause::Where,
-            format!("unknown_schema_column:{reference}"),
-        ));
+        if output.columns().iter().any(|projected| {
+            let mut references = BTreeSet::new();
+            collect_expression_column_refs(projected.expression(), sources, &mut references);
+            references.contains(&column)
+        }) {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::UnknownSchemaColumn,
+                ConditionClause::Select,
+                format!("select:unknown_schema_column:{reference}"),
+            ));
+        }
+        for (clause, identity) in
+            condition_locations_for_column(&column, predicates, joins, sources)
+        {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::UnknownSchemaColumn,
+                clause,
+                format!("{identity}:unknown_schema_column:{reference}"),
+            ));
+        }
     }
-    residuals
+
+    // Remapping an invalid physical equality can replace the missing column
+    // with Unknown before the normalized join reaches schema validation.
+    // Inspect the original ON expression for reference evidence only.
+    if let SetExpr::Select(select) = query.body.as_ref() {
+        let mut join_index = 0usize;
+        for table in &select.from {
+            for join in &table.joins {
+                if let (_, Some(JoinConstraint::On(expression)), _) =
+                    analyze_join_operator(&join.join_operator)
+                {
+                    let predicate = analyze_predicate(expression, &mut Vec::new());
+                    let mut raw_columns = BTreeSet::new();
+                    collect_predicate_column_refs(&predicate, sources, &mut raw_columns);
+                    for column in raw_columns {
+                        let Some(relation) = column.relation() else {
+                            continue;
+                        };
+                        let Some(schema_columns) = metadata.schema_columns(relation) else {
+                            continue;
+                        };
+                        if schema_columns
+                            .iter()
+                            .any(|declared| declared == column.name())
+                        {
+                            continue;
+                        }
+                        let reference = format!("{relation}.{}", column.name());
+                        let diagnostic = warning(
+                            "unknown_schema_column",
+                            DiagnosticArea::Source,
+                            &format!("column '{reference}' is absent from available typed schema evidence"),
+                        );
+                        if !diagnostics.contains(&diagnostic) {
+                            diagnostics.push(diagnostic);
+                        }
+                        residuals.push(ResidualCondition::new(
+                            ResidualConditionReason::UnknownSchemaColumn,
+                            ConditionClause::JoinOn,
+                            format!("join:{join_index}:unknown_schema_column:{reference}"),
+                        ));
+                    }
+                }
+                join_index += 1;
+            }
+        }
+    }
+    ConditionExactness::from_residuals(residuals)
+        .residual_conditions()
+        .to_vec()
+}
+
+/// Keep the category of a rejected typed comparison separate from its human-readable explanation.
+#[derive(Debug)]
+struct TypedLiteralError {
+    reason: ResidualConditionReason,
+    message: String,
+}
+
+impl TypedLiteralError {
+    fn new(reason: ResidualConditionReason, message: impl Into<String>) -> Self {
+        Self {
+            reason,
+            message: message.into(),
+        }
+    }
+}
+
+/// Find the actual membership clauses that reference a physical column.
+fn condition_locations_for_column(
+    column: &ColumnRef,
+    predicates: &Predicates,
+    joins: &[ProtocolJoin],
+    sources: &[SourceRelation],
+) -> Vec<(ConditionClause, String)> {
+    let mut locations = Vec::new();
+    for (clause, identity, predicate) in [
+        (
+            ConditionClause::Where,
+            "where",
+            predicates.where_predicate(),
+        ),
+        (
+            ConditionClause::Having,
+            "having",
+            predicates.having_predicate(),
+        ),
+        (
+            ConditionClause::Qualify,
+            "qualify",
+            predicates.qualify_predicate(),
+        ),
+    ] {
+        if let Some(predicate) = predicate {
+            let mut columns = BTreeSet::new();
+            collect_predicate_column_refs(predicate, sources, &mut columns);
+            if columns.contains(column) {
+                locations.push((clause, identity.to_string()));
+            }
+        }
+    }
+    for (index, join) in joins.iter().enumerate() {
+        if let Some(predicate) = join.condition() {
+            let mut columns = BTreeSet::new();
+            collect_predicate_column_refs(predicate, sources, &mut columns);
+            if columns.contains(column) {
+                locations.push((ConditionClause::JoinOn, format!("join:{index}")));
+            }
+        }
+    }
+    locations
 }
 
 fn type_column_domains(
     column_domains: Vec<ColumnDomain>,
     metadata: &AnalysisMetadata<'_>,
-) -> Vec<ColumnDomain> {
-    column_domains
+) -> (Vec<ColumnDomain>, Vec<(ColumnRef, ResidualConditionReason)>) {
+    let mut failures = Vec::new();
+    let domains = column_domains
         .into_iter()
         .map(|column_domain| {
             let Some(data_type) = metadata.column_data_type(column_domain.column()) else {
                 return column_domain;
             };
-            let domain = type_value_domain(
+            let domain = match type_value_domain(
                 column_domain.domain(),
                 data_type,
                 metadata.column_timestamp_zone(column_domain.column()),
-            );
+            ) {
+                Ok(domain) => domain,
+                Err(error) => {
+                    failures.push((column_domain.column().clone(), error.reason));
+                    ValueDomain::unknown(error.message)
+                }
+            };
             ColumnDomain::new(column_domain.column().clone(), domain)
         })
-        .collect()
+        .collect();
+    (domains, failures)
 }
 
 fn type_value_domain(
     domain: &ValueDomain,
     data_type: &DataType,
     zone: Option<TimestampZone>,
-) -> ValueDomain {
+) -> Result<ValueDomain, TypedLiteralError> {
     match domain {
         ValueDomain::Ranges(ranges) => {
-            let typed = ranges
+            let ranges = ranges
                 .ranges()
                 .iter()
                 .map(|range| {
@@ -720,26 +863,20 @@ fn type_value_domain(
                         .transpose()?;
                     Ok(ValueRange::new(lower, upper))
                 })
-                .collect::<Result<Vec<_>, String>>();
-            match typed {
-                Ok(ranges) => ValueDomain::ranges(ranges),
-                Err(reason) => ValueDomain::unknown(reason),
-            }
+                .collect::<Result<Vec<_>, TypedLiteralError>>()?;
+            Ok(ValueDomain::ranges(ranges))
         }
         ValueDomain::Set(set) => {
-            let typed = set
+            let values = set
                 .values()
                 .iter()
                 .map(|literal| type_literal(literal, data_type, zone))
-                .collect::<Result<Vec<_>, String>>();
-            match typed {
-                Ok(values) => ValueDomain::set(set.mode(), values),
-                Err(reason) => ValueDomain::unknown(reason),
-            }
+                .collect::<Result<Vec<_>, TypedLiteralError>>()?;
+            Ok(ValueDomain::set(set.mode(), values))
         }
-        ValueDomain::Unbounded => ValueDomain::Unbounded,
-        ValueDomain::Empty => ValueDomain::Empty,
-        ValueDomain::Unknown(unknown) => ValueDomain::unknown(unknown.reason()),
+        ValueDomain::Unbounded => Ok(ValueDomain::Unbounded),
+        ValueDomain::Empty => Ok(ValueDomain::Empty),
+        ValueDomain::Unknown(unknown) => Ok(ValueDomain::unknown(unknown.reason())),
     }
 }
 
@@ -747,7 +884,7 @@ fn type_bound(
     bound: &Bound,
     data_type: &DataType,
     zone: Option<TimestampZone>,
-) -> Result<Bound, String> {
+) -> Result<Bound, TypedLiteralError> {
     Ok(Bound::new(
         type_literal(bound.value(), data_type, zone)?,
         bound.inclusive(),
@@ -758,7 +895,7 @@ fn type_literal(
     literal: &LiteralExpression,
     data_type: &DataType,
     zone: Option<TimestampZone>,
-) -> Result<LiteralExpression, String> {
+) -> Result<LiteralExpression, TypedLiteralError> {
     if literal.literal_type() == LiteralType::Null {
         return Ok(literal.clone());
     }
@@ -768,10 +905,13 @@ fn type_literal(
         other => other,
     };
     let incompatible = || {
-        Err(format!(
-            "literal type '{}' cannot be compared exactly with canonical '{}' column semantics",
-            literal.literal_type().as_str(),
-            data_type.kind()
+        Err(TypedLiteralError::new(
+            ResidualConditionReason::LiteralTypeMismatch,
+            format!(
+                "literal type '{}' cannot be compared exactly with canonical '{}' column semantics",
+                literal.literal_type().as_str(),
+                data_type.kind()
+            ),
         ))
     };
 
@@ -796,9 +936,10 @@ fn type_literal(
                     LiteralValue::Number(value.clone()),
                 ))
             }
-            LiteralValue::Number(_) => Err(
-                "numeric literal exceeds the declared decimal precision or scale".to_string(),
-            ),
+            LiteralValue::Number(_) => Err(TypedLiteralError::new(
+                ResidualConditionReason::OutOfRangeLiteral,
+                "numeric literal exceeds the declared decimal precision or scale",
+            )),
             _ => incompatible(),
         },
         DataType::FloatingPoint { .. } => match literal.value() {
@@ -809,19 +950,28 @@ fn type_literal(
         DataType::Time { .. } if literal.literal_type() == LiteralType::Time => Ok(literal.clone()),
         DataType::Timestamp { .. } if literal.literal_type() == LiteralType::Timestamp => {
             if zone == Some(TimestampZone::WithoutTimeZone) && timestamp_literal_has_offset(literal) {
-                return Err("offset-bearing timestamp literal conflicts with timestamp without time zone".to_string());
+                return Err(TypedLiteralError::new(
+                    ResidualConditionReason::LiteralTypeMismatch,
+                    "offset-bearing timestamp literal conflicts with timestamp without time zone",
+                ));
             }
             Ok(literal.clone())
         },
         DataType::Interval if literal.literal_type() == LiteralType::Interval => Ok(literal.clone()),
         DataType::String { .. } if literal.literal_type() == LiteralType::String => Ok(literal.clone()),
-        DataType::Enum { .. } | DataType::Set { .. } => Err(
-            "enum and set predicate domains are residual because comparison semantics are dialect-dependent".to_string(),
-        ),
-        DataType::Any | DataType::Unspecified | DataType::Custom { .. } => Err(format!(
-            "canonical '{}' datatype does not define exact comparison semantics",
-            data_type.kind()
+        DataType::Enum { .. } | DataType::Set { .. } => Err(TypedLiteralError::new(
+            ResidualConditionReason::ComparisonSemantics,
+            "enum and set predicate domains are residual because comparison semantics are dialect-dependent",
         )),
+        DataType::Any | DataType::Unspecified | DataType::Custom { .. } => Err(
+            TypedLiteralError::new(
+                ResidualConditionReason::ComparisonSemantics,
+                format!(
+                    "canonical '{}' datatype does not define exact comparison semantics",
+                    data_type.kind()
+                ),
+            ),
+        ),
         DataType::Binary { .. }
         | DataType::Uuid
         | DataType::Json
@@ -835,9 +985,12 @@ fn type_literal(
         | DataType::Regclass
         | DataType::TextSearchVector
         | DataType::TextSearchQuery
-        | DataType::Trigger => Err(format!(
-            "canonical '{}' datatype has no protocol-defined ordered scalar comparison semantics",
-            data_type.kind()
+        | DataType::Trigger => Err(TypedLiteralError::new(
+            ResidualConditionReason::ComparisonSemantics,
+            format!(
+                "canonical '{}' datatype has no protocol-defined ordered scalar comparison semantics",
+                data_type.kind()
+            ),
         )),
         DataType::Nullable(_) => unreachable!("nullable datatype was unwrapped above"),
         _ => incompatible(),
@@ -866,12 +1019,18 @@ fn type_integer_literal(
     literal: &LiteralExpression,
     bits: Option<u16>,
     unsigned: bool,
-) -> Result<LiteralExpression, String> {
+) -> Result<LiteralExpression, TypedLiteralError> {
     if literal.literal_type() != LiteralType::Integer {
-        return Err("lossy numeric coercion to an integer column is not exact".to_string());
+        return Err(TypedLiteralError::new(
+            ResidualConditionReason::LossyCoercion,
+            "lossy numeric coercion to an integer column is not exact",
+        ));
     }
     let LiteralValue::Number(value) = literal.value() else {
-        return Err("integer literal does not contain a numeric payload".to_string());
+        return Err(TypedLiteralError::new(
+            ResidualConditionReason::LiteralTypeMismatch,
+            "integer literal does not contain a numeric payload",
+        ));
     };
     let in_range = if unsigned {
         value
@@ -883,10 +1042,13 @@ fn type_integer_literal(
             .is_ok_and(|value| integer_fits_signed(value, bits))
     };
     if !in_range {
-        return Err(format!(
-            "integer literal '{value}' is outside the canonical {}-bit {}integer range",
-            bits.map_or_else(|| "unbounded".to_string(), |bits| bits.to_string()),
-            if unsigned { "unsigned " } else { "" }
+        return Err(TypedLiteralError::new(
+            ResidualConditionReason::OutOfRangeLiteral,
+            format!(
+                "integer literal '{value}' is outside the canonical {}-bit {}integer range",
+                bits.map_or_else(|| "unbounded".to_string(), |bits| bits.to_string()),
+                if unsigned { "unsigned " } else { "" }
+            ),
         ));
     }
     Ok(LiteralExpression::new(
@@ -1015,26 +1177,83 @@ fn comparison_domain_exactness(
     ConditionExactness::from_requirements(requirements)
 }
 
-fn unknown_column_domain_exactness(column_domains: &[ColumnDomain]) -> ConditionExactness {
-    ConditionExactness::from_residuals(
-        column_domains
+fn unknown_column_domain_exactness(
+    column_domains: &[ColumnDomain],
+    typing_failures: &[(ColumnRef, ResidualConditionReason)],
+    predicates: &Predicates,
+    joins: &[ProtocolJoin],
+    sources: &[SourceRelation],
+    predicate_exactness: &ConditionExactness,
+) -> ConditionExactness {
+    let mut residuals = Vec::new();
+    for column_domain in column_domains {
+        if !matches!(column_domain.domain(), ValueDomain::Unknown(_)) {
+            continue;
+        }
+        let typed_failure = typing_failures
             .iter()
-            .filter(|column_domain| matches!(column_domain.domain(), ValueDomain::Unknown(_)))
-            .map(|column_domain| {
-                ResidualCondition::new(
-                    ResidualConditionReason::ComputedExpression,
+            .find(|(column, _)| column == column_domain.column())
+            .map(|(_, reason)| *reason);
+        let mut locations =
+            condition_locations_for_column(column_domain.column(), predicates, joins, sources);
+        if locations.is_empty() {
+            // The domain may have been remapped from a computed local column to
+            // physical lineage. Such a column no longer matches the local
+            // predicate's reference, but its unknown outcome still blocks exactness.
+            for (clause, identity, predicate) in [
+                (
                     ConditionClause::Where,
-                    format!(
-                        "column_domain:{}",
-                        qualified_column_name(
-                            column_domain.column().relation(),
-                            column_domain.column().name()
-                        )
-                    ),
-                )
-            })
-            .collect(),
-    )
+                    "where",
+                    predicates.where_predicate(),
+                ),
+                (
+                    ConditionClause::Having,
+                    "having",
+                    predicates.having_predicate(),
+                ),
+                (
+                    ConditionClause::Qualify,
+                    "qualify",
+                    predicates.qualify_predicate(),
+                ),
+            ] {
+                if predicate.is_some() {
+                    locations.push((clause, identity.to_string()));
+                }
+            }
+            if locations.is_empty() {
+                for (index, join) in joins.iter().enumerate() {
+                    if join.condition().is_some() {
+                        locations.push((ConditionClause::JoinOn, format!("join:{index}")));
+                    }
+                }
+            }
+        }
+        for (clause, identity) in locations {
+            // A structural unknown explained by the predicate classifier is already
+            // represented with the predicate's own identity. Do not report it again.
+            if typed_failure.is_none()
+                && predicate_exactness
+                    .residual_conditions()
+                    .iter()
+                    .any(|residual| residual.clause() == clause)
+            {
+                continue;
+            }
+            residuals.push(ResidualCondition::new(
+                typed_failure.unwrap_or(ResidualConditionReason::ComputedExpression),
+                clause,
+                format!(
+                    "{identity}:column_domain:{}",
+                    qualified_column_name(
+                        column_domain.column().relation(),
+                        column_domain.column().name()
+                    )
+                ),
+            ));
+        }
+    }
+    ConditionExactness::from_residuals(residuals)
 }
 
 fn analyze_query_condition_exactness(
@@ -1237,6 +1456,7 @@ fn diagnostic_is_non_membership_or_already_classified(code: &str) -> bool {
             | "set_operation_arity_mismatch"
             | "unresolved_set_operation_output"
             | "unsupported_set_operation_alignment"
+            | "unknown_schema_column"
     )
 }
 
@@ -1360,8 +1580,46 @@ fn append_predicate_residuals(
     allow_join_equality: bool,
     residuals: &mut Vec<ResidualCondition>,
 ) {
-    for reason in predicate_residual_reasons(predicate, clause, sources, allow_join_equality) {
-        residuals.push(ResidualCondition::new(reason, clause, identity));
+    // A path through the logical tree identifies a condition, rather than only its
+    // reason. Two unsupported siblings must not collapse into one residual.
+    match predicate {
+        Predicate::And(logical) => {
+            for (index, operand) in logical.operands().iter().enumerate() {
+                append_predicate_residuals(
+                    operand,
+                    clause,
+                    &format!("{identity}:and:{index}"),
+                    sources,
+                    allow_join_equality,
+                    residuals,
+                );
+            }
+        }
+        Predicate::Or(logical)
+            if clause != ConditionClause::JoinOn
+                && logical.operands().iter().any(|operand| {
+                    !predicate_residual_reasons(operand, clause, sources, allow_join_equality)
+                        .is_empty()
+                }) =>
+        {
+            for (index, operand) in logical.operands().iter().enumerate() {
+                append_predicate_residuals(
+                    operand,
+                    clause,
+                    &format!("{identity}:or:{index}"),
+                    sources,
+                    allow_join_equality,
+                    residuals,
+                );
+            }
+        }
+        _ => {
+            for reason in
+                predicate_residual_reasons(predicate, clause, sources, allow_join_equality)
+            {
+                residuals.push(ResidualCondition::new(reason, clause, identity));
+            }
+        }
     }
 }
 
@@ -2666,6 +2924,7 @@ fn analyze_local_query_condition_exactness(
     let missing_columns = metadata.map_or_else(Vec::new, |metadata| {
         let output = analyze_query_output(query, local_outputs, &mut diagnostics, Some(metadata));
         validate_schema_column_references(
+            query,
             &predicates,
             &output,
             &relation_analysis.joins,
@@ -4031,6 +4290,29 @@ fn analyze_predicate_with_windows(
             analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             true,
         )),
+        Expr::IsTrue(inner)
+        | Expr::IsFalse(inner)
+        | Expr::IsNotTrue(inner)
+        | Expr::IsNotFalse(inner) => {
+            let (value, include_null) = match expression {
+                Expr::IsTrue(_) => (true, false),
+                Expr::IsFalse(_) => (false, false),
+                Expr::IsNotTrue(_) => (true, true),
+                Expr::IsNotFalse(_) => (false, true),
+                _ => unreachable!("matched boolean truth-test variants"),
+            };
+            normalize_boolean_test(
+                analyze_predicate_expression(
+                    inner,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                value,
+                include_null,
+            )
+        }
         Expr::InList {
             expr,
             list,
@@ -4077,6 +4359,14 @@ fn analyze_predicate_with_windows(
         Expr::UnaryOp {
             op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
             expr,
+        } if is_plain_boolean_column(expr) => normalize_boolean_test(
+            analyze_predicate_expression(expr, named_windows, output_aliases, scope, diagnostics),
+            false,
+            false,
+        ),
+        Expr::UnaryOp {
+            op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
+            expr,
         } => Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
             expr,
             named_windows,
@@ -4084,6 +4374,17 @@ fn analyze_predicate_with_windows(
             scope,
             diagnostics,
         ))),
+        Expr::Identifier(_) | Expr::CompoundIdentifier(_) => normalize_boolean_test(
+            analyze_predicate_expression(
+                expression,
+                named_windows,
+                output_aliases,
+                scope,
+                diagnostics,
+            ),
+            true,
+            false,
+        ),
         _ => Predicate::BooleanExpression(analyze_predicate_expression(
             expression,
             named_windows,
@@ -4092,6 +4393,29 @@ fn analyze_predicate_with_windows(
             diagnostics,
         )),
     }
+}
+
+fn is_plain_boolean_column(expression: &Expr) -> bool {
+    match expression {
+        Expr::Identifier(_) | Expr::CompoundIdentifier(_) => true,
+        Expr::Nested(inner) => is_plain_boolean_column(inner),
+        _ => false,
+    }
+}
+
+fn normalize_boolean_test(expression: Expression, value: bool, include_null: bool) -> Predicate {
+    normalize_comparison(
+        expression,
+        if include_null {
+            ComparisonOperator::IsDistinctFrom
+        } else {
+            ComparisonOperator::Eq
+        },
+        Expression::Literal(LiteralExpression::new(
+            LiteralType::Boolean,
+            LiteralValue::Boolean(value),
+        )),
+    )
 }
 
 fn analyze_predicate_expression(
@@ -4185,6 +4509,10 @@ fn is_boolean_value_expression(expression: &Expr) -> bool {
         | Expr::IsNotDistinctFrom(_, _)
         | Expr::IsNull(_)
         | Expr::IsNotNull(_)
+        | Expr::IsTrue(_)
+        | Expr::IsFalse(_)
+        | Expr::IsNotTrue(_)
+        | Expr::IsNotFalse(_)
         | Expr::InList { .. }
         | Expr::Exists { .. }
         | Expr::InSubquery { .. }

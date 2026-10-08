@@ -3419,11 +3419,17 @@
             "prewhere",
             "connect_by",
             "analysis_diagnostic",
-            "correlated_subquery"
+            "correlated_subquery",
+            "comparison_semantics",
+            "literal_type_mismatch",
+            "lossy_coercion",
+            "out_of_range_literal",
+            "unknown_schema_column"
           ]
         },
         "clause": {
           "enum": [
+            "select",
             "where",
             "on",
             "having",
