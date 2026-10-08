@@ -3898,7 +3898,8 @@
         "argument",
         "predicate",
         "qualifying",
-        "rejected"
+        "rejected",
+        "distinct"
       ],
       "properties": {
         "boundary": {
@@ -3974,6 +3975,9 @@
         },
         "rejected": {
           "$ref": "#/$defs/groupWitnessDirection"
+        },
+        "distinct": {
+          "type": "boolean"
         }
       }
     },
