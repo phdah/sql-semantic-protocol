@@ -4,6 +4,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_inputs, analyze_sql, dialect_from_name, CaseSourceDomains, ColumnDomain,
     ComparisonOperator, ComposedSemantics, ConditionExactnessStatus, Expression, Join,
+    ResolvedComposedSemantics, ResidualConditionReason,
     LiteralValue, Predicate, Protocol, ProtocolStatement, QueryStatement, SetMode, SqlInput,
     ValueDomain,
 };
@@ -882,4 +883,208 @@ fn known_soundness_reproductions_stay_in_the_conformance_matrix() {
         "SELECT row_id FROM predicate_rows WHERE (a = 1 AND b = 2) OR (a = 2 AND b = 1)";
     let protocol = analyze_duckdb(correlated);
     assert!(!first_query(&protocol).condition_exactness().is_exact());
+}
+
+
+fn resolved_query(sql: &str) -> ResolvedComposedSemantics {
+    let dialect = dialect_from_name("duckdb").expect("DuckDB dialect");
+    let bundle = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref())
+        .unwrap_or_else(|error| panic!("conformance fixture failed: {sql}\n{error}"));
+    match bundle.layers().last().expect("conformance query layer").composed_semantics() {
+        ComposedSemantics::Resolved(semantics) => semantics.clone(),
+        other => panic!("conformance fixture could not compose {sql}: {other:?}"),
+    }
+}
+
+fn residual_reasons(semantics: &ResolvedComposedSemantics) -> BTreeSet<ResidualConditionReason> {
+    semantics
+        .condition_exactness()
+        .residual_conditions()
+        .iter()
+        .map(|residual| residual.reason())
+        .collect()
+}
+
+fn assert_complete_plain_copy(
+    connection: &Connection,
+    inlined: &str,
+    wrapped: &str,
+    location: &str,
+) {
+    let expected = resolved_query(inlined);
+    let actual = resolved_query(wrapped);
+    assert!(
+        expected.condition_exactness().is_exact(),
+        "baseline must be allow-listed: {inlined}; residuals={:?}",
+        expected.condition_exactness().residual_conditions()
+    );
+    assert_eq!(
+        actual.condition_exactness().status(),
+        expected.condition_exactness().status(),
+        "completeness failure: location={location}; query={wrapped}; expected=exact; actual={:?}",
+        actual.condition_exactness().residual_conditions()
+    );
+    assert_eq!(
+        actual.column_domains(),
+        expected.column_domains(),
+        "completeness failure: location={location}; query={wrapped}; expected domains={:?}; actual domains={:?}",
+        expected.column_domains(),
+        actual.column_domains()
+    );
+    assert_eq!(
+        actual.join_equalities().len(),
+        expected.join_equalities().len(),
+        "completeness failure: location={location}; query={wrapped}; expected join equalities={:?}; actual join equalities={:?}",
+        expected.join_equalities(),
+        actual.join_equalities()
+    );
+    assert_eq!(
+        predicted_row_ids(actual.column_domains()),
+        row_ids(connection, wrapped),
+        "completeness oracle mismatch: location={location}; query={wrapped}"
+    );
+}
+
+#[test]
+fn every_scalar_allow_list_shape_is_complete_at_all_plain_copy_locations() {
+    let connection = duckdb_connection();
+    for predicate in [
+        "a = 1",
+        "a <> 1",
+        "a < 1",
+        "a <= 1",
+        "a > 0",
+        "a >= 0",
+        "a BETWEEN 0 AND 1",
+        "a NOT BETWEEN 0 AND 1",
+        "a IN (0, 1, 2)",
+        "a NOT IN (0, 1, 2)",
+        "a IS NULL",
+        "a IS NOT NULL",
+        "a IS DISTINCT FROM 1",
+        "a IS NOT DISTINCT FROM 1",
+        "a >= 0 AND a <= 1",
+        "a = 0 OR a = 2",
+    ] {
+        let inlined = format!("SELECT row_id FROM predicate_rows WHERE {predicate}");
+        let wrapped = [
+            (
+                "cte",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}) SELECT row_id FROM x"
+                ),
+            ),
+            (
+                "chained_cte",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}), y AS (SELECT row_id, a, b, c FROM x) SELECT row_id FROM y"
+                ),
+            ),
+            (
+                "derived",
+                format!(
+                    "SELECT row_id FROM (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}) d"
+                ),
+            ),
+            (
+                "outer_filter",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows) SELECT row_id FROM x WHERE {predicate}"
+                ),
+            ),
+        ];
+        assert_exact_matches_oracle(&connection, predicate);
+        for (location, sql) in wrapped {
+            assert_complete_plain_copy(&connection, &inlined, &sql, location);
+        }
+
+        let dialect = dialect_from_name("duckdb").expect("DuckDB dialect");
+        let inputs = [
+            SqlInput::inline(format!(
+                "CREATE VIEW stage_rows AS SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}"
+            )),
+            SqlInput::inline("SELECT row_id FROM stage_rows"),
+        ];
+        let bundle = analyze_inputs(&inputs, "duckdb", dialect.as_ref())
+            .unwrap_or_else(|error| panic!("multi-layer fixture {predicate}: {error}"));
+        let ComposedSemantics::Resolved(actual) = bundle
+            .layers()
+            .last()
+            .expect("final composed layer")
+            .composed_semantics()
+        else {
+            panic!("multi-layer identity path should compose: {predicate}");
+        };
+        let expected = resolved_query(&inlined);
+        assert!(
+            actual.condition_exactness().is_exact(),
+            "multi-layer completeness: predicate={predicate}; residuals={:?}",
+            actual.condition_exactness().residual_conditions()
+        );
+        assert_eq!(actual.column_domains(), expected.column_domains());
+        assert!(actual.join_equalities().is_empty());
+        assert_eq!(
+            predicted_row_ids(actual.column_domains()),
+            row_ids(&connection, &inlined),
+            "multi-layer domain oracle: predicate={predicate}"
+        );
+    }
+}
+
+#[test]
+fn seeded_plain_copy_equivalence_checks_exact_and_residual_predicates() {
+    // Separate seeds from the soundness suite: this checks completeness and
+    // representation stability, not merely whether asserted domains are sound.
+    for seed in 1..=1_000 {
+        let mut rng = DeterministicRng::new(seed);
+        let predicate = random_predicate(&mut rng, 3);
+        let inlined = format!("SELECT row_id FROM predicate_rows WHERE {predicate}");
+        let baseline = resolved_query(&inlined);
+        let variants = [
+            (
+                "cte",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}) SELECT row_id FROM x"
+                ),
+            ),
+            (
+                "chained_cte",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}), y AS (SELECT row_id, a, b, c FROM x) SELECT row_id FROM y"
+                ),
+            ),
+            (
+                "derived",
+                format!(
+                    "SELECT row_id FROM (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}) d"
+                ),
+            ),
+        ];
+        for (location, sql) in variants {
+            let actual = resolved_query(&sql);
+            assert_eq!(
+                actual.condition_exactness().status(),
+                baseline.condition_exactness().status(),
+                "seed={seed}; location={location}; query={sql}; expected={:?}; actual residuals={:?}",
+                baseline.condition_exactness().status(),
+                actual.condition_exactness().residual_conditions()
+            );
+            assert_eq!(
+                residual_reasons(&actual),
+                residual_reasons(&baseline),
+                "seed={seed}; location={location}; query={sql}; expected residual reasons={:?}; actual={:?}",
+                residual_reasons(&baseline),
+                actual.condition_exactness().residual_conditions()
+            );
+            if baseline.condition_exactness().is_exact() {
+                assert_eq!(
+                    actual.column_domains(),
+                    baseline.column_domains(),
+                    "seed={seed}; location={location}; query={sql}; expected domains={:?}; actual={:?}",
+                    baseline.column_domains(),
+                    actual.column_domains()
+                );
+            }
+        }
+    }
 }
