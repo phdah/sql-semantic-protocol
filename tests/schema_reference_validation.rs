@@ -74,6 +74,27 @@ fn missing_select_and_predicate_columns_block_composed_exactness_for_each_schema
 }
 
 #[test]
+fn missing_columns_in_referenced_ctes_and_derived_tables_make_composition_residual() {
+    let schema = schema("t", &[("id", "INTEGER")]);
+    for sql in [
+        "WITH c AS (SELECT ghost FROM t) SELECT ghost FROM c",
+        "SELECT d.ghost FROM (SELECT ghost FROM t) AS d",
+    ] {
+        let bundle = analyzed(sql, std::slice::from_ref(&schema));
+        match bundle.layers()[0].composed_semantics() {
+            ComposedSemantics::Resolved(composed) => {
+                assert!(
+                    !composed.condition_exactness().is_exact(),
+                    "invalid nested source reference cannot be exact: {sql}"
+                );
+            }
+            ComposedSemantics::Unresolved(_) => {}
+            other => panic!("unexpected composition: {other:?}"),
+        }
+    }
+}
+
+#[test]
 fn existing_columns_do_not_create_reference_diagnostics() {
     let bundle = analyzed(
         "SELECT id FROM t WHERE id > 1",
