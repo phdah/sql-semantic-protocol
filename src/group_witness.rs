@@ -4,9 +4,9 @@
 //! Unsupported grouping and non-row-preserving inputs stay explicitly residual.
 
 use crate::protocol::{
-    AggregateArgument, ColumnRef, ComparisonOperator, Expression,
-    GroupBy, GroupingExpression, LiteralExpression, LiteralType, LiteralValue, Predicate,
-    QueryStatement, Bound, Output, ValueDomain, ValueRange, SetMode,
+    AggregateArgument, Bound, ColumnRef, ComparisonOperator, Expression, GroupBy,
+    GroupingExpression, LiteralExpression, LiteralType, LiteralValue, Output, Predicate,
+    QueryStatement, SetMode, ValueDomain, ValueRange,
 };
 
 /// Aggregate computation whose source-row contributions a consumer must construct.
