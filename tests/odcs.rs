@@ -1,3 +1,5 @@
+#![cfg(feature = "odcs")]
+
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, parse_odcs_documents, parse_odcs_yaml,
     select_targets, to_bundle_json, ConfiguredSqlInput, ConstraintEnforcement,
