@@ -3,9 +3,10 @@ use std::process::{Command, Output, Stdio};
 
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_dbt_manifest,
-    analyze_dbt_manifest_with_schemas, parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ComposedSemantics, ConfiguredSqlInput,
-    DataType, DbtArtifactsError, LiteralValue, RelationCatalog, RelationContext,
-    RelationResolution, SchemaSourceKind, SqlInput, TransformationLayer, ValueDomain,
+    analyze_dbt_manifest_with_schemas, parse_dbt_catalog, parse_dbt_manifest, to_bundle_json,
+    ComposedSemantics, ConfiguredSqlInput, DataType, DbtArtifactsError, LiteralValue,
+    RelationCatalog, RelationContext, RelationResolution, SchemaSourceKind, SqlInput,
+    TransformationLayer, ValueDomain,
 };
 use sqlparser::dialect::dialect_from_str;
 
@@ -340,11 +341,18 @@ fn dbt_manifest_with_schemas_matches_empty_catalog() {
     let without_catalog =
         analyze_dbt_manifest_with_schemas(&manifest, manifest.adapter_type(), dialect.as_ref())
             .expect("manifest-only schemas should analyze");
-    let with_empty_catalog =
-        analyze_dbt_artifacts(&manifest, &empty_catalog(), manifest.adapter_type(), dialect.as_ref())
-            .expect("empty catalog should use manifest declarations");
+    let with_empty_catalog = analyze_dbt_artifacts(
+        &manifest,
+        &empty_catalog(),
+        manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .expect("empty catalog should use manifest declarations");
 
-    assert_eq!(to_bundle_json(&without_catalog), to_bundle_json(&with_empty_catalog));
+    assert_eq!(
+        to_bundle_json(&without_catalog),
+        to_bundle_json(&with_empty_catalog)
+    );
     let [source] = without_catalog.source_schemas() else {
         panic!("one source schema should be emitted");
     };
@@ -425,7 +433,9 @@ fn dbt_cli_uses_manifest_schemas_without_default_catalog() {
         analyze_dbt_manifest_with_schemas(&manifest, manifest.adapter_type(), dialect.as_ref())
             .expect("manifest-only library analysis");
     assert_eq!(
-        String::from_utf8(output.stdout).expect("UTF-8 CLI output").trim(),
+        String::from_utf8(output.stdout)
+            .expect("UTF-8 CLI output")
+            .trim(),
         to_bundle_json(&expected)
     );
 }
