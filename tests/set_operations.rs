@@ -209,3 +209,136 @@ fn snowflake_minus_is_normalized_to_except() {
     assert_eq!(operation.operator(), SetOperator::Except);
     assert_eq!(operation.quantifier(), SetQuantifier::Distinct);
 }
+
+#[test]
+fn branch_specific_predicate_domains_are_not_collapsed_into_one_witness() {
+    let dialect = GenericDialect {};
+    let sql = "SELECT a FROM t WHERE a > 10 UNION ALL SELECT a FROM t WHERE a < 0";
+    let protocol = analyze_sql(sql, "generic", &dialect).expect("set operation");
+    let query = first_query(&protocol);
+    let operation = query.set_operation().expect("set operation");
+    let branches = operation.branches();
+
+    assert_eq!(branches.len(), 2);
+    assert_eq!(branches[0].identity(), "body:left");
+    assert_eq!(branches[1].identity(), "body:right");
+    assert!(branches[0].predicates().where_predicate().is_some());
+    assert!(branches[1].predicates().where_predicate().is_some());
+    assert_eq!(branches[0].sources()[0].name(), "t");
+    assert_eq!(branches[1].sources()[0].name(), "t");
+    assert_eq!(branches[0].output().columns()[0].name(), "a");
+
+    let emitted: serde_json::Value =
+        serde_json::from_str(&to_json(&protocol)).expect("valid json");
+    let membership = &emitted["inputs"][0]["statements"][0]["set_operation"]["membership"];
+    assert_eq!(membership["tuple_equality"], "not_distinct");
+    assert_eq!(membership["multiplicity_rule"], "sum");
+    assert_eq!(membership["branches"].as_array().unwrap().len(), 2);
+    assert_ne!(
+        membership["branches"][0]["column_domains"],
+        membership["branches"][1]["column_domains"],
+        "opposing branch source domains must remain independent"
+    );
+    assert_eq!(membership["qualifying_witness"]["status"], "residual");
+    assert_eq!(membership["non_qualifying_witness"]["status"], "residual");
+    assert!(!query.condition_exactness().is_exact());
+}
+
+#[test]
+fn nested_set_operations_keep_stable_leaf_branch_identities() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(
+        "(SELECT a FROM x UNION ALL SELECT a FROM y) EXCEPT SELECT a FROM z",
+        "generic",
+        &dialect,
+    )
+    .expect("nested set operation");
+    let branches = first_query(&protocol)
+        .set_operation()
+        .expect("set operation")
+        .branches();
+    assert_eq!(
+        branches.iter().map(|b| b.identity()).collect::<Vec<_>>(),
+        vec!["body:left:query:left", "body:left:query:right", "body:right"]
+    );
+}
+
+#[test]
+fn set_tuple_multiplicity_rules_match_duckdb_with_duplicates_and_null() {
+    use duckdb::Connection;
+    use sql_semantic_protocol::SetMultiplicityRule;
+
+    let connection = Connection::open_in_memory().expect("DuckDB");
+    connection.execute_batch(
+        "CREATE TABLE l (v INTEGER); CREATE TABLE r (v INTEGER);
+         INSERT INTO l VALUES (1), (1), (NULL), (NULL), (2);
+         INSERT INTO r VALUES (1), (NULL), (NULL), (3);",
+    ).expect("seed fixture");
+
+    let cases = [
+        ("UNION ALL", SetMultiplicityRule::Sum),
+        ("UNION", SetMultiplicityRule::UnionDistinct),
+        ("INTERSECT ALL", SetMultiplicityRule::Minimum),
+        ("INTERSECT", SetMultiplicityRule::IntersectDistinct),
+        ("EXCEPT ALL", SetMultiplicityRule::SaturatingDifference),
+        ("EXCEPT", SetMultiplicityRule::ExceptDistinct),
+    ];
+    let dialect = GenericDialect {};
+    for (operator, rule) in cases {
+        let sql = format!("SELECT v FROM l {operator} SELECT v FROM r");
+        let protocol = analyze_sql(&sql, "generic", &dialect).expect("analyze SQL");
+        let actual_rule = first_query(&protocol)
+            .set_operation()
+            .expect("operation")
+            .multiplicity_rule()
+            .expect("positional set rule");
+        assert_eq!(actual_rule, rule, "{operator}");
+
+        let mut statement = connection
+            .prepare(&format!(
+                "SELECT v, COUNT(*) FROM ({sql}) x GROUP BY v ORDER BY v NULLS FIRST"
+            ))
+            .expect("prepare oracle query");
+        let results = statement
+            .query_map([], |row| {
+                Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, u64>(1)?))
+            })
+            .expect("query oracle")
+            .collect::<Result<Vec<_>, _>>()
+            .expect("collect rows");
+
+        for (value, observed_count) in results {
+            let left_count = match value {
+                None => 2,
+                Some(1) => 2,
+                Some(2) => 1,
+                _ => 0,
+            };
+            let right_count = match value {
+                None => 2,
+                Some(1) => 1,
+                Some(3) => 1,
+                _ => 0,
+            };
+            assert_eq!(
+                rule.evaluate(left_count, right_count),
+                observed_count,
+                "{operator} value {value:?}"
+            );
+        }
+        for (left, right) in [(0, 0), (1, 0), (0, 1), (3, 2), (0, 4)] {
+            assert!(rule.evaluate(left, right) <= left.saturating_add(right));
+        }
+    }
+}
+
+#[test]
+fn set_operators_share_null_safe_positional_multiplicity_contract() {
+    use sql_semantic_protocol::SetMultiplicityRule;
+    assert_eq!(SetMultiplicityRule::Sum.evaluate(2, 3), 5);
+    assert_eq!(SetMultiplicityRule::UnionDistinct.evaluate(2, 3), 1);
+    assert_eq!(SetMultiplicityRule::Minimum.evaluate(2, 3), 2);
+    assert_eq!(SetMultiplicityRule::IntersectDistinct.evaluate(2, 0), 0);
+    assert_eq!(SetMultiplicityRule::SaturatingDifference.evaluate(2, 3), 0);
+    assert_eq!(SetMultiplicityRule::ExceptDistinct.evaluate(2, 0), 1);
+}
