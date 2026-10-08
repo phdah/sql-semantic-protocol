@@ -330,6 +330,16 @@ For one query scope, `exact` means that before row-set shaping, a combination of
 
 Exact predicate forms are deliberately allow-listed. Direct column-to-literal comparisons, `IS NULL`/`IS NOT NULL`, literal `IN`/`NOT IN`, literal `BETWEEN`/`NOT BETWEEN`, conjunctions of exact predicates, and disjunctions whose constraints refer to one source column can be exact. Inner joins can additionally use column equality plus safely reducible scalar filters such as `t.x = u.y AND t.a > 5`; the scalar join filter is also emitted in `column_domains`. Cross joins have no row condition and can be exact.
 
+The CI differential conformance suite treats this allow-list as a completeness contract, not merely
+a soundness bound: every allow-listed scalar shape must claim exact status and retain its expected
+physical source-column domains when moved through plain-copy CTEs, derived tables, or producer
+layers. Two- and three-relation equality joins must preserve physical equality endpoints across
+explicit and implicit join syntax. Seeded predicate and join fixtures compare those claims with
+DuckDB, and verify that unsupported shapes continue to report residual conditions rather than
+claiming unsafe precision. Typed comparison checks cover portable scalar types, while string,
+floating-point, and timestamp comparisons without the required semantics remain explicit
+residual cases pending conditional-comparison metadata.
+
 Resolved `composed_semantics.join_equalities` is the canonical consumer-facing representation of those correlations. Each entry names both physical leaf relation/column endpoints, a relation-instance identity, the join kind, and the originating transformation layer. Equalities from referenced CTEs, derived tables, and resolved producer layers compose transitively through plain-copy lineage. A column equality in `WHERE` between distinct relation instances, including comma/CROSS-join syntax, is represented as an implicit inner equality rather than an `unknown` scalar domain. Outer-join equalities are listed with their join kind while the scope remains residual. Repeated/self-joins remain residual when physical instance identity cannot be proven safely.
 
 Everything else is default-denied unless analysis proves an exact representation. Residual cases include cross-column OR correlations, logical `NOT` outside the directly normalized negated forms above, non-equality column-to-column comparisons outside join equality, computed/function/CAST/pattern predicates, subquery predicates, `HAVING`, `QUALIFY`, outer/semi/anti or otherwise unsupported joins, repeated instances of the same physical relation, `LIMIT`, `OFFSET`, `FETCH`, `TOP`, `DISTINCT ON`, `TABLESAMPLE`, and set operations. UNION is currently residual as well, including branches with different constraints; INTERSECT and EXCEPT are residual.

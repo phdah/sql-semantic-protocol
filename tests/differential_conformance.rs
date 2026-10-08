@@ -2,10 +2,11 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_inputs, analyze_sql, dialect_from_name, CaseSourceDomains, ColumnDomain,
-    ComparisonOperator, ComposedSemantics, ConditionExactnessStatus, Expression, Join,
-    LiteralValue, Predicate, Protocol, ProtocolStatement, QueryStatement, SetMode, SqlInput,
-    ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, dialect_from_name,
+    CaseSourceDomains, ColumnDomain, ComparisonOperator, ComposedSemantics,
+    ConditionExactnessStatus, ConfiguredSqlInput, Expression, Join, LiteralValue, Predicate,
+    Protocol, ProtocolStatement, QueryStatement, RelationCatalog, RelationSchema,
+    ResolvedComposedSemantics, SchemaColumn, SetMode, SqlInput, ValueDomain,
 };
 
 type ColumnIdentity<'a> = (&'a str, &'a str);
@@ -882,4 +883,652 @@ fn known_soundness_reproductions_stay_in_the_conformance_matrix() {
         "SELECT row_id FROM predicate_rows WHERE (a = 1 AND b = 2) OR (a = 2 AND b = 1)";
     let protocol = analyze_duckdb(correlated);
     assert!(!first_query(&protocol).condition_exactness().is_exact());
+}
+
+fn resolved_query(sql: &str) -> ResolvedComposedSemantics {
+    let dialect = dialect_from_name("duckdb").expect("DuckDB dialect");
+    let bundle = analyze_inputs(&[SqlInput::inline(sql)], "duckdb", dialect.as_ref())
+        .unwrap_or_else(|error| panic!("conformance fixture failed: {sql}\n{error}"));
+    match bundle
+        .layers()
+        .last()
+        .expect("conformance query layer")
+        .composed_semantics()
+    {
+        ComposedSemantics::Resolved(semantics) => semantics.clone(),
+        other => panic!("conformance fixture could not compose {sql}: {other:?}"),
+    }
+}
+
+fn residual_reasons(semantics: &ResolvedComposedSemantics) -> BTreeSet<String> {
+    semantics
+        .condition_exactness()
+        .residual_conditions()
+        .iter()
+        // A local-only diagnostic supplements the original predicate residual;
+        // it must not count as a new semantic reason in plain-copy comparisons.
+        .filter(|residual| residual.identity() != "diagnostic:unresolved_local_predicate")
+        .map(|residual| format!("{:?}", residual.reason()))
+        .collect()
+}
+
+fn assert_complete_plain_copy(
+    connection: &Connection,
+    inlined: &str,
+    wrapped: &str,
+    location: &str,
+) {
+    let expected = resolved_query(inlined);
+    let actual = resolved_query(wrapped);
+    assert!(
+        expected.condition_exactness().is_exact(),
+        "baseline must be allow-listed: {inlined}; residuals={:?}",
+        expected.condition_exactness().residual_conditions()
+    );
+    assert_eq!(
+        actual.condition_exactness().status(),
+        expected.condition_exactness().status(),
+        "completeness failure: location={location}; query={wrapped}; expected=exact; actual={:?}",
+        actual.condition_exactness().residual_conditions()
+    );
+    assert_eq!(
+        actual.column_domains(),
+        expected.column_domains(),
+        "completeness failure: location={location}; query={wrapped}; expected domains={:?}; actual domains={:?}",
+        expected.column_domains(),
+        actual.column_domains()
+    );
+    assert_eq!(
+        actual.join_equalities().len(),
+        expected.join_equalities().len(),
+        "completeness failure: location={location}; query={wrapped}; expected join equalities={:?}; actual join equalities={:?}",
+        expected.join_equalities(),
+        actual.join_equalities()
+    );
+    assert_eq!(
+        predicted_row_ids(actual.column_domains()),
+        row_ids(connection, wrapped),
+        "completeness oracle mismatch: location={location}; query={wrapped}"
+    );
+}
+
+#[test]
+fn every_scalar_allow_list_shape_is_complete_at_all_plain_copy_locations() {
+    let connection = duckdb_connection();
+    for predicate in [
+        "a = 1",
+        "a <> 1",
+        "a < 1",
+        "a <= 1",
+        "a > 0",
+        "a >= 0",
+        "a BETWEEN 0 AND 1",
+        "a NOT BETWEEN 0 AND 1",
+        "a IN (0, 1, 2)",
+        "a NOT IN (0, 1, 2)",
+        "a IS NULL",
+        "a IS NOT NULL",
+        "a IS DISTINCT FROM 1",
+        "a IS NOT DISTINCT FROM 1",
+        "a >= 0 AND a <= 1",
+        "a = 0 OR a = 2",
+    ] {
+        let inlined = format!("SELECT row_id FROM predicate_rows WHERE {predicate}");
+        let wrapped = [
+            (
+                "cte",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}) SELECT row_id FROM x"
+                ),
+            ),
+            (
+                "chained_cte",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}), y AS (SELECT row_id, a, b, c FROM x) SELECT row_id FROM y"
+                ),
+            ),
+            (
+                "derived",
+                format!(
+                    "SELECT row_id FROM (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}) d"
+                ),
+            ),
+            (
+                "outer_filter",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows) SELECT row_id FROM x WHERE {predicate}"
+                ),
+            ),
+        ];
+        assert_exact_matches_oracle(&connection, predicate);
+        for (location, sql) in wrapped {
+            assert_complete_plain_copy(&connection, &inlined, &sql, location);
+        }
+
+        let dialect = dialect_from_name("duckdb").expect("DuckDB dialect");
+        let inputs = [
+            SqlInput::inline(format!(
+                "CREATE VIEW stage_rows AS SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}"
+            )),
+            SqlInput::inline("SELECT row_id FROM stage_rows"),
+        ];
+        let bundle = analyze_inputs(&inputs, "duckdb", dialect.as_ref())
+            .unwrap_or_else(|error| panic!("multi-layer fixture {predicate}: {error}"));
+        let ComposedSemantics::Resolved(actual) = bundle
+            .layers()
+            .last()
+            .expect("final composed layer")
+            .composed_semantics()
+        else {
+            panic!("multi-layer identity path should compose: {predicate}");
+        };
+        let expected = resolved_query(&inlined);
+        assert!(
+            actual.condition_exactness().is_exact(),
+            "multi-layer completeness: predicate={predicate}; residuals={:?}",
+            actual.condition_exactness().residual_conditions()
+        );
+        assert_eq!(actual.column_domains(), expected.column_domains());
+        assert!(actual.join_equalities().is_empty());
+        assert_eq!(
+            predicted_row_ids(actual.column_domains()),
+            row_ids(&connection, &inlined),
+            "multi-layer domain oracle: predicate={predicate}"
+        );
+    }
+}
+
+#[test]
+fn seeded_plain_copy_equivalence_checks_exact_and_residual_predicates() {
+    // Separate seeds from the soundness suite: this checks completeness and
+    // representation stability, not merely whether asserted domains are sound.
+    for seed in 1..=1_000 {
+        let mut rng = DeterministicRng::new(seed);
+        let predicate = random_predicate(&mut rng, 3);
+        let inlined = format!("SELECT row_id FROM predicate_rows WHERE {predicate}");
+        let baseline = resolved_query(&inlined);
+        let variants = [
+            (
+                "cte",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}) SELECT row_id FROM x"
+                ),
+            ),
+            (
+                "chained_cte",
+                format!(
+                    "WITH x AS (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}), y AS (SELECT row_id, a, b, c FROM x) SELECT row_id FROM y"
+                ),
+            ),
+            (
+                "derived",
+                format!(
+                    "SELECT row_id FROM (SELECT row_id, a, b, c FROM predicate_rows WHERE {predicate}) d"
+                ),
+            ),
+        ];
+        for (location, sql) in variants {
+            let actual = resolved_query(&sql);
+            assert_eq!(
+                actual.condition_exactness().status(),
+                baseline.condition_exactness().status(),
+                "seed={seed}; location={location}; query={sql}; expected={:?}; actual residuals={:?}",
+                baseline.condition_exactness().status(),
+                actual.condition_exactness().residual_conditions()
+            );
+            assert_eq!(
+                residual_reasons(&actual),
+                residual_reasons(&baseline),
+                "seed={seed}; location={location}; query={sql}; expected residual reasons={:?}; actual={:?}",
+                residual_reasons(&baseline),
+                actual.condition_exactness().residual_conditions()
+            );
+            if baseline.condition_exactness().is_exact() {
+                assert_eq!(
+                    actual.column_domains(),
+                    baseline.column_domains(),
+                    "seed={seed}; location={location}; query={sql}; expected domains={:?}; actual={:?}",
+                    baseline.column_domains(),
+                    actual.column_domains()
+                );
+            }
+        }
+    }
+}
+
+fn canonical_composed_equalities(
+    semantics: &ResolvedComposedSemantics,
+) -> BTreeSet<(String, String, String, String)> {
+    semantics
+        .join_equalities()
+        .iter()
+        .map(|join| {
+            let left = (
+                join.left().relation().to_string(),
+                join.left().column().to_string(),
+            );
+            let right = (
+                join.right().relation().to_string(),
+                join.right().column().to_string(),
+            );
+            let (left, right) = if left <= right {
+                (left, right)
+            } else {
+                (right, left)
+            };
+            (left.0, left.1, right.0, right.1)
+        })
+        .collect()
+}
+
+fn row_triples(connection: &Connection, sql: &str) -> BTreeSet<(i64, i64, i64)> {
+    let mut statement = connection
+        .prepare(sql)
+        .expect("prepare three-source oracle");
+    statement
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, i64>(1)?,
+                row.get::<_, i64>(2)?,
+            ))
+        })
+        .unwrap_or_else(|error| panic!("execute three-source oracle {sql}: {error}"))
+        .map(|row| row.expect("read oracle triple"))
+        .collect()
+}
+
+#[test]
+fn explicit_and_implicit_two_source_join_claims_are_complete() {
+    let connection = duckdb_connection();
+    let explicit = "SELECT l.row_id, r.row_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2";
+    let implicit = "SELECT l.row_id, r.row_id FROM left_rows l, right_rows r WHERE l.x = r.y AND l.a > 0 AND r.b <= 2";
+    let expected = resolved_query(explicit);
+    assert!(
+        expected.condition_exactness().is_exact(),
+        "explicit join baseline: {:?}",
+        expected.condition_exactness().residual_conditions()
+    );
+    assert_eq!(expected.join_equalities().len(), 1);
+    assert_eq!(
+        canonical_composed_equalities(&expected),
+        BTreeSet::from([(
+            "left_rows".to_string(),
+            "x".to_string(),
+            "right_rows".to_string(),
+            "y".to_string(),
+        )])
+    );
+    let expected_rows = row_pairs(&connection, explicit);
+    assert_eq!(expected_rows, row_pairs(&connection, implicit));
+    for (location, sql) in [
+        ("implicit_where", implicit.to_string()),
+        ("cte", "WITH j AS (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2) SELECT l_id, r_id FROM j".to_string()),
+        ("chained_cte", "WITH j AS (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2), k AS (SELECT l_id, r_id FROM j) SELECT l_id, r_id FROM k".to_string()),
+        ("derived", "SELECT l_id, r_id FROM (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2) j".to_string()),
+    ] {
+        let actual = resolved_query(&sql);
+        assert!(
+            actual.condition_exactness().is_exact(),
+            "join completeness failure: location={location}; query={sql}; residuals={:?}",
+            actual.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            canonical_composed_equalities(&actual),
+            canonical_composed_equalities(&expected),
+            "join equality completeness: location={location}; query={sql}"
+        );
+        assert_eq!(
+            actual.column_domains(),
+            expected.column_domains(),
+            "join domain completeness: location={location}; query={sql}"
+        );
+        assert_eq!(
+            expected_rows,
+            row_pairs(&connection, &sql),
+            "join oracle: location={location}; query={sql}"
+        );
+    }
+}
+
+#[test]
+fn three_source_join_shapes_are_complete_against_duckdb() {
+    let connection = duckdb_connection();
+    connection
+        .execute_batch(
+            "CREATE TABLE third_rows (row_id BIGINT NOT NULL, c BIGINT, z BIGINT);
+         INSERT INTO third_rows VALUES (21, 1, 1), (22, 2, 2), (23, 3, 3), (24, NULL, 2);",
+        )
+        .expect("populate third source");
+
+    let explicit = "SELECT l.row_id, r.row_id, t.row_id FROM left_rows l JOIN right_rows r ON l.x = r.y JOIN third_rows t ON r.b = t.c WHERE l.a > 0";
+    let implicit = "SELECT l.row_id, r.row_id, t.row_id FROM left_rows l, right_rows r, third_rows t WHERE l.x = r.y AND r.b = t.c AND l.a > 0";
+    let expected = resolved_query(explicit);
+    assert!(
+        expected.condition_exactness().is_exact(),
+        "three-source baseline residuals={:?}",
+        expected.condition_exactness().residual_conditions()
+    );
+    assert_eq!(
+        expected.join_equalities().len(),
+        2,
+        "both physical equalities must be emitted"
+    );
+    let expected_rows = row_triples(&connection, explicit);
+    assert_eq!(expected_rows, row_triples(&connection, implicit));
+
+    for (location, sql) in [
+        ("implicit_where", implicit.to_string()),
+        ("cte", format!("WITH j AS ({explicit}) SELECT * FROM j")),
+        (
+            "chained_cte",
+            format!("WITH j AS ({explicit}), k AS (SELECT * FROM j) SELECT * FROM k"),
+        ),
+        ("derived", format!("SELECT * FROM ({explicit}) j")),
+    ] {
+        let actual = resolved_query(&sql);
+        assert!(
+            actual.condition_exactness().is_exact(),
+            "three-way join completeness: location={location}; query={sql}; residuals={:?}",
+            actual.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            canonical_composed_equalities(&actual),
+            canonical_composed_equalities(&expected),
+            "three-way equality completeness: location={location}; query={sql}"
+        );
+        assert_eq!(
+            actual.column_domains(),
+            expected.column_domains(),
+            "three-way domain completeness: location={location}; query={sql}"
+        );
+        assert_eq!(
+            expected_rows,
+            row_triples(&connection, &sql),
+            "three-way oracle: location={location}; query={sql}"
+        );
+    }
+}
+
+fn typed_conformance(sql: &str, sql_type: &str) -> ResolvedComposedSemantics {
+    let schema = RelationSchema::new(
+        "typed_rows",
+        vec![
+            SchemaColumn::from_sql_type("row_id", "BIGINT", "duckdb").expect("row ID type"),
+            SchemaColumn::from_sql_type("value", sql_type, "duckdb")
+                .expect("typed conformance column"),
+        ],
+    )
+    .expect("typed conformance relation");
+    let catalog = RelationCatalog::from_schemas(&[schema]).expect("typed catalog");
+    let dialect = dialect_from_name("duckdb").expect("DuckDB dialect");
+    let input = SqlInput::inline(sql);
+    let configured = [ConfiguredSqlInput::new(
+        "typed-conformance",
+        &input,
+        "duckdb",
+        dialect.as_ref(),
+    )];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+        .expect("typed conformance query should analyze");
+    match bundle.layers()[0].composed_semantics() {
+        ComposedSemantics::Resolved(semantics) => semantics.clone(),
+        other => panic!("typed conformance could not compose: {other:?}"),
+    }
+}
+
+#[test]
+fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable() {
+    for (data_type, predicate) in [
+        ("INTEGER", "value >= 1"),
+        ("BIGINT", "value BETWEEN 0 AND 2"),
+        ("DECIMAL(10,2)", "value > 1.5"),
+        ("DATE", "value >= DATE '2024-01-01'"),
+        ("TIME", "value < TIME '12:00:00'"),
+        ("BOOLEAN", "value = TRUE"),
+    ] {
+        let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
+        let typed = typed_conformance(&sql, data_type);
+        let untyped = resolved_query(&sql);
+        assert!(
+            typed.condition_exactness().is_exact(),
+            "typed completeness: type={data_type}; query={sql}; residuals={:?}",
+            typed.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            typed.condition_exactness().status(),
+            untyped.condition_exactness().status(),
+            "typed/untyped completeness: type={data_type}; query={sql}"
+        );
+        assert!(
+            typed
+                .column_domains()
+                .iter()
+                .all(|domain| !matches!(domain.domain(), ValueDomain::Unknown(_))),
+            "portable typed predicates must not silently lose domains: {sql}"
+        );
+    }
+}
+
+#[test]
+fn typed_comparison_exceptions_remain_explicit_until_assumptions_are_modeled() {
+    // TASK-53 will add conditional comparison semantics for strings, floats, and timestamps.
+    // INTERVAL literals remain a distinct parser-normalization boundary.
+    // Until then, an unconditional exactness claim would be unsound.
+    for (data_type, predicate) in [
+        ("VARCHAR", "value = 'keep'"),
+        ("DOUBLE", "value > 1.5"),
+        ("TIMESTAMP", "value >= TIMESTAMP '2024-01-01 00:00:00'"),
+        ("INTERVAL", "value >= INTERVAL '1 day'"),
+    ] {
+        let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
+        let typed = typed_conformance(&sql, data_type);
+        assert!(
+            !typed.condition_exactness().is_exact(),
+            "typed comparison must remain conditional: type={data_type}; query={sql}"
+        );
+        assert!(
+            !typed.condition_exactness().residual_conditions().is_empty(),
+            "typed comparison residual must explain unsupported semantics: {sql}"
+        );
+    }
+}
+
+#[test]
+fn seeded_two_and_three_source_joins_preserve_exact_equalities() {
+    const CASES: u64 = 120;
+    let connection = duckdb_connection();
+    connection
+        .execute_batch(
+            "CREATE TABLE third_rows (row_id BIGINT NOT NULL, c BIGINT, z BIGINT);
+             INSERT INTO third_rows VALUES (21, 1, 1), (22, 2, 2), (23, 3, 3), (24, NULL, 2);",
+        )
+        .expect("populate three-way oracle");
+
+    for seed in 1..=CASES {
+        let mut rng = DeterministicRng::new(seed);
+        let two_relation_equality = if rng.bool() { "l.x = r.y" } else { "l.a = r.b" };
+        let third_relation_equality = if rng.bool() { "r.b = t.c" } else { "l.x = t.z" };
+        let lower = rng.index(3);
+        let upper = rng.index(3) + 1;
+        let triple = rng.bool();
+        let (explicit, implicit, expected_count) = if triple {
+            (
+                format!("SELECT l.row_id, r.row_id, t.row_id FROM left_rows l JOIN right_rows r ON {two_relation_equality} JOIN third_rows t ON {third_relation_equality} WHERE l.a >= {lower} AND r.b <= {upper}"),
+                format!("SELECT l.row_id, r.row_id, t.row_id FROM left_rows l, right_rows r, third_rows t WHERE {two_relation_equality} AND {third_relation_equality} AND l.a >= {lower} AND r.b <= {upper}"),
+                2,
+            )
+        } else {
+            (
+                format!("SELECT l.row_id, r.row_id FROM left_rows l JOIN right_rows r ON {two_relation_equality} WHERE l.a >= {lower} AND r.b <= {upper}"),
+                format!("SELECT l.row_id, r.row_id FROM left_rows l, right_rows r WHERE {two_relation_equality} AND l.a >= {lower} AND r.b <= {upper}"),
+                1,
+            )
+        };
+        let baseline = resolved_query(&explicit);
+        assert!(
+            baseline.condition_exactness().is_exact(),
+            "seed={seed}; explicit query={explicit}; residuals={:?}",
+            baseline.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            canonical_composed_equalities(&baseline).len(),
+            expected_count,
+            "seed={seed}; explicit query={explicit}"
+        );
+        let wrapped = [
+            ("implicit", implicit),
+            ("cte", format!("WITH j AS ({explicit}) SELECT * FROM j")),
+            (
+                "chained_cte",
+                format!("WITH j AS ({explicit}), k AS (SELECT * FROM j) SELECT * FROM k"),
+            ),
+            ("derived", format!("SELECT * FROM ({explicit}) j")),
+        ];
+        for (location, sql) in wrapped {
+            let actual = resolved_query(&sql);
+            assert!(
+                actual.condition_exactness().is_exact(),
+                "seed={seed}; location={location}; query={sql}; residuals={:?}",
+                actual.condition_exactness().residual_conditions()
+            );
+            assert_eq!(
+                canonical_composed_equalities(&actual),
+                canonical_composed_equalities(&baseline),
+                "seed={seed}; location={location}; query={sql}; equality mismatch"
+            );
+            assert_eq!(
+                actual.column_domains(),
+                baseline.column_domains(),
+                "seed={seed}; location={location}; query={sql}; domain mismatch"
+            );
+            if triple {
+                assert_eq!(
+                    row_triples(&connection, &sql),
+                    row_triples(&connection, &explicit),
+                    "seed={seed}; location={location}; three-source oracle mismatch"
+                );
+            } else {
+                assert_eq!(
+                    row_pairs(&connection, &sql),
+                    row_pairs(&connection, &explicit),
+                    "seed={seed}; location={location}; two-source oracle mismatch"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
+    let connection = duckdb_connection();
+    connection
+        .execute_batch(
+            "CREATE TABLE third_rows (row_id BIGINT NOT NULL, c BIGINT, z BIGINT);
+             INSERT INTO third_rows VALUES (21, 1, 1), (22, 2, 2), (23, 3, 3), (24, NULL, 2);",
+        )
+        .expect("populate revenue source");
+    let inlined = "
+        SELECT l.row_id AS order_id,
+               CASE WHEN SUM(r.b * t.c) > 0 THEN CAST(SUM(r.b * t.c) AS BIGINT) ELSE 0 END AS revenue
+        FROM left_rows l
+        JOIN right_rows r ON l.x = r.y
+        JOIN third_rows t ON r.y = t.z
+        WHERE l.a > 0 AND r.b <= 2 AND t.c > 0
+        GROUP BY l.row_id
+    ";
+    let with_ctes = "
+        WITH orders AS (
+            SELECT row_id AS order_id, x AS product_id, a FROM left_rows WHERE a > 0
+        ),
+        items AS (
+            SELECT row_id AS item_id, y AS product_id, b FROM right_rows WHERE b <= 2
+        ),
+        products AS (
+            SELECT row_id AS product_row_id, z AS product_id, c FROM third_rows WHERE c > 0
+        ),
+        line_items AS (
+            SELECT o.order_id, i.b, p.c
+            FROM orders o
+            JOIN items i ON o.product_id = i.product_id
+            JOIN products p ON i.product_id = p.product_id
+        )
+        SELECT order_id,
+               CASE WHEN SUM(b * c) > 0 THEN CAST(SUM(b * c) AS BIGINT) ELSE 0 END AS revenue
+        FROM line_items
+        GROUP BY order_id
+    ";
+    let expected = resolved_query(inlined);
+    let actual = resolved_query(with_ctes);
+    assert!(
+        expected.condition_exactness().is_exact(),
+        "inlined revenue query must be exact: {:?}",
+        expected.condition_exactness().residual_conditions()
+    );
+    assert!(
+        actual.condition_exactness().is_exact(),
+        "daily-revenue CTE chain must be exact; query={with_ctes}; residuals={:?}",
+        actual.condition_exactness().residual_conditions()
+    );
+    assert_eq!(
+        canonical_composed_equalities(&actual),
+        canonical_composed_equalities(&expected),
+        "CTE revenue chain must preserve both physical equalities"
+    );
+    assert_eq!(
+        actual.column_domains(),
+        expected.column_domains(),
+        "CTE revenue chain must preserve source filter domains"
+    );
+    assert_eq!(
+        query_optional_i64(
+            &connection,
+            &format!("SELECT revenue FROM ({inlined}) q ORDER BY order_id")
+        ),
+        query_optional_i64(
+            &connection,
+            &format!("SELECT revenue FROM ({with_ctes}) q ORDER BY order_id")
+        ),
+        "CTE revenue chain must compute the same aggregates as DuckDB"
+    );
+}
+
+#[test]
+fn seeded_portable_typed_scalar_families_keep_exactness() {
+    const CASES: u64 = 120;
+    for seed in 1..=CASES {
+        let mut rng = DeterministicRng::new(seed);
+        let literal = rng.index(4);
+        let (data_type, predicate) = match rng.index(6) {
+            0 => (
+                "BOOLEAN",
+                format!("value = {}", if rng.bool() { "TRUE" } else { "FALSE" }),
+            ),
+            1 => ("INTEGER", format!("value >= {literal}")),
+            2 => ("BIGINT", format!("value < {literal}")),
+            3 => ("DECIMAL(10,2)", format!("value <= {literal}.5")),
+            4 => ("DATE", format!("value >= DATE '2024-01-0{}'", literal + 1)),
+            _ => ("TIME", format!("value <= TIME '12:0{literal}:00'")),
+        };
+        let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
+        let typed = typed_conformance(&sql, data_type);
+        let untyped = resolved_query(&sql);
+        assert!(
+            typed.condition_exactness().is_exact(),
+            "seed={seed}; type={data_type}; query={sql}; expected exact; actual residuals={:?}",
+            typed.condition_exactness().residual_conditions()
+        );
+        assert_eq!(
+            typed.condition_exactness().status(),
+            untyped.condition_exactness().status(),
+            "seed={seed}; type={data_type}; query={sql}; typed/untyped exactness mismatch"
+        );
+        assert!(
+            typed
+                .column_domains()
+                .iter()
+                .all(|domain| !matches!(domain.domain(), ValueDomain::Unknown(_))),
+            "seed={seed}; type={data_type}; query={sql}; domain became unknown"
+        );
+    }
 }

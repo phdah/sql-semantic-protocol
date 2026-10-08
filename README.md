@@ -543,6 +543,12 @@ The standard Rust test suite includes a deterministic differential oracle in
 `tests/differential_conformance.rs`. It runs protocol exactness, source-domain, output-domain,
 join-equality, and CASE-branch claims against DuckDB. The suite combines a curated matrix with
 3,000 seeded AND/OR/NOT predicate trees; failures report the reproducing query and seed.
+Completeness checks require allow-listed predicates to remain exact through CTEs, chained CTEs,
+derived tables, and multi-layer identity projections. Seeded local-relation equivalence cases
+compare exactness and residual reasons with the inlined form. Explicit and implicit two- and
+three-source joins verify physical equality identities and domains against DuckDB. Typed-schema
+cases assert portable exactness while retaining explicit residuals for comparisons whose
+collation, floating-point, or timestamp semantics are not yet represented.
 
 DuckDB is a development-only dependency with default features disabled. The repository does not
 enable duckdb-rs's `bundled` feature, so it never compiles DuckDB from source. Cargo config sets
