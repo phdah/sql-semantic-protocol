@@ -6,8 +6,13 @@ assignee: []
 created_date: '2026-10-08'
 labels: []
 milestone: m-3
-dependencies: []
+dependencies:
+  - TASK-58
+  - TASK-59
+  - TASK-60
 references:
+  - 'TASK-58'
+  - 'TASK-61'
   - 'TASK-28'
   - 'TASK-43'
   - 'TASK-59'
@@ -21,6 +26,8 @@ type: feature
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
 The existing row-condition exactness contract describes qualifying source-row combinations, not requested output cardinality, group counts or distributions. A generator must distinguish source row counts from final results.
+
+The full TASK-64 acceptance scope depends on exact set membership (TASK-58), grouped aggregates (TASK-59) and window ranking (TASK-60). Existing exact inner joins can participate without TASK-61; goals involving extended join semantics remain residual until TASK-61 exposes and releases the required match/multiplicity contract. A narrower implementation may be staged, but this task is not Done until its advertised supported classes satisfy the full acceptance criteria.
 
 SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Semantic Protocol. Preserve existing exact behavior while extending the canonical contract, and never mark unsupported cases exact. Changes must uphold the repository's outcome-first definition of done and cross-adapter parity.
 <!-- SECTION:DESCRIPTION:END -->
