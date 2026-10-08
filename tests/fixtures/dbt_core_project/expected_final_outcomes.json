@@ -383,8 +383,7 @@
         "columns": [
           {
             "domain": {
-              "kind": "unknown",
-              "reason": "set-operation output value is determined positionally by multiple query branches"
+              "kind": "unbounded"
             },
             "expression": {
               "kind": "column",
@@ -1245,8 +1244,7 @@
         "columns": [
           {
             "domain": {
-              "kind": "unknown",
-              "reason": "set-operation output value is determined positionally by multiple query branches"
+              "kind": "unbounded"
             },
             "expression": {
               "kind": "unknown",
@@ -2983,8 +2981,7 @@
         "columns": [
           {
             "domain": {
-              "kind": "unknown",
-              "reason": "set-operation output value is determined positionally by multiple query branches"
+              "kind": "unbounded"
             },
             "expression": {
               "kind": "unknown",
@@ -4471,8 +4468,7 @@
         "columns": [
           {
             "domain": {
-              "kind": "unknown",
-              "reason": "set-operation output value is determined positionally by multiple query branches"
+              "kind": "unbounded"
             },
             "expression": {
               "kind": "unknown",
@@ -4790,8 +4786,7 @@
         "columns": [
           {
             "domain": {
-              "kind": "unknown",
-              "reason": "set-operation output value is determined positionally by multiple query branches"
+              "kind": "unbounded"
             },
             "expression": {
               "kind": "column",
