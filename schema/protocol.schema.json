@@ -347,6 +347,13 @@
           "items": {
             "$ref": "#/$defs/composedSetOperation"
           }
+        },
+        "group_witnesses": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/composedGroupWitness"
+          }
         }
       }
     },
@@ -3967,6 +3974,22 @@
         },
         "rejected": {
           "$ref": "#/$defs/groupWitnessDirection"
+        }
+      }
+    },
+    "composedGroupWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_layer_id",
+        "witness"
+      ],
+      "properties": {
+        "origin_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "witness": {
+          "$ref": "#/$defs/groupWitness"
         }
       }
     }
