@@ -585,11 +585,17 @@ fn analyze_query(
         ),
         metadata,
     );
-    let output = refine_output_domains_from_column_domains(
-        output,
-        &column_domains,
-        &relation_analysis.sources,
-    );
+    // A set output is already the operator-specific composition of branch domains.
+    // Its placeholder Unknown expression must not replace that proven domain.
+    let output = if set_operation.is_some() {
+        output
+    } else {
+        refine_output_domains_from_column_domains(
+            output,
+            &column_domains,
+            &relation_analysis.sources,
+        )
+    };
 
     if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
         inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
