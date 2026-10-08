@@ -406,12 +406,12 @@ impl ComposedSemantics {
         dependencies: Vec<String>,
         column_domains: Vec<ColumnDomain>,
         mut join_equalities: Vec<ComposedJoinEquality>,
-        mut set_operations: Vec<ComposedSetOperation>,
-        mut group_witnesses: Vec<ComposedGroupWitness>,
+        witnesses: ComposedWitnessEvidence,
         condition_exactness: ConditionExactness,
         output: Output,
         mut diagnostics: Vec<CompositionDiagnostic>,
     ) -> Self {
+        let ComposedWitnessEvidence { mut set_operations, mut group_witnesses } = witnesses;
         join_equalities.sort_by(composed_join_equality_cmp);
         join_equalities.dedup();
         set_operations.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
@@ -425,7 +425,7 @@ impl ComposedSemantics {
             column_domains,
             join_equalities,
             set_operations,
-            group_witnesses,
+            group_witnesses: Box::new(group_witnesses),
             condition_exactness,
             output,
             diagnostics,
@@ -568,6 +568,13 @@ impl ComposedSetOperation {
     }
 }
 
+/// Locally and transitively composed generator-facing witness evidence.
+/// Each witness retains the layer that introduced it and its own proof boundary.
+pub(crate) struct ComposedWitnessEvidence {
+    pub(crate) set_operations: Vec<ComposedSetOperation>,
+    pub(crate) group_witnesses: Vec<ComposedGroupWitness>,
+}
+
 /// A grouped HAVING witness introduced at one SQL or dbt transformation layer.
 ///
 /// This is provenance-bearing local evidence, not a proof that an arbitrary
@@ -597,7 +604,7 @@ pub struct ResolvedComposedSemantics {
     column_domains: Vec<ColumnDomain>,
     join_equalities: Vec<ComposedJoinEquality>,
     set_operations: Vec<ComposedSetOperation>,
-    group_witnesses: Vec<ComposedGroupWitness>,
+    group_witnesses: Box<Vec<ComposedGroupWitness>>,
     condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
