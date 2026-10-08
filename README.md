@@ -52,7 +52,7 @@ sql-semantic-protocol --dialect snowflake \
 For dbt, first compile the project and use its generated artifacts:
 
 ```sh
-dbt compile
+dbt docs generate
 sql-semantic-protocol --dbt-manifest target/manifest.json
 ```
 
