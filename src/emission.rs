@@ -651,7 +651,9 @@ fn group_witness_to_value(witness: &crate::group_witness::GroupWitness) -> Value
     })
 }
 
-fn group_witness_direction_to_value(direction: &crate::group_witness::GroupWitnessDirection) -> Value {
+fn group_witness_direction_to_value(
+    direction: &crate::group_witness::GroupWitnessDirection,
+) -> Value {
     match direction {
         crate::group_witness::GroupWitnessDirection::Residual { reason } => json!({
             "status": "residual", "reason": reason
