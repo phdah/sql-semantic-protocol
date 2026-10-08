@@ -1744,9 +1744,29 @@ fn parse_manifest_relation_constraints(
                 referenced_resources.dedup();
                 let reference_path = format!("{path}.test_metadata.kwargs.to");
                 let reference = required_string(arguments, "to", &reference_path)?;
+                let declared_target = dbt_constraint_reference(reference, resources);
                 let referenced_relation = match referenced_resources.as_slice() {
-                    [relation] => (*relation).to_string(),
-                    [] => dbt_constraint_reference(reference, resources).ok_or_else(|| {
+                    [relation] => {
+                        if let Some(declared_target) = declared_target.as_deref() {
+                            if declared_target != *relation {
+                                record_constraint_diagnostic(
+                                    &mut result,
+                                    &mut unscoped_diagnostics,
+                                    Some(local_relation),
+                                    test_id,
+                                    ConstraintDiagnostic::new(
+                                        "inconsistent_relationship_target",
+                                        format!(
+                                            "dbt relationships test '{test_id}' declares to '{declared_target}' but depends_on identifies '{relation}'; no foreign key was emitted"
+                                        ),
+                                    ),
+                                )?;
+                                continue;
+                            }
+                        }
+                        (*relation).to_string()
+                    }
+                    [] => declared_target.ok_or_else(|| {
                         invalid_field(
                             &reference_path,
                             format!(
