@@ -139,6 +139,9 @@ impl<'a> Composer<'a> {
                 )]
             })
             .unwrap_or_default();
+        let mut group_witnesses = query.group_witness().map(|witness| {
+            vec![crate::bundle::ComposedGroupWitness::new(layer.id().to_string(), witness.clone())]
+        }).unwrap_or_default();
         let mut diagnostics = Vec::<CompositionDiagnostic>::new();
         let mut condition_exactness: ConditionExactness = query
             .condition_exactness()
@@ -174,6 +177,7 @@ impl<'a> Composer<'a> {
                             merge_column_domains(&mut domain_map, upstream.column_domains());
                             join_equalities.extend(upstream.join_equalities().iter().cloned());
                             set_operations.extend(upstream.set_operations().iter().cloned());
+                            group_witnesses.extend(upstream.group_witnesses().iter().cloned());
                             condition_exactness =
                                 condition_exactness.merged_with(upstream.condition_exactness());
                         }
@@ -256,6 +260,7 @@ impl<'a> Composer<'a> {
             column_domains,
             join_equalities,
             set_operations,
+            group_witnesses,
             condition_exactness,
             output,
             diagnostics,
