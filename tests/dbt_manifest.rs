@@ -3,9 +3,10 @@ use std::process::{Command, Output, Stdio};
 
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_dbt_manifest,
-    parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ComposedSemantics, ConfiguredSqlInput,
-    DataType, DbtArtifactsError, LiteralValue, RelationCatalog, RelationContext,
-    RelationResolution, SchemaSourceKind, SqlInput, TransformationLayer, ValueDomain,
+    analyze_dbt_manifest_with_schemas, parse_dbt_catalog, parse_dbt_manifest, to_bundle_json,
+    ComposedSemantics, ConfiguredSqlInput, DataType, DbtArtifactsError, LiteralValue,
+    RelationCatalog, RelationContext, RelationResolution, SchemaSourceKind, SqlInput,
+    TransformationLayer, ValueDomain,
 };
 use sqlparser::dialect::dialect_from_str;
 
@@ -331,4 +332,154 @@ fn dbt_manifest_cli_matches_library_analysis() {
             .trim(),
         to_bundle_json(&bundle)
     );
+}
+
+#[test]
+fn dbt_manifest_with_schemas_matches_empty_catalog() {
+    let manifest = fixture_manifest();
+    let dialect = dialect_from_str(manifest.adapter_type()).expect("postgres dialect");
+    let without_catalog =
+        analyze_dbt_manifest_with_schemas(&manifest, manifest.adapter_type(), dialect.as_ref())
+            .expect("manifest-only schemas should analyze");
+    let with_empty_catalog = analyze_dbt_artifacts(
+        &manifest,
+        &empty_catalog(),
+        manifest.adapter_type(),
+        dialect.as_ref(),
+    )
+    .expect("empty catalog should use manifest declarations");
+
+    assert_eq!(
+        to_bundle_json(&without_catalog),
+        to_bundle_json(&with_empty_catalog)
+    );
+    let [source] = without_catalog.source_schemas() else {
+        panic!("one source schema should be emitted");
+    };
+    assert_eq!(source.relation(), "warehouse.raw.orders");
+    assert_eq!(source.source_kind(), Some(SchemaSourceKind::DbtManifest));
+    let final_orders =
+        layer_for_relation(without_catalog.layers(), "warehouse.analytics.final_orders");
+    let ComposedSemantics::Resolved(semantics) = final_orders.composed_semantics() else {
+        panic!("final dbt model should compose");
+    };
+    assert_closed_number_range(semantics.output().columns()[1].domain(), "10", "50");
+}
+
+#[test]
+fn dbt_manifest_without_catalog_names_each_missing_column_type() {
+    let mut manifest_json: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+            .expect("manifest fixture should be JSON");
+    for column in ["id", "amount"] {
+        manifest_json["sources"]["source.demo.orders"]["columns"][column]
+            .as_object_mut()
+            .expect("source column")
+            .remove("data_type");
+    }
+    let manifest = parse_dbt_manifest(&manifest_json.to_string()).expect("manifest parses");
+    let dialect = dialect_from_str(manifest.adapter_type()).expect("postgres dialect");
+    let error =
+        analyze_dbt_manifest_with_schemas(&manifest, manifest.adapter_type(), dialect.as_ref())
+            .expect_err("partial source declarations must fail");
+
+    assert_eq!(
+        error,
+        DbtArtifactsError::MissingDeclaredColumnTypes {
+            relation: "warehouse.raw.orders".to_string(),
+            columns: vec!["amount".to_string(), "id".to_string()],
+        }
+    );
+}
+
+#[test]
+fn dbt_manifest_without_catalog_rejects_missing_source_columns() {
+    let mut manifest_json: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+            .expect("manifest fixture should be JSON");
+    manifest_json["sources"]["source.demo.orders"]
+        .as_object_mut()
+        .expect("source")
+        .remove("columns");
+    let manifest = parse_dbt_manifest(&manifest_json.to_string()).expect("manifest parses");
+    let dialect = dialect_from_str(manifest.adapter_type()).expect("postgres dialect");
+    let error =
+        analyze_dbt_manifest_with_schemas(&manifest, manifest.adapter_type(), dialect.as_ref())
+            .expect_err("undeclared source columns must fail");
+
+    assert_eq!(
+        error,
+        DbtArtifactsError::MissingCatalogSchema {
+            relation: "warehouse.raw.orders".to_string(),
+        }
+    );
+}
+
+#[test]
+fn dbt_cli_uses_manifest_schemas_without_default_catalog() {
+    let manifest_path = fixture_path();
+    let output = run(&[
+        "--dbt-manifest",
+        manifest_path.to_str().expect("UTF-8 fixture path"),
+    ]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let manifest = fixture_manifest();
+    let dialect = dialect_from_str(manifest.adapter_type()).expect("postgres dialect");
+    let expected =
+        analyze_dbt_manifest_with_schemas(&manifest, manifest.adapter_type(), dialect.as_ref())
+            .expect("manifest-only library analysis");
+    assert_eq!(
+        String::from_utf8(output.stdout)
+            .expect("UTF-8 CLI output")
+            .trim(),
+        to_bundle_json(&expected)
+    );
+}
+
+#[test]
+fn dbt_cli_explicit_missing_catalog_is_an_error() {
+    let manifest_path = fixture_path();
+    let absent_catalog = manifest_path.with_file_name("missing-catalog.json");
+    let output = run(&[
+        "--dbt-manifest",
+        manifest_path.to_str().expect("UTF-8 manifest path"),
+        "--dbt-catalog",
+        absent_catalog.to_str().expect("UTF-8 catalog path"),
+    ]);
+
+    assert!(!output.status.success());
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("missing-catalog.json"),
+        "error should identify the explicitly required catalog"
+    );
+}
+
+#[test]
+fn dbt_cli_without_catalog_names_missing_manifest_type() {
+    let mut manifest_json: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+            .expect("manifest fixture should be JSON");
+    manifest_json["sources"]["source.demo.orders"]["columns"]["amount"]
+        .as_object_mut()
+        .expect("source column")
+        .remove("data_type");
+    let path = std::env::temp_dir().join(format!(
+        "sql-semantic-protocol-task49-{}-missing-type.json",
+        std::process::id()
+    ));
+    std::fs::write(&path, manifest_json.to_string()).expect("write manifest fixture");
+    let output = run(&[
+        "--dbt-manifest",
+        path.to_str().expect("UTF-8 temporary manifest path"),
+    ]);
+    std::fs::remove_file(&path).expect("remove manifest fixture");
+
+    assert!(!output.status.success());
+    let error = String::from_utf8_lossy(&output.stderr);
+    assert!(error.contains("warehouse.raw.orders"), "{error}");
+    assert!(error.contains("amount"), "{error}");
 }

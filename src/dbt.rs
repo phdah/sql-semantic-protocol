@@ -926,6 +926,19 @@ pub fn analyze_dbt_manifest(
     analyze_dbt_with_catalog(manifest, dialect_name, dialect, &catalog)
 }
 
+/// Analyze a dbt manifest with complete manifest-declared physical source schemas.
+///
+/// No warehouse catalog is required. Every physical dependency must declare its columns and
+/// usable `data_type` values in the manifest. The resulting source schemas retain
+/// `dbt_manifest` provenance and use the same validation as paired artifact analysis.
+pub fn analyze_dbt_manifest_with_schemas(
+    manifest: &DbtManifest,
+    dialect_name: &str,
+    dialect: &dyn Dialect,
+) -> Result<AnalysisBundle, DbtArtifactsError> {
+    analyze_dbt_with_schema_evidence(manifest, &BTreeMap::new(), dialect_name, dialect)
+}
+
 /// Analyze a paired dbt manifest and catalog into the complete protocol contract.
 ///
 /// The manifest supplies model identity, compiled SQL, dependency metadata, and declared column
@@ -938,7 +951,16 @@ pub fn analyze_dbt_artifacts(
     dialect_name: &str,
     dialect: &dyn Dialect,
 ) -> Result<AnalysisBundle, DbtArtifactsError> {
-    let schemas = relation_schemas_from_artifacts(manifest, catalog, dialect_name)?;
+    analyze_dbt_with_schema_evidence(manifest, &catalog.resources, dialect_name, dialect)
+}
+
+fn analyze_dbt_with_schema_evidence(
+    manifest: &DbtManifest,
+    catalog_resources: &BTreeMap<String, DbtCatalogResource>,
+    dialect_name: &str,
+    dialect: &dyn Dialect,
+) -> Result<AnalysisBundle, DbtArtifactsError> {
+    let schemas = relation_schemas_from_artifacts(manifest, catalog_resources, dialect_name)?;
     let catalog_relations = manifest
         .catalog_relations
         .iter()
@@ -1048,12 +1070,12 @@ fn analyze_dbt_with_catalog(
 
 fn relation_schemas_from_artifacts(
     manifest: &DbtManifest,
-    catalog: &DbtCatalog,
+    catalog_resources: &BTreeMap<String, DbtCatalogResource>,
     dialect_name: &str,
 ) -> Result<Vec<RelationSchema>, DbtArtifactsError> {
     let mut schemas = BTreeMap::<String, (String, RelationSchema)>::new();
 
-    for (unique_id, catalog_resource) in &catalog.resources {
+    for (unique_id, catalog_resource) in catalog_resources {
         let resource = manifest.resources.get(unique_id).ok_or_else(|| {
             DbtArtifactsError::CatalogResourceNotInManifest {
                 unique_id: unique_id.clone(),
@@ -1116,7 +1138,7 @@ fn relation_schemas_from_artifacts(
         .iter()
         .flat_map(|model| model.dependencies.iter())
         .filter(|dependency_id| !model_ids.contains(dependency_id.as_str()))
-        .filter(|dependency_id| !catalog.resources.contains_key(dependency_id.as_str()))
+        .filter(|dependency_id| !catalog_resources.contains_key(dependency_id.as_str()))
         .cloned()
         .collect::<BTreeSet<_>>();
 

@@ -7,16 +7,16 @@ use std::process::ExitCode;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
-    parse_analysis_manifest, parse_dbt_catalog, parse_dbt_manifest, select_targets, to_bundle_json,
-    to_openlineage_json, AnalysisBundle, ConfiguredInputAnalysisError, ConfiguredSqlInput,
-    DbtArtifactsError, Error as ProtocolError, InputAnalysisError, ManifestInputSource,
-    ManifestOutputScope, OpenLineageExportError, RelationCatalog, RelationContext, SqlInput,
-    TargetSelectionError,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
+    analyze_dbt_manifest_with_schemas, analyze_inputs, parse_analysis_manifest, parse_dbt_catalog,
+    parse_dbt_manifest, select_targets, to_bundle_json, to_openlineage_json, AnalysisBundle,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, DbtArtifactsError, Error as ProtocolError,
+    InputAnalysisError, ManifestInputSource, ManifestOutputScope, OpenLineageExportError,
+    RelationCatalog, RelationContext, SqlInput, TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dbt-manifest <path> [--dbt-catalog <path>] | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]... [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>]\n\nUse --dbt-manifest for a dbt manifest.json artifact. The complete dbt path also consumes catalog.json for warehouse-introspected column schemas and datatypes. By default catalog.json is loaded beside manifest.json; use --dbt-catalog to override that path.\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, optional catalog metadata, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, --target, and --catalog-relation as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nUse --default-catalog and --default-schema to qualify otherwise partial direct-input relation identities before graph linking.\nLegacy positional SQL remains one input. If no direct input, dbt manifest, or analysis manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser. dbt analysis uses the artifact adapter_type as the sqlparser dialect name.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--dbt-manifest <path> [--dbt-catalog <path>] | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]... [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>]\n\nUse --dbt-manifest for a dbt manifest.json artifact. The complete dbt path also consumes catalog.json for warehouse-introspected column schemas and datatypes. If catalog.json exists beside manifest.json it is loaded automatically; otherwise complete manifest-declared source column types are required. Use --dbt-catalog to override the default path (an explicit missing catalog is an error).\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, optional catalog metadata, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, --target, and --catalog-relation as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nUse --default-catalog and --default-schema to qualify otherwise partial direct-input relation identities before graph linking.\nLegacy positional SQL remains one input. If no direct input, dbt manifest, or analysis manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser. dbt analysis uses the artifact adapter_type as the sqlparser dialect name.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -394,13 +394,20 @@ fn analyze_dbt_artifacts_from_paths(
             .unwrap_or_else(|| Path::new("."))
             .join("catalog.json"),
     };
-    let catalog_json = fs::read_to_string(&catalog_path).map_err(|error| {
-        CliError::Input(format!(
-            "dbt catalog '{}': failed to read: {error}; generate catalog.json for the same dbt project or pass --dbt-catalog",
-            catalog_path.display()
-        ))
-    })?;
-    let catalog = parse_dbt_catalog(&catalog_json)
+    let catalog_json = match fs::read_to_string(&catalog_path) {
+        Ok(json) => Some(json),
+        Err(error) if catalog_override.is_none() && error.kind() == io::ErrorKind::NotFound => None,
+        Err(error) => {
+            return Err(CliError::Input(format!(
+                "dbt catalog '{}': failed to read: {error}",
+                catalog_path.display()
+            )));
+        }
+    };
+    let catalog = catalog_json
+        .as_deref()
+        .map(parse_dbt_catalog)
+        .transpose()
         .map_err(|error| CliError::DbtArtifacts(DbtArtifactsError::Catalog(error)))?;
 
     let (dialect_name, dialect) = select_dialect(manifest.adapter_type()).map_err(|error| {
@@ -411,8 +418,11 @@ fn analyze_dbt_artifacts_from_paths(
         ))
     })?;
 
-    analyze_dbt_artifacts(&manifest, &catalog, &dialect_name, dialect.as_ref())
-        .map_err(CliError::DbtArtifacts)
+    match catalog.as_ref() {
+        Some(catalog) => analyze_dbt_artifacts(&manifest, catalog, &dialect_name, dialect.as_ref()),
+        None => analyze_dbt_manifest_with_schemas(&manifest, &dialect_name, dialect.as_ref()),
+    }
+    .map_err(CliError::DbtArtifacts)
 }
 
 struct LoadedManifestInput {
