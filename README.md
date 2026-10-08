@@ -143,6 +143,16 @@ deterministically; missing, ambiguous, or unsupported references fail rather tha
 
 ### Typed predicate-domain literals
 
+Boolean filters on plain boolean columns normalize to exact literal domains: `WHERE flag`
+and `WHERE flag IS TRUE` require `true`, while `WHERE NOT flag` and
+`WHERE flag IS FALSE` require `false`. `IS NOT TRUE` and `IS NOT FALSE`
+also allow SQL NULL. Typed-literal errors retain their distinct residual reasons
+(`literal_type_mismatch`, `lossy_coercion`, `out_of_range_literal`,
+`comparison_semantics`, and `unknown_schema_column`) and are attributed to
+their actual condition clause. See [row-condition exactness](docs/protocol.md#row-condition-exactness)
+for the complete residual reason contract.
+
+
 When typed source-schema evidence is available, predicate-domain literals are checked against the
 canonical datatype before a domain can participate in the exact row-condition contract. Exact
 boolean, integer, date, time, and interval literals retain their canonical literal type; integer
