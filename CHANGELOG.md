@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/phdah/sql-semantic-protocol/compare/v2.0.1...v2.0.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* **dbt:** resolve source relationships tests without attached_node ([#72](https://github.com/phdah/sql-semantic-protocol/issues/72)) ([355a992](https://github.com/phdah/sql-semantic-protocol/commit/355a99238c8e75f1e5969ef945481f3241c99c43))
+
 ## [2.0.1](https://github.com/phdah/sql-semantic-protocol/compare/v2.0.0...v2.0.1) (2026-10-08)
 
 
