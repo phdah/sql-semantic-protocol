@@ -418,12 +418,29 @@ fn directory_with_no_sql_files_is_an_input_error_when_it_is_the_only_input() {
 
 #[test]
 fn cli_assumption_declaration_is_recorded_and_closes_condition() {
-    let output = run_with_stdin(&["--assume", "binary_collation"], "SELECT name FROM t WHERE name = 'x'");
-    assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
+    let output = run_with_stdin(
+        &["--assume", "binary_collation"],
+        "SELECT name FROM t WHERE name = 'x'",
+    );
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(json["declared_comparison_assumptions"], serde_json::json!(["binary_collation"]));
-    assert_eq!(json["layers"][0]["composed_semantics"]["condition_exactness"]["status"], "exact");
-    assert_eq!(json["layers"][0]["composed_semantics"]["condition_exactness"]["comparison_assumptions"][0]["declared"], true);
+    assert_eq!(
+        json["declared_comparison_assumptions"],
+        serde_json::json!(["binary_collation"])
+    );
+    assert_eq!(
+        json["layers"][0]["composed_semantics"]["condition_exactness"]["status"],
+        "exact"
+    );
+    assert_eq!(
+        json["layers"][0]["composed_semantics"]["condition_exactness"]["comparison_assumptions"][0]
+            ["declared"],
+        true
+    );
 }
 
 #[test]

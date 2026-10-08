@@ -229,23 +229,53 @@ fn timestamp_metadata_preserves_explicit_timezone_and_rejects_invalid_type() {
     use sql_semantic_protocol::{DataType, TimestampZone};
     let tz = SchemaColumn::from_sql_type("ts", "TIMESTAMP WITH TIME ZONE", "postgresql").unwrap();
     assert_eq!(tz.timestamp_zone(), Some(TimestampZone::WithTimeZone));
-    let ntz = SchemaColumn::from_sql_type("ts", "TIMESTAMP WITHOUT TIME ZONE", "postgresql").unwrap();
+    let ntz =
+        SchemaColumn::from_sql_type("ts", "TIMESTAMP WITHOUT TIME ZONE", "postgresql").unwrap();
     assert_eq!(ntz.timestamp_zone(), Some(TimestampZone::WithoutTimeZone));
     let unknown = SchemaColumn::new("ts", DataType::Timestamp { precision: None }).unwrap();
     assert_eq!(unknown.timestamp_zone(), None);
-    assert!(SchemaColumn::new("name", DataType::String { length: None, fixed: false }).unwrap().with_timestamp_zone(TimestampZone::WithTimeZone).is_err());
+    assert!(SchemaColumn::new(
+        "name",
+        DataType::String {
+            length: None,
+            fixed: false
+        }
+    )
+    .unwrap()
+    .with_timestamp_zone(TimestampZone::WithTimeZone)
+    .is_err());
 }
 
 #[test]
 fn single_input_library_supports_comparison_declarations() {
-    use sql_semantic_protocol::{analyze_sql, to_json, ComparisonAssumption, ConditionExactnessStatus, ProtocolStatement};
+    use sql_semantic_protocol::{
+        analyze_sql, to_json, ComparisonAssumption, ConditionExactnessStatus, ProtocolStatement,
+    };
     let dialect = PostgreSqlDialect {};
-    let mut protocol = analyze_sql("SELECT name FROM t WHERE name = 'x'", "postgresql", &dialect).unwrap();
-    let ProtocolStatement::Query(query) = &protocol.statements()[0] else { panic!("not a query") };
-    assert_eq!(query.condition_exactness().status(), ConditionExactnessStatus::Conditional);
+    let mut protocol = analyze_sql(
+        "SELECT name FROM t WHERE name = 'x'",
+        "postgresql",
+        &dialect,
+    )
+    .unwrap();
+    let ProtocolStatement::Query(query) = &protocol.statements()[0] else {
+        panic!("not a query")
+    };
+    assert_eq!(
+        query.condition_exactness().status(),
+        ConditionExactnessStatus::Conditional
+    );
     protocol.declare_comparison_assumptions(&[ComparisonAssumption::BinaryCollation]);
-    let ProtocolStatement::Query(query) = &protocol.statements()[0] else { panic!("not a query") };
-    assert_eq!(query.condition_exactness().status(), ConditionExactnessStatus::Exact);
+    let ProtocolStatement::Query(query) = &protocol.statements()[0] else {
+        panic!("not a query")
+    };
+    assert_eq!(
+        query.condition_exactness().status(),
+        ConditionExactnessStatus::Exact
+    );
     let json: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
-    assert_eq!(json["declared_comparison_assumptions"], serde_json::json!(["binary_collation"]));
+    assert_eq!(
+        json["declared_comparison_assumptions"],
+        serde_json::json!(["binary_collation"])
+    );
 }

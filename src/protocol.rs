@@ -35,7 +35,8 @@ impl Protocol {
     ///
     /// Callers must attest only settings known to hold for the target warehouse.
     pub fn declare_comparison_assumptions(&mut self, declared: &[ComparisonAssumption]) {
-        self.comparison_declarations.extend(declared.iter().copied());
+        self.comparison_declarations
+            .extend(declared.iter().copied());
         self.comparison_declarations.sort();
         self.comparison_declarations.dedup();
         for statement in &mut self.statements {
