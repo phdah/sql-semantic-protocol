@@ -77,10 +77,10 @@ The library exposes analysis APIs separately from the CLI. See the [Rust API doc
 | [Protocol contract](docs/protocol.md) | Detailed current representation and guarantees |
 | [JSON schema](schema/protocol.schema.json) | Machine-readable active protocol contract |
 | [Examples](examples/protocol-simple.json) | An emitted protocol document |
-| [Versioning](docs/releasing.md) | SemVer policy, Release Please, and upcoming breaking release |
+| [Versioning](docs/releasing.md) | SemVer compatibility policy and Release Please workflow |
 | [Documentation index](docs/README.md) | References and historical contracts |
 
-The application and emitted `protocol_version` use one shared version. **Version 2.0.0 is proposed**, not yet published, in [release PR #41](https://github.com/phdah/sql-semantic-protocol/pull/41) because the next protocol change is breaking. Check [releases](https://github.com/phdah/sql-semantic-protocol/releases) for published versions.
+The application and emitted `protocol_version` share one version. See [releases](https://github.com/phdah/sql-semantic-protocol/releases) for published versions.
 
 ## Contributing
 
