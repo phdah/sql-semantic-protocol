@@ -54,6 +54,11 @@ optionally `catalog.json`, using each artifact only for the evidence it authorit
 - `catalog.json`: warehouse-introspected physical columns and database datatypes for models,
   seeds, snapshots, and sources.
 
+For source-level dbt `relationships` tests where `attached_node` is absent, the adapter
+uses the declared `to` reference to distinguish the parent relation from the single
+remaining child dependency. Ambiguous or unresolved ownership fails explicitly rather
+than assigning a foreign key to an arbitrary source.
+
 The adapter joins the artifacts by dbt resource `unique_id`, normalizes catalog datatypes into the
 same parser-independent `DataType` model used by direct callers, and runs compiled model SQL
 through the ordinary analyzer, graph builder, composition, and outcome-domain pipeline. dbt-specific
