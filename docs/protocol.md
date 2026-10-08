@@ -319,6 +319,15 @@ Each terminal layer uses the same `composed_semantics` representation as any oth
 
 ## Set operations
 
+The initial TASK-58 contract records **branch evidence**, but does not yet prove source-level witnesses or upgrade set operations to exact. Consumers must respect the existing `condition_exactness: residual` and MUST NOT generate rows from branch evidence alone.
+
+Each operation node emits `membership`: `tuple_equality: not_distinct` (tuple-wise NULLs compare equal for set operations), a typed `multiplicity_rule`, ordered leaf `branches` on the outermost node, and explicit qualifying/non-qualifying witness statuses. Each branch has a stable identity (`body:left`, `body:right`, or nested `:query/:left/:right` paths), its own relations, predicates, source-column domains, output columns, and row-filter exactness. This avoids mistaking a union of alternatives for the conjunction of independent column domains.
+
+For an aligned tuple with counts `L` and `R`, rules are: `sum` = L+R (UNION ALL), `union_distinct` = 1 when L+R>0, `minimum` = min(L,R) (INTERSECT ALL), `intersect_distinct` = 1 when both counts are nonzero, `saturating_difference` = max(L-R,0) (EXCEPT ALL), and `except_distinct` = 1 when L>0 and R=0. Quantifiers with BY NAME leave `multiplicity_rule` null until name alignment is supported. Arithmetic uses mathematical nonnegative counts; the Rust helper saturates at `u64::MAX` when supplied finite machine integers. No tuple equality/NULL rule licenses inferring source-level witness construction from output counts.
+
+Both witness directions remain `residual: source_witness_obligations_not_proven`: the branch predicates and output mapping alone do not prove feasible satisfying and rejecting physical source rows, duplicate counts, or safe remapping through upstream layers. Composition still merges existing exactness and domains conservatively. This field is an additive, not a version-2.0.3 runtime change until released through Release Please; downstream generators must feature-detect it and remain on the existing residual guardrails.
+
+
 A query that contains UNION, INTERSECT, or EXCEPT carries an optional `set_operation` tree alongside the existing query semantics. The tree is parser-independent and records `operator`, normalized `quantifier`, and recursive left/right operands. A leaf operand is `{"kind":"query"}`; nested operations use `{"kind":"set_operation", ...}`.
 
 UNION ALL keeps `all`; an omitted quantifier normalizes to `distinct`. Dialect-specific MINUS syntax normalizes to `except`. BY NAME quantifiers are retained so the parsed meaning is not lost, but output-column composition for name-based alignment remains explicitly unsupported.
