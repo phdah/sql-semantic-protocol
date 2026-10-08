@@ -4954,7 +4954,12 @@ fn analyze_typed_string(
     let data_type = data_type.to_ascii_uppercase();
     let literal_type = match data_type.as_str() {
         "DATE" => Some(LiteralType::Date),
-        data_type if data_type.starts_with("TIMESTAMP") => Some(LiteralType::Timestamp),
+        data_type
+            if data_type.starts_with("TIMESTAMP")
+                || matches!(data_type, "TIMESTAMPTZ" | "TIMESTAMP_TZ") =>
+        {
+            Some(LiteralType::Timestamp)
+        }
         data_type if data_type.starts_with("TIME") => Some(LiteralType::Time),
         data_type if data_type.starts_with("INTERVAL") => Some(LiteralType::Interval),
         _ => None,
