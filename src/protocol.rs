@@ -1055,6 +1055,8 @@ impl ConditionalCondition {
 /// SQL clause that owns a residual row-membership condition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ConditionClause {
+    /// SELECT output projection.
+    Select,
     /// WHERE clause.
     Where,
     /// JOIN ON or USING condition.
@@ -1072,6 +1074,7 @@ pub enum ConditionClause {
 impl ConditionClause {
     pub(crate) fn as_str(self) -> &'static str {
         match self {
+            Self::Select => "select",
             Self::Where => "where",
             Self::JoinOn => "on",
             Self::Having => "having",
