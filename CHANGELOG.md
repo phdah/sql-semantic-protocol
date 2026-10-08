@@ -1,5 +1,42 @@
 # Changelog
 
+## [2.0.0](https://github.com/phdah/sql-semantic-protocol/compare/v1.0.1...v2.0.0) (2026-10-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* **protocol:** classify residual causes and normalize boolean predicates ([#66](https://github.com/phdah/sql-semantic-protocol/issues/66))
+
+### Features
+
+* **analysis:** compose CASE branch source domains ([#51](https://github.com/phdah/sql-semantic-protocol/issues/51)) ([f5f9974](https://github.com/phdah/sql-semantic-protocol/commit/f5f9974ad34ae84aba259b33df7cb87b878cce4f))
+* **analysis:** retain typed comparison domains with explicit assumptions (TASK-53) ([#65](https://github.com/phdah/sql-semantic-protocol/issues/65)) ([c5e359a](https://github.com/phdah/sql-semantic-protocol/commit/c5e359a7e114a94002fd66fb21b930bc315548ab))
+* **analysis:** type domain literals from source schemas ([#59](https://github.com/phdah/sql-semantic-protocol/issues/59)) ([1c8f086](https://github.com/phdah/sql-semantic-protocol/commit/1c8f0862d82bdf7f64b0059f47e8ccf8ca97c453))
+* **constraints:** add canonical column constraints ([#45](https://github.com/phdah/sql-semantic-protocol/issues/45)) ([ed92419](https://github.com/phdah/sql-semantic-protocol/commit/ed92419ea2f70e514365b4cf5dda49a0a9514d5d))
+* **constraints:** define NULL and accepted-value typing semantics ([#54](https://github.com/phdah/sql-semantic-protocol/issues/54)) ([2e6998e](https://github.com/phdah/sql-semantic-protocol/commit/2e6998e4ff3426b7aa393bf48279e00cace30745))
+* **dbt:** analyze typed manifests without catalog.json ([#61](https://github.com/phdah/sql-semantic-protocol/issues/61)) ([6c506ab](https://github.com/phdah/sql-semantic-protocol/commit/6c506ab98c50fb33891b12acab44a5245961e7ea))
+* **dbt:** fall back to manifest column types ([#46](https://github.com/phdah/sql-semantic-protocol/issues/46)) ([117cd10](https://github.com/phdah/sql-semantic-protocol/commit/117cd10b05512ba76ff185c00b7219f9d741d673))
+* expose composed physical join equalities ([#58](https://github.com/phdah/sql-semantic-protocol/issues/58)) ([adcaccc](https://github.com/phdah/sql-semantic-protocol/commit/adcaccc5a1ec07450347abda472f701f6f6ee625))
+* **odcs:** add v3.2 external metadata adapter ([#47](https://github.com/phdah/sql-semantic-protocol/issues/47)) ([d2b4de9](https://github.com/phdah/sql-semantic-protocol/commit/d2b4de9f3f0e029a2d3d785606c490f16b7567be))
+* **protocol:** add canonical relation key constraints ([#44](https://github.com/phdah/sql-semantic-protocol/issues/44)) ([dcc8680](https://github.com/phdah/sql-semantic-protocol/commit/dcc8680d1c5bc6970cf3f96da8d80e5958cfa00b))
+* **protocol:** define row-condition exactness ([#55](https://github.com/phdah/sql-semantic-protocol/issues/55)) ([e1c54dd](https://github.com/phdah/sql-semantic-protocol/commit/e1c54dd5243e076e30122a25eff2f1f10f6b9cda))
+* **protocol:** emit CASE branch source domains ([#42](https://github.com/phdah/sql-semantic-protocol/issues/42)) ([4cb53db](https://github.com/phdah/sql-semantic-protocol/commit/4cb53db21c8c3bb5921cdb8e6d2111829b06ebf0))
+* **schema:** validate query and constraint references against typed evidence ([#60](https://github.com/phdah/sql-semantic-protocol/issues/60)) ([4976351](https://github.com/phdah/sql-semantic-protocol/commit/49763513c380eca31206c307ccb3f71822533e18))
+
+
+### Bug Fixes
+
+* **analysis:** carry CTE and derived-table semantics ([#40](https://github.com/phdah/sql-semantic-protocol/issues/40)) ([8fe27a4](https://github.com/phdah/sql-semantic-protocol/commit/8fe27a43ac570bd1b7ba13609374f4776aec344a))
+* **analysis:** normalize timestamp bounds (TASK-55) ([#67](https://github.com/phdah/sql-semantic-protocol/issues/67)) ([f86f0d6](https://github.com/phdah/sql-semantic-protocol/commit/f86f0d611c1bcb79a0b02eb1ebcd7bbb434b468d))
+* **analysis:** normalize timezone-aware timestamp literal spellings (TASK-56) ([#68](https://github.com/phdah/sql-semantic-protocol/issues/68)) ([49b5b99](https://github.com/phdah/sql-semantic-protocol/commit/49b5b99a9d7edac629f04e6271d17a095ec00279))
+* **analysis:** resolve local joins to physical columns ([#49](https://github.com/phdah/sql-semantic-protocol/issues/49)) ([5a34eda](https://github.com/phdah/sql-semantic-protocol/commit/5a34edab03f558d73296999db4a6ef9c28f973b9))
+* **analysis:** stop mapping domains through computed columns ([#48](https://github.com/phdah/sql-semantic-protocol/issues/48)) ([4e2d4f1](https://github.com/phdah/sql-semantic-protocol/commit/4e2d4f1a706797060d6fed43251999e4c8200fb3))
+* **analysis:** surface local predicate semantics ([#50](https://github.com/phdah/sql-semantic-protocol/issues/50)) ([c2d5956](https://github.com/phdah/sql-semantic-protocol/commit/c2d595686961a4111a67f8cf1e1681e5a722f3f0))
+* carry exactness through local relations and composition ([#57](https://github.com/phdah/sql-semantic-protocol/issues/57)) ([7521077](https://github.com/phdah/sql-semantic-protocol/commit/7521077f7ee0da2344de8625dcfad2748c111281))
+* **dbt:** report unsupported constraint metadata ([#53](https://github.com/phdah/sql-semantic-protocol/issues/53)) ([2254f18](https://github.com/phdah/sql-semantic-protocol/commit/2254f1829d77b4eac92fcc92027a31baf8d1ae1d))
+* **dbt:** resolve canonical foreign key targets ([#52](https://github.com/phdah/sql-semantic-protocol/issues/52)) ([e1a7957](https://github.com/phdah/sql-semantic-protocol/commit/e1a795744dfd2fd3051c990855810047bfbbee13))
+* **protocol:** classify residual causes and normalize boolean predicates ([#66](https://github.com/phdah/sql-semantic-protocol/issues/66)) ([3a4d3c6](https://github.com/phdah/sql-semantic-protocol/commit/3a4d3c6870d38eb9310af54a9533806e8098a05c))
+
 ## [1.0.1](https://github.com/phdah/sql-semantic-protocol/compare/v1.0.0...v1.0.1) (2026-10-04)
 
 
