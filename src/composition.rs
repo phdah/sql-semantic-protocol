@@ -200,7 +200,7 @@ impl<'a> Composer<'a> {
         }
 
         for column_domain in query.column_domains() {
-            match self.resolve_column_identity(&layer, column_domain.column()) {
+            match self.resolve_column_identity(&layer, &query, column_domain.column()) {
                 Ok(source) => {
                     let column = ColumnRef::new(
                         Some(source.relation().to_string()),
@@ -376,6 +376,7 @@ impl<'a> Composer<'a> {
     fn resolve_column_identity(
         &self,
         layer: &TransformationLayer,
+        query: &QueryStatement,
         column: &ColumnRef,
     ) -> Result<LineageSource, Box<CompositionDiagnostic>> {
         let Some(relation) = column.relation() else {
@@ -391,10 +392,37 @@ impl<'a> Composer<'a> {
             ));
         };
 
-        self.resolve_source_identity(
+        let direct = self.resolve_source_identity(
             layer,
             &LineageSource::new(relation.to_string(), column.name().to_string()),
-        )
+        );
+        if direct.is_ok() {
+            return direct;
+        }
+
+        // Domains carried from a nested joined relation may retain an inner
+        // table alias. Only recover that alias when the join participant is
+        // unique and proven to be a physical dependency of this layer.
+        let candidates = query
+            .joins()
+            .iter()
+            .flat_map(|join| [join.left(), join.right()])
+            .filter(|participant| participant.alias() == Some(relation))
+            .map(|participant| participant.relation())
+            .collect::<BTreeSet<_>>();
+        if let Some(physical_relation) = candidates.iter().next().filter(|_| candidates.len() == 1)
+        {
+            if query.dependencies().iter().any(|dependency| dependency == physical_relation) {
+                return self.resolve_source_identity(
+                    layer,
+                    &LineageSource::new(
+                        (*physical_relation).to_string(),
+                        column.name().to_string(),
+                    ),
+                );
+            }
+        }
+        direct
     }
 
     fn resolve_source_identity(
