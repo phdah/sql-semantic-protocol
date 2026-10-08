@@ -1132,9 +1132,30 @@ fn unknown_column_domain_exactness(
             .iter()
             .find(|(column, _)| column == column_domain.column())
             .map(|(_, reason)| *reason);
-        for (clause, identity) in
-            condition_locations_for_column(column_domain.column(), predicates, joins, sources)
-        {
+        let mut locations =
+            condition_locations_for_column(column_domain.column(), predicates, joins, sources);
+        if locations.is_empty() {
+            // The domain may have been remapped from a computed local column to
+            // physical lineage. Such a column no longer matches the local
+            // predicate's reference, but its unknown outcome still blocks exactness.
+            for (clause, identity, predicate) in [
+                (ConditionClause::Where, "where", predicates.where_predicate()),
+                (ConditionClause::Having, "having", predicates.having_predicate()),
+                (ConditionClause::Qualify, "qualify", predicates.qualify_predicate()),
+            ] {
+                if predicate.is_some() {
+                    locations.push((clause, identity.to_string()));
+                }
+            }
+            if locations.is_empty() {
+                for (index, join) in joins.iter().enumerate() {
+                    if join.condition().is_some() {
+                        locations.push((ConditionClause::JoinOn, format!("join:{index}")));
+                    }
+                }
+            }
+        }
+        for (clause, identity) in locations {
             // A structural unknown explained by the predicate classifier is already
             // represented with the predicate's own identity. Do not report it again.
             if typed_failure.is_none()
