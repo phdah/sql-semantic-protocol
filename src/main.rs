@@ -8,11 +8,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
-    analyze_dbt_manifest_with_schemas, analyze_inputs, parse_analysis_manifest, parse_dbt_catalog, parse_dbt_manifest, select_targets, to_bundle_json,
-    to_openlineage_json, AnalysisBundle, ConfiguredInputAnalysisError, ConfiguredSqlInput,
-    DbtArtifactsError, Error as ProtocolError, InputAnalysisError, ManifestInputSource,
-    ManifestOutputScope, OpenLineageExportError, RelationCatalog, RelationContext, SqlInput,
-    TargetSelectionError,
+    analyze_dbt_manifest_with_schemas, analyze_inputs, parse_analysis_manifest, parse_dbt_catalog,
+    parse_dbt_manifest, select_targets, to_bundle_json, to_openlineage_json, AnalysisBundle,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, DbtArtifactsError, Error as ProtocolError,
+    InputAnalysisError, ManifestInputSource, ManifestOutputScope, OpenLineageExportError,
+    RelationCatalog, RelationContext, SqlInput, TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
@@ -396,11 +396,7 @@ fn analyze_dbt_artifacts_from_paths(
     };
     let catalog_json = match fs::read_to_string(&catalog_path) {
         Ok(json) => Some(json),
-        Err(error)
-            if catalog_override.is_none() && error.kind() == io::ErrorKind::NotFound =>
-        {
-            None
-        }
+        Err(error) if catalog_override.is_none() && error.kind() == io::ErrorKind::NotFound => None,
         Err(error) => {
             return Err(CliError::Input(format!(
                 "dbt catalog '{}': failed to read: {error}",
