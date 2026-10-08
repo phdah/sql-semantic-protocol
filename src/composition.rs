@@ -139,15 +139,20 @@ impl<'a> Composer<'a> {
                 )]
             })
             .unwrap_or_default();
-        let mut group_witnesses = query
-            .group_witness()
-            .map(|witness| {
-                vec![crate::bundle::ComposedGroupWitness::new(
-                    layer.id().to_string(),
-                    witness.clone(),
-                )]
-            })
-            .unwrap_or_default();
+        let mut group_witnesses = query.group_witness().map(|witness| {
+            let boundary_kind = witness.boundary().and_then(|boundary| {
+                edges.iter().find(|edge| edge.relation() == boundary)
+            }).map_or(crate::bundle::GroupBoundaryKind::Unresolved, |edge| {
+                match edge.resolution() {
+                    RelationResolution::External => crate::bundle::GroupBoundaryKind::Physical,
+                    RelationResolution::Resolved => crate::bundle::GroupBoundaryKind::Intermediate,
+                    _ => crate::bundle::GroupBoundaryKind::Unresolved,
+                }
+            });
+            vec![crate::bundle::ComposedGroupWitness::new(
+                layer.id().to_string(), witness.clone(), boundary_kind,
+            )]
+        }).unwrap_or_default();
         let mut diagnostics = Vec::<CompositionDiagnostic>::new();
         let mut condition_exactness: ConditionExactness = query
             .condition_exactness()
