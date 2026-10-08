@@ -1139,9 +1139,21 @@ fn unknown_column_domain_exactness(
             // physical lineage. Such a column no longer matches the local
             // predicate's reference, but its unknown outcome still blocks exactness.
             for (clause, identity, predicate) in [
-                (ConditionClause::Where, "where", predicates.where_predicate()),
-                (ConditionClause::Having, "having", predicates.having_predicate()),
-                (ConditionClause::Qualify, "qualify", predicates.qualify_predicate()),
+                (
+                    ConditionClause::Where,
+                    "where",
+                    predicates.where_predicate(),
+                ),
+                (
+                    ConditionClause::Having,
+                    "having",
+                    predicates.having_predicate(),
+                ),
+                (
+                    ConditionClause::Qualify,
+                    "qualify",
+                    predicates.qualify_predicate(),
+                ),
             ] {
                 if predicate.is_some() {
                     locations.push((clause, identity.to_string()));
