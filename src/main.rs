@@ -10,9 +10,9 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
     analyze_dbt_manifest_with_schemas, analyze_inputs, parse_analysis_manifest, parse_dbt_catalog,
     parse_dbt_manifest, select_targets, to_bundle_json, to_openlineage_json, AnalysisBundle,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, DbtArtifactsError, Error as ProtocolError,
-    ComparisonAssumption, InputAnalysisError, ManifestInputSource, ManifestOutputScope, OpenLineageExportError,
-    RelationCatalog, RelationContext, SqlInput, TargetSelectionError,
+    ComparisonAssumption, ConfiguredInputAnalysisError, ConfiguredSqlInput, DbtArtifactsError,
+    Error as ProtocolError, InputAnalysisError, ManifestInputSource, ManifestOutputScope,
+    OpenLineageExportError, RelationCatalog, RelationContext, SqlInput, TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
@@ -218,9 +218,9 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                 })?);
             }
             "--assume" => {
-                let value = arguments.next().ok_or_else(|| {
-                    CliError::Input("missing value for --assume".to_string())
-                })?;
+                let value = arguments
+                    .next()
+                    .ok_or_else(|| CliError::Input("missing value for --assume".to_string()))?;
                 let assumption = ComparisonAssumption::from_name(&value).ok_or_else(|| {
                     CliError::Input(format!("unsupported comparison assumption '{value}'"))
                 })?;
