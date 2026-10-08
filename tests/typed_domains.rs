@@ -76,13 +76,23 @@ fn decimal_literal_against_integer_is_unknown() {
 }
 
 #[test]
-fn string_comparison_is_unknown_without_collation_evidence() {
+fn string_comparison_retains_range_but_needs_collation_evidence() {
     let semantics = analyze("SELECT name FROM t WHERE name > 'b'", &[("name", "TEXT")]);
     let domain = semantics.column_domains()[0].domain();
     assert!(
-        matches!(domain, ValueDomain::Unknown(_)),
-        "string ordering must be residual without collation evidence: {domain:?}"
+        matches!(domain, ValueDomain::Ranges(_)),
+        "domain was discarded: {domain:?}"
     );
+    assert_eq!(
+        semantics.condition_exactness().status(),
+        sql_semantic_protocol::ConditionExactnessStatus::Conditional
+    );
+    assert!(semantics
+        .condition_exactness()
+        .required_assumptions()
+        .iter()
+        .any(|requirement| requirement.assumption()
+            == sql_semantic_protocol::ComparisonAssumption::BinaryCollation));
 }
 
 #[test]
@@ -116,13 +126,156 @@ fn typed_date_literal_remains_exact() {
 }
 
 #[test]
-fn timestamp_domain_is_residual_until_timezone_semantics_are_represented() {
+fn timestamp_domain_remains_conditional_on_timezone() {
     let semantics = analyze(
         "SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 00:00:00'",
         &[("ts", "TIMESTAMPTZ")],
     );
     assert!(matches!(
         semantics.column_domains()[0].domain(),
-        ValueDomain::Unknown(_)
+        ValueDomain::Ranges(_)
     ));
+    assert_eq!(
+        semantics.condition_exactness().status(),
+        sql_semantic_protocol::ConditionExactnessStatus::Conditional
+    );
+}
+
+#[test]
+fn float_domain_remains_conditional_on_nan_semantics() {
+    let semantics = analyze("SELECT f FROM t WHERE f > 1.5", &[("f", "DOUBLE")]);
+    assert!(matches!(
+        semantics.column_domains()[0].domain(),
+        ValueDomain::Ranges(_)
+    ));
+    assert!(semantics
+        .condition_exactness()
+        .required_assumptions()
+        .iter()
+        .any(|item| item.assumption() == sql_semantic_protocol::ComparisonAssumption::NoNan));
+}
+
+#[test]
+fn declared_comparison_assumptions_make_string_predicate_exact() {
+    let schema = RelationSchema::new(
+        "t",
+        vec![SchemaColumn::from_sql_type("name", "VARCHAR", "postgresql").unwrap()],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let input = SqlInput::inline("SELECT name FROM t WHERE name = 'x'");
+    let dialect = PostgreSqlDialect {};
+    let configured = [ConfiguredSqlInput::new(
+        "sample",
+        &input,
+        "postgresql",
+        &dialect,
+    )];
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    bundle.declare_comparison_assumptions(&[
+        sql_semantic_protocol::ComparisonAssumption::BinaryCollation,
+    ]);
+    match bundle.layers()[0].composed_semantics() {
+        ComposedSemantics::Resolved(semantics) => {
+            assert!(semantics.condition_exactness().is_exact())
+        }
+        _ => panic!("unresolved query"),
+    }
+}
+
+#[test]
+fn timestamp_without_zone_and_offset_free_literal_is_exact() {
+    let semantics = analyze(
+        "SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 00:00:00'",
+        &[("ts", "TIMESTAMP WITHOUT TIME ZONE")],
+    );
+    assert!(semantics.condition_exactness().is_exact());
+    assert!(matches!(
+        semantics.column_domains()[0].domain(),
+        ValueDomain::Ranges(_)
+    ));
+}
+
+#[test]
+fn timestamp_with_zone_requires_session_setting_if_literal_has_no_offset() {
+    let semantics = analyze(
+        "SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 00:00:00'",
+        &[("ts", "TIMESTAMP WITH TIME ZONE")],
+    );
+    assert_eq!(
+        semantics.condition_exactness().status(),
+        sql_semantic_protocol::ConditionExactnessStatus::Conditional
+    );
+}
+
+#[test]
+fn varchar_set_preserves_membership_after_typing() {
+    let semantics = analyze(
+        "SELECT name FROM t WHERE name IN ('x', 'y')",
+        &[("name", "VARCHAR")],
+    );
+    assert!(matches!(
+        semantics.column_domains()[0].domain(),
+        ValueDomain::Set(_)
+    ));
+    assert_eq!(
+        semantics.condition_exactness().status(),
+        sql_semantic_protocol::ConditionExactnessStatus::Conditional
+    );
+}
+
+#[test]
+fn timestamp_metadata_preserves_explicit_timezone_and_rejects_invalid_type() {
+    use sql_semantic_protocol::{DataType, TimestampZone};
+    let tz = SchemaColumn::from_sql_type("ts", "TIMESTAMP WITH TIME ZONE", "postgresql").unwrap();
+    assert_eq!(tz.timestamp_zone(), Some(TimestampZone::WithTimeZone));
+    let ntz =
+        SchemaColumn::from_sql_type("ts", "TIMESTAMP WITHOUT TIME ZONE", "postgresql").unwrap();
+    assert_eq!(ntz.timestamp_zone(), Some(TimestampZone::WithoutTimeZone));
+    let unknown = SchemaColumn::new("ts", DataType::Timestamp { precision: None }).unwrap();
+    assert_eq!(unknown.timestamp_zone(), None);
+    assert!(SchemaColumn::new(
+        "name",
+        DataType::String {
+            length: None,
+            fixed: false
+        }
+    )
+    .unwrap()
+    .with_timestamp_zone(TimestampZone::WithTimeZone)
+    .is_err());
+}
+
+#[test]
+fn single_input_library_supports_comparison_declarations() {
+    use sql_semantic_protocol::{
+        analyze_sql, to_json, ComparisonAssumption, ConditionExactnessStatus, ProtocolStatement,
+    };
+    let dialect = PostgreSqlDialect {};
+    let mut protocol = analyze_sql(
+        "SELECT name FROM t WHERE name = 'x'",
+        "postgresql",
+        &dialect,
+    )
+    .unwrap();
+    let ProtocolStatement::Query(query) = &protocol.statements()[0] else {
+        panic!("not a query")
+    };
+    assert_eq!(
+        query.condition_exactness().status(),
+        ConditionExactnessStatus::Conditional
+    );
+    protocol.declare_comparison_assumptions(&[ComparisonAssumption::BinaryCollation]);
+    let ProtocolStatement::Query(query) = &protocol.statements()[0] else {
+        panic!("not a query")
+    };
+    assert_eq!(
+        query.condition_exactness().status(),
+        ConditionExactnessStatus::Exact
+    );
+    let json: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
+    assert_eq!(
+        json["declared_comparison_assumptions"],
+        serde_json::json!(["binary_collation"])
+    );
 }

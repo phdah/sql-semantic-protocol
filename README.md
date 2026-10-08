@@ -537,6 +537,22 @@ QUALIFY, named windows, UNION/INTERSECT/EXCEPT, aggregation, HAVING, DISTINCT, R
 derived/lateral tables, transitive composition, disconnected components, incremental model
 configuration, terminal outcome snapshots, and warehouse source-schema datatype emission.
 
+## Comparison-semantics assumptions
+
+Typed string, floating-point, and timestamp filters preserve their representable value domains,
+even when warehouse comparison settings are unspecified. `condition_exactness.status` is
+`conditional` until the caller declares the assumptions listed in
+`condition_exactness.comparison_assumptions`, or `residual` for unsupported semantics.
+Use repeatable `--assume binary_collation`, `--assume no_char_padding`,
+`--assume no_nan`, `--assume signed_zero_equivalent`, or `--assume session_time_zone`
+in direct, dbt, or manifest CLI analysis. Manifest JSON can declare
+`"comparison_assumptions": ["binary_collation"]` at the root.
+Library callers can use `AnalysisBundle::declare_comparison_assumptions`.
+Explicitly timezone-qualified physical schemas preserve `timestamp_zone` on source columns,
+without changing the canonical `DataType::Timestamp` public shape.
+No comparison setting is assumed solely from a SQL dialect or metadata source.
+See [the protocol contract](docs/protocol.md#typed-predicate-domain-literals) for guarantees.
+
 ## Differential conformance
 
 The standard Rust test suite includes a deterministic differential oracle in

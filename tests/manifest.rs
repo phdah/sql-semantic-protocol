@@ -152,3 +152,41 @@ fn manifest_is_exclusive_with_direct_analysis_options() {
     let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
     assert!(stderr.contains("--manifest cannot be combined"));
 }
+
+#[test]
+fn analysis_manifest_comparison_assumptions_are_applied() {
+    let root =
+        std::env::temp_dir().join(format!("sql-semantic-comparisons-{}", std::process::id()));
+    fs::create_dir_all(&root).unwrap();
+    let manifest = root.join("comparison.json");
+    fs::write(
+        &manifest,
+        serde_json::json!({
+            "manifest_version": "1",
+            "comparison_assumptions": ["binary_collation"],
+            "inputs": [{"id": "one", "sql": "SELECT name FROM t WHERE name = 'x'"}]
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_sql-semantic-protocol"))
+        .arg("--manifest")
+        .arg(&manifest)
+        .output()
+        .unwrap();
+    fs::remove_dir_all(&root).unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        json["declared_comparison_assumptions"],
+        serde_json::json!(["binary_collation"])
+    );
+    assert_eq!(
+        json["layers"][0]["composed_semantics"]["condition_exactness"]["status"],
+        "exact"
+    );
+}

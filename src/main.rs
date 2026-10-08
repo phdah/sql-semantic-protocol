@@ -10,13 +10,13 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
     analyze_dbt_manifest_with_schemas, analyze_inputs, parse_analysis_manifest, parse_dbt_catalog,
     parse_dbt_manifest, select_targets, to_bundle_json, to_openlineage_json, AnalysisBundle,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, DbtArtifactsError, Error as ProtocolError,
-    InputAnalysisError, ManifestInputSource, ManifestOutputScope, OpenLineageExportError,
-    RelationCatalog, RelationContext, SqlInput, TargetSelectionError,
+    ComparisonAssumption, ConfiguredInputAnalysisError, ConfiguredSqlInput, DbtArtifactsError,
+    Error as ProtocolError, InputAnalysisError, ManifestInputSource, ManifestOutputScope,
+    OpenLineageExportError, RelationCatalog, RelationContext, SqlInput, TargetSelectionError,
 };
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-const USAGE: &str = "Usage: sql-semantic-protocol [--dbt-manifest <path> [--dbt-catalog <path>] | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]... [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>]\n\nUse --dbt-manifest for a dbt manifest.json artifact. The complete dbt path also consumes catalog.json for warehouse-introspected column schemas and datatypes. If catalog.json exists beside manifest.json it is loaded automatically; otherwise complete manifest-declared source column types are required. Use --dbt-catalog to override the default path (an explicit missing catalog is an error).\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, optional catalog metadata, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, --target, and --catalog-relation as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nUse --default-catalog and --default-schema to qualify otherwise partial direct-input relation identities before graph linking.\nLegacy positional SQL remains one input. If no direct input, dbt manifest, or analysis manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser. dbt analysis uses the artifact adapter_type as the sqlparser dialect name.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
+const USAGE: &str = "Usage: sql-semantic-protocol [--dbt-manifest <path> [--dbt-catalog <path>] | --manifest <path> | [--dialect <name>] [--catalog-relation <relation>]... [--default-catalog <identifier>] [--default-schema <identifier>] [--target <relation>]... [--sql <SQL>]... [--file <path>]... [--dir <path>]... [SQL ...]] [--target <relation>]... [--format <protocol|openlineage>] [--namespace <name>] [--event-time <RFC3339>] [--assume <comparison-setting>]...\n\nUse --dbt-manifest for a dbt manifest.json artifact. The complete dbt path also consumes catalog.json for warehouse-introspected column schemas and datatypes. If catalog.json exists beside manifest.json it is loaded automatically; otherwise complete manifest-declared source column types are required. Use --dbt-catalog to override the default path (an explicit missing catalog is an error).\nUse --manifest for a versioned declarative analysis request with stable input IDs, per-input dialects, optional catalog metadata, and optional target projection. Manifest paths are resolved relative to the manifest file.\nRepeat --sql, --file, --dir, --target, and --catalog-relation as needed for direct analysis. Directories are searched recursively for .sql files; other files are ignored.\nUse --default-catalog and --default-schema to qualify otherwise partial direct-input relation identities before graph linking.\nLegacy positional SQL remains one input. If no direct input, dbt manifest, or analysis manifest is supplied, SQL is read from stdin.\nThe direct-analysis dialect defaults to generic and may be any built-in dialect recognized by sqlparser. dbt analysis uses the artifact adapter_type as the sqlparser dialect name.\nTargets are selected only after the full bundle has been analyzed; each target keeps its required in-bundle ancestors.\nUse repeatable --assume to attest comparison settings: binary_collation, no_char_padding, no_nan, signed_zero_equivalent, or session_time_zone. Assumptions are never inferred from a dialect name.\nThe output format defaults to protocol. OpenLineage output requires --namespace; --event-time is optional and defaults to the current UTC time.\nUse -- to pass positional SQL that starts with a dash.";
 
 fn main() -> ExitCode {
     match run() {
@@ -35,7 +35,7 @@ fn run() -> Result<(), CliError> {
             Ok(())
         }
         Command::Analyze(options) => {
-            let bundle = match options.dbt_manifest.as_deref() {
+            let mut bundle = match options.dbt_manifest.as_deref() {
                 Some(path) => {
                     let bundle =
                         analyze_dbt_artifacts_from_paths(path, options.dbt_catalog.as_deref())?;
@@ -57,6 +57,7 @@ fn run() -> Result<(), CliError> {
                     }
                 },
             };
+            bundle.declare_comparison_assumptions(&options.comparison_assumptions);
             let output = match options.format {
                 OutputFormat::Protocol => to_bundle_json(&bundle),
                 OutputFormat::OpenLineage => {
@@ -95,6 +96,7 @@ struct Options {
     format: OutputFormat,
     namespace: Option<String>,
     event_time: Option<String>,
+    comparison_assumptions: Vec<ComparisonAssumption>,
     catalog_relations: Vec<String>,
     default_catalog: Option<String>,
     default_schema: Option<String>,
@@ -125,6 +127,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
     let mut format = OutputFormat::Protocol;
     let mut namespace = None;
     let mut event_time = None;
+    let mut comparison_assumptions = Vec::new();
     let mut catalog_relations = Vec::new();
     let mut default_catalog = None;
     let mut default_schema = None;
@@ -213,6 +216,15 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
                 event_time = Some(arguments.next().ok_or_else(|| {
                     CliError::Input("missing value for --event-time".to_string())
                 })?);
+            }
+            "--assume" => {
+                let value = arguments
+                    .next()
+                    .ok_or_else(|| CliError::Input("missing value for --assume".to_string()))?;
+                let assumption = ComparisonAssumption::from_name(&value).ok_or_else(|| {
+                    CliError::Input(format!("unsupported comparison assumption '{value}'"))
+                })?;
+                comparison_assumptions.push(assumption);
             }
             "--catalog-relation" => {
                 let relation = arguments.next().ok_or_else(|| {
@@ -365,6 +377,7 @@ fn parse_args(mut arguments: impl Iterator<Item = String>) -> Result<Command, Cl
         format,
         namespace,
         event_time,
+        comparison_assumptions,
         catalog_relations,
         default_catalog,
         default_schema,
@@ -531,8 +544,9 @@ fn analyze_manifest(path: &Path) -> Result<AnalysisBundle, CliError> {
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::new(&catalog_relations)
         .map_err(|error| CliError::Input(format!("manifest catalog metadata: {error}")))?;
-    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
         .map_err(CliError::ConfiguredInputProtocol)?;
+    bundle.declare_comparison_assumptions(manifest.comparison_assumptions());
 
     match manifest.output_scope() {
         ManifestOutputScope::All => Ok(bundle),

@@ -40,10 +40,11 @@ use crate::protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
     CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef,
-    ComparisonOperator, ComparisonPredicate, ConditionClause, ConditionExactness, Diagnostic,
-    DiagnosticArea, DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
-    GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin,
-    JoinKind, LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
+    ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
+    ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
+    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
@@ -53,7 +54,7 @@ use crate::protocol::{
     WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
     WindowOrderExpression, WindowSpecification, WriteOperation, WriteValue,
 };
-use crate::relation::{RelationCatalog, RelationContext};
+use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -112,6 +113,15 @@ impl AnalysisMetadata<'_> {
     }
 
     fn column_data_type(&self, column: &ColumnRef) -> Option<&DataType> {
+        self.schema_column(column).map(SchemaColumn::data_type)
+    }
+
+    fn column_timestamp_zone(&self, column: &ColumnRef) -> Option<TimestampZone> {
+        self.schema_column(column)
+            .and_then(SchemaColumn::timestamp_zone)
+    }
+
+    fn schema_column(&self, column: &ColumnRef) -> Option<&SchemaColumn> {
         let relation = column.relation()?;
         let catalog = self.catalog?;
         let canonical = catalog
@@ -124,7 +134,6 @@ impl AnalysisMetadata<'_> {
             .columns()
             .iter()
             .find(|schema_column| schema_column.name() == column.name())
-            .map(|schema_column| schema_column.data_type())
     }
 }
 
@@ -590,6 +599,7 @@ fn analyze_query(
         false,
     )
     .merged_with(&unknown_column_domain_exactness(&column_domains))
+    .merged_with(&comparison_domain_exactness(&column_domains, metadata))
     .merged_with(&ConditionExactness::from_residuals(
         relation_analysis.residual_conditions.clone(),
     ))
@@ -679,13 +689,21 @@ fn type_column_domains(
             let Some(data_type) = metadata.column_data_type(column_domain.column()) else {
                 return column_domain;
             };
-            let domain = type_value_domain(column_domain.domain(), data_type);
+            let domain = type_value_domain(
+                column_domain.domain(),
+                data_type,
+                metadata.column_timestamp_zone(column_domain.column()),
+            );
             ColumnDomain::new(column_domain.column().clone(), domain)
         })
         .collect()
 }
 
-fn type_value_domain(domain: &ValueDomain, data_type: &DataType) -> ValueDomain {
+fn type_value_domain(
+    domain: &ValueDomain,
+    data_type: &DataType,
+    zone: Option<TimestampZone>,
+) -> ValueDomain {
     match domain {
         ValueDomain::Ranges(ranges) => {
             let typed = ranges
@@ -694,11 +712,11 @@ fn type_value_domain(domain: &ValueDomain, data_type: &DataType) -> ValueDomain 
                 .map(|range| {
                     let lower = range
                         .lower()
-                        .map(|bound| type_bound(bound, data_type))
+                        .map(|bound| type_bound(bound, data_type, zone))
                         .transpose()?;
                     let upper = range
                         .upper()
-                        .map(|bound| type_bound(bound, data_type))
+                        .map(|bound| type_bound(bound, data_type, zone))
                         .transpose()?;
                     Ok(ValueRange::new(lower, upper))
                 })
@@ -712,7 +730,7 @@ fn type_value_domain(domain: &ValueDomain, data_type: &DataType) -> ValueDomain 
             let typed = set
                 .values()
                 .iter()
-                .map(|literal| type_literal(literal, data_type))
+                .map(|literal| type_literal(literal, data_type, zone))
                 .collect::<Result<Vec<_>, String>>();
             match typed {
                 Ok(values) => ValueDomain::set(set.mode(), values),
@@ -725,9 +743,13 @@ fn type_value_domain(domain: &ValueDomain, data_type: &DataType) -> ValueDomain 
     }
 }
 
-fn type_bound(bound: &Bound, data_type: &DataType) -> Result<Bound, String> {
+fn type_bound(
+    bound: &Bound,
+    data_type: &DataType,
+    zone: Option<TimestampZone>,
+) -> Result<Bound, String> {
     Ok(Bound::new(
-        type_literal(bound.value(), data_type)?,
+        type_literal(bound.value(), data_type, zone)?,
         bound.inclusive(),
     ))
 }
@@ -735,6 +757,7 @@ fn type_bound(bound: &Bound, data_type: &DataType) -> Result<Bound, String> {
 fn type_literal(
     literal: &LiteralExpression,
     data_type: &DataType,
+    zone: Option<TimestampZone>,
 ) -> Result<LiteralExpression, String> {
     if literal.literal_type() == LiteralType::Null {
         return Ok(literal.clone());
@@ -778,18 +801,20 @@ fn type_literal(
             ),
             _ => incompatible(),
         },
-        DataType::FloatingPoint { .. } => Err(
-            "floating-point predicate domains are residual because NaN and signed-zero comparison semantics are not represented by the protocol".to_string(),
-        ),
+        DataType::FloatingPoint { .. } => match literal.value() {
+            LiteralValue::Number(_) => Ok(literal.clone()),
+            _ => incompatible(),
+        },
         DataType::Date if literal.literal_type() == LiteralType::Date => Ok(literal.clone()),
         DataType::Time { .. } if literal.literal_type() == LiteralType::Time => Ok(literal.clone()),
         DataType::Timestamp { .. } if literal.literal_type() == LiteralType::Timestamp => {
-            Err("timestamp predicate domains are residual because timezone normalization is not represented by the canonical timestamp literal".to_string())
-        }
+            if zone == Some(TimestampZone::WithoutTimeZone) && timestamp_literal_has_offset(literal) {
+                return Err("offset-bearing timestamp literal conflicts with timestamp without time zone".to_string());
+            }
+            Ok(literal.clone())
+        },
         DataType::Interval if literal.literal_type() == LiteralType::Interval => Ok(literal.clone()),
-        DataType::String { .. } => Err(
-            "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol".to_string(),
-        ),
+        DataType::String { .. } if literal.literal_type() == LiteralType::String => Ok(literal.clone()),
         DataType::Enum { .. } | DataType::Set { .. } => Err(
             "enum and set predicate domains are residual because comparison semantics are dialect-dependent".to_string(),
         ),
@@ -887,6 +912,107 @@ fn integer_fits_unsigned(value: u128, bits: Option<u16>) -> bool {
         Some(0) => false,
         Some(bits) => value < (1_u128 << bits),
     }
+}
+
+fn timestamp_literal_has_offset(literal: &LiteralExpression) -> bool {
+    let LiteralValue::Text(text) = literal.value() else {
+        return false;
+    };
+    let value = text.trim();
+    if value.ends_with('Z') || value.ends_with('z') {
+        return true;
+    }
+    let Some(rest) = value.get(10..) else {
+        return false;
+    };
+    let Some(position) = rest.rfind(['+', '-']) else {
+        return false;
+    };
+    let suffix = &rest[position + 1..];
+    let bytes = suffix.as_bytes();
+    bytes.len() == 5
+        && bytes[2] == b':'
+        && bytes
+            .iter()
+            .enumerate()
+            .all(|(index, byte)| index == 2 || byte.is_ascii_digit())
+}
+
+// Preserve representable domains while making warehouse-dependent comparisons conditional.
+fn comparison_domain_exactness(
+    column_domains: &[ColumnDomain],
+    metadata: &AnalysisMetadata<'_>,
+) -> ConditionExactness {
+    let mut requirements = Vec::new();
+    for column_domain in column_domains {
+        let domain = column_domain.domain();
+        let literal = match domain {
+            ValueDomain::Ranges(ranges) => ranges
+                .ranges()
+                .iter()
+                .flat_map(|range| {
+                    [range.lower(), range.upper()]
+                        .into_iter()
+                        .flatten()
+                        .map(|bound| bound.value())
+                })
+                .next(),
+            ValueDomain::Set(set) => set
+                .values()
+                .iter()
+                .find(|value| value.literal_type() != LiteralType::Null),
+            ValueDomain::Unbounded | ValueDomain::Empty | ValueDomain::Unknown(_) => None,
+        };
+        let Some(literal) = literal else { continue };
+        let data_type = metadata.column_data_type(column_domain.column());
+        let data_type = match data_type {
+            Some(DataType::Nullable(inner)) => Some(inner.as_ref()),
+            other => other,
+        };
+        let mut assumptions = BTreeSet::new();
+        match data_type {
+            Some(DataType::String { fixed, .. }) => {
+                assumptions.insert(ComparisonAssumption::BinaryCollation);
+                if *fixed {
+                    assumptions.insert(ComparisonAssumption::NoCharPadding);
+                }
+            }
+            Some(DataType::FloatingPoint { .. }) => {
+                assumptions.insert(ComparisonAssumption::NoNan);
+                assumptions.insert(ComparisonAssumption::SignedZeroEquivalent);
+            }
+            Some(DataType::Timestamp { .. }) => {
+                let zone = metadata.column_timestamp_zone(column_domain.column());
+                if zone != Some(TimestampZone::WithoutTimeZone)
+                    && (zone != Some(TimestampZone::WithTimeZone)
+                        || !timestamp_literal_has_offset(literal))
+                {
+                    assumptions.insert(ComparisonAssumption::SessionTimeZone);
+                }
+            }
+            None if literal.literal_type() == LiteralType::String => {
+                assumptions.insert(ComparisonAssumption::BinaryCollation);
+            }
+            None if literal.literal_type() == LiteralType::Timestamp => {
+                assumptions.insert(ComparisonAssumption::SessionTimeZone);
+            }
+            _ => {}
+        }
+        for assumption in assumptions {
+            requirements.push(ConditionalCondition::new(
+                assumption,
+                ConditionClause::Where,
+                format!(
+                    "column_domain:{}",
+                    qualified_column_name(
+                        column_domain.column().relation(),
+                        column_domain.column().name()
+                    )
+                ),
+            ));
+        }
+    }
+    ConditionExactness::from_requirements(requirements)
 }
 
 fn unknown_column_domain_exactness(column_domains: &[ColumnDomain]) -> ConditionExactness {

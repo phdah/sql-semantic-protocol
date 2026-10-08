@@ -88,7 +88,8 @@
           "diagnostics": [],
           "condition_exactness": {
             "status": "exact",
-            "residual_conditions": []
+            "residual_conditions": [],
+            "comparison_assumptions": []
           }
         }
       ]
@@ -164,7 +165,8 @@
         "diagnostics": [],
         "condition_exactness": {
           "status": "exact",
-          "residual_conditions": []
+          "residual_conditions": [],
+          "comparison_assumptions": []
         }
       }
     }

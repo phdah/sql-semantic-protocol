@@ -79,11 +79,48 @@ impl SchemaSourceKind {
     }
 }
 
+/// Time-zone awareness supplied by physical schema evidence.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum TimestampZone {
+    /// Wall-clock timestamp without an associated time zone.
+    WithoutTimeZone,
+    /// Instant interpreted with time-zone or UTC-offset semantics.
+    WithTimeZone,
+}
+impl TimestampZone {
+    /// Return the stable protocol value.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::WithoutTimeZone => "without_time_zone",
+            Self::WithTimeZone => "with_time_zone",
+        }
+    }
+    /// Resolve explicit time-zone qualifiers only; unqualified TIMESTAMP remains unknown.
+    pub fn from_sql_type(sql_type: &str) -> Option<Self> {
+        let normalized = sql_type.trim().to_ascii_uppercase();
+        if normalized.contains("WITHOUT TIME ZONE")
+            || normalized.starts_with("TIMESTAMP_NTZ")
+            || normalized.starts_with("DATETIME")
+        {
+            Some(Self::WithoutTimeZone)
+        } else if normalized.contains("WITH TIME ZONE")
+            || normalized.starts_with("TIMESTAMPTZ")
+            || normalized.starts_with("TIMESTAMP_TZ")
+            || normalized.starts_with("TIMESTAMP_LTZ")
+        {
+            Some(Self::WithTimeZone)
+        } else {
+            None
+        }
+    }
+}
+
 /// One typed column in caller-supplied relation schema metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SchemaColumn {
     name: String,
     data_type: DataType,
+    timestamp_zone: Option<TimestampZone>,
 }
 
 impl SchemaColumn {
@@ -100,7 +137,11 @@ impl SchemaColumn {
             });
         }
 
-        Ok(Self { name, data_type })
+        Ok(Self {
+            name,
+            data_type,
+            timestamp_zone: None,
+        })
     }
 
     /// Construct a schema column from dialect-specific SQL datatype syntax.
@@ -117,7 +158,34 @@ impl SchemaColumn {
                 message: error.to_string(),
             }
         })?;
-        Self::new(name, data_type)
+        let zone = TimestampZone::from_sql_type(sql_type);
+        let column = Self::new(name, data_type)?;
+        match zone {
+            Some(zone) if matches!(column.data_type, DataType::Timestamp { .. }) => {
+                column.with_timestamp_zone(zone)
+            }
+            _ => Ok(column),
+        }
+    }
+
+    /// Attach explicit physical time-zone evidence without changing the canonical datatype.
+    pub fn with_timestamp_zone(
+        mut self,
+        zone: TimestampZone,
+    ) -> Result<Self, RelationMetadataError> {
+        if !matches!(self.data_type, DataType::Timestamp { .. }) {
+            return Err(RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: "timestamp time-zone evidence requires a timestamp datatype".to_string(),
+            });
+        }
+        self.timestamp_zone = Some(zone);
+        Ok(self)
+    }
+
+    /// Return physical time-zone awareness, or None when metadata cannot prove it.
+    pub fn timestamp_zone(&self) -> Option<TimestampZone> {
+        self.timestamp_zone
     }
 
     /// Return the column name.

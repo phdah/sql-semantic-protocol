@@ -3,6 +3,8 @@
 //! The Rust model intentionally contains no sqlparser AST types. Unknown and unsupported
 //! semantics remain explicit so consumers can distinguish incomplete analysis from known values.
 
+use std::collections::BTreeSet;
+
 use crate::constraints::RelationConstraintSet;
 
 /// Current protocol version emitted by this crate.
@@ -15,6 +17,7 @@ pub struct Protocol {
     source: ProtocolSource,
     statements: Vec<ProtocolStatement>,
     relation_constraints: Vec<RelationConstraintSet>,
+    comparison_declarations: Vec<ComparisonAssumption>,
 }
 
 impl Protocol {
@@ -24,7 +27,28 @@ impl Protocol {
             source: ProtocolSource { dialect },
             statements,
             relation_constraints: Vec::new(),
+            comparison_declarations: Vec::new(),
         }
+    }
+
+    /// Declare warehouse comparison settings for single-input analysis.
+    ///
+    /// Callers must attest only settings known to hold for the target warehouse.
+    pub fn declare_comparison_assumptions(&mut self, declared: &[ComparisonAssumption]) {
+        self.comparison_declarations
+            .extend(declared.iter().copied());
+        self.comparison_declarations.sort();
+        self.comparison_declarations.dedup();
+        for statement in &mut self.statements {
+            if let ProtocolStatement::Query(query) = statement {
+                query.declare_comparison_assumptions(&self.comparison_declarations);
+            }
+        }
+    }
+
+    /// Return caller-declared comparison settings.
+    pub fn comparison_declarations(&self) -> &[ComparisonAssumption] {
+        &self.comparison_declarations
     }
 
     pub(crate) fn with_relation_constraints(
@@ -111,7 +135,7 @@ pub struct QueryStatement {
     sources: Vec<SourceRelation>,
     dependencies: Vec<String>,
     joins: Vec<Join>,
-    row_conditions: RowConditions,
+    row_conditions: Box<RowConditions>,
     output: Output,
     aggregation: Option<Box<Aggregation>>,
     set_operation: Option<SetOperation>,
@@ -133,7 +157,7 @@ impl QueryStatement {
             sources,
             dependencies,
             joins,
-            row_conditions,
+            row_conditions: Box::new(row_conditions),
             output,
             aggregation: None,
             set_operation: None,
@@ -195,6 +219,14 @@ impl QueryStatement {
     /// Return whether row-membership conditions are represented exactly by domains and joins.
     pub fn condition_exactness(&self) -> &ConditionExactness {
         &self.row_conditions.exactness
+    }
+
+    pub(crate) fn declare_comparison_assumptions(&mut self, declared: &[ComparisonAssumption]) {
+        self.row_conditions.exactness = self
+            .row_conditions
+            .exactness
+            .clone()
+            .with_declarations(declared);
     }
 
     /// Return final query output columns in SELECT-list order.
@@ -905,6 +937,8 @@ impl Predicates {
 pub enum ConditionExactnessStatus {
     /// Every row-membership condition is represented by the allow-listed exact contract.
     Exact,
+    /// All domains are represented but comparison settings must be confirmed by the caller.
+    Conditional,
     /// One or more row-membership conditions remain outside the exact representation.
     Residual,
 }
@@ -913,13 +947,113 @@ impl ConditionExactnessStatus {
     pub(crate) fn as_str(self) -> &'static str {
         match self {
             Self::Exact => "exact",
+            Self::Conditional => "conditional",
             Self::Residual => "residual",
         }
     }
 }
 
+/// A comparison setting a caller can attest to for an analyzed warehouse.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ComparisonAssumption {
+    /// String equality and ordering use binary, case-sensitive comparison.
+    BinaryCollation,
+    /// Fixed-width character comparisons do not silently pad or trim strings.
+    NoCharPadding,
+    /// Floating columns contain no NaN values.
+    NoNan,
+    /// Positive and negative floating zero compare as equal.
+    SignedZeroEquivalent,
+    /// Session timezone interpretation is deterministic and matches supplied timestamp literals.
+    SessionTimeZone,
+}
+
+impl ComparisonAssumption {
+    /// Return the stable protocol and CLI name.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::BinaryCollation => "binary_collation",
+            Self::NoCharPadding => "no_char_padding",
+            Self::NoNan => "no_nan",
+            Self::SignedZeroEquivalent => "signed_zero_equivalent",
+            Self::SessionTimeZone => "session_time_zone",
+        }
+    }
+
+    /// Parse a stable comparison-setting name.
+    pub fn from_name(value: &str) -> Option<Self> {
+        match value {
+            "binary_collation" => Some(Self::BinaryCollation),
+            "no_char_padding" => Some(Self::NoCharPadding),
+            "no_nan" => Some(Self::NoNan),
+            "signed_zero_equivalent" => Some(Self::SignedZeroEquivalent),
+            "session_time_zone" => Some(Self::SessionTimeZone),
+            _ => None,
+        }
+    }
+}
+
+/// A row-condition dependency on a comparison setting.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ConditionalCondition {
+    assumption: ComparisonAssumption,
+    clause: ConditionClause,
+    identity: String,
+    origin_layer_id: Option<String>,
+    origin_scope: Option<String>,
+}
+
+impl ConditionalCondition {
+    pub(crate) fn new(
+        assumption: ComparisonAssumption,
+        clause: ConditionClause,
+        identity: impl Into<String>,
+    ) -> Self {
+        Self {
+            assumption,
+            clause,
+            identity: identity.into(),
+            origin_layer_id: None,
+            origin_scope: None,
+        }
+    }
+
+    /// Required comparison setting.
+    pub fn assumption(&self) -> ComparisonAssumption {
+        self.assumption
+    }
+    /// SQL clause containing the condition.
+    pub fn clause(&self) -> ConditionClause {
+        self.clause
+    }
+    /// Stable condition identity.
+    pub fn identity(&self) -> &str {
+        &self.identity
+    }
+    /// Composed layer that introduced the condition.
+    pub fn origin_layer_id(&self) -> Option<&str> {
+        self.origin_layer_id.as_deref()
+    }
+    /// Original query or local-relation scope.
+    pub fn origin_scope(&self) -> Option<&str> {
+        self.origin_scope.as_deref()
+    }
+
+    fn with_scope(mut self, scope: &str) -> Self {
+        self.origin_scope = Some(scope.to_string());
+        self
+    }
+    fn with_layer_origin(mut self, layer_id: &str) -> Self {
+        self.origin_layer_id = Some(layer_id.to_string());
+        if self.origin_scope.is_none() {
+            self.origin_scope = Some("query".to_string());
+        }
+        self
+    }
+}
+
 /// SQL clause that owns a residual row-membership condition.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ConditionClause {
     /// WHERE clause.
     Where,
@@ -1097,6 +1231,8 @@ impl ResidualCondition {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConditionExactness {
     residual_conditions: Vec<ResidualCondition>,
+    required_assumptions: Vec<ConditionalCondition>,
+    declared_assumptions: BTreeSet<ComparisonAssumption>,
 }
 
 impl ConditionExactness {
@@ -1120,47 +1256,100 @@ impl ConditionExactness {
         residual_conditions.dedup();
         Self {
             residual_conditions,
+            required_assumptions: Vec::new(),
+            declared_assumptions: BTreeSet::new(),
         }
+    }
+
+    pub(crate) fn from_requirements(mut requirements: Vec<ConditionalCondition>) -> Self {
+        requirements.sort();
+        requirements.dedup();
+        Self {
+            residual_conditions: Vec::new(),
+            required_assumptions: requirements,
+            declared_assumptions: BTreeSet::new(),
+        }
+    }
+
+    pub(crate) fn with_declarations(mut self, declared: &[ComparisonAssumption]) -> Self {
+        self.declared_assumptions.extend(declared.iter().copied());
+        self
     }
 
     pub(crate) fn with_scope(&self, scope: impl Into<String>) -> Self {
         let scope = scope.into();
-        Self::from_residuals(
+        let mut result = Self::from_residuals(
             self.residual_conditions
                 .iter()
                 .cloned()
                 .map(|residual| residual.with_scope(scope.clone()))
                 .collect(),
-        )
+        );
+        result.required_assumptions = self
+            .required_assumptions
+            .iter()
+            .cloned()
+            .map(|requirement| requirement.with_scope(&scope))
+            .collect();
+        result.declared_assumptions = self.declared_assumptions.clone();
+        result
     }
 
     pub(crate) fn with_layer_origin(&self, layer_id: impl Into<String>) -> Self {
         let layer_id = layer_id.into();
-        Self::from_residuals(
+        let mut result = Self::from_residuals(
             self.residual_conditions
                 .iter()
                 .cloned()
                 .map(|residual| residual.with_layer_origin(layer_id.clone()))
                 .collect(),
-        )
+        );
+        result.required_assumptions = self
+            .required_assumptions
+            .iter()
+            .cloned()
+            .map(|requirement| requirement.with_layer_origin(&layer_id))
+            .collect();
+        result.declared_assumptions = self.declared_assumptions.clone();
+        result
     }
 
     pub(crate) fn merged_with(&self, other: &Self) -> Self {
-        Self::from_residuals(
+        let mut merged = Self::from_residuals(
             self.residual_conditions
                 .iter()
                 .chain(other.residual_conditions.iter())
                 .cloned()
                 .collect(),
-        )
+        );
+        merged.required_assumptions = self
+            .required_assumptions
+            .iter()
+            .chain(&other.required_assumptions)
+            .cloned()
+            .collect();
+        merged.required_assumptions.sort();
+        merged.required_assumptions.dedup();
+        merged.declared_assumptions = self
+            .declared_assumptions
+            .union(&other.declared_assumptions)
+            .copied()
+            .collect();
+        merged
     }
 
     /// Return whether the scope satisfies the exact row-membership contract.
     pub fn status(&self) -> ConditionExactnessStatus {
-        if self.residual_conditions.is_empty() {
-            ConditionExactnessStatus::Exact
-        } else {
+        if !self.residual_conditions.is_empty() {
             ConditionExactnessStatus::Residual
+        } else if self
+            .required_assumptions
+            .iter()
+            .any(|item| !self.declared_assumptions.contains(&item.assumption))
+        {
+            ConditionExactnessStatus::Conditional
+        } else {
+            ConditionExactnessStatus::Exact
         }
     }
 
@@ -1169,9 +1358,19 @@ impl ConditionExactness {
         &self.residual_conditions
     }
 
-    /// Return true when no row-membership condition is residual.
+    /// Return the assumptions each condition depends on, including those already declared.
+    pub fn required_assumptions(&self) -> &[ConditionalCondition] {
+        &self.required_assumptions
+    }
+
+    /// Return the settings currently attested by the caller.
+    pub fn declared_assumptions(&self) -> &BTreeSet<ComparisonAssumption> {
+        &self.declared_assumptions
+    }
+
+    /// Return true only when no residual condition or undeclared assumption remains.
     pub fn is_exact(&self) -> bool {
-        self.residual_conditions.is_empty()
+        self.status() == ConditionExactnessStatus::Exact
     }
 }
 

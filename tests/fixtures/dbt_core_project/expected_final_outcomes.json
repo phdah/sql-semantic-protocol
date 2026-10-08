@@ -3,6 +3,7 @@
     "composed_semantics": {
       "column_domains": [],
       "condition_exactness": {
+        "comparison_assumptions": [],
         "residual_conditions": [],
         "status": "exact"
       },
@@ -104,24 +105,38 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
+            }
           }
         ],
-        "status": "residual"
+        "residual_conditions": [],
+        "status": "conditional"
       },
       "dependencies": [
         "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -296,22 +311,37 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
-          },
+            }
+          }
+        ],
+        "residual_conditions": [
           {
             "clause": "on",
             "identity": "join:1",
@@ -486,22 +516,37 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
-          },
+            }
+          }
+        ],
+        "residual_conditions": [
           {
             "clause": "on",
             "identity": "join:1",
@@ -620,24 +665,38 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
+            }
           }
         ],
-        "status": "residual"
+        "residual_conditions": [],
+        "status": "conditional"
       },
       "dependencies": [
         "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -744,24 +803,38 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
+            }
           }
         ],
-        "status": "residual"
+        "residual_conditions": [],
+        "status": "conditional"
       },
       "dependencies": [
         "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -885,24 +958,38 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
+            }
           }
         ],
-        "status": "residual"
+        "residual_conditions": [],
+        "status": "conditional"
       },
       "dependencies": [
         "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -992,6 +1079,7 @@
     "composed_semantics": {
       "column_domains": [],
       "condition_exactness": {
+        "comparison_assumptions": [],
         "residual_conditions": [],
         "status": "exact"
       },
@@ -1162,22 +1250,37 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
-          },
+            }
+          }
+        ],
+        "residual_conditions": [
           {
             "clause": "on",
             "identity": "join:1",
@@ -1292,24 +1395,38 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
+            }
           }
         ],
-        "status": "residual"
+        "residual_conditions": [],
+        "status": "conditional"
       },
       "dependencies": [
         "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -1416,24 +1533,38 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
+            }
           }
         ],
-        "status": "residual"
+        "residual_conditions": [],
+        "status": "conditional"
       },
       "dependencies": [
         "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -1623,22 +1754,37 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
-          },
+            }
+          }
+        ],
+        "residual_conditions": [
           {
             "clause": "row_set_operator",
             "identity": "limit",
@@ -1801,22 +1947,37 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
-          },
+            }
+          }
+        ],
+        "residual_conditions": [
           {
             "clause": "on",
             "identity": "join:1",
@@ -2024,22 +2185,37 @@
             "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
           },
           "domain": {
-            "kind": "unknown",
-            "reason": "string predicate domains are residual because collation, case sensitivity, and CHAR padding are warehouse settings not represented by the protocol"
+            "kind": "set",
+            "mode": "include",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "paid"
+              },
+              {
+                "kind": "literal",
+                "type": "string",
+                "value": "pending"
+              }
+            ]
           }
         }
       ],
       "condition_exactness": {
-        "residual_conditions": [
+        "comparison_assumptions": [
           {
             "clause": "where",
+            "declared": false,
             "identity": "column_domain:\"dbt-core-e2e\".\"raw\".\"orders\".status",
+            "name": "binary_collation",
             "origin": {
               "layer_id": "layer-0004",
               "scope": "query"
-            },
-            "reason": "computed_expression"
-          },
+            }
+          }
+        ],
+        "residual_conditions": [
           {
             "clause": "on",
             "identity": "join:1",
@@ -2225,6 +2401,7 @@
                   }
                 ],
                 "condition_exactness": {
+                  "comparison_assumptions": [],
                   "residual_conditions": [
                     {
                       "clause": "where",

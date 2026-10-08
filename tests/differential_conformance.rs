@@ -1251,6 +1251,14 @@ fn three_source_join_shapes_are_complete_against_duckdb() {
 }
 
 fn typed_conformance(sql: &str, sql_type: &str) -> ResolvedComposedSemantics {
+    typed_conformance_with_assumptions(sql, sql_type, &[])
+}
+
+fn typed_conformance_with_assumptions(
+    sql: &str,
+    sql_type: &str,
+    assumptions: &[sql_semantic_protocol::ComparisonAssumption],
+) -> ResolvedComposedSemantics {
     let schema = RelationSchema::new(
         "typed_rows",
         vec![
@@ -1269,8 +1277,9 @@ fn typed_conformance(sql: &str, sql_type: &str) -> ResolvedComposedSemantics {
         "duckdb",
         dialect.as_ref(),
     )];
-    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+    let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
         .expect("typed conformance query should analyze");
+    bundle.declare_comparison_assumptions(assumptions);
     match bundle.layers()[0].composed_semantics() {
         ComposedSemantics::Resolved(semantics) => semantics.clone(),
         other => panic!("typed conformance could not compose: {other:?}"),
@@ -1312,26 +1321,49 @@ fn typed_and_untyped_scalar_exactness_agree_when_literal_semantics_are_portable(
 
 #[test]
 fn typed_comparison_exceptions_remain_explicit_until_assumptions_are_modeled() {
-    // TASK-53 will add conditional comparison semantics for strings, floats, and timestamps.
-    // INTERVAL literals remain a distinct parser-normalization boundary.
-    // Until then, an unconditional exactness claim would be unsound.
     for (data_type, predicate) in [
         ("VARCHAR", "value = 'keep'"),
         ("DOUBLE", "value > 1.5"),
         ("TIMESTAMP", "value >= TIMESTAMP '2024-01-01 00:00:00'"),
-        ("INTERVAL", "value >= INTERVAL '1 day'"),
     ] {
         let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
         let typed = typed_conformance(&sql, data_type);
-        assert!(
-            !typed.condition_exactness().is_exact(),
-            "typed comparison must remain conditional: type={data_type}; query={sql}"
+        assert_eq!(
+            typed.condition_exactness().status(),
+            ConditionExactnessStatus::Conditional,
+            "expected conditional exactness: {sql}"
         );
         assert!(
-            !typed.condition_exactness().residual_conditions().is_empty(),
-            "typed comparison residual must explain unsupported semantics: {sql}"
+            typed.condition_exactness().residual_conditions().is_empty(),
+            "representable comparisons must not be residual: {sql}"
+        );
+        assert!(
+            !typed
+                .condition_exactness()
+                .required_assumptions()
+                .is_empty(),
+            "assumption must be explicit: {sql}"
+        );
+        assert!(
+            typed
+                .column_domains()
+                .iter()
+                .all(|domain| !matches!(domain.domain(), ValueDomain::Unknown(_))),
+            "typed domains must be retained: {sql}"
         );
     }
+    let interval = typed_conformance(
+        "SELECT row_id FROM typed_rows WHERE value >= INTERVAL '1 day'",
+        "INTERVAL",
+    );
+    assert!(!interval.condition_exactness().is_exact());
+    assert!(
+        !interval
+            .condition_exactness()
+            .residual_conditions()
+            .is_empty(),
+        "unsupported interval normalization must be residual"
+    );
 }
 
 #[test]
@@ -1530,5 +1562,89 @@ fn seeded_portable_typed_scalar_families_keep_exactness() {
                 .all(|domain| !matches!(domain.domain(), ValueDomain::Unknown(_))),
             "seed={seed}; type={data_type}; query={sql}; domain became unknown"
         );
+    }
+}
+
+#[test]
+fn declared_comparison_settings_are_consistent_with_duckdb_row_membership() {
+    use sql_semantic_protocol::{ComparisonAssumption as A, ValueDomain as D};
+    // Each declaration is a fact about the fixture's warehouse and dataset, not a dialect default.
+    type DeclaredCase<'a> = (&'a str, &'a str, &'a [A], &'a [&'a str], usize);
+    let cases: &[DeclaredCase<'_>] = &[
+        (
+            "VARCHAR",
+            "value IN ('keep', 'hold')",
+            &[A::BinaryCollation],
+            &["'keep'", "'drop'", "'hold'"],
+            2,
+        ),
+        (
+            "DOUBLE",
+            "value > 1.5",
+            &[A::NoNan, A::SignedZeroEquivalent],
+            &["-0.0", "2.5", "1.0"],
+            1,
+        ),
+        (
+            "DOUBLE",
+            "value = 0.0",
+            &[A::NoNan, A::SignedZeroEquivalent],
+            &["0.0", "-0.0", "2.5"],
+            2,
+        ),
+        (
+            "TIMESTAMP",
+            "value >= TIMESTAMP '2024-01-01 00:00:00'",
+            &[A::SessionTimeZone],
+            &[
+                "TIMESTAMP '2024-01-01 00:00:00'",
+                "TIMESTAMP '2023-12-31 23:59:59'",
+                "TIMESTAMP '2024-01-02 00:00:00'",
+            ],
+            2,
+        ),
+    ];
+    for &(data_type, predicate, assumptions, values, expected_count) in cases {
+        let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
+        let undeclared = typed_conformance(&sql, data_type);
+        assert_eq!(
+            undeclared.condition_exactness().status(),
+            ConditionExactnessStatus::Conditional,
+            "must not assume warehouse settings: {sql}"
+        );
+        let declared = typed_conformance_with_assumptions(&sql, data_type, assumptions);
+        assert_eq!(
+            declared.condition_exactness().status(),
+            ConditionExactnessStatus::Exact,
+            "declared settings should close condition: {sql}"
+        );
+        assert!(
+            declared
+                .column_domains()
+                .iter()
+                .all(|domain| matches!(domain.domain(), D::Ranges(_) | D::Set(_))),
+            "typed domain must be retained: {sql}"
+        );
+        assert!(declared
+            .condition_exactness()
+            .required_assumptions()
+            .iter()
+            .all(|item| declared
+                .condition_exactness()
+                .declared_assumptions()
+                .contains(&item.assumption())));
+        let connection = Connection::open_in_memory().unwrap();
+        connection.execute_batch(&format!(
+            "CREATE TABLE typed_rows (row_id BIGINT, value {data_type}); INSERT INTO typed_rows VALUES {};",
+            values.iter().enumerate().map(|(i, value)| format!("({}, {value})", i + 1)).collect::<Vec<_>>().join(",")
+        )).unwrap();
+        let count: i64 = connection
+            .query_row(
+                &format!("SELECT COUNT(*) FROM typed_rows WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count as usize, expected_count, "oracle membership: {sql}");
     }
 }

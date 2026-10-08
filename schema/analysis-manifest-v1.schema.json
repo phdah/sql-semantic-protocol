@@ -49,6 +49,14 @@
     },
     "relation_context": {
       "$ref": "#/$defs/relationContext"
+    },
+    "comparison_assumptions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/comparisonAssumption"
+      },
+      "default": []
     }
   },
   "allOf": [
@@ -147,6 +155,15 @@
           "$ref": "#/$defs/nonEmptyString"
         }
       }
+    },
+    "comparisonAssumption": {
+      "enum": [
+        "binary_collation",
+        "no_char_padding",
+        "no_nan",
+        "signed_zero_equivalent",
+        "session_time_zone"
+      ]
     }
   }
 }

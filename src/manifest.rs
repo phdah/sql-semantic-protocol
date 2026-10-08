@@ -6,6 +6,7 @@
 use std::collections::BTreeSet;
 use std::fmt;
 
+use crate::protocol::ComparisonAssumption;
 use serde_json::{Map, Value};
 
 /// Active analysis-manifest contract version.
@@ -96,6 +97,7 @@ pub struct AnalysisManifest {
     output_scope: ManifestOutputScope,
     targets: Vec<String>,
     inputs: Vec<ManifestInput>,
+    comparison_assumptions: Vec<ComparisonAssumption>,
 }
 
 impl AnalysisManifest {
@@ -132,6 +134,11 @@ impl AnalysisManifest {
     /// Return explicit target relation identifiers in manifest order.
     pub fn targets(&self) -> &[String] {
         &self.targets
+    }
+
+    /// Return caller-declared comparison settings.
+    pub fn comparison_assumptions(&self) -> &[ComparisonAssumption] {
+        &self.comparison_assumptions
     }
 
     /// Return inputs in deterministic manifest order.
@@ -209,6 +216,7 @@ pub fn parse_analysis_manifest(json: &str) -> Result<AnalysisManifest, ManifestE
             "output_scope",
             "targets",
             "inputs",
+            "comparison_assumptions",
         ],
         "manifest",
     )?;
@@ -243,6 +251,18 @@ pub fn parse_analysis_manifest(json: &str) -> Result<AnalysisManifest, ManifestE
     };
 
     let targets = parse_targets(object.get("targets"))?;
+    let comparison_assumptions = parse_unique_string_array(
+        object.get("comparison_assumptions"),
+        "manifest.comparison_assumptions",
+        "comparison assumption",
+    )?
+    .into_iter()
+    .map(|name| {
+        ComparisonAssumption::from_name(&name).ok_or_else(|| ManifestError::InvalidConfiguration {
+            message: format!("unsupported comparison assumption '{name}'"),
+        })
+    })
+    .collect::<Result<Vec<_>, _>>()?;
     match output_scope {
         ManifestOutputScope::All if !targets.is_empty() => {
             return invalid("manifest.targets requires output_scope 'targets'".to_string())
@@ -284,6 +304,7 @@ pub fn parse_analysis_manifest(json: &str) -> Result<AnalysisManifest, ManifestE
         output_scope,
         targets,
         inputs,
+        comparison_assumptions,
     })
 }
 
