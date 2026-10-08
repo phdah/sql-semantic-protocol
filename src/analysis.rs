@@ -561,7 +561,7 @@ fn analyze_query(
         }
     };
 
-    let column_domains = type_column_domains(
+    let (column_domains, typing_failures) = type_column_domains(
         analyze_query_column_domains(
             query,
             &BTreeSet::new(),
@@ -589,7 +589,7 @@ fn analyze_query(
         metadata,
         &mut diagnostics,
     );
-    let condition_exactness = analyze_query_condition_exactness(
+    let predicate_exactness = analyze_query_condition_exactness(
         query,
         &predicates,
         &relation_analysis.sources,
@@ -597,8 +597,16 @@ fn analyze_query(
         &relation_analysis.joins,
         &diagnostics,
         false,
-    )
-    .merged_with(&unknown_column_domain_exactness(&column_domains))
+    );
+    let condition_exactness = predicate_exactness
+    .merged_with(&unknown_column_domain_exactness(
+        &column_domains,
+        &typing_failures,
+        &predicates,
+        &relation_analysis.joins,
+        &relation_analysis.sources,
+        &predicate_exactness,
+    ))
     .merged_with(&comparison_domain_exactness(&column_domains, metadata))
     .merged_with(&ConditionExactness::from_residuals(
         relation_analysis.residual_conditions.clone(),
@@ -679,34 +687,58 @@ fn validate_schema_column_references(
     residuals
 }
 
+/// Keep the category of a rejected typed comparison separate from its human-readable explanation.
+#[derive(Debug)]
+struct TypedLiteralError {
+    reason: ResidualConditionReason,
+    message: String,
+}
+
+impl TypedLiteralError {
+    fn new(reason: ResidualConditionReason, message: impl Into<String>) -> Self {
+        Self {
+            reason,
+            message: message.into(),
+        }
+    }
+}
+
 fn type_column_domains(
     column_domains: Vec<ColumnDomain>,
     metadata: &AnalysisMetadata<'_>,
-) -> Vec<ColumnDomain> {
-    column_domains
+) -> (Vec<ColumnDomain>, Vec<(ColumnRef, ResidualConditionReason)>) {
+    let mut failures = Vec::new();
+    let domains = column_domains
         .into_iter()
         .map(|column_domain| {
             let Some(data_type) = metadata.column_data_type(column_domain.column()) else {
                 return column_domain;
             };
-            let domain = type_value_domain(
+            let domain = match type_value_domain(
                 column_domain.domain(),
                 data_type,
                 metadata.column_timestamp_zone(column_domain.column()),
-            );
+            ) {
+                Ok(domain) => domain,
+                Err(error) => {
+                    failures.push((column_domain.column().clone(), error.reason));
+                    ValueDomain::unknown(error.message)
+                }
+            };
             ColumnDomain::new(column_domain.column().clone(), domain)
         })
-        .collect()
+        .collect();
+    (domains, failures)
 }
 
 fn type_value_domain(
     domain: &ValueDomain,
     data_type: &DataType,
     zone: Option<TimestampZone>,
-) -> ValueDomain {
+) -> Result<ValueDomain, TypedLiteralError> {
     match domain {
         ValueDomain::Ranges(ranges) => {
-            let typed = ranges
+            let ranges = ranges
                 .ranges()
                 .iter()
                 .map(|range| {
@@ -720,26 +752,20 @@ fn type_value_domain(
                         .transpose()?;
                     Ok(ValueRange::new(lower, upper))
                 })
-                .collect::<Result<Vec<_>, String>>();
-            match typed {
-                Ok(ranges) => ValueDomain::ranges(ranges),
-                Err(reason) => ValueDomain::unknown(reason),
-            }
+                .collect::<Result<Vec<_>, TypedLiteralError>>()?;
+            Ok(ValueDomain::ranges(ranges))
         }
         ValueDomain::Set(set) => {
-            let typed = set
+            let values = set
                 .values()
                 .iter()
                 .map(|literal| type_literal(literal, data_type, zone))
-                .collect::<Result<Vec<_>, String>>();
-            match typed {
-                Ok(values) => ValueDomain::set(set.mode(), values),
-                Err(reason) => ValueDomain::unknown(reason),
-            }
+                .collect::<Result<Vec<_>, TypedLiteralError>>()?;
+            Ok(ValueDomain::set(set.mode(), values))
         }
-        ValueDomain::Unbounded => ValueDomain::Unbounded,
-        ValueDomain::Empty => ValueDomain::Empty,
-        ValueDomain::Unknown(unknown) => ValueDomain::unknown(unknown.reason()),
+        ValueDomain::Unbounded => Ok(ValueDomain::Unbounded),
+        ValueDomain::Empty => Ok(ValueDomain::Empty),
+        ValueDomain::Unknown(unknown) => Ok(ValueDomain::unknown(unknown.reason())),
     }
 }
 
@@ -747,7 +773,7 @@ fn type_bound(
     bound: &Bound,
     data_type: &DataType,
     zone: Option<TimestampZone>,
-) -> Result<Bound, String> {
+) -> Result<Bound, TypedLiteralError> {
     Ok(Bound::new(
         type_literal(bound.value(), data_type, zone)?,
         bound.inclusive(),
@@ -758,7 +784,7 @@ fn type_literal(
     literal: &LiteralExpression,
     data_type: &DataType,
     zone: Option<TimestampZone>,
-) -> Result<LiteralExpression, String> {
+) -> Result<LiteralExpression, TypedLiteralError> {
     if literal.literal_type() == LiteralType::Null {
         return Ok(literal.clone());
     }
@@ -768,10 +794,13 @@ fn type_literal(
         other => other,
     };
     let incompatible = || {
-        Err(format!(
-            "literal type '{}' cannot be compared exactly with canonical '{}' column semantics",
-            literal.literal_type().as_str(),
-            data_type.kind()
+        Err(TypedLiteralError::new(
+            ResidualConditionReason::LiteralTypeMismatch,
+            format!(
+                "literal type '{}' cannot be compared exactly with canonical '{}' column semantics",
+                literal.literal_type().as_str(),
+                data_type.kind()
+            ),
         ))
     };
 
@@ -796,9 +825,10 @@ fn type_literal(
                     LiteralValue::Number(value.clone()),
                 ))
             }
-            LiteralValue::Number(_) => Err(
-                "numeric literal exceeds the declared decimal precision or scale".to_string(),
-            ),
+            LiteralValue::Number(_) => Err(TypedLiteralError::new(
+                ResidualConditionReason::OutOfRangeLiteral,
+                "numeric literal exceeds the declared decimal precision or scale",
+            )),
             _ => incompatible(),
         },
         DataType::FloatingPoint { .. } => match literal.value() {
@@ -809,19 +839,28 @@ fn type_literal(
         DataType::Time { .. } if literal.literal_type() == LiteralType::Time => Ok(literal.clone()),
         DataType::Timestamp { .. } if literal.literal_type() == LiteralType::Timestamp => {
             if zone == Some(TimestampZone::WithoutTimeZone) && timestamp_literal_has_offset(literal) {
-                return Err("offset-bearing timestamp literal conflicts with timestamp without time zone".to_string());
+                return Err(TypedLiteralError::new(
+                    ResidualConditionReason::LiteralTypeMismatch,
+                    "offset-bearing timestamp literal conflicts with timestamp without time zone",
+                ));
             }
             Ok(literal.clone())
         },
         DataType::Interval if literal.literal_type() == LiteralType::Interval => Ok(literal.clone()),
         DataType::String { .. } if literal.literal_type() == LiteralType::String => Ok(literal.clone()),
-        DataType::Enum { .. } | DataType::Set { .. } => Err(
-            "enum and set predicate domains are residual because comparison semantics are dialect-dependent".to_string(),
-        ),
-        DataType::Any | DataType::Unspecified | DataType::Custom { .. } => Err(format!(
-            "canonical '{}' datatype does not define exact comparison semantics",
-            data_type.kind()
+        DataType::Enum { .. } | DataType::Set { .. } => Err(TypedLiteralError::new(
+            ResidualConditionReason::ComparisonSemantics,
+            "enum and set predicate domains are residual because comparison semantics are dialect-dependent",
         )),
+        DataType::Any | DataType::Unspecified | DataType::Custom { .. } => Err(
+            TypedLiteralError::new(
+                ResidualConditionReason::ComparisonSemantics,
+                format!(
+                    "canonical '{}' datatype does not define exact comparison semantics",
+                    data_type.kind()
+                ),
+            ),
+        ),
         DataType::Binary { .. }
         | DataType::Uuid
         | DataType::Json
@@ -835,9 +874,12 @@ fn type_literal(
         | DataType::Regclass
         | DataType::TextSearchVector
         | DataType::TextSearchQuery
-        | DataType::Trigger => Err(format!(
-            "canonical '{}' datatype has no protocol-defined ordered scalar comparison semantics",
-            data_type.kind()
+        | DataType::Trigger => Err(TypedLiteralError::new(
+            ResidualConditionReason::ComparisonSemantics,
+            format!(
+                "canonical '{}' datatype has no protocol-defined ordered scalar comparison semantics",
+                data_type.kind()
+            ),
         )),
         DataType::Nullable(_) => unreachable!("nullable datatype was unwrapped above"),
         _ => incompatible(),
@@ -866,12 +908,18 @@ fn type_integer_literal(
     literal: &LiteralExpression,
     bits: Option<u16>,
     unsigned: bool,
-) -> Result<LiteralExpression, String> {
+) -> Result<LiteralExpression, TypedLiteralError> {
     if literal.literal_type() != LiteralType::Integer {
-        return Err("lossy numeric coercion to an integer column is not exact".to_string());
+        return Err(TypedLiteralError::new(
+            ResidualConditionReason::LossyCoercion,
+            "lossy numeric coercion to an integer column is not exact",
+        ));
     }
     let LiteralValue::Number(value) = literal.value() else {
-        return Err("integer literal does not contain a numeric payload".to_string());
+        return Err(TypedLiteralError::new(
+            ResidualConditionReason::LiteralTypeMismatch,
+            "integer literal does not contain a numeric payload",
+        ));
     };
     let in_range = if unsigned {
         value
@@ -883,10 +931,13 @@ fn type_integer_literal(
             .is_ok_and(|value| integer_fits_signed(value, bits))
     };
     if !in_range {
-        return Err(format!(
-            "integer literal '{value}' is outside the canonical {}-bit {}integer range",
-            bits.map_or_else(|| "unbounded".to_string(), |bits| bits.to_string()),
-            if unsigned { "unsigned " } else { "" }
+        return Err(TypedLiteralError::new(
+            ResidualConditionReason::OutOfRangeLiteral,
+            format!(
+                "integer literal '{value}' is outside the canonical {}-bit {}integer range",
+                bits.map_or_else(|| "unbounded".to_string(), |bits| bits.to_string()),
+                if unsigned { "unsigned " } else { "" }
+            ),
         ));
     }
     Ok(LiteralExpression::new(
