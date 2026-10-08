@@ -901,6 +901,9 @@ fn residual_reasons(semantics: &ResolvedComposedSemantics) -> BTreeSet<String> {
         .condition_exactness()
         .residual_conditions()
         .iter()
+        // A local-only diagnostic supplements the original predicate residual;
+        // it must not count as a new semantic reason in plain-copy comparisons.
+        .filter(|residual| residual.identity() != "diagnostic:unresolved_local_predicate")
         .map(|residual| format!("{:?}", residual.reason()))
         .collect()
 }
@@ -1145,8 +1148,8 @@ fn explicit_and_implicit_two_source_join_claims_are_complete() {
     assert_eq!(expected_rows, row_pairs(&connection, implicit));
     for (location, sql) in [
         ("implicit_where", implicit.to_string()),
-        ("cte", format!("WITH j AS (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2) SELECT l_id, r_id FROM j")),
-        ("chained_cte", format!("WITH j AS (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2), k AS (SELECT l_id, r_id FROM j) SELECT l_id, r_id FROM k")),
+        ("cte", "WITH j AS (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2) SELECT l_id, r_id FROM j".to_string()),
+        ("chained_cte", "WITH j AS (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2), k AS (SELECT l_id, r_id FROM j) SELECT l_id, r_id FROM k".to_string()),
         ("derived", "SELECT l_id, r_id FROM (SELECT l.row_id AS l_id, r.row_id AS r_id FROM left_rows l JOIN right_rows r ON l.x = r.y AND l.a > 0 AND r.b <= 2) j".to_string()),
     ] {
         let actual = resolved_query(&sql);
