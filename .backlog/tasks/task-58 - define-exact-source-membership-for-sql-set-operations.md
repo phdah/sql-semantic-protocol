@@ -30,6 +30,10 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 - [ ] #2 Emit exactness only where membership can be proven for full branch combinations; conflicting, missing or ambiguous evidence remains an explicit residual with origin.
 - [ ] #3 Compose the contract through CTEs, producer layers and dbt compiled model graphs; preserve strong output domains.
 - [ ] #4 Add paired exact and residual tests, including DuckDB differential tests for overlapping and disjoint branches, duplicates and NULL, plus applicable dialect variants.
-- [x] #5 Update schema, protocol docs and consumer compatibility/versioning guidance; sql-tdg TASK-24 consumes this contract.
+- [ ] #5 Update schema, protocol docs and consumer compatibility/versioning guidance; sql-tdg TASK-24 consumes this contract.
 - [ ] #6 Expose typed qualifying and, where provable, non-qualifying branch witness obligations at physical-source or intermediate boundaries, including branch identity and duplicate counts; do not make consumers infer set-operation semantics to generate rejected rows. Report unsupported witness directions as residual with a reason.
 <!-- AC:END -->
+
+## Implementation status
+
+Draft PR #78 introduces independent branch evidence, NULL-safe tuple multiplicity rules, and transitive operation provenance, with schema, docs, and differential tests. This is a partial implementation only: neither positive nor negative physical-source witness obligations are proven. Exact set membership, complete local-relation remapping and consumer adoption remain open; do not mark the task Done or enable generator exactness until these are tested.
