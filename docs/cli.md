@@ -1,6 +1,6 @@
 # CLI and input workflows
 
-Run `sql-semantic-protocol --help` for the currently supported flags. The CLI emits one protocol JSON document to stdout; failures are written to stderr.
+Run `sql-semantic-protocol --help` for grouped options and copyable examples. Help headings and flags use ANSI colors only when stdout is an interactive terminal; piped output, `NO_COLOR`, and `TERM=dumb` remain plain text. Analysis output is unchanged: the CLI emits one protocol JSON document to stdout; failures are written to stderr.
 
 ## CLI
 
