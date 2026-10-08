@@ -52,9 +52,8 @@ pub use constraints::{
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{
     analyze_dbt_artifacts, analyze_dbt_manifest, analyze_dbt_manifest_with_schemas,
-    parse_dbt_catalog, parse_dbt_manifest,
-    DbtArtifactsError, DbtCatalog, DbtCatalogError, DbtManifest, DbtManifestError,
-    SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
+    parse_dbt_catalog, parse_dbt_manifest, DbtArtifactsError, DbtCatalog, DbtCatalogError,
+    DbtManifest, DbtManifestError, SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
 pub use emission::{to_bundle_json, to_json};
 pub use manifest::{
