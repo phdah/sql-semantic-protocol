@@ -547,7 +547,10 @@ pub struct ComposedSetOperation {
 
 impl ComposedSetOperation {
     pub(crate) fn new(origin_layer_id: String, operation: SetOperation) -> Self {
-        Self { origin_layer_id, operation }
+        Self {
+            origin_layer_id,
+            operation,
+        }
     }
 
     /// Layer where this SQL set operation was introduced.
