@@ -18,7 +18,12 @@ types when a relation is present there. When a physical dependency is absent fro
 `manifest.json` column `data_type` declarations are accepted as lower-authority schema evidence
 when the declared schema is complete. The adapter never lets a manifest declaration override
 catalog evidence. Missing declared datatypes fail explicitly with the affected relation and column
-names rather than being guessed.
+names rather than being guessed. `analyze_dbt_manifest_with_schemas` supports the same
+typed schema validation and `dbt_manifest` provenance without a catalog; it is equivalent
+to `analyze_dbt_artifacts` with an empty catalog. With no catalog, every physical
+dependency must have declared columns and types; absent declarations fail with the relation
+name. The CLI uses this path only when the default adjacent `catalog.json` does not exist.
+An explicitly provided catalog path is mandatory even if it is missing.
 
 Optional `source_schemas` metadata carries typed schema evidence for physical source relations.
 Each entry has a canonical relation identity, its columns, and may include `source_kind`.
