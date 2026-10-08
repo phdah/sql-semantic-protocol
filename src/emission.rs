@@ -393,7 +393,18 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .iter()
             .map(composition_diagnostic_to_value)
             .collect::<Vec<_>>()
-    })
+    });
+    if !semantics.set_operations().is_empty() {
+        value["set_operations"] = json!(semantics
+            .set_operations()
+            .iter()
+            .map(|item| json!({
+                "origin_layer_id": item.origin_layer_id(),
+                "operation": set_operation_to_value(item.operation())
+            }))
+            .collect::<Vec<_>>());
+    }
+    value
 }
 
 fn composed_join_equality_to_value(equality: &crate::ComposedJoinEquality) -> Value {
