@@ -3568,21 +3568,66 @@
         }
       }
     },
-    "setWitnessDirection": {
+    "setWitnessBoundary": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "status",
-        "reason"
-      ],
+      "required": ["kind", "relation", "tuple_columns"],
       "properties": {
-        "status": {
-          "const": "residual"
-        },
-        "reason": {
-          "const": "source_witness_obligations_not_proven"
+        "kind": { "enum": ["physical", "intermediate"] },
+        "relation": { "$ref": "#/$defs/relationName" },
+        "tuple_columns": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
         }
       }
+    },
+    "setWitnessObligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch_identity", "boundary", "matching_tuple_count"],
+      "properties": {
+        "branch_identity": { "$ref": "#/$defs/nonEmptyString" },
+        "boundary": { "$ref": "#/$defs/setWitnessBoundary" },
+        "matching_tuple_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "setWitnessCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["output_tuple_count", "obligations"],
+      "properties": {
+        "output_tuple_count": { "type": "integer", "minimum": 0 },
+        "obligations": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/$defs/setWitnessObligation" }
+        }
+      }
+    },
+    "setWitnessDirection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "cases"],
+          "properties": {
+            "status": { "const": "exact" },
+            "cases": {
+              "type": "array", "minItems": 1,
+              "items": { "$ref": "#/$defs/setWitnessCase" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason", "origin"],
+          "properties": {
+            "status": { "const": "residual" },
+            "reason": { "$ref": "#/$defs/nonEmptyString" },
+            "origin": { "type": ["string", "null"] }
+          }
+        }
+      ]
     },
     "setMembership": {
       "type": "object",
