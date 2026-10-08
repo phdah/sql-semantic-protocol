@@ -1429,7 +1429,7 @@ fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
         .expect("populate revenue source");
     let inlined = "
         SELECT l.row_id AS order_id,
-               CASE WHEN SUM(r.b * t.c) > 0 THEN SUM(r.b * t.c) ELSE 0 END AS revenue
+               CASE WHEN SUM(r.b * t.c) > 0 THEN CAST(SUM(r.b * t.c) AS BIGINT) ELSE 0 END AS revenue
         FROM left_rows l
         JOIN right_rows r ON l.x = r.y
         JOIN third_rows t ON r.y = t.z
@@ -1453,7 +1453,7 @@ fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
             JOIN products p ON i.product_id = p.product_id
         )
         SELECT order_id,
-               CASE WHEN SUM(b * c) > 0 THEN SUM(b * c) ELSE 0 END AS revenue
+               CASE WHEN SUM(b * c) > 0 THEN CAST(SUM(b * c) AS BIGINT) ELSE 0 END AS revenue
         FROM line_items
         GROUP BY order_id
     ";
@@ -1480,8 +1480,8 @@ fn daily_revenue_cte_chain_keeps_join_and_grouping_conditions_exact() {
         "CTE revenue chain must preserve source filter domains"
     );
     assert_eq!(
-        query_optional_i64(&connection, &format!("SELECT revenue FROM ({inlined}) q")),
-        query_optional_i64(&connection, &format!("SELECT revenue FROM ({with_ctes}) q")),
+        query_optional_i64(&connection, &format!("SELECT revenue FROM ({inlined}) q ORDER BY order_id")),
+        query_optional_i64(&connection, &format!("SELECT revenue FROM ({with_ctes}) q ORDER BY order_id")),
         "CTE revenue chain must compute the same aggregates as DuckDB"
     );
 }
