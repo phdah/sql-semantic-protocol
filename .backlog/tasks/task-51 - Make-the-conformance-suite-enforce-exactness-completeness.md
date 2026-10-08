@@ -1,9 +1,10 @@
 ---
 id: TASK-51
 title: Make the conformance suite enforce exactness completeness
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-08 09:06'
+updated_date: '2026-10-08'
 labels: []
 milestone: m-2
 dependencies: []
@@ -39,3 +40,9 @@ The conformance suite enforces both directions of the contract:
 - [ ] #6 Completeness failures print the query, the location, the expected exact representation, and the actual residual reasons
 - [ ] #7 The suite remains deterministic and part of the standard CI check
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+PR #63 extends differential conformance with mandatory exactness completeness across scalar predicates, plain-copy CTE/derived/multi-layer paths, seeded predicate trees, two-/three-relation joins, and typed schema evidence. CI gates the same test suite in both feature configurations. The derived join-alias mapping and exactness classification uncovered by these assertions are corrected in the analyzer/composition layers. Final closure depends on full acceptance coverage and green CI.
+<!-- SECTION:NOTES:END -->
