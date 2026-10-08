@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/phdah/sql-semantic-protocol/compare/v2.0.2...v2.0.3) (2026-10-08)
+
+
+### Bug Fixes
+
+* **dbt:** emit typed schemas for constraint-only physical sources (TASK-57) ([#75](https://github.com/phdah/sql-semantic-protocol/issues/75)) ([52744c2](https://github.com/phdah/sql-semantic-protocol/commit/52744c2a20dffcdfc38fc7abefaf9c91f783880c))
+
 ## [2.0.2](https://github.com/phdah/sql-semantic-protocol/compare/v2.0.1...v2.0.2) (2026-10-08)
 
 
