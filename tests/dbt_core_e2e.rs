@@ -792,11 +792,15 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     assert_eq!(aggregated["group_witness"]["qualifying"]["status"], "exact");
     assert_eq!(aggregated["group_witness"]["rejected"]["status"], "exact");
     assert_eq!(
-        layer_for_model(&protocol, "aggregated_orders")["composed_semantics"]["group_witnesses"][0]["boundary_kind"],
+        layer_for_model(&protocol, "aggregated_orders")["composed_semantics"]["group_witnesses"][0]
+            ["boundary_kind"],
         "intermediate"
     );
     assert_lower_bounded_number_range(
-        &output_column(layer_for_model(&protocol, "aggregated_orders"), "total_amount")["domain"],
+        &output_column(
+            layer_for_model(&protocol, "aggregated_orders"),
+            "total_amount",
+        )["domain"],
         "20",
     );
     assert!(contains_string(aggregated, "paid"));
