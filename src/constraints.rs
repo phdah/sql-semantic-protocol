@@ -578,6 +578,93 @@ impl RelationConstraintSet {
         &self.diagnostics
     }
 
+    /// Reject constraint facts disproved by available typed schema evidence.
+    ///
+    /// Missing schemas are not negative evidence. Unverifiable facts remain unchanged,
+    /// whereas a known missing column or incompatible scalar produces a diagnostic.
+    pub(crate) fn validated_against_schemas(
+        &self,
+        schemas: &[crate::relation::RelationSchema],
+    ) -> Self {
+        let local = schemas.iter().find(|schema| schema.relation() == self.relation);
+        let mut valid = Vec::new();
+        let mut diagnostics = self.diagnostics.clone();
+
+        for constraint in &self.constraints {
+            let missing_local = local.and_then(|schema| {
+                constraint.columns().iter().find(|column| {
+                    !schema.columns().iter().any(|declared| declared.name() == column.as_str())
+                })
+            });
+            if let Some(column) = missing_local {
+                diagnostics.push(ConstraintDiagnostic::new(
+                    "invalid_constraint_column",
+                    format!(
+                        "constraint on relation '{}' references undeclared column '{}'",
+                        self.relation, column
+                    ),
+                ));
+                continue;
+            }
+
+            if let RelationConstraint::ForeignKey(key) = constraint {
+                if let Some(target) = schemas
+                    .iter()
+                    .find(|schema| schema.relation() == key.referenced_relation())
+                {
+                    if let Some(column) = key.referenced_columns().iter().find(|column| {
+                        !target.columns().iter().any(|declared| declared.name() == column.as_str())
+                    }) {
+                        diagnostics.push(ConstraintDiagnostic::new(
+                            "invalid_constraint_column",
+                            format!(
+                                "foreign key from '{}' references undeclared column '{}.{}'",
+                                self.relation, key.referenced_relation(), column
+                            ),
+                        ));
+                        continue;
+                    }
+                }
+            }
+
+            if let (Some(schema), RelationConstraint::AcceptedValues(accepted)) =
+                (local, constraint)
+            {
+                if let Some(column) = schema
+                    .columns()
+                    .iter()
+                    .find(|column| column.name() == accepted.column())
+                {
+                    if accepted
+                        .values()
+                        .iter()
+                        .any(|value| !constraint_value_fits_type(value, column.data_type()))
+                    {
+                        diagnostics.push(ConstraintDiagnostic::new(
+                            "incompatible_accepted_value",
+                            format!(
+                                "accepted values for '{}.{}' are incompatible with declared datatype '{}'",
+                                self.relation,
+                                accepted.column(),
+                                column.data_type().kind()
+                            ),
+                        ));
+                        continue;
+                    }
+                }
+            }
+
+            valid.push(constraint.clone());
+        }
+
+        let mut result = Self::new(self.relation.clone(), valid)
+            .expect("existing constraint relation has already been validated");
+        for diagnostic in diagnostics {
+            result.add_diagnostic(diagnostic);
+        }
+        result
+    }
+
     pub(crate) fn add_diagnostic(&mut self, diagnostic: ConstraintDiagnostic) {
         self.diagnostics.push(diagnostic);
         self.normalize();
@@ -719,6 +806,72 @@ impl RelationConstraintSet {
 ///
 /// This is the adapter-neutral enrichment boundary used by metadata producers. Existing facts are
 /// preserved, identical facts coalesce their evidence, and contradictory primary keys remain
+/// Test only canonical scalar representations whose compatibility is provable without a
+/// warehouse's implicit casts or collation settings.
+fn constraint_value_fits_type(
+    value: &ConstraintValue,
+    data_type: &crate::data_type::DataType,
+) -> bool {
+    use crate::data_type::DataType;
+    if matches!(value, ConstraintValue::Null) {
+        return true;
+    }
+    match data_type {
+        DataType::Nullable(inner) => constraint_value_fits_type(value, inner),
+        DataType::Boolean => matches!(value, ConstraintValue::Boolean(_)),
+        DataType::SignedInteger { bits } => {
+            let integer = match value {
+                ConstraintValue::Integer(value) => i128::from(*value),
+                ConstraintValue::UnsignedInteger(value) => i128::from(*value),
+                _ => return false,
+            };
+            bits.is_none_or(|bits| {
+                bits >= 128 || (integer >= -(1_i128 << (bits - 1))
+                    && integer < (1_i128 << (bits - 1)))
+            })
+        }
+        DataType::UnsignedInteger { bits } => {
+            let integer = match value {
+                ConstraintValue::Integer(value) if *value >= 0 => *value as u128,
+                ConstraintValue::UnsignedInteger(value) => u128::from(*value),
+                _ => return false,
+            };
+            bits.is_none_or(|bits| bits >= 128 || integer < (1_u128 << bits))
+        }
+        DataType::Decimal { .. } | DataType::FloatingPoint { .. } => match value {
+            ConstraintValue::Integer(_) | ConstraintValue::UnsignedInteger(_) => true,
+            ConstraintValue::Number(number) => number.parse::<f64>().is_ok_and(f64::is_finite),
+            _ => false,
+        },
+        DataType::String { .. }
+        | DataType::Enum { .. }
+        | DataType::Set { .. }
+        | DataType::Uuid
+        | DataType::Date
+        | DataType::Time { .. }
+        | DataType::Timestamp { .. }
+        | DataType::Interval => matches!(value, ConstraintValue::String(_)),
+        // Opaque and non-scalar types have no portable value-validation contract yet.
+        // Retain evidence rather than claiming that it is invalid.
+        DataType::Any
+        | DataType::Unspecified
+        | DataType::Custom { .. }
+        | DataType::Binary { .. }
+        | DataType::BitString { .. }
+        | DataType::Json
+        | DataType::Array { .. }
+        | DataType::Map { .. }
+        | DataType::Struct { .. }
+        | DataType::Union { .. }
+        | DataType::Table { .. }
+        | DataType::Geometry { .. }
+        | DataType::Regclass
+        | DataType::TextSearchVector
+        | DataType::TextSearchQuery
+        | DataType::Trigger => true,
+    }
+}
+
 /// explicit diagnostics rather than being overwritten.
 pub fn merge_relation_constraint_sets(
     target: &mut Vec<RelationConstraintSet>,
