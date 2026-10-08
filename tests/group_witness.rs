@@ -59,14 +59,26 @@ fn count_rows_group_witnesses_are_exact_and_impossible_cases_are_empty() {
     let value: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
     let statement = &value["inputs"][0]["statements"][0];
     assert_eq!(statement["group_witness"]["qualifying"]["status"], "exact");
-    assert_eq!(statement["output"]["columns"][1]["domain"]["ranges"][0]["lower"]["value"]["value"], 3);
-    assert_eq!(statement["output"]["columns"][1]["domain"]["ranges"][0]["lower"]["inclusive"], true);
+    assert_eq!(
+        statement["output"]["columns"][1]["domain"]["ranges"][0]["lower"]["value"]["value"],
+        3
+    );
+    assert_eq!(
+        statement["output"]["columns"][1]["domain"]["ranges"][0]["lower"]["inclusive"],
+        true
+    );
     assert_eq!(query.dependencies(), &["sales"]);
     assert!(query.output().columns()[1].lineage().is_empty());
 
-    let impossible = analyze("SELECT category, COUNT(*) FROM sales GROUP BY category HAVING COUNT(*) < 1");
-    assert!(matches!(first_query(&impossible).group_witness().unwrap().qualifying(), GroupWitnessDirection::Exact(cases) if cases.is_empty()));
-    assert!(matches!(first_query(&impossible).output().columns()[1].domain(), ValueDomain::Empty));
+    let impossible =
+        analyze("SELECT category, COUNT(*) FROM sales GROUP BY category HAVING COUNT(*) < 1");
+    assert!(
+        matches!(first_query(&impossible).group_witness().unwrap().qualifying(), GroupWitnessDirection::Exact(cases) if cases.is_empty())
+    );
+    assert!(matches!(
+        first_query(&impossible).output().columns()[1].domain(),
+        ValueDomain::Empty
+    ));
 
     let connection = Connection::open_in_memory().unwrap();
     connection.execute_batch("CREATE TABLE sales(category VARCHAR, amount BIGINT);
@@ -196,8 +208,14 @@ fn grouped_witness_provenance_is_preserved_across_producer_layers() {
     let bundle = analyze_inputs(&inputs, "generic", &dialect).expect("composed bundle");
     let value: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
     let layers = value["layers"].as_array().expect("transformation layers");
-    let producer = layers.iter().find(|layer| layer["consumes"][0] == "raw.sales").expect("producer");
-    let consumer = layers.iter().find(|layer| layer["consumes"][0] == "mart.groups").expect("consumer");
+    let producer = layers
+        .iter()
+        .find(|layer| layer["consumes"][0] == "raw.sales")
+        .expect("producer");
+    let consumer = layers
+        .iter()
+        .find(|layer| layer["consumes"][0] == "mart.groups")
+        .expect("consumer");
     let proof = &producer["composed_semantics"]["group_witnesses"][0];
     assert_eq!(proof["witness"]["qualifying"]["status"], "exact");
     assert_eq!(proof["witness"]["boundary"], "raw.sales");
