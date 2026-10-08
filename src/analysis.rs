@@ -2189,7 +2189,7 @@ fn collect_set_branch_evidence(
         }
         SetExpr::Select(_) => {
             let mut branch_query = context.clone();
-            branch_query.body = Box::new(expression.clone());
+            *branch_query.body = expression.clone();
             // Set-level shaping is not a filter on an individual branch. Nested
             // query-level shaping remains residual at the enclosing set scope.
             branch_query.limit_clause = None;
