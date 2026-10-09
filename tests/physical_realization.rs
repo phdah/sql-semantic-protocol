@@ -152,9 +152,14 @@ fn null_sensitive_filters_from_two_layers_are_jointly_solved_at_one_physical_lea
         "CREATE TABLE t(a INTEGER, b INTEGER);
          INSERT INTO t VALUES (1,2),(NULL,3),(1,NULL),(NULL,NULL);
          CREATE TABLE stage AS SELECT a,b FROM t WHERE a IS NOT NULL OR b IS NOT NULL;",
-    ).expect("joint rows");
+    )
+    .expect("joint rows");
     let included: i64 = conn
-        .query_row("SELECT COUNT(*) FROM stage WHERE a IS NULL OR b IS NOT NULL", [], |r| r.get(0))
+        .query_row(
+            "SELECT COUNT(*) FROM stage WHERE a IS NULL OR b IS NOT NULL",
+            [],
+            |r| r.get(0),
+        )
         .expect("terminal count");
     assert_eq!(included, 2);
     let rejected: i64 = conn
