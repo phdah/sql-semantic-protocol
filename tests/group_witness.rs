@@ -190,8 +190,9 @@ fn group_by_output_aliases_do_not_invent_physical_group_keys() {
 
     // A grouping column is still provable when the query explicitly groups
     // by the physical column rather than the projection alias.
-    let ordinary =
-        analyze("SELECT category AS grp, COUNT(*) FROM sales GROUP BY category HAVING COUNT(*) > 1");
+    let ordinary = analyze(
+        "SELECT category AS grp, COUNT(*) FROM sales GROUP BY category HAVING COUNT(*) > 1",
+    );
     let witness = first_query(&ordinary).group_witness().unwrap();
     assert!(matches!(
         witness.qualifying(),
