@@ -69,9 +69,9 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 The executable coverage inventory lives in [docs/coverage-manifest.json](../../docs/coverage-manifest.json), with its readable [dialect matrix](../../docs/coverage.md) and [Rust fixtures](../../tests/coverage_manifest.rs). TASK-66 owns scope/variant evidence; TASK-88 owns parser and vendor engine laws; TASK-89 owns cross-feature oracle and dbt fixture certification. Each sql-tdg TASK-24..31/35/36 maps to upstream TASK-67..90 in the matrix. sql-tdg TASK-43 must pin a protocol **Git commit SHA** before protocol 3.0.0 is published.
 
-**Gate remains closed** for all cells marked unverified, operator-local, residual, or pending exclusion approval. The maintainer has **approved** sql-tdg TASK-35 per-terminal rejection with seeded randomized rejecting alternatives, TASK-36's unified dbt `make all` plus required scripted DML/DDL gate, and conditional future deferral for unproved opaque behavior. Implementation, canonical equivalence across all supported dialect/variants, and full executable release evidence remain pending.
+**Gate remains closed** for all cells marked unverified, operator-local, residual, or conditionally deferred behavior without a documented fail-closed proof. The maintainer has **approved** sql-tdg TASK-35 per-terminal rejection with seeded randomized rejecting alternatives, TASK-36's unified dbt `make all` plus required scripted DML/DDL gate, and conditional future deferral for unproved opaque behavior. Implementation, canonical equivalence across all supported dialect/variants, and full executable release evidence remain pending.
 
-**Maintainer scope choices:** [docs/coverage-signoff.md](../../docs/coverage-signoff.md). They cover sql-tdg TASK-35's negative row meaning, TASK-36's DML test location, opaque/unbounded exclusions, and non-DuckDB engine certification. A scope approval is **not** final release approval.
+**Maintainer scope choices:** [docs/coverage-signoff.md](../../docs/coverage-signoff.md). They cover sql-tdg TASK-35's negative row meaning, TASK-36's DML test location, future-extensible opaque/unbounded deferrals and their fail-closed tests, and canonical versus native-engine certification. A scope approval is **not** final release approval.
 
 ## Approved decisions versus release approval (2026-10-09)
 
