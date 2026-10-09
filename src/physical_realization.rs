@@ -73,6 +73,8 @@ pub enum PhysicalProofGap {
     UnresolvedSemantics,
     /// No source-level membership classification is proved.
     NoWitness,
+    /// No safe classification was proved by the local witness.
+    LocalWitnessUnproven,
     /// Local witnesses for different operators cannot be assumed jointly satisfiable.
     MultipleWitnesses,
     /// Only one-source row-preserving projection chains are currently invertible.
@@ -97,6 +99,7 @@ impl PhysicalProofGap {
             Self::UnsupportedDependency => "unsupported_dependency",
             Self::UnresolvedSemantics => "unresolved_semantics",
             Self::NoWitness => "no_witness",
+            Self::LocalWitnessUnproven => "local_witness_unproven",
             Self::MultipleWitnesses => "multiple_witnesses",
             Self::NonInvertibleTransformation => "non_invertible_transformation",
             Self::UnsupportedOperator => "unsupported_operator",
@@ -309,23 +312,17 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         }) {
             Some(semantics) => {
                 let proofs = local_constructive_witnesses(semantics);
-                let origin_proofs = proofs
-                    .iter()
-                    .filter(|p| {
-                        matches!(
-                            (p.qualifying(), p.rejected()),
-                            (WitnessDirection::Feasible(_), _) | (_, WitnessDirection::Feasible(_))
-                        )
-                    })
-                    .collect::<Vec<_>>();
-                gap = if proofs.len() != 1 || origin_proofs.len() != 1 {
-                    Some(if proofs.is_empty() {
-                        PhysicalProofGap::NoWitness
-                    } else {
-                        PhysicalProofGap::MultipleWitnesses
-                    })
+                gap = if proofs.is_empty() {
+                    Some(PhysicalProofGap::NoWitness)
+                } else if proofs.len() != 1 {
+                    Some(PhysicalProofGap::MultipleWitnesses)
                 } else if proofs[0].operator() != WitnessOperator::Boolean {
                     Some(PhysicalProofGap::UnsupportedOperator)
+                } else if !matches!(
+                    (proofs[0].qualifying(), proofs[0].rejected()),
+                    (WitnessDirection::Feasible(_), _) | (_, WitnessDirection::Feasible(_))
+                ) {
+                    Some(PhysicalProofGap::LocalWitnessUnproven)
                 } else if walker.sources.len() != 1 {
                     Some(PhysicalProofGap::UnboundPhysicalSource)
                 } else if !walker
