@@ -62,3 +62,9 @@ One consolidated 3.0.0 release is requested. The existing Release Please PR #79 
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Coverage manifest and cross-repo gate (2026-10-09)
+
+The executable coverage inventory lives in [docs/coverage-manifest.json](../../docs/coverage-manifest.json), with its readable [dialect matrix](../../docs/coverage.md) and [Rust fixtures](../../tests/coverage_manifest.rs). TASK-66 owns scope/variant evidence; TASK-88 owns parser and vendor engine laws; TASK-89 owns cross-feature oracle and dbt fixture certification. Each sql-tdg TASK-24..31/35/36 maps to upstream TASK-67..90 in the matrix. sql-tdg TASK-43 must pin a protocol **Git commit SHA** before protocol 3.0.0 is published.
+
+**Gate remains closed** for all cells marked unverified, operator-local, residual, or pending exclusion approval. The maintainer must decide sql-tdg TASK-35 rejection semantics, TASK-36 DML test location, and explicit exclusions before TASK-91 and Release Please PR #79 can close.
