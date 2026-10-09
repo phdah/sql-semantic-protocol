@@ -168,6 +168,9 @@ identify either a complete relation or the complete multiplicity of one
 SQL-equal candidate tuple. Incomplete candidate sampling is never a
 proof of zero occurrences or anti-membership.
 
+Candidate tuples must carry the same typed `BagTupleIdentity` across
+operands; unmatched or unknown identities remain residual.
+
 Given complete evidence, `BagLaw::SetTuple` reuses the *existing*
 `SetMultiplicityRule`, including SQL NULL-equal DISTINCT/ALL tuple
 counts, checked SUM, MIN, and subtract-clamped-at-zero semantics.
