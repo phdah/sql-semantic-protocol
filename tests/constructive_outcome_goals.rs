@@ -270,3 +270,24 @@ fn untyped_integer_join_does_not_claim_constructive_key_feasibility() {
         OutcomeGoalStatus::Residual
     );
 }
+
+#[test]
+fn all_set_histogram_scales_branch_counts() {
+    let sql = "SELECT id FROM l UNION ALL SELECT id FROM r";
+    let mut bundle = typed(sql, &[("l", &["id"]), ("r", &["id"])]);
+    let values = vec![OutputValueCount::new(ConstraintValue::Integer(7), 3)];
+    assess(&mut bundle, 3, None, vec![OutputDistribution::new("id", values).unwrap()]);
+    assert_eq!(bundle.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
+    let case = match bundle.outcome_goals()[0].witness() {
+        Some(OutcomeWitness::SetTuples { tuples: 1, case, scale_by_value_rows: true, .. }) => case,
+        other => panic!("unexpected set proof: {other:?}"),
+    };
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE l(id BIGINT); CREATE TABLE r(id BIGINT);").unwrap();
+    for obligation in case.obligations() {
+        for _ in 0..(obligation.matching_tuple_count() * 3) {
+            db.execute_batch(&format!("INSERT INTO {} VALUES (7);", obligation.boundary().relation())).unwrap();
+        }
+    }
+    assert_eq!(count(&db, sql), 3);
+}
