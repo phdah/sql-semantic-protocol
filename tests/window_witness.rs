@@ -54,7 +54,7 @@ fn rank_one_exposes_both_source_membership_directions() {
         true
     );
     assert_eq!(
-        statement["output"]["columns"][1]["domain"]["ranges"][0]["upper"]["value"]["value"],
+        statement["output"]["columns"][1]["domain"]["values"][0]["value"],
         1
     );
 }
