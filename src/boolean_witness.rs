@@ -100,9 +100,9 @@ impl BooleanRowConstraint {
             Self::All(children) | Self::Any(children) => {
                 !children.is_empty() && children.iter().all(Self::is_exact)
             }
-            Self::NullTest { .. }
-            | Self::IntegerComparison { .. }
-            | Self::StringPrefix { .. } => true,
+            Self::NullTest { .. } | Self::IntegerComparison { .. } | Self::StringPrefix { .. } => {
+                true
+            }
             Self::Residual { .. } => false,
         }
     }
@@ -305,7 +305,8 @@ impl BooleanWitness {
     /// Caller attestations permit exact prefix witnesses only under binary,
     /// no-padding string comparisons. Other settings never certify LIKE.
     pub(crate) fn declare_comparison_assumptions(&mut self, assumptions: &[ComparisonAssumption]) {
-        self.comparison_assumptions.extend(assumptions.iter().copied());
+        self.comparison_assumptions
+            .extend(assumptions.iter().copied());
         self.recheck_truth_directions();
     }
 
@@ -360,9 +361,7 @@ impl BooleanWitness {
                 reason: reason.to_string(),
             }
         };
-        self.rejected = if cases.contains(&SqlTruth::False)
-            || cases.contains(&SqlTruth::Unknown)
-        {
+        self.rejected = if cases.contains(&SqlTruth::False) || cases.contains(&SqlTruth::Unknown) {
             BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
         } else {
             BooleanWitnessDirection::Residual {
@@ -409,7 +408,8 @@ impl BooleanWitness {
                             .not_null = true;
                     }
                     RelationConstraint::AcceptedValues(item) => {
-                        let restriction = restrictions.entry(item.column().to_string()).or_default();
+                        let restriction =
+                            restrictions.entry(item.column().to_string()).or_default();
                         let mut accepted = BTreeSet::new();
                         for value in item.values() {
                             match value {
@@ -438,9 +438,10 @@ impl BooleanWitness {
         }
         // A non-null constraint and an empty accepted-value domain are
         // contradictory even when the column is absent from the predicate.
-        if restrictions.values().any(|item| {
-            item.not_null && item.accepted.as_ref().is_some_and(BTreeSet::is_empty)
-        }) {
+        if restrictions
+            .values()
+            .any(|item| item.not_null && item.accepted.as_ref().is_some_and(BTreeSet::is_empty))
+        {
             return None;
         }
         Some(restrictions)
@@ -751,18 +752,14 @@ fn possible_joint_truths(
         if let Some(allowed) = restriction.and_then(|item| item.accepted.as_ref()) {
             for value in allowed {
                 let fits = match value {
-                    RowScalar::Integer(value) if !literals.integers.is_empty() => {
-                        integer_bounds.is_some_and(|bounds| {
-                            bounds.minimum <= *value && *value <= bounds.maximum
-                        })
-                    }
-                    RowScalar::String(value) if !literals.prefixes.is_empty() => {
-                        string_bounds.is_some_and(|bounds| {
+                    RowScalar::Integer(value) if !literals.integers.is_empty() => integer_bounds
+                        .is_some_and(|bounds| bounds.minimum <= *value && *value <= bounds.maximum),
+                    RowScalar::String(value) if !literals.prefixes.is_empty() => string_bounds
+                        .is_some_and(|bounds| {
                             bounds
                                 .max_chars
                                 .is_none_or(|max| value.chars().count() as u64 <= max)
-                        })
-                    }
+                        }),
                     // A pure NULL test admits a source value of any scalar kind.
                     _ if literals.integers.is_empty() && literals.prefixes.is_empty() => true,
                     _ => false,
