@@ -5,6 +5,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, to_json,
     BooleanRowConstraint, BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
+    ComparisonOperator,
     ConfiguredSqlInput, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect, PostgreSqlDialect};
@@ -190,34 +191,164 @@ fn dialects_preserve_the_same_null_sensitive_source_tree() {
 }
 
 #[test]
-fn duckdb_confirms_both_three_valued_directions_of_coupled_conditions() {
+fn impossible_positive_direction_is_residual_even_with_known_integer_types() {
+    let bundle = typed_bundle(
+        "SELECT a FROM t WHERE a > 2147483647 OR b > 2147483647",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+}
+
+#[test]
+fn signed_integer_literals_are_proven_without_string_based_reparsing() {
+    let bundle = typed_bundle("SELECT a FROM t WHERE a > -2 OR b < +3");
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    let BooleanRowConstraint::Any(operands) = witness.condition() else {
+        panic!("expected disjunction");
+    };
+    assert!(matches!(
+        operands[0],
+        BooleanRowConstraint::IntegerComparison { literal: -2, .. }
+    ));
+    assert!(matches!(
+        operands[1],
+        BooleanRowConstraint::IntegerComparison { literal: 3, .. }
+    ));
+}
+
+fn sql_and(left: Option<bool>, right: Option<bool>) -> Option<bool> {
+    match (left, right) {
+        (Some(false), _) | (_, Some(false)) => Some(false),
+        (Some(true), Some(true)) => Some(true),
+        _ => None,
+    }
+}
+
+fn sql_or(left: Option<bool>, right: Option<bool>) -> Option<bool> {
+    match (left, right) {
+        (Some(true), _) | (_, Some(true)) => Some(true),
+        (Some(false), Some(false)) => Some(false),
+        _ => None,
+    }
+}
+
+fn witness_truth(
+    constraint: &BooleanRowConstraint,
+    a: Option<i32>,
+    b: Option<i32>,
+) -> Option<bool> {
+    match constraint {
+        BooleanRowConstraint::All(operands) => operands
+            .iter()
+            .fold(Some(true), |previous, item| {
+                sql_and(previous, witness_truth(item, a, b))
+            }),
+        BooleanRowConstraint::Any(operands) => operands
+            .iter()
+            .fold(Some(false), |previous, item| {
+                sql_or(previous, witness_truth(item, a, b))
+            }),
+        BooleanRowConstraint::NullTest { column, negated } => {
+            let value = match column.name() {
+                "a" => a,
+                "b" => b,
+                other => panic!("unexpected source column {other}"),
+            };
+            Some(value.is_none() != *negated)
+        }
+        BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal,
+        } => {
+            let value = match column.name() {
+                "a" => a,
+                "b" => b,
+                other => panic!("unexpected source column {other}"),
+            };
+            value.map(|v| {
+                let v = i64::from(v);
+                match operator {
+                    ComparisonOperator::Eq => v == *literal,
+                    ComparisonOperator::Neq => v != *literal,
+                    ComparisonOperator::Lt => v < *literal,
+                    ComparisonOperator::Lte => v <= *literal,
+                    ComparisonOperator::Gt => v > *literal,
+                    ComparisonOperator::Gte => v >= *literal,
+                    ComparisonOperator::IsDistinctFrom
+                    | ComparisonOperator::IsNotDistinctFrom => {
+                        panic!("null-safe comparisons must remain residual")
+                    }
+                }
+            })
+        }
+        BooleanRowConstraint::Residual { reason } => {
+            panic!("differential fixture cannot evaluate residual: {reason}")
+        }
+    }
+}
+
+#[test]
+fn duckdb_differential_matches_generated_witness_for_every_source_row() {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE t(a INTEGER, b INTEGER);
          INSERT INTO t VALUES (NULL,1), (1,NULL), (NULL,NULL), (1,1);
-         INSERT INTO t VALUES (3,NULL), (NULL,-1);",
+         INSERT INTO t VALUES (3,NULL), (NULL,-1), (2147483647,-2147483648);",
     )
     .unwrap();
-    let cases = [
-        ("a IS NULL OR b IS NULL", 5_i64, 1_i64),
-        ("a > 2 OR b < 0", 2_i64, 4_i64),
-    ];
-    for (predicate, qualifying, rejected) in cases {
-        let selected: i64 = db
-            .query_row(
-                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
-                [],
-                |row| row.get(0),
-            )
+    for predicate in [
+        "a IS NULL OR b IS NULL",
+        "a > 2 OR b < 0",
+        "(a > -2 AND b <= 1) OR a IS NULL",
+    ] {
+        let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
+        let ComposedSemantics::Resolved(semantics) =
+            bundle.layers()[0].composed_semantics()
+        else {
+            panic!("expected resolved composed semantics");
+        };
+        let witness = semantics.boolean_witnesses()[0].witness();
+        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Exact(_)));
+
+        let mut statement = db
+            .prepare(&format!("SELECT a, b, ({predicate}) FROM t"))
             .unwrap();
-        let excluded: i64 = db
-            .query_row(
-                &format!("SELECT COUNT(*) FROM t WHERE ({predicate}) IS NOT TRUE"),
-                [],
-                |row| row.get(0),
-            )
+        let actual = statement
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, Option<i32>>(0)?,
+                    row.get::<_, Option<i32>>(1)?,
+                    row.get::<_, Option<bool>>(2)?,
+                ))
+            })
             .unwrap();
-        assert_eq!(selected, qualifying, "{predicate}");
-        assert_eq!(excluded, rejected, "{predicate}");
+        for row in actual {
+            let (a, b, sql_result) = row.unwrap();
+            let computed = witness_truth(witness.condition(), a, b);
+            assert_eq!(
+                computed, sql_result,
+                "witness differs from DuckDB for {predicate} at ({a:?}, {b:?})"
+            );
+            assert_eq!(computed == Some(true), sql_result == Some(true));
+            assert_eq!(computed != Some(true), sql_result != Some(true));
+        }
     }
 }
