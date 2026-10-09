@@ -910,6 +910,85 @@
           "items": {
             "$ref": "#/$defs/compositionDiagnostic"
           }
+        },
+        "physical_nodes": {
+          "description": "Optional, canonical source and producer nodes. All producer plans reference these identities, never duplicate their contents.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/physicalPlanNode" }
+        },
+        "physical_source_plans": {
+          "description": "Optional per-layer physical realizability assessments. Residual directions cannot be upgraded to feasible by downstream consumers.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/physicalSourcePlan" }
+        }
+      }
+    },
+    "physicalPlanRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "const": "source" },
+            "id": { "$ref": "#/$defs/nonEmptyString" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "const": "layer" },
+            "id": { "$ref": "#/$defs/nonEmptyString" }
+          }
+        }
+      ]
+    },
+    "physicalPlanNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "inputs", "produced_relations", "write_kind"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/physicalPlanRef" },
+        "inputs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/physicalPlanRef" }
+        },
+        "produced_relations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relationName" }
+        },
+        "write_kind": {
+          "enum": [null, "definition", "append", "conditional_mutation", "update", "delete"]
+        }
+      }
+    },
+    "physicalSourcePlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer_id", "node_refs", "physical_sources", "qualifying", "rejected", "gap"],
+      "properties": {
+        "layer_id": { "$ref": "#/$defs/nonEmptyString" },
+        "node_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/physicalPlanRef" }
+        },
+        "physical_sources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relationName" }
+        },
+        "qualifying": { "$ref": "#/$defs/constructiveDirection" },
+        "rejected": { "$ref": "#/$defs/constructiveDirection" },
+        "gap": {
+          "description": "Proof limitation. null means supported single-row classifications only, not a proof of full target cardinality.",
+          "enum": [null, "unknown_target", "missing_producer", "ambiguous_producer", "cycle", "partial_producer", "unsupported_dependency", "unresolved_semantics", "no_witness", "local_witness_unproven", "multiple_witnesses", "non_invertible_transformation", "unsupported_operator", "intermediate_boundary", "unbound_physical_source"]
         }
       }
     },
