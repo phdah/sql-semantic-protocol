@@ -8,8 +8,7 @@ use std::fmt;
 use crate::bundle::{AnalysisBundle, ComposedSemantics, RelationResolution, TransformationLayer};
 use crate::constraints::ConstraintValue;
 use crate::protocol::{
-    Expression, GroupBy, GroupingExpression, LiteralType, LiteralValue, ProtocolStatement,
-    QueryStatement,
+    Expression, LiteralType, LiteralValue, ProtocolStatement, QueryStatement,
 };
 
 /// A requested count for one output scalar, including SQL NULL.
@@ -366,9 +365,7 @@ fn assess_goal(
     }
 
     if let Some(query) = query {
-        let simple_groups = query.aggregation().and_then(|aggregation| aggregation.group_by())
-            .is_some_and(|group_by| matches!(group_by, GroupBy::Expressions(items)
-                if !items.is_empty() && items.iter().all(|item| matches!(item, GroupingExpression::Expression(_)))));
+        let simple_groups = query.group_rows_match_surviving_groups();
         if simple_groups && goal.rows.is_some() && goal.groups != goal.rows && goal.groups.is_some()
         {
             return Ok(assessed(
