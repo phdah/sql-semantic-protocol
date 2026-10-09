@@ -721,6 +721,17 @@ fn analyze_query(
                     || (output.columns().iter().any(|column| matches!(column.expression(), Expression::AggregateFunction(_)))
                         && output.columns().iter().all(|column| matches!(column.expression(), Expression::AggregateFunction(_) | Expression::Literal(_))))));
 
+    // GROUP BY normally emits one final row per surviving group. Additional
+    // output-shaping (DISTINCT, QUALIFY, TOP, LIMIT, FETCH) can change that count.
+    let group_rows_match_surviving_groups = query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.distinct.is_none()
+                && select.qualify.is_none()
+                && select.top.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if !items.is_empty() && modifiers.is_empty()));
+
     QueryStatement::new(
         relation_analysis.sources,
         relation_analysis.dependencies.into_iter().collect(),
@@ -735,6 +746,7 @@ fn analyze_query(
     .with_boolean_witness(boolean_witness)
     .with_row_preserving_projection(row_preserving_projection)
     .with_proven_single_row_output(proven_single_row_output)
+    .with_group_row_correspondence(group_rows_match_surviving_groups)
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))
