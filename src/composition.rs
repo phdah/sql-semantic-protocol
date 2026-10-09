@@ -94,7 +94,10 @@ impl<'a> Composer<'a> {
             return composed;
         };
 
-        if layer.write_kind() == Some(WriteKind::ConditionalMutation) {
+        if matches!(
+            layer.write_kind(),
+            Some(WriteKind::ConditionalMutation | WriteKind::Update | WriteKind::Delete)
+        ) {
             let composed = ComposedSemantics::unresolved(
                 CompositionFailureReason::PartialProducer,
                 vec![CompositionDiagnostic::layer_warning(

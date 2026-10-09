@@ -430,6 +430,10 @@ pub enum WriteKind {
     Append,
     /// The transformation conditionally updates, inserts, or deletes existing relation rows.
     ConditionalMutation,
+    /// UPDATE changes qualifying existing rows while preserving nonqualifying rows.
+    Update,
+    /// DELETE removes qualifying existing rows.
+    Delete,
 }
 
 impl WriteKind {
@@ -438,6 +442,8 @@ impl WriteKind {
             Self::Definition => "definition",
             Self::Append => "append",
             Self::ConditionalMutation => "conditional_mutation",
+            Self::Update => "update",
+            Self::Delete => "delete",
         }
     }
 
@@ -455,6 +461,8 @@ pub struct WriteOperation {
     target_columns: Vec<String>,
     match_condition: Option<Predicate>,
     merge_clauses: Vec<MergeClause>,
+    selection: Option<Predicate>,
+    assignments: Vec<MergeAssignment>,
 }
 
 impl WriteOperation {
@@ -465,6 +473,8 @@ impl WriteOperation {
             target_columns: Vec::new(),
             match_condition: None,
             merge_clauses: Vec::new(),
+            selection: None,
+            assignments: Vec::new(),
         }
     }
 
@@ -475,6 +485,8 @@ impl WriteOperation {
             target_columns,
             match_condition: None,
             merge_clauses: Vec::new(),
+            selection: None,
+            assignments: Vec::new(),
         }
     }
 
@@ -489,6 +501,36 @@ impl WriteOperation {
             target_columns: Vec::new(),
             match_condition: Some(match_condition),
             merge_clauses,
+            selection: None,
+            assignments: Vec::new(),
+        }
+    }
+
+    pub(crate) fn update(
+        target: String,
+        selection: Option<Predicate>,
+        assignments: Vec<MergeAssignment>,
+    ) -> Self {
+        Self {
+            target,
+            kind: WriteKind::Update,
+            target_columns: Vec::new(),
+            match_condition: None,
+            merge_clauses: Vec::new(),
+            selection,
+            assignments,
+        }
+    }
+
+    pub(crate) fn delete(target: String, selection: Option<Predicate>) -> Self {
+        Self {
+            target,
+            kind: WriteKind::Delete,
+            target_columns: Vec::new(),
+            match_condition: None,
+            merge_clauses: Vec::new(),
+            selection,
+            assignments: Vec::new(),
         }
     }
 
@@ -516,6 +558,188 @@ impl WriteOperation {
     pub fn merge_clauses(&self) -> &[MergeClause] {
         &self.merge_clauses
     }
+
+    /// Return the standalone UPDATE/DELETE WHERE condition, if present.
+    pub fn selection(&self) -> Option<&Predicate> {
+        self.selection.as_ref()
+    }
+
+    /// Return standalone UPDATE assignments in SQL order.
+    pub fn assignments(&self) -> &[MergeAssignment] {
+        &self.assignments
+    }
+
+    /// Derive conservative before/after effects without assuming target data exists.
+    ///
+    /// A caller must provide an initial target snapshot and verify source multiplicities,
+    /// key constraints, and SQL three-valued predicate evaluation. No sampled rows are
+    /// invented. The unconditional DELETE case alone proves an empty final target and
+    /// idempotence regardless of the initial rows.
+    pub fn state_effect(&self) -> Option<WriteStateEffect> {
+        let initial = WriteInitialState::CallerSupplied;
+        let unbounded = WriteAffectedRows { minimum: 0, maximum: None };
+        let mut reasons = vec![WriteUncertainty::AffectedRowsUnknown];
+        let (branches, post_state, idempotence) = match self.kind {
+            WriteKind::Definition => return None,
+            WriteKind::Append => {
+                reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
+                (vec![WriteEffectBranch {
+                    match_kind: None,
+                    predicate: None,
+                    action: WriteEffectAction::InsertQuery,
+                }], WritePostState::ApplyToInitial, WriteIdempotence::Unproven)
+            }
+            WriteKind::Update => {
+                reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
+                (vec![WriteEffectBranch {
+                    match_kind: None,
+                    predicate: self.selection.clone(),
+                    action: WriteEffectAction::Mutation(MergeAction::Update {
+                        assignments: self.assignments.clone(),
+                    }),
+                }], WritePostState::ApplyToInitial, WriteIdempotence::Unproven)
+            }
+            WriteKind::Delete => {
+                let unconditional = self.selection.is_none();
+                (vec![WriteEffectBranch {
+                    match_kind: None,
+                    predicate: self.selection.clone(),
+                    action: WriteEffectAction::Mutation(MergeAction::Delete),
+                }],
+                if unconditional { WritePostState::Empty } else { WritePostState::ApplyToInitial },
+                if unconditional { WriteIdempotence::Proven } else { WriteIdempotence::Unproven })
+            }
+            WriteKind::ConditionalMutation => {
+                reasons.push(WriteUncertainty::MatchMultiplicityUnknown);
+                reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
+                (self.merge_clauses.iter().map(|clause| WriteEffectBranch {
+                    match_kind: Some(clause.match_kind()),
+                    predicate: clause.predicate().cloned(),
+                    action: WriteEffectAction::Mutation(clause.action().clone()),
+                }).collect(), WritePostState::ApplyToInitial, WriteIdempotence::Unproven)
+            }
+        };
+        Some(WriteStateEffect {
+            initial,
+            affected_rows: unbounded,
+            post_state,
+            idempotence,
+            branches,
+            reasons,
+        })
+    }
+}
+
+/// Required initial state before applying a partial write.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WriteInitialState {
+    /// A complete caller-provided target snapshot, never an inferred empty table.
+    CallerSupplied,
+}
+
+/// What can be asserted about the final target without supplying initial rows.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WritePostState {
+    /// Unconditional DELETE guarantees an empty target.
+    Empty,
+    /// Apply the ordered write effects to the actual initial snapshot.
+    ApplyToInitial,
+}
+
+/// Whether repeating the statement is proved to leave the same final state.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WriteIdempotence {
+    /// SQL semantics prove idempotence independent of initial row values.
+    Proven,
+    /// No idempotence proof is available.
+    Unproven,
+}
+
+/// Conservative interval for affected target rows.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WriteAffectedRows {
+    minimum: u64,
+    maximum: Option<u64>,
+}
+
+impl WriteAffectedRows {
+    /// Inclusive minimum affected row count.
+    pub fn minimum(&self) -> u64 { self.minimum }
+    /// Inclusive maximum, or None when no bound is provable.
+    pub fn maximum(&self) -> Option<u64> { self.maximum }
+}
+
+/// A residual obligation before a generator can verify the write.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WriteUncertainty {
+    /// Affected cardinality depends on actual target and source rows.
+    AffectedRowsUnknown,
+    /// Schema constraints and conflicts have not been checked against the actual target snapshot.
+    ConstraintConflictsUnverified,
+    /// Multiple source matches and clause overlap require execution-time verification.
+    MatchMultiplicityUnknown,
+}
+
+impl WriteUncertainty {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::AffectedRowsUnknown => "affected_rows_unknown",
+            Self::ConstraintConflictsUnverified => "constraint_conflicts_unverified",
+            Self::MatchMultiplicityUnknown => "match_multiplicity_unknown",
+        }
+    }
+}
+
+/// A mutation branch with explicit SQL match and predicate context.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WriteEffectBranch {
+    match_kind: Option<MergeMatchKind>,
+    predicate: Option<Predicate>,
+    action: WriteEffectAction,
+}
+
+impl WriteEffectBranch {
+    /// MERGE matched/unmatched classification; None for standalone DML.
+    pub fn match_kind(&self) -> Option<MergeMatchKind> { self.match_kind }
+    /// Additional branch/WHERE predicate; only SQL TRUE selects rows.
+    pub fn predicate(&self) -> Option<&Predicate> { self.predicate.as_ref() }
+    /// Written action, with normalized expressions and conservative domains.
+    pub fn action(&self) -> &WriteEffectAction { &self.action }
+}
+
+/// Source-backed INSERT or normalized row mutation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WriteEffectAction {
+    /// INSERT SELECT takes its inserted rows from the owning query output.
+    InsertQuery,
+    /// An UPDATE, DELETE, or MERGE action, including explicit unsupported actions.
+    Mutation(MergeAction),
+}
+
+/// A verifiable DML effect, not an assertion that the whole target is generated.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WriteStateEffect {
+    initial: WriteInitialState,
+    affected_rows: WriteAffectedRows,
+    post_state: WritePostState,
+    idempotence: WriteIdempotence,
+    branches: Vec<WriteEffectBranch>,
+    reasons: Vec<WriteUncertainty>,
+}
+
+impl WriteStateEffect {
+    /// Initial target state precondition.
+    pub fn initial(&self) -> WriteInitialState { self.initial }
+    /// Affected row count bounds.
+    pub fn affected_rows(&self) -> &WriteAffectedRows { &self.affected_rows }
+    /// Proven final state, or a delta requiring the initial snapshot.
+    pub fn post_state(&self) -> WritePostState { self.post_state }
+    /// Proven or unproven idempotence.
+    pub fn idempotence(&self) -> WriteIdempotence { self.idempotence }
+    /// Ordered operation branches.
+    pub fn branches(&self) -> &[WriteEffectBranch] { &self.branches }
+    /// Explicit outstanding verification obligations.
+    pub fn reasons(&self) -> &[WriteUncertainty] { &self.reasons }
 }
 
 /// MERGE clause match category.

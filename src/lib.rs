@@ -22,6 +22,7 @@
 //!   requests and their independently proven output-row feasibility.
 //! - OutcomeWitness describes source-complete integer-key, group, join, window and set
 //!   cardinality constructions derived from existing operator witness contracts.
+//! - WriteStateEffect describes conservative INSERT, UPDATE, DELETE and MERGE before/after obligations.
 
 mod analysis;
 mod boolean_witness;
@@ -118,7 +119,9 @@ pub use protocol::{
     SubquerySemantics, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
-    WindowSpecification, WriteKind, WriteOperation, WriteValue, PROTOCOL_VERSION,
+    WindowSpecification, WriteAffectedRows, WriteEffectAction, WriteEffectBranch, WriteIdempotence,
+    WriteInitialState, WriteKind, WriteOperation, WritePostState, WriteStateEffect,
+    WriteUncertainty, WriteValue, PROTOCOL_VERSION,
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,

@@ -2421,7 +2421,10 @@
         "kind",
         "target_columns",
         "match_condition",
-        "merge_clauses"
+        "merge_clauses",
+        "selection",
+        "assignments",
+        "state_effect"
       ],
       "properties": {
         "target": {
@@ -2431,7 +2434,9 @@
           "enum": [
             "definition",
             "append",
-            "conditional_mutation"
+            "conditional_mutation",
+            "update",
+            "delete"
           ]
         },
         "target_columns": {
@@ -2455,6 +2460,32 @@
           "items": {
             "$ref": "#/$defs/mergeClause"
           }
+        },
+        "selection": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mergeAssignment"
+          }
+        },
+        "state_effect": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/writeStateEffect"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -5257,6 +5288,126 @@
           }
         }
       ]
+    },
+    "writeStateEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "initial_state",
+        "affected_rows",
+        "post_state",
+        "idempotence",
+        "branches",
+        "residual_reasons"
+      ],
+      "properties": {
+        "initial_state": {
+          "const": "caller_supplied"
+        },
+        "affected_rows": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minimum",
+            "maximum"
+          ],
+          "properties": {
+            "minimum": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maximum": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        "post_state": {
+          "enum": [
+            "empty",
+            "apply_to_initial"
+          ]
+        },
+        "idempotence": {
+          "enum": [
+            "proven",
+            "unproven"
+          ]
+        },
+        "branches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/writeEffectBranch"
+          }
+        },
+        "residual_reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "affected_rows_unknown",
+              "constraint_conflicts_unverified",
+              "match_multiplicity_unknown"
+            ]
+          }
+        }
+      }
+    },
+    "writeEffectBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "match_kind",
+        "predicate",
+        "action"
+      ],
+      "properties": {
+        "match_kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "matched",
+            "not_matched",
+            "not_matched_by_target",
+            "not_matched_by_source",
+            null
+          ]
+        },
+        "predicate": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/mergeAction"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "insert_query"
+                }
+              }
+            }
+          ]
+        }
+      }
     }
   }
 }
