@@ -149,6 +149,15 @@ fn grouped_having_witness_creates_exact_surviving_groups() {
         bundle.outcome_goals()[0].status(),
         OutcomeGoalStatus::Unsatisfiable
     );
+
+    let output_id = bundle.layers()[0].id().to_string();
+    let goal = OutcomeGoal::new(output_id, None, Some(2), Vec::new()).unwrap();
+    bundle.set_outcome_goals(&[goal]).unwrap();
+    assert_eq!(bundle.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
+    assert!(matches!(
+        bundle.outcome_goals()[0].witness(),
+        Some(OutcomeWitness::Groups { groups: 2, .. })
+    ));
 }
 
 #[test]
