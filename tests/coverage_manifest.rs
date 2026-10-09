@@ -157,7 +157,10 @@ fn maintainer_approval_does_not_waive_generator_evidence() {
     let manifest = manifest();
     let approved = &manifest["scope_decisions"];
     assert_eq!(approved["approval_date"], "2026-10-09");
-    assert_eq!(approved["approval_type"], "feature_scope_only_not_release_signoff");
+    assert_eq!(
+        approved["approval_type"],
+        "feature_scope_only_not_release_signoff"
+    );
     assert_eq!(approved["release_approved"], false);
     assert_eq!(
         approved["per_terminal_rejection"],
@@ -199,9 +202,10 @@ fn identical_meaning_produces_the_same_canonical_protocol_across_all_dialects() 
         let mut baseline = None;
         for dialect_name in &names {
             let dialect = dialect_from_name(dialect_name).expect("known dialect");
-            let protocol = analyze_sql(sql, dialect_name, dialect.as_ref()).unwrap_or_else(|error| {
-                panic!("{id}/{dialect_name}: semantically shared syntax must parse: {error}")
-            });
+            let protocol =
+                analyze_sql(sql, dialect_name, dialect.as_ref()).unwrap_or_else(|error| {
+                    panic!("{id}/{dialect_name}: semantically shared syntax must parse: {error}")
+                });
             let mut normalized: Value =
                 serde_json::from_str(&to_json(&protocol)).expect("valid canonical protocol");
             // Parsing dialect is provenance, not a semantic difference in the SQL outcome.
