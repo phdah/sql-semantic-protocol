@@ -188,7 +188,11 @@ impl QueryStatement {
 
     pub(crate) fn with_window_witness(mut self) -> Self {
         self.window_witness = crate::window_witness::analyze(&self).map(Box::new);
-        if self.window_witness.as_ref().is_some_and(|witness| witness.is_exact()) {
+        if self
+            .window_witness
+            .as_ref()
+            .is_some_and(|witness| witness.is_exact())
+        {
             self.row_conditions.exactness =
                 self.row_conditions.exactness.without_qualify_residual();
             self.output = crate::window_witness::refine_output(&self);
