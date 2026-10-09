@@ -1933,6 +1933,8 @@ pub enum Expression {
     Case(CaseExpression),
     /// A predicate used as a boolean-valued scalar expression.
     BooleanPredicate(Box<Predicate>),
+    /// A signed integer cast with an explicit canonical target width.
+    SignedIntegerCast(SignedIntegerCastExpression),
     /// A supported unary operation.
     Unary(UnaryExpression),
     /// A supported binary operation.
@@ -2818,6 +2820,37 @@ pub enum WindowFrameBound {
     UnboundedFollowing,
     /// A bounded FOLLOWING offset.
     Following(Box<Expression>),
+}
+
+/// A statically typed integer cast recorded in a predicate expression.
+///
+/// Only explicit signed widths (16, 32, 64) are constructible. The source
+/// datatype must independently establish lossless widening before a witness
+/// can treat this as an invertible expression.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SignedIntegerCastExpression {
+    expression: Box<Expression>,
+    target_bits: u16,
+}
+
+impl SignedIntegerCastExpression {
+    pub(crate) fn new(expression: Expression, target_bits: u16) -> Self {
+        debug_assert!(matches!(target_bits, 16 | 32 | 64));
+        Self {
+            expression: Box::new(expression),
+            target_bits,
+        }
+    }
+
+    /// Expression being cast.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Signed target width in bits.
+    pub fn target_bits(&self) -> u16 {
+        self.target_bits
+    }
 }
 
 /// A normalized unary operation.
