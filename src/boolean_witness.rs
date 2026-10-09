@@ -1093,10 +1093,7 @@ mod tests {
                         maximum: i128::from(i32::MAX),
                     },
                 )]),
-                string_bounds: BTreeMap::from([(
-                    b.clone(),
-                    StringEvidence { max_chars: Some(8) },
-                )]),
+                string_bounds: BTreeMap::from([(b.clone(), StringEvidence { max_chars: Some(8) })]),
                 comparison_assumptions: BTreeSet::from([
                     ComparisonAssumption::BinaryCollation,
                     ComparisonAssumption::NoCharPadding,
