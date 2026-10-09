@@ -167,6 +167,79 @@ fn unsupported_subquery_shapes_retain_residual_directions() {
 }
 
 #[test]
+fn nested_projection_aggregates_and_windows_are_residual() {
+    for sql in [
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT COUNT(*) + 1 FROM lines l)",
+        "SELECT o.id FROM orders o WHERE NOT EXISTS (SELECT COALESCE(COUNT(*), 0) FROM lines l)",
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT ROW_NUMBER() OVER (ORDER BY l.order_id) + 1 FROM lines l)",
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM lines l)",
+    ] {
+        let item = witness(sql);
+        assert!(
+            matches!(item.qualifying(), SubqueryMembershipDirection::Residual { .. }),
+            "{sql}"
+        );
+        assert!(
+            matches!(item.rejected(), SubqueryMembershipDirection::Residual { .. }),
+            "{sql}"
+        );
+    }
+
+    // A scalar aggregate emits a row even when there are no source rows.
+    // A matching-row/no-candidates source witness would therefore be wrong.
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE orders(id INTEGER); CREATE TABLE lines(order_id INTEGER);
+         INSERT INTO orders VALUES (1), (2);",
+    )
+    .unwrap();
+    assert_eq!(
+        count(&db, "SELECT COUNT(*) FROM orders o WHERE EXISTS (SELECT COUNT(*) + 1 FROM lines l)"),
+        2
+    );
+    assert_eq!(
+        count(&db, "SELECT COUNT(*) FROM orders o WHERE NOT EXISTS (SELECT COUNT(*) + 1 FROM lines l)"),
+        0
+    );
+}
+
+#[test]
+fn unqualified_nested_columns_without_proven_ownership_are_residual() {
+    for sql in [
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE id = 1)",
+        "SELECT o.id FROM orders o WHERE o.id IN (SELECT id FROM lines l)",
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE l.order_id = o.id AND amount > 0)",
+    ] {
+        let item = witness(sql);
+        assert!(
+            matches!(item.qualifying(), SubqueryMembershipDirection::Residual { .. }),
+            "{sql}"
+        );
+        assert!(
+            matches!(item.rejected(), SubqueryMembershipDirection::Residual { .. }),
+            "{sql}"
+        );
+    }
+
+    // Neither id below exists on lines. SQL resolves it to orders.id.
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE orders(id INTEGER); CREATE TABLE lines(order_id INTEGER);
+         INSERT INTO orders VALUES (1), (2), (NULL);
+         INSERT INTO lines VALUES (100);",
+    )
+    .unwrap();
+    assert_eq!(
+        count(&db, "SELECT COUNT(*) FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE id = 1)"),
+        1
+    );
+    assert_eq!(
+        count(&db, "SELECT COUNT(*) FROM orders o WHERE o.id IN (SELECT id FROM lines l)"),
+        2
+    );
+}
+
+#[test]
 fn uncorrelated_not_exists_tests_empty_and_nonempty_inner_sources() {
     let sql = "SELECT o.id FROM orders o WHERE NOT EXISTS (SELECT 1 FROM lines l)";
     let item = witness(sql);

@@ -6610,12 +6610,10 @@ fn analyze_subquery_semantics(
                 && select.qualify.is_none()
                 && select.top.is_none()
                 && matches!(&select.group_by, GroupByExpr::Expressions(expressions, _) if expressions.is_empty()))
-        && !output.columns().iter().any(|column| {
-            matches!(
-                column.expression(),
-                Expression::AggregateFunction(_) | Expression::WindowFunction(_)
-            )
-        });
+        && output
+            .columns()
+            .iter()
+            .all(|column| nested_projection_preserves_candidate_rows(column.expression()));
 
     SubquerySemantics::new(
         relations.sources,
@@ -6627,6 +6625,33 @@ fn analyze_subquery_semantics(
         diagnostics,
     )
     .with_row_shape_preserves_candidates(row_shape_preserves_candidates)
+}
+
+/// Avoid calling an aggregate or window query candidate-preserving merely
+/// because the row-shaping operation is nested in a scalar expression.
+/// Unknown expression forms default to residual membership evidence.
+fn nested_projection_preserves_candidate_rows(expression: &Expression) -> bool {
+    match expression {
+        Expression::Column(_) | Expression::Literal(_) => true,
+        Expression::Function(function) => function
+            .arguments()
+            .iter()
+            .all(nested_projection_preserves_candidate_rows),
+        Expression::Unary(unary) => {
+            nested_projection_preserves_candidate_rows(unary.operand())
+        }
+        Expression::Binary(binary) => {
+            nested_projection_preserves_candidate_rows(binary.left())
+                && nested_projection_preserves_candidate_rows(binary.right())
+        }
+        Expression::AggregateFunction(_)
+        | Expression::WindowFunction(_)
+        | Expression::Case(_)
+        | Expression::BooleanPredicate(_)
+        | Expression::ScalarSubquery(_)
+        | Expression::Unknown(_)
+        | Expression::Unsupported(_) => false,
+    }
 }
 
 fn collect_query_correlations(

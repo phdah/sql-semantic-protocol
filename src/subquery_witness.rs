@@ -307,6 +307,11 @@ fn derive(
             let [projected] = subquery.output().columns() else {
                 return residual("membership_requires_one_inner_output_column");
             };
+            // Without schema evidence, an unqualified SELECT column can resolve
+            // to an enclosing scope when the inner table lacks that column.
+            if !matches!(projected.expression(), Expression::Column(column) if column.relation().is_some()) {
+                return residual("membership_key_requires_qualified_inner_column");
+            }
             let Some(inner_column) = projected.plain_copy_source() else {
                 return residual("membership_key_must_be_plain_source_column");
             };
@@ -436,7 +441,9 @@ fn source_column(
 
 fn inner_column(col: &ColumnExpression, inner: &SourceRelation) -> Option<ColumnRef> {
     let qualifier = col.relation();
-    if qualifier.is_none() || qualifier == inner.alias() || qualifier == Some(inner.name()) {
+    // SQL may bind an unqualified column to an outer scope if it is absent
+    // from this relation; reject it unless ownership can be proven.
+    if qualifier.is_some() && (qualifier == inner.alias() || qualifier == Some(inner.name())) {
         Some(ColumnRef::new(
             Some(inner.name().to_string()),
             col.name().to_string(),

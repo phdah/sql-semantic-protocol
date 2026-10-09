@@ -617,7 +617,9 @@ each side, straightforward candidate-preserving subqueries, plain membership
 columns, and conjunctive simple equality correlations. Unsupported shaping,
 aggregate/window output, computed/multiple keys, joins, unproven comparisons,
 non-equality correlations and ambiguous repeated physical relations are
-explicit residual directions. This is deliberately narrower than SQL syntax
+explicit residual directions. Without proven nested column ownership, unqualified
+inner columns are residual: SQL can resolve them to an enclosing scope when
+the nested relation lacks the column. Explicitly qualify inner source columns. This is deliberately narrower than SQL syntax
 support. Composed entries retain their origin even when an inner boundary is
 intermediate or unresolved, and consumers must honor that boundary instead of
 treating it as independently generated physical input. The pre-existing
