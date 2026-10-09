@@ -57,6 +57,14 @@
       "items": {
         "$ref": "#/$defs/comparisonAssumption"
       }
+    },
+    "outcome_goals": {
+      "description": "Optional caller-requested final-output goals with independent feasibility evidence; absent in ordinary analysis.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/outcomeGoal"
+      }
     }
   },
   "$defs": {
@@ -1166,12 +1174,26 @@
     "likePrefixPredicate": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "expression", "prefix", "negated"],
+      "required": [
+        "kind",
+        "expression",
+        "prefix",
+        "negated"
+      ],
       "properties": {
-        "kind": {"const": "like_prefix"},
-        "expression": {"$ref": "#/$defs/expression"},
-        "prefix": {"type": "string", "pattern": "^[A-Za-z0-9]+$"},
-        "negated": {"type": "boolean"}
+        "kind": {
+          "const": "like_prefix"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "prefix": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9]+$"
+        },
+        "negated": {
+          "type": "boolean"
+        }
       }
     },
     "comparisonPredicate": {
@@ -1504,7 +1526,11 @@
           "$ref": "#/$defs/expression"
         },
         "target_bits": {
-          "enum": [16, 32, 64]
+          "enum": [
+            16,
+            32,
+            64
+          ]
         }
       }
     },
@@ -4731,25 +4757,48 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "column", "prefix", "negated"],
+          "required": [
+            "kind",
+            "column",
+            "prefix",
+            "negated"
+          ],
           "properties": {
-            "kind": {"const": "string_prefix"},
+            "kind": {
+              "const": "string_prefix"
+            },
             "column": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["relation", "name"],
+              "required": [
+                "relation",
+                "name"
+              ],
               "properties": {
                 "relation": {
                   "anyOf": [
-                    {"type": "string", "minLength": 1},
-                    {"type": "null"}
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
                   ]
                 },
-                "name": {"type": "string", "minLength": 1}
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
               }
             },
-            "prefix": {"type": "string", "pattern": "^[A-Za-z0-9]+$"},
-            "negated": {"type": "boolean"}
+            "prefix": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9]+$"
+            },
+            "negated": {
+              "type": "boolean"
+            }
           }
         },
         {
@@ -4858,6 +4907,122 @@
         },
         "witness": {
           "$ref": "#/$defs/booleanWitness"
+        }
+      }
+    },
+    "outcomeValueCount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "rows"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/constraintValue"
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "outcomeDistribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "column",
+        "values"
+      ],
+      "properties": {
+        "column": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "values": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/outcomeValueCount"
+          }
+        }
+      }
+    },
+    "outcomeGoal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "requested",
+        "assessment"
+      ],
+      "properties": {
+        "layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "requested": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rows",
+            "groups",
+            "distributions"
+          ],
+          "properties": {
+            "rows": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "groups": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "distributions": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/outcomeDistribution"
+              }
+            }
+          }
+        },
+        "assessment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reason",
+            "min_rows",
+            "max_rows"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "feasible",
+                "unsatisfiable",
+                "residual"
+              ]
+            },
+            "reason": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "min_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_rows": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
         }
       }
     }
