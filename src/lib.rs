@@ -83,7 +83,7 @@ pub use constraints::{
     RelationConstraint, RelationConstraintSet,
 };
 pub use constructive::{
-    local_constructive_witnesses, local_pending_producers, ConstructiveWitness, CountBounds,
+    local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage, ConstructiveWitness, CountBounds,
     ProofStrength, RowQuantifier, RowVariable, WitnessBoundary, WitnessCase, WitnessDirection,
     WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
