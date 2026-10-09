@@ -29,6 +29,7 @@
 //!   claiming source construction or guessing unsupported NULL/key semantics.
 
 mod analysis;
+mod bag_histogram;
 mod bag_semantics;
 mod boolean_witness;
 mod bundle;
@@ -58,6 +59,7 @@ use std::fmt;
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
+pub use bag_histogram::{equijoin_key_histogram, BagHistogramProof, BagKeyHistogram};
 pub use bag_semantics::{
     BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagScope, BagSourceIdentity,
     BagTupleIdentity,
