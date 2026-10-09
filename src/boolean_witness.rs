@@ -514,16 +514,15 @@ fn possible_joint_truths(
         if assignments.len().saturating_mul(values.len()) > MAX_ASSIGNMENTS {
             return BTreeSet::new();
         }
-        assignments = assignments
-            .into_iter()
-            .flat_map(|assignment| {
-                values.iter().map(move |value| {
-                    let mut assignment = assignment.clone();
-                    assignment.insert(column.clone(), *value);
-                    assignment
-                })
-            })
-            .collect();
+        let mut expanded = Vec::new();
+        for assignment in assignments {
+            for value in &values {
+                let mut candidate = assignment.clone();
+                candidate.insert(column.clone(), *value);
+                expanded.push(candidate);
+            }
+        }
+        assignments = expanded;
     }
     assignments
         .iter()
