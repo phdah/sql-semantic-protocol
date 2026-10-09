@@ -676,13 +676,16 @@ fn window_witness_to_value(witness: &crate::window_witness::WindowWitness) -> Va
 
 fn window_direction_to_value(direction: &crate::window_witness::WindowWitnessDirection) -> Value {
     match direction {
-        crate::window_witness::WindowWitnessDirection::Residual { reason } =>
-            json!({"status": "residual", "reason": reason}),
-        crate::window_witness::WindowWitnessDirection::Impossible =>
-            json!({"status": "impossible"}),
-        crate::window_witness::WindowWitnessDirection::Exact(case) =>
+        crate::window_witness::WindowWitnessDirection::Residual { reason } => {
+            json!({"status": "residual", "reason": reason})
+        }
+        crate::window_witness::WindowWitnessDirection::Impossible => {
+            json!({"status": "impossible"})
+        }
+        crate::window_witness::WindowWitnessDirection::Exact(case) => {
             json!({"status": "exact", "min_preceding": case.min_preceding(),
-                "max_preceding": case.max_preceding()}),
+                "max_preceding": case.max_preceding()})
+        }
     }
 }
 
