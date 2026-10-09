@@ -8,8 +8,8 @@ use crate::boolean_witness::{BooleanRowConstraint, BooleanTruthCase, BooleanWitn
 use crate::bundle::{GroupBoundaryKind, ResolvedComposedSemantics};
 use crate::group_witness::{GroupAggregate, GroupValueTest, GroupWitnessDirection};
 use crate::join_witness::{JoinSide, JoinWitnessDirection, JoinWitnessShape};
-use crate::window_witness::{WindowOrderKey, WindowWitnessDirection};
 use crate::protocol::{ColumnRef, ComparisonOperator};
+use crate::window_witness::{WindowOrderKey, WindowWitnessDirection};
 
 /// A named candidate or partner row scoped to a relation instance.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -556,7 +556,9 @@ pub fn local_constructive_witnesses(
         let translate = |direction: &GroupWitnessDirection| -> WitnessDirection {
             match direction {
                 GroupWitnessDirection::Residual { reason } => WitnessDirection::residual(reason),
-                GroupWitnessDirection::Exact(cases) if cases.is_empty() => WitnessDirection::Impossible,
+                GroupWitnessDirection::Exact(cases) if cases.is_empty() => {
+                    WitnessDirection::Impossible
+                }
                 GroupWitnessDirection::Exact(cases) => {
                     if item.boundary_kind() != GroupBoundaryKind::Physical {
                         return WitnessDirection::residual("requires_physical_source_realization");
@@ -565,7 +567,9 @@ pub fn local_constructive_witnesses(
                         return WitnessDirection::residual("missing_group_boundary");
                     };
                     let Some(boundary) = WitnessBoundary::new(
-                        boundary_name, item.boundary_kind(), item.origin_layer_id()
+                        boundary_name,
+                        item.boundary_kind(),
+                        item.origin_layer_id(),
                     ) else {
                         return WitnessDirection::residual("invalid_group_boundary");
                     };
@@ -583,8 +587,8 @@ pub fn local_constructive_witnesses(
                         if non_null.minimum() > rows.maximum().unwrap_or(u64::MAX) {
                             return WitnessDirection::residual("unsatisfiable_group_cardinality");
                         }
-                        let Some(translated_case) = WitnessCase::new(vec![
-                            WitnessObligation::Group {
+                        let Some(translated_case) = WitnessCase::new(
+                            vec![WitnessObligation::Group {
                                 boundary: boundary.clone(),
                                 key: witness.group_keys().to_vec(),
                                 aggregate,
@@ -593,8 +597,9 @@ pub fn local_constructive_witnesses(
                                 rows,
                                 non_null,
                                 tests: case.tests().to_vec(),
-                            }
-                        ], ProofStrength::Sufficient) else {
+                            }],
+                            ProofStrength::Sufficient,
+                        ) else {
                             return WitnessDirection::residual("invalid_group_case");
                         };
                         translated.push(translated_case);
@@ -625,14 +630,18 @@ pub fn local_constructive_witnesses(
                         return WitnessDirection::residual("missing_window_boundary");
                     };
                     let (Some(boundary), Some(candidate), Some(preceding)) = (
-                        WitnessBoundary::new(boundary_name, item.boundary_kind(), item.origin_layer_id()),
+                        WitnessBoundary::new(
+                            boundary_name,
+                            item.boundary_kind(),
+                            item.origin_layer_id(),
+                        ),
                         RowVariable::new(boundary_name, boundary_name, "candidate"),
                         CountBounds::new(case.min_preceding(), case.max_preceding()),
                     ) else {
                         return WitnessDirection::residual("invalid_window_case");
                     };
-                    let Some(translated) = WitnessCase::new(vec![
-                        WitnessObligation::Ranked {
+                    let Some(translated) = WitnessCase::new(
+                        vec![WitnessObligation::Ranked {
                             boundary,
                             candidate,
                             partition_by: witness.partition_by().to_vec(),
@@ -640,8 +649,9 @@ pub fn local_constructive_witnesses(
                             preceding,
                             strict_unique: true,
                             closed_world: true,
-                        }
-                    ], ProofStrength::Sufficient) else {
+                        }],
+                        ProofStrength::Sufficient,
+                    ) else {
                         return WitnessDirection::residual("invalid_window_case");
                     };
                     WitnessDirection::feasible(vec![translated])
