@@ -31,11 +31,17 @@ impl RowVariable {
     }
 
     /// Relation identity, which is not necessarily a writable physical source.
-    pub fn relation(&self) -> &str { &self.relation }
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
     /// Distinct relation instance (important for self-joins).
-    pub fn instance(&self) -> &str { &self.instance }
+    pub fn instance(&self) -> &str {
+        &self.instance
+    }
     /// Variable name scoped to the witness case.
-    pub fn name(&self) -> &str { &self.name }
+    pub fn name(&self) -> &str {
+        &self.name
+    }
 }
 
 /// A typed scalar term; unknown functions are never silently represented as values.
@@ -62,15 +68,31 @@ pub enum WitnessFormula {
     /// SQL NOT: UNKNOWN stays UNKNOWN.
     Not(Box<WitnessFormula>),
     /// Require SQL TRUE or NOT TRUE (FALSE or UNKNOWN) of one row predicate.
-    RowTruth { row: RowVariable, predicate: BooleanRowConstraint, truth: BooleanTruthCase },
+    RowTruth {
+        row: RowVariable,
+        predicate: BooleanRowConstraint,
+        truth: BooleanTruthCase,
+    },
     /// Compare typed terms under the given SQL comparison operator.
-    Comparison { left: WitnessTerm, operator: ComparisonOperator, right: WitnessTerm },
+    Comparison {
+        left: WitnessTerm,
+        operator: ComparisonOperator,
+        right: WitnessTerm,
+    },
     /// Test whether a column value is (or is not) NULL.
     IsNull { term: WitnessTerm, negated: bool },
     /// Coupled multi-column tuple equality or inequality on named row variables.
-    TupleComparison { left: Vec<WitnessTerm>, equal: bool, right: Vec<WitnessTerm> },
+    TupleComparison {
+        left: Vec<WitnessTerm>,
+        equal: bool,
+        right: Vec<WitnessTerm>,
+    },
     /// Exact prefix check with binary-collation assumptions established upstream.
-    StringPrefix { term: WitnessTerm, prefix: String, negated: bool },
+    StringPrefix {
+        term: WitnessTerm,
+        prefix: String,
+        negated: bool,
+    },
 }
 
 /// Nonempty bounded row counts, with inclusive upper bounds and no overflow.
@@ -83,14 +105,20 @@ pub struct CountBounds {
 impl CountBounds {
     /// Create valid inclusive cardinality bounds.
     pub fn new(minimum: u64, maximum: Option<u64>) -> Option<Self> {
-        if maximum.is_some_and(|max| minimum > max) { return None; }
+        if maximum.is_some_and(|max| minimum > max) {
+            return None;
+        }
         Some(Self { minimum, maximum })
     }
 
     /// Minimum row count.
-    pub fn minimum(self) -> u64 { self.minimum }
+    pub fn minimum(self) -> u64 {
+        self.minimum
+    }
     /// Maximum row count when finite.
-    pub fn maximum(self) -> Option<u64> { self.maximum }
+    pub fn maximum(self) -> Option<u64> {
+        self.maximum
+    }
 }
 
 /// Quantification of matching rows in a relation.
@@ -113,7 +141,9 @@ pub struct WitnessBoundary {
 impl WitnessBoundary {
     /// Create a typed boundary, retaining provenance for intermediate realization.
     pub fn new(relation: &str, kind: GroupBoundaryKind, origin_layer_id: &str) -> Option<Self> {
-        if relation.is_empty() || origin_layer_id.is_empty() { return None; }
+        if relation.is_empty() || origin_layer_id.is_empty() {
+            return None;
+        }
         Some(Self {
             relation: relation.to_string(),
             kind,
@@ -122,11 +152,17 @@ impl WitnessBoundary {
     }
 
     /// Relation identity.
-    pub fn relation(&self) -> &str { &self.relation }
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
     /// Physical, intermediate, or unresolved proof boundary.
-    pub fn kind(&self) -> GroupBoundaryKind { self.kind }
+    pub fn kind(&self) -> GroupBoundaryKind {
+        self.kind
+    }
     /// Layer introducing the obligation.
-    pub fn origin_layer_id(&self) -> &str { &self.origin_layer_id }
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
 }
 
 /// One required fact. None of these grant physical-source realizability on their own.
@@ -168,9 +204,16 @@ pub enum WitnessObligation {
         non_null: CountBounds,
     },
     /// Final output count requirement.
-    OutputRows { layer_id: String, bounds: CountBounds },
+    OutputRows {
+        layer_id: String,
+        bounds: CountBounds,
+    },
     /// Before/after relation state count requirement; requires ordered state composition.
-    StateRows { relation: String, before: CountBounds, after: CountBounds },
+    StateRows {
+        relation: String,
+        before: CountBounds,
+        after: CountBounds,
+    },
     /// A computed boundary must be realized through its named upstream producer.
     Producer { boundary: WitnessBoundary },
 }
@@ -199,30 +242,70 @@ impl WitnessCase {
     /// This local check is deliberately incomplete: success does not prove cross-row
     /// satisfiability, type compatibility, or producer realizability.
     pub fn new(obligations: Vec<WitnessObligation>, strength: ProofStrength) -> Option<Self> {
-        if obligations.is_empty() || directly_conflicts(&obligations) { return None; }
-        Some(Self { obligations, strength })
+        if obligations.is_empty() || directly_conflicts(&obligations) {
+            return None;
+        }
+        Some(Self {
+            obligations,
+            strength,
+        })
     }
     /// Requirements that must hold together.
-    pub fn obligations(&self) -> &[WitnessObligation] { &self.obligations }
+    pub fn obligations(&self) -> &[WitnessObligation] {
+        &self.obligations
+    }
     /// Strength of the proof relative to the classified result.
-    pub fn strength(&self) -> ProofStrength { self.strength }
+    pub fn strength(&self) -> ProofStrength {
+        self.strength
+    }
 }
 
 fn directly_conflicts(obligations: &[WitnessObligation]) -> bool {
     for (index, first) in obligations.iter().enumerate() {
         for second in obligations.iter().skip(index + 1) {
             match (first, second) {
-                (WitnessObligation::OutputRows { layer_id: l, bounds: a },
-                 WitnessObligation::OutputRows { layer_id: r, bounds: b }) if l == r => {
-                    if disjoint(*a, *b) { return true; }
+                (
+                    WitnessObligation::OutputRows {
+                        layer_id: l,
+                        bounds: a,
+                    },
+                    WitnessObligation::OutputRows {
+                        layer_id: r,
+                        bounds: b,
+                    },
+                ) if l == r => {
+                    if disjoint(*a, *b) {
+                        return true;
+                    }
                 }
-                (WitnessObligation::StateRows { relation: l, before: ab, after: aa },
-                 WitnessObligation::StateRows { relation: r, before: bb, after: ba }) if l == r => {
-                    if disjoint(*ab, *bb) || disjoint(*aa, *ba) { return true; }
+                (
+                    WitnessObligation::StateRows {
+                        relation: l,
+                        before: ab,
+                        after: aa,
+                    },
+                    WitnessObligation::StateRows {
+                        relation: r,
+                        before: bb,
+                        after: ba,
+                    },
+                ) if l == r => {
+                    if disjoint(*ab, *bb) || disjoint(*aa, *ba) {
+                        return true;
+                    }
                 }
-                (WitnessObligation::Predicate(WitnessFormula::RowTruth { row: a, predicate: ap, truth: at }),
-                 WitnessObligation::Predicate(WitnessFormula::RowTruth { row: b, predicate: bp, truth: bt }))
-                    if a == b && ap == bp && at != bt => return true,
+                (
+                    WitnessObligation::Predicate(WitnessFormula::RowTruth {
+                        row: a,
+                        predicate: ap,
+                        truth: at,
+                    }),
+                    WitnessObligation::Predicate(WitnessFormula::RowTruth {
+                        row: b,
+                        predicate: bp,
+                        truth: bt,
+                    }),
+                ) if a == b && ap == bp && at != bt => return true,
                 _ => {}
             }
         }
@@ -249,15 +332,23 @@ pub enum WitnessDirection {
 impl WitnessDirection {
     /// Validate that every feasible direction has at least one sufficient case.
     pub fn feasible(cases: Vec<WitnessCase>) -> Option<Self> {
-        if cases.is_empty() ||
-            cases.iter().any(|case| !matches!(case.strength(), ProofStrength::Sufficient | ProofStrength::Equivalent)) {
+        if cases.is_empty()
+            || cases.iter().any(|case| {
+                !matches!(
+                    case.strength(),
+                    ProofStrength::Sufficient | ProofStrength::Equivalent
+                )
+            })
+        {
             return None;
         }
         Some(Self::Feasible(cases))
     }
 
     fn residual(reason: &str) -> Self {
-        Self::Residual { reason: reason.to_string() }
+        Self::Residual {
+            reason: reason.to_string(),
+        }
     }
 }
 
@@ -303,13 +394,21 @@ pub struct ConstructiveWitness {
 
 impl ConstructiveWitness {
     /// Operator that supplied the local proof.
-    pub fn operator(&self) -> WitnessOperator { self.operator }
+    pub fn operator(&self) -> WitnessOperator {
+        self.operator
+    }
     /// Layer supplying provenance.
-    pub fn origin_layer_id(&self) -> &str { &self.origin_layer_id }
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
     /// Matching classification, independently proven.
-    pub fn qualifying(&self) -> &WitnessDirection { &self.qualifying }
+    pub fn qualifying(&self) -> &WitnessDirection {
+        &self.qualifying
+    }
     /// Rejected classification, independently proven.
-    pub fn rejected(&self) -> &WitnessDirection { &self.rejected }
+    pub fn rejected(&self) -> &WitnessDirection {
+        &self.rejected
+    }
 }
 
 /// Translate existing operator-local proofs into one deterministic typed API.
@@ -317,25 +416,38 @@ impl ConstructiveWitness {
 /// No physical-source DAG realization is inferred. Operator families not yet
 /// translated remain visibly residual, even when their legacy local witness
 /// is exact, rather than being silently upgraded to full constructive proof.
-pub fn local_constructive_witnesses(semantics: &ResolvedComposedSemantics) -> Vec<ConstructiveWitness> {
+pub fn local_constructive_witnesses(
+    semantics: &ResolvedComposedSemantics,
+) -> Vec<ConstructiveWitness> {
     let mut proofs = Vec::new();
     for source in semantics.boolean_witnesses() {
         let witness = source.witness();
-        let row = RowVariable::new(witness.source_relation(), witness.source_relation(), "candidate");
-        let map = |direction: &BooleanWitnessDirection| {
-            match (row.as_ref(), direction, source.boundary_kind()) {
-                (Some(row), BooleanWitnessDirection::Exact(truth), GroupBoundaryKind::Physical) => {
-                    let case = WitnessCase::new(vec![WitnessObligation::Predicate(WitnessFormula::RowTruth {
+        let row = RowVariable::new(
+            witness.source_relation(),
+            witness.source_relation(),
+            "candidate",
+        );
+        let map = |direction: &BooleanWitnessDirection| match (
+            row.as_ref(),
+            direction,
+            source.boundary_kind(),
+        ) {
+            (Some(row), BooleanWitnessDirection::Exact(truth), GroupBoundaryKind::Physical) => {
+                let case = WitnessCase::new(
+                    vec![WitnessObligation::Predicate(WitnessFormula::RowTruth {
                         row: row.clone(),
                         predicate: witness.condition().clone(),
                         truth: *truth,
-                    })], ProofStrength::Sufficient);
-                    case.and_then(|c| WitnessDirection::feasible(vec![c]))
-                        .unwrap_or_else(|| WitnessDirection::residual("invalid_boolean_case"))
-                }
-                (_, BooleanWitnessDirection::Residual { reason }, _) => WitnessDirection::residual(reason),
-                (_, _, _) => WitnessDirection::residual("requires_physical_source_realization"),
+                    })],
+                    ProofStrength::Sufficient,
+                );
+                case.and_then(|c| WitnessDirection::feasible(vec![c]))
+                    .unwrap_or_else(|| WitnessDirection::residual("invalid_boolean_case"))
             }
+            (_, BooleanWitnessDirection::Residual { reason }, _) => {
+                WitnessDirection::residual(reason)
+            }
+            (_, _, _) => WitnessDirection::residual("requires_physical_source_realization"),
         };
         proofs.push(ConstructiveWitness {
             operator: WitnessOperator::Boolean,
@@ -345,53 +457,75 @@ pub fn local_constructive_witnesses(semantics: &ResolvedComposedSemantics) -> Ve
         });
     }
     for source in semantics.join_witnesses() {
-        let translate = |direction: &JoinWitnessDirection| {
-            match direction {
-                JoinWitnessDirection::Impossible => WitnessDirection::Impossible,
-                JoinWitnessDirection::Residual { reason } => WitnessDirection::residual(reason),
-                JoinWitnessDirection::Exact(cases) => {
-                    let (Some(left), Some(right), Some(op)) =
-                        (source.left(), source.right(), source.comparison()) else {
-                        return WitnessDirection::residual("missing_join_endpoint");
+        let translate = |direction: &JoinWitnessDirection| match direction {
+            JoinWitnessDirection::Impossible => WitnessDirection::Impossible,
+            JoinWitnessDirection::Residual { reason } => WitnessDirection::residual(reason),
+            JoinWitnessDirection::Exact(cases) => {
+                let (Some(left), Some(right), Some(op)) =
+                    (source.left(), source.right(), source.comparison())
+                else {
+                    return WitnessDirection::residual("missing_join_endpoint");
+                };
+                let (Some(left_row), Some(right_row)) = (
+                    RowVariable::new(left.relation(), left.relation_instance(), "left"),
+                    RowVariable::new(right.relation(), right.relation_instance(), "right"),
+                ) else {
+                    return WitnessDirection::residual("invalid_join_relation_instance");
+                };
+                let mut results = Vec::new();
+                for join_case in cases {
+                    let obligation = match join_case.shape() {
+                        JoinWitnessShape::Matched => WitnessObligation::JoinPair {
+                            left_row: left_row.clone(),
+                            right_row: right_row.clone(),
+                            left: ColumnRef::new(
+                                Some(left.relation().to_string()),
+                                left.column().to_string(),
+                            ),
+                            right: ColumnRef::new(
+                                Some(right.relation().to_string()),
+                                right.column().to_string(),
+                            ),
+                            comparison: op,
+                            null_extended: join_case.null_extended_side(),
+                        },
+                        JoinWitnessShape::LeftUnmatched => WitnessObligation::NoMatchingPartner {
+                            candidate: left_row.clone(),
+                            partner: right_row.clone(),
+                            comparison: op,
+                            left: ColumnRef::new(
+                                Some(left.relation().to_string()),
+                                left.column().to_string(),
+                            ),
+                            right: ColumnRef::new(
+                                Some(right.relation().to_string()),
+                                right.column().to_string(),
+                            ),
+                            closed_world: true,
+                        },
+                        JoinWitnessShape::RightUnmatched => WitnessObligation::NoMatchingPartner {
+                            candidate: right_row.clone(),
+                            partner: left_row.clone(),
+                            comparison: op.reversed(),
+                            left: ColumnRef::new(
+                                Some(right.relation().to_string()),
+                                right.column().to_string(),
+                            ),
+                            right: ColumnRef::new(
+                                Some(left.relation().to_string()),
+                                left.column().to_string(),
+                            ),
+                            closed_world: true,
+                        },
                     };
-                    let (Some(left_row), Some(right_row)) = (
-                        RowVariable::new(left.relation(), left.relation_instance(), "left"),
-                        RowVariable::new(right.relation(), right.relation_instance(), "right"),
-                    ) else {
-                        return WitnessDirection::residual("invalid_join_relation_instance");
+                    let Some(case) = WitnessCase::new(vec![obligation], ProofStrength::Sufficient)
+                    else {
+                        return WitnessDirection::residual("invalid_join_case");
                     };
-                    let mut results = Vec::new();
-                    for join_case in cases {
-                        let obligation = match join_case.shape() {
-                            JoinWitnessShape::Matched => WitnessObligation::JoinPair {
-                                left_row: left_row.clone(),
-                                right_row: right_row.clone(),
-                                left: ColumnRef::new(Some(left.relation().to_string()), left.column().to_string()),
-                                right: ColumnRef::new(Some(right.relation().to_string()), right.column().to_string()),
-                                comparison: op,
-                                null_extended: join_case.null_extended_side(),
-                            },
-                            JoinWitnessShape::LeftUnmatched => WitnessObligation::NoMatchingPartner {
-                                candidate: left_row.clone(), partner: right_row.clone(), comparison: op,
-                                left: ColumnRef::new(Some(left.relation().to_string()), left.column().to_string()),
-                                right: ColumnRef::new(Some(right.relation().to_string()), right.column().to_string()),
-                                closed_world: true,
-                            },
-                            JoinWitnessShape::RightUnmatched => WitnessObligation::NoMatchingPartner {
-                                candidate: right_row.clone(), partner: left_row.clone(), comparison: op.reversed(),
-                                left: ColumnRef::new(Some(right.relation().to_string()), right.column().to_string()),
-                                right: ColumnRef::new(Some(left.relation().to_string()), left.column().to_string()),
-                                closed_world: true,
-                            },
-                        };
-                        let Some(case) = WitnessCase::new(vec![obligation], ProofStrength::Sufficient) else {
-                            return WitnessDirection::residual("invalid_join_case");
-                        };
-                        results.push(case);
-                    }
-                    WitnessDirection::feasible(results)
-                        .unwrap_or_else(|| WitnessDirection::residual("empty_join_case"))
+                    results.push(case);
                 }
+                WitnessDirection::feasible(results)
+                    .unwrap_or_else(|| WitnessDirection::residual("empty_join_case"))
             }
         };
         proofs.push(ConstructiveWitness {
@@ -405,10 +539,16 @@ pub fn local_constructive_witnesses(semantics: &ResolvedComposedSemantics) -> Ve
         proofs.push(untranslated(WitnessOperator::Group, item.origin_layer_id()));
     }
     for item in semantics.window_witnesses() {
-        proofs.push(untranslated(WitnessOperator::Window, item.origin_layer_id()));
+        proofs.push(untranslated(
+            WitnessOperator::Window,
+            item.origin_layer_id(),
+        ));
     }
     for item in semantics.subquery_witnesses() {
-        proofs.push(untranslated(WitnessOperator::Subquery, item.origin_layer_id()));
+        proofs.push(untranslated(
+            WitnessOperator::Subquery,
+            item.origin_layer_id(),
+        ));
     }
     for item in semantics.set_operations() {
         proofs.push(untranslated(WitnessOperator::Set, item.origin_layer_id()));
@@ -444,14 +584,36 @@ mod tests {
 
     #[test]
     fn contradictory_output_and_state_counts_are_rejected() {
-        assert!(WitnessCase::new(vec![
-            WitnessObligation::OutputRows { layer_id: "l".into(), bounds: bound(3, Some(3)) },
-            WitnessObligation::OutputRows { layer_id: "l".into(), bounds: bound(0, Some(2)) },
-        ], ProofStrength::Sufficient).is_none());
-        assert!(WitnessCase::new(vec![
-            WitnessObligation::StateRows { relation: "t".into(), before: bound(0, Some(0)), after: bound(2, Some(3)) },
-            WitnessObligation::StateRows { relation: "t".into(), before: bound(0, Some(0)), after: bound(4, Some(5)) },
-        ], ProofStrength::Sufficient).is_none());
+        assert!(WitnessCase::new(
+            vec![
+                WitnessObligation::OutputRows {
+                    layer_id: "l".into(),
+                    bounds: bound(3, Some(3))
+                },
+                WitnessObligation::OutputRows {
+                    layer_id: "l".into(),
+                    bounds: bound(0, Some(2))
+                },
+            ],
+            ProofStrength::Sufficient
+        )
+        .is_none());
+        assert!(WitnessCase::new(
+            vec![
+                WitnessObligation::StateRows {
+                    relation: "t".into(),
+                    before: bound(0, Some(0)),
+                    after: bound(2, Some(3))
+                },
+                WitnessObligation::StateRows {
+                    relation: "t".into(),
+                    before: bound(0, Some(0)),
+                    after: bound(4, Some(5))
+                },
+            ],
+            ProofStrength::Sufficient
+        )
+        .is_none());
     }
 
     #[test]
@@ -461,21 +623,33 @@ mod tests {
             column: ColumnRef::new(Some("orders".to_string()), "amount".to_string()),
             negated: false,
         };
-        let truth = |truth| WitnessObligation::Predicate(WitnessFormula::RowTruth {
-            row: row.clone(), predicate: predicate.clone(), truth,
-        });
-        assert!(WitnessCase::new(vec![
-            truth(BooleanTruthCase::True),
-            truth(BooleanTruthCase::NotTrue),
-        ], ProofStrength::Sufficient).is_none());
+        let truth = |truth| {
+            WitnessObligation::Predicate(WitnessFormula::RowTruth {
+                row: row.clone(),
+                predicate: predicate.clone(),
+                truth,
+            })
+        };
+        assert!(WitnessCase::new(
+            vec![
+                truth(BooleanTruthCase::True),
+                truth(BooleanTruthCase::NotTrue),
+            ],
+            ProofStrength::Sufficient
+        )
+        .is_none());
     }
 
     #[test]
     fn necessity_does_not_claim_sufficient_constructibility() {
         let case = WitnessCase::new(
-            vec![WitnessObligation::OutputRows { layer_id: "x".into(), bounds: bound(1, Some(1)) }],
+            vec![WitnessObligation::OutputRows {
+                layer_id: "x".into(),
+                bounds: bound(1, Some(1)),
+            }],
             ProofStrength::Necessary,
-        ).expect("valid necessary condition");
+        )
+        .expect("valid necessary condition");
         assert!(WitnessDirection::feasible(vec![case]).is_none());
     }
 }
