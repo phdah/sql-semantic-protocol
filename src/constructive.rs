@@ -497,11 +497,20 @@ impl WitnessDirection {
                 if left.len().checked_mul(right.len()).is_none_or(|n| n > 256) {
                     return Self::residual("conjunctive_case_limit");
                 }
+                let fully_equivalent = left.len() == 1 && right.len() == 1
+                    && left[0].strength() == ProofStrength::Equivalent
+                    && right[0].strength() == ProofStrength::Equivalent;
                 let mut cases = Vec::new();
+                let mut unproved = false;
                 for a in left {
                     for b in right {
-                        let mut obligations = a.obligations().to_vec();
-                        obligations.extend_from_slice(b.obligations());
+                        // Sufficient constructions are examples, not exhaustive
+                        // model sets. Two different examples cannot be merged
+                        // without a proof of joint satisfiability.
+                        if a.obligations() != b.obligations() {
+                            unproved = true;
+                            continue;
+                        }
                         let strength = if a.strength() == ProofStrength::Equivalent
                             && b.strength() == ProofStrength::Equivalent
                         {
@@ -509,17 +518,25 @@ impl WitnessDirection {
                         } else {
                             ProofStrength::Sufficient
                         };
-                        if let Some(case) = WitnessCase::new(obligations, strength) {
+                        if let Some(case) = WitnessCase::new(a.obligations().to_vec(), strength) {
                             if !cases.contains(&case) {
                                 cases.push(case);
                             }
                         }
                     }
                 }
-                if cases.is_empty() {
-                    Self::Impossible
-                } else {
+                if !cases.is_empty() {
                     Self::Feasible(cases)
+                } else if fully_equivalent && directly_conflicts(
+                    &left[0].obligations().iter().cloned()
+                        .chain(right[0].obligations().iter().cloned())
+                        .collect::<Vec<_>>()
+                ) {
+                    Self::Impossible
+                } else if unproved {
+                    Self::residual("conjunctive_realization_unproven")
+                } else {
+                    Self::residual("conjunctive_case_satisfiability_unproven")
                 }
             }
         }
