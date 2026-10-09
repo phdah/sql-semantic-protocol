@@ -6,15 +6,21 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_sql, dialect_from_name, BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys,
-    BagLaw, BagScope, CountBounds, JoinKind, ProtocolStatement, SetMultiplicityRule,
+    BagLaw, BagScope, BagTupleIdentity, CountBounds, JoinKind, ProtocolStatement,
+    SetMultiplicityRule,
 };
 
 fn exact(n: u64, scope: BagScope) -> BagEvidence {
-    BagEvidence::new(
+    let evidence = BagEvidence::new(
         CountBounds::new(n, Some(n)).expect("valid count"),
         scope,
         true,
-    )
+    );
+    if scope == BagScope::CandidateTuple {
+        evidence.with_tuple_identity(BagTupleIdentity::new(1))
+    } else {
+        evidence
+    }
 }
 
 fn observed(db: &Connection, query: &str) -> u64 {
