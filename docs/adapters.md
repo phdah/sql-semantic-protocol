@@ -203,3 +203,15 @@ For byte-reproducible output, add `--event-time 2026-10-02T07:00:00Z`.
 Group witness semantics come from normalized SQL after the common parser boundary. Raw SQL, composed SQL and dbt compiled model SQL use the same canonical `group_witness` contract. Resolved layer composition retains per-origin `group_witnesses` and `boundary_kind` (physical, intermediate, or unresolved), including upstream dbt model layers, without claiming that an arbitrary downstream layer preserves the same group or that intermediate relations can be freely generated. The dbt manifest provides compiled SQL and graph identity, while catalog metadata can provide types and schema constraints; the adapter does not independently derive grouped witness semantics.
 
 ODCS v3.2 supplies metadata and schema evidence, not executable HAVING SQL, so it cannot itself create group witness obligations. Constraints from any evidence source remain mandatory when checking whether an exact witness **can actually be materialized**. For downstream generation, `sql-tdg TASK-28` consumes source-group obligations and must not infer aggregate proofs by reparsing SQL.
+
+## EXISTS and IN membership witness adapter parity
+
+Direct SQL and dbt compiled-model SQL share the same canonical nested-query
+analyzer. Both expose the optional typed `subquery_witnesses` contract for
+provable EXISTS, NOT EXISTS, IN and NOT IN and default-deny residual directions
+for unsupported relation shapes, unproved correlations or comparison semantics.
+The dbt Core end-to-end outcome snapshot asserts the composed witnesses for
+compiled EXISTS, IN and NOT IN queries, including the physical/intermediate
+origin boundary. ODCS enriches relation metadata but does not synthesize SQL
+predicates or invent membership witnesses. No adapter requires SQL text
+reparsing by downstream generators.
