@@ -362,10 +362,6 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                     })
                 {
                     Some(PhysicalProofGap::NonInvertibleTransformation)
-                } else if matches!(proofs[0].qualifying(), WitnessDirection::Residual { .. })
-                    || matches!(proofs[0].rejected(), WitnessDirection::Residual { .. })
-                {
-                    Some(PhysicalProofGap::IntermediateBoundary)
                 } else {
                     let only_source = walker.sources.iter().next().map(String::as_str);
                     let physical = |direction: &WitnessDirection| match direction {
@@ -381,24 +377,27 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                                     _ => false,
                                 })
                         }),
-                        _ => false,
+                        WitnessDirection::Impossible | WitnessDirection::Residual { .. } => true,
                     };
                     if physical(proofs[0].qualifying()) && physical(proofs[0].rejected()) {
-                        None
-                    } else {
-                        Some(PhysicalProofGap::UnboundPhysicalSource)
+                        let still_residual = matches!(
+                            proofs[0].qualifying(),
+                            WitnessDirection::Residual { .. }
+                        ) || matches!(
+                            proofs[0].rejected(),
+                            WitnessDirection::Residual { .. }
+                        );
+                        return PhysicalSourcePlan {
+                            target_layer_id: target_layer_id.to_string(),
+                            nodes: walker.nodes,
+                            sources: walker.sources.into_iter().collect(),
+                            qualifying: proofs[0].qualifying().clone(),
+                            rejected: proofs[0].rejected().clone(),
+                            gap: still_residual.then_some(PhysicalProofGap::IntermediateBoundary),
+                        };
                     }
+                    Some(PhysicalProofGap::UnboundPhysicalSource)
                 };
-                if gap.is_none() {
-                    return PhysicalSourcePlan {
-                        target_layer_id: target_layer_id.to_string(),
-                        nodes: walker.nodes,
-                        sources: walker.sources.into_iter().collect(),
-                        qualifying: proofs[0].qualifying().clone(),
-                        rejected: proofs[0].rejected().clone(),
-                        gap: None,
-                    };
-                }
             }
             None => gap = Some(PhysicalProofGap::UnresolvedSemantics),
         }
