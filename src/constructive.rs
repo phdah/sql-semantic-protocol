@@ -300,7 +300,10 @@ impl WitnessCase {
     /// This local check is deliberately incomplete: success does not prove cross-row
     /// satisfiability, type compatibility, or producer realizability.
     pub fn new(obligations: Vec<WitnessObligation>, strength: ProofStrength) -> Option<Self> {
-        if obligations.is_empty() || directly_conflicts(&obligations) {
+        if obligations.is_empty()
+            || obligations.iter().any(invalid_obligation)
+            || directly_conflicts(&obligations)
+        {
             return None;
         }
         Some(Self {
@@ -315,6 +318,46 @@ impl WitnessCase {
     /// Strength of the proof relative to the classified result.
     pub fn strength(&self) -> ProofStrength {
         self.strength
+    }
+}
+
+fn invalid_formula(formula: &WitnessFormula) -> bool {
+    match formula {
+        WitnessFormula::All(children) | WitnessFormula::Any(children) =>
+            children.is_empty() || children.iter().any(invalid_formula),
+        WitnessFormula::Not(child) => invalid_formula(child),
+        WitnessFormula::RowTruth { predicate, .. } => !predicate.is_exact(),
+        WitnessFormula::TupleComparison { left, right, .. } =>
+            left.is_empty() || left.len() != right.len(),
+        WitnessFormula::Comparison { .. }
+        | WitnessFormula::IsNull { .. }
+        | WitnessFormula::StringPrefix { .. } => false,
+    }
+}
+
+fn invalid_obligation(obligation: &WitnessObligation) -> bool {
+    match obligation {
+        WitnessObligation::Predicate(formula) => invalid_formula(formula),
+        WitnessObligation::Rows { quantifier, bounds, predicate, closed_world, .. } => {
+            invalid_formula(predicate)
+                || (matches!(quantifier, RowQuantifier::Exists) && bounds.minimum() == 0)
+                || (matches!(quantifier, RowQuantifier::ForAll) && !closed_world)
+        }
+        WitnessObligation::NoMatchingPartner { closed_world, .. } => !closed_world,
+        WitnessObligation::JoinPair { null_extended, .. } => null_extended.is_some(),
+        WitnessObligation::Group { rows, non_null, .. } =>
+            non_null.minimum() > rows.maximum().unwrap_or(u64::MAX),
+        WitnessObligation::Ranked { strict_unique, closed_world, order_by, .. } =>
+            !strict_unique || !closed_world || order_by.is_empty(),
+        WitnessObligation::Membership { closed_world, .. } => !closed_world,
+        WitnessObligation::SetTuple { branch_identity, tuple_columns, matching_rows, closed_world, .. } =>
+            branch_identity.is_empty() || tuple_columns.is_empty()
+                || (*matching_rows == 0 && !closed_world),
+        WitnessObligation::SetResultTuple { nulls_equal, .. } => !nulls_equal,
+        WitnessObligation::OutputRows { layer_id, .. } => layer_id.is_empty(),
+        WitnessObligation::StateRows { relation, .. } => relation.is_empty(),
+        WitnessObligation::Producer { boundary } =>
+            boundary.kind() != GroupBoundaryKind::Intermediate,
     }
 }
 
