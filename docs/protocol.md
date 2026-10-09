@@ -630,7 +630,7 @@ the ODCS adapter supplies metadata but does not invent membership evidence.
 This schema addition is a protocol contract change and must be versioned
 with the application.
 
-## Coupled source-row boolean witnesses (TASK-63, initial subset)
+## Coupled source-row boolean witnesses (TASK-63)
 
 A query with a coupled `AND` or `OR` over one unambiguous source relation may
 carry a `boolean_witness`; resolved composed outcomes retain it in
@@ -640,8 +640,9 @@ representation is **operator-local evidence**, not a promotion of
 
 `condition` is a recursive typed tree with `all` (AND) and `any` (OR)
 nodes, each applying its children to the **same source row**. Supported leaf
-nodes are `null_test` (`column`, `negated`) and `integer_comparison`
-(`column`, `operator`, `literal`). Column endpoints use physical relation
+nodes are `null_test` (`column`, `negated`), `integer_comparison`
+(`column`, `operator`, `literal`), and `string_prefix`
+(`column`, `prefix`, `negated`). Column endpoints use physical relation
 identity and source-column name. Integer comparisons are exact only for
 catalog-confirmed bounded signed integer types and `i64` literals; without
 type evidence the branch remains `residual`. Signed unary literal notation
@@ -653,8 +654,14 @@ source bounds fit entirely within the 16-, 32-, or 64-bit signed target.
 The normalized `signed_integer_cast` expression stores `expression` and
 `target_bits`, while its coupled witness is inverted back to a comparison
 on the original source column. Narrowing, TRY/SAFE_CAST, nonidentity
-arithmetic, LIKE, functional and collation-sensitive predicates remain
-residual. All supported predicates, including repeated-column conjunctions,
+arithmetic, functional and unattested collation-sensitive predicates remain
+residual. A normalized `like_prefix` predicate is supported only when an
+ordinary LIKE/NOT LIKE has exactly one trailing `%`, a nonempty unescaped
+ASCII alphanumeric literal prefix, and a catalog-proven variable-width string
+source column. The source-row `string_prefix` constraint is exact only after
+both `binary_collation` and `no_char_padding` comparison declarations. Other
+LIKE forms, ILIKE, embedded wildcards, escape clauses, untyped or fixed-width
+strings stay residual. NULL is UNKNOWN for both LIKE and NOT LIKE. All supported predicates, including repeated-column conjunctions,
 are solved jointly using bounded source-value partitions. Ambiguous relation
 identity, mixed proven/unproven trees, or oversized searches remain residual.
 
@@ -681,7 +688,9 @@ not establish general physical-lineage invertibility or satisfiability of
 arbitrary warehouse constraints that the protocol does not represent. No Cartesian combination of independent scalar domains may substitute
 for these coupled obligations.
 
-This scoped contract does **not** complete TASK-63: safe LIKE-prefix
-constraints, nonidentity computed expressions, broader cast forms, physical
-lineage beyond direct identity-only projections, minimal output-domain
-conformance, and dialect-specific collation evidence remain to be added.
+The scoped exact subset is intentionally smaller than arbitrary SQL:
+nonidentity arithmetic and functional predicates, unsafe cast forms, LIKE
+under unknown collation, and nondirect physical lineage remain residual.
+Independent output scalar domains are not widened or narrowed by splitting
+correlated conditions into separate per-column domains; the coupled
+`boolean_witness` obligation owns that relation-level information.
