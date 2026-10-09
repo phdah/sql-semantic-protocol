@@ -1,5 +1,8 @@
 //! Canonical operator-local constructive proof translation and fail-closed regression tests.
 
+mod common;
+
+use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, local_constructive_witnesses,
@@ -44,14 +47,7 @@ fn bundle(sql: &str, dialect: &str) -> sql_semantic_protocol::AnalysisBundle {
 
 #[test]
 fn coupled_boolean_reuses_one_row_identity_and_preserves_sql_not_true() {
-    for dialect in [
-        "generic",
-        "postgresql",
-        "mysql",
-        "sqlite",
-        "duckdb",
-        "snowflake",
-    ] {
+    for &dialect in DIALECTS {
         let bundle = bundle("SELECT a FROM t WHERE a > 2 OR b < 0", dialect);
         let ComposedSemantics::Resolved(ref resolved) = bundle.layers()[0].composed_semantics()
         else {
