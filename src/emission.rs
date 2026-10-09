@@ -96,10 +96,15 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
     let mut nodes = BTreeMap::<PhysicalPlanRef, PhysicalPlanNode>::new();
     for plan in &plans {
         for node in plan.nodes() {
-            nodes.entry(node.id().clone()).or_insert_with(|| node.clone());
+            nodes
+                .entry(node.id().clone())
+                .or_insert_with(|| node.clone());
         }
     }
-    value["graph"]["physical_nodes"] = json!(nodes.values().map(physical_plan_node_to_value).collect::<Vec<_>>());
+    value["graph"]["physical_nodes"] = json!(nodes
+        .values()
+        .map(physical_plan_node_to_value)
+        .collect::<Vec<_>>());
     value["graph"]["physical_source_plans"] = json!(plans.iter().map(|plan| json!({
         "layer_id": plan.target_layer_id(),
         "node_refs": plan.nodes().iter().map(|node| physical_plan_ref_to_value(node.id())).collect::<Vec<_>>(),
