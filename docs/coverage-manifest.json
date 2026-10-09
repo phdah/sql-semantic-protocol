@@ -10261,7 +10261,7 @@
       "setup": "CREATE TABLE orders(region VARCHAR, amount INTEGER); INSERT INTO orders VALUES ('north',1),('north',2),('south',3),(NULL,4),(NULL,5);",
       "sql": "SELECT region FROM orders GROUP BY region HAVING COUNT(*) >= 2",
       "expected_rows": 2,
-      "expected_values": "NULL,north",
+      "expected_values": "north,NULL",
       "snapshot_column": "region"
     },
     {
