@@ -271,15 +271,14 @@ fn normalize(
             }
         }
         Predicate::Comparison(comparison) => {
-            let (column, operator, literal) = if let Some(column) =
-                identity_integer_column(comparison.left())
-            {
-                (column, comparison.operator(), comparison.right())
-            } else if let Some(column) = identity_integer_column(comparison.right()) {
-                (column, comparison.operator().reversed(), comparison.left())
-            } else {
-                return residual("comparison is noninvertible or correlates two source values");
-            };
+            let (column, operator, literal) =
+                if let Some(column) = identity_integer_column(comparison.left()) {
+                    (column, comparison.operator(), comparison.right())
+                } else if let Some(column) = identity_integer_column(comparison.right()) {
+                    (column, comparison.operator().reversed(), comparison.left())
+                } else {
+                    return residual("comparison is noninvertible or correlates two source values");
+                };
             if matches!(
                 operator,
                 ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
@@ -471,8 +470,13 @@ fn collect_comparison_literals(
         BooleanRowConstraint::NullTest { column, .. } => {
             thresholds.entry(column.clone()).or_default();
         }
-        BooleanRowConstraint::IntegerComparison { column, literal, .. } => {
-            thresholds.entry(column.clone()).or_default().insert(i128::from(*literal));
+        BooleanRowConstraint::IntegerComparison {
+            column, literal, ..
+        } => {
+            thresholds
+                .entry(column.clone())
+                .or_default()
+                .insert(i128::from(*literal));
         }
         BooleanRowConstraint::Residual { .. } => {}
     }
@@ -554,7 +558,11 @@ fn eval_joint_truth(
                 SqlTruth::False
             })
         }
-        BooleanRowConstraint::IntegerComparison { column, operator, literal } => {
+        BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal,
+        } => {
             use crate::protocol::ComparisonOperator as Op;
             let value = match assignment.get(column)? {
                 Some(value) => *value,
@@ -570,7 +578,11 @@ fn eval_joint_truth(
                 Op::Gte => value >= literal,
                 Op::IsDistinctFrom | Op::IsNotDistinctFrom => return None,
             };
-            Some(if result { SqlTruth::True } else { SqlTruth::False })
+            Some(if result {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            })
         }
         BooleanRowConstraint::Residual { .. } => None,
     }
