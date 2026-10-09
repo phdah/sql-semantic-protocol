@@ -7,9 +7,13 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::bundle::{AnalysisBundle, ComposedSemantics, RelationResolution, TransformationLayer};
+use crate::bundle::{
+    AnalysisBundle, ComposedSemantics, GroupBoundaryKind, RelationResolution, TransformationLayer,
+};
 use crate::constructive::{
-    local_constructive_witnesses, WitnessDirection, WitnessObligation, WitnessOperator,
+    local_constructive_witnesses, ClosedWorldCoverage, CountBounds, ProofStrength, RowQuantifier,
+    WitnessBoundary, WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation,
+    WitnessOperator, WitnessTerm,
 };
 use crate::protocol::{ProtocolStatement, QueryStatement, WriteKind};
 
@@ -121,6 +125,7 @@ pub struct PhysicalSourcePlan {
     sources: Vec<String>,
     qualifying: WitnessDirection,
     rejected: WitnessDirection,
+    zero_output: WitnessDirection,
     gap: Option<PhysicalProofGap>,
 }
 
@@ -148,6 +153,12 @@ impl PhysicalSourcePlan {
     /// Sufficient rejection witness for an individual physical row, if proved.
     pub fn rejected(&self) -> &WitnessDirection {
         &self.rejected
+    }
+
+    /// Sufficient closed-world source obligations for exactly zero terminal rows.
+    /// This is independent of the single-row qualifying and rejected directions.
+    pub fn zero_output(&self) -> &WitnessDirection {
+        &self.zero_output
     }
 
     /// Why physical row classification is unproved. None is not an
@@ -290,6 +301,71 @@ fn transparent_projection(query: &QueryStatement) -> bool {
             .all(|column| column.plain_copy_source().is_some())
 }
 
+/// A completely empty controllable source ensures zero output only through
+/// transformations whose row-shape cannot invent rows.
+///
+/// An empty source is not a constructive proof of any positive cardinality,
+/// and must not be applied to global aggregates or source-free projections.
+fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -> WitnessDirection {
+    if walker.sources.len() != 1 {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    }
+    let Some(source) = walker.sources.iter().next() else {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    };
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        let Some(layer) = walker.layers.get(id.as_str()).copied() else {
+            return residual(PhysicalProofGap::MissingProducer);
+        };
+        let Some(query) = query_for(bundle, layer) else {
+            return residual(PhysicalProofGap::UnresolvedSemantics);
+        };
+        if query.sources().len() != 1
+            || !query.joins().is_empty()
+            || query.aggregation().is_some()
+            || query.set_operation().is_some()
+            || query.proven_single_row_output()
+            || !query.diagnostics().is_empty()
+            || !(query.row_preserving_projection() || query.filter_only_row_shape())
+        {
+            return residual(PhysicalProofGap::NonInvertibleTransformation);
+        }
+    }
+    let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, target) else {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    };
+    let Some(bounds) = CountBounds::new(0, Some(0)) else {
+        return residual(PhysicalProofGap::UnresolvedSemantics);
+    };
+    let tautology = WitnessFormula::IsNull {
+        term: WitnessTerm::Integer(1),
+        negated: true,
+    };
+    let Some(case) = WitnessCase::new(
+        vec![
+            WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds,
+                predicate: tautology,
+                closed_world: true,
+            },
+            WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            },
+        ],
+        ProofStrength::Sufficient,
+    ) else {
+        return residual(PhysicalProofGap::UnresolvedSemantics);
+    };
+    WitnessDirection::feasible(vec![case])
+        .unwrap_or_else(|| residual(PhysicalProofGap::UnresolvedSemantics))
+}
+
 /// Construct canonical producer references, and lift an individual physical-row
 /// predicate witness only when the entire path is transparently reversible.
 ///
@@ -304,6 +380,11 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         Err(PhysicalProofGap::UnknownTarget)
     };
     let mut gap = walk.err();
+    let zero_output = if let Some(reason) = gap {
+        residual(reason)
+    } else {
+        prove_zero_rows(bundle, &walker, target_layer_id)
+    };
     if gap.is_none() {
         let target = walker.layers.get(target_layer_id).copied();
         match target.and_then(|layer| match layer.composed_semantics() {
@@ -389,6 +470,7 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                             sources: walker.sources.into_iter().collect(),
                             qualifying: proofs[0].qualifying().clone(),
                             rejected: proofs[0].rejected().clone(),
+                            zero_output,
                             gap: still_residual.then_some(PhysicalProofGap::IntermediateBoundary),
                         };
                     }
@@ -405,6 +487,7 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         sources: walker.sources.into_iter().collect(),
         qualifying: residual(gap),
         rejected: residual(gap),
+        zero_output,
         gap: Some(gap),
     }
 }
