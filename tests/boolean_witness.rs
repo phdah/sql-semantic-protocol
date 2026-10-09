@@ -829,6 +829,51 @@ fn filtered_or_limited_identity_projections_keep_intermediate_witnesses() {
 }
 
 #[test]
+fn intermediate_typed_witness_does_not_assume_physical_type_parity() {
+    let schemas = [RelationSchema::new(
+        "stage",
+        vec![
+            SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("b", "INTEGER", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap()];
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let inputs = [
+        SqlInput::inline("CREATE TABLE stage AS SELECT a, b FROM raw_t"),
+        SqlInput::inline(
+            "CREATE TABLE sink AS SELECT a FROM stage WHERE a > 2 OR b < 0",
+        ),
+    ];
+    let dialect = PostgreSqlDialect {};
+    let configured = [
+        ConfiguredSqlInput::new("stage", &inputs[0], "postgresql", &dialect),
+        ConfiguredSqlInput::new("sink", &inputs[1], "postgresql", &dialect),
+    ];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    let sink = bundle
+        .layers()
+        .iter()
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|output| output.relation_name() == Some("sink"))
+        })
+        .unwrap();
+    let ComposedSemantics::Resolved(composed) = sink.composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = &composed.boolean_witnesses()[0];
+    assert!(matches!(
+        witness.witness().qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert_eq!(witness.boundary_kind(), GroupBoundaryKind::Intermediate);
+    assert_eq!(witness.witness().source_relation(), "stage");
+}
+
+#[test]
 fn dialects_preserve_the_same_null_sensitive_source_tree() {
     let sql = "SELECT a FROM t WHERE a IS NULL OR b IS NOT NULL";
     for name in DIALECTS {
