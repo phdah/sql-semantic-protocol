@@ -301,7 +301,8 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                 }).all(|layer| {
                     let Some(query) = query_for(bundle, layer) else { return false; };
                     if layer.id() == proofs[0].origin_layer_id() {
-                        query.sources().len() == 1
+                        query.filter_only_row_shape()
+                            && query.sources().len() == 1
                             && query.joins().is_empty()
                             && query.aggregation().is_none()
                             && query.set_operation().is_none()
@@ -317,8 +318,8 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                     }
                 }) {
                     Some(PhysicalProofGap::NonInvertibleTransformation)
-                } else if proofs[0].qualifying().is_residual()
-                    || proofs[0].rejected().is_residual()
+                } else if matches!(proofs[0].qualifying(), WitnessDirection::Residual { .. })
+                    || matches!(proofs[0].rejected(), WitnessDirection::Residual { .. })
                 {
                     Some(PhysicalProofGap::IntermediateBoundary)
                 } else {
