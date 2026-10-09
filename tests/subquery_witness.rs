@@ -255,18 +255,31 @@ fn nested_layer_preserves_originating_subquery_witness() {
     let origin = bundle
         .layers()
         .iter()
-        .find(|layer| layer.produces().iter().any(|out| out.relation_name() == Some("matching_orders")))
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|out| out.relation_name() == Some("matching_orders"))
+        })
         .expect("producing layer");
     let downstream = bundle
         .layers()
         .iter()
-        .find(|layer| layer.produces().iter().any(|out| out.relation_name() == Some("downstream")))
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|out| out.relation_name() == Some("downstream"))
+        })
         .expect("consuming layer");
     let ComposedSemantics::Resolved(semantics) = downstream.composed_semantics() else {
         panic!("must compose nested layer");
     };
     assert_eq!(semantics.subquery_witnesses().len(), 1);
-    assert_eq!(semantics.subquery_witnesses()[0].origin_layer_id(), origin.id());
+    assert_eq!(
+        semantics.subquery_witnesses()[0].origin_layer_id(),
+        origin.id()
+    );
 }
 
 #[test]
