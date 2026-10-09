@@ -272,7 +272,10 @@ fn product(a: CountBounds, b: CountBounds) -> BagCountProof {
 }
 
 fn intersect(a: CountBounds, b: CountBounds) -> Option<CountBounds> {
-    CountBounds::new(a.minimum().max(b.minimum()), min_upper(a.maximum(), b.maximum()))
+    CountBounds::new(
+        a.minimum().max(b.minimum()),
+        min_upper(a.maximum(), b.maximum()),
+    )
 }
 
 fn min_upper(a: Option<u64>, b: Option<u64>) -> Option<u64> {
@@ -456,8 +459,14 @@ impl BagLaw {
                         return BagCountProof::Impossible;
                     };
                     (
-                        BagEvidence { bounds: shared, ..left },
-                        Some(BagEvidence { bounds: shared, ..right }),
+                        BagEvidence {
+                            bounds: shared,
+                            ..left
+                        },
+                        Some(BagEvidence {
+                            bounds: shared,
+                            ..right
+                        }),
                     )
                 } else {
                     (left, Some(right))
@@ -477,7 +486,9 @@ impl BagLaw {
             }
             SetTuple(rule)
                 if left.scope() == BagScope::CandidateTuple
-                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CandidateTuple) =>
+                    && pair
+                        .as_ref()
+                        .is_some_and(|r| r.scope() == BagScope::CandidateTuple) =>
             {
                 if let Some(right) = pair {
                     if left.tuple_identity().is_none()
@@ -513,7 +524,9 @@ impl BagLaw {
             },
             EquiJoin { kind, keys }
                 if left.scope() == BagScope::CompleteRelation
-                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                    && pair
+                        .as_ref()
+                        .is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
             {
                 if let Some(right) = pair {
                     match keys {
@@ -535,7 +548,9 @@ impl BagLaw {
             }
             AppendRows
                 if left.scope() == BagScope::CompleteRelation
-                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                    && pair
+                        .as_ref()
+                        .is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
             {
                 if let Some(right) = pair {
                     sum(left.bounds(), right.bounds())
@@ -547,7 +562,9 @@ impl BagLaw {
             }
             DeleteRows
                 if left.scope() == BagScope::CompleteRelation
-                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                    && pair
+                        .as_ref()
+                        .is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
             {
                 if let Some(right) = pair {
                     if left
@@ -582,7 +599,9 @@ impl BagLaw {
             }
             UpdateRows
                 if left.scope() == BagScope::CompleteRelation
-                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                    && pair
+                        .as_ref()
+                        .is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
             {
                 if let Some(right) = pair {
                     if left
@@ -712,12 +731,10 @@ mod tests {
 
     #[test]
     fn repeated_set_branches_share_candidate_multiplicity() {
-        let first = evidence(2, Some(4), BagScope::CandidateTuple).with_source(
-            BagSourceIdentity::new("t", "a").expect("source"),
-        );
-        let second = evidence(3, Some(5), BagScope::CandidateTuple).with_source(
-            BagSourceIdentity::new("t", "b").expect("source"),
-        );
+        let first = evidence(2, Some(4), BagScope::CandidateTuple)
+            .with_source(BagSourceIdentity::new("t", "a").expect("source"));
+        let second = evidence(3, Some(5), BagScope::CandidateTuple)
+            .with_source(BagSourceIdentity::new("t", "b").expect("source"));
         assert_eq!(
             BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference)
                 .transfer(first, Some(second)),
@@ -751,7 +768,8 @@ mod tests {
     fn joins_count_duplicate_pairs_and_treat_null_equalities_as_nonmatching() {
         let l = exact(3, BagScope::CompleteRelation);
         let r = exact(2, BagScope::CompleteRelation);
-        let join = |kind, keys| BagLaw::EquiJoin { kind, keys }.transfer(l.clone(), Some(r.clone()));
+        let join =
+            |kind, keys| BagLaw::EquiJoin { kind, keys }.transfer(l.clone(), Some(r.clone()));
         assert_eq!(
             number(join(JoinKind::Inner, BagJoinKeys::EqualNonNull)).minimum(),
             6
