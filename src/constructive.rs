@@ -1174,15 +1174,17 @@ mod tests {
 
     #[test]
     fn distinct_sufficient_examples_are_not_a_joint_satisfiability_proof() {
-        let sufficient = |count| WitnessDirection::feasible(vec![
-            WitnessCase::new(
+        let sufficient = |count| {
+            WitnessDirection::feasible(vec![WitnessCase::new(
                 vec![WitnessObligation::OutputRows {
                     layer_id: "terminal".to_string(),
                     bounds: bound(count, Some(count)),
                 }],
                 ProofStrength::Sufficient,
-            ).expect("case")
-        ]).expect("direction");
+            )
+            .expect("case")])
+            .expect("direction")
+        };
         assert!(matches!(
             sufficient(1).all(&sufficient(2)),
             WitnessDirection::Residual { .. }
