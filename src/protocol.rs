@@ -3021,7 +3021,9 @@ pub struct LikePrefixPredicate {
 
 impl LikePrefixPredicate {
     pub(crate) fn new(expression: Expression, prefix: String, negated: bool) -> Self {
-        debug_assert!(!prefix.is_empty() && prefix.bytes().all(|byte| byte.is_ascii_alphanumeric()));
+        debug_assert!(
+            !prefix.is_empty() && prefix.bytes().all(|byte| byte.is_ascii_alphanumeric())
+        );
         Self {
             expression,
             prefix,
