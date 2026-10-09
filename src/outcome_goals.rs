@@ -424,9 +424,14 @@ fn assess_goal(
         }
 
         let distinct_one_column = output.columns().len() == 1
-            && query.aggregation().is_some_and(|aggregation| {
+            && (query.aggregation().is_some_and(|aggregation| {
                 aggregation.distinct() && aggregation.distinct_on().is_empty()
-            });
+            }) || query.set_operation().and_then(|operation| operation.multiplicity_rule())
+                .is_some_and(|rule| matches!(rule,
+                    crate::protocol::SetMultiplicityRule::UnionDistinct
+                        | crate::protocol::SetMultiplicityRule::IntersectDistinct
+                        | crate::protocol::SetMultiplicityRule::ExceptDistinct
+                )));
         if distinct_one_column
             && goal
                 .distributions()
