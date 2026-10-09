@@ -27,6 +27,8 @@
 //!   source obligations without pretending to solve full physical-source DAGs.
 //! - BagLaw transfers closed-world count bounds through proven bag operators without
 //!   claiming source construction or guessing unsupported NULL/key semantics.
+//! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
+//!   multiplicities with NULL, duplicates and shared physical aliases.
 
 mod analysis;
 mod bag_histogram;
