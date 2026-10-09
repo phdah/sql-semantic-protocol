@@ -98,7 +98,8 @@ pub(crate) fn construct(
     goal: &OutcomeGoal,
 ) -> Option<OutcomeWitness> {
     let rows = goal.rows().or_else(|| {
-        query.group_rows_match_surviving_groups()
+        query
+            .group_rows_match_surviving_groups()
             .then(|| goal.groups())
             .flatten()
     })?;
