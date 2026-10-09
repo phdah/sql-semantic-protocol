@@ -195,15 +195,23 @@ fn variant_evidence_uses_fail_closed_defaults_without_inheriting_feature_claims(
                     ),
                     "unexpected per-variant evidence for {syntax}/{name}"
                 );
-                if parse == "fixture_tested" {
-                    assert!(
-                        fixtures.iter().any(|fixture| {
-                            fixture["feature"] == feature["id"]
-                                && required_array(fixture, "dialects").contains(&Value::from(*name))
-                                && required_string(fixture, "sql").contains(syntax)
-                        }),
-                        "{syntax}/{name}: variant claims need an actual SQL fixture"
-                    );
+                if parse != "unverified" {
+                    let ids = required_array(explicit, "fixture_ids");
+                    assert!(!ids.is_empty(), "{syntax}/{name}: missing fixture ids");
+                    for id in ids {
+                        assert!(
+                            fixtures.iter().any(|fixture| {
+                                fixture["id"] == *id
+                                    && fixture["feature"] == feature["id"]
+                                    && required_array(fixture, "dialects")
+                                        .contains(&Value::from(*name))
+                                    && required_array(fixture, "covered_variants")
+                                        .contains(&Value::from(syntax))
+                                    && fixture["variant_status"] == parse
+                            }),
+                            "{syntax}/{name}: evidence must cite a real fixture"
+                        );
+                    }
                 }
                 if !explicit.is_null() {
                     assert!(explicit["parse"].as_str().is_some());
@@ -235,6 +243,19 @@ fn parser_and_analysis_claims_are_exercised_by_manifest_fixtures() {
             assert!(checked.insert((fixture_id, name)), "duplicate fixture");
             let cell = &feature["dialects"][name];
             assert_eq!(cell["parse"], "fixture_tested", "{fixture_id}/{name}");
+            assert_eq!(cell["canonical"], "unverified", "analysis success is not canonical proof");
+            for variant in required_array(fixture, "covered_variants") {
+                let syntax = variant.as_str().expect("known variant");
+                assert!(
+                    required_array(feature, "variants").contains(&Value::from(syntax)),
+                    "{fixture_id}: missing inventory variant"
+                );
+                let evidence = &feature["variant_overrides"][syntax][name];
+                assert!(
+                    required_array(evidence, "fixture_ids").contains(&Value::from(fixture_id)),
+                    "{fixture_id}/{name}: variant must retain fixture reference"
+                );
+            }
             assert!(required_array(cell, "fixture_ids").contains(&Value::from(fixture_id)));
             let dialect = dialect_from_name(name).expect("fixture dialect must exist");
             let analyzed = analyze_sql(sql, name, dialect.as_ref())
