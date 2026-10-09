@@ -184,10 +184,18 @@ fn projected_rank_filters_keep_the_original_partition_and_boundary() {
     ] {
         let protocol = analyze(sql);
         let query = first(&protocol);
-        let witness = query.window_witness().expect("nested ranked projection should retain witness");
+        let witness = query
+            .window_witness()
+            .expect("nested ranked projection should retain witness");
         assert_eq!(witness.boundary(), Some("events"));
         assert_eq!(witness.partition_by()[0].name(), "account_id");
-        assert!(matches!(witness.qualifying(), WindowWitnessDirection::Exact(_)));
-        assert!(matches!(witness.rejected(), WindowWitnessDirection::Exact(_)));
+        assert!(matches!(
+            witness.qualifying(),
+            WindowWitnessDirection::Exact(_)
+        ));
+        assert!(matches!(
+            witness.rejected(),
+            WindowWitnessDirection::Exact(_)
+        ));
     }
 }
