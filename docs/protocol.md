@@ -648,8 +648,9 @@ type evidence the branch remains `residual`. Signed unary literal notation
 (`-2` and `+3`) is normalized semantically rather than reparsed as SQL.
 Logical operand sequences always contain at least two children. Casts, computed/functional
 expressions, LIKE and collation-sensitive comparisons are not yet invertible
-and remain residual. Repeated-column predicates, ambiguous relation identity,
-or mixed proven/unproven trees do not produce exact directions.
+and remain residual. Repeated-column predicates are solved jointly using bounded source-value
+partitions; ambiguous relation identity or mixed proven/unproven trees remain
+residual. Oversized search spaces also remain residual.
 
 Each `qualifying` or `rejected` direction has either
 `{status:"exact",truth:"true"|"not_true"}` or
