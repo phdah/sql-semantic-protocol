@@ -46,8 +46,14 @@ Parser support does not prove executed semantics. A release-quality protocol nee
 - [ ] #4 Distinguish parse, canonical proof, generator-ready witness and actual engine execution. Require real-engine oracle for each supported engine claim; mark other engines unverified.
 - [ ] #5 Fail CI on missing matrix entries, unreviewed residuals and any newly parsed form incorrectly treated as exact.
 - [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [ ] #7 Require CI parser and canonical-equivalence tests for **all 13 exposed dialects** and every reviewed shared/dialect-specific supported variant. For semantically equivalent SQL, compare exact parser-independent protocol outcomes, value-domain bounds/inclusivity, lineage, membership proof, cardinality, write effects and residual state, excluding only dialect provenance metadata.
+- [ ] #8 When SQL syntax or engine semantics genuinely differ, declare explicit dialect/session assumptions and equivalence mappings; block any unverified advertised semantic support. Native vendor-engine execution evidence remains distinct from parsing/canonical proof and DuckDB oracles.
 <!-- AC:END -->
 
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Maintainer decision (2026-10-09)
+
+Approved [13-dialect canonical-equivalence acceptance](../../docs/coverage-signoff.md): parsing runs in CI without vendor databases and equivalent SQL in every supported dialect must emit **semantically identical canonical protocol outcomes**, not only parse. DuckDB executes the equivalent common SQL and validates actual generated data. Externally unavailable engines must never be marked execution-certified. Fixture baseline tests in TASK-66 are representative, not sufficient for TASK-88 acceptance.
