@@ -289,10 +289,11 @@ impl BooleanWitness {
                         .or_insert(derived);
                     true
                 }
+                // Other exact conjuncts do not invalidate independently proven
+                // integer bounds; they simply contribute no scalar bounds.
                 BooleanRowConstraint::NullTest { .. }
-                | BooleanRowConstraint::StringPrefix { .. }
-                | BooleanRowConstraint::Any(_)
-                | BooleanRowConstraint::Residual { .. } => false,
+                | BooleanRowConstraint::StringPrefix { .. } => true,
+                BooleanRowConstraint::Any(_) | BooleanRowConstraint::Residual { .. } => false,
             }
         }
         let mut domains = BTreeMap::new();
