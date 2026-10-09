@@ -461,14 +461,17 @@ fn normalize(
             }
         }
         Predicate::Comparison(comparison) => {
-            let (column, operator, literal) =
-                if let Some(column) = invertible_integer_column(comparison.left(), sources, integer_evidence) {
-                    (column, comparison.operator(), comparison.right())
-                } else if let Some(column) = invertible_integer_column(comparison.right(), sources, integer_evidence) {
-                    (column, comparison.operator().reversed(), comparison.left())
-                } else {
-                    return residual("comparison is noninvertible or correlates two source values");
-                };
+            let (column, operator, literal) = if let Some(column) =
+                invertible_integer_column(comparison.left(), sources, integer_evidence)
+            {
+                (column, comparison.operator(), comparison.right())
+            } else if let Some(column) =
+                invertible_integer_column(comparison.right(), sources, integer_evidence)
+            {
+                (column, comparison.operator().reversed(), comparison.left())
+            } else {
+                return residual("comparison is noninvertible or correlates two source values");
+            };
             if matches!(
                 operator,
                 ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
