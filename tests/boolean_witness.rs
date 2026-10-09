@@ -278,6 +278,40 @@ fn filtered_upstream_domains_survive_without_false_physical_witnesses() {
 }
 
 #[test]
+fn widened_cast_offsets_produce_exact_composed_scalar_bounds() {
+    let bundle = typed_bundle(
+        "SELECT a FROM t WHERE CAST(a AS BIGINT) + 1 > 3 AND CAST(a AS BIGINT) - 1 <= 9",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+
+    let ValueDomain::Ranges(ranges) = semantics.output().columns()[0].domain() else {
+        panic!("affine conjunction must tighten projected integer domain");
+    };
+    let [range] = ranges.ranges() else {
+        panic!("expected one exact bounded output interval");
+    };
+    let lower = range.lower().expect("exclusive lower bound");
+    let upper = range.upper().expect("inclusive upper bound");
+    assert_eq!(
+        lower.value().value(),
+        &sql_semantic_protocol::LiteralValue::Number("2".into())
+    );
+    assert!(!lower.inclusive());
+    assert_eq!(
+        upper.value().value(),
+        &sql_semantic_protocol::LiteralValue::Number("10".into())
+    );
+    assert!(upper.inclusive());
+}
+
+#[test]
 fn untyped_integer_conditions_and_computed_branches_default_to_residual() {
     for sql in [
         "SELECT a FROM t WHERE a > 2 OR b < 0",
