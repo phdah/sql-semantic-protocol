@@ -248,10 +248,15 @@ whose ON/USING condition normalizes to a single physical column-to-column
 comparison with unambiguous instance lineage. Self-joins preserve separate alias
 identities even when both endpoints name the same physical relation. Join trees,
 disjunctions, multiple ON terms, computed operands, null-safe comparisons,
-unresolved projection lineage, and unrecognized join kinds emit **residual**
+unresolved projection lineage, row-changing upstream producers (including filters,
+DISTINCT, aggregation, and LIMIT), and unrecognized join kinds emit **residual**
 directions, never a guessed pair of witnesses. Upstream witness evidence is carried
 with its originating layer through composition, not silently reinterpreted against
-the downstream join. The older whole-scope `condition_exactness` remains residual
+the downstream join. A local witness is resolved against physical input rows only when
+any intermediate producer is proven to preserve source row membership, such as a chain
+of plain-copy projections without filtering. A filtered stage may remove a matching
+partner, so its join emits residual directions rather than an incorrect exact
+physical-source non-match. The older whole-scope `condition_exactness` remains residual
 for outer/semi/anti joins and repeated relations: proving a local join witness does
 not automatically prove exact membership of the entire query. Consumers must inspect
 both witness directions, the scope exactness, source datatypes and comparison
