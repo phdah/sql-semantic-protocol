@@ -283,8 +283,20 @@ fn assessed(
     }
 }
 
-fn proved(goal: OutcomeGoal, reason: &str, min_rows: u64, max_rows: Option<u64>, witness: crate::outcome_proofs::OutcomeWitness) -> EvaluatedOutcomeGoal {
-    let mut result = assessed(goal, OutcomeGoalStatus::Feasible, reason, min_rows, max_rows);
+fn proved(
+    goal: OutcomeGoal,
+    reason: &str,
+    min_rows: u64,
+    max_rows: Option<u64>,
+    witness: crate::outcome_proofs::OutcomeWitness,
+) -> EvaluatedOutcomeGoal {
+    let mut result = assessed(
+        goal,
+        OutcomeGoalStatus::Feasible,
+        reason,
+        min_rows,
+        max_rows,
+    );
     result.witness = Some(witness);
     result
 }
@@ -336,9 +348,17 @@ fn assess_goal(
     let min_rows = u64::from(singleton);
     let rank_upper = query.and_then(crate::outcome_proofs::rank_upper_bound);
     let max_rows = singleton.then_some(1).or(rank_upper);
-    if goal.rows.is_some_and(|requested| max_rows.is_some_and(|max| requested > max)) {
-        return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable,
-            "requested output exceeds the proven final result-row upper bound", min_rows, max_rows));
+    if goal
+        .rows
+        .is_some_and(|requested| max_rows.is_some_and(|max| requested > max))
+    {
+        return Ok(assessed(
+            goal,
+            OutcomeGoalStatus::Unsatisfiable,
+            "requested output exceeds the proven final result-row upper bound",
+            min_rows,
+            max_rows,
+        ));
     }
     if let Some(rows) = goal.rows {
         if singleton && rows != 1 {
@@ -488,8 +508,6 @@ fn assess_goal(
                 return Ok(proved(goal, "all physical source rows and operator multiplicities are constructively specified", min_rows, max_rows, witness));
             }
         }
-
-
     }
 
     Ok(assessed(goal, OutcomeGoalStatus::Residual, "SQL cardinality, grouping, join multiplicity, window and distribution witnesses are not sufficient to prove this request", min_rows, max_rows))
