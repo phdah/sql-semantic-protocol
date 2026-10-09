@@ -343,13 +343,19 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
             // when all inputs are empty, regardless of INNER/OUTER/SEMI/ANTI
             // multiplicity. An opaque joined relation or row producer may
             // emit rows independently of the named physical sources.
-            let names = query.sources().iter().map(|source| source.name())
+            let names = query
+                .sources()
+                .iter()
+                .map(|source| source.name())
                 .collect::<BTreeSet<_>>();
             if query.joins().iter().any(|join| {
                 join.kind() == crate::protocol::JoinKind::Unknown
                     || !names.contains(join.left().relation())
                     || !names.contains(join.right().relation())
-            }) || names.iter().any(|name| !layer.consumes().contains(&layer.canonical_relation(name))) {
+            }) || names
+                .iter()
+                .any(|name| !layer.consumes().contains(&layer.canonical_relation(name)))
+            {
                 return residual(PhysicalProofGap::UnsupportedOperator);
             }
         }
@@ -359,7 +365,8 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
     };
     let mut obligations = Vec::new();
     for source in &walker.sources {
-        let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, target) else {
+        let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, target)
+        else {
             return residual(PhysicalProofGap::UnboundPhysicalSource);
         };
         obligations.push(WitnessObligation::Rows {
