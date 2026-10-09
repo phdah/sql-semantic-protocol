@@ -47,7 +47,7 @@ fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
 #[test]
 fn simple_filter_has_both_physical_row_classifications_across_dialects() {
     for &dialect in DIALECTS {
-        let b = bundle(&["SELECT a, b FROM t WHERE a > 2"], dialect);
+        let b = bundle(&["SELECT a, b FROM t WHERE a > 2 OR b < 0"], dialect);
         let plan = physical_source_plan(&b, b.layers()[0].id());
         assert_eq!(plan.gap(), None, "{dialect}: {plan:?}");
         assert_eq!(plan.sources(), &["t".to_string()]);
@@ -76,7 +76,7 @@ fn transparent_producer_is_a_reference_not_a_second_physical_table() {
         &[
             "CREATE TABLE stage AS SELECT a, b FROM t",
             "CREATE TABLE mart AS SELECT a, b FROM stage",
-            "SELECT a FROM mart WHERE a > 2",
+            "SELECT a FROM mart WHERE a > 2 OR b < 0",
         ],
         "postgresql",
     );
@@ -108,8 +108,8 @@ fn transparent_producer_is_a_reference_not_a_second_physical_table() {
 fn filtered_upstream_and_downstream_require_joint_satisfiability_proof() {
     let b = bundle(
         &[
-            "CREATE TABLE stage AS SELECT a, b FROM t WHERE a > 10",
-            "SELECT a FROM stage WHERE a < 20",
+            "CREATE TABLE stage AS SELECT a, b FROM t WHERE a > 10 OR b < 0",
+            "SELECT a FROM stage WHERE a < 20 OR b < 0",
         ],
         "postgresql",
     );
@@ -126,9 +126,9 @@ fn filtered_upstream_and_downstream_require_joint_satisfiability_proof() {
 #[test]
 fn computed_and_row_limited_projections_do_not_upgrade_local_evidence() {
     for query in [
-        "SELECT a + 1 AS b FROM t WHERE a > 2",
-        "SELECT a FROM t WHERE a > 2 LIMIT 1",
-        "SELECT DISTINCT a FROM t WHERE a > 2",
+        "SELECT a + 1 AS b FROM t WHERE a > 2 OR b < 0",
+        "SELECT a FROM t WHERE a > 2 OR b < 0 LIMIT 1",
+        "SELECT DISTINCT a FROM t WHERE a > 2 OR b < 0",
     ] {
         let b = bundle(&[query], "postgresql");
         let plan = physical_source_plan(&b, b.layers()[0].id());
@@ -164,7 +164,7 @@ fn partial_writes_and_missing_targets_fail_closed() {
     let b = bundle(
         &[
             "INSERT INTO stage SELECT a, b FROM t",
-            "SELECT a FROM stage WHERE a > 2",
+            "SELECT a FROM stage WHERE a > 2 OR b < 0",
         ],
         "postgresql",
     );
@@ -180,7 +180,7 @@ fn duckdb_terminal_rows_agree_with_physical_source_membership_classification() {
     let b = bundle(
         &[
             "CREATE TABLE stage AS SELECT a, b FROM t",
-            "SELECT a FROM stage WHERE a > 2",
+            "SELECT a FROM stage WHERE a > 2 OR b < 0",
         ],
         "postgresql",
     );
@@ -194,7 +194,7 @@ fn duckdb_terminal_rows_agree_with_physical_source_membership_classification() {
     )
     .expect("fixture");
     let mut stmt = conn
-        .prepare("SELECT a FROM stage WHERE a > 2")
+        .prepare("SELECT a FROM stage WHERE a > 2 OR b < 0")
         .expect("query");
     let output = stmt
         .query_map([], |row| row.get::<_, i32>(0))
@@ -205,7 +205,7 @@ fn duckdb_terminal_rows_agree_with_physical_source_membership_classification() {
     // SQL NOT TRUE covers both a=1 (FALSE) and a=NULL (UNKNOWN).
     let count: i64 = conn
         .query_row(
-            "SELECT COUNT(*) FROM t WHERE (a > 2) IS NOT TRUE",
+            "SELECT COUNT(*) FROM t WHERE (a > 2 OR b < 0) IS NOT TRUE",
             [],
             |row| row.get(0),
         )
