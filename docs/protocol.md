@@ -646,12 +646,17 @@ identity and source-column name. Integer comparisons are exact only for
 catalog-confirmed bounded signed integer types and `i64` literals; without
 type evidence the branch remains `residual`. Signed unary literal notation
 (`-2` and `+3`) is normalized semantically rather than reparsed as SQL.
-Logical operand sequences always contain at least two children. Only identity arithmetic (`+a`, `a+0`, `a-0`) is
-invertible; casts, nonidentity computed/functional expressions, LIKE and
-collation-sensitive comparisons are not yet invertible
-and remain residual. All supported predicates, including repeated-column conjunctions,
-are solved jointly using bounded source-value partitions; ambiguous relation identity or mixed proven/unproven trees remain
-residual. Oversized search spaces also remain residual.
+Logical operand sequences always contain at least two children. The proven
+invertible expression subset includes identity arithmetic (`+a`, `a+0`,
+`0+a`, `a-0`) and explicit ordinary signed-integer CASTs where catalog
+source bounds fit entirely within the 16-, 32-, or 64-bit signed target.
+The normalized `signed_integer_cast` expression stores `expression` and
+`target_bits`, while its coupled witness is inverted back to a comparison
+on the original source column. Narrowing, TRY/SAFE_CAST, nonidentity
+arithmetic, LIKE, functional and collation-sensitive predicates remain
+residual. All supported predicates, including repeated-column conjunctions,
+are solved jointly using bounded source-value partitions. Ambiguous relation
+identity, mixed proven/unproven trees, or oversized searches remain residual.
 
 Each `qualifying` or `rejected` direction has either
 `{status:"exact",truth:"true"|"not_true"}` or
@@ -676,6 +681,7 @@ not establish general physical-lineage invertibility or satisfiability of
 arbitrary warehouse constraints that the protocol does not represent. No Cartesian combination of independent scalar domains may substitute
 for these coupled obligations.
 
-This initial contract does **not** complete TASK-63: invertible casts and
-nonidentity computations, safe LIKE-prefix constraints, full physical-lineage
-inversion, output-domain conformance, and dialect-specific collation evidence remain to be added.
+This scoped contract does **not** complete TASK-63: safe LIKE-prefix
+constraints, nonidentity computed expressions, broader cast forms, physical
+lineage beyond direct identity-only projections, minimal output-domain
+conformance, and dialect-specific collation evidence remain to be added.
