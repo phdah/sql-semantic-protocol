@@ -442,8 +442,10 @@ column domains. For a single source such as
 `a IS NULL OR b IS NULL`, the analyzer may instead carry a typed
 `boolean_witness` whose `any` branches apply to the **same row**.
 Its qualifying truth is TRUE, while its rejected truth is FALSE **or UNKNOWN**.
-This does not alter the conservative independent `column_domains` or grant
-whole-query row-membership exactness.
+A fully proven conjunctive integer filter can additionally tighten the
+independent source and projected output domains. Disjunctions retain their
+conservative independent `column_domains`; neither case grants
+whole-query row-membership exactness without all other proof obligations.
 
 Signed integer comparisons require authoritative catalog datatypes and
 representable signed literals. Overflow-free identity arithmetic (`+a`, `a+0`, `0+a`, `a-0`),
@@ -468,4 +470,6 @@ retain their originating layer. Only a proven single-relation, identity-only
 lineage chain can remap the coupled condition to physical column references;
 computed or ambiguous projections, and even identity projections behind
 WHERE, DISTINCT or LIMIT, preserve the intermediate boundary. A physical
-mapping additionally requires a row-preserving producer chain.
+mapping additionally requires a row-preserving producer chain. Type- and
+collation-dependent comparisons remain intermediate across producer layers
+unless source-schema parity is independently established.
