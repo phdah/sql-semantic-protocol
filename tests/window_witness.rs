@@ -146,6 +146,13 @@ fn duckdb_rank_oracle_confirms_matching_rejected_and_impossible_witnesses() {
     assert_eq!(count("rn <= 2"), 4);
     assert_eq!(count("rn > 2"), 1);
     assert_eq!(count("rn <= 0"), 0);
+    for (predicate, expected) in [("rn <= 2", 4), ("rn = 1", 2), ("rn <= 0", 0)] {
+        let direct = format!(
+            "SELECT COUNT(*) FROM (SELECT account_id, score, ROW_NUMBER() OVER (PARTITION BY account_id ORDER BY score NULLS LAST) AS rn FROM events QUALIFY {predicate})"
+        );
+        let actual: i64 = db.query_row(&direct, [], |row| row.get(0)).unwrap();
+        assert_eq!(actual, expected, "{predicate}");
+    }
     // A non-unique ORDER BY produces an arbitrary tie winner; the witness
     // therefore explicitly requires strictly distinct order tuples.
 }
