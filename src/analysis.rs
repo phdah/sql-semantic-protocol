@@ -673,6 +673,11 @@ fn analyze_query(
             }
         },
     );
+    let (column_domains, output) = refine_boolean_qualifying_outcomes(
+        column_domains,
+        output,
+        boolean_witness.as_ref(),
+    );
     sort_diagnostics(&mut diagnostics);
 
     // Only a plain one-to-one projection preserves all source-row truth
@@ -714,6 +719,73 @@ fn analyze_query(
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))
     .with_produced_relation(produced_relation)
+}
+
+// Exact same-row conjunctions may prove source scalar bounds even where
+// general expression-domain analysis conservatively returned Unknown. Never
+// distribute OR branches into independently sampled per-column intervals.
+fn refine_boolean_qualifying_outcomes(
+    column_domains: Vec<ColumnDomain>,
+    output: Output,
+    witness: Option<&crate::boolean_witness::BooleanWitness>,
+) -> (Vec<ColumnDomain>, Output) {
+    let proven = witness
+        .map(crate::boolean_witness::BooleanWitness::qualifying_conjunctive_domains)
+        .unwrap_or_default();
+    if proven.is_empty() {
+        return (column_domains, output);
+    }
+
+    let mut domains = column_domains
+        .into_iter()
+        .map(|item| (item.column().clone(), item.domain().clone()))
+        .collect::<BTreeMap<_, _>>();
+    for item in proven {
+        let column = item.column().clone();
+        let domain = item.domain().clone();
+        domains
+            .entry(column)
+            .and_modify(|existing| {
+                *existing = match existing {
+                    ValueDomain::Unknown(_) => domain.clone(),
+                    other => intersect_domains(other, &domain),
+                };
+            })
+            .or_insert(domain);
+    }
+
+    let output = Output::new(
+        output
+            .columns()
+            .iter()
+            .cloned()
+            .map(|column| {
+                let Some(source) = column.plain_copy_source() else {
+                    return column;
+                };
+                let reference = ColumnRef::new(
+                    Some(source.relation().to_string()),
+                    source.column().to_string(),
+                );
+                let Some(domain) = domains.get(&reference) else {
+                    return column;
+                };
+                let refined = match column.domain() {
+                    ValueDomain::Unknown(_) => domain.clone(),
+                    other => intersect_domains(other, domain),
+                };
+                column.with_domain(refined)
+            })
+            .collect(),
+    );
+
+    (
+        domains
+            .into_iter()
+            .map(|(column, domain)| ColumnDomain::new(column, domain))
+            .collect(),
+        output,
+    )
 }
 
 /// Resolve one immediately projected ROW_NUMBER filter through a direct derived
