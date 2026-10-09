@@ -151,6 +151,7 @@ pub struct QueryStatement {
     subquery_witnesses: Box<[crate::subquery_witness::SubqueryMembershipWitness]>,
     boolean_witness: Option<Box<BooleanWitness>>,
     row_preserving_projection: bool,
+    proven_single_row_output: bool,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -178,6 +179,7 @@ impl QueryStatement {
             subquery_witnesses: Vec::new().into_boxed_slice(),
             boolean_witness: None,
             row_preserving_projection: false,
+            proven_single_row_output: false,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -207,6 +209,17 @@ impl QueryStatement {
 
     pub(crate) fn row_preserving_projection(&self) -> bool {
         self.row_preserving_projection
+    }
+
+    pub(crate) fn with_proven_single_row_output(mut self, proven: bool) -> Self {
+        self.proven_single_row_output = proven;
+        self
+    }
+
+    /// Whether syntax and supported expressions prove exactly one output row.
+    /// This is independent of whether any source table contains rows.
+    pub fn proven_single_row_output(&self) -> bool {
+        self.proven_single_row_output
     }
 
     pub(crate) fn with_group_witness(mut self) -> Self {
