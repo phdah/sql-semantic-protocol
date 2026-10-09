@@ -237,6 +237,12 @@ fn derive(
     let [inner] = subquery.dependencies() else {
         return residual("requires_single_inner_physical_relation");
     };
+    let [inner_source] = subquery.sources() else {
+        return residual("requires_single_inner_relation_instance");
+    };
+    if inner_source.name() != inner {
+        return residual("inner_boundary_not_a_direct_physical_relation");
+    }
     if inner == outer_source.name() {
         return residual("repeated_physical_relation_requires_distinct_instance_evidence");
     }
@@ -262,7 +268,7 @@ fn derive(
     let outer_instance = outer_source.alias().unwrap_or(outer_source.name());
     let mut pairs = Vec::new();
     if let Some(predicate) = subquery.predicates().where_predicate() {
-        if !collect_correlations(predicate, outer_source, outer_instance, inner, &mut pairs) {
+        if !collect_correlations(predicate, outer_source, outer_instance, inner_source, &mut pairs) {
             return residual("unsupported_inner_predicate_or_correlation");
         }
     }
@@ -352,43 +358,45 @@ fn collect_correlations(
     predicate: &Predicate,
     outer: &SourceRelation,
     outer_instance: &str,
-    inner_relation: &str,
+    inner: &SourceRelation,
     keys: &mut Vec<SubqueryCorrelation>,
 ) -> bool {
     match predicate {
         Predicate::And(and) => and
             .operands()
             .iter()
-            .all(|item| collect_correlations(item, outer, outer_instance, inner_relation, keys)),
-        Predicate::Comparison(compare) if compare.operator() == ComparisonOperator::Eq => {
-            match (compare.left(), compare.right()) {
-                (Expression::Column(a), Expression::Column(b)) => {
-                    let pair = source_column(a, outer, outer_instance)
-                        .zip(inner_column(b, outer_instance, inner_relation))
-                        .or_else(|| {
-                            source_column(b, outer, outer_instance).zip(inner_column(
-                                a,
-                                outer_instance,
-                                inner_relation,
-                            ))
-                        });
-                    if let Some((outer, inner)) = pair {
-                        keys.push(SubqueryCorrelation { outer, inner });
-                        true
-                    } else {
-                        false
-                    }
+            .all(|item| collect_correlations(item, outer, outer_instance, inner, keys)),
+        Predicate::Comparison(compare) => match (compare.left(), compare.right()) {
+            (Expression::Column(a), Expression::Column(b))
+                if compare.operator() == ComparisonOperator::Eq =>
+            {
+                let pair = source_column(a, outer, outer_instance)
+                    .zip(inner_column(b, inner))
+                    .or_else(|| source_column(b, outer, outer_instance).zip(inner_column(a, inner)));
+                if let Some((outer, inner)) = pair {
+                    keys.push(SubqueryCorrelation { outer, inner });
+                    true
+                } else {
+                    false
                 }
-                (Expression::Column(col), Expression::Literal(_)) => {
-                    col.relation() != Some(outer_instance)
-                }
-                _ => false,
             }
+            (Expression::Column(col), Expression::Literal(_)) => {
+                inner_column(col, inner).is_some()
+            }
+            _ => false,
+        },
+        Predicate::IsNull(check) => {
+            matches!(check.expression(), Expression::Column(col) if inner_column(col, inner).is_some())
         }
-        Predicate::Comparison(compare) => {
-            matches!((compare.left(), compare.right()), (Expression::Column(col), Expression::Literal(_)) if col.relation() != Some(outer_instance))
+        Predicate::Between(check) => {
+            matches!(check.expression(), Expression::Column(col) if inner_column(col, inner).is_some())
+                && matches!(check.lower(), Expression::Literal(_))
+                && matches!(check.upper(), Expression::Literal(_))
         }
-        Predicate::In(_) | Predicate::Between(_) | Predicate::IsNull(_) => true,
+        Predicate::In(check) => {
+            matches!(check.expression(), Expression::Column(col) if inner_column(col, inner).is_some())
+                && check.values().iter().all(|expr| matches!(expr, Expression::Literal(_)))
+        }
         _ => false,
     }
 }
@@ -408,21 +416,19 @@ fn source_column(
     }
 }
 
-fn inner_column(
-    col: &ColumnExpression,
-    outer_instance: &str,
-    inner_relation: &str,
-) -> Option<ColumnRef> {
-    let qualifier = col.relation()?;
-    if qualifier == outer_instance {
-        return None;
+fn inner_column(col: &ColumnExpression, inner: &SourceRelation) -> Option<ColumnRef> {
+    let qualifier = col.relation();
+    if qualifier.is_none()
+        || qualifier == inner.alias()
+        || qualifier == Some(inner.name())
+    {
+        Some(ColumnRef::new(
+            Some(inner.name().to_string()),
+            col.name().to_string(),
+        ))
+    } else {
+        None
     }
-    // The distinct qualifier is kept as an instance only in the normalized
-    // comparison. The physical relation comes from nested dependency evidence.
-    Some(ColumnRef::new(
-        Some(inner_relation.to_string()),
-        col.name().to_string(),
-    ))
 }
 
 #[cfg(test)]
