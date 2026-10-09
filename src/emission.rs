@@ -1938,7 +1938,13 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "closed_world": closed_world
         }),
         crate::WitnessObligation::Membership {
-            outer, inner, case, correlations, membership_key, inner_domains, closed_world,
+            outer,
+            inner,
+            case,
+            correlations,
+            membership_key,
+            inner_domains,
+            closed_world,
         } => json!({
             "kind": "membership",
             "outer": constructive_row_to_value(outer),
@@ -1956,7 +1962,12 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "closed_world": closed_world
         }),
         crate::WitnessObligation::SetTuple {
-            branch_identity, boundary, tuple_columns, matching_rows, column_domains, closed_world,
+            branch_identity,
+            boundary,
+            tuple_columns,
+            matching_rows,
+            column_domains,
+            closed_world,
         } => json!({
             "kind": "set_tuple",
             "branch_identity": branch_identity,
@@ -1966,7 +1977,10 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "column_domains": column_domains.iter().map(column_domain_to_value).collect::<Vec<_>>(),
             "closed_world": closed_world
         }),
-        crate::WitnessObligation::SetResultTuple { matching_rows, nulls_equal } => json!({
+        crate::WitnessObligation::SetResultTuple {
+            matching_rows,
+            nulls_equal,
+        } => json!({
             "kind": "set_result_tuple", "matching_rows": matching_rows, "nulls_equal": nulls_equal
         }),
         crate::WitnessObligation::OutputRows { layer_id, bounds } => json!({
