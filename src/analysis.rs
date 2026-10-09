@@ -699,6 +699,28 @@ fn analyze_query(
                 && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
                     if items.is_empty() && modifiers.is_empty()));
 
+    // Prove singleton output only for source-free literal SELECTs and global
+    // aggregates without grouping or any row-limiting, HAVING, or QUALIFY clause.
+    // This is a result-row fact, not a source-row cardinality assumption.
+    let proven_single_row_output = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && diagnostics.is_empty()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.top.is_none()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.connect_by.is_none()
+                && select.lateral_views.is_empty()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty())
+                && ((select.from.is_empty()
+                        && select.selection.is_none()
+                        && output.columns().iter().all(|column| matches!(column.expression(), Expression::Literal(_))))
+                    || (output.columns().iter().any(|column| matches!(column.expression(), Expression::AggregateFunction(_)))
+                        && output.columns().iter().all(|column| matches!(column.expression(), Expression::AggregateFunction(_) | Expression::Literal(_))))));
+
     QueryStatement::new(
         relation_analysis.sources,
         relation_analysis.dependencies.into_iter().collect(),
@@ -712,6 +734,7 @@ fn analyze_query(
     .with_subquery_witnesses()
     .with_boolean_witness(boolean_witness)
     .with_row_preserving_projection(row_preserving_projection)
+    .with_proven_single_row_output(proven_single_row_output)
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))
