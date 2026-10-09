@@ -1104,3 +1104,12 @@ Each `physical_nodes[]` entry may additionally expose
 origin-local typed obligations, not separately executable source scripts.
 They preserve per-layer join, group, window, set and subquery facts even when
 the complete DAG cannot yet be proved feasible.
+
+Existing opt-in `outcome_goals` now consumes these physical row-count
+proofs for count-only requests when an otherwise residual direct-local
+plan was made constructive by safe producer composition. A proven transitive
+count emits the pre-existing canonical `source_rows` witness targeting the
+real physical input, not a fabricated `stage`/intermediate table. A proven
+zero-result under filtering can emit `empty_sources` with all controlled
+physical leaves. Requests with output distributions or group counts retain
+their stricter independent evidence requirements.
