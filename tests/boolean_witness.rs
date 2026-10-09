@@ -388,7 +388,9 @@ fn identity_lineage_maps_coupled_witnesses_to_physical_source() {
     let bundle = analyze_inputs(
         &[
             SqlInput::inline("CREATE TABLE stage AS SELECT a, b FROM raw_t"),
-            SqlInput::inline("CREATE TABLE sink AS SELECT a FROM stage WHERE a IS NULL OR b IS NULL"),
+            SqlInput::inline(
+                "CREATE TABLE sink AS SELECT a FROM stage WHERE a IS NULL OR b IS NULL",
+            ),
         ],
         "generic",
         &GenericDialect {},
@@ -397,7 +399,12 @@ fn identity_lineage_maps_coupled_witnesses_to_physical_source() {
     let sink = bundle
         .layers()
         .iter()
-        .find(|layer| layer.produces().iter().any(|output| output.relation_name() == Some("sink")))
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|output| output.relation_name() == Some("sink"))
+        })
         .unwrap();
     let ComposedSemantics::Resolved(composed) = sink.composed_semantics() else {
         panic!("expected physical composition");
@@ -421,7 +428,9 @@ fn computed_lineage_does_not_claim_a_physical_boolean_witness() {
     let bundle = analyze_inputs(
         &[
             SqlInput::inline("CREATE TABLE stage AS SELECT a + 1 AS a, b FROM raw_t"),
-            SqlInput::inline("CREATE TABLE sink AS SELECT a FROM stage WHERE a IS NULL OR b IS NULL"),
+            SqlInput::inline(
+                "CREATE TABLE sink AS SELECT a FROM stage WHERE a IS NULL OR b IS NULL",
+            ),
         ],
         "generic",
         &GenericDialect {},
@@ -430,7 +439,12 @@ fn computed_lineage_does_not_claim_a_physical_boolean_witness() {
     let sink = bundle
         .layers()
         .iter()
-        .find(|layer| layer.produces().iter().any(|output| output.relation_name() == Some("sink")))
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|output| output.relation_name() == Some("sink"))
+        })
         .unwrap();
     let ComposedSemantics::Resolved(composed) = sink.composed_semantics() else {
         panic!("expected composition");
