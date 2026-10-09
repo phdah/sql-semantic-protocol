@@ -145,10 +145,12 @@ fn distinct_and_limits_cannot_be_used_as_group_to_output_row_proofs() {
         "SELECT category FROM sales GROUP BY category LIMIT 1",
     ];
     let connection = Connection::open_in_memory().expect("DuckDB");
-    connection.execute_batch(
-        "CREATE TABLE sales(category INTEGER);
-         INSERT INTO sales VALUES (1),(2);"
-    ).expect("group source");
+    connection
+        .execute_batch(
+            "CREATE TABLE sales(category INTEGER);
+         INSERT INTO sales VALUES (1),(2);",
+        )
+        .expect("group source");
     for sql in cases {
         let mut bundle = analyze(sql);
         request(&mut bundle, Some(1), Some(2), vec![]);
