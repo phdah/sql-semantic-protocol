@@ -731,12 +731,29 @@ fn physical_plan_ref_to_value(reference: &PhysicalPlanRef) -> Value {
 }
 
 fn physical_plan_node_to_value(node: &PhysicalPlanNode) -> Value {
-    json!({
+    let mut value = json!({
         "ref": physical_plan_ref_to_value(node.id()),
         "inputs": node.inputs().iter().map(physical_plan_ref_to_value).collect::<Vec<_>>(),
         "produced_relations": node.produced_relations(),
         "write_kind": node.write_kind().map(|kind| kind.as_str())
-    })
+    });
+    if !node.operator_witnesses().is_empty() {
+        value["operator_witnesses"] = Value::Array(
+            node.operator_witnesses()
+                .iter()
+                .map(constructive_witness_to_value)
+                .collect(),
+        );
+    }
+    if !node.pending_producers().is_empty() {
+        value["pending_producers"] = Value::Array(
+            node.pending_producers()
+                .iter()
+                .map(constructive_obligation_to_value)
+                .collect(),
+        );
+    }
+    value
 }
 
 fn graph_edge_to_value(edge: &GraphEdge) -> Value {
