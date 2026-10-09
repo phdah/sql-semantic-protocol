@@ -254,3 +254,66 @@ fn shared_update_and_delete_syntax_runs_across_all_supported_parser_dialects() {
         }
     }
 }
+
+
+#[test]
+fn merger_exports_matching_predicate_and_insert_mapping_without_sql_reparsing() {
+    let merge = bundle(
+        "MERGE INTO target AS t USING source AS s ON t.id = s.id
+         WHEN MATCHED THEN DELETE
+         WHEN NOT MATCHED THEN INSERT (id, score) VALUES (s.id, s.score)",
+        "snowflake",
+    );
+    let effects = merge.write_state_effects();
+    let effect = effects[0].effect();
+    assert!(effect.match_condition().is_some());
+    assert!(effect.target_columns().is_empty());
+    assert_eq!(effects[0].sources(), &["source".to_string()]);
+    let value: serde_json::Value =
+        serde_json::from_str(&to_bundle_json(&merge)).expect("valid JSON");
+    assert!(!value["write_effects"][0]["state_effect"]["match_condition"].is_null());
+    assert_eq!(
+        value["write_effects"][0]["state_effect"]["branches"][0]["match_kind"],
+        "matched"
+    );
+    assert_eq!(
+        value["write_effects"][0]["state_effect"]["branches"][1]["match_kind"],
+        "not_matched"
+    );
+
+    let insert = bundle(
+        "INSERT INTO target (score, id) SELECT score, id FROM source",
+        "generic",
+    );
+    let effects = insert.write_state_effects();
+    assert_eq!(effects[0].effect().target_columns(), &["score", "id"]);
+    assert!(effects[0].effect().match_condition().is_none());
+    let value: serde_json::Value =
+        serde_json::from_str(&to_bundle_json(&insert)).expect("valid JSON");
+    assert_eq!(
+        value["write_effects"][0]["state_effect"]["target_columns"],
+        serde_json::json!(["score", "id"])
+    );
+}
+
+#[test]
+fn duplicate_unmatched_merge_insert_conflicts_with_enforced_primary_key() {
+    let sql = "MERGE INTO target AS t USING source AS s ON t.id = s.id
+               WHEN NOT MATCHED THEN INSERT (id, score) VALUES (s.id, s.score)";
+    let b = bundle(sql, "snowflake");
+    let effects = b.write_state_effects();
+    assert!(effects[0].effect().match_condition().is_some());
+    assert!(effects[0]
+        .effect()
+        .reasons()
+        .contains(&sql_semantic_protocol::WriteUncertainty::ConstraintConflictsUnverified));
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER);
+         CREATE TABLE source(id INTEGER, score INTEGER);
+         INSERT INTO source VALUES (2, 3), (2, 4);",
+    )
+    .expect("fixtures");
+    assert!(db.execute_batch(sql).is_err(), "duplicate unmatched source keys conflict");
+    assert_eq!(count(&db, "target"), 0);
+}
