@@ -8,8 +8,7 @@ use std::collections::BTreeSet;
 
 use crate::domain::resolve_column;
 use crate::protocol::{
-    ColumnRef, ComparisonOperator, Expression, LiteralType, LiteralValue, Predicate,
-    SourceRelation,
+    ColumnRef, ComparisonOperator, Expression, LiteralType, LiteralValue, Predicate, SourceRelation,
 };
 
 /// A generator-facing, typed source-row boolean expression.
@@ -156,7 +155,9 @@ pub(crate) fn analyze(
         return None;
     }
     let unique_columns = columns.iter().collect::<BTreeSet<_>>().len() == columns.len();
-    let resolved_source = columns.iter().all(|column| column.relation() == Some(source.name()));
+    let resolved_source = columns
+        .iter()
+        .all(|column| column.relation() == Some(source.name()));
     let directions = if condition.is_exact() && unique_columns && resolved_source {
         (
             BooleanWitnessDirection::Exact(BooleanTruthCase::True),
