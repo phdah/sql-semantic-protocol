@@ -224,6 +224,9 @@ from authoritative relation schema/catalog evidence. A plain SQL invocation
 without a catalog cannot prove those branches exact, and dbt adapters must
 not infer warehouse datatypes from compiled SQL or unconstrained manifest
 text. Null-test-only boolean trees need no datatype evidence. Unsupported
-casts, collation-dependent LIKE and noninvertible computed functions stay
-residual; overflow-free identity arithmetic (`+a`, `a+0`, `a-0`) can normalize
-to its original signed-integer source column.
+casts, unattested collation-dependent LIKE and noninvertible computed
+functions stay residual. Overflow-free identity arithmetic and signed
+constant offsets following lossless widening CASTs can normalize to their
+original source columns if the full typed source range proves no overflow.
+Physical remapping additionally requires row-preserving intermediate producers;
+column-only identity is insufficient for exact source witness obligations.
