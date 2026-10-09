@@ -786,6 +786,7 @@ fn write_operation_to_value(write: &WriteOperation) -> Value {
     let state_effect = write.state_effect().map(|effect| {
         json!({
             "initial_state": "caller_supplied",
+            "cardinality_rule": effect.cardinality_rule().as_str(),
             "affected_rows": { "minimum": effect.affected_rows().minimum(), "maximum": effect.affected_rows().maximum() },
             "post_state": match effect.post_state() { WritePostState::Empty => "empty", WritePostState::ApplyToInitial => "apply_to_initial" },
             "idempotence": match effect.idempotence() { WriteIdempotence::Proven => "proven", WriteIdempotence::Unproven => "unproven" },

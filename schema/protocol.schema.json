@@ -5312,7 +5312,8 @@
         "post_state",
         "idempotence",
         "branches",
-        "residual_reasons"
+        "residual_reasons",
+        "cardinality_rule"
       ],
       "properties": {
         "initial_state": {
@@ -5368,6 +5369,14 @@
               "predicate_exactness_unverified"
             ]
           }
+        },
+        "cardinality_rule": {
+          "enum": [
+            "initial_plus_inserted",
+            "initial",
+            "initial_minus_deleted",
+            "initial_plus_inserted_minus_deleted"
+          ]
         }
       }
     },

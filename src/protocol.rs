@@ -677,6 +677,13 @@ impl WriteOperation {
             idempotence,
             branches,
             reasons,
+            cardinality_rule: match self.kind {
+                WriteKind::Append => WriteCardinalityRule::Append,
+                WriteKind::Update => WriteCardinalityRule::Preserve,
+                WriteKind::Delete => WriteCardinalityRule::SubtractDeletes,
+                WriteKind::ConditionalMutation => WriteCardinalityRule::Merge,
+                WriteKind::Definition => return None,
+            },
         })
     }
 }
@@ -786,6 +793,83 @@ pub enum WriteEffectAction {
     Mutation(MergeAction),
 }
 
+/// Algebraic relation between target row counts, conditional on legal, executed DML.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WriteCardinalityRule {
+    /// Post = pre + inserted (INSERT SELECT).
+    Append,
+    /// Post = pre (UPDATE, including predicates rejecting all rows).
+    Preserve,
+    /// Post = pre - deleted (DELETE).
+    SubtractDeletes,
+    /// Post = pre + inserted - deleted (MERGE).
+    Merge,
+}
+
+impl WriteCardinalityRule {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Append => "initial_plus_inserted",
+            Self::Preserve => "initial",
+            Self::SubtractDeletes => "initial_minus_deleted",
+            Self::Merge => "initial_plus_inserted_minus_deleted",
+        }
+    }
+}
+
+/// Logical counts of actual inserted, updated and deleted target rows.
+///
+/// These must be verified against execution, rather than inferred from SQL
+/// source-row counts: MERGE source rows may not match 1:1, and conflicting
+/// writes may fail without producing any final state.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WriteRowCounts {
+    inserted: u64,
+    updated: u64,
+    deleted: u64,
+}
+
+impl WriteRowCounts {
+    /// Record verified logical target-row counts.
+    pub fn new(inserted: u64, updated: u64, deleted: u64) -> Self {
+        Self { inserted, updated, deleted }
+    }
+
+    /// Rows appended to the target.
+    pub fn inserted(self) -> u64 { self.inserted }
+    /// Existing rows updated, not newly inserted.
+    pub fn updated(self) -> u64 { self.updated }
+    /// Existing rows removed.
+    pub fn deleted(self) -> u64 { self.deleted }
+}
+
+/// Why verified DML counts cannot satisfy the stated target-state contract.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WriteCountError {
+    /// Count of action kinds inconsistent with SQL mutation class.
+    InvalidActionCounts,
+    /// UPDATE/DELETE cannot affect more distinct target rows than existed.
+    ExceedsInitialRows,
+    /// A DELETE without WHERE must remove every pre-existing row.
+    UnconditionalDeleteMismatch,
+    /// The final row count cannot fit in an unsigned 64-bit integer.
+    Overflow,
+}
+
+impl std::fmt::Display for WriteCountError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let reason = match self {
+            Self::InvalidActionCounts => "observed action counts contradict the DML kind",
+            Self::ExceedsInitialRows => "affected existing rows exceed the initial target size",
+            Self::UnconditionalDeleteMismatch => "unconditional DELETE must remove every initial row",
+            Self::Overflow => "computed final row count exceeds u64",
+        };
+        formatter.write_str(reason)
+    }
+}
+
+impl std::error::Error for WriteCountError {}
+
 /// A verifiable DML effect, not an assertion that the whole target is generated.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteStateEffect {
@@ -795,6 +879,7 @@ pub struct WriteStateEffect {
     idempotence: WriteIdempotence,
     branches: Vec<WriteEffectBranch>,
     reasons: Vec<WriteUncertainty>,
+    cardinality_rule: WriteCardinalityRule,
 }
 
 impl WriteStateEffect {
@@ -821,6 +906,44 @@ impl WriteStateEffect {
     /// Explicit outstanding verification obligations.
     pub fn reasons(&self) -> &[WriteUncertainty] {
         &self.reasons
+    }
+
+    /// Conditional row-count conservation rule, independent of action feasibility.
+    pub fn cardinality_rule(&self) -> WriteCardinalityRule {
+        self.cardinality_rule
+    }
+
+    /// Check target-row conservation against caller-verified action counts.
+    ///
+    /// A successful result establishes only the required final row *count* if
+    /// SQL execution successfully performed these actions. It does not verify
+    /// branch predicates, key conflicts, exact row values, or transaction success.
+    /// In particular it is unsafe to supply source-row counts as MERGE updates.
+    pub fn resulting_rows(&self, initial: u64, counts: WriteRowCounts) -> Result<u64, WriteCountError> {
+        let (inserted, updated, deleted) = (counts.inserted(), counts.updated(), counts.deleted());
+        let target_changed = updated.checked_add(deleted).ok_or(WriteCountError::Overflow)?;
+        if target_changed > initial {
+            return Err(WriteCountError::ExceedsInitialRows);
+        }
+        match self.cardinality_rule {
+            WriteCardinalityRule::Append if updated != 0 || deleted != 0 => {
+                return Err(WriteCountError::InvalidActionCounts);
+            }
+            WriteCardinalityRule::Preserve if inserted != 0 || deleted != 0 => {
+                return Err(WriteCountError::InvalidActionCounts);
+            }
+            WriteCardinalityRule::SubtractDeletes if inserted != 0 || updated != 0 => {
+                return Err(WriteCountError::InvalidActionCounts);
+            }
+            WriteCardinalityRule::Append | WriteCardinalityRule::Preserve |
+            WriteCardinalityRule::SubtractDeletes | WriteCardinalityRule::Merge => {}
+        }
+        if self.post_state == WritePostState::Empty && deleted != initial {
+            return Err(WriteCountError::UnconditionalDeleteMismatch);
+        }
+        initial.checked_sub(deleted)
+            .and_then(|remaining| remaining.checked_add(inserted))
+            .ok_or(WriteCountError::Overflow)
     }
 }
 
