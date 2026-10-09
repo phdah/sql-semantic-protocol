@@ -5,7 +5,8 @@ mod common;
 use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, physical_source_plan,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_row_count_plan,
+    physical_source_plan,
     AnalysisBundle, ConfiguredSqlInput, PhysicalPlanRef, PhysicalProofGap, RelationCatalog,
     RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula, WitnessObligation,
 };
@@ -526,4 +527,82 @@ fn self_join_reuses_one_physical_empty_source_obligation() {
             .count(),
         1
     );
+}
+
+#[test]
+fn exact_terminal_cardinality_is_constructive_through_shared_schema_backed_producers() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t",
+                "CREATE TABLE mart AS SELECT a, b FROM stage",
+                "SELECT a FROM mart",
+            ],
+            dialect,
+        );
+        let target = b.layers()[2].id();
+        for rows in [0, 1, 3, 8] {
+            let proof = physical_row_count_plan(&b, target, rows);
+            let WitnessDirection::Feasible(cases) = proof else {
+                panic!("{dialect}: {rows} must have source-backed construction: {proof:?}");
+            };
+            assert_eq!(cases.len(), 1);
+            assert!(cases[0].obligations().iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::Rows { boundary, bounds, closed_world: true, .. }
+                    if boundary.relation() == "t"
+                        && bounds.minimum() == rows
+                        && bounds.maximum() == Some(rows)
+            )));
+            assert!(cases[0].obligations().iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::OutputRows { layer_id, bounds }
+                    if layer_id == target
+                        && bounds.minimum() == rows
+                        && bounds.maximum() == Some(rows)
+            )));
+        }
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (NULL,NULL), (NULL,NULL), (1,1);
+         CREATE TABLE stage AS SELECT a,b FROM t;
+         CREATE TABLE mart AS SELECT a,b FROM stage;",
+    ).expect("materialized chain");
+    let output: i64 = conn
+        .query_row("SELECT COUNT(*) FROM (SELECT a FROM mart)", [], |row| row.get(0))
+        .expect("terminal rows");
+    assert_eq!(output, 3);
+}
+
+#[test]
+fn exact_singleton_cardinality_is_proved_without_physical_sources() {
+    let b = bundle(&["SELECT 1 AS one"], "postgresql");
+    let target = b.layers()[0].id();
+    assert!(matches!(
+        physical_row_count_plan(&b, target, 1),
+        WitnessDirection::Feasible(_)
+    ));
+    for rows in [0, 2, 5] {
+        assert!(matches!(
+            physical_row_count_plan(&b, target, rows),
+            WitnessDirection::Impossible
+        ));
+    }
+}
+
+#[test]
+fn row_count_constructor_does_not_guess_after_filters_or_join_multiplicities() {
+    for query in [
+        "SELECT a FROM t WHERE a IS NOT NULL",
+        "SELECT l.a FROM l INNER JOIN r ON l.k = r.k",
+        "SELECT COUNT(*) AS c FROM t",
+    ] {
+        let b = bundle(&[query], "postgresql");
+        assert!(!matches!(
+            physical_row_count_plan(&b, b.layers()[0].id(), 4),
+            WitnessDirection::Feasible(_)
+        ), "{query}");
+    }
 }
