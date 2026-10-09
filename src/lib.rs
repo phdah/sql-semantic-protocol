@@ -25,8 +25,14 @@
 //! - WriteStateEffect describes conservative INSERT, UPDATE, DELETE and MERGE before/after obligations.
 //! - ConstructiveWitness and local_constructive_witnesses normalize proven operator-local
 //!   source obligations without pretending to solve full physical-source DAGs.
+//! - BagLaw transfers closed-world count bounds through proven bag operators without
+//!   claiming source construction or guessing unsupported NULL/key semantics.
+//! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
+//!   multiplicities with NULL, duplicates and shared physical aliases.
 
 mod analysis;
+mod bag_histogram;
+mod bag_semantics;
 mod boolean_witness;
 mod bundle;
 mod composition;
@@ -55,6 +61,11 @@ use std::fmt;
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
+pub use bag_histogram::{equijoin_key_histogram, BagHistogramProof, BagKeyHistogram};
+pub use bag_semantics::{
+    BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagScope, BagSourceIdentity,
+    BagTupleIdentity,
+};
 pub use boolean_witness::{
     BooleanOperands, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
     BooleanWitnessDirection,
@@ -77,9 +88,9 @@ pub use constraints::{
     RelationConstraint, RelationConstraintSet,
 };
 pub use constructive::{
-    local_constructive_witnesses, local_pending_producers, ConstructiveWitness, CountBounds,
-    ProofStrength, RowQuantifier, RowVariable, WitnessBoundary, WitnessCase, WitnessDirection,
-    WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
+    local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
+    ConstructiveWitness, CountBounds, ProofStrength, RowQuantifier, RowVariable, WitnessBoundary,
+    WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{

@@ -6316,6 +6316,16 @@
         {
           "type": "object",
           "additionalProperties": false,
+          "required": ["kind", "boundary", "coverage"],
+          "properties": {
+            "kind": {"const": "closed_world"},
+            "boundary": {"$ref": "#/$defs/constructiveBoundary"},
+            "coverage": {"$ref": "#/$defs/closedWorldCoverage"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
           "required": [
             "kind",
             "boundary",
@@ -6334,6 +6344,32 @@
               "items": {
                 "$ref": "#/$defs/relationName"
               }
+            }
+          }
+        }
+      ]
+    },
+    "closedWorldCoverage": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": {"const": "entire_relation"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "branch_identity", "columns"],
+          "properties": {
+            "kind": {"const": "candidate_tuple"},
+            "branch_identity": {"$ref": "#/$defs/nonEmptyString"},
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "items": {"$ref": "#/$defs/nonEmptyString"}
             }
           }
         }

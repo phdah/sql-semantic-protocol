@@ -2,6 +2,15 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_69_operator_local_evidence": {
+    "status": "operator_local_evidence_only_release_blocked",
+    "owner": "TASK-69",
+    "canonical_contract": "typed constructive closed_world obligations and preexisting operator-local witness counts",
+    "rust_api": ["BagLaw", "BagKeyHistogram", "equijoin_key_histogram"],
+    "physical_scope": ["entire_relation", "candidate_tuple"],
+    "evidence": ["tests/bag_semantics.rs", "tests/constructive_membership.rs", "tests/constructive_witness.rs"],
+    "release_limit": "No complete physical-source DAG realization or generator sign-off; cross-feature and variant/dialect cells remain release-blocking."
+  },
   "scope_rule": "Maintainer approved the four engineering-scope decisions only. All current supported claims require exhaustive cross-dialect canonical equality and DuckDB end-to-end proof. Conditionally deferred opaque/unbounded behavior fails closed until typed evidence is supplied, while safely bounded subsets remain release-blocking. No release approval is implied.",
   "dialects": [
     {

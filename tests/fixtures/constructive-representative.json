@@ -62,6 +62,17 @@
                 "name": "id",
                 "relation": "crm.customers"
               }
+            },
+            {
+              "kind": "closed_world",
+              "boundary": {
+                "kind": "physical",
+                "relation": "crm.customers",
+                "origin_layer_id": "layer-0001"
+              },
+              "coverage": {
+                "kind": "entire_relation"
+              }
             }
           ],
           "strength": "sufficient"
@@ -90,6 +101,17 @@
               "right": {
                 "name": "customer_id",
                 "relation": "sales.orders"
+              }
+            },
+            {
+              "kind": "closed_world",
+              "boundary": {
+                "kind": "physical",
+                "relation": "sales.orders",
+                "origin_layer_id": "layer-0001"
+              },
+              "coverage": {
+                "kind": "entire_relation"
               }
             }
           ],

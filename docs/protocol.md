@@ -159,6 +159,82 @@ The Rust APIs are `local_constructive_witnesses` and
 contract. Existing operator witnesses remain available for migration, but
 the canonical typed obligations are the new consumer-facing proof format.
 
+## Closed-world bag-count transfer foundation (TASK-69)
+
+The Rust API exposes `BagEvidence`, `BagScope`, `BagLaw`,
+`BagCountProof` and `BagCountTarget` as conservative cardinality
+**laws**, not as whole-source constructive witnesses. Evidence must
+identify either a complete relation or the complete multiplicity of one
+SQL-equal candidate tuple. Incomplete candidate sampling is never a
+proof of zero occurrences or anti-membership.
+
+Candidate tuples must carry the same typed `BagTupleIdentity` across
+operands; unmatched or unknown identities remain residual. Aliases and
+self-joins with the same `BagSourceIdentity::physical_relation`
+intersect their complete count constraints before applying a transfer
+law. Conflicting interval evidence for one physical relation is
+impossible, not two independent source inputs.
+
+Given complete evidence, `BagLaw::SetTuple` reuses the *existing*
+`SetMultiplicityRule`, including SQL NULL-equal DISTINCT/ALL tuple
+counts, checked SUM, MIN, and subtract-clamped-at-zero semantics.
+Other explicitly authorized transfer laws cover row-preserving
+projection, DISTINCT, one grouping key versus global aggregation,
+rank-prefix counts with proved strict ordering, known-key equijoins,
+and append/delete/update counts with complete affected subsets.
+Join pair multiplication is only valid when **all** candidate keys are
+proved equal and non-NULL; unknown key relationships fail closed.
+NULL join keys never compare equal under ordinary SQL equality.
+
+For mixed-key joins, `BagKeyHistogram` represents a complete
+physical key-frequency distribution keyed by canonical typed
+`ConstraintValue`. `equijoin_key_histogram` computes exact output
+frequency under INNER, LEFT, RIGHT, FULL, SEMI and ANTI equality joins.
+It distinguishes SQL NULL comparisons from set NULL-equality,
+computes duplicate-pair products per key, preserves unmatched source
+keys and counts repeated aliases using one physical histogram. It
+rejects inconsistent shared-source distributions as impossible and
+returns residual for unproved coercion/collation, unknown join kinds
+or cardinality overflow. The caller must attest that the histograms
+are complete and the keys are exactly comparable expressions; this
+is not a replacement for upstream value-domain or type evidence.
+
+Results distinguish bounded, impossible and residual. Bounds, even exact
+bounds, are **not** certificates that a physical-source fixture exists;
+`BagCountProof::assess` only establishes entailed, impossible or
+unproved count targets. A residual never means an impossible row.
+Arithmetic overflow never silently produces a false finite upper bound.
+
+The existing emitted contract owns set multiplicity
+(`set_operations[].operation.multiplicity_rule`) and typed
+`set_tuple` / `set_result_tuple` obligations. The extended optional
+`constructive_witnesses[].{qualifying,rejected}.cases[].obligations`
+now also admits a `closed_world` obligation with a physical
+`boundary` and one of two scoped `coverage` variants:
+
+- `entire_relation`: enumerate every row of the named physical
+  relation, including all potential join partners or subquery candidates.
+- `candidate_tuple`: enumerate every row equal to one candidate
+  output tuple under set NULL-equality; `branch_identity` and
+  positional `columns` identify its complete equivalence class.
+  This does **not** assert the underlying relation is empty.
+
+For unmatched joins and subquery membership the canonical local
+witnesses additionally require an entire-relation closure, and
+zero-count EXCEPT/INTERSECT/UNION cases require candidate-class
+closure. An intermediate/unresolved boundary cannot be passed off as a
+physical table. The schema closes both forms against unknown fields,
+and the same emission path is used for direct SQL, dbt and ODCS.
+
+The Rust evaluator still requires a caller to supply **proven**
+closed-world source scope and operator applicability. A typed closure
+obligation is a demand on the generator, not an assertion that the
+physical data has already been constructed. Whole-DAG physical-source
+realization, arbitrary predicates and complete generator sign-off
+remain upstream/downstream release work under TASK-68 and TASK-91.
+No unverified coverage-manifest cell is promoted solely from this
+operator-local work.
+
 ## Source schemas
 For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
 types when a relation is present there. When a physical dependency or a physical relation referenced only by a canonical constraint
