@@ -55,6 +55,23 @@ fn simple_filter_has_both_physical_row_classifications_across_dialects() {
         assert!(matches!(plan.rejected(), WitnessDirection::Feasible(_)));
         assert_eq!(plan.nodes().len(), 2);
         assert_eq!(plan.nodes()[0].id(), &PhysicalPlanRef::Source("t".into()));
+        assert!(plan.nodes()[0].operator_witnesses().is_empty());
+        assert_eq!(plan.nodes()[1].operator_witnesses().len(), 1);
+        assert_eq!(
+            plan.nodes()[1].operator_witnesses()[0].origin_layer_id(),
+            plan.target_layer_id()
+        );
+        let wire: serde_json::Value = serde_json::from_str(
+            &sql_semantic_protocol::to_bundle_json(&b),
+        ).expect("typed graph JSON");
+        let node = &wire["graph"]["physical_nodes"]
+            .as_array()
+            .expect("physical nodes")[1];
+        assert_eq!(
+            node["operator_witnesses"][0]["operator"],
+            "boolean",
+        );
+
         let WitnessDirection::Feasible(cases) = plan.rejected() else {
             panic!("expected deliberate rejection");
         };
