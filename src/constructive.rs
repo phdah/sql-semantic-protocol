@@ -754,12 +754,15 @@ pub fn local_pending_producers(semantics: &ResolvedComposedSemantics) -> Vec<Wit
         .sort_by(|a, b| (&a.origin_layer_id, &a.relation).cmp(&(&b.origin_layer_id, &b.relation)));
     boundaries
         .into_iter()
-        .map(|boundary| WitnessObligation::Producer {
-            boundary,
+        .map(|boundary| {
             // A missing producer mapping is unknown, never the terminal dependency set.
-            physical_sources: semantics
+            let physical_sources = semantics
                 .producer_physical_sources(boundary.relation())
-                .map_or_else(Vec::new, |sources| sources.to_vec()),
+                .map_or_else(Vec::new, |sources| sources.to_vec());
+            WitnessObligation::Producer {
+                boundary,
+                physical_sources,
+            }
         })
         .collect()
 }

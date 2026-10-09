@@ -298,9 +298,12 @@ impl<'a> Composer<'a> {
 
                     match self.compose_layer(producer_id) {
                         ComposedSemantics::Resolved(upstream) => {
-                            producer_sources.extend(upstream.producer_sources().iter().map(
-                                |(relation, sources)| (relation.clone(), sources.clone()),
-                            ));
+                            producer_sources.extend(
+                                upstream
+                                    .producer_sources()
+                                    .iter()
+                                    .map(|(relation, sources)| (relation.clone(), sources.clone())),
+                            );
                             producer_sources.insert(
                                 edge.relation().to_string(),
                                 upstream.dependencies().to_vec(),
