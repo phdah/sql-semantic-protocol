@@ -229,9 +229,7 @@ impl<'a> Walker<'a> {
             .get(layer_id)
             .copied()
             .ok_or(PhysicalProofGap::MissingProducer)?;
-        if !matches!(layer.write_kind(), None | Some(WriteKind::Definition)) {
-            return Err(PhysicalProofGap::PartialProducer);
-        }
+        let partial_write = !matches!(layer.write_kind(), None | Some(WriteKind::Definition));
         let mut inputs = Vec::new();
         for edge in self
             .bundle
@@ -312,7 +310,13 @@ impl<'a> Walker<'a> {
             pending_producers,
         });
         self.visited.insert(layer_id.to_string());
-        Ok(())
+        if partial_write {
+            // Retain DML provenance and write kind in the canonical graph,
+            // but never certify it as a complete physical-source producer.
+            Err(PhysicalProofGap::PartialProducer)
+        } else {
+            Ok(())
+        }
     }
 }
 
