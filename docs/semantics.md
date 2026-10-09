@@ -495,3 +495,30 @@ silently being interpreted as no keys. Key uniqueness must be checked across
 inserted, updated, and untouched rows of the actual target. Unknown computed
 predicates and noninvertible assignments keep conservative domains; their
 presence never licenses a generator to claim complete exactness.
+
+
+## Physical-source row realization (TASK-68, partial)
+
+The Rust library's `physical_source_plan(bundle, target_layer_id)` returns a
+deterministic, reference-based physical dependency graph. Each source and
+producer is represented once, and producer nodes retain their write kind.
+A named derived relation is **not** a directly writable physical source.
+Missing, cyclic, ambiguous and partial producers fail closed with typed
+`PhysicalProofGap` reasons. Nodes are ordered producer-first.
+
+For now, the library lifts both TRUE and NOT TRUE **single-row** boolean
+witnesses to physical sources only when exactly one operator witness is
+present and all other producer layers are single-source, one-to-one direct
+column projections. The filtering layer must have a direct single table,
+no CTE, limit, DISTINCT, join, grouping or other row-shaping, and proven
+physical row identity. Projection computed columns cannot be inverted by
+this proof. The two directions remain independent and can be residual.
+
+**This is not a whole-DAG constructive solver.** It does not yet prove
+joint satisfiability of multiple operator witnesses, multiple physical
+sources, full output cardinality, or materialized final states. In these
+cases the physical graph remains available and both row classifications
+remain explicitly residual. The existing operator-local
+`local_constructive_witnesses` API must not be interpreted as complete
+physical realization. The protocol JSON contract is unchanged by this
+library-only foundational step.
