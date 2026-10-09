@@ -1,67 +1,52 @@
-# Decisions requiring maintainer approval
+# Maintainer-approved v3 scope and acceptance decisions
 
-**Status: proposals only. Nothing below has been approved.** These decisions establish the finite support envelope and generator acceptance rules, not a claim that SQL Semantic Protocol 3.0.0 or sql-tdg m-3 is ready to release.
+**Decision status: approved 2026-10-09, with the four addendums below.** This is approval of engineering *requirements and scope*, **not** release sign-off, not evidence of implemented generation, and not certification of any unchecked coverage cell.
 
-Evidence: [coverage matrix](coverage.md), [machine-readable inventory](coverage-manifest.json), protocol [TASK-66](../.backlog/tasks/task-66%20-%20inventory-sql-dialect-feature-contract.md) and [TASK-91](../.backlog/tasks/task-91%20-%20gate-single-protocol-3-release-on-tdg-signoff.md).
+The [coverage matrix](coverage.md), [executable manifest](coverage-manifest.json), [TASK-66](../.backlog/tasks/task-66%20-%20inventory-sql-dialect-feature-contract.md) and [TASK-91](../.backlog/tasks/task-91%20-%20gate-single-protocol-3-release-on-tdg-signoff.md) remain authoritative for test evidence and the release gate.
 
-## Decision 1: What is a rejected source row in whole-project mode?
+## 1. Per-terminal rejected rows with randomized failure predicates: approved
 
-**Recommendation: per-terminal-outcome classification**, rather than requiring a source row to be absent from *every* terminal output.
+- Classify each generated physical source row against **every selected terminal outcome**. A row can be qualifying for terminal A and provably rejected for terminal B. Persist the vector and stable outcome identities as protocol-defined semantics, with independent SQL execution verification.
+- **Randomly choose which eligible rejecting predicate or column to violate**, using the injected, reproducibly seeded generator RNG; do not hard-code the first predicate or always falsify the same column. Enumerate all *provably constructive* rejection alternatives expressed by the protocol, including nested AND/OR/NOT, joins, null-sensitive predicates, computed/aggregated/window predicates, and multi-layer composition where exact semantics are available.
+- Seeded randomized selection must sample across the eligible choices. Tests with multiple seeds must demonstrate **every** feasible alternative can be exercised, including different columns, while fixed seeds reproduce identical generated tables, selections and classifications. Do not falsely require that a single row fail all columns or that a small random sample deterministically reaches each alternative.
+- **Only select a predicate when its violation guarantees nonmembership in the intended final terminal**, after all Boolean logic and alternative lineage paths are evaluated. Example: failing one side of `A OR B` is *not* sufficient if B passes; instead the candidate must prove that the entire output predicate is FALSE or UNKNOWN and the row cannot contribute through another branch. For `NOT`, `EXISTS`, sets, joins, aggregates, windows, and mutations the proof may require multiple coordinated source rows, not a single-column mutation.
+- Preserve requested matching/rejected counts, schema/uniqueness/FK/dbt tests, and per-terminal counts. Report a typed impossible or residual error naming terminal and rejected alternative when no exact witness is constructive; never reduce counts, silently drop a predicate, or present a merely plausible row as rejected.
+- **The default `--rejected 10` must work in whole-project mode** for fully proven compatible workloads. Scenario partitioning and shared/disjoint source cases need complete metadata and independent SQL checks.
 
-- Every generated physical row receives a vector of exact, independently verified membership/absence claims for each selected terminal output.
-- For terminal `T`, a negative row is a physical input row proven **not to contribute to any output row of `T`**. It may legitimately contribute to other terminal outputs. The vector must identify those terminals.
-- Matching source rows must still satisfy all intended positive terminal obligations. The existing CLI default `--rejected 10` must work in whole-project mode, with consistent per-source requested counts and no fabricated claims when targets share data.
-- Duplicate values, null semantics, joins, fan-out, CTE producers, and post-DML state must not turn a negative case into a positive by unaccounted-for alternative input paths. If exact absence cannot be proven for a requested terminal, **fail naming that terminal**, never silently downgrade or return fewer rows.
-- Execute all selected terminal SQL against the same generated dataset and compare the complete per-terminal membership vector, not only row counts.
+Owner: upstream protocol TASK-86 and TASK-68/70/85, sql-tdg TASK-35; final sql-tdg TASK-36.
 
-**Alternative:** globally rejected rows, excluded by all terminals; simpler but misses `passes A/fails B` cases. Requires changing sql-tdg TASK-35/36 acceptance.
+## 2. Rebuild and expand the complete dbt/SQL E2E gate: approved
 
-Maintainer approval: **pending**. Owner: sql-tdg TASK-35; protocol TASK-86, TASK-68, TASK-91.
+- **Rebuild/extend the committed dbt DuckDB end-to-end workflow**, rather than limiting the fixture to read-only models. Its `make all` must cover all **reviewed, protocol-supported** transformation and DML/DDL families, including INSERT, INSERT SELECT, UPDATE, DELETE, MERGE, UPSERT/conflicts, CTAS, CREATE VIEW, CREATE OR REPLACE, DROP/ALTER, transactions, ordered effects and post-state where applicable.
+- dbt-native models, including incremental materializations and snapshots, should exercise their feasible DML/DDL behaviors; use a **companion DuckDB scripted state-transition harness** for SQL that dbt's model DAG cannot natively express. This harness is mandatory, invoked by the **same top-level `make all`** and CI gate; it is not an optional or independent substitute for the dbt E2E.
+- Generate and load the protocol-driven initial physical sources/target state; run the full SQL program in DuckDB; assert **complete deterministic output rows, row multiplicities, source-to-terminal membership and before/after table contents**, including untouched rows, keys, NULLs, conflict paths, matched/unmatched MERGE paths and valid/idempotent versus non-idempotent effects.
+- Include every inventoried in-scope group/window/set/CTE/join/subquery/predicate combination, DML and DDL variant that the protocol promises. For dialect-specific syntax that DuckDB cannot execute verbatim, separately parse/analyze it with that dialect and compare canonical semantics with an equivalent DuckDB-executable SQL fixture where an equivalence is genuinely proven. Do not claim vendor-runtime conformance from DuckDB alone.
+- The complete audited feature/dialect manifest is the finite acceptance target; newly discovered supported transformations must extend the inventory and required tests. No claim of literal exhaustive `every SQL ever` for arbitrary external code is made.
 
-## Decision 2: Where should INSERT/UPDATE/DELETE/MERGE acceptance live?
+Owner: sql-tdg TASK-31 and TASK-36, protocol TASK-80..84 and TASK-89.
 
-**Recommendation: a dedicated, required DuckDB DML state-transition E2E job** outside the pure dbt model DAG. Its artifact/log must be included in the overall m-3 acceptance gate alongside dbt `make all`.
+## 3. Non-supported features remain future extensibility targets: approved
 
-- Generate physical sources and initial target state from the protocol's canonical obligations, execute complete ordered SQL mutation programs, then verify precise post-state contents and positive/negative rows.
-- Cover keys, conflicts, untouched rows, matched/unmatched MERGE branches, NULLs, non-idempotent INSERT, and idempotence **only where provable**.
-- Include dialect-specific syntax under separate parse/analysis tests. The DuckDB oracle cannot certify vendor-specific execution behavior. Other engines require their own executed oracle or approved exclusion.
-- The committed dbt fixture's `make all` continues to own SELECT/model graph, group/window/set and rejection tests. Its CI aggregate is not green unless the separate DML job also passed.
+- Uninterpreted arbitrary UDFs, unseeded stochastic functions, environment-sensitive session behavior, unbounded/nonterminating recursion and opaque vendor operators are **not permanently forbidden**. They are **deferred pending sound semantic evidence** and explicit user-provided execution assumptions or supported metadata.
+- Future contracts may accept declared function properties/return-domain expressions from structured input, introspection queries against a particular database, dbt macro/function metadata, ODCS or another verifiable adapter. This also applies to seeded stochastic behavior, recursion bounded by provable termination, and vendor session/collation/timezone laws. The canonical source-independent protocol must own typed validated semantics and provenance; adapter-specific syntax stays at the parsing/evidence boundary.
+- Without such evidence, exact generation **fails closed** with an explicit unsupported/residual reason. A syntax being parseable is never enough. Do not guess a UDF's value domain or side effects from its name.
+- Keep explicit documented deferrals and follow-up tasks; do not call a deferred capability 'supported', but also do not phrase scope as an irrevocable exclusion from later versions. Exact, safely bounded subsets are not automatically excluded.
+- Approval of this deferral policy does not approve missing tests for currently *claimed* supported variants.
 
-**Alternative:** build a dbt incremental-model or snapshot fixture expressing each DML variant. This cannot universally represent DELETE/MERGE/DDL syntax and would need explicit external-case coverage anyway.
+Owner: protocol TASK-66/78/79/87/88/90 and future scoped extension tasks, sql-tdg TASK-33/36.
 
-Maintainer approval: **pending**. Owner: sql-tdg TASK-31 and TASK-36; protocol TASK-80..84, TASK-89/91.
+## 4. All supported dialects must produce equivalent canonical protocols: approved
 
-## Decision 3: Bounded support rather than `any SQL`
+- Before final v3 sign-off, run **parser and analyzer tests on CI for all 13 supported dialect families**, covering every inventoried supported feature/variant which parses in that dialect, including dialect-specific SQL renderings. Do not rely on warehouse availability to test parsing.
+- Where variants express the **same SQL meaning**, compare the normalized parser-independent protocol **including outcome domains, bounds/inclusivity, three-valued truth, lineage, cardinality, positive/negative requirements, write effects and residual status**. Ignore only source metadata identifying the dialect and other explicitly non-semantic presentation metadata. Do not weaken assertions to 'SQL parses' or 'JSON shape matches'.
+- Where semantics actually differ by dialect or session settings, document conditional laws and explicit typed assumptions; do not require false equivalence. If a supported form cannot be proven equivalent, mark it residual and **block sign-off** for that claimed support.
+- **DuckDB is the executable E2E oracle** for equivalent SQL transformations and generator results; execute generated physical data against its full transformation scripts. A DuckDB pass cannot by itself certify BigQuery/MySQL/PostgreSQL/Snowflake/etc. native engine behavior. This distinction must remain explicit in CI reports and the manifest.
+- The tests run in CI even if no external database is provisioned. All 13 names are metadata inventory only, not a hard-coded runtime dialect whitelist.
 
-**Recommendation: explicitly exclude only opaque, inherently unprovable or unavailable semantics, with fail-closed proofs**.
+Owner: protocol TASK-88/89 and sql-tdg TASK-33/36.
 
-- Arbitrary UDFs, external side-effecting functions and runtime environment calls without a declared deterministic algebra.
-- Unseeded stochastic sampling, random ordering, nondeterministic/tie-ambiguous result selection.
-- Potentially nonterminating/unbounded recursive statements without a finite, provable termination/boundary.
-- Vendor-specific SQL operators and implicit collation/timezone/coercion laws without declared executable semantics.
+## Separate final release gate
 
-**Important:** approval does *not* exclude entire classes such as `WITH RECURSIVE`, vendor statements or expressions that *can* be modeled exactly under explicit bounded assumptions. Their safe subsets remain in-scope under TASK-70..88. Parseable but unsupported forms must emit a typed residual/unsupported diagnostic, and sql-tdg must refuse exact generation. Unparseable forms fail with explicit parser errors; neither is classified as passing coverage. All exclusions require a documented negative test, explicit scope record and review.
+**Release Please PR #79 stays unmerged.** Protocol 3.0.0 release sign-off is distinct from the four decisions above. TASK-66..90, cross-dialect semantic-equivalence tests, exact generator-ready physical-source positive/negative proofs, randomized rejecting-alternative coverage, the complete dbt `make all` + scripted DML/DDL E2E, pinned prepublication protocol candidate integration in sql-tdg TASK-43, and TASK-91 must all pass before the maintainer can approve publishing the consolidated release.
 
-**Alternative:** treat every extension as release blocking. That would make the scope unbounded and the release effectively unverifiable.
-
-Maintainer approval: **pending**. Owner: protocol TASK-66, TASK-78, TASK-88, TASK-91.
-
-## Decision 4: Executable dialect certification
-
-**Recommendation: distinguish 13-dialect parser/semantic coverage from SQL-engine certification.** Use DuckDB for directly executable and equivalent SQL shapes; do not claim DuckDB establishes Snowflake, PostgreSQL, MySQL, SQL Server, BigQuery or other vendor runtime laws.
-
-- Common SQL syntax must be parsed and analyzed across all exposed dialect names where sqlparser accepts it, with corresponding AST and normalized-result tests.
-- Dialect-specific forms need explicit parser-boundary and semantic evidence, including conditional NULL ordering, collation, timestamp zones, arithmetic overflow, and DML/DDL semantics.
-- Exactness dependent on a vendor runtime setting remains residual without declared and independently verifiable assumptions.
-- For unavailable vendor engines, record **engine oracle unavailable / not certified** and seek explicit approval to ship only dialect-independent safe semantics, with the corresponding unsupported settings failing closed.
-- Adding an executed vendor engine later must include its version/session configuration and SQL result snapshots, not just a parser test.
-
-**Alternative:** require native execution of all supported dialects and engine versions before 3.0.0. This is stronger but introduces vendor infrastructure and potentially licensing dependencies.
-
-Maintainer approval: **pending**. Owner: protocol TASK-88, TASK-89, TASK-91; sql-tdg TASK-33/36.
-
-## Final release sign-off, a separate future gate
-
-**Do not sign off on releasing protocol 3.0.0 yet.** Final approval is valid only when protocol TASK-66..90 are Done, approved exclusions are audited, CI is green, sql-tdg has pinned the candidate Git SHA, generated a complete positive/negative dataset, passed dbt `make all`, verified DML results and full cross-feature output oracles, and TASK-91's acceptance is complete. Release Please PR #79 remains unmerged until that point.
-
-To approve the scope *now*, the maintainer may explicitly accept decisions **1–4** (individually or together). Approval establishes what engineering/tests must implement; it **does not waive** the acceptance tests or prove readiness to release.
+**Approval recorded for scope decisions 1–4; none of the implementation evidence, unfinished task acceptance criteria or final release authorization has been waived.**
