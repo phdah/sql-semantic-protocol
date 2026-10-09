@@ -198,9 +198,14 @@ pub struct EvaluatedOutcomeGoal {
     reason: String,
     min_rows: u64,
     max_rows: Option<u64>,
+    witness: Option<crate::outcome_proofs::OutcomeWitness>,
 }
 
 impl EvaluatedOutcomeGoal {
+    /// Constructive source obligations for a proven feasible request.
+    pub fn witness(&self) -> Option<&crate::outcome_proofs::OutcomeWitness> {
+        self.witness.as_ref()
+    }
     /// Caller-originated request retained unmodified.
     pub fn goal(&self) -> &OutcomeGoal {
         &self.goal
@@ -274,7 +279,14 @@ fn assessed(
         reason: reason.to_string(),
         min_rows,
         max_rows,
+        witness: None,
     }
+}
+
+fn proved(goal: OutcomeGoal, reason: &str, min_rows: u64, max_rows: Option<u64>, witness: crate::outcome_proofs::OutcomeWitness) -> EvaluatedOutcomeGoal {
+    let mut result = assessed(goal, OutcomeGoalStatus::Feasible, reason, min_rows, max_rows);
+    result.witness = Some(witness);
+    result
 }
 
 fn assess_goal(
@@ -322,7 +334,12 @@ fn assess_goal(
     let singleton = query.is_some_and(QueryStatement::proven_single_row_output)
         && resolved.diagnostics().is_empty();
     let min_rows = u64::from(singleton);
-    let max_rows = singleton.then_some(1);
+    let rank_upper = query.and_then(crate::outcome_proofs::rank_upper_bound);
+    let max_rows = singleton.then_some(1).or(rank_upper);
+    if goal.rows.is_some_and(|requested| max_rows.is_some_and(|max| requested > max)) {
+        return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable,
+            "requested output exceeds the proven final result-row upper bound", min_rows, max_rows));
+    }
     if let Some(rows) = goal.rows {
         if singleton && rows != 1 {
             return Ok(assessed(
@@ -456,13 +473,19 @@ fn assess_goal(
                 ));
             }
             if literal_histograms.iter().all(|proof| *proof == Some(true)) {
-                return Ok(assessed(
+                return Ok(proved(
                     goal,
-                    OutcomeGoalStatus::Feasible,
                     "SQL proves one output row and every requested literal frequency",
                     min_rows,
                     max_rows,
+                    crate::outcome_proofs::OutcomeWitness::Singleton,
                 ));
+            }
+        }
+
+        if !singleton {
+            if let Some(witness) = crate::outcome_proofs::construct(bundle, layer, query, &goal) {
+                return Ok(proved(goal, "all physical source rows and operator multiplicities are constructively specified", min_rows, max_rows, witness));
             }
         }
 
@@ -493,12 +516,12 @@ fn assess_goal(
                 .iter()
                 .all(|distribution| distribution.values().is_empty())
         {
-            return Ok(assessed(
+            return Ok(proved(
                 goal,
-                OutcomeGoalStatus::Feasible,
                 "an empty external source yields an empty row-preserving projection",
                 min_rows,
                 max_rows,
+                crate::outcome_proofs::OutcomeWitness::EmptySources { relations: vec![query.dependencies()[0].clone()] },
             ));
         }
     }
