@@ -1781,7 +1781,9 @@ pub fn select_targets(
         relation_constraints: bundle.relation_constraints.clone(),
         constraint_diagnostics: bundle.constraint_diagnostics.clone(),
         comparison_declarations: bundle.comparison_declarations.clone(),
-        outcome_goals: bundle.outcome_goals.iter()
+        outcome_goals: bundle
+            .outcome_goals
+            .iter()
             .filter(|item| selected_layer_ids.contains(item.goal().layer_id()))
             .cloned()
             .collect(),
