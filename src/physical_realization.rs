@@ -394,6 +394,82 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
         .unwrap_or_else(|| residual(PhysicalProofGap::UnresolvedSemantics))
 }
 
+/// Normalize sequential physical WHERE filters into one candidate-row
+/// formula, then solve TRUE versus FALSE/UNKNOWN jointly. Distinct independent
+/// sufficient examples must never simply be conjoined without this proof.
+fn joint_physical_filters(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    semantics: &crate::bundle::ResolvedComposedSemantics,
+) -> Option<(WitnessDirection, WitnessDirection)> {
+    let filters = semantics.boolean_witnesses();
+    if filters.len() <= 1 || filters.len() > 12 || walker.sources.len() != 1 {
+        return None;
+    }
+    let source = walker.sources.iter().next()?;
+    if filters.iter().any(|filter| {
+        filter.boundary_kind() != GroupBoundaryKind::Physical
+            || filter.witness().source_relation() != source
+    }) {
+        return None;
+    }
+    let origin_ids = filters
+        .iter()
+        .map(|filter| filter.origin_layer_id())
+        .collect::<BTreeSet<_>>();
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        let query = query_for(bundle, layer)?;
+        if origin_ids.contains(layer.id()) {
+            if !query.filter_only_row_shape()
+                || query.sources().len() != 1
+                || !query.joins().is_empty()
+                || query.aggregation().is_some()
+                || query.set_operation().is_some()
+                || query.window_witness().is_some()
+                || !query.subquery_witnesses().is_empty()
+                || query.predicates().where_predicate().is_none()
+                || query.predicates().having_predicate().is_some()
+                || query.predicates().qualify_predicate().is_some()
+                || !query.diagnostics().is_empty()
+                || !query.output().columns().iter().all(|c| c.plain_copy_source().is_some())
+            {
+                return None;
+            }
+        } else if !transparent_projection(query) {
+            return None;
+        }
+    }
+    let physical_witnesses = filters
+        .iter()
+        .map(|filter| filter.witness())
+        .collect::<Vec<_>>();
+    let joint =
+        crate::boolean_witness::BooleanWitness::conjoin_physical_filters(&physical_witnesses)?;
+    let row = crate::constructive::RowVariable::new(source, source, "candidate")?;
+    let translate = |direction: &crate::boolean_witness::BooleanWitnessDirection| match direction {
+        crate::boolean_witness::BooleanWitnessDirection::Exact(truth) => {
+            WitnessCase::new(
+                vec![WitnessObligation::Predicate(WitnessFormula::RowTruth {
+                    row: row.clone(),
+                    predicate: joint.condition().clone(),
+                    truth: *truth,
+                })],
+                ProofStrength::Sufficient,
+            )
+            .and_then(|case| WitnessDirection::feasible(vec![case]))
+            .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
+        }
+        crate::boolean_witness::BooleanWitnessDirection::Residual { .. } => {
+            residual(PhysicalProofGap::LocalWitnessUnproven)
+        }
+    };
+    Some((translate(joint.qualifying()), translate(joint.rejected())))
+}
+
 /// Construct canonical producer references, and lift an individual physical-row
 /// predicate witness only when the entire path is transparently reversible.
 ///
@@ -421,6 +497,32 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         }) {
             Some(semantics) => {
                 let proofs = local_constructive_witnesses(semantics);
+                if !semantics
+                    .column_domains()
+                    .iter()
+                    .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty))
+                    && semantics
+                        .boolean_witnesses()
+                        .len()
+                        == proofs.len()
+                {
+                    if let Some((qualifying, rejected)) =
+                        joint_physical_filters(bundle, &walker, semantics)
+                    {
+                        let partial = matches!(qualifying, WitnessDirection::Residual { .. })
+                            || matches!(rejected, WitnessDirection::Residual { .. });
+                        return PhysicalSourcePlan {
+                            target_layer_id: target_layer_id.to_string(),
+                            nodes: walker.nodes,
+                            sources: walker.sources.into_iter().collect(),
+                            qualifying,
+                            rejected,
+                            zero_output,
+                            gap: partial.then_some(PhysicalProofGap::LocalWitnessUnproven),
+                        };
+                    }
+                }
+
                 gap = if semantics
                     .column_domains()
                     .iter()
