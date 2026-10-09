@@ -46,7 +46,8 @@ use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
 pub use boolean_witness::{
-    BooleanOperands, BooleanRowConstraint, BooleanTruthCase, BooleanWitness, BooleanWitnessDirection,
+    BooleanOperands, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
+    BooleanWitnessDirection,
 };
 pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
