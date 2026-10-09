@@ -109,7 +109,7 @@ fn source_witness_is_emitted_locally_and_retains_origin_through_composition() {
     let downstream = bundle
         .layers()
         .iter()
-        .find(|layer| layer.produced_relation() == Some("downstream"))
+        .find(|layer| layer.produces().iter().any(|output| output.relation_name() == Some("downstream")))
         .unwrap();
     let ComposedSemantics::Resolved(composed) = downstream.composed_semantics() else {
         panic!("downstream composition should resolve");
