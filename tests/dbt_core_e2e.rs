@@ -116,6 +116,12 @@ fn final_outcome_snapshot(protocol: &Value) -> Value {
                 .as_object_mut()
                 .expect("composed semantics should be an object")
                 .remove("join_witnesses");
+            // Keep the historical golden focused on existing semantics; the
+            // constructive proof extension has dedicated contract tests.
+            composed_semantics
+                .as_object_mut()
+                .expect("composed semantics should be an object")
+                .remove("constructive_witnesses");
             outcomes.push(serde_json::json!({
                 "relation": relation,
                 "model_id": layer["statement"]["input_id"].clone(),
