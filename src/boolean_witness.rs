@@ -546,22 +546,22 @@ fn normalize(
             }
         }
         Predicate::Comparison(comparison) => {
-            let (column, operator, literal, offset) =
-                if let Some((column, offset)) = affine_integer_operand(
+            let (column, operator, literal, offset) = if let Some((column, offset)) =
+                affine_integer_operand(comparison.left(), sources, integer_evidence)
+            {
+                (column, comparison.operator(), comparison.right(), offset)
+            } else if let Some((column, offset)) =
+                affine_integer_operand(comparison.right(), sources, integer_evidence)
+            {
+                (
+                    column,
+                    comparison.operator().reversed(),
                     comparison.left(),
-                    sources,
-                    integer_evidence,
-                ) {
-                    (column, comparison.operator(), comparison.right(), offset)
-                } else if let Some((column, offset)) = affine_integer_operand(
-                    comparison.right(),
-                    sources,
-                    integer_evidence,
-                ) {
-                    (column, comparison.operator().reversed(), comparison.left(), offset)
-                } else {
-                    return residual("comparison is noninvertible or correlates two source values");
-                };
+                    offset,
+                )
+            } else {
+                return residual("comparison is noninvertible or correlates two source values");
+            };
             if matches!(
                 operator,
                 ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
@@ -650,7 +650,10 @@ fn affine_integer_operand<'a>(
             if let Some(value) = signed_integer_literal(binary.right()) {
                 (binary.left(), i128::from(value))
             } else {
-                (binary.right(), i128::from(signed_integer_literal(binary.left())?))
+                (
+                    binary.right(),
+                    i128::from(signed_integer_literal(binary.left())?),
+                )
             }
         }
         BinaryOperator::Subtract => (
