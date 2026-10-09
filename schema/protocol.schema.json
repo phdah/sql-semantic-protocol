@@ -971,7 +971,7 @@
     "physicalSourcePlan": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["layer_id", "node_refs", "physical_sources", "qualifying", "rejected", "gap"],
+      "required": ["layer_id", "node_refs", "physical_sources", "qualifying", "rejected", "zero_output", "gap"],
       "properties": {
         "layer_id": { "$ref": "#/$defs/nonEmptyString" },
         "node_refs": {
@@ -986,6 +986,10 @@
         },
         "qualifying": { "$ref": "#/$defs/constructiveDirection" },
         "rejected": { "$ref": "#/$defs/constructiveDirection" },
+        "zero_output": {
+          "description": "Sufficient entire-physical-source empty-row obligations for zero terminal output; does not imply positive output cardinality.",
+          "$ref": "#/$defs/constructiveDirection"
+        },
         "gap": {
           "description": "Proof limitation. null means supported single-row classifications only, not a proof of full target cardinality.",
           "enum": [null, "unknown_target", "missing_producer", "ambiguous_producer", "cycle", "partial_producer", "unsupported_dependency", "unresolved_semantics", "no_witness", "local_witness_unproven", "multiple_witnesses", "non_invertible_transformation", "unsupported_operator", "intermediate_boundary", "unbound_physical_source"]
