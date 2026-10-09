@@ -209,9 +209,27 @@ impl<'a> Composer<'a> {
                             _ => crate::bundle::GroupBoundaryKind::Unresolved,
                         },
                     );
+                let (witness, boundary_kind) =
+                    if boundary_kind == crate::bundle::GroupBoundaryKind::Intermediate {
+                        match witness.mapped_to_physical(|column| {
+                            self.resolve_column_identity(&layer, &query, column)
+                                .ok()
+                                .map(|source| {
+                                    ColumnRef::new(
+                                        Some(source.relation().to_string()),
+                                        source.column().to_string(),
+                                    )
+                                })
+                        }) {
+                            Some(mapped) => (mapped, crate::bundle::GroupBoundaryKind::Physical),
+                            None => (witness.clone(), boundary_kind),
+                        }
+                    } else {
+                        (witness.clone(), boundary_kind)
+                    };
                 vec![crate::bundle::ComposedBooleanWitness::new(
                     layer.id().to_string(),
-                    witness.clone(),
+                    witness,
                     boundary_kind,
                 )]
             })
