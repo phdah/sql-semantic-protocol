@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "release_target": "3.0.0",
-  "review_status": "maintainer_and_sql_tdg_review_pending",
-  "scope_rule": "Unknown, unverified, operator-local and pending-exclusion are not certified for exact whole-source generation; no release until TASK-91 sign-off.",
+  "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "scope_rule": "Maintainer approved the four engineering-scope decisions only. All current supported claims require exhaustive cross-dialect canonical equality and DuckDB end-to-end proof. Conditionally deferred opaque/unbounded behavior fails closed until typed evidence is supplied, while safely bounded subsets remain release-blocking. No release approval is implied.",
   "dialects": [
     {
       "name": "ansi",
@@ -6289,8 +6289,7 @@
       "tdg_tasks": [
         "TASK-36"
       ],
-      "scope": "pending_exclusion_approval",
-      "exclusion": "Nonterminating/unbounded recursion must fail closed; approval pending",
+      "scope": "approved_conditional_deferral",
       "dialects": {
         "ansi": {
           "parse": "unverified",
@@ -6410,7 +6409,9 @@
           "fixture_ids": []
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {},
+      "deferral": "Nonterminating/unbounded recursion must fail closed; requires independently verified typed evidence for future support",
+      "safe_subset_release_blocking": true
     },
     {
       "id": "scopes.derived_lateral",
@@ -6873,8 +6874,7 @@
       "tdg_tasks": [
         "TASK-30"
       ],
-      "scope": "pending_exclusion_approval",
-      "exclusion": "Unseeded engine randomness is not constructively provable; approval pending",
+      "scope": "approved_conditional_deferral",
       "dialects": {
         "ansi": {
           "parse": "unverified",
@@ -6994,7 +6994,9 @@
           "fixture_ids": []
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {},
+      "deferral": "Unseeded engine randomness is not constructively provable; requires independently verified typed evidence for future support",
+      "safe_subset_release_blocking": true
     },
     {
       "id": "relations.advanced_sources",
@@ -9606,8 +9608,7 @@
         "TASK-33",
         "TASK-36"
       ],
-      "scope": "pending_exclusion_approval",
-      "exclusion": "Opaque or nondeterministic behavior requires fail-closed diagnostics; maintainer approval pending",
+      "scope": "approved_conditional_deferral",
       "dialects": {
         "ansi": {
           "parse": "unverified",
@@ -9727,7 +9728,9 @@
           "fixture_ids": []
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {},
+      "deferral": "Opaque or nondeterministic behavior requires fail-closed diagnostics; future modelled extension",
+      "safe_subset_release_blocking": true
     }
   ],
   "fixtures": [
@@ -10493,5 +10496,62 @@
         "generation_oracle": "pending"
       }
     ]
-  }
+  },
+  "scope_decisions": {
+    "approval_date": "2026-10-09",
+    "approval_type": "feature_scope_only_not_release_signoff",
+    "decision_record": "docs/coverage-signoff.md",
+    "per_terminal_rejection": "seeded_random_provably_rejecting_alternative",
+    "dml_ddl_e2e": "single_required_dbt_make_all_with_scripted_duckdb_transition_harness",
+    "opaque_behavior": "future_extensibility_fail_closed_until_typed_verified_evidence",
+    "dialect_contract": "all_13_cross_dialect_equivalent_canonical_outcomes_duckdb_e2e",
+    "release_approved": false
+  },
+  "deferred_capabilities": [
+    {
+      "feature": "scopes.recursive_cte",
+      "condition": "nonterminating/unbounded recursion without a provable finite bound",
+      "future_evidence": [
+        "declared termination measure",
+        "recursive bound",
+        "database metadata"
+      ],
+      "fail_closed": "unsupported_or_residual",
+      "safe_subset_release_blocking": true
+    },
+    {
+      "feature": "ordering.sampling",
+      "condition": "unseeded/engine-dependent sampling without a reproducible distribution",
+      "future_evidence": [
+        "explicit seed",
+        "distribution model",
+        "database execution/session metadata"
+      ],
+      "fail_closed": "unsupported_or_residual",
+      "safe_subset_release_blocking": true
+    },
+    {
+      "feature": "execution.unsupported_opaque",
+      "condition": "opaque UDFs and unknown external/side-effecting functions",
+      "future_evidence": [
+        "structured function contracts",
+        "database introspection",
+        "dbt function/macro definitions",
+        "ODCS adapters"
+      ],
+      "fail_closed": "unsupported_or_residual",
+      "safe_subset_release_blocking": true
+    },
+    {
+      "feature": "execution.unsupported_opaque",
+      "condition": "vendor-specific operations and collation/timezone/coercion not proved with explicit laws",
+      "future_evidence": [
+        "declared session settings",
+        "versioned database metadata",
+        "executable verification"
+      ],
+      "fail_closed": "unsupported_or_residual",
+      "safe_subset_release_blocking": true
+    }
+  ]
 }
