@@ -4,12 +4,12 @@ mod common;
 
 use common::DIALECTS;
 use duckdb::Connection;
-use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, AnalysisBundle,
     ComposedSemantics, ConfiguredSqlInput, JoinSide, JoinWitness, JoinWitnessDirection,
     JoinWitnessShape, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
+use sqlparser::parser::Parser;
 
 fn schema(name: &str) -> RelationSchema {
     RelationSchema::new(
@@ -275,7 +275,10 @@ fn filtered_upstream_rows_do_not_become_exact_physical_join_witnesses() {
         JoinWitnessDirection::Residual { reason }
             if reason == "upstream_row_membership_not_preserved"
     ));
-    assert!(matches!(witness.rejected(), JoinWitnessDirection::Residual { .. }));
+    assert!(matches!(
+        witness.rejected(),
+        JoinWitnessDirection::Residual { .. }
+    ));
 }
 
 #[test]
@@ -289,7 +292,10 @@ fn exact_physical_join_witness_survives_multiple_plain_copy_producers() {
     };
     assert_eq!(witness.left().expect("physical left").relation(), "l");
     assert_eq!(witness.right().expect("physical right").relation(), "r");
-    assert!(matches!(witness.qualifying(), JoinWitnessDirection::Exact(_)));
+    assert!(matches!(
+        witness.qualifying(),
+        JoinWitnessDirection::Exact(_)
+    ));
 }
 
 #[test]
@@ -304,6 +310,9 @@ fn upstream_row_shaping_cannot_be_flattened_into_exact_source_obligations() {
         let [witness] = witnesses(&bundle) else {
             panic!("row-shaping upstream witness");
         };
-        assert!(matches!(witness.qualifying(), JoinWitnessDirection::Residual { .. }));
+        assert!(matches!(
+        witness.qualifying(),
+        JoinWitnessDirection::Residual { .. }
+    ));
     }
 }
