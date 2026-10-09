@@ -208,26 +208,32 @@ fn branch_tuple_counts_are_identical_to_existing_operator_local_cases() {
     };
     let set = query.set_operation().expect("set");
     let (original_positive, original_negative) = set.witness_directions();
-    let ComposedSemantics::Resolved(ref semantics) = analyzed.layers()[0].composed_semantics() else {
+    let ComposedSemantics::Resolved(ref semantics) = analyzed.layers()[0].composed_semantics()
+    else {
         panic!("resolved");
     };
-    let normalized = local_constructive_witnesses(semantics).into_iter()
-        .find(|proof| proof.operator() == WitnessOperator::Set).expect("set proof");
+    let normalized = local_constructive_witnesses(semantics)
+        .into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Set)
+        .expect("set proof");
     for (original, current) in [
         (original_positive, normalized.qualifying()),
         (original_negative, normalized.rejected()),
     ] {
         let (SetWitnessDirection::Exact(cases), WitnessDirection::Feasible(converted)) =
-            (original, current) else {
+            (original, current)
+        else {
             panic!("both directions must remain exact");
         };
         assert_eq!(cases.len(), converted.len());
         for (case, translated) in cases.iter().zip(converted) {
             assert_eq!(
                 case.obligations().len(),
-                translated.obligations().iter().filter(|item|
-                    matches!(item, WitnessObligation::SetTuple { .. })
-                ).count()
+                translated
+                    .obligations()
+                    .iter()
+                    .filter(|item| matches!(item, WitnessObligation::SetTuple { .. }))
+                    .count()
             );
             assert!(translated.obligations().iter().any(|item| matches!(item,
                 WitnessObligation::SetResultTuple { matching_rows, nulls_equal: true }
@@ -248,24 +254,26 @@ fn branch_tuple_counts_are_identical_to_existing_operator_local_cases() {
 #[test]
 fn membership_case_counts_match_legacy_exact_truth_directions() {
     use sql_semantic_protocol::{ProtocolStatement, SubqueryMembershipDirection};
-    let analyzed = analyze(
-        "SELECT l.k FROM l WHERE l.k NOT IN (SELECT r.k FROM r)"
-    );
+    let analyzed = analyze("SELECT l.k FROM l WHERE l.k NOT IN (SELECT r.k FROM r)");
     let ProtocolStatement::Query(query) = &analyzed.inputs()[0].statements()[0] else {
         panic!("expected query");
     };
     let original = &query.subquery_witnesses()[0];
-    let ComposedSemantics::Resolved(ref semantics) = analyzed.layers()[0].composed_semantics() else {
+    let ComposedSemantics::Resolved(ref semantics) = analyzed.layers()[0].composed_semantics()
+    else {
         panic!("resolved");
     };
-    let normalized = local_constructive_witnesses(semantics).into_iter()
-        .find(|proof| proof.operator() == WitnessOperator::Subquery).expect("membership proof");
+    let normalized = local_constructive_witnesses(semantics)
+        .into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Subquery)
+        .expect("membership proof");
     for (before, after) in [
         (original.qualifying(), normalized.qualifying()),
         (original.rejected(), normalized.rejected()),
     ] {
         let (SubqueryMembershipDirection::Exact(old), WitnessDirection::Feasible(new)) =
-            (before, after) else {
+            (before, after)
+        else {
             panic!("both directions must remain exact");
         };
         assert_eq!(old.len(), new.len());
@@ -282,29 +290,43 @@ fn intermediate_boundaries_require_producer_realization_instead_of_direct_writes
     use sql_semantic_protocol::{local_pending_producers, GroupBoundaryKind};
     let b = analyze(
         "WITH left_cte AS (SELECT k FROM l WHERE k > 0), right_cte AS (SELECT k FROM r)
-         SELECT k FROM left_cte UNION ALL SELECT k FROM right_cte"
+         SELECT k FROM left_cte UNION ALL SELECT k FROM right_cte",
     );
     let ComposedSemantics::Resolved(ref semantics) = b.layers()[0].composed_semantics() else {
         panic!("resolved");
     };
-    let intermediate = semantics.set_operations().iter().flat_map(|op| op.operation().branches())
+    let intermediate = semantics
+        .set_operations()
+        .iter()
+        .flat_map(|op| op.operation().branches())
         .filter_map(|branch| branch.witness_boundary())
         .any(|boundary| boundary.is_intermediate());
     let pending = local_pending_producers(semantics);
     if intermediate {
         assert!(!pending.is_empty());
         for obligation in pending {
-            let WitnessObligation::Producer { boundary, physical_sources } = obligation else {
+            let WitnessObligation::Producer {
+                boundary,
+                physical_sources,
+            } = obligation
+            else {
                 panic!("only unresolved producer requirements");
             };
             assert_eq!(boundary.kind(), GroupBoundaryKind::Intermediate);
-            assert!(physical_sources.iter().all(|source| source == "l" || source == "r"));
+            assert!(physical_sources
+                .iter()
+                .all(|source| source == "l" || source == "r"));
         }
     } else {
         let normalized = local_constructive_witnesses(semantics);
-        let set = normalized.iter().find(|proof| proof.operator() == WitnessOperator::Set)
+        let set = normalized
+            .iter()
+            .find(|proof| proof.operator() == WitnessOperator::Set)
             .expect("set evidence");
-        assert!(matches!(set.qualifying(), WitnessDirection::Residual { .. }));
+        assert!(matches!(
+            set.qualifying(),
+            WitnessDirection::Residual { .. }
+        ));
     }
 }
 
