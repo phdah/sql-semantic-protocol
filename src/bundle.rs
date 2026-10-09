@@ -993,6 +993,7 @@ pub struct AnalysisBundle {
     relation_constraints: Vec<RelationConstraintSet>,
     constraint_diagnostics: Vec<ConstraintDiagnostic>,
     comparison_declarations: Vec<ComparisonAssumption>,
+    outcome_goals: Vec<crate::outcome_goals::EvaluatedOutcomeGoal>,
 }
 
 impl AnalysisBundle {
@@ -1036,6 +1037,22 @@ impl AnalysisBundle {
         &self.comparison_declarations
     }
 
+    /// Return optional caller goals and their conservative feasibility assessments.
+    pub fn outcome_goals(&self) -> &[crate::outcome_goals::EvaluatedOutcomeGoal] {
+        &self.outcome_goals
+    }
+
+    /// Replace requested outcome goals. Requests are evaluated only against proved semantics;
+    /// this does not modify source predicates or any SQL-derived value domain.
+    pub fn set_outcome_goals(
+        &mut self,
+        goals: &[crate::outcome_goals::OutcomeGoal],
+    ) -> Result<(), crate::outcome_goals::OutcomeGoalError> {
+        let evaluated = crate::outcome_goals::evaluate(self, goals)?;
+        self.outcome_goals = evaluated;
+        Ok(())
+    }
+
     /// Attest warehouse comparison settings and apply them to local and composed scopes.
     /// No assumption is silently supplied by default.
     pub fn declare_comparison_assumptions(&mut self, declared: &[ComparisonAssumption]) {
@@ -1063,6 +1080,7 @@ impl AnalysisBundle {
                 }
             }
         }
+        self.refresh_outcome_goals();
     }
 
     /// Merge adapter-neutral canonical constraint evidence into this bundle.
@@ -1083,6 +1101,7 @@ impl AnalysisBundle {
             .extend(diagnostics.iter().cloned());
         self.constraint_diagnostics.sort();
         self.constraint_diagnostics.dedup();
+        self.refresh_outcome_goals();
     }
 
     pub(crate) fn replace_source_schemas(&mut self, mut schemas: Vec<RelationSchema>) {
@@ -1108,6 +1127,22 @@ impl AnalysisBundle {
                 }
             }
         }
+        self.refresh_outcome_goals();
+    }
+
+    // Goals are evaluated from mutable evidence, not immutable SQL syntax alone.
+    // Keep the caller's requests while replacing any now-invalid witness or bound.
+    fn refresh_outcome_goals(&mut self) {
+        if self.outcome_goals.is_empty() {
+            return;
+        }
+        let requested = self
+            .outcome_goals
+            .iter()
+            .map(|item| item.goal().clone())
+            .collect::<Vec<_>>();
+        self.outcome_goals = crate::outcome_goals::evaluate(self, &requested)
+            .expect("evidence updates preserve validated output layer and column identities");
     }
 
     fn validate_existing_constraints(&mut self) {
@@ -1170,6 +1205,7 @@ impl AnalysisBundle {
             relation_constraints,
             constraint_diagnostics: Vec::new(),
             comparison_declarations: Vec::new(),
+            outcome_goals: Vec::new(),
         };
         bundle.recheck_boolean_witnesses();
         Ok(bundle)
@@ -1763,6 +1799,12 @@ pub fn select_targets(
         relation_constraints: bundle.relation_constraints.clone(),
         constraint_diagnostics: bundle.constraint_diagnostics.clone(),
         comparison_declarations: bundle.comparison_declarations.clone(),
+        outcome_goals: bundle
+            .outcome_goals
+            .iter()
+            .filter(|item| selected_layer_ids.contains(item.goal().layer_id()))
+            .cloned()
+            .collect(),
     })
 }
 

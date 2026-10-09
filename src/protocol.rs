@@ -151,6 +151,10 @@ pub struct QueryStatement {
     subquery_witnesses: Box<[crate::subquery_witness::SubqueryMembershipWitness]>,
     boolean_witness: Option<Box<BooleanWitness>>,
     row_preserving_projection: bool,
+    proven_single_row_output: bool,
+    group_rows_match_surviving_groups: bool,
+    plain_goal_output_shape: bool,
+    ranked_goal_output_shape: bool,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -178,6 +182,10 @@ impl QueryStatement {
             subquery_witnesses: Vec::new().into_boxed_slice(),
             boolean_witness: None,
             row_preserving_projection: false,
+            proven_single_row_output: false,
+            group_rows_match_surviving_groups: false,
+            plain_goal_output_shape: false,
+            ranked_goal_output_shape: false,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -207,6 +215,44 @@ impl QueryStatement {
 
     pub(crate) fn row_preserving_projection(&self) -> bool {
         self.row_preserving_projection
+    }
+
+    pub(crate) fn with_proven_single_row_output(mut self, proven: bool) -> Self {
+        self.proven_single_row_output = proven;
+        self
+    }
+
+    /// Whether syntax and supported expressions prove exactly one output row.
+    /// This is independent of whether any source table contains rows.
+    pub fn proven_single_row_output(&self) -> bool {
+        self.proven_single_row_output
+    }
+
+    pub(crate) fn with_group_row_correspondence(mut self, proven: bool) -> Self {
+        self.group_rows_match_surviving_groups = proven;
+        self
+    }
+
+    /// Whether SQL proves one final result row for every surviving ordinary GROUP BY group.
+    /// DISTINCT, QUALIFY and result limits can invalidate this correspondence.
+    pub fn group_rows_match_surviving_groups(&self) -> bool {
+        self.group_rows_match_surviving_groups
+    }
+
+    pub(crate) fn with_goal_shapes(mut self, plain: bool, ranked: bool) -> Self {
+        self.plain_goal_output_shape = plain;
+        self.ranked_goal_output_shape = ranked;
+        self
+    }
+
+    /// Whether this local query has no row-shaping beyond a plain FROM/JOIN projection.
+    pub fn plain_goal_output_shape(&self) -> bool {
+        self.plain_goal_output_shape
+    }
+
+    /// Whether QUALIFY is the sole row-shaping operation on a single direct table.
+    pub fn ranked_goal_output_shape(&self) -> bool {
+        self.ranked_goal_output_shape
     }
 
     pub(crate) fn with_group_witness(mut self) -> Self {

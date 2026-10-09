@@ -12,6 +12,100 @@ Implementations should preserve caller order and generate deterministic IDs when
 
 Inline source labels are optional. File sources retain their path. Raw SQL text is intentionally not part of the semantic protocol.
 
+
+## Optional output cardinality and distribution goals
+
+Result goals are **caller requests**, not SQL-derived facts and not part of
+`condition_exactness`. The Rust API `AnalysisBundle::set_outcome_goals(&[OutcomeGoal])`
+evaluates typed requests against each target layer's composed output; unrequested
+analyses retain byte-identical JSON and omit `outcome_goals` entirely.
+Requests target `layer_id` rather than a relation name so parallel and
+multi-outcome bundles cannot silently redirect them. `select_targets` drops
+goals for outputs outside the selected graph while retaining the original
+identities for selected layers. The SQL, dbt, and ODCS adapters share the same
+evaluation path once an `AnalysisBundle` is constructed. If source schemas,
+constraints or comparison evidence are enriched after goals are set, their
+assessments are reevaluated so stale constructive witnesses cannot remain feasible.
+
+Each goal has optional `rows`, optional `groups`, and complete `distributions`
+per named **output** column. Histogram values are canonical typed scalars,
+including a distinct NULL value; their counts must sum to `rows`. Zero-count
+histograms can represent empty results. A group count means the number of
+*surviving result groups* after HAVING, not source rows, and is only comparable
+directly to output rows for an ordinary non-grouping-sets GROUP BY.
+A goal cannot alter column domains, source row membership, or downstream
+witness obligations. A consumer must not infer a source-row count from a
+requested output count.
+
+The `assessment` includes `status` (`feasible`, `unsatisfiable` or
+`residual`), a reason and proven `min_rows`/`max_rows` bounds.
+`null` as a maximum means no finite maximum has been proved.
+`feasible` is reserved for a constructive witness: a source-free literal
+singleton, an ungrouped global aggregate's single output row, or an
+empty external source through a plain row-preserving projection.
+Impossible singleton row counts, inconsistent full histograms,
+duplicated values in a single-column DISTINCT output (including repeated
+NULL), and mismatched simple GROUP BY output/group counts are
+`unsatisfiable`. These proofs do not depend on independent sampling
+of predicate intervals.
+
+Joins may expand or contract row multiplicity, DISTINCT can collapse
+tuples, grouped aggregates transform input rows into result groups,
+QUALIFY/window predicates affect surviving ranks, and NULL comparison
+behavior changes which tuples are duplicates. Without a proven witness
+for all interactions, a request remains `residual`; exact row-condition
+predicates alone never upgrade output cardinality to exact. Grouping sets,
+nontrivial distributions, nested row-shaping, and unproven cross-layer
+multiplicity remain residual rather than guessing feasible output goals.
+An unknown output column, duplicate target or histogram entry is a
+caller-input error rather than a semantic feasibility result.
+
+### Constructive result witnesses
+
+A feasible assessment includes a typed `witness` field; residual and unsatisfiable
+assessments have no witness. These are **whole-input** obligations, not evidence
+that a source predicate happens to match an existing dataset:
+
+- `singleton` proves an ungrouped aggregate or source-free constant query has one row.
+- `empty_sources` requires the complete named physical source relations to be empty.
+- `source_rows` fixes the count of a direct unmodified relation projection
+  and optionally maps complete typed column histograms to physical source columns.
+- `join_pairs` requires independent integer-key physical inputs, each with
+  one matching row for every key in `0..pairs-1`. It supports exact equality
+  INNER, LEFT, RIGHT and FULL joins, with no other rows, predicates or row-shaping.
+- `groups` constructs `groups` distinct physical integer keys with
+  `rows_per_group` source rows each, using exact COUNT(*) HAVING obligations
+  where present. No other source rows or grouping sets are admitted.
+- `ranked` constructs one selected row per integer-key partition (or
+  `rows` strictly ordered rows in the single global partition), using the
+  existing exact ROW_NUMBER predicate and explicit NULL ordering. Global
+  unpartitioned `ROW_NUMBER <= k` also proves the bound `max_rows = k`.
+- `set_tuples` carries the exact branch obligations for one resulting
+  tuple, repeated for `tuples` independent integer-key values. If a
+  one-column histogram is included, values are used instead of generated
+  keys. For UNION/INTERSECT/EXCEPT ALL, `scale_by_value_rows` means each
+  branch's matching tuple count is multiplied by that histogram value's
+  requested frequency. DISTINCT operators require unit multiplicities;
+  every emitted tuple remains distinct, including NULL equality.
+
+Positive proofs for integer-key classes require compatible, complete
+`source_schemas`, no active constraints on the controlled sources,
+and independent external source boundaries. The admitted construction
+deliberately excludes unsupported functions, additional filters,
+unmodeled producer-layer cardinalities, shared sources, and complex
+cross-column distributions; those requests remain `residual`. A parenthesized
+set branch with its own LIMIT or FETCH cannot be treated as an unmodified
+physical-source boundary, even when its projected columns are direct copies.
+The existing typed row-membership witnesses remain authoritative for
+the join, set, grouped and rank operators: a positive goal never turns
+unknown comparison semantics into an exact source witness.
+
+The optional root property is additive and absent by default. The
+application and active protocol version remain aligned through Release
+Please. Consumers accepting opt-in goals must handle all three statuses,
+including `residual`; `sql-tdg` TASK-30 can use these typed requests
+without reparsing SQL.
+
 ## Source schemas
 For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
 types when a relation is present there. When a physical dependency or a physical relation referenced only by a canonical constraint
