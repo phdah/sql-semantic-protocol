@@ -200,6 +200,25 @@ impl QueryStatement {
         self
     }
 
+    pub(crate) fn with_projected_window_witness(
+        mut self,
+        projected: Option<(WindowWitness, String)>,
+    ) -> Self {
+        if self.window_witness.is_some() {
+            return self;
+        }
+        if let Some((witness, alias)) = projected {
+            if witness.is_exact() {
+                self.row_conditions.exactness =
+                    self.row_conditions.exactness.without_projected_rank_where_residual();
+                self.output =
+                    crate::window_witness::refine_projected_output(&self.output, &alias, &witness);
+            }
+            self.window_witness = Some(Box::new(witness));
+        }
+        self
+    }
+
     pub(crate) fn with_set_operation(mut self, set_operation: Option<SetOperation>) -> Self {
         self.set_operation = set_operation;
         self
@@ -1732,6 +1751,14 @@ impl ConditionExactness {
             required_assumptions: requirements,
             declared_assumptions: BTreeSet::new(),
         }
+    }
+
+    pub(crate) fn without_projected_rank_where_residual(mut self) -> Self {
+        self.residual_conditions.retain(|item| {
+            !(item.clause == ConditionClause::Where
+                && item.reason == ResidualConditionReason::ComputedExpression)
+        });
+        self
     }
 
     pub(crate) fn without_qualify_residual(mut self) -> Self {
