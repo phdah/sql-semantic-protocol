@@ -89,7 +89,7 @@ impl BooleanRowConstraint {
     fn columns(&self, output: &mut Vec<ColumnRef>) {
         match self {
             Self::All(children) | Self::Any(children) => {
-                for child in children {
+                for child in children.iter() {
                     child.columns(output);
                 }
             }
