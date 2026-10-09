@@ -1,7 +1,7 @@
 ---
 id: TASK-69
 title: Prove bag, duplicate and closed-world row-count semantics
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-09'
@@ -28,12 +28,12 @@ Set duplicate arithmetic and local match counts do not suffice for joins/groups/
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Model multiplicity of row/tuple identities under projection, DISTINCT, joins, set operators, aggregation, rank filtering, insert/delete/update and no-match conditions.
-- [ ] #2 Define exact cardinality transfer functions and admissible bounds under NULL-aware equality, bag semantics, duplicate keys, zero rows, and cross-row correlations.
-- [ ] #3 Expose complete-physical-relation closed-world obligations for absence and anti-join/subquery/EXCEPT cases; distinguish empty relation from absent candidate.
-- [ ] #4 Cover feasible/impossible count goals and preserve constraints on copies, self joins and aliases without inventing independent physical tables.
-- [ ] #5 Differential-test all counts and output histograms on DuckDB including many-to-many joins, duplicate cancellations, empty sets and NULL tuples.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Model multiplicity of row/tuple identities under projection, DISTINCT, joins, set operators, aggregation, rank filtering, insert/delete/update and no-match conditions.
+- [x] #2 Define exact cardinality transfer functions and admissible bounds under NULL-aware equality, bag semantics, duplicate keys, zero rows, and cross-row correlations.
+- [x] #3 Expose complete-physical-relation closed-world obligations for absence and anti-join/subquery/EXCEPT cases; distinguish empty relation from absent candidate.
+- [x] #4 Cover feasible/impossible count goals and preserve constraints on copies, self joins and aliases without inventing independent physical tables.
+- [x] #5 Differential-test all counts and output histograms on DuckDB including many-to-many joins, duplicate cancellations, empty sets and NULL tuples.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 ## Delivery guidance
@@ -53,4 +53,4 @@ Implementation: [PR #90](https://github.com/phdah/sql-semantic-protocol/pull/90)
 
 **Boundary of TASK-69:** These are operator-local exact laws and source-completeness requirements, not a claim of universal whole-graph data construction. TASK-68 owns transitive physical-source realization and joint satisfiability, TASK-70..87 own individual unsupported semantic variants, TASK-88/89 own exhaustive dialect and cross-feature engine oracles, and TASK-91 owns final generator sign-off. Unverified release cells remain blocked in `docs/coverage-manifest.json`; PR #79 must not be merged based on this task alone.
 
-**CI sign-off:** Await green fmt/clippy/test/doc, no-default-features and dbt Core E2E checks on the final PR head before checking acceptance criteria or closing.
+**Acceptance sign-off:** All six task-specific operator-local criteria are complete in PR #90. The fully passing GitHub Actions run `37998322646` (head `e9af8c4127e1dc85a5945d307937e0a35ddf2a82`) verified format, warnings-as-errors lint, Rust tests, API documentation, no-default-features dependency/lint/test/doc and dbt Core end-to-end snapshots. Final task metadata is documentation only. This does **not** grant release approval for any unchecked feature/dialect inventory cell or the downstream multi-layer constructive generator.
