@@ -147,13 +147,21 @@ fn group_cases_preserve_bounded_counts_and_non_null_contributions() {
         .find(|proof| proof.operator() == WitnessOperator::Group)
         .expect("group witness");
     let WitnessDirection::Feasible(cases) = proof.qualifying() else {
-        panic!("expected a typed group construction: {:?}", proof.qualifying());
+        panic!(
+            "expected a typed group construction: {:?}",
+            proof.qualifying()
+        );
     };
-    assert!(cases.iter().any(|case| case.obligations().iter().any(|obligation| {
-        matches!(obligation, WitnessObligation::Group { rows, .. } if rows.minimum() >= 2)
-    })));
+    assert!(cases
+        .iter()
+        .any(|case| case.obligations().iter().any(|obligation| {
+            matches!(obligation, WitnessObligation::Group { rows, .. } if rows.minimum() >= 2)
+        })));
     let WitnessDirection::Feasible(rejected) = proof.rejected() else {
-        panic!("expected a rejected group construction: {:?}", proof.rejected());
+        panic!(
+            "expected a rejected group construction: {:?}",
+            proof.rejected()
+        );
     };
     assert!(!rejected.is_empty());
 }
@@ -174,11 +182,18 @@ fn ranked_witness_preserves_strict_order_and_closed_world_predecessors() {
     let WitnessDirection::Feasible(cases) = proof.qualifying() else {
         panic!("expected ranking proof: {:?}", proof.qualifying());
     };
-    assert!(cases.iter().any(|case| case.obligations().iter().any(|obligation| {
-        matches!(obligation, WitnessObligation::Ranked {
-            strict_unique: true, closed_world: true, ..
-        })
-    })));
+    assert!(cases
+        .iter()
+        .any(|case| case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::Ranked {
+                    strict_unique: true,
+                    closed_world: true,
+                    ..
+                }
+            )
+        })));
 }
 
 #[test]
