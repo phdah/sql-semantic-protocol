@@ -10,10 +10,10 @@ use crate::constraints::{
     ConstraintEnforcement, ConstraintValue, RelationConstraint, RelationConstraintSet,
 };
 
-use crate::domain::resolve_column;
+use crate::domain::{comparison_domain, intersect_domains, resolve_column};
 use crate::protocol::{
-    ColumnRef, ComparisonAssumption, ComparisonOperator, Expression, LiteralType, LiteralValue,
-    Predicate, SourceRelation,
+    ColumnDomain, ColumnRef, ComparisonAssumption, ComparisonOperator, Expression,
+    LiteralExpression, LiteralType, LiteralValue, Predicate, SourceRelation, ValueDomain,
 };
 
 /// A logical operand sequence with at least two children.
@@ -240,6 +240,59 @@ impl BooleanWitness {
     /// Obligation that makes the filtered row fail WHERE (FALSE or UNKNOWN).
     pub fn rejected(&self) -> &BooleanWitnessDirection {
         &self.rejected
+    }
+
+    /// Derive scalar domains only when every conjunct is proven and must be
+    /// TRUE for a qualifying row. Disjunctions cannot narrow any one column.
+    pub(crate) fn qualifying_conjunctive_domains(&self) -> Vec<ColumnDomain> {
+        if !matches!(
+            self.qualifying,
+            BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+        ) {
+            return Vec::new();
+        }
+        fn collect(
+            condition: &BooleanRowConstraint,
+            domains: &mut BTreeMap<ColumnRef, ValueDomain>,
+        ) -> bool {
+            match condition {
+                BooleanRowConstraint::All(operands) => {
+                    operands.iter().all(|item| collect(item, domains))
+                }
+                BooleanRowConstraint::IntegerComparison {
+                    column,
+                    operator,
+                    literal,
+                } => {
+                    let derived = comparison_domain(
+                        *operator,
+                        &LiteralExpression::new(
+                            LiteralType::Integer,
+                            LiteralValue::Number(literal.to_string()),
+                        ),
+                    );
+                    domains
+                        .entry(column.clone())
+                        .and_modify(|existing| {
+                            *existing = intersect_domains(existing, &derived);
+                        })
+                        .or_insert(derived);
+                    true
+                }
+                BooleanRowConstraint::NullTest { .. }
+                | BooleanRowConstraint::StringPrefix { .. }
+                | BooleanRowConstraint::Any(_)
+                | BooleanRowConstraint::Residual { .. } => false,
+            }
+        }
+        let mut domains = BTreeMap::new();
+        if !collect(&self.condition, &mut domains) {
+            return Vec::new();
+        }
+        domains
+            .into_iter()
+            .map(|(column, domain)| ColumnDomain::new(column, domain))
+            .collect()
     }
 
     /// Replace intermediate references with proven identity-only physical source columns.
