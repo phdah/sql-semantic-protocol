@@ -2424,7 +2424,8 @@
         "merge_clauses",
         "selection",
         "assignments",
-        "state_effect"
+        "state_effect",
+        "selection_domains"
       ],
       "properties": {
         "target": {
@@ -2486,6 +2487,12 @@
               "type": "null"
             }
           ]
+        },
+        "selection_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
         }
       }
     },
@@ -2495,7 +2502,8 @@
       "required": [
         "match_kind",
         "predicate",
-        "action"
+        "action",
+        "domains"
       ],
       "properties": {
         "match_kind": {
@@ -2518,6 +2526,12 @@
         },
         "action": {
           "$ref": "#/$defs/mergeAction"
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
         }
       }
     },
@@ -5363,7 +5377,8 @@
       "required": [
         "match_kind",
         "predicate",
-        "action"
+        "action",
+        "domains"
       ],
       "properties": {
         "match_kind": {
@@ -5407,6 +5422,12 @@
               }
             }
           ]
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
         }
       }
     }

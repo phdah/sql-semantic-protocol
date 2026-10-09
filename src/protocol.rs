@@ -463,6 +463,7 @@ pub struct WriteOperation {
     merge_clauses: Vec<MergeClause>,
     selection: Option<Predicate>,
     assignments: Vec<MergeAssignment>,
+    selection_domains: Vec<ColumnDomain>,
 }
 
 impl WriteOperation {
@@ -475,6 +476,7 @@ impl WriteOperation {
             merge_clauses: Vec::new(),
             selection: None,
             assignments: Vec::new(),
+            selection_domains: Vec::new(),
         }
     }
 
@@ -487,6 +489,7 @@ impl WriteOperation {
             merge_clauses: Vec::new(),
             selection: None,
             assignments: Vec::new(),
+            selection_domains: Vec::new(),
         }
     }
 
@@ -503,6 +506,7 @@ impl WriteOperation {
             merge_clauses,
             selection: None,
             assignments: Vec::new(),
+            selection_domains: Vec::new(),
         }
     }
 
@@ -510,6 +514,7 @@ impl WriteOperation {
         target: String,
         selection: Option<Predicate>,
         assignments: Vec<MergeAssignment>,
+        selection_domains: Vec<ColumnDomain>,
     ) -> Self {
         Self {
             target,
@@ -519,10 +524,11 @@ impl WriteOperation {
             merge_clauses: Vec::new(),
             selection,
             assignments,
+            selection_domains,
         }
     }
 
-    pub(crate) fn delete(target: String, selection: Option<Predicate>) -> Self {
+    pub(crate) fn delete(target: String, selection: Option<Predicate>, selection_domains: Vec<ColumnDomain>) -> Self {
         Self {
             target,
             kind: WriteKind::Delete,
@@ -531,6 +537,7 @@ impl WriteOperation {
             merge_clauses: Vec::new(),
             selection,
             assignments: Vec::new(),
+            selection_domains,
         }
     }
 
@@ -569,6 +576,11 @@ impl WriteOperation {
         &self.assignments
     }
 
+    /// Necessary domains on rows selected by standalone UPDATE/DELETE.
+    pub fn selection_domains(&self) -> &[ColumnDomain] {
+        &self.selection_domains
+    }
+
     /// Derive conservative before/after effects without assuming target data exists.
     ///
     /// A caller must provide an initial target snapshot and verify source multiplicities,
@@ -590,6 +602,7 @@ impl WriteOperation {
                     vec![WriteEffectBranch {
                         match_kind: None,
                         predicate: None,
+                        domains: Vec::new(),
                         action: WriteEffectAction::InsertQuery,
                     }],
                     WritePostState::ApplyToInitial,
@@ -605,6 +618,7 @@ impl WriteOperation {
                     vec![WriteEffectBranch {
                         match_kind: None,
                         predicate: self.selection.clone(),
+                        domains: self.selection_domains.clone(),
                         action: WriteEffectAction::Mutation(MergeAction::Update {
                             assignments: self.assignments.clone(),
                         }),
@@ -622,6 +636,7 @@ impl WriteOperation {
                     vec![WriteEffectBranch {
                         match_kind: None,
                         predicate: self.selection.clone(),
+                        domains: self.selection_domains.clone(),
                         action: WriteEffectAction::Mutation(MergeAction::Delete),
                     }],
                     if unconditional {
@@ -646,6 +661,7 @@ impl WriteOperation {
                         .map(|clause| WriteEffectBranch {
                             match_kind: Some(clause.match_kind()),
                             predicate: clause.predicate().cloned(),
+                            domains: clause.domains().to_vec(),
                             action: WriteEffectAction::Mutation(clause.action().clone()),
                         })
                         .collect(),
@@ -737,6 +753,7 @@ impl WriteUncertainty {
 pub struct WriteEffectBranch {
     match_kind: Option<MergeMatchKind>,
     predicate: Option<Predicate>,
+    domains: Vec<ColumnDomain>,
     action: WriteEffectAction,
 }
 
@@ -749,6 +766,11 @@ impl WriteEffectBranch {
     pub fn predicate(&self) -> Option<&Predicate> {
         self.predicate.as_ref()
     }
+    /// Necessary (not sufficient) predicate domains for the branch.
+    pub fn domains(&self) -> &[ColumnDomain] {
+        &self.domains
+    }
+
     /// Written action, with normalized expressions and conservative domains.
     pub fn action(&self) -> &WriteEffectAction {
         &self.action
@@ -831,6 +853,7 @@ impl MergeMatchKind {
 pub struct MergeClause {
     match_kind: MergeMatchKind,
     predicate: Option<Predicate>,
+    domains: Vec<ColumnDomain>,
     action: MergeAction,
 }
 
@@ -838,11 +861,13 @@ impl MergeClause {
     pub(crate) fn new(
         match_kind: MergeMatchKind,
         predicate: Option<Predicate>,
+        domains: Vec<ColumnDomain>,
         action: MergeAction,
     ) -> Self {
         Self {
             match_kind,
             predicate,
+            domains,
             action,
         }
     }
@@ -855,6 +880,11 @@ impl MergeClause {
     /// Return the optional additional clause predicate.
     pub fn predicate(&self) -> Option<&Predicate> {
         self.predicate.as_ref()
+    }
+
+    /// Necessary source-column domains for this branch (not match proof).
+    pub fn domains(&self) -> &[ColumnDomain] {
+        &self.domains
     }
 
     /// Return the action executed by the clause.

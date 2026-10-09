@@ -399,7 +399,7 @@ fn analyze_update(
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::update(target, predicate, assignments))),
+        .with_write(Some(WriteOperation::update(target, predicate, assignments, domains.clone()))),
     )
 }
 
@@ -475,7 +475,7 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::delete(target, predicate))),
+        .with_write(Some(WriteOperation::delete(target, predicate, domains.clone()))),
     )
 }
 
@@ -700,7 +700,7 @@ fn analyze_merge_clause(
         },
     };
 
-    ProtocolMergeClause::new(match_kind, predicate, action)
+    ProtocolMergeClause::new(match_kind, predicate, branch_domains, action)
 }
 
 fn merge_branch_predicate(

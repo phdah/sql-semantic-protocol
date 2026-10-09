@@ -792,6 +792,7 @@ fn write_operation_to_value(write: &WriteOperation) -> Value {
             "branches": effect.branches().iter().map(|branch| json!({
                 "match_kind": branch.match_kind().map(|kind| kind.as_str()),
                 "predicate": branch.predicate().map_or(Value::Null, predicate_to_value),
+                "domains": branch.domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
                 "action": match branch.action() {
                     WriteEffectAction::InsertQuery => json!({"kind": "insert_query"}),
                     WriteEffectAction::Mutation(action) => merge_action_to_value(action),
@@ -811,6 +812,7 @@ fn write_operation_to_value(write: &WriteOperation) -> Value {
             .map(merge_clause_to_value)
             .collect::<Vec<_>>(),
         "selection": write.selection().map_or(Value::Null, predicate_to_value),
+        "selection_domains": write.selection_domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
         "assignments": write.assignments().iter().map(|assignment| json!({
             "target": assignment.target(),
             "value": write_value_to_value(assignment.value())
@@ -823,6 +825,7 @@ fn merge_clause_to_value(clause: &MergeClause) -> Value {
     json!({
         "match_kind": clause.match_kind().as_str(),
         "predicate": clause.predicate().map_or(Value::Null, predicate_to_value),
+        "domains": clause.domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
         "action": merge_action_to_value(clause.action())
     })
 }
