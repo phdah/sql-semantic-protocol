@@ -142,7 +142,7 @@ fn duckdb_join_duplicate_and_sql_null_nonmatches_are_counted_separately() {
 fn negative_counts_and_open_world_are_not_promoted_to_feasible_source_plans() {
     let empty = exact(0, BagScope::CandidateTuple);
     let count = BagLaw::SetTuple(SetMultiplicityRule::Minimum)
-        .transfer(exact(3, BagScope::CandidateTuple), Some(empty));
+        .transfer(exact(3, BagScope::CandidateTuple), Some(empty.clone()));
     assert_eq!(
         count.assess(CountBounds::new(1, Some(1)).expect("valid")),
         BagCountTarget::Impossible
