@@ -462,9 +462,9 @@ fn normalize(
         }
         Predicate::Comparison(comparison) => {
             let (column, operator, literal) =
-                if let Some(column) = identity_integer_column(comparison.left()) {
+                if let Some(column) = invertible_integer_column(comparison.left(), sources, integer_evidence) {
                     (column, comparison.operator(), comparison.right())
-                } else if let Some(column) = identity_integer_column(comparison.right()) {
+                } else if let Some(column) = invertible_integer_column(comparison.right(), sources, integer_evidence) {
                     (column, comparison.operator().reversed(), comparison.left())
                 } else {
                     return residual("comparison is noninvertible or correlates two source values");
@@ -496,6 +496,26 @@ fn normalize(
 fn residual(reason: &str) -> BooleanRowConstraint {
     BooleanRowConstraint::Residual {
         reason: reason.to_string(),
+    }
+}
+
+// Ordinary CASTs to an equal or wider signed integer type preserve every
+// source value, order, and NULL. A narrowing cast can truncate/overflow and
+// must never be assumed invertible.
+fn invertible_integer_column<'a>(
+    expression: &'a Expression,
+    sources: &[SourceRelation],
+    evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<&'a crate::protocol::ColumnExpression> {
+    match expression {
+        Expression::SignedIntegerCast(cast) => {
+            let column = identity_integer_column(cast.expression())?;
+            let source = resolve_column(column, sources);
+            let bounds = evidence(&source)?;
+            let magnitude = 1_i128 << (u32::from(cast.target_bits()) - 1);
+            (bounds.minimum >= -magnitude && bounds.maximum < magnitude).then_some(column)
+        }
+        other => identity_integer_column(other),
     }
 }
 
