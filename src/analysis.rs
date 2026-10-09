@@ -332,6 +332,33 @@ fn analyze_update(
     };
     let target = target_source.name().to_string();
     let mut diagnostics = Vec::new();
+    let mut derived_index = 0;
+    let mut nonlocal_dependencies = BTreeSet::new();
+    if let Some(selection) = selection {
+        collect_expression_dependencies(
+            selection,
+            &BTreeSet::new(),
+            &mut diagnostics,
+            &mut derived_index,
+            &mut nonlocal_dependencies,
+        );
+    }
+    for assignment in assignments {
+        collect_expression_dependencies(
+            &assignment.value,
+            &BTreeSet::new(),
+            &mut diagnostics,
+            &mut derived_index,
+            &mut nonlocal_dependencies,
+        );
+    }
+    if !nonlocal_dependencies.is_empty() {
+        return unsupported_write_statement(
+            "update",
+            "unsupported_update_subquery",
+            "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved",
+        );
+    }
     let predicate = selection.map(|selection| analyze_predicate(selection, &mut diagnostics));
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
@@ -403,6 +430,24 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     };
     let target = target_source.name().to_string();
     let mut diagnostics = Vec::new();
+    let mut derived_index = 0;
+    let mut nonlocal_dependencies = BTreeSet::new();
+    if let Some(selection) = &delete.selection {
+        collect_expression_dependencies(
+            selection,
+            &BTreeSet::new(),
+            &mut diagnostics,
+            &mut derived_index,
+            &mut nonlocal_dependencies,
+        );
+    }
+    if !nonlocal_dependencies.is_empty() {
+        return unsupported_write_statement(
+            "delete",
+            "unsupported_delete_subquery",
+            "DELETE subqueries require source-row and correlation semantics that cannot yet be proved",
+        );
+    }
     let predicate = delete
         .selection
         .as_ref()
