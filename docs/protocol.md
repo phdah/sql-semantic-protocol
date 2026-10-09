@@ -1077,3 +1077,30 @@ plans are an additional source-independent proof level, not a replacement
 for complete operator-local contracts. Unsupported graph shapes remain
 residual; downstream tools must not invent missing transformations or
 reparse SQL to compensate.
+
+
+### Independent and jointly requested whole-output row counts
+
+The Rust APIs `physical_row_count_plan(bundle, layer_id, rows)` and
+`physical_joint_row_count_plan(bundle, &[(layer_id, rows), ...])` return
+`WitnessDirection` cases over typed `Rows`, `ClosedWorld` and
+`OutputRows` obligations. These prove *complete physical input contents*,
+not sample existence. A source-free, guaranteed singleton proves exactly
+one output row and rejects incompatible counts.
+
+For a positive number of terminal rows, a proof is returned only when every
+producer is an unfiltered, exactly row-preserving single-source chain and
+the first physical-source stage passes the existing canonical
+`outcome_proofs` schema and constraint checks. Those same physical rows
+are passed through each producer. The joint API coordinates the physical
+source by canonical identity, requiring identical counts for two terminal
+projections of the same source. Contradictory requests are proved impossible
+only after verifying that exact source-count correspondence. Independent
+sources can be planned separately, while joins, filters, aggregations,
+partial writes, ambiguous dependencies and unknown constraints stay residual.
+
+Each `physical_nodes[]` entry may additionally expose
+`operator_witnesses` and `pending_producers`. These are the normalized,
+origin-local typed obligations, not separately executable source scripts.
+They preserve per-layer join, group, window, set and subquery facts even when
+the complete DAG cannot yet be proved feasible.
