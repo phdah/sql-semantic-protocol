@@ -223,6 +223,64 @@ fn variant_evidence_uses_fail_closed_defaults_without_inheriting_feature_claims(
 }
 
 #[test]
+fn readable_matrix_and_upstream_owners_match_inventory() {
+    let manifest = manifest();
+    let matrix = include_str!("../docs/coverage.md");
+    let dialects: Vec<&str> = required_array(&manifest, "dialects")
+        .iter()
+        .map(|dialect| required_string(dialect, "name"))
+        .collect();
+
+    let tasks = std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/.backlog/tasks"))
+        .expect("versioned backlog must exist");
+    let task_ids: BTreeSet<String> = tasks
+        .filter_map(Result::ok)
+        .filter_map(|entry| entry.file_name().to_str().map(str::to_owned))
+        .filter_map(|name| name.split_once(" - ").map(|(id, _)| id.to_ascii_uppercase()))
+        .collect();
+
+    for feature in required_array(&manifest, "features") {
+        let id = required_string(feature, "id");
+        let marks: Vec<&str> = dialects
+            .iter()
+            .map(|dialect| {
+                if feature["dialects"][dialect]["parse"] == "fixture_tested" {
+                    "P"
+                } else {
+                    "?"
+                }
+            })
+            .collect();
+        let scope = if feature["scope"] == "release_blocking" {
+            "Block"
+        } else {
+            "Approval"
+        };
+        let owners: Vec<&str> = required_array(feature, "protocol_tasks")
+            .iter()
+            .map(|value| value.as_str().expect("upstream task"))
+            .collect();
+        for task in &owners {
+            assert!(task_ids.contains(*task), "{id}: orphaned owner {task}");
+        }
+        let downstream: Vec<&str> = required_array(feature, "tdg_tasks")
+            .iter()
+            .map(|value| value.as_str().expect("downstream task"))
+            .collect();
+        let row = format!(
+            "| `{id}` | {} | {scope} | {} | {} |",
+            marks.join(" | "),
+            owners.join(", "),
+            downstream.join(", ")
+        );
+        assert!(
+            matrix.lines().any(|line| line == row),
+            "{id}: stale generated human-readable coverage row"
+        );
+    }
+}
+
+#[test]
 fn parser_and_analysis_claims_are_exercised_by_manifest_fixtures() {
     let manifest = manifest();
     let fixtures = required_array(&manifest, "fixtures");
