@@ -255,9 +255,9 @@ fn multiple_identical_values_collapse_under_distinct_set_rules() {
     )
     .unwrap();
     assess(&mut bundle, 2, None, vec![distribution]);
-    assert_ne!(
+    assert_eq!(
         bundle.outcome_goals()[0].status(),
-        OutcomeGoalStatus::Feasible
+        OutcomeGoalStatus::Unsatisfiable
     );
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE l(id BIGINT); CREATE TABLE r(id BIGINT); INSERT INTO l VALUES(7),(7); INSERT INTO r VALUES (7);").unwrap();
