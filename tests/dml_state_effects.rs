@@ -111,9 +111,9 @@ fn count_proofs_reject_impossible_actions_oversubscribed_rows_and_overflow() {
     let insert = bundle("INSERT INTO target SELECT id FROM src", "generic");
     let effects = insert.write_state_effects();
     let effect = effects[0].effect();
-    assert!(effect.reasons().contains(
-        &sql_semantic_protocol::WriteUncertainty::ImplicitTargetColumns
-    ));
+    assert!(effect
+        .reasons()
+        .contains(&sql_semantic_protocol::WriteUncertainty::ImplicitTargetColumns));
     assert_eq!(
         effect.resulting_rows(2, WriteRowCounts::new(1, 1, 0)),
         Err(WriteCountError::InvalidActionCounts)
