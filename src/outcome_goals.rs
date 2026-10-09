@@ -5,7 +5,7 @@
 
 use std::fmt;
 
-use crate::bundle::{AnalysisBundle, ComposedSemantics, RelationResolution, TransformationLayer};
+use crate::bundle::{AnalysisBundle, ComposedSemantics, TransformationLayer};
 use crate::constraints::ConstraintValue;
 use crate::protocol::{Expression, LiteralType, LiteralValue, ProtocolStatement, QueryStatement};
 
@@ -489,41 +489,7 @@ fn assess_goal(
             }
         }
 
-        // An empty physical source is a constructive witness for zero rows only
-        // for an ordinary, direct, predicate-free and projection-preserving query.
-        let direct_external = layer.consumes().len() == 1
-            && bundle
-                .graph()
-                .edges()
-                .iter()
-                .filter(|edge| edge.consumer_layer_id() == layer.id())
-                .all(|edge| edge.resolution() == RelationResolution::External);
-        let simple_projection = query.row_preserving_projection()
-            && query.output().columns().iter().all(|column| {
-                matches!(
-                    column.expression(),
-                    Expression::Column(_) | Expression::Literal(_)
-                )
-            })
-            && query.diagnostics().is_empty()
-            && resolved.diagnostics().is_empty()
-            && direct_external;
-        if simple_projection
-            && goal.rows == Some(0)
-            && goal.groups.is_none()
-            && goal
-                .distributions
-                .iter()
-                .all(|distribution| distribution.values().is_empty())
-        {
-            return Ok(proved(
-                goal,
-                "an empty external source yields an empty row-preserving projection",
-                min_rows,
-                max_rows,
-                crate::outcome_proofs::OutcomeWitness::EmptySources { relations: vec![query.dependencies()[0].clone()] },
-            ));
-        }
+
     }
 
     Ok(assessed(goal, OutcomeGoalStatus::Residual, "SQL cardinality, grouping, join multiplicity, window and distribution witnesses are not sufficient to prove this request", min_rows, max_rows))
