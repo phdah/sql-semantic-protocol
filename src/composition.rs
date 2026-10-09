@@ -12,6 +12,7 @@ use crate::bundle::{
     RelationResolution, TransformationLayer,
 };
 use crate::domain::{intersect_case_domain_values, intersect_domains};
+use crate::join_witness::JoinWitness;
 use crate::protocol::{
     CaseBranch, CaseExpression, CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain,
     ColumnExpression, ColumnRef, ComparisonOperator, ConditionClause, ConditionExactness,
@@ -130,6 +131,7 @@ impl<'a> Composer<'a> {
         let mut dependencies = BTreeSet::<String>::new();
         let mut domain_map = BTreeMap::<ColumnRef, ValueDomain>::new();
         let mut join_equalities = Vec::<ComposedJoinEquality>::new();
+        let mut join_witnesses = self.compose_query_join_witnesses(&layer, &query);
         let mut set_operations = query
             .set_operation()
             .map(|operation| {
@@ -223,6 +225,7 @@ impl<'a> Composer<'a> {
                             dependencies.extend(upstream.dependencies().iter().cloned());
                             merge_column_domains(&mut domain_map, upstream.column_domains());
                             join_equalities.extend(upstream.join_equalities().iter().cloned());
+                            join_witnesses.extend(upstream.join_witnesses().iter().cloned());
                             set_operations.extend(upstream.set_operations().iter().cloned());
                             group_witnesses.extend(upstream.group_witnesses().iter().cloned());
                             window_witnesses.extend(upstream.window_witnesses().iter().cloned());
@@ -311,6 +314,7 @@ impl<'a> Composer<'a> {
                 set_operations,
                 group_witnesses,
                 window_witnesses,
+                join_witnesses,
             },
             condition_exactness,
             output,
@@ -335,6 +339,69 @@ impl<'a> Composer<'a> {
             ProtocolStatement::Query(query) => Some(query),
             ProtocolStatement::Unsupported(_) => None,
         }
+    }
+
+    /// Only a single, unambiguous binary join permits source-level row witnesses.
+    /// Chained joins have composite left inputs and must not be flattened into independent
+    /// pairwise obligations (in particular when an earlier join null-extends a row).
+    fn compose_query_join_witnesses(
+        &self,
+        layer: &TransformationLayer,
+        query: &QueryStatement,
+    ) -> Vec<JoinWitness> {
+        query.joins().iter().map(|join| {
+            let residual = |reason: &str| JoinWitness::residual(
+                join.kind(), layer.id().to_string(), reason,
+            );
+            if query.joins().len() != 1 {
+                return residual("composite_join_tree");
+            }
+            if matches!(join.kind(), JoinKind::Unknown | JoinKind::Cross) {
+                return residual("unsupported_join_kind");
+            }
+            let Some(Predicate::Comparison(comparison)) = join.condition() else {
+                return residual("join_condition_not_single_column_comparison");
+            };
+            let (Expression::Column(left), Expression::Column(right)) =
+                (comparison.left(), comparison.right())
+            else {
+                return residual("computed_join_comparison");
+            };
+            if matches!(comparison.operator(),
+                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                return residual("null_safe_comparison_not_supported");
+            }
+            let Ok(left_endpoint) = self.compose_join_column(layer, query, left, Some(join)) else {
+                return residual("unresolved_left_physical_lineage");
+            };
+            let Ok(right_endpoint) = self.compose_join_column(layer, query, right, Some(join)) else {
+                return residual("unresolved_right_physical_lineage");
+            };
+            let participant_instance = |participant: &RelationRef| {
+                participant.alias().unwrap_or(participant.relation())
+            };
+            let left_name = participant_instance(join.left());
+            let right_name = participant_instance(join.right());
+            if left_name == right_name {
+                return residual("ambiguous_relation_instances");
+            }
+            let (left_endpoint, right_endpoint, operator) =
+                if left_endpoint.relation_instance() == left_name
+                    && right_endpoint.relation_instance() == right_name
+                {
+                    (left_endpoint, right_endpoint, comparison.operator())
+                } else if left_endpoint.relation_instance() == right_name
+                    && right_endpoint.relation_instance() == left_name
+                {
+                    (right_endpoint, left_endpoint, comparison.operator().reversed())
+                } else {
+                    return residual("comparison_does_not_link_join_participants");
+                };
+            JoinWitness::exact(
+                join.kind(), left_endpoint, right_endpoint, operator, layer.id().to_string(),
+            )
+        }).collect()
     }
 
     fn compose_query_join_equalities(
