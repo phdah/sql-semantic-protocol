@@ -230,3 +230,17 @@ constant offsets following lossless widening CASTs can normalize to their
 original source columns if the full typed source range proves no overflow.
 Physical remapping additionally requires row-preserving intermediate producers;
 column-only identity is insufficient for exact source witness obligations.
+
+
+## DML state-effect parity
+
+The canonical DML effect is constructed at the SQL analysis boundary for
+direct SQL, dbt compiled SQL, and any other adapter supplying SQL statements.
+It is not inferred from dbt manifest metadata or catalog types. Source
+metadata adapters (dbt and optional ODCS) contribute the existing canonical
+relation-constraint evidence, including primary/unique keys, enforcement and
+provenance; the bundle resolves that evidence against the written target.
+A missing schema or constraint set remains explicitly unavailable. Compiled
+SQL and direct SQL with equivalent schema evidence must expose identical
+write effects; no adapter fabricates an initial target state, mutation counts,
+or conflict-freedom from a catalog.
