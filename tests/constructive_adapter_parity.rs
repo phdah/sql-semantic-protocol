@@ -2,10 +2,9 @@
 
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
-    local_constructive_witnesses, parse_dbt_catalog, parse_dbt_manifest, ComposedSemantics,
-    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    WitnessDirection, WitnessOperator,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, local_constructive_witnesses,
+    parse_dbt_catalog, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessOperator,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -17,32 +16,48 @@ fn dbt_catalog_and_direct_sql_normalize_the_same_source_boolean_obligations() {
         .expect("dbt manifest fixture");
     manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
     let manifest = parse_dbt_manifest(&manifest.to_string()).expect("parsed manifest");
-    let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json"))
-        .expect("parsed catalog");
+    let catalog =
+        parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).expect("parsed catalog");
     let dialect = PostgreSqlDialect {};
     let dbt = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect)
         .expect("dbt compilation");
     let source = RelationSchema::new(
-        "warehouse.raw.orders", vec![
+        "warehouse.raw.orders",
+        vec![
             SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").expect("id"),
             SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").expect("amount"),
-        ]
-    ).expect("source schema");
+        ],
+    )
+    .expect("source schema");
     let raw_catalog = RelationCatalog::from_schemas(&[source]).expect("catalog");
     let inline = SqlInput::inline(SQL);
     let direct = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("direct", &inline, "postgresql", &dialect)],
-        &raw_catalog
-    ).expect("direct SQL");
+        &[ConfiguredSqlInput::new(
+            "direct",
+            &inline,
+            "postgresql",
+            &dialect,
+        )],
+        &raw_catalog,
+    )
+    .expect("direct SQL");
 
     let witness = |bundle: &sql_semantic_protocol::AnalysisBundle| {
-        let layer = bundle.layers().iter().find(|layer|
-            layer.consumes().iter().any(|dependency| dependency == "warehouse.raw.orders")
-        ).expect("source-consuming layer");
+        let layer = bundle
+            .layers()
+            .iter()
+            .find(|layer| {
+                layer
+                    .consumes()
+                    .iter()
+                    .any(|dependency| dependency == "warehouse.raw.orders")
+            })
+            .expect("source-consuming layer");
         let ComposedSemantics::Resolved(ref semantics) = layer.composed_semantics() else {
             panic!("resolved semantics");
         };
-        local_constructive_witnesses(semantics).into_iter()
+        local_constructive_witnesses(semantics)
+            .into_iter()
             .find(|w| w.operator() == WitnessOperator::Boolean)
             .expect("boolean witness")
     };
