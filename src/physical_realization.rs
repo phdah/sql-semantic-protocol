@@ -75,6 +75,8 @@ pub enum PhysicalProofGap {
     UnsupportedDependency,
     /// The layer's transitive semantics remain unresolved.
     UnresolvedSemantics,
+    /// Contradictory exact physical column domains prevent a joint construction.
+    ConflictingDomains,
     /// No source-level membership classification is proved.
     NoWitness,
     /// No safe classification was proved by the local witness.
@@ -102,6 +104,7 @@ impl PhysicalProofGap {
             Self::PartialProducer => "partial_producer",
             Self::UnsupportedDependency => "unsupported_dependency",
             Self::UnresolvedSemantics => "unresolved_semantics",
+            Self::ConflictingDomains => "conflicting_domains",
             Self::NoWitness => "no_witness",
             Self::LocalWitnessUnproven => "local_witness_unproven",
             Self::MultipleWitnesses => "multiple_witnesses",
@@ -418,7 +421,11 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         }) {
             Some(semantics) => {
                 let proofs = local_constructive_witnesses(semantics);
-                gap = if proofs.is_empty() {
+                gap = if semantics.column_domains().iter().any(|domain| {
+                    matches!(domain.domain(), crate::protocol::ValueDomain::Empty)
+                }) {
+                    Some(PhysicalProofGap::ConflictingDomains)
+                } else if proofs.is_empty() {
                     Some(PhysicalProofGap::NoWitness)
                 } else if proofs.len() != 1 {
                     Some(PhysicalProofGap::MultipleWitnesses)
