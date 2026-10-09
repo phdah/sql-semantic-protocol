@@ -451,3 +451,30 @@ fn unsupported_multi_relation_writes_remain_explicit() {
         assert_eq!(statement.category(), kind);
     }
 }
+
+
+#[test]
+fn update_delete_subqueries_do_not_silently_omit_external_dependencies() {
+    let cases = [
+        (
+            "UPDATE target SET score = (SELECT MAX(score) FROM external_data)",
+            "update",
+            "unsupported_update_subquery",
+        ),
+        (
+            "DELETE FROM target WHERE id IN (SELECT id FROM external_data)",
+            "delete",
+            "unsupported_delete_subquery",
+        ),
+    ];
+    for (sql, category, code) in cases {
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], "generic", &GenericDialect {})
+            .expect("valid SQL syntax");
+        assert!(bundle.layers().is_empty());
+        let ProtocolStatement::Unsupported(statement) = &bundle.inputs()[0].statements()[0] else {
+            panic!("subquery DML must not assert complete target effects: {sql}");
+        };
+        assert_eq!(statement.category(), category);
+        assert_eq!(statement.diagnostics()[0].code(), code);
+    }
+}
