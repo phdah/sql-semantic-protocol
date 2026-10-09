@@ -415,6 +415,7 @@ impl ComposedSemantics {
             mut set_operations,
             mut group_witnesses,
             mut window_witnesses,
+            mut subquery_witnesses,
             mut join_witnesses,
         } = witnesses;
         join_equalities.sort_by(composed_join_equality_cmp);
@@ -427,6 +428,8 @@ impl ComposedSemantics {
         group_witnesses.dedup();
         window_witnesses.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
         window_witnesses.dedup();
+        subquery_witnesses.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
+        subquery_witnesses.dedup();
         diagnostics.sort_by(diagnostic_cmp);
         diagnostics.dedup();
         Self::Resolved(Box::new(ResolvedComposedSemantics {
@@ -437,6 +440,7 @@ impl ComposedSemantics {
             set_operations: set_operations.into_boxed_slice(),
             group_witnesses: group_witnesses.into_boxed_slice(),
             window_witnesses: window_witnesses.into_boxed_slice(),
+            subquery_witnesses: subquery_witnesses.into_boxed_slice(),
             condition_exactness,
             output,
             diagnostics,
@@ -586,6 +590,40 @@ pub(crate) struct ComposedWitnessEvidence {
     pub(crate) set_operations: Vec<ComposedSetOperation>,
     pub(crate) group_witnesses: Vec<ComposedGroupWitness>,
     pub(crate) window_witnesses: Vec<ComposedWindowWitness>,
+    pub(crate) subquery_witnesses: Vec<ComposedSubqueryWitness>,
+}
+
+/// One source-membership witness retained at its introducing layer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComposedSubqueryWitness {
+    origin_layer_id: String,
+    witness: crate::subquery_witness::SubqueryMembershipWitness,
+    boundary_kind: GroupBoundaryKind,
+}
+
+impl ComposedSubqueryWitness {
+    pub(crate) fn new(
+        origin_layer_id: String,
+        witness: crate::subquery_witness::SubqueryMembershipWitness,
+        boundary_kind: GroupBoundaryKind,
+    ) -> Self {
+        Self { origin_layer_id, witness, boundary_kind }
+    }
+
+    /// Layer that introduced the subquery membership predicate.
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
+
+    /// Source-level operator witness at its originating boundary.
+    pub fn witness(&self) -> &crate::subquery_witness::SubqueryMembershipWitness {
+        &self.witness
+    }
+
+    /// Whether the inner boundary is a physical or intermediate relation.
+    pub fn boundary_kind(&self) -> GroupBoundaryKind {
+        self.boundary_kind
+    }
 }
 
 /// Relation class of an originating grouped witness boundary.
@@ -693,6 +731,7 @@ pub struct ResolvedComposedSemantics {
     set_operations: Box<[ComposedSetOperation]>,
     group_witnesses: Box<[ComposedGroupWitness]>,
     window_witnesses: Box<[ComposedWindowWitness]>,
+    subquery_witnesses: Box<[ComposedSubqueryWitness]>,
     condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
@@ -733,6 +772,11 @@ impl ResolvedComposedSemantics {
     /// Ranked-window witness evidence retained with the originating boundary.
     pub fn window_witnesses(&self) -> &[ComposedWindowWitness] {
         &self.window_witnesses
+    }
+
+    /// Subquery membership evidence, with its original layer and boundary.
+    pub fn subquery_witnesses(&self) -> &[ComposedSubqueryWitness] {
+        &self.subquery_witnesses
     }
 
     /// Return transitive row-condition exactness for this resolved layer.
