@@ -4,9 +4,9 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, to_json,
-    BooleanRowConstraint, BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
-    ComparisonOperator,
-    ConfiguredSqlInput, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    BooleanRowConstraint, BooleanTruthCase, BooleanWitnessDirection, ComparisonOperator,
+    ComposedSemantics, ConfiguredSqlInput, ProtocolStatement, RelationCatalog, RelationSchema,
+    SchemaColumn, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect, PostgreSqlDialect};
 
@@ -192,9 +192,7 @@ fn dialects_preserve_the_same_null_sensitive_source_tree() {
 
 #[test]
 fn impossible_positive_direction_is_residual_even_with_known_integer_types() {
-    let bundle = typed_bundle(
-        "SELECT a FROM t WHERE a > 2147483647 OR b > 2147483647",
-    );
+    let bundle = typed_bundle("SELECT a FROM t WHERE a > 2147483647 OR b > 2147483647");
     let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
         panic!("expected composition");
     };
@@ -255,16 +253,16 @@ fn witness_truth(
     b: Option<i32>,
 ) -> Option<bool> {
     match constraint {
-        BooleanRowConstraint::All(operands) => operands
-            .iter()
-            .fold(Some(true), |previous, item| {
+        BooleanRowConstraint::All(operands) => {
+            operands.iter().fold(Some(true), |previous, item| {
                 sql_and(previous, witness_truth(item, a, b))
-            }),
-        BooleanRowConstraint::Any(operands) => operands
-            .iter()
-            .fold(Some(false), |previous, item| {
+            })
+        }
+        BooleanRowConstraint::Any(operands) => {
+            operands.iter().fold(Some(false), |previous, item| {
                 sql_or(previous, witness_truth(item, a, b))
-            }),
+            })
+        }
         BooleanRowConstraint::NullTest { column, negated } => {
             let value = match column.name() {
                 "a" => a,
@@ -292,8 +290,7 @@ fn witness_truth(
                     ComparisonOperator::Lte => v <= *literal,
                     ComparisonOperator::Gt => v > *literal,
                     ComparisonOperator::Gte => v >= *literal,
-                    ComparisonOperator::IsDistinctFrom
-                    | ComparisonOperator::IsNotDistinctFrom => {
+                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
                         panic!("null-safe comparisons must remain residual")
                     }
                 }
@@ -320,13 +317,14 @@ fn duckdb_differential_matches_generated_witness_for_every_source_row() {
         "a > -2 OR b <= 1",
     ] {
         let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
-        let ComposedSemantics::Resolved(semantics) =
-            bundle.layers()[0].composed_semantics()
-        else {
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
             panic!("expected resolved composed semantics");
         };
         let witness = semantics.boolean_witnesses()[0].witness();
-        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Exact(_)));
+        assert!(matches!(
+            witness.qualifying(),
+            BooleanWitnessDirection::Exact(_)
+        ));
 
         let mut statement = db
             .prepare(&format!("SELECT a, b, ({predicate}) FROM t"))
