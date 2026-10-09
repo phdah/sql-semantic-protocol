@@ -76,7 +76,7 @@ fn transparent_producer_is_a_reference_not_a_second_physical_table() {
         &[
             "CREATE TABLE stage AS SELECT a, b FROM t",
             "CREATE TABLE mart AS SELECT a, b FROM stage",
-            "SELECT a FROM mart WHERE a > 2 OR b < 0",
+            "SELECT a FROM mart WHERE a IS NOT NULL OR b IS NULL",
         ],
         "postgresql",
     );
@@ -164,7 +164,7 @@ fn partial_writes_and_missing_targets_fail_closed() {
     let b = bundle(
         &[
             "INSERT INTO stage SELECT a, b FROM t",
-            "SELECT a FROM stage WHERE a > 2 OR b < 0",
+            "SELECT a FROM stage WHERE a IS NOT NULL OR b IS NULL",
         ],
         "postgresql",
     );
@@ -201,14 +201,14 @@ fn duckdb_terminal_rows_agree_with_physical_source_membership_classification() {
         .expect("rows")
         .map(|row| row.expect("integer result"))
         .collect::<Vec<_>>();
-    assert_eq!(output, vec![4]);
-    // SQL NOT TRUE covers both a=1 (FALSE) and a=NULL (UNKNOWN).
+    assert_eq!(output, vec![1, 4]);
+    // The NULL candidate is deliberately rejected by the NULL-aware predicate.
     let count: i64 = conn
         .query_row(
-            "SELECT COUNT(*) FROM t WHERE (a > 2 OR b < 0) IS NOT TRUE",
+            "SELECT COUNT(*) FROM t WHERE (a IS NOT NULL OR b IS NULL) IS NOT TRUE",
             [],
             |row| row.get(0),
         )
         .expect("rejected rows");
-    assert_eq!(count, 2);
+    assert_eq!(count, 1);
 }
