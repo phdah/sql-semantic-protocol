@@ -3,7 +3,8 @@ mod common;
 use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, to_json,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs, analyze_sql,
+    parse_dbt_catalog, parse_dbt_manifest, to_json,
     BooleanRowConstraint, BooleanTruthCase, BooleanWitnessDirection, ComparisonOperator,
     ComposedSemantics, ConfiguredSqlInput, ProtocolStatement, RelationCatalog, RelationSchema,
     SchemaColumn, SqlInput,
@@ -176,6 +177,53 @@ fn identity_arithmetic_is_invertible_but_nonidentity_arithmetic_stays_residual()
     assert!(matches!(
         semantics.boolean_witnesses()[0].witness().qualifying(),
         BooleanWitnessDirection::Residual { .. }
+    ));
+}
+
+#[test]
+fn dbt_compiled_sql_and_direct_catalog_sql_emit_the_same_boolean_witness() {
+    let mut manifest_value: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    let sql = "SELECT id, amount FROM warehouse.raw.orders WHERE id > 2 OR amount < 0";
+    manifest_value["nodes"]["model.demo.stg_orders"]["compiled_code"] =
+        serde_json::Value::String(sql.to_string());
+    let manifest = parse_dbt_manifest(&manifest_value.to_string()).unwrap();
+    let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
+    let dialect = PostgreSqlDialect {};
+    let dbt = analyze_dbt_artifacts(&manifest, &catalog, "postgres", &dialect).unwrap();
+    let stage = dbt.layers().iter()
+        .find(|layer| layer.produces().iter().any(|item| {
+            item.relation_name() == Some("warehouse.analytics.stg_orders")
+        }))
+        .unwrap();
+    let ComposedSemantics::Resolved(dbt_semantics) = stage.composed_semantics() else {
+        panic!("dbt composition");
+    };
+    let dbt_witness = dbt_semantics.boolean_witnesses()[0].witness();
+
+    let source_schema = RelationSchema::new(
+        "warehouse.raw.orders",
+        vec![
+            SchemaColumn::from_sql_type("id", "BIGINT", "postgres").unwrap(),
+            SchemaColumn::from_sql_type("amount", "INTEGER", "postgres").unwrap(),
+        ],
+    ).unwrap();
+    let source_catalog = RelationCatalog::from_schemas(&[source_schema]).unwrap();
+    let input = SqlInput::inline(sql);
+    let configured = [ConfiguredSqlInput::new("direct", &input, "postgres", &dialect)];
+    let direct = analyze_configured_inputs_with_catalog(&configured, &source_catalog).unwrap();
+    let ComposedSemantics::Resolved(direct_semantics) =
+        direct.layers()[0].composed_semantics()
+    else {
+        panic!("direct composition");
+    };
+    assert_eq!(
+        dbt_witness,
+        direct_semantics.boolean_witnesses()[0].witness()
+    );
+    assert!(matches!(
+        dbt_witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
     ));
 }
 
