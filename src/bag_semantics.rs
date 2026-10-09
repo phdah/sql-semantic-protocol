@@ -511,9 +511,11 @@ impl BagLaw {
                             reason: "unproved_shared_tuple_identity",
                         };
                     }
-                    if left.source().zip(right.source()).is_some_and(|(a, b)| {
-                        a.physical_relation() == b.physical_relation()
-                    }) {
+                    if left
+                        .source()
+                        .zip(right.source())
+                        .is_some_and(|(a, b)| a.physical_relation() == b.physical_relation())
+                    {
                         same_source_set_count(rule, left.bounds())
                     } else {
                         set_count(rule, left.bounds(), right.bounds())
@@ -756,9 +758,18 @@ mod tests {
             .with_source(BagSourceIdentity::new("t", "b").expect("source"));
         for (rule, expected) in [
             (SetMultiplicityRule::Minimum, CountBounds::new(3, Some(4))),
-            (SetMultiplicityRule::SaturatingDifference, CountBounds::new(0, Some(0))),
-            (SetMultiplicityRule::ExceptDistinct, CountBounds::new(0, Some(0))),
-            (SetMultiplicityRule::UnionDistinct, CountBounds::new(1, Some(1))),
+            (
+                SetMultiplicityRule::SaturatingDifference,
+                CountBounds::new(0, Some(0)),
+            ),
+            (
+                SetMultiplicityRule::ExceptDistinct,
+                CountBounds::new(0, Some(0)),
+            ),
+            (
+                SetMultiplicityRule::UnionDistinct,
+                CountBounds::new(1, Some(1)),
+            ),
         ] {
             assert_eq!(
                 BagLaw::SetTuple(rule).transfer(first.clone(), Some(second.clone())),
