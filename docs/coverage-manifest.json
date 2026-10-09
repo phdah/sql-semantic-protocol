@@ -8119,5 +8119,195 @@
     "engine_oracle": "unverified",
     "boundary": "needs_fixture_or_approved_exclusion"
   },
-  "variant_matrix_semantics": "Each variant/dialect cell inherits variant_evidence_defaults unless a named fixture-backed override is present; feature-level parser fixture P never certifies other variants. No positive/negative/end-to-end physical-source proof is certified."
+  "variant_matrix_semantics": "Each variant/dialect cell inherits variant_evidence_defaults unless a named fixture-backed override is present; feature-level parser fixture P never certifies other variants. No positive/negative/end-to-end physical-source proof is certified.",
+  "dbt_fixture_inventory": {
+    "source_repo": "phdah/sql-tdg",
+    "path": "tests/fixtures/dbt_core_project",
+    "observed_date": "2026-10-09",
+    "default_invocation": "make all (MATCHING=100 REJECTED=10 no target)",
+    "current_gate": "not_certified",
+    "models": [
+      {
+        "name": "aggregate_summary",
+        "sql_path": "tests/fixtures/dbt_core_project/models/aggregate_summary.sql",
+        "feature_ids": [
+          "grouping.having",
+          "grouping.basic"
+        ],
+        "tdg_task": "TASK-28",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "boundary_final_orders",
+        "sql_path": "tests/fixtures/dbt_core_project/models/boundary_final_orders.sql",
+        "feature_ids": [
+          "predicates.integer_ranges",
+          "outcomes.dag"
+        ],
+        "tdg_task": "TASK-27",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "derived_orders",
+        "sql_path": "tests/fixtures/dbt_core_project/models/derived_orders.sql",
+        "feature_ids": [
+          "predicates.computed",
+          "outcomes.dag"
+        ],
+        "tdg_task": "TASK-27",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "enriched_orders",
+        "sql_path": "tests/fixtures/dbt_core_project/models/enriched_orders.sql",
+        "feature_ids": [
+          "joins.inner",
+          "outcomes.dag"
+        ],
+        "tdg_task": "TASK-25",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "final_orders",
+        "sql_path": "tests/fixtures/dbt_core_project/models/final_orders.sql",
+        "feature_ids": [
+          "predicates.integer_ranges",
+          "outcomes.dag"
+        ],
+        "tdg_task": "TASK-27",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "independent_return_summary",
+        "sql_path": "tests/fixtures/dbt_core_project/models/independent_return_summary.sql",
+        "feature_ids": [
+          "grouping.basic",
+          "outcomes.dag"
+        ],
+        "tdg_task": "TASK-28",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "ranked_orders",
+        "sql_path": "tests/fixtures/dbt_core_project/models/ranked_orders.sql",
+        "feature_ids": [
+          "windows.row_number",
+          "windows.qualify",
+          "joins.inner"
+        ],
+        "tdg_task": "TASK-29",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "stg_customers",
+        "sql_path": "tests/fixtures/dbt_core_project/models/stg_customers.sql",
+        "feature_ids": [
+          "predicates.integer_ranges",
+          "predicates.boolean_logic"
+        ],
+        "tdg_task": "TASK-27",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "stg_orders",
+        "sql_path": "tests/fixtures/dbt_core_project/models/stg_orders.sql",
+        "feature_ids": [
+          "predicates.integer_ranges",
+          "predicates.computed"
+        ],
+        "tdg_task": "TASK-27",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "subquery_orders",
+        "sql_path": "tests/fixtures/dbt_core_project/models/subquery_orders.sql",
+        "feature_ids": [
+          "subqueries.exists",
+          "outcomes.dag"
+        ],
+        "tdg_task": "TASK-26",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      },
+      {
+        "name": "unioned_orders",
+        "sql_path": "tests/fixtures/dbt_core_project/models/unioned_orders.sql",
+        "feature_ids": [
+          "sets.union_all",
+          "outcomes.dag"
+        ],
+        "tdg_task": "TASK-24",
+        "parse": "dbt_compile_required",
+        "physical_positive": "not_end_to_end_proven",
+        "physical_negative": "not_end_to_end_proven",
+        "output_oracle": "pending_TASK-36"
+      }
+    ],
+    "scripted_workloads": [
+      {
+        "name": "insert",
+        "protocol_test": "tests/dml_state_effects.rs",
+        "protocol_task": "TASK-80",
+        "tdg_task": "TASK-31",
+        "generation_oracle": "pending"
+      },
+      {
+        "name": "update",
+        "protocol_test": "tests/dml_state_effects.rs",
+        "protocol_task": "TASK-81",
+        "tdg_task": "TASK-31",
+        "generation_oracle": "pending"
+      },
+      {
+        "name": "delete",
+        "protocol_test": "tests/dml_state_effects.rs",
+        "protocol_task": "TASK-81",
+        "tdg_task": "TASK-31",
+        "generation_oracle": "pending"
+      },
+      {
+        "name": "merge",
+        "protocol_test": "tests/dml_state_effects.rs",
+        "protocol_task": "TASK-82",
+        "tdg_task": "TASK-31",
+        "generation_oracle": "pending"
+      },
+      {
+        "name": "ctas_create_replace",
+        "protocol_test": "tests/ddl_producers.rs",
+        "protocol_task": "TASK-83",
+        "tdg_task": "TASK-36",
+        "generation_oracle": "pending"
+      }
+    ]
+  }
 }
