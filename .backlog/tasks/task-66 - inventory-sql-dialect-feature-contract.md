@@ -30,7 +30,7 @@ Define a finite, reviewed dialect-by-feature inventory as the release's authorit
 - [ ] #4 Enumerate unsupported-but-parseable variants and unparseable dialect forms; no unreviewed residual may be counted as covered. Add a triaged upstream task for each release-blocking gap.
 - [x] #5 Produce a machine-readable coverage manifest driving parameterized tests and a human-readable matrix with explicit release-blocking vs approved-out-of-scope classes.
 - [ ] #6 Review inventory with sql-tdg TASK-24..36 owners before finalizing release scope.
-- [ ] #7 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #7 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 ## Delivery guidance
@@ -47,3 +47,9 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 - This is an **infrastructure-only inventory**. There are no changes to the active SQL protocol schema, library public types, or dbt/ODCS adapters, because no new canonical semantic capability is claimed by this task. Later TASK-67..90 must update those interfaces and tests together.
 
 Implementation PR: https://github.com/phdah/sql-semantic-protocol/pull/88
+
+### Sign-off handoff and verification
+
+- [Maintainer decision record](../../docs/coverage-signoff.md) describes four concrete proposals for cross-terminal rejected rows, DML verification, explicit fail-closed exclusions, and dialect engine certification. **All four are currently pending**, not tacitly approved.
+- Additional parser fixtures cover SQL sets, joined relations, grouped/HAVING and window projections, correlated EXISTS, CTEs, conditional logic and known residual LIMIT. DuckDB oracle fixtures include complete row values for representative joins, sets, grouping, EXISTS and QUALIFY, in addition to positive/negative/NULL/duplicate counts. No SQL generator exactness is asserted from these oracles.
+- The readable matrix and task owners are checked against the manifest by executable Rust tests. The existing protocol JSON schema, public Rust API and adapters remain unchanged because TASK-66 adds no new domain semantics. Criteria #3 and #4 still require TASK-67..90's exhaustive evidence, and #6 requires maintainer approval of the finite scope; no unsupported variant is counted as covered.
