@@ -734,7 +734,7 @@ mod tests {
         );
         let open = BagEvidence::new(tuple.bounds(), tuple.scope(), false);
         assert_eq!(
-            BagLaw::DistinctTuple.transfer(open, None),
+            BagLaw::DistinctTuple.transfer(open.clone(), None),
             BagCountProof::Residual {
                 reason: "left_open_world"
             }
@@ -790,7 +790,7 @@ mod tests {
                     limit: 3,
                     strict_total_order: true
                 }
-                .transfer(partition, None)
+                .transfer(partition.clone(), None)
             )
             .minimum(),
             3
