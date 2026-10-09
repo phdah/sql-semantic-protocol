@@ -629,3 +629,37 @@ The same normalized SQL analyzer is used by direct SQL and dbt model SQL;
 the ODCS adapter supplies metadata but does not invent membership evidence.
 This schema addition is a protocol contract change and must be versioned
 with the application.
+
+## Coupled source-row boolean witnesses (TASK-63, initial subset)
+
+A query with a cross-column `OR` over one unambiguous source relation may
+carry a `boolean_witness`; resolved composed outcomes retain it in
+`boolean_witnesses` with `origin_layer_id` and `boundary_kind`. The
+representation is **operator-local evidence**, not a promotion of
+`condition_exactness` to exact or a replacement for output value domains.
+
+`condition` is a recursive typed tree with `all` (AND) and `any` (OR)
+nodes, each applying its children to the **same source row**. Supported leaf
+nodes are `null_test` (`column`, `negated`) and `integer_comparison`
+(`column`, `operator`, `literal`). Column endpoints use physical relation
+identity and source-column name. Integer comparisons are exact only for
+catalog-confirmed signed integer types and representable literals; without
+type evidence the branch remains `residual`. Casts, computed/functional
+expressions, LIKE and collation-sensitive comparisons are not yet invertible
+and remain residual. Repeated-column predicates, ambiguous relation identity,
+or mixed proven/unproven trees do not produce exact directions.
+
+Each `qualifying` or `rejected` direction has either
+`{status:"exact",truth:"true"|"not_true"}` or
+`{status:"residual",reason:"..."}`. `not_true` explicitly includes
+both SQL FALSE and UNKNOWN. It is **not** a binary negation of each leaf;
+consumers must retain the complete logical tree with SQL three-valued truth
+rules, including nullable source inputs. The exact statuses certify equivalence
+of the coupled row predicate within this supported subset, not general proof
+that nonempty source populations satisfying every other schema constraint
+exist. No Cartesian combination of independent scalar domains may substitute
+for these coupled obligations.
+
+This initial contract does **not** complete TASK-63: invertible casts,
+LIKE-prefix constraints, richer comparisons, and rigorous source
+satisfiability and dialect-specific collation evidence remain to be added.
