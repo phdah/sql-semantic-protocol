@@ -2559,7 +2559,17 @@ fn collect_set_branch_evidence(
                 branch_query.fetch = None;
             }
             let analyzed = analyze_query(&branch_query, None, metadata);
-            let boundary = analyze_set_leaf_boundary(expression, &analyzed);
+            // A nested branch's own LIMIT/FETCH/CTE can change the exact
+            // number of tuples at its physical boundary. Those modifiers
+            // cannot be discharged by a source-row witness for the branch.
+            let boundary = if branch_query.with.is_none()
+                && branch_query.limit_clause.is_none()
+                && branch_query.fetch.is_none()
+            {
+                analyze_set_leaf_boundary(expression, &analyzed)
+            } else {
+                None
+            };
             branches.push(SetBranch::new(identity.to_string(), &analyzed, boundary));
         }
         SetExpr::Values(_)
