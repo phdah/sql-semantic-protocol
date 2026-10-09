@@ -796,3 +796,51 @@ conjunctive integer comparisons, including inverted cast offsets. Disjunctions
 remain coupled obligations and never narrow an individual source column by
 splitting its OR branches into a Cartesian product. The `boolean_witness`
 owns all remaining same-row correlation evidence.
+
+## DML state-effect contract (TASK-65)
+
+Each recognized partial DML `write` contains a typed `state_effect` with
+`initial_state: "caller_supplied"`. This is an explicit precondition: a
+consumer must supply the complete actual target snapshot, including untouched
+rows and duplicates. The analyzer **never** pretends the target starts empty.
+`affected_rows` uses inclusive bounds and a `null` upper bound where no
+safe bound exists. These counts are affected **target** rows, not source rows,
+matched pairs or output rows.
+
+`branches` preserve SQL order. Standalone INSERT SELECT uses
+`{ "kind": "insert_query" }` and the owning query's output schema and
+domains; UPDATE/DELETE use the existing normalized `update` assignments or
+`delete` action, paired with the original WHERE predicate. MERGE carries the
+ON `match_condition` in `write` and the per-branch matched/unmatched kind,
+optional additional predicate, and action in `state_effect.branches`.
+A branch predicate selects only rows for which it evaluates to SQL TRUE,
+never FALSE or UNKNOWN. MERGE clauses have first-applicable-clause precedence,
+so predicates from different branches must not be treated as independent
+disjoint source domains. Multiple matching source rows can produce conflicts
+or engine-specific errors; match multiplicity remains unproven.
+
+`post_state: "apply_to_initial"` means the final relation is determined by
+applying verified ordered effects to the real prestate, with unaffected rows
+preserved, inserted rows appended, updated rows replaced and deleted rows
+removed under bag semantics. It is **not** a proof of the complete final
+relation. Only unrestricted `DELETE FROM target` emits
+`post_state: "empty"` and `idempotence: "proven"`; all other forms say
+`idempotence: "unproven"`. `residual_reasons` explicitly require row-count,
+key/conflict, branch multiplicity and/or predicate verification. Duplicate
+primary/unique keys must be checked against the target's current rows, not
+inferred from SELECT lineage or a catalog alone.
+
+The supported standalone UPDATE/DELETE subset is one named target without
+FROM/USING/JOIN, RETURNING, conflict modifiers, ORDER BY or LIMIT. Unsupported
+forms remain statement-level Unsupported with an actionable diagnostic.
+INSERT SELECT with write-changing modifiers is likewise unsupported. MERGE
+branches that could not be normalized retain their explicit unsupported
+actions. No newly recognized DML source claims complete produced-relation
+semantics in the dependency graph.
+
+This versioned field extends the existing strict `write` JSON schema and
+the public Rust `WriteOperation::state_effect()` API. Since the active protocol
+shape and write-kind enum change, this is a breaking contract change requiring
+a major SemVer release through Release Please. SQL, dbt-compiled SQL and other
+SQL-bearing adapters share the same parser-independent representation; metadata
+adapters do not invent mutation operations.

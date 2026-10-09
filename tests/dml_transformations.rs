@@ -1,6 +1,8 @@
+use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_inputs, ComposedSemantics, CompositionFailureReason, LiteralValue, MergeAction,
-    MergeMatchKind, ProtocolStatement, RelationResolution, SqlInput, ValueDomain, WriteKind,
+    analyze_inputs, to_bundle_json, ComposedSemantics, CompositionFailureReason, LiteralValue,
+    MergeAction, MergeMatchKind, ProtocolStatement, RelationResolution, SqlInput, ValueDomain,
+    WriteEffectAction, WriteIdempotence, WriteKind, WritePostState, WriteUncertainty,
 };
 use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
 
@@ -196,4 +198,164 @@ fn unsupported_insert_write_forms_remain_explicit() {
         statement.diagnostics()[0].code(),
         "unsupported_insert_source"
     );
+}
+
+
+#[test]
+fn standalone_updates_preserve_before_after_obligations_and_written_domains() {
+    let bundle = analyze_inputs(
+        &[SqlInput::inline("UPDATE accounts SET balance = 9 WHERE id = 1")],
+        "generic",
+        &GenericDialect {},
+    ).expect("UPDATE should analyze");
+    assert_eq!(bundle.layers()[0].write_kind(), Some(WriteKind::Update));
+    let ProtocolStatement::Query(statement) = &bundle.inputs()[0].statements()[0] else {
+        panic!("expected normalized UPDATE");
+    };
+    let write = statement.write().expect("write");
+    assert_eq!(write.target(), "accounts");
+    assert!(write.selection().is_some());
+    assert_eq!(write.assignments().len(), 1);
+    let effect = write.state_effect().expect("partial state obligation");
+    assert_eq!(effect.post_state(), WritePostState::ApplyToInitial);
+    assert_eq!(effect.idempotence(), WriteIdempotence::Unproven);
+    assert_eq!(effect.affected_rows().minimum(), 0);
+    assert_eq!(effect.affected_rows().maximum(), None);
+    assert!(effect.reasons().contains(&WriteUncertainty::PredicateExactnessUnverified));
+    assert!(matches!(effect.branches()[0].action(), WriteEffectAction::Mutation(MergeAction::Update { .. })));
+    let emitted: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+    assert_eq!(emitted["inputs"][0]["statements"][0]["write"]["state_effect"]["post_state"], "apply_to_initial");
+    assert_eq!(emitted["inputs"][0]["statements"][0]["write"]["state_effect"]["affected_rows"]["minimum"], 0);
+    assert_eq!(emitted["inputs"][0]["statements"][0]["write"]["state_effect"]["affected_rows"]["maximum"], serde_json::Value::Null);
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE accounts(id BIGINT PRIMARY KEY, balance BIGINT);
+         INSERT INTO accounts VALUES (1, 3), (2, NULL);
+         UPDATE accounts SET balance = 9 WHERE id = 1;"
+    ).unwrap();
+    let first: i64 = db.query_row("SELECT balance FROM accounts WHERE id = 1", [], |row| row.get(0)).unwrap();
+    let untouched: Option<i64> = db.query_row("SELECT balance FROM accounts WHERE id = 2", [], |row| row.get(0)).unwrap();
+    assert_eq!(first, 9);
+    assert_eq!(untouched, None);
+}
+
+#[test]
+fn conditional_delete_preserves_unmatched_rows_and_unconditional_delete_is_idempotent() {
+    let selected = analyze_inputs(
+        &[SqlInput::inline("DELETE FROM accounts WHERE balance IS NULL")],
+        "generic",
+        &GenericDialect {},
+    ).unwrap();
+    let ProtocolStatement::Query(selected_query) = &selected.inputs()[0].statements()[0] else {
+        panic!("expected DELETE");
+    };
+    let write = selected_query.write().unwrap();
+    assert_eq!(write.kind(), WriteKind::Delete);
+    assert_eq!(write.state_effect().unwrap().post_state(), WritePostState::ApplyToInitial);
+
+    let all = analyze_inputs(
+        &[SqlInput::inline("DELETE FROM accounts")],
+        "generic",
+        &GenericDialect {},
+    ).unwrap();
+    let ProtocolStatement::Query(all_query) = &all.inputs()[0].statements()[0] else {
+        panic!("expected DELETE");
+    };
+    let effect = all_query.write().unwrap().state_effect().unwrap();
+    assert_eq!(effect.post_state(), WritePostState::Empty);
+    assert_eq!(effect.idempotence(), WriteIdempotence::Proven);
+    assert_eq!(all.layers()[0].write_kind(), Some(WriteKind::Delete));
+    assert!(matches!(all.layers()[0].composed_semantics(), ComposedSemantics::Unresolved(_)));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE accounts(id BIGINT, balance BIGINT);
+        INSERT INTO accounts VALUES (1, 1), (2, NULL);
+        DELETE FROM accounts WHERE balance IS NULL;").unwrap();
+    let count: i64 = db.query_row("SELECT COUNT(*) FROM accounts", [], |row| row.get(0)).unwrap();
+    assert_eq!(count, 1);
+    db.execute_batch("DELETE FROM accounts; DELETE FROM accounts;").unwrap();
+    let count: i64 = db.query_row("SELECT COUNT(*) FROM accounts", [], |row| row.get(0)).unwrap();
+    assert_eq!(count, 0);
+}
+
+#[test]
+fn insert_select_contract_does_not_invent_initial_rows_or_key_compatibility() {
+    let bundle = analyze_inputs(
+        &[SqlInput::inline("INSERT INTO target (id, score) SELECT id, score FROM upstream")],
+        "generic",
+        &GenericDialect {},
+    ).unwrap();
+    let ProtocolStatement::Query(query) = &bundle.inputs()[0].statements()[0] else {
+        panic!("expected INSERT SELECT");
+    };
+    let effect = query.write().unwrap().state_effect().unwrap();
+    assert_eq!(effect.post_state(), WritePostState::ApplyToInitial);
+    assert_eq!(effect.idempotence(), WriteIdempotence::Unproven);
+    assert!(effect.reasons().contains(&WriteUncertainty::ConstraintConflictsUnverified));
+    assert!(matches!(effect.branches()[0].action(), WriteEffectAction::InsertQuery));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE target(id BIGINT PRIMARY KEY, score BIGINT);
+        CREATE TABLE upstream(id BIGINT, score BIGINT);
+        INSERT INTO target VALUES (1, 4);
+        INSERT INTO upstream VALUES (1, 10);").unwrap();
+    assert!(db.execute_batch("INSERT INTO target SELECT id, score FROM upstream").is_err());
+    let score: i64 = db.query_row("SELECT score FROM target WHERE id = 1", [], |row| row.get(0)).unwrap();
+    assert_eq!(score, 4);
+}
+
+#[test]
+fn merge_retains_ordered_matched_and_unmatched_effects_without_finalstate_proof() {
+    let bundle = analyze_inputs(
+        &[SqlInput::inline(
+            "MERGE INTO target AS t USING upstream AS s ON t.id = s.id
+             WHEN MATCHED THEN UPDATE SET score = s.score
+             WHEN NOT MATCHED THEN INSERT (id, score) VALUES (s.id, s.score)"
+        )],
+        "snowflake",
+        &SnowflakeDialect {},
+    ).unwrap();
+    let ProtocolStatement::Query(query) = &bundle.inputs()[0].statements()[0] else {
+        panic!("expected MERGE");
+    };
+    let effect = query.write().unwrap().state_effect().unwrap();
+    assert_eq!(effect.branches().len(), 2);
+    assert_eq!(effect.branches()[0].match_kind(), Some(MergeMatchKind::Matched));
+    assert_eq!(effect.branches()[1].match_kind(), Some(MergeMatchKind::NotMatched));
+    assert!(effect.reasons().contains(&WriteUncertainty::MatchMultiplicityUnknown));
+    assert_eq!(effect.post_state(), WritePostState::ApplyToInitial);
+    assert!(matches!(bundle.layers()[0].composed_semantics(), ComposedSemantics::Unresolved(_)));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id BIGINT PRIMARY KEY, score BIGINT);
+         CREATE TABLE upstream(id BIGINT, score BIGINT);
+         INSERT INTO target VALUES (1, 1), (3, 3);
+         INSERT INTO upstream VALUES (1, 9), (2, 2);
+         MERGE INTO target AS t USING upstream AS s ON t.id = s.id
+         WHEN MATCHED THEN UPDATE SET score = s.score
+         WHEN NOT MATCHED THEN INSERT (id, score) VALUES (s.id, s.score);"
+    ).unwrap();
+    let rows: i64 = db.query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0)).unwrap();
+    let updated: i64 = db.query_row("SELECT score FROM target WHERE id = 1", [], |row| row.get(0)).unwrap();
+    let untouched: i64 = db.query_row("SELECT score FROM target WHERE id = 3", [], |row| row.get(0)).unwrap();
+    assert_eq!((rows, updated, untouched), (3, 9, 3));
+}
+
+#[test]
+fn unsupported_multi_relation_writes_remain_explicit() {
+    let cases = [
+        ("UPDATE target SET score = src.score FROM src WHERE target.id = src.id", "update"),
+        ("DELETE FROM target USING src WHERE target.id = src.id", "delete"),
+    ];
+    for (sql, kind) in cases {
+        let bundle = analyze_inputs(&[SqlInput::inline(sql)], "generic", &GenericDialect {})
+            .expect("parser-supported DML");
+        assert!(bundle.layers().is_empty(), "multi-table mutation must not become a known effect: {sql}");
+        let ProtocolStatement::Unsupported(statement) = &bundle.inputs()[0].statements()[0] else {
+            panic!("unproven write must be unsupported: {sql}");
+        };
+        assert_eq!(statement.category(), kind);
+    }
 }

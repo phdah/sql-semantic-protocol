@@ -590,6 +590,9 @@ impl WriteOperation {
                 }], WritePostState::ApplyToInitial, WriteIdempotence::Unproven)
             }
             WriteKind::Update => {
+                if self.selection.is_some() {
+                    reasons.push(WriteUncertainty::PredicateExactnessUnverified);
+                }
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
                 (vec![WriteEffectBranch {
                     match_kind: None,
@@ -601,6 +604,9 @@ impl WriteOperation {
             }
             WriteKind::Delete => {
                 let unconditional = self.selection.is_none();
+                if !unconditional {
+                    reasons.push(WriteUncertainty::PredicateExactnessUnverified);
+                }
                 (vec![WriteEffectBranch {
                     match_kind: None,
                     predicate: self.selection.clone(),
@@ -610,6 +616,7 @@ impl WriteOperation {
                 if unconditional { WriteIdempotence::Proven } else { WriteIdempotence::Unproven })
             }
             WriteKind::ConditionalMutation => {
+                reasons.push(WriteUncertainty::PredicateExactnessUnverified);
                 reasons.push(WriteUncertainty::MatchMultiplicityUnknown);
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
                 (self.merge_clauses.iter().map(|clause| WriteEffectBranch {
@@ -678,6 +685,8 @@ pub enum WriteUncertainty {
     ConstraintConflictsUnverified,
     /// Multiple source matches and clause overlap require execution-time verification.
     MatchMultiplicityUnknown,
+    /// Predicate truth under NULL and dialect comparison rules is not proved exact.
+    PredicateExactnessUnverified,
 }
 
 impl WriteUncertainty {
@@ -686,6 +695,7 @@ impl WriteUncertainty {
             Self::AffectedRowsUnknown => "affected_rows_unknown",
             Self::ConstraintConflictsUnverified => "constraint_conflicts_unverified",
             Self::MatchMultiplicityUnknown => "match_multiplicity_unknown",
+            Self::PredicateExactnessUnverified => "predicate_exactness_unverified",
         }
     }
 }
