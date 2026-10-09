@@ -444,6 +444,56 @@ fn widening_integer_casts_are_invertible_and_narrowing_casts_are_residual() {
 }
 
 #[test]
+fn casted_integer_offsets_are_inverted_without_overflow() {
+    for (predicate, adjusted) in [
+        ("CAST(a AS BIGINT) + 1 > 2 OR b < 0", 1),
+        ("3 < 1 + CAST(a AS BIGINT) OR b < 0", 2),
+        ("CAST(a AS BIGINT) - 2 > 2 OR b < 0", 4),
+    ] {
+        let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
+        let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        let witness = composed.boolean_witnesses()[0].witness();
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Exact(_)),
+            "{predicate}: {:?}",
+            witness.qualifying()
+        );
+        let BooleanRowConstraint::Any(children) = witness.condition() else {
+            panic!("expected coupled disjunction");
+        };
+        assert!(
+            matches!(
+                &children[0],
+                BooleanRowConstraint::IntegerComparison { literal, .. } if *literal == adjusted
+            ),
+            "{predicate}: {:?}",
+            children[0]
+        );
+    }
+
+    for predicate in [
+        "a + 1 > 2 OR b < 0",
+        "CAST(a AS INTEGER) + 1 > 2 OR b < 0",
+        "CAST(a AS BIGINT) + 9223372036854775807 > 2 OR b < 0",
+        "CAST(a AS BIGINT) * 2 > 2 OR b < 0",
+    ] {
+        let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
+        let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        assert!(
+            matches!(
+                composed.boolean_witnesses()[0].witness().qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
+            "{predicate}"
+        );
+    }
+}
+
+#[test]
 fn dbt_compiled_sql_and_direct_catalog_sql_emit_the_same_boolean_witness() {
     let mut manifest_value: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
@@ -613,6 +663,47 @@ fn computed_lineage_does_not_claim_a_physical_boolean_witness() {
     let witness = &composed.boolean_witnesses()[0];
     assert_eq!(witness.boundary_kind(), GroupBoundaryKind::Intermediate);
     assert_eq!(witness.witness().source_relation(), "stage");
+}
+
+#[test]
+fn filtered_or_limited_identity_projections_keep_intermediate_witnesses() {
+    for producer in [
+        "CREATE TABLE stage AS SELECT a, b FROM raw_t WHERE a > 0",
+        "CREATE TABLE stage AS SELECT a, b FROM raw_t LIMIT 1",
+        "CREATE TABLE stage AS SELECT DISTINCT a, b FROM raw_t",
+    ] {
+        let bundle = analyze_inputs(
+            &[
+                SqlInput::inline(producer),
+                SqlInput::inline(
+                    "CREATE TABLE sink AS SELECT a FROM stage WHERE a IS NULL OR b IS NULL",
+                ),
+            ],
+            "generic",
+            &GenericDialect {},
+        )
+        .unwrap();
+        let sink = bundle
+            .layers()
+            .iter()
+            .find(|layer| {
+                layer
+                    .produces()
+                    .iter()
+                    .any(|output| output.relation_name() == Some("sink"))
+            })
+            .unwrap();
+        let ComposedSemantics::Resolved(composed) = sink.composed_semantics() else {
+            panic!("expected composition");
+        };
+        let witness = &composed.boolean_witnesses()[0];
+        assert_eq!(
+            witness.boundary_kind(),
+            GroupBoundaryKind::Intermediate,
+            "{producer}"
+        );
+        assert_eq!(witness.witness().source_relation(), "stage");
+    }
 }
 
 #[test]
@@ -870,6 +961,9 @@ fn duckdb_differential_matches_generated_witness_for_every_source_row() {
         "a > -2 OR b <= 1",
         "(a > 2 AND a < 1) OR b < 0",
         "(a + 0) > 2 OR (0 + b) < 0",
+        "CAST(a AS BIGINT) + 1 > 2 OR b < 0",
+        "CAST(a AS BIGINT) - 2 > 2 OR b < 0",
+        "3 < 1 + CAST(a AS BIGINT) OR b < 0",
         "a > 2 AND b < 0",
         "CAST(a AS BIGINT) > 2 OR b < 0",
         "CAST(a AS INTEGER) > 2 AND b < 0",
