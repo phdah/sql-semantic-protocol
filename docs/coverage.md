@@ -93,6 +93,17 @@ Dialect names here are **inventory entries only**, never a production runtime wh
 
 sql-tdg **TASK-43** pins the protocol release-candidate SHA prior to publication. The final sign-off belongs to protocol **TASK-91**. Do **not** merge Release Please PR #79 until the final fixture and matrix are accepted.
 
+## Committed dbt and scripted SQL workload inventory
+
+The manifest tracks each of the 11 SQL models currently in `sql-tdg/tests/fixtures/dbt_core_project/models/`. This is an explicit fixture snapshot, not a claim that the project passes the current generator. In particular:
+
+- `aggregate_summary` and `independent_return_summary`: grouped counts and MAX; the first also exercises HAVING.
+- `ranked_orders`: joined sources feeding ROW_NUMBER and QUALIFY.
+- `subquery_orders` and `unioned_orders`: EXISTS and UNION ALL on composed models.
+- `stg_orders`, `stg_customers`, `enriched_orders`, `final_orders`, `derived_orders`, `boundary_final_orders`: typed filters, CASE, joins and compositional lineage.
+
+Scripted oracle inputs are separately mapped for INSERT, UPDATE, DELETE, MERGE and CTAS/replace. The local protocol test files demonstrate partial analyses and some DuckDB behavior, but **none** proves that sql-tdg generates a complete prestate/source/afterstate witness. `make all` in sql-tdg's dbt fixture remains the final TASK-36 acceptance gate, with its default 100 matching and 10 rejected rows and no target.
+
 ## Triage and currently unresolved decisions
 
 All in-scope families above have a concrete downstream and upstream task owner. The release-blocking gaps map to protocol TASK-67..90 and to downstream TASK-24..31/35/36, with task-level proof requirements. Where current implementation is operator-local, the missing proof belongs to **TASK-67** (shared typed witness algebra) and **TASK-68** (physical-source DAG realization). A parser success cannot close either.
