@@ -17,12 +17,27 @@ pub enum BagScope {
     CandidateTuple,
 }
 
+/// Stable identity of one corresponding tuple across set-operation branches.
+///
+/// The caller must assign the same identity only to positional tuples equal
+/// under SQL IS NOT DISTINCT FROM, including NULL-to-NULL equality.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BagTupleIdentity(u64);
+
+impl BagTupleIdentity {
+    /// Name a tuple equivalence class within one transfer proof.
+    pub fn new(value: u64) -> Self {
+        Self(value)
+    }
+}
+
 /// Input evidence for a bag transfer: an inclusive count and its closed-world scope.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BagEvidence {
     bounds: CountBounds,
     scope: BagScope,
     closed_world: bool,
+    tuple_identity: Option<BagTupleIdentity>,
 }
 
 impl BagEvidence {
@@ -33,7 +48,24 @@ impl BagEvidence {
             bounds,
             scope,
             closed_world,
+            tuple_identity: None,
         }
+    }
+
+    /// Bind complete candidate-tuple evidence to one shared SQL-equality class.
+    ///
+    /// A producer/consumer must supply this from typed projection evidence;
+    /// unrelated tuple identities cannot be combined to claim set membership.
+    pub fn with_tuple_identity(mut self, identity: BagTupleIdentity) -> Self {
+        if self.scope == BagScope::CandidateTuple {
+            self.tuple_identity = Some(identity);
+        }
+        self
+    }
+
+    /// Stable candidate-tuple identity, if one was proven.
+    pub fn tuple_identity(self) -> Option<BagTupleIdentity> {
+        self.tuple_identity
     }
 
     /// Count interval of the controlled scope.
@@ -79,7 +111,7 @@ pub enum BagLaw {
     SetTuple(SetMultiplicityRule),
     /// One GROUP BY key survives iff it has at least one contributor.
     GroupKey,
-    /// An ungrouped aggregate emits one row, even over an empty input.
+    /// An unfiltered ungrouped aggregate emits one row even over empty input.
     GlobalAggregate,
     /// ROW_NUMBER() <= limit with deterministic strict total ordering.
     RankedPrefix {
@@ -369,8 +401,14 @@ impl BagLaw {
                 if left.scope() == BagScope::CandidateTuple
                     && pair.is_some_and(|r| r.scope() == BagScope::CandidateTuple) =>
             {
-                // The checked pair is present by construction.
                 if let Some(right) = pair {
+                    if left.tuple_identity().is_none()
+                        || left.tuple_identity() != right.tuple_identity()
+                    {
+                        return BagCountProof::Residual {
+                            reason: "unproved_shared_tuple_identity",
+                        };
+                    }
                     set_count(rule, left.bounds(), right.bounds())
                 } else {
                     BagCountProof::Residual {
@@ -504,11 +542,16 @@ mod tests {
     use super::*;
 
     fn evidence(min: u64, max: Option<u64>, scope: BagScope) -> BagEvidence {
-        BagEvidence::new(
+        let evidence = BagEvidence::new(
             CountBounds::new(min, max).expect("valid counts"),
             scope,
             true,
-        )
+        );
+        if scope == BagScope::CandidateTuple {
+            evidence.with_tuple_identity(BagTupleIdentity::new(1))
+        } else {
+            evidence
+        }
     }
 
     fn exact(n: u64, scope: BagScope) -> BagEvidence {
@@ -542,6 +585,26 @@ mod tests {
         assert_eq!(
             number(BagLaw::DistinctTuple.transfer(l, None)).maximum(),
             Some(1)
+        );
+    }
+
+    #[test]
+    fn mismatched_or_unknown_tuple_keys_cannot_prove_set_membership() {
+        let tuple = exact(2, BagScope::CandidateTuple);
+        let unrelated = tuple.with_tuple_identity(BagTupleIdentity::new(2));
+        let rule = BagLaw::SetTuple(SetMultiplicityRule::Minimum);
+        assert_eq!(
+            rule.transfer(tuple, Some(unrelated)),
+            BagCountProof::Residual {
+                reason: "unproved_shared_tuple_identity"
+            }
+        );
+        let unidentified = BagEvidence::new(tuple.bounds(), BagScope::CandidateTuple, true);
+        assert_eq!(
+            rule.transfer(tuple, Some(unidentified)),
+            BagCountProof::Residual {
+                reason: "unproved_shared_tuple_identity"
+            }
         );
     }
 
