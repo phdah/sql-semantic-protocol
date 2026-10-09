@@ -382,11 +382,20 @@ impl BooleanWitness {
         let mut combined = (*first).clone();
         let mut conditions = vec![combined.condition.clone()];
         for next in rest {
-            if combined.source_relation != next.source_relation
-                || combined.source_constraints != next.source_constraints
-                || combined.comparison_assumptions != next.comparison_assumptions
-            {
+            if combined.source_relation != next.source_relation {
                 return None;
+            }
+            // Only assumptions shared by *every* layer can support a
+            // cross-layer comparison; combine all actual source restrictions.
+            combined.comparison_assumptions = combined
+                .comparison_assumptions
+                .intersection(&next.comparison_assumptions)
+                .copied()
+                .collect();
+            for constraints in &next.source_constraints {
+                if !combined.source_constraints.contains(constraints) {
+                    combined.source_constraints.push(constraints.clone());
+                }
             }
             for (column, bounds) in &next.integer_bounds {
                 if combined
