@@ -190,6 +190,8 @@ pub enum WitnessObligation {
         comparison: ComparisonOperator,
         left: ColumnRef,
         right: ColumnRef,
+        /// Side receiving NULL values when the unmatched candidate is preserved.
+        null_extended: Option<JoinSide>,
         closed_world: bool,
     },
     /// One matched join pair with a typed comparison.
@@ -754,7 +756,10 @@ pub fn local_pending_producers(semantics: &ResolvedComposedSemantics) -> Vec<Wit
         .into_iter()
         .map(|boundary| WitnessObligation::Producer {
             boundary,
-            physical_sources: semantics.dependencies().to_vec(),
+            // A missing producer mapping is unknown, never the terminal dependency set.
+            physical_sources: semantics
+                .producer_physical_sources(boundary.relation())
+                .map_or_else(Vec::new, |sources| sources.to_vec()),
         })
         .collect()
 }
@@ -849,6 +854,7 @@ pub fn local_constructive_witnesses(
                                 Some(right.relation().to_string()),
                                 right.column().to_string(),
                             ),
+                            null_extended: join_case.null_extended_side(),
                             closed_world: true,
                         },
                         JoinWitnessShape::RightUnmatched => WitnessObligation::NoMatchingPartner {
@@ -863,6 +869,7 @@ pub fn local_constructive_witnesses(
                                 Some(left.relation().to_string()),
                                 left.column().to_string(),
                             ),
+                            null_extended: join_case.null_extended_side(),
                             closed_world: true,
                         },
                     };
@@ -1015,12 +1022,9 @@ pub fn local_constructive_witnesses(
                     let Some(inner_name) = witness.inner_relation() else {
                         return WitnessDirection::residual("missing_inner_source_identity");
                     };
-                    let mut outer_relations = semantics
-                        .dependencies()
-                        .iter()
-                        .filter(|relation| relation.as_str() != inner_name);
-                    let (Some(outer_name), None) = (outer_relations.next(), outer_relations.next())
-                    else {
+                    // Later transformations may introduce unrelated physical sources.
+                    // The original witness retains its outer physical relation.
+                    let Some(outer_name) = witness.outer_source_relation() else {
                         return WitnessDirection::residual("unresolved_outer_source_identity");
                     };
                     let (Some(outer), Some(inner)) = (

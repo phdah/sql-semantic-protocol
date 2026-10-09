@@ -404,6 +404,7 @@ impl ComposedSemantics {
 
     pub(crate) fn resolved(
         dependencies: Vec<String>,
+        producer_sources: BTreeMap<String, Vec<String>>,
         column_domains: Vec<ColumnDomain>,
         mut join_equalities: Vec<ComposedJoinEquality>,
         witnesses: ComposedWitnessEvidence,
@@ -437,6 +438,7 @@ impl ComposedSemantics {
         diagnostics.dedup();
         Self::Resolved(Box::new(ResolvedComposedSemantics {
             dependencies,
+            producer_sources,
             column_domains,
             join_equalities,
             join_witnesses: join_witnesses.into_boxed_slice(),
@@ -771,6 +773,7 @@ impl ComposedWindowWitness {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedComposedSemantics {
     dependencies: Vec<String>,
+    producer_sources: BTreeMap<String, Vec<String>>,
     column_domains: Vec<ColumnDomain>,
     join_equalities: Vec<ComposedJoinEquality>,
     join_witnesses: Box<[crate::join_witness::JoinWitness]>,
@@ -788,6 +791,16 @@ impl ResolvedComposedSemantics {
     /// Return physical leaf dependencies in deterministic relation order.
     pub fn dependencies(&self) -> &[String] {
         &self.dependencies
+    }
+
+    /// Proven physical leaves for a particular upstream relation producer.
+    /// None means the producer's specific physical dependencies are unresolved.
+    pub fn producer_physical_sources(&self, relation: &str) -> Option<&[String]> {
+        self.producer_sources.get(relation).map(Vec::as_slice)
+    }
+
+    pub(crate) fn producer_sources(&self) -> &BTreeMap<String, Vec<String>> {
+        &self.producer_sources
     }
 
     /// Return value domains mapped back to physical source columns.
