@@ -601,6 +601,9 @@ impl WriteOperation {
         let (branches, post_state, idempotence) = match self.kind {
             WriteKind::Definition => return None,
             WriteKind::Append => {
+                if self.target_columns.is_empty() {
+                    reasons.push(WriteUncertainty::ImplicitTargetColumns);
+                }
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
                 (
                     vec![WriteEffectBranch {
@@ -755,6 +758,8 @@ pub enum WriteUncertainty {
     PredicateExactnessUnverified,
     /// An unsupported MERGE branch cannot be constructed or verified.
     UnsupportedAction,
+    /// Implicit INSERT target column order requires target-schema evidence.
+    ImplicitTargetColumns,
 }
 
 impl WriteUncertainty {
@@ -765,6 +770,7 @@ impl WriteUncertainty {
             Self::MatchMultiplicityUnknown => "match_multiplicity_unknown",
             Self::PredicateExactnessUnverified => "predicate_exactness_unverified",
             Self::UnsupportedAction => "unsupported_action",
+            Self::ImplicitTargetColumns => "implicit_target_columns",
         }
     }
 }
