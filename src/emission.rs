@@ -394,6 +394,13 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .map(composition_diagnostic_to_value)
             .collect::<Vec<_>>()
     });
+    if !semantics.join_witnesses().is_empty() {
+        value["join_witnesses"] = json!(semantics
+            .join_witnesses()
+            .iter()
+            .map(join_witness_to_value)
+            .collect::<Vec<_>>());
+    }
     if !semantics.window_witnesses().is_empty() {
         value["window_witnesses"] = json!(semantics
             .window_witnesses()
@@ -427,6 +434,44 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .collect::<Vec<_>>());
     }
     value
+}
+
+fn join_witness_to_value(witness: &crate::JoinWitness) -> Value {
+    let endpoint = |column: &crate::ComposedJoinColumn| {
+        json!({
+            "relation": column.relation(),
+            "column": column.column(),
+            "relation_instance": column.relation_instance()
+        })
+    };
+    json!({
+        "origin_layer_id": witness.origin_layer_id(),
+        "join_kind": witness.kind().as_str(),
+        "comparison": witness.comparison().map(|op| op.as_str()),
+        "left": witness.left().map(endpoint),
+        "right": witness.right().map(endpoint),
+        "unknown_comparison_is_match": false,
+        "qualifying": join_witness_direction_to_value(witness.qualifying()),
+        "rejected": join_witness_direction_to_value(witness.rejected())
+    })
+}
+
+fn join_witness_direction_to_value(direction: &crate::JoinWitnessDirection) -> Value {
+    match direction {
+        crate::JoinWitnessDirection::Impossible => json!({"status": "impossible"}),
+        crate::JoinWitnessDirection::Residual { reason } => {
+            json!({"status": "residual", "reason": reason})
+        }
+        crate::JoinWitnessDirection::Exact(cases) => json!({
+            "status": "exact",
+            "cases": cases.iter().map(|case| json!({
+                "shape": case.shape().as_str(),
+                "min_matches": case.shape().min_matches(),
+                "max_matches": case.shape().max_matches(),
+                "null_extended_side": case.null_extended_side().map(|side| side.as_str())
+            })).collect::<Vec<_>>()
+        }),
+    }
 }
 
 fn composed_join_equality_to_value(equality: &crate::ComposedJoinEquality) -> Value {

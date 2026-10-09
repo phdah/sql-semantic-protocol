@@ -4075,7 +4075,15 @@ fn analyze_join_constraint(
         JoinConstraint::None => None,
     };
 
-    predicate.map(|predicate| remap_join_equality_columns(predicate, scope, diagnostics))
+    // Self-join aliases are distinct input instances. Remapping both sides to the same
+    // physical relation would erase that identity before composition.
+    predicate.map(|predicate| {
+        if left.relation() == right.relation() && left.alias() != right.alias() {
+            predicate
+        } else {
+            remap_join_equality_columns(predicate, scope, diagnostics)
+        }
+    })
 }
 
 fn remap_join_equality_columns(

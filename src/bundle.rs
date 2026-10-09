@@ -415,8 +415,11 @@ impl ComposedSemantics {
             mut set_operations,
             mut group_witnesses,
             mut window_witnesses,
+            mut join_witnesses,
         } = witnesses;
         join_equalities.sort_by(composed_join_equality_cmp);
+        join_witnesses.sort_by(|a, b| a.origin_layer_id().cmp(b.origin_layer_id()));
+        join_witnesses.dedup();
         join_equalities.dedup();
         set_operations.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
         set_operations.dedup();
@@ -430,6 +433,7 @@ impl ComposedSemantics {
             dependencies,
             column_domains,
             join_equalities,
+            join_witnesses: join_witnesses.into_boxed_slice(),
             set_operations: set_operations.into_boxed_slice(),
             group_witnesses: group_witnesses.into_boxed_slice(),
             window_witnesses: window_witnesses.into_boxed_slice(),
@@ -578,6 +582,7 @@ impl ComposedSetOperation {
 /// Locally and transitively composed generator-facing witness evidence.
 /// Each witness retains the layer that introduced it and its own proof boundary.
 pub(crate) struct ComposedWitnessEvidence {
+    pub(crate) join_witnesses: Vec<crate::join_witness::JoinWitness>,
     pub(crate) set_operations: Vec<ComposedSetOperation>,
     pub(crate) group_witnesses: Vec<ComposedGroupWitness>,
     pub(crate) window_witnesses: Vec<ComposedWindowWitness>,
@@ -684,6 +689,7 @@ pub struct ResolvedComposedSemantics {
     dependencies: Vec<String>,
     column_domains: Vec<ColumnDomain>,
     join_equalities: Vec<ComposedJoinEquality>,
+    join_witnesses: Box<[crate::join_witness::JoinWitness]>,
     set_operations: Box<[ComposedSetOperation]>,
     group_witnesses: Box<[ComposedGroupWitness]>,
     window_witnesses: Box<[ComposedWindowWitness]>,
@@ -706,6 +712,11 @@ impl ResolvedComposedSemantics {
     /// Return physical join equalities required by the composed row-condition contract.
     pub fn join_equalities(&self) -> &[ComposedJoinEquality] {
         &self.join_equalities
+    }
+
+    /// Matched, unmatched, and null-extension obligations carried across producer layers.
+    pub fn join_witnesses(&self) -> &[crate::join_witness::JoinWitness] {
+        &self.join_witnesses
     }
 
     /// Set-operation evidence introduced locally or inherited from upstream layers.

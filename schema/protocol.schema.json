@@ -292,6 +292,68 @@
         }
       }
     },
+    "joinWitnessCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shape", "min_matches", "max_matches", "null_extended_side"],
+      "properties": {
+        "shape": { "enum": ["matched", "left_unmatched", "right_unmatched"] },
+        "min_matches": { "type": "integer", "minimum": 0 },
+        "max_matches": { "type": ["integer", "null"], "minimum": 0 },
+        "null_extended_side": { "enum": ["left", "right", null] }
+      }
+    },
+    "joinWitnessDirection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "cases"],
+          "properties": {
+            "status": { "const": "exact" },
+            "cases": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/joinWitnessCase" }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": { "status": { "const": "impossible" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason"],
+          "properties": {
+            "status": { "const": "residual" },
+            "reason": { "$ref": "#/$defs/nonEmptyString" }
+          }
+        }
+      ]
+    },
+    "composedJoinWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_layer_id", "join_kind", "comparison", "left", "right",
+        "unknown_comparison_is_match", "qualifying", "rejected"
+      ],
+      "properties": {
+        "origin_layer_id": { "$ref": "#/$defs/nonEmptyString" },
+        "join_kind": { "enum": ["inner", "left", "right", "full", "cross",
+          "left_semi", "right_semi", "left_anti", "right_anti", "unknown"] },
+        "comparison": { "enum": ["eq", "neq", "lt", "lte", "gt", "gte", null] },
+        "left": { "oneOf": [{ "$ref": "#/$defs/composedJoinColumn" }, { "type": "null" }] },
+        "right": { "oneOf": [{ "$ref": "#/$defs/composedJoinColumn" }, { "type": "null" }] },
+        "unknown_comparison_is_match": { "const": false },
+        "qualifying": { "$ref": "#/$defs/joinWitnessDirection" },
+        "rejected": { "$ref": "#/$defs/joinWitnessDirection" }
+      }
+    },
     "resolvedComposedSemantics": {
       "type": "object",
       "additionalProperties": false,
@@ -328,6 +390,11 @@
           "items": {
             "$ref": "#/$defs/composedJoinEquality"
           }
+        },
+        "join_witnesses": {
+          "description": "Optional typed matching, rejection, and null-extension obligations for joins.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/composedJoinWitness" }
         },
         "output": {
           "$ref": "#/$defs/output"
