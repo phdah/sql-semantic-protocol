@@ -383,7 +383,7 @@ impl CompositionFailureReason {
 #[non_exhaustive]
 pub enum ComposedSemantics {
     /// Transitive dependencies, domains, and output lineage were composed safely.
-    Resolved(ResolvedComposedSemantics),
+    Resolved(Box<ResolvedComposedSemantics>),
     /// Composition stopped rather than inventing semantics that cannot be proven.
     Unresolved(UnresolvedComposedSemantics),
 }
@@ -426,7 +426,7 @@ impl ComposedSemantics {
         window_witnesses.dedup();
         diagnostics.sort_by(diagnostic_cmp);
         diagnostics.dedup();
-        Self::Resolved(ResolvedComposedSemantics {
+        Self::Resolved(Box::new(ResolvedComposedSemantics {
             dependencies,
             column_domains,
             join_equalities,
@@ -436,7 +436,7 @@ impl ComposedSemantics {
             condition_exactness,
             output,
             diagnostics,
-        })
+        }))
     }
 
     pub(crate) fn unresolved(
