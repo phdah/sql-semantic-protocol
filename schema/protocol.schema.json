@@ -5983,8 +5983,12 @@
             "kind",
             "boundary",
             "key",
+            "aggregate",
+            "distinct",
+            "argument",
             "rows",
-            "non_null"
+            "non_null",
+            "tests"
           ],
           "properties": {
             "kind": {
@@ -6005,6 +6009,97 @@
             },
             "non_null": {
               "$ref": "#/$defs/constructiveBounds"
+            },
+            "aggregate": {
+              "enum": [
+                "count_rows",
+                "count_values",
+                "sum",
+                "min",
+                "max"
+              ]
+            },
+            "distinct": {
+              "type": "boolean"
+            },
+            "argument": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/groupWitnessColumn"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "tests": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/groupWitnessTest"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "boundary",
+            "candidate",
+            "partition_by",
+            "order_by",
+            "preceding",
+            "strict_unique",
+            "closed_world"
+          ],
+          "properties": {
+            "kind": {
+              "const": "ranked"
+            },
+            "boundary": {
+              "$ref": "#/$defs/constructiveBoundary"
+            },
+            "candidate": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "partition_by": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/groupWitnessColumn"
+              }
+            },
+            "order_by": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "column",
+                  "ascending",
+                  "nulls_first"
+                ],
+                "properties": {
+                  "column": {
+                    "$ref": "#/$defs/groupWitnessColumn"
+                  },
+                  "ascending": {
+                    "type": "boolean"
+                  },
+                  "nulls_first": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "preceding": {
+              "$ref": "#/$defs/constructiveBounds"
+            },
+            "strict_unique": {
+              "const": true
+            },
+            "closed_world": {
+              "const": true
             }
           }
         },
