@@ -150,6 +150,7 @@ pub struct QueryStatement {
     window_witness: Option<Box<WindowWitness>>,
     subquery_witnesses: Box<[crate::subquery_witness::SubqueryMembershipWitness]>,
     boolean_witness: Option<Box<BooleanWitness>>,
+    row_preserving_projection: bool,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -176,6 +177,7 @@ impl QueryStatement {
             window_witness: None,
             subquery_witnesses: Vec::new().into_boxed_slice(),
             boolean_witness: None,
+            row_preserving_projection: false,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -196,6 +198,15 @@ impl QueryStatement {
     pub(crate) fn with_boolean_witness(mut self, witness: Option<BooleanWitness>) -> Self {
         self.boolean_witness = witness.map(Box::new);
         self
+    }
+
+    pub(crate) fn with_row_preserving_projection(mut self, preserved: bool) -> Self {
+        self.row_preserving_projection = preserved;
+        self
+    }
+
+    pub(crate) fn row_preserving_projection(&self) -> bool {
+        self.row_preserving_projection
     }
 
     pub(crate) fn with_group_witness(mut self) -> Self {
