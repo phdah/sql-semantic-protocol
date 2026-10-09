@@ -191,6 +191,16 @@ impl<'a> Composer<'a> {
                 )]
             })
             .unwrap_or_default();
+        let mut boolean_witnesses = query.boolean_witness().map(|witness| {
+            let boundary_kind = edges.iter()
+                .find(|edge| edge.relation() == witness.source_relation())
+                .map_or(crate::bundle::GroupBoundaryKind::Unresolved, |edge| match edge.resolution() {
+                    RelationResolution::External => crate::bundle::GroupBoundaryKind::Physical,
+                    RelationResolution::Resolved => crate::bundle::GroupBoundaryKind::Intermediate,
+                    _ => crate::bundle::GroupBoundaryKind::Unresolved,
+                });
+            vec![crate::bundle::ComposedBooleanWitness::new(layer.id().to_string(), witness.clone(), boundary_kind)]
+        }).unwrap_or_default();
         let mut subquery_witnesses = query
             .subquery_witnesses()
             .iter()
@@ -258,6 +268,7 @@ impl<'a> Composer<'a> {
                             window_witnesses.extend(upstream.window_witnesses().iter().cloned());
                             subquery_witnesses
                                 .extend(upstream.subquery_witnesses().iter().cloned());
+                            boolean_witnesses.extend(upstream.boolean_witnesses().iter().cloned());
                             condition_exactness =
                                 condition_exactness.merged_with(upstream.condition_exactness());
                         }
@@ -344,6 +355,7 @@ impl<'a> Composer<'a> {
                 group_witnesses,
                 window_witnesses,
                 subquery_witnesses,
+                boolean_witnesses,
                 join_witnesses,
             },
             condition_exactness,
