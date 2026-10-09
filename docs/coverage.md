@@ -72,7 +72,7 @@ Dialect names here are **inventory entries only**, never a production runtime wh
 | `execution.dbt_fixture` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-89, TASK-91 | TASK-36 |
 | `execution.unsupported_opaque` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Approval | TASK-66, TASK-88, TASK-91 | TASK-33, TASK-36 |
 
-**Every row** currently has `physical_source_positive = not_end_to_end_proven`, `physical_source_negative = not_end_to_end_proven`, and `output_cardinality = unverified`. This prevents the local witnesses for TASK-58..65 from being mistaken for complete constructive generator plans. The manifest contains the explicit syntax variant list, existing local witness status, all 13 per-dialect records, and fixture IDs.
+**Every row** currently has `physical_source_positive = not_end_to_end_proven`, `physical_source_negative = not_end_to_end_proven`, and `output_cardinality = unverified`. This prevents the local witnesses for TASK-58..65 from being mistaken for complete constructive generator plans. The manifest also expands **251 named syntax/semantic variants across 13 dialects (3,263 logical variant cells)** from fail-closed defaults, with only fixture-backed sparse overrides. The matrix above shows **representative parser evidence**, not proof of every variant in its family. Each variant inherits `variant_evidence_defaults` unless an independent fixture justifies an override. The manifest contains existing local witness status, all dialect records, variant evidence and fixture IDs.
 
 ## Generator acceptance ownership
 
