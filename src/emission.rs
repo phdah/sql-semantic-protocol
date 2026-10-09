@@ -1114,6 +1114,12 @@ fn optional_predicate_to_value(predicate: Option<&Predicate>) -> Value {
 fn predicate_to_value(predicate: &Predicate) -> Value {
     match predicate {
         Predicate::Comparison(predicate) => comparison_predicate_to_value(predicate),
+        Predicate::LikePrefix(predicate) => json!({
+            "kind": "like_prefix",
+            "expression": expression_to_value(predicate.expression()),
+            "prefix": predicate.prefix(),
+            "negated": predicate.negated()
+        }),
         Predicate::And(predicate) => logical_predicate_to_value("and", predicate),
         Predicate::Or(predicate) => logical_predicate_to_value("or", predicate),
         Predicate::Not(predicate) => not_predicate_to_value(predicate),
