@@ -124,9 +124,7 @@ fn typed_integer_disjunction_retains_comparison_operators_without_cross_product(
 
 #[test]
 fn repeated_column_conditions_are_checked_jointly() {
-    let bundle = typed_bundle(
-        "SELECT a FROM t WHERE (a > 2 AND a < 1) OR b < 0",
-    );
+    let bundle = typed_bundle("SELECT a FROM t WHERE (a > 2 AND a < 1) OR b < 0");
     let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
         panic!("expected composition");
     };
@@ -140,9 +138,7 @@ fn repeated_column_conditions_are_checked_jointly() {
         BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
     ));
 
-    let impossible = typed_bundle(
-        "SELECT a FROM t WHERE (a > 2 AND a < 1) OR (b > 3 AND b < 2)",
-    );
+    let impossible = typed_bundle("SELECT a FROM t WHERE (a > 2 AND a < 1) OR (b > 3 AND b < 2)");
     let ComposedSemantics::Resolved(semantics) = impossible.layers()[0].composed_semantics() else {
         panic!("expected composition");
     };
