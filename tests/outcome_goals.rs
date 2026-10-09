@@ -139,6 +139,29 @@ fn group_goals_enforce_one_surviving_row_per_ordinary_group() {
 }
 
 #[test]
+fn distinct_and_limits_cannot_be_used_as_group_to_output_row_proofs() {
+    let cases = [
+        "SELECT DISTINCT COUNT(*) AS n FROM sales GROUP BY category",
+        "SELECT category FROM sales GROUP BY category LIMIT 1",
+    ];
+    let connection = Connection::open_in_memory().expect("DuckDB");
+    connection.execute_batch(
+        "CREATE TABLE sales(category INTEGER);
+         INSERT INTO sales VALUES (1),(2);"
+    ).expect("group source");
+    for sql in cases {
+        let mut bundle = analyze(sql);
+        request(&mut bundle, Some(1), Some(2), vec![]);
+        assert_eq!(
+            bundle.outcome_goals()[0].status(),
+            OutcomeGoalStatus::Residual,
+            "{sql} must not reject feasible group counts"
+        );
+        assert_eq!(oracle_count(&connection, sql), 1);
+    }
+}
+
+#[test]
 fn distinct_and_null_semantics_reject_duplicate_distribution_values() {
     let sql = "SELECT DISTINCT category FROM sales";
     let mut bundle = analyze(sql);
