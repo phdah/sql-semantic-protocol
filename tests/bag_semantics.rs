@@ -10,11 +10,17 @@ use sql_semantic_protocol::{
 };
 
 fn exact(n: u64, scope: BagScope) -> BagEvidence {
-    BagEvidence::new(CountBounds::new(n, Some(n)).expect("valid count"), scope, true)
+    BagEvidence::new(
+        CountBounds::new(n, Some(n)).expect("valid count"),
+        scope,
+        true,
+    )
 }
 
 fn observed(db: &Connection, query: &str) -> u64 {
-    let count: i64 = db.query_row(query, [], |row| row.get(0)).expect("query count");
+    let count: i64 = db
+        .query_row(query, [], |row| row.get(0))
+        .expect("query count");
     u64::try_from(count).expect("nonnegative SQL row count")
 }
 
@@ -44,7 +50,10 @@ fn all_dialects_expose_the_same_typed_set_duplicate_law() {
         assert_eq!(rule, SetMultiplicityRule::Sum, "{name}");
         let l = exact(3, BagScope::CandidateTuple);
         let r = exact(2, BagScope::CandidateTuple);
-        assert_eq!(checked_count(BagLaw::SetTuple(rule).transfer(l, Some(r))), 5);
+        assert_eq!(
+            checked_count(BagLaw::SetTuple(rule).transfer(l, Some(r))),
+            5
+        );
     }
 }
 
@@ -69,9 +78,10 @@ fn duckdb_duplicate_and_null_tuple_counts_obey_all_six_set_laws() {
         (SetMultiplicityRule::SaturatingDifference, "EXCEPT ALL"),
         (SetMultiplicityRule::ExceptDistinct, "EXCEPT"),
     ] {
-        let actual = observed(&db, &format!(
-            "SELECT COUNT(*) FROM (SELECT k FROM l {sql} SELECT k FROM r) AS bag"
-        ));
+        let actual = observed(
+            &db,
+            &format!("SELECT COUNT(*) FROM (SELECT k FROM l {sql} SELECT k FROM r) AS bag"),
+        );
         assert_eq!(
             checked_count(BagLaw::SetTuple(rule).transfer(inputs.0, Some(inputs.1))),
             actual,
@@ -98,30 +108,43 @@ fn duckdb_join_duplicate_and_sql_null_nonmatches_are_counted_separately() {
     .transfer(left, Some(right));
     assert_eq!(
         checked_count(matched),
-        observed(&db, "SELECT COUNT(*) FROM l JOIN r ON l.k = r.k WHERE l.k = 1")
+        observed(
+            &db,
+            "SELECT COUNT(*) FROM l JOIN r ON l.k = r.k WHERE l.k = 1"
+        )
     );
     let nulls = BagLaw::EquiJoin {
         kind: JoinKind::Full,
         keys: BagJoinKeys::NeverMatch,
     }
-    .transfer(exact(2, BagScope::CompleteRelation), Some(exact(1, BagScope::CompleteRelation)));
+    .transfer(
+        exact(2, BagScope::CompleteRelation),
+        Some(exact(1, BagScope::CompleteRelation)),
+    );
     assert_eq!(
         checked_count(nulls),
-        observed(&db, "SELECT COUNT(*) FROM l FULL JOIN r ON l.k = r.k WHERE l.k IS NULL AND r.k IS NULL")
+        observed(
+            &db,
+            "SELECT COUNT(*) FROM l FULL JOIN r ON l.k = r.k WHERE l.k IS NULL AND r.k IS NULL"
+        )
     );
 }
 
 #[test]
 fn negative_counts_and_open_world_are_not_promoted_to_feasible_source_plans() {
     let empty = exact(0, BagScope::CandidateTuple);
-    let count = BagLaw::SetTuple(SetMultiplicityRule::Minimum).transfer(
-        exact(3, BagScope::CandidateTuple), Some(empty),
+    let count = BagLaw::SetTuple(SetMultiplicityRule::Minimum)
+        .transfer(exact(3, BagScope::CandidateTuple), Some(empty));
+    assert_eq!(
+        count.assess(CountBounds::new(1, Some(1)).expect("valid")),
+        BagCountTarget::Impossible
     );
-    assert_eq!(count.assess(CountBounds::new(1, Some(1)).expect("valid")), BagCountTarget::Impossible);
     let open = BagEvidence::new(empty.bounds(), BagScope::CandidateTuple, false);
     assert!(matches!(
         BagLaw::SetTuple(SetMultiplicityRule::Minimum)
             .transfer(exact(3, BagScope::CandidateTuple), Some(open)),
-        BagCountProof::Residual { reason: "right_open_world" }
+        BagCountProof::Residual {
+            reason: "right_open_world"
+        }
     ));
 }
