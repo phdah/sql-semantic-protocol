@@ -153,6 +153,8 @@ pub struct QueryStatement {
     row_preserving_projection: bool,
     proven_single_row_output: bool,
     group_rows_match_surviving_groups: bool,
+    plain_goal_output_shape: bool,
+    ranked_goal_output_shape: bool,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -182,6 +184,8 @@ impl QueryStatement {
             row_preserving_projection: false,
             proven_single_row_output: false,
             group_rows_match_surviving_groups: false,
+            plain_goal_output_shape: false,
+            ranked_goal_output_shape: false,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -233,6 +237,22 @@ impl QueryStatement {
     /// DISTINCT, QUALIFY and result limits can invalidate this correspondence.
     pub fn group_rows_match_surviving_groups(&self) -> bool {
         self.group_rows_match_surviving_groups
+    }
+
+    pub(crate) fn with_goal_shapes(mut self, plain: bool, ranked: bool) -> Self {
+        self.plain_goal_output_shape = plain;
+        self.ranked_goal_output_shape = ranked;
+        self
+    }
+
+    /// Whether this local query has no row-shaping beyond a plain FROM/JOIN projection.
+    pub fn plain_goal_output_shape(&self) -> bool {
+        self.plain_goal_output_shape
+    }
+
+    /// Whether QUALIFY is the sole row-shaping operation on a single direct table.
+    pub fn ranked_goal_output_shape(&self) -> bool {
+        self.ranked_goal_output_shape
     }
 
     pub(crate) fn with_group_witness(mut self) -> Self {
