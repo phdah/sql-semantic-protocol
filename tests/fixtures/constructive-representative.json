@@ -1,0 +1,102 @@
+[
+  {
+    "operator": "join",
+    "origin_layer_id": "layer-0001",
+    "qualifying": {
+      "cases": [
+        {
+          "obligations": [
+            {
+              "comparison": "eq",
+              "kind": "join_pair",
+              "left": {
+                "name": "customer_id",
+                "relation": "sales.orders"
+              },
+              "left_row": {
+                "instance": "o",
+                "name": "left",
+                "relation": "sales.orders"
+              },
+              "null_extended": null,
+              "right": {
+                "name": "id",
+                "relation": "crm.customers"
+              },
+              "right_row": {
+                "instance": "c",
+                "name": "right",
+                "relation": "crm.customers"
+              }
+            }
+          ],
+          "strength": "sufficient"
+        }
+      ],
+      "status": "feasible"
+    },
+    "rejected": {
+      "cases": [
+        {
+          "obligations": [
+            {
+              "candidate": {
+                "instance": "o",
+                "name": "left",
+                "relation": "sales.orders"
+              },
+              "closed_world": true,
+              "comparison": "eq",
+              "kind": "no_matching_partner",
+              "left": {
+                "name": "customer_id",
+                "relation": "sales.orders"
+              },
+              "null_extended": null,
+              "partner": {
+                "instance": "c",
+                "name": "right",
+                "relation": "crm.customers"
+              },
+              "right": {
+                "name": "id",
+                "relation": "crm.customers"
+              }
+            }
+          ],
+          "strength": "sufficient"
+        },
+        {
+          "obligations": [
+            {
+              "candidate": {
+                "instance": "c",
+                "name": "right",
+                "relation": "crm.customers"
+              },
+              "closed_world": true,
+              "comparison": "eq",
+              "kind": "no_matching_partner",
+              "left": {
+                "name": "id",
+                "relation": "crm.customers"
+              },
+              "null_extended": null,
+              "partner": {
+                "instance": "o",
+                "name": "left",
+                "relation": "sales.orders"
+              },
+              "right": {
+                "name": "customer_id",
+                "relation": "sales.orders"
+              }
+            }
+          ],
+          "strength": "sufficient"
+        }
+      ],
+      "status": "feasible"
+    }
+  }
+]

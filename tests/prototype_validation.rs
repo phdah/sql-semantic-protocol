@@ -18,7 +18,7 @@ fn representative_generic_query_matches_complete_protocol_document() {
     let actual: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol should serialize as JSON");
 
-    let expected = json!({
+    let mut expected = json!({
         "protocol_version": env!("CARGO_PKG_VERSION"),
         "inputs": [
             {
@@ -382,11 +382,9 @@ fn representative_generic_query_matches_complete_protocol_document() {
         }
     });
 
-    eprintln!(
-        "REPRESENTATIVE_CONSTRUCTIVE:{}",
-        serde_json::to_string(&actual["layers"][0]["composed_semantics"]["constructive_witnesses"])
-            .expect("serialize proof")
-    );
+    expected["layers"][0]["composed_semantics"]["constructive_witnesses"] =
+        serde_json::from_str(include_str!("fixtures/constructive-representative.json"))
+            .expect("versioned representative constructive proof fixture");
     assert_eq!(actual, expected);
 }
 
