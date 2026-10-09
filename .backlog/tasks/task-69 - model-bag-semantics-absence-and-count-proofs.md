@@ -40,13 +40,17 @@ Set duplicate arithmetic and local match counts do not suffice for joins/groups/
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
 
-## Implementation checkpoint (2026-10-09)
+## Implementation and verification checkpoint (2026-10-10)
 
-Initial implementation in branch `feat/task-69-bag-cardinality-laws`:
+Implementation: [PR #90](https://github.com/phdah/sql-semantic-protocol/pull/90).
 
-- Reuses canonical `SetMultiplicityRule` with a checked closed-world, SQL NULL-safe tuple-count evaluator, including duplicates and empty candidate classes.
-- Adds typed count-scope/key evidence and cardinality-transfer laws for compatible joins, grouping, rank filtering, plain projections and simple insert/delete/update count changes. Cases lacking closure, key proofs, determinism, complete affected subsets or compatible scopes remain residual.
-- Unit and public-API integration tests exercise cardinality bounds, contradictions, NULLs, duplicate many-to-many joins, dialect-invariant UNION ALL and DuckDB oracle counts.
-- Documents why numeric bounds are not whole-DAG constructive plans. Existing protocol schema and serialized witness types remain unchanged until authoritative closed-world obligations are integrated, avoiding a duplicate bag IR.
+- **#1:** Canonical source/tuple identities, row-preserving projection, DISTINCT, group-key and global-aggregate cardinality, strict rank-prefix, all six SQL set multiplicity laws, typed equijoin/outer/semi/anti laws, complete append/delete/update subset counts and negative no-match cases. Unproved operator variants remain explicitly residual.
+- **#2:** Closed-world inclusive count bounds, checked overflow, NULL-aware set equality versus SQL NULL nonmatching joins, zero rows, per-key mixed duplicate join histograms, complete physical alias/copy coupling, impossible contradictions and caller-goal assessments distinguish entailed/impossible/residual. Cross-type coercion/collation fails closed.
+- **#3:** The canonical constructive witness IR now emits the versioned `closed_world` obligation at a **physical** boundary, with `entire_relation` for unmatched partner / EXISTS / IN cases and `candidate_tuple` for zero-count set candidates. A missing candidate does not imply an empty source; unresolved producers cannot be inserted into as physical tables.
+- **#4:** `BagSourceIdentity` preserves physical relation versus SQL alias, and overlapping counts for the same physical relation are intersected; contradictions are impossible. Repeated set branches use correlated identical counts, never independently sampled multiplicity.
+- **#5:** DuckDB integration oracles compare complete candidate histograms across all six set laws, NULL/duplicates, many-to-many joins and outer-null extensions, empty/absent candidates, group/rank counts and sequential DELETE, UPDATE, INSERT cardinality. The 13 dialect families exercise common UNION ALL canonical rules.
+- **#6:** New and expanded Rust unit/integration tests; public Rust API; schema's closed-world coverage variants; canonical SQL and dbt emission snapshots, docs/protocol.md and coverage inventory checkpoint. The ODCS/dbt/raw SQL paths share the same resolved semantics and emission, avoiding adapter-specific bag logic.
 
-**Still blocking completion:** This is an algebra foundation, not acceptance of #1..6. In particular, physically certified global row-count laws across mixed operators, independent aliases and shared sources, closed-world absence for every negative classification, complete state plans, broad dialect/operator coverage, canonical emitted wire obligations, adapter path parity and full generator E2E fixtures are not discharged. Leave all criteria unchecked and milestone m-3 open. Do not merge release PR #79 based on this checkpoint.
+**Boundary of TASK-69:** These are operator-local exact laws and source-completeness requirements, not a claim of universal whole-graph data construction. TASK-68 owns transitive physical-source realization and joint satisfiability, TASK-70..87 own individual unsupported semantic variants, TASK-88/89 own exhaustive dialect and cross-feature engine oracles, and TASK-91 owns final generator sign-off. Unverified release cells remain blocked in `docs/coverage-manifest.json`; PR #79 must not be merged based on this task alone.
+
+**CI sign-off:** Await green fmt/clippy/test/doc, no-default-features and dbt Core E2E checks on the final PR head before checking acceptance criteria or closing.
