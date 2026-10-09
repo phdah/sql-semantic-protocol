@@ -59,6 +59,11 @@ impl Protocol {
         relation_constraints: Vec<RelationConstraintSet>,
     ) -> Self {
         self.relation_constraints = relation_constraints;
+        for statement in &mut self.statements {
+            if let ProtocolStatement::Query(query) = statement {
+                query.restrict_boolean_witness(&self.relation_constraints);
+            }
+        }
         self
     }
 
@@ -325,6 +330,12 @@ impl QueryStatement {
     /// A typed, coupled source-row predicate proof, independent of scalar domain exactness.
     pub fn boolean_witness(&self) -> Option<&BooleanWitness> {
         self.boolean_witness.as_deref()
+    }
+
+    pub(crate) fn restrict_boolean_witness(&mut self, sets: &[RelationConstraintSet]) {
+        if let Some(witness) = &mut self.boolean_witness {
+            witness.restrict_with_schema_constraints(sets);
+        }
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.
