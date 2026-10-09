@@ -1,7 +1,7 @@
 ---
 id: TASK-60
 title: Represent exact window ranking and QUALIFY witness constraints
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-08'
 labels: []
@@ -26,9 +26,16 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Define canonical partition, ordering and rank witness requirements for the initial exact class `ROW_NUMBER() = 1` and `ROW_NUMBER() <= N`. Keep `RANK` and `DENSE_RANK` residual until separate tie-aware source obligations and execution tests prove their exactness; do not imply they are covered by `ROW_NUMBER`.
-- [ ] #2 Connect QUALIFY and safe projected-window filters to source partitions and physical column lineage without guessing ordering or tie semantics.
-- [ ] #3 Describe exactness preconditions for null ordering, collation, frame and dialect-specific behavior; unsupported cases stay residual.
-- [ ] #4 Test positive, negative and impossible `ROW_NUMBER` witness conditions against real SQL execution and across parser-supported dialects, and assert explicit residuals for unproven `RANK`/`DENSE_RANK` cases.
-- [ ] #5 Preserve existing window expression and output-domain contracts, and document the new semantics; sql-tdg TASK-29 depends on it.
+- [x] #1 Define canonical partition, ordering and rank witness requirements for the initial exact class `ROW_NUMBER() = 1` and `ROW_NUMBER() <= N`. Keep `RANK` and `DENSE_RANK` residual until separate tie-aware source obligations and execution tests prove their exactness; do not imply they are covered by `ROW_NUMBER`.
+- [x] #2 Connect QUALIFY and safe projected-window filters to source partitions and physical column lineage without guessing ordering or tie semantics.
+- [x] #3 Describe exactness preconditions for null ordering, collation, frame and dialect-specific behavior; unsupported cases stay residual.
+- [x] #4 Test positive, negative and impossible `ROW_NUMBER` witness conditions against real SQL execution and across parser-supported dialects, and assert explicit residuals for unproven `RANK`/`DENSE_RANK` cases.
+- [x] #5 Preserve existing window expression and output-domain contracts, and document the new semantics; sql-tdg TASK-29 depends on it.
 <!-- AC:END -->
+
+## Implementation
+
+- Typed `window_witness` records source/intermediate partitions, explicit NULL and strict order requirements, and sufficient qualifying/rejected predecessor counts for `ROW_NUMBER() = 1` and `<= N`; impossible zero-bound matches are explicit.
+- Direct QUALIFY aliases and safe rank projections filtered through one derived-table/CTE boundary share the analyzer-owned contract. Unsupported `RANK`, `DENSE_RANK`, ordering, frames and row shaping remain residual.
+- Composed witnesses carry origin layer and boundary classification; rank output bounds are refined conservatively, without constraining underlying scalar input columns.
+- Schema, protocol/semantics documentation, cross-dialect checks, DuckDB differential tests and dbt adapter snapshot updated.
