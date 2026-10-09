@@ -15,10 +15,12 @@
 //!   expressions, predicates, row-condition exactness, and explicit unknown/unsupported values.
 //! - JoinWitness and JoinWitnessDirection describe matched, unmatched and null-extended input obligations.
 //! - SubqueryMembershipWitness describes EXISTS and IN source-row membership and NULL behavior.
+//! - BooleanWitness describes coupled single-row boolean obligations and their proof boundaries.
 //! - WindowWitness, WindowOrderKey, WindowRankCase, and WindowWitnessDirection describe
 //!   source-partition and strict-order obligations for ranked-row membership.
 
 mod analysis;
+mod boolean_witness;
 mod bundle;
 mod composition;
 mod constraints;
@@ -43,10 +45,13 @@ use std::fmt;
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
+pub use boolean_witness::{
+    BooleanRowConstraint, BooleanTruthCase, BooleanWitness, BooleanWitnessDirection,
+};
 pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
-    AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
+    AnalysisGraph, AnalyzedInput, ComposedBooleanWitness, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
     ComposedSemantics, ComposedSetOperation, ComposedSubqueryWitness, ComposedWindowWitness,
     CompositionDiagnostic, CompositionFailureReason, ConfiguredInputAnalysisError,
     ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge, GroupBoundaryKind,
