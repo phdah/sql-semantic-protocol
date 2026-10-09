@@ -632,8 +632,9 @@ with the application.
 
 ## Coupled source-row boolean witnesses (TASK-63)
 
-A query with a coupled `AND` or `OR` over one unambiguous source relation may
-carry a `boolean_witness`; resolved composed outcomes retain it in
+A query with a coupled `AND` or `OR`, a standalone supported
+computed comparison, or a safe LIKE prefix over one unambiguous source
+relation may carry a `boolean_witness`; resolved composed outcomes retain it in
 `boolean_witnesses` with `origin_layer_id` and `boundary_kind`. The
 representation is **operator-local evidence**, not a promotion of
 `condition_exactness` to exact or a replacement for output value domains.
@@ -682,8 +683,10 @@ constraints added after initial composition by dbt or ODCS enrichment. An imposs
 direction is downgraded to residual. Unknown enforcement, incompatible metadata and
 foreign-key witness dependencies are conservative residuals. Rechecking can only
 downgrade an existing direction; it never manufactures exactness. For identity-only *row-preserving* projections through named producer layers,
-composition can map the entire coupled witness onto one physical source relation
-and change its `boundary_kind` to `physical`. Filtered, limited, distinct or
+composition can map NULL-test-only witnesses onto one physical source relation
+and change their `boundary_kind` to `physical`. Typed comparisons and
+LIKE prefixes stay intermediate without physical source-schema and collation
+parity proof. Filtered, limited, distinct or
 otherwise row-changing producers retain the intermediate boundary. Computed projections, unresolved or many-to-one
 lineage keep their intermediate/unresolved boundary. These proof statuses do
 not establish general physical-lineage invertibility or satisfiability of
@@ -694,6 +697,8 @@ The scoped exact subset is intentionally smaller than arbitrary SQL:
 noninvertible or overflow-prone arithmetic and functional predicates,
 unsafe cast forms, LIKE
 under unknown collation, and nondirect physical lineage remain residual.
-Independent output scalar domains are not widened or narrowed by splitting
-correlated conditions into separate per-column domains; the coupled
-`boolean_witness` obligation owns that relation-level information.
+Independently valid scalar output domains are tightened by fully proven
+conjunctive integer comparisons, including inverted cast offsets. Disjunctions
+remain coupled obligations and never narrow an individual source column by
+splitting its OR branches into a Cartesian product. The `boolean_witness`
+owns all remaining same-row correlation evidence.
