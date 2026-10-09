@@ -59,7 +59,7 @@ use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
 pub use bag_semantics::{
-    BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagScope,
+    BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagScope, BagTupleIdentity,
 };
 pub use boolean_witness::{
     BooleanOperands, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
