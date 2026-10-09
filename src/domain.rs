@@ -825,6 +825,9 @@ fn collect_expression_columns(
         Expression::BooleanPredicate(predicate) => {
             collect_predicate_columns(predicate, sources, columns);
         }
+        Expression::SignedIntegerCast(expression) => {
+            collect_expression_columns(expression.expression(), sources, columns);
+        }
         Expression::Unary(expression) => {
             collect_expression_columns(expression.operand(), sources, columns);
         }
