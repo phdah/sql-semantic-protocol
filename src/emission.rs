@@ -394,6 +394,17 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .map(composition_diagnostic_to_value)
             .collect::<Vec<_>>()
     });
+    if !semantics.window_witnesses().is_empty() {
+        value["window_witnesses"] = json!(semantics
+            .window_witnesses()
+            .iter()
+            .map(|item| json!({
+                "origin_layer_id": item.origin_layer_id(),
+                "boundary_kind": item.boundary_kind().as_str(),
+                "witness": window_witness_to_value(item.witness())
+            }))
+            .collect::<Vec<_>>());
+    }
     if !semantics.group_witnesses().is_empty() {
         value["group_witnesses"] = json!(semantics
             .group_witnesses()
@@ -573,6 +584,9 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
     if let Some(group_witness) = statement.group_witness() {
         value["group_witness"] = group_witness_to_value(group_witness);
     }
+    if let Some(window_witness) = statement.window_witness() {
+        value["window_witness"] = window_witness_to_value(window_witness);
+    }
 
     if let Some(set_operation) = statement.set_operation() {
         value["set_operation"] = set_operation_to_value(set_operation);
@@ -640,6 +654,39 @@ fn write_value_to_value(value: &WriteValue) -> Value {
         "expression": expression_to_value(value.expression()),
         "domain": value_domain_to_value(value.domain())
     })
+}
+
+fn window_witness_to_value(witness: &crate::window_witness::WindowWitness) -> Value {
+    json!({
+        "boundary": witness.boundary(),
+        "partition_by": witness.partition_by().iter().map(column_ref_to_value).collect::<Vec<_>>(),
+        "order_by": witness.order_by().iter().map(|key| json!({
+            "column": column_ref_to_value(key.column()),
+            "ascending": key.ascending(),
+            "nulls_first": key.nulls_first(),
+            "strict_unique": true
+        })).collect::<Vec<_>>(),
+        "predicate": witness.operator().zip(witness.limit()).map(|(operator, limit)| json!({
+            "operator": operator.as_str(), "limit": limit
+        })),
+        "qualifying": window_direction_to_value(witness.qualifying()),
+        "rejected": window_direction_to_value(witness.rejected())
+    })
+}
+
+fn window_direction_to_value(direction: &crate::window_witness::WindowWitnessDirection) -> Value {
+    match direction {
+        crate::window_witness::WindowWitnessDirection::Residual { reason } => {
+            json!({"status": "residual", "reason": reason})
+        }
+        crate::window_witness::WindowWitnessDirection::Impossible => {
+            json!({"status": "impossible"})
+        }
+        crate::window_witness::WindowWitnessDirection::Exact(case) => {
+            json!({"status": "exact", "min_preceding": case.min_preceding(),
+                "max_preceding": case.max_preceding()})
+        }
+    }
 }
 
 fn group_witness_to_value(witness: &crate::group_witness::GroupWitness) -> Value {

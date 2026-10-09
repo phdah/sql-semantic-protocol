@@ -13,6 +13,8 @@
 //! - dialect_from_name resolves built-in dialects for consumers without a direct sqlparser dependency.
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions, predicates, row-condition exactness, and explicit unknown/unsupported values.
+//! - WindowWitness, WindowOrderKey, WindowRankCase, and WindowWitnessDirection describe
+//!   source-partition and strict-order obligations for ranked-row membership.
 
 mod analysis;
 mod bundle;
@@ -30,6 +32,7 @@ mod openlineage;
 mod parser;
 pub mod protocol;
 mod relation;
+mod window_witness;
 
 use std::fmt;
 
@@ -40,10 +43,11 @@ pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
     AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
-    ComposedSemantics, ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
-    GroupBoundaryKind, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
-    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    ComposedSemantics, ComposedSetOperation, ComposedWindowWitness, CompositionDiagnostic,
+    CompositionFailureReason, ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef,
+    GraphComponent, GraphEdge, GroupBoundaryKind, InputAnalysisError, RelationResolution,
+    ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
+    UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
@@ -95,6 +99,7 @@ pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
     RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TimestampZone,
 };
+pub use window_witness::{WindowOrderKey, WindowRankCase, WindowWitness, WindowWitnessDirection};
 
 /// Error returned when SQL cannot be converted into protocol domain values.
 #[derive(Debug, Clone, PartialEq, Eq)]

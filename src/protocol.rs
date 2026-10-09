@@ -7,6 +7,7 @@ use std::collections::BTreeSet;
 
 use crate::constraints::RelationConstraintSet;
 use crate::group_witness::GroupWitness;
+use crate::window_witness::WindowWitness;
 
 /// Current protocol version emitted by this crate.
 pub const PROTOCOL_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -140,6 +141,7 @@ pub struct QueryStatement {
     output: Output,
     aggregation: Option<Box<Aggregation>>,
     group_witness: Option<Box<GroupWitness>>,
+    window_witness: Option<Box<WindowWitness>>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -163,6 +165,7 @@ impl QueryStatement {
             output,
             aggregation: None,
             group_witness: None,
+            window_witness: None,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -179,6 +182,41 @@ impl QueryStatement {
         self.group_witness = crate::group_witness::analyze(&self).map(Box::new);
         if self.group_witness.is_some() {
             self.output = crate::group_witness::refine_output(&self);
+        }
+        self
+    }
+
+    pub(crate) fn with_window_witness(mut self) -> Self {
+        self.window_witness = crate::window_witness::analyze(&self).map(Box::new);
+        if self
+            .window_witness
+            .as_ref()
+            .is_some_and(|witness| witness.is_exact())
+        {
+            self.row_conditions.exactness =
+                self.row_conditions.exactness.without_qualify_residual();
+            self.output = crate::window_witness::refine_output(&self);
+        }
+        self
+    }
+
+    pub(crate) fn with_projected_window_witness(
+        mut self,
+        projected: Option<(WindowWitness, String)>,
+    ) -> Self {
+        if self.window_witness.is_some() {
+            return self;
+        }
+        if let Some((witness, alias)) = projected {
+            if witness.is_exact() {
+                self.row_conditions.exactness = self
+                    .row_conditions
+                    .exactness
+                    .without_projected_rank_where_residual();
+                self.output =
+                    crate::window_witness::refine_projected_output(&self.output, &alias, &witness);
+            }
+            self.window_witness = Some(Box::new(witness));
         }
         self
     }
@@ -253,6 +291,11 @@ impl QueryStatement {
     /// Return typed qualifying and HAVING-rejected group witness plans, when HAVING exists.
     pub fn group_witness(&self) -> Option<&GroupWitness> {
         self.group_witness.as_deref()
+    }
+
+    /// Typed source-partition witness obligations for a QUALIFY rank filter.
+    pub fn window_witness(&self) -> Option<&WindowWitness> {
+        self.window_witness.as_deref()
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.
@@ -1710,6 +1753,23 @@ impl ConditionExactness {
             required_assumptions: requirements,
             declared_assumptions: BTreeSet::new(),
         }
+    }
+
+    pub(crate) fn without_projected_rank_where_residual(mut self) -> Self {
+        self.residual_conditions.retain(|item| {
+            !(item.clause == ConditionClause::Where
+                && item.reason == ResidualConditionReason::ComputedExpression
+                && item.identity == "where")
+        });
+        self
+    }
+
+    pub(crate) fn without_qualify_residual(mut self) -> Self {
+        self.residual_conditions.retain(|item| {
+            !(item.clause == ConditionClause::Qualify
+                && item.reason == ResidualConditionReason::Qualify)
+        });
+        self
     }
 
     pub(crate) fn with_declarations(mut self, declared: &[ComparisonAssumption]) -> Self {

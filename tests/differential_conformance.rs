@@ -895,7 +895,7 @@ fn resolved_query(sql: &str) -> ResolvedComposedSemantics {
         .expect("conformance query layer")
         .composed_semantics()
     {
-        ComposedSemantics::Resolved(semantics) => semantics.clone(),
+        ComposedSemantics::Resolved(semantics) => semantics.as_ref().clone(),
         other => panic!("conformance fixture could not compose {sql}: {other:?}"),
     }
 }
@@ -1281,7 +1281,7 @@ fn typed_conformance_with_assumptions(
         .expect("typed conformance query should analyze");
     bundle.declare_comparison_assumptions(assumptions);
     match bundle.layers()[0].composed_semantics() {
-        ComposedSemantics::Resolved(semantics) => semantics.clone(),
+        ComposedSemantics::Resolved(semantics) => semantics.as_ref().clone(),
         other => panic!("typed conformance could not compose: {other:?}"),
     }
 }

@@ -31,7 +31,7 @@ fn analyze(sql: &str, columns: &[(&str, &str)]) -> ResolvedComposedSemantics {
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
         .expect("analysis should succeed");
     match bundle.layers()[0].composed_semantics() {
-        ComposedSemantics::Resolved(semantics) => semantics.clone(),
+        ComposedSemantics::Resolved(semantics) => semantics.as_ref().clone(),
         other => panic!("expected resolved semantics, got {other:?}"),
     }
 }
@@ -366,7 +366,7 @@ fn analyze_zoned_timestamp_for_dialect(
     )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     match bundle.layers()[0].composed_semantics() {
-        ComposedSemantics::Resolved(semantics) => Some(semantics.clone()),
+        ComposedSemantics::Resolved(semantics) => Some(semantics.as_ref().clone()),
         other => panic!("unresolved {sql} ({dialect_name}): {other:?}"),
     }
 }

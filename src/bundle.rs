@@ -383,7 +383,7 @@ impl CompositionFailureReason {
 #[non_exhaustive]
 pub enum ComposedSemantics {
     /// Transitive dependencies, domains, and output lineage were composed safely.
-    Resolved(ResolvedComposedSemantics),
+    Resolved(Box<ResolvedComposedSemantics>),
     /// Composition stopped rather than inventing semantics that cannot be proven.
     Unresolved(UnresolvedComposedSemantics),
 }
@@ -414,6 +414,7 @@ impl ComposedSemantics {
         let ComposedWitnessEvidence {
             mut set_operations,
             mut group_witnesses,
+            mut window_witnesses,
         } = witnesses;
         join_equalities.sort_by(composed_join_equality_cmp);
         join_equalities.dedup();
@@ -421,18 +422,21 @@ impl ComposedSemantics {
         set_operations.dedup();
         group_witnesses.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
         group_witnesses.dedup();
+        window_witnesses.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
+        window_witnesses.dedup();
         diagnostics.sort_by(diagnostic_cmp);
         diagnostics.dedup();
-        Self::Resolved(ResolvedComposedSemantics {
+        Self::Resolved(Box::new(ResolvedComposedSemantics {
             dependencies,
             column_domains,
             join_equalities,
             set_operations: set_operations.into_boxed_slice(),
             group_witnesses: group_witnesses.into_boxed_slice(),
+            window_witnesses: window_witnesses.into_boxed_slice(),
             condition_exactness,
             output,
             diagnostics,
-        })
+        }))
     }
 
     pub(crate) fn unresolved(
@@ -576,6 +580,7 @@ impl ComposedSetOperation {
 pub(crate) struct ComposedWitnessEvidence {
     pub(crate) set_operations: Vec<ComposedSetOperation>,
     pub(crate) group_witnesses: Vec<ComposedGroupWitness>,
+    pub(crate) window_witnesses: Vec<ComposedWindowWitness>,
 }
 
 /// Relation class of an originating grouped witness boundary.
@@ -639,6 +644,40 @@ impl ComposedGroupWitness {
     }
 }
 
+/// One ranked window witness at the layer that introduced its rank filter.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComposedWindowWitness {
+    origin_layer_id: String,
+    witness: crate::window_witness::WindowWitness,
+    boundary_kind: GroupBoundaryKind,
+}
+
+impl ComposedWindowWitness {
+    pub(crate) fn new(
+        origin_layer_id: String,
+        witness: crate::window_witness::WindowWitness,
+        boundary_kind: GroupBoundaryKind,
+    ) -> Self {
+        Self {
+            origin_layer_id,
+            witness,
+            boundary_kind,
+        }
+    }
+    /// Layer introducing this ranked window filter.
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
+    /// Input-partition and ordered-row obligations at that layer.
+    pub fn witness(&self) -> &crate::window_witness::WindowWitness {
+        &self.witness
+    }
+    /// Physical, intermediate or unresolved input relation boundary.
+    pub fn boundary_kind(&self) -> GroupBoundaryKind {
+        self.boundary_kind
+    }
+}
+
 /// Successfully composed transitive semantics for a transformation layer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedComposedSemantics {
@@ -647,6 +686,7 @@ pub struct ResolvedComposedSemantics {
     join_equalities: Vec<ComposedJoinEquality>,
     set_operations: Box<[ComposedSetOperation]>,
     group_witnesses: Box<[ComposedGroupWitness]>,
+    window_witnesses: Box<[ComposedWindowWitness]>,
     condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
@@ -677,6 +717,11 @@ impl ResolvedComposedSemantics {
     /// Upstream and local group witness evidence, each identified by its originating layer.
     pub fn group_witnesses(&self) -> &[ComposedGroupWitness] {
         &self.group_witnesses
+    }
+
+    /// Ranked-window witness evidence retained with the originating boundary.
+    pub fn window_witnesses(&self) -> &[ComposedWindowWitness] {
+        &self.window_witnesses
     }
 
     /// Return transitive row-condition exactness for this resolved layer.
