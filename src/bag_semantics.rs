@@ -29,17 +29,27 @@ impl BagEvidence {
     /// Construct scoped evidence. Open-world evidence is legal but cannot prove
     /// exact absence, duplicate multiplicity, or source-wide cardinality.
     pub fn new(bounds: CountBounds, scope: BagScope, closed_world: bool) -> Self {
-        Self { bounds, scope, closed_world }
+        Self {
+            bounds,
+            scope,
+            closed_world,
+        }
     }
 
     /// Count interval of the controlled scope.
-    pub fn bounds(self) -> CountBounds { self.bounds }
+    pub fn bounds(self) -> CountBounds {
+        self.bounds
+    }
 
     /// Whether this is a complete relation or an entire matching tuple class.
-    pub fn scope(self) -> BagScope { self.scope }
+    pub fn scope(self) -> BagScope {
+        self.scope
+    }
 
     /// Whether all candidates, including absent candidates, are controlled.
-    pub fn closed_world(self) -> bool { self.closed_world }
+    pub fn closed_world(self) -> bool {
+        self.closed_world
+    }
 }
 
 /// A proven relationship between every candidate key on two complete inputs.
@@ -72,7 +82,10 @@ pub enum BagLaw {
     /// An ungrouped aggregate emits one row, even over an empty input.
     GlobalAggregate,
     /// ROW_NUMBER() <= limit with deterministic strict total ordering.
-    RankedPrefix { limit: u64, strict_total_order: bool },
+    RankedPrefix {
+        limit: u64,
+        strict_total_order: bool,
+    },
     /// Equijoin with the stated complete key-match law, no other predicates.
     EquiJoin { kind: JoinKind, keys: BagJoinKeys },
     /// Pure INSERT append with no conflicting constraints/triggers.
@@ -143,27 +156,38 @@ fn bounds(minimum: u64, maximum: Option<u64>) -> BagCountProof {
     // Overflow of a finite maximum means no finite u64 upper bound is proved.
     match CountBounds::new(minimum, maximum) {
         Some(bounds) => BagCountProof::Bounds(bounds),
-        None => BagCountProof::Residual { reason: "invalid_transferred_bounds" },
+        None => BagCountProof::Residual {
+            reason: "invalid_transferred_bounds",
+        },
     }
 }
 
 fn sum(a: CountBounds, b: CountBounds) -> BagCountProof {
     let Some(min) = a.minimum().checked_add(b.minimum()) else {
-        return BagCountProof::Residual { reason: "minimum_count_overflow" };
+        return BagCountProof::Residual {
+            reason: "minimum_count_overflow",
+        };
     };
-    let max = a.maximum().zip(b.maximum()).and_then(|(x, y)| x.checked_add(y));
+    let max = a
+        .maximum()
+        .zip(b.maximum())
+        .and_then(|(x, y)| x.checked_add(y));
     bounds(min, max)
 }
 
 fn product(a: CountBounds, b: CountBounds) -> BagCountProof {
     let Some(min) = a.minimum().checked_mul(b.minimum()) else {
-        return BagCountProof::Residual { reason: "minimum_count_overflow" };
+        return BagCountProof::Residual {
+            reason: "minimum_count_overflow",
+        };
     };
     // Zero times an unbounded count is provably zero.
     let max = if a.maximum() == Some(0) || b.maximum() == Some(0) {
         Some(0)
     } else {
-        a.maximum().zip(b.maximum()).and_then(|(x, y)| x.checked_mul(y))
+        a.maximum()
+            .zip(b.maximum())
+            .and_then(|(x, y)| x.checked_mul(y))
     };
     bounds(min, max)
 }
@@ -191,17 +215,23 @@ fn set_count(rule: SetMultiplicityRule, left: CountBounds, right: CountBounds) -
             min_upper(left.maximum(), right.maximum()),
         ),
         SetMultiplicityRule::SaturatingDifference => bounds(
-            left.minimum().saturating_sub(right.maximum().unwrap_or(u64::MAX)),
-            left.maximum().map(|max| max.saturating_sub(right.minimum())),
+            left.minimum()
+                .saturating_sub(right.maximum().unwrap_or(u64::MAX)),
+            left.maximum()
+                .map(|max| max.saturating_sub(right.minimum())),
         ),
         SetMultiplicityRule::UnionDistinct => {
             let lo = u64::from(left.minimum() > 0 || right.minimum() > 0);
-            let hi = Some(u64::from(left.maximum() != Some(0) || right.maximum() != Some(0)));
+            let hi = Some(u64::from(
+                left.maximum() != Some(0) || right.maximum() != Some(0),
+            ));
             bounds(lo, hi)
         }
         SetMultiplicityRule::IntersectDistinct => {
             let lo = u64::from(left.minimum() > 0 && right.minimum() > 0);
-            let hi = Some(u64::from(left.maximum() != Some(0) && right.maximum() != Some(0)));
+            let hi = Some(u64::from(
+                left.maximum() != Some(0) && right.maximum() != Some(0),
+            ));
             bounds(lo, hi)
         }
         SetMultiplicityRule::ExceptDistinct => {
@@ -216,41 +246,74 @@ fn matching_join(kind: JoinKind, left: CountBounds, right: CountBounds) -> BagCo
     use JoinKind::*;
     match kind {
         Inner | Cross => product(left, right),
-        Left => product(left, CountBounds::new(right.minimum().max(1), right.maximum().map(|n| n.max(1))).unwrap_or(right)),
-        Right => product(right, CountBounds::new(left.minimum().max(1), left.maximum().map(|n| n.max(1))).unwrap_or(left)),
+        Left => product(
+            left,
+            CountBounds::new(right.minimum().max(1), right.maximum().map(|n| n.max(1)))
+                .unwrap_or(right),
+        ),
+        Right => product(
+            right,
+            CountBounds::new(left.minimum().max(1), left.maximum().map(|n| n.max(1)))
+                .unwrap_or(left),
+        ),
         Full => {
             // If either side might be empty, FULL has piecewise behavior:
             // matching pairs when both nonempty, otherwise all other-side rows.
             // Do not infer an interval from independent endpoints without a
             // proof of which branch is active.
-            match (left.minimum() > 0, right.minimum() > 0, left.maximum() == Some(0), right.maximum() == Some(0)) {
+            match (
+                left.minimum() > 0,
+                right.minimum() > 0,
+                left.maximum() == Some(0),
+                right.maximum() == Some(0),
+            ) {
                 (_, _, true, _) => bounds(right.minimum(), right.maximum()),
                 (_, _, _, true) => bounds(left.minimum(), left.maximum()),
                 (true, true, _, _) => product(left, right),
-                _ => BagCountProof::Residual { reason: "full_join_possible_empty_branch" },
+                _ => BagCountProof::Residual {
+                    reason: "full_join_possible_empty_branch",
+                },
             }
         }
         LeftSemi => {
-            if right.minimum() > 0 { bounds(left.minimum(), left.maximum()) }
-            else if right.maximum() == Some(0) { bounds(0, Some(0)) }
-            else { bounds(0, left.maximum()) }
+            if right.minimum() > 0 {
+                bounds(left.minimum(), left.maximum())
+            } else if right.maximum() == Some(0) {
+                bounds(0, Some(0))
+            } else {
+                bounds(0, left.maximum())
+            }
         }
         RightSemi => {
-            if left.minimum() > 0 { bounds(right.minimum(), right.maximum()) }
-            else if left.maximum() == Some(0) { bounds(0, Some(0)) }
-            else { bounds(0, right.maximum()) }
+            if left.minimum() > 0 {
+                bounds(right.minimum(), right.maximum())
+            } else if left.maximum() == Some(0) {
+                bounds(0, Some(0))
+            } else {
+                bounds(0, right.maximum())
+            }
         }
         LeftAnti => {
-            if right.minimum() > 0 { bounds(0, Some(0)) }
-            else if right.maximum() == Some(0) { bounds(left.minimum(), left.maximum()) }
-            else { bounds(0, left.maximum()) }
+            if right.minimum() > 0 {
+                bounds(0, Some(0))
+            } else if right.maximum() == Some(0) {
+                bounds(left.minimum(), left.maximum())
+            } else {
+                bounds(0, left.maximum())
+            }
         }
         RightAnti => {
-            if left.minimum() > 0 { bounds(0, Some(0)) }
-            else if left.maximum() == Some(0) { bounds(right.minimum(), right.maximum()) }
-            else { bounds(0, right.maximum()) }
+            if left.minimum() > 0 {
+                bounds(0, Some(0))
+            } else if left.maximum() == Some(0) {
+                bounds(right.minimum(), right.maximum())
+            } else {
+                bounds(0, right.maximum())
+            }
         }
-        Unknown => BagCountProof::Residual { reason: "unknown_join_kind" },
+        Unknown => BagCountProof::Residual {
+            reason: "unknown_join_kind",
+        },
     }
 }
 
@@ -262,7 +325,9 @@ fn nonmatching_join(kind: JoinKind, left: CountBounds, right: CountBounds) -> Ba
         Left | LeftAnti => bounds(left.minimum(), left.maximum()),
         Right | RightAnti => bounds(right.minimum(), right.maximum()),
         Full => sum(left, right),
-        Unknown => BagCountProof::Residual { reason: "unknown_join_kind" },
+        Unknown => BagCountProof::Residual {
+            reason: "unknown_join_kind",
+        },
     }
 }
 
@@ -273,15 +338,21 @@ impl BagLaw {
     pub fn transfer(self, left: BagEvidence, right: Option<BagEvidence>) -> BagCountProof {
         use BagLaw::*;
         if !left.closed_world() {
-            return BagCountProof::Residual { reason: "left_open_world" };
+            return BagCountProof::Residual {
+                reason: "left_open_world",
+            };
         }
         let pair = match self {
             SetTuple(_) | EquiJoin { .. } | AppendRows | DeleteRows | UpdateRows => {
                 let Some(other) = right else {
-                    return BagCountProof::Residual { reason: "missing_right_input" };
+                    return BagCountProof::Residual {
+                        reason: "missing_right_input",
+                    };
                 };
                 if !other.closed_world() {
-                    return BagCountProof::Residual { reason: "right_open_world" };
+                    return BagCountProof::Residual {
+                        reason: "right_open_world",
+                    };
                 }
                 Some(other)
             }
@@ -294,71 +365,136 @@ impl BagLaw {
             DistinctTuple if left.scope() == BagScope::CandidateTuple => {
                 BagCountProof::Bounds(presence(left.bounds()))
             }
-            SetTuple(rule) if left.scope() == BagScope::CandidateTuple
-                && pair.is_some_and(|r| r.scope() == BagScope::CandidateTuple) => {
+            SetTuple(rule)
+                if left.scope() == BagScope::CandidateTuple
+                    && pair.is_some_and(|r| r.scope() == BagScope::CandidateTuple) =>
+            {
                 // The checked pair is present by construction.
                 if let Some(right) = pair {
                     set_count(rule, left.bounds(), right.bounds())
                 } else {
-                    BagCountProof::Residual { reason: "missing_right_input" }
+                    BagCountProof::Residual {
+                        reason: "missing_right_input",
+                    }
                 }
             }
             GroupKey if left.scope() == BagScope::CandidateTuple => {
                 BagCountProof::Bounds(presence(left.bounds()))
             }
             GlobalAggregate if left.scope() == BagScope::CompleteRelation => bounds(1, Some(1)),
-            RankedPrefix { limit, strict_total_order: true }
-                if left.scope() == BagScope::CompleteRelation => {
-                bounds(left.bounds().minimum().min(limit), left.bounds().maximum().map(|n| n.min(limit)))
-            }
-            RankedPrefix { strict_total_order: false, .. } => {
-                BagCountProof::Residual { reason: "unproved_rank_tie_order" }
-            }
-            EquiJoin { kind, keys } if left.scope() == BagScope::CompleteRelation
-                && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) => {
+            RankedPrefix {
+                limit,
+                strict_total_order: true,
+            } if left.scope() == BagScope::CompleteRelation => bounds(
+                left.bounds().minimum().min(limit),
+                left.bounds().maximum().map(|n| n.min(limit)),
+            ),
+            RankedPrefix {
+                strict_total_order: false,
+                ..
+            } => BagCountProof::Residual {
+                reason: "unproved_rank_tie_order",
+            },
+            EquiJoin { kind, keys }
+                if left.scope() == BagScope::CompleteRelation
+                    && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+            {
                 if let Some(right) = pair {
                     match keys {
-                        BagJoinKeys::EqualNonNull => matching_join(kind, left.bounds(), right.bounds()),
-                        BagJoinKeys::NeverMatch => nonmatching_join(kind, left.bounds(), right.bounds()),
-                        BagJoinKeys::Unknown => BagCountProof::Residual { reason: "unproved_join_key_relationship" },
+                        BagJoinKeys::EqualNonNull => {
+                            matching_join(kind, left.bounds(), right.bounds())
+                        }
+                        BagJoinKeys::NeverMatch => {
+                            nonmatching_join(kind, left.bounds(), right.bounds())
+                        }
+                        BagJoinKeys::Unknown => BagCountProof::Residual {
+                            reason: "unproved_join_key_relationship",
+                        },
                     }
                 } else {
-                    BagCountProof::Residual { reason: "missing_right_input" }
+                    BagCountProof::Residual {
+                        reason: "missing_right_input",
+                    }
                 }
             }
-            AppendRows if left.scope() == BagScope::CompleteRelation
-                && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) => {
-                if let Some(right) = pair { sum(left.bounds(), right.bounds()) }
-                else { BagCountProof::Residual { reason: "missing_right_input" } }
-            }
-            DeleteRows if left.scope() == BagScope::CompleteRelation
-                && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) => {
+            AppendRows
+                if left.scope() == BagScope::CompleteRelation
+                    && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+            {
                 if let Some(right) = pair {
-                    if left.bounds().maximum().is_some_and(|max| right.bounds().minimum() > max) {
+                    sum(left.bounds(), right.bounds())
+                } else {
+                    BagCountProof::Residual {
+                        reason: "missing_right_input",
+                    }
+                }
+            }
+            DeleteRows
+                if left.scope() == BagScope::CompleteRelation
+                    && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+            {
+                if let Some(right) = pair {
+                    if left
+                        .bounds()
+                        .maximum()
+                        .is_some_and(|max| right.bounds().minimum() > max)
+                    {
                         BagCountProof::Impossible
-                    } else if right.bounds().maximum().is_none_or(|max| max > left.bounds().minimum()) {
-                        BagCountProof::Residual { reason: "deleted_subset_not_proved" }
+                    } else if right
+                        .bounds()
+                        .maximum()
+                        .is_none_or(|max| max > left.bounds().minimum())
+                    {
+                        BagCountProof::Residual {
+                            reason: "deleted_subset_not_proved",
+                        }
                     } else {
                         bounds(
-                            left.bounds().minimum().saturating_sub(right.bounds().maximum().unwrap_or(0)),
-                            left.bounds().maximum().map(|max| max.saturating_sub(right.bounds().minimum())),
+                            left.bounds()
+                                .minimum()
+                                .saturating_sub(right.bounds().maximum().unwrap_or(0)),
+                            left.bounds()
+                                .maximum()
+                                .map(|max| max.saturating_sub(right.bounds().minimum())),
                         )
                     }
-                } else { BagCountProof::Residual { reason: "missing_right_input" } }
+                } else {
+                    BagCountProof::Residual {
+                        reason: "missing_right_input",
+                    }
+                }
             }
-            UpdateRows if left.scope() == BagScope::CompleteRelation
-                && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) => {
+            UpdateRows
+                if left.scope() == BagScope::CompleteRelation
+                    && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+            {
                 if let Some(right) = pair {
-                    if left.bounds().maximum().is_some_and(|max| right.bounds().minimum() > max) {
+                    if left
+                        .bounds()
+                        .maximum()
+                        .is_some_and(|max| right.bounds().minimum() > max)
+                    {
                         BagCountProof::Impossible
-                    } else if right.bounds().maximum().is_none_or(|max| max > left.bounds().minimum()) {
-                        BagCountProof::Residual { reason: "updated_subset_not_proved" }
+                    } else if right
+                        .bounds()
+                        .maximum()
+                        .is_none_or(|max| max > left.bounds().minimum())
+                    {
+                        BagCountProof::Residual {
+                            reason: "updated_subset_not_proved",
+                        }
                     } else {
                         BagCountProof::Bounds(left.bounds())
                     }
-                } else { BagCountProof::Residual { reason: "missing_right_input" } }
+                } else {
+                    BagCountProof::Residual {
+                        reason: "missing_right_input",
+                    }
+                }
             }
-            _ => BagCountProof::Residual { reason: "incompatible_bag_scope_or_law" },
+            _ => BagCountProof::Residual {
+                reason: "incompatible_bag_scope_or_law",
+            },
         }
     }
 }
@@ -368,13 +504,22 @@ mod tests {
     use super::*;
 
     fn evidence(min: u64, max: Option<u64>, scope: BagScope) -> BagEvidence {
-        BagEvidence::new(CountBounds::new(min, max).expect("valid counts"), scope, true)
+        BagEvidence::new(
+            CountBounds::new(min, max).expect("valid counts"),
+            scope,
+            true,
+        )
     }
 
-    fn exact(n: u64, scope: BagScope) -> BagEvidence { evidence(n, Some(n), scope) }
+    fn exact(n: u64, scope: BagScope) -> BagEvidence {
+        evidence(n, Some(n), scope)
+    }
 
     fn number(proof: BagCountProof) -> CountBounds {
-        match proof { BagCountProof::Bounds(value) => value, other => panic!("not proved: {other:?}") }
+        match proof {
+            BagCountProof::Bounds(value) => value,
+            other => panic!("not proved: {other:?}"),
+        }
     }
 
     #[test]
@@ -389,18 +534,37 @@ mod tests {
             (SetMultiplicityRule::SaturatingDifference, 1),
             (SetMultiplicityRule::ExceptDistinct, 0),
         ] {
-            assert_eq!(number(BagLaw::SetTuple(law).transfer(l, Some(r))).minimum(), expected);
+            assert_eq!(
+                number(BagLaw::SetTuple(law).transfer(l, Some(r))).minimum(),
+                expected
+            );
         }
-        assert_eq!(number(BagLaw::DistinctTuple.transfer(l, None)).maximum(), Some(1));
+        assert_eq!(
+            number(BagLaw::DistinctTuple.transfer(l, None)).maximum(),
+            Some(1)
+        );
     }
 
     #[test]
     fn empty_tuple_absence_requires_a_closed_world() {
         let tuple = exact(0, BagScope::CandidateTuple);
-        assert_eq!(number(BagLaw::DistinctTuple.transfer(tuple, None)).maximum(), Some(0));
+        assert_eq!(
+            number(BagLaw::DistinctTuple.transfer(tuple, None)).maximum(),
+            Some(0)
+        );
         let open = BagEvidence::new(tuple.bounds(), tuple.scope(), false);
-        assert_eq!(BagLaw::DistinctTuple.transfer(open, None), BagCountProof::Residual { reason: "left_open_world" });
-        assert_eq!(BagLaw::SetTuple(SetMultiplicityRule::Minimum).transfer(tuple, Some(open)), BagCountProof::Residual { reason: "right_open_world" });
+        assert_eq!(
+            BagLaw::DistinctTuple.transfer(open, None),
+            BagCountProof::Residual {
+                reason: "left_open_world"
+            }
+        );
+        assert_eq!(
+            BagLaw::SetTuple(SetMultiplicityRule::Minimum).transfer(tuple, Some(open)),
+            BagCountProof::Residual {
+                reason: "right_open_world"
+            }
+        );
     }
 
     #[test]
@@ -408,42 +572,96 @@ mod tests {
         let l = exact(3, BagScope::CompleteRelation);
         let r = exact(2, BagScope::CompleteRelation);
         let join = |kind, keys| BagLaw::EquiJoin { kind, keys }.transfer(l, Some(r));
-        assert_eq!(number(join(JoinKind::Inner, BagJoinKeys::EqualNonNull)).minimum(), 6);
-        assert_eq!(number(join(JoinKind::Full, BagJoinKeys::EqualNonNull)).minimum(), 6);
-        assert_eq!(number(join(JoinKind::Full, BagJoinKeys::NeverMatch)).minimum(), 5);
-        assert_eq!(number(join(JoinKind::LeftAnti, BagJoinKeys::NeverMatch)).minimum(), 3);
-        assert!(matches!(join(JoinKind::Inner, BagJoinKeys::Unknown), BagCountProof::Residual { .. }));
+        assert_eq!(
+            number(join(JoinKind::Inner, BagJoinKeys::EqualNonNull)).minimum(),
+            6
+        );
+        assert_eq!(
+            number(join(JoinKind::Full, BagJoinKeys::EqualNonNull)).minimum(),
+            6
+        );
+        assert_eq!(
+            number(join(JoinKind::Full, BagJoinKeys::NeverMatch)).minimum(),
+            5
+        );
+        assert_eq!(
+            number(join(JoinKind::LeftAnti, BagJoinKeys::NeverMatch)).minimum(),
+            3
+        );
+        assert!(matches!(
+            join(JoinKind::Inner, BagJoinKeys::Unknown),
+            BagCountProof::Residual { .. }
+        ));
     }
 
     #[test]
     fn grouped_global_and_ranked_laws_are_distinct() {
         let empty = exact(0, BagScope::CompleteRelation);
-        assert_eq!(number(BagLaw::GlobalAggregate.transfer(empty, None)).minimum(), 1);
+        assert_eq!(
+            number(BagLaw::GlobalAggregate.transfer(empty, None)).minimum(),
+            1
+        );
         let group = exact(0, BagScope::CandidateTuple);
         assert_eq!(number(BagLaw::GroupKey.transfer(group, None)).minimum(), 0);
         let partition = exact(7, BagScope::CompleteRelation);
-        assert_eq!(number(BagLaw::RankedPrefix { limit: 3, strict_total_order: true }.transfer(partition, None)).minimum(), 3);
-        assert!(matches!(BagLaw::RankedPrefix { limit: 3, strict_total_order: false }.transfer(partition, None), BagCountProof::Residual { .. }));
+        assert_eq!(
+            number(
+                BagLaw::RankedPrefix {
+                    limit: 3,
+                    strict_total_order: true
+                }
+                .transfer(partition, None)
+            )
+            .minimum(),
+            3
+        );
+        assert!(matches!(
+            BagLaw::RankedPrefix {
+                limit: 3,
+                strict_total_order: false
+            }
+            .transfer(partition, None),
+            BagCountProof::Residual { .. }
+        ));
     }
 
     #[test]
     fn impossible_and_underdetermined_mutations_are_not_constructive_proofs() {
         let initial = exact(2, BagScope::CompleteRelation);
         let too_many = exact(3, BagScope::CompleteRelation);
-        assert_eq!(BagLaw::DeleteRows.transfer(initial, Some(too_many)), BagCountProof::Impossible);
-        assert_eq!(BagLaw::UpdateRows.transfer(initial, Some(too_many)), BagCountProof::Impossible);
+        assert_eq!(
+            BagLaw::DeleteRows.transfer(initial, Some(too_many)),
+            BagCountProof::Impossible
+        );
+        assert_eq!(
+            BagLaw::UpdateRows.transfer(initial, Some(too_many)),
+            BagCountProof::Impossible
+        );
         let partial = evidence(0, Some(3), BagScope::CompleteRelation);
-        assert!(matches!(BagLaw::DeleteRows.transfer(initial, Some(partial)), BagCountProof::Residual { .. }));
-        assert_eq!(number(BagLaw::AppendRows.transfer(initial, Some(too_many))).minimum(), 5);
+        assert!(matches!(
+            BagLaw::DeleteRows.transfer(initial, Some(partial)),
+            BagCountProof::Residual { .. }
+        ));
+        assert_eq!(
+            number(BagLaw::AppendRows.transfer(initial, Some(too_many))).minimum(),
+            5
+        );
     }
 
     #[test]
     fn interval_bounds_never_claim_feasibility_from_overlapping_targets() {
         let left = evidence(1, Some(4), BagScope::CandidateTuple);
         let right = evidence(0, Some(2), BagScope::CandidateTuple);
-        let count = BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference).transfer(left, Some(right));
+        let count =
+            BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference).transfer(left, Some(right));
         assert_eq!(number(count), CountBounds::new(0, Some(4)).expect("bounds"));
-        assert_eq!(count.assess(CountBounds::new(2, Some(2)).expect("target")), BagCountTarget::Residual);
-        assert_eq!(count.assess(CountBounds::new(5, Some(5)).expect("target")), BagCountTarget::Impossible);
+        assert_eq!(
+            count.assess(CountBounds::new(2, Some(2)).expect("target")),
+            BagCountTarget::Residual
+        );
+        assert_eq!(
+            count.assess(CountBounds::new(5, Some(5)).expect("target")),
+            BagCountTarget::Impossible
+        );
     }
 }
