@@ -376,6 +376,14 @@ impl<'a> Composer<'a> {
                 ) {
                     return residual("null_safe_comparison_not_supported");
                 }
+                // A physical-row witness is valid only when any named input contains
+                // exactly its source rows. A filtered producer can remove a matching
+                // partner and make a physical left_unmatched claim false.
+                if !self.join_input_preserves_source_rows(layer, join.left().relation())
+                    || !self.join_input_preserves_source_rows(layer, join.right().relation())
+                {
+                    return residual("upstream_row_membership_not_preserved");
+                }
                 let Ok(left_endpoint) = self.compose_join_column(layer, query, left, Some(join))
                 else {
                     return residual("unresolved_left_physical_lineage");
@@ -414,6 +422,58 @@ impl<'a> Composer<'a> {
                 )
             })
             .collect()
+    }
+
+    /// A join-local witness is expressed against physical source rows. Only plain,
+    /// row-preserving projections may be traced through named producer layers:
+    /// predicates or row-shaping operators can change which partners exist.
+    fn join_input_preserves_source_rows(
+        &self,
+        layer: &TransformationLayer,
+        relation: &str,
+    ) -> bool {
+        let Some(edge) = self.edge_for_source(layer.id(), relation) else {
+            return false;
+        };
+        match edge.resolution() {
+            RelationResolution::External => true,
+            RelationResolution::Resolved => {
+                let [producer_id] = edge.producer_layer_ids() else {
+                    return false;
+                };
+                let Some(producer) = self.layer_by_id(producer_id) else {
+                    return false;
+                };
+                let Some(query) = self.query_for_layer(producer) else {
+                    return false;
+                };
+                let [source] = query.sources() else {
+                    return false;
+                };
+                if producer.write_kind() != Some(WriteKind::Definition)
+                    || !query.joins().is_empty()
+                    || query.aggregation().is_some()
+                    || query.set_operation().is_some()
+                    || query.window_witness().is_some()
+                    || query.predicates().where_predicate().is_some()
+                    || query.predicates().having_predicate().is_some()
+                    || query.predicates().qualify_predicate().is_some()
+                    || !query.condition_exactness().is_exact()
+                    || !query.diagnostics().is_empty()
+                    || query.output().columns().iter().any(|column| {
+                        column.plain_copy_source().is_none()
+                    })
+                {
+                    return false;
+                }
+                self.join_input_preserves_source_rows(producer, source.name())
+            }
+            RelationResolution::Missing
+            | RelationResolution::Ambiguous
+            | RelationResolution::Cycle
+            | RelationResolution::Partial
+            | RelationResolution::Unsupported => false,
+        }
     }
 
     fn compose_query_join_equalities(
