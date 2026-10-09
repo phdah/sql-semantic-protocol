@@ -169,11 +169,16 @@ SQL-equal candidate tuple. Incomplete candidate sampling is never a
 proof of zero occurrences or anti-membership.
 
 Candidate tuples must carry the same typed `BagTupleIdentity` across
-operands; unmatched or unknown identities remain residual. Aliases and
-self-joins with the same `BagSourceIdentity::physical_relation`
-intersect their complete count constraints before applying a transfer
-law. Conflicting interval evidence for one physical relation is
-impossible, not two independent source inputs.
+operands; unmatched or unknown identities remain residual. A physical
+source identity records provenance, **not** logical population equality:
+separately filtered branches can have different tuple counts despite
+originating from the same table. `BagPopulationIdentity` is an explicit
+upstream attestation that two operands select exactly the same logical
+row population. Only when both the physical source and the population
+identity agree do aliases and self-joins intersect compatible count
+constraints. For tuple counts the tuple identity must also agree.
+Conflicting evidence for a proven identical population is impossible;
+otherwise its distinct counts must not be conflated.
 
 Given complete evidence, `BagLaw::SetTuple` reuses the *existing*
 `SetMultiplicityRule`, including SQL NULL-equal DISTINCT/ALL tuple
@@ -182,13 +187,20 @@ Other explicitly authorized transfer laws cover row-preserving
 projection, DISTINCT, one grouping key versus global aggregation,
 rank-prefix counts with proved strict ordering, known-key equijoins,
 and append/delete/update counts with complete affected subsets.
+DELETE and UPDATE require a right operand scoped as
+`BagScope::AffectedRows`, distinct from the entire input relation;
+sharing its physical source does not equate the two populations.
 Join pair multiplication is only valid when **all** candidate keys are
 proved equal and non-NULL; unknown key relationships fail closed.
 NULL join keys never compare equal under ordinary SQL equality.
 
 For mixed-key joins, `BagKeyHistogram` represents a complete
 physical key-frequency distribution keyed by canonical typed
-`ConstraintValue`. `equijoin_key_histogram` computes exact output
+`ConstraintValue`. Its required `BagKeyExpressionIdentity` names the
+underlying physical expression, independent of the SQL alias. Histograms
+from the same physical source must agree **only when this key-expression
+identity also agrees**; two different join columns of one self-joined
+table can have different histograms. `equijoin_key_histogram` computes exact output
 frequency under INNER, LEFT, RIGHT, FULL, SEMI and ANTI equality joins.
 It distinguishes SQL NULL comparisons from set NULL-equality,
 computes duplicate-pair products per key, preserves unmatched source
