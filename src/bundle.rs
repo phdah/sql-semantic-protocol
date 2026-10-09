@@ -607,18 +607,32 @@ pub struct ComposedBooleanWitness {
 }
 
 impl ComposedBooleanWitness {
-    pub(crate) fn new(origin_layer_id: String, witness: crate::boolean_witness::BooleanWitness, boundary_kind: GroupBoundaryKind) -> Self {
-        Self { origin_layer_id, witness, boundary_kind }
+    pub(crate) fn new(
+        origin_layer_id: String,
+        witness: crate::boolean_witness::BooleanWitness,
+        boundary_kind: GroupBoundaryKind,
+    ) -> Self {
+        Self {
+            origin_layer_id,
+            witness,
+            boundary_kind,
+        }
     }
 
     /// Layer where the correlated predicate originated.
-    pub fn origin_layer_id(&self) -> &str { &self.origin_layer_id }
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
 
     /// Coupled source-row proof at that layer.
-    pub fn witness(&self) -> &crate::boolean_witness::BooleanWitness { &self.witness }
+    pub fn witness(&self) -> &crate::boolean_witness::BooleanWitness {
+        &self.witness
+    }
 
     /// Physical, intermediate or unresolved source boundary.
-    pub fn boundary_kind(&self) -> GroupBoundaryKind { self.boundary_kind }
+    pub fn boundary_kind(&self) -> GroupBoundaryKind {
+        self.boundary_kind
+    }
 }
 
 /// One source-membership witness retained at its introducing layer.
