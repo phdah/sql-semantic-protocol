@@ -449,8 +449,13 @@ Signed integer comparisons require authoritative catalog datatypes and
 representable signed literals. Only overflow-free identity arithmetic (`+a`, `a+0`, `0+a`, `a-0`) and
 catalog-proven lossless ordinary signed-integer CASTs are inverted. Casts
 retain their target width in the normalized expression; narrowing casts,
-TRY/SAFE_CAST, nonidentity arithmetic, LIKE, functions, and ambiguous sources
-remain residual. Repeated columns are evaluated jointly using bounded integer truth
+TRY/SAFE_CAST, nonidentity arithmetic, functions, and ambiguous sources
+remain residual. Ordinary LIKE/NOT LIKE with one trailing wildcard after an
+unescaped ASCII alphanumeric prefix is represented as a typed, jointly solved
+source-row `string_prefix`; both `binary_collation` and `no_char_padding`
+attestations are required before either direction can become exact. SQL NULL
+remains UNKNOWN, also under NOT LIKE; embedded wildcards, ILIKE, escaped
+patterns and fixed-width or unknown string types default to residual. Repeated columns are evaluated jointly using bounded integer truth
 partitions and remain residual if their search space is too large. Pure
 conjunctions, including contradictory repeated-column comparisons, use the same
 solver. Enforced NOT NULL, primary key and finite accepted-values metadata
