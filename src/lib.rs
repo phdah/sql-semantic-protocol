@@ -18,6 +18,8 @@
 //! - BooleanWitness describes coupled single-row boolean obligations and their proof boundaries.
 //! - WindowWitness, WindowOrderKey, WindowRankCase, and WindowWitnessDirection describe
 //!   source-partition and strict-order obligations for ranked-row membership.
+//! - OutcomeGoal, OutputDistribution, and EvaluatedOutcomeGoal describe optional caller
+//!   requests and their independently proven output-row feasibility.
 
 mod analysis;
 mod boolean_witness;
@@ -34,6 +36,7 @@ mod manifest;
 #[cfg(feature = "odcs")]
 mod odcs;
 mod openlineage;
+mod outcome_goals;
 mod parser;
 pub mod protocol;
 mod relation;
@@ -88,6 +91,10 @@ pub use odcs::{
     SUPPORTED_ODCS_API_VERSION,
 };
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
+pub use outcome_goals::{
+    EvaluatedOutcomeGoal, OutcomeGoal, OutcomeGoalError, OutcomeGoalStatus,
+    OutputDistribution, OutputValueCount,
+};
 pub use parser::ParseError;
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
