@@ -321,7 +321,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn self_join_distinct_physical_key_expressions_may_have_different_histograms() {
         // Three physical rows: (id, manager_id) = (1, 1), (2, 1), (3, 2).
@@ -343,12 +342,7 @@ mod tests {
         );
         // Contradictory complete evidence for one and the same expression
         // remains impossible, even across different relation aliases.
-        let other_managers = histogram_for_key(
-            "employees",
-            "b",
-            "manager_id",
-            &[(Some(1), 3)],
-        );
+        let other_managers = histogram_for_key("employees", "b", "manager_id", &[(Some(1), 3)]);
         assert_eq!(
             equijoin_key_histogram(JoinKind::Inner, &managers, &other_managers),
             BagHistogramProof::Impossible
