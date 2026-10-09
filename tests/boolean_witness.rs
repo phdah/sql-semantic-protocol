@@ -29,7 +29,12 @@ fn typed_bundle(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let input = SqlInput::inline(sql);
     let dialect = PostgreSqlDialect {};
-    let configured = [ConfiguredSqlInput::new("typed", &input, "postgresql", &dialect)];
+    let configured = [ConfiguredSqlInput::new(
+        "typed",
+        &input,
+        "postgresql",
+        &dialect,
+    )];
     analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap()
 }
 
@@ -65,14 +70,17 @@ fn untyped_integer_conditions_and_computed_branches_default_to_residual() {
     ] {
         let query = query(sql);
         let witness = query.boolean_witness().expect("correlation evidence");
-        assert!(matches!(
-            witness.qualifying(),
-            BooleanWitnessDirection::Residual { .. }
-        ), "{sql}");
-        assert!(matches!(
-            witness.rejected(),
-            BooleanWitnessDirection::Residual { .. }
-        ), "{sql}");
+        assert!(
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
+            "{sql}"
+        );
+        assert!(
+            matches!(witness.rejected(), BooleanWitnessDirection::Residual { .. }),
+            "{sql}"
+        );
     }
 }
 
@@ -84,13 +92,25 @@ fn typed_integer_disjunction_retains_comparison_operators_without_cross_product(
     };
     let item = &semantics.boolean_witnesses()[0];
     let witness = item.witness();
-    assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Exact(BooleanTruthCase::True)));
-    assert!(matches!(witness.rejected(), BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)));
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
     let BooleanRowConstraint::Any(operands) = witness.condition() else {
         panic!("expected correlated disjunction");
     };
-    assert!(matches!(operands[0], BooleanRowConstraint::IntegerComparison { literal: 2, .. }));
-    assert!(matches!(operands[1], BooleanRowConstraint::IntegerComparison { literal: 0, .. }));
+    assert!(matches!(
+        operands[0],
+        BooleanRowConstraint::IntegerComparison { literal: 2, .. }
+    ));
+    assert!(matches!(
+        operands[1],
+        BooleanRowConstraint::IntegerComparison { literal: 0, .. }
+    ));
     assert_ne!(operands[0], operands[1]);
 }
 
@@ -109,14 +129,25 @@ fn source_witness_is_emitted_locally_and_retains_origin_through_composition() {
     let downstream = bundle
         .layers()
         .iter()
-        .find(|layer| layer.produces().iter().any(|output| output.relation_name() == Some("downstream")))
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|output| output.relation_name() == Some("downstream"))
+        })
         .unwrap();
     let ComposedSemantics::Resolved(composed) = downstream.composed_semantics() else {
         panic!("downstream composition should resolve");
     };
     assert_eq!(composed.boolean_witnesses().len(), 1);
-    assert_eq!(composed.boolean_witnesses()[0].witness().source_relation(), "t");
-    assert_ne!(composed.boolean_witnesses()[0].origin_layer_id(), downstream.id());
+    assert_eq!(
+        composed.boolean_witnesses()[0].witness().source_relation(),
+        "t"
+    );
+    assert_ne!(
+        composed.boolean_witnesses()[0].origin_layer_id(),
+        downstream.id()
+    );
 
     let protocol = analyze_sql(sql, "generic", &GenericDialect {}).unwrap();
     let value: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
@@ -124,7 +155,10 @@ fn source_witness_is_emitted_locally_and_retains_origin_through_composition() {
     assert_eq!(witness["condition"]["kind"], "any");
     assert_eq!(witness["qualifying"]["truth"], "true");
     assert_eq!(witness["rejected"]["truth"], "not_true");
-    assert_eq!(witness["condition"]["operands"][0]["column"]["relation"], "t");
+    assert_eq!(
+        witness["condition"]["operands"][0]["column"]["relation"],
+        "t"
+    );
 }
 
 #[test]
@@ -137,8 +171,14 @@ fn dialects_preserve_the_same_null_sensitive_source_tree() {
             panic!("expected query in {name}");
         };
         let witness = query.boolean_witness().expect("witness for every dialect");
-        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Exact(_)), "{name}");
-        assert!(matches!(witness.rejected(), BooleanWitnessDirection::Exact(_)), "{name}");
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Exact(_)),
+            "{name}"
+        );
+        assert!(
+            matches!(witness.rejected(), BooleanWitnessDirection::Exact(_)),
+            "{name}"
+        );
     }
 }
 
@@ -149,18 +189,27 @@ fn duckdb_confirms_both_three_valued_directions_of_coupled_conditions() {
         "CREATE TABLE t(a INTEGER, b INTEGER);
          INSERT INTO t VALUES (NULL,1), (1,NULL), (NULL,NULL), (1,1);
          INSERT INTO t VALUES (3,NULL), (NULL,-1);",
-    ).unwrap();
+    )
+    .unwrap();
     let cases = [
         ("a IS NULL OR b IS NULL", 5_i64, 1_i64),
         ("a > 2 OR b < 0", 2_i64, 4_i64),
     ];
     for (predicate, qualifying, rejected) in cases {
-        let selected: i64 = db.query_row(
-            &format!("SELECT COUNT(*) FROM t WHERE {predicate}"), [], |row| row.get(0),
-        ).unwrap();
-        let excluded: i64 = db.query_row(
-            &format!("SELECT COUNT(*) FROM t WHERE ({predicate}) IS NOT TRUE"), [], |row| row.get(0),
-        ).unwrap();
+        let selected: i64 = db
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        let excluded: i64 = db
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE ({predicate}) IS NOT TRUE"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
         assert_eq!(selected, qualifying, "{predicate}");
         assert_eq!(excluded, rejected, "{predicate}");
     }
