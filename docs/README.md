@@ -10,6 +10,7 @@ Start with the [project README](../README.md) for an overview and first commands
 | [Protocol contract](protocol.md) | Active JSON model and exact representation guarantees |
 | [Protocol JSON Schema](../schema/protocol.schema.json) | Machine-readable active contract |
 | [Analysis manifest v1](analysis-manifest-v1.md) | Declarative analysis input format (distinct from protocol version) |
+| [Generator scope sign-off](coverage-signoff.md) | Four concrete maintainer decisions, with defaults and alternatives |
 | [Generator release coverage](coverage.md) | 13-dialect feature and syntax-variant matrix, test evidence and downstream sign-off gate |
 | [Machine-readable coverage manifest](coverage-manifest.json) | Release-scoped feature variants, per-dialect evidence and executable fixtures |
 | [Versioning and releases](releasing.md) | Shared application/protocol version and release automation |
