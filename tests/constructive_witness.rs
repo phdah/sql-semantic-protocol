@@ -134,7 +134,7 @@ fn unmatched_join_encodes_closed_world_partner_absence_not_just_an_example() {
 }
 
 #[test]
-fn group_proofs_do_not_get_upgraded_without_canonical_translation() {
+fn group_cases_preserve_bounded_counts_and_non_null_contributions() {
     let b = bundle(
         "SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
         "postgresql",
@@ -146,14 +146,39 @@ fn group_proofs_do_not_get_upgraded_without_canonical_translation() {
         .into_iter()
         .find(|proof| proof.operator() == WitnessOperator::Group)
         .expect("group witness");
-    assert!(matches!(
-        proof.qualifying(),
-        WitnessDirection::Residual { .. }
-    ));
-    assert!(matches!(
-        proof.rejected(),
-        WitnessDirection::Residual { .. }
-    ));
+    let WitnessDirection::Feasible(cases) = proof.qualifying() else {
+        panic!("expected a typed group construction: {:?}", proof.qualifying());
+    };
+    assert!(cases.iter().any(|case| case.obligations().iter().any(|obligation| {
+        matches!(obligation, WitnessObligation::Group { rows, .. } if rows.minimum() >= 2)
+    })));
+    let WitnessDirection::Feasible(rejected) = proof.rejected() else {
+        panic!("expected a rejected group construction: {:?}", proof.rejected());
+    };
+    assert!(!rejected.is_empty());
+}
+
+#[test]
+fn ranked_witness_preserves_strict_order_and_closed_world_predecessors() {
+    let b = bundle(
+        "SELECT ROW_NUMBER() OVER (ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn <= 2",
+        "snowflake",
+    );
+    let ComposedSemantics::Resolved(ref resolved) = b.layers()[0].composed_semantics() else {
+        panic!("expected resolved window");
+    };
+    let proof = local_constructive_witnesses(resolved)
+        .into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Window)
+        .expect("window witness");
+    let WitnessDirection::Feasible(cases) = proof.qualifying() else {
+        panic!("expected ranking proof: {:?}", proof.qualifying());
+    };
+    assert!(cases.iter().any(|case| case.obligations().iter().any(|obligation| {
+        matches!(obligation, WitnessObligation::Ranked {
+            strict_unique: true, closed_world: true, ..
+        })
+    })));
 }
 
 #[test]
