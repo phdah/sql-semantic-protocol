@@ -1758,7 +1758,8 @@ impl ConditionExactness {
     pub(crate) fn without_projected_rank_where_residual(mut self) -> Self {
         self.residual_conditions.retain(|item| {
             !(item.clause == ConditionClause::Where
-                && item.reason == ResidualConditionReason::ComputedExpression)
+                && item.reason == ResidualConditionReason::ComputedExpression
+                && item.identity == "where")
         });
         self
     }
