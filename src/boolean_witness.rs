@@ -372,6 +372,49 @@ impl BooleanWitness {
         })
     }
 
+    /// Recheck a sequence of WHERE filters on the *same physical row* jointly.
+    ///
+    /// Each input must have been independently resolved through transparent
+    /// producer projections. Conflicting source evidence is not silently
+    /// widened; no upstream materialization boundary may be treated as a leaf.
+    pub(crate) fn conjoin_physical_filters(filters: &[&Self]) -> Option<Self> {
+        let (first, rest) = filters.split_first()?;
+        let mut combined = (*first).clone();
+        let mut conditions = vec![combined.condition.clone()];
+        for next in rest {
+            if combined.source_relation != next.source_relation
+                || combined.source_constraints != next.source_constraints
+                || combined.comparison_assumptions != next.comparison_assumptions
+            {
+                return None;
+            }
+            for (column, bounds) in &next.integer_bounds {
+                if combined
+                    .integer_bounds
+                    .insert(column.clone(), *bounds)
+                    .is_some_and(|prior| prior != *bounds)
+                {
+                    return None;
+                }
+            }
+            for (column, bounds) in &next.string_bounds {
+                if combined
+                    .string_bounds
+                    .insert(column.clone(), *bounds)
+                    .is_some_and(|prior| prior != *bounds)
+                {
+                    return None;
+                }
+            }
+            conditions.push(next.condition.clone());
+        }
+        if conditions.len() > 1 {
+            combined.condition = BooleanRowConstraint::All(BooleanOperands::new(conditions)?);
+        }
+        combined.recheck_truth_directions();
+        Some(combined)
+    }
+
     /// Caller attestations permit exact prefix witnesses only under binary,
     /// no-padding string comparisons. Other settings never certify LIKE.
     pub(crate) fn declare_comparison_assumptions(&mut self, assumptions: &[ComparisonAssumption]) {
