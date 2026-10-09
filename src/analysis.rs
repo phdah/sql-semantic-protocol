@@ -6379,9 +6379,9 @@ fn derive_output_domain(expression: &Expression) -> ValueDomain {
             );
             union_domains(&domain, &else_domain)
         }
-        Expression::SignedIntegerCast(_) => {
-            ValueDomain::unknown("signed integer cast output domain requires source datatype evidence")
-        }
+        Expression::SignedIntegerCast(_) => ValueDomain::unknown(
+            "signed integer cast output domain requires source datatype evidence",
+        ),
         Expression::Unary(unary) => derive_unary_output_domain(unary),
         Expression::Binary(binary) => derive_binary_output_domain(binary),
         Expression::ScalarSubquery(subquery) => {
