@@ -13,11 +13,15 @@ fn manifest() -> Value {
 }
 
 fn required_string<'a>(value: &'a Value, key: &str) -> &'a str {
-    value[key].as_str().unwrap_or_else(|| panic!("missing text field: {key}"))
+    value[key]
+        .as_str()
+        .unwrap_or_else(|| panic!("missing text field: {key}"))
 }
 
 fn required_array<'a>(value: &'a Value, key: &str) -> &'a [Value] {
-    value[key].as_array().unwrap_or_else(|| panic!("missing array field: {key}"))
+    value[key]
+        .as_array()
+        .unwrap_or_else(|| panic!("missing array field: {key}"))
 }
 
 #[test]
@@ -40,7 +44,10 @@ fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
         .copied()
         .filter(|name| *name != "postgres")
         .collect();
-    assert_eq!(names, exposed, "dialect additions require an inventory update");
+    assert_eq!(
+        names, exposed,
+        "dialect additions require an inventory update"
+    );
     assert_eq!(dialects.len(), 13);
     assert!(dialects.iter().any(|dialect| {
         dialect["name"] == "postgresql"
@@ -53,15 +60,27 @@ fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
     }
 
     let features = required_array(&manifest, "features");
-    assert!(features.len() >= 50, "coverage inventory unexpectedly shrank");
+    assert!(
+        features.len() >= 50,
+        "coverage inventory unexpectedly shrank"
+    );
     let mut feature_ids = BTreeSet::new();
     let mut pending = 0;
     for feature in features {
         let id = required_string(feature, "id");
         assert!(feature_ids.insert(id), "duplicated feature {id}");
-        assert!(!required_array(feature, "variants").is_empty(), "{id} has no variants");
-        assert!(!required_array(feature, "protocol_tasks").is_empty(), "{id} has no protocol task");
-        assert!(!required_array(feature, "tdg_tasks").is_empty(), "{id} has no downstream owner");
+        assert!(
+            !required_array(feature, "variants").is_empty(),
+            "{id} has no variants"
+        );
+        assert!(
+            !required_array(feature, "protocol_tasks").is_empty(),
+            "{id} has no protocol task"
+        );
+        assert!(
+            !required_array(feature, "tdg_tasks").is_empty(),
+            "{id} has no downstream owner"
+        );
         let scope = required_string(feature, "scope");
         assert!(
             matches!(scope, "release_blocking" | "pending_exclusion_approval"),
@@ -69,36 +88,48 @@ fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
         );
         if scope == "pending_exclusion_approval" {
             pending += 1;
-            assert!(feature["exclusion"].as_str().is_some(), "{id} needs a reason");
+            assert!(
+                feature["exclusion"].as_str().is_some(),
+                "{id} needs a reason"
+            );
         }
         assert_eq!(
-            feature["physical_source_positive"],
-            "not_end_to_end_proven",
+            feature["physical_source_positive"], "not_end_to_end_proven",
             "{id}: local witnesses must not count as physical-source proofs"
         );
         assert_eq!(
-            feature["physical_source_negative"],
-            "not_end_to_end_proven",
+            feature["physical_source_negative"], "not_end_to_end_proven",
             "{id}: negative witnesses need independent absence proofs"
         );
 
-        let cells = feature["dialects"].as_object().expect("per-dialect evidence");
+        let cells = feature["dialects"]
+            .as_object()
+            .expect("per-dialect evidence");
         assert_eq!(cells.len(), names.len(), "{id} must cover every dialect");
         for name in &names {
             let cell = &feature["dialects"][name];
             assert!(
-                matches!(cell["parse"].as_str(), Some("fixture_tested" | "unverified")),
+                matches!(
+                    cell["parse"].as_str(),
+                    Some("fixture_tested" | "unverified")
+                ),
                 "{id}/{name}: invalid parser evidence"
             );
             assert!(
-                matches!(cell["canonical"].as_str(), Some("fixture_tested" | "unverified")),
+                matches!(
+                    cell["canonical"].as_str(),
+                    Some("fixture_tested" | "unverified")
+                ),
                 "{id}/{name}: invalid canonical evidence"
             );
             assert_eq!(cell["positive"], "not_end_to_end_proven");
             assert_eq!(cell["negative"], "not_end_to_end_proven");
             assert_eq!(cell["cardinality"], "unverified");
             assert!(
-                matches!(cell["oracle"].as_str(), Some("unverified" | "fixture_duckdb_only")),
+                matches!(
+                    cell["oracle"].as_str(),
+                    Some("unverified" | "fixture_duckdb_only")
+                ),
                 "{id}/{name}: invalid execution evidence"
             );
             assert!(
@@ -113,7 +144,10 @@ fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
             );
         }
     }
-    assert!(pending > 0, "unsupported scope requires maintainer approval");
+    assert!(
+        pending > 0,
+        "unsupported scope requires maintainer approval"
+    );
     assert!(feature_ids.contains("execution.dbt_fixture"));
     assert!(feature_ids.contains("outcomes.classification"));
 }
@@ -151,19 +185,21 @@ fn variant_evidence_uses_fail_closed_defaults_without_inheriting_feature_claims(
             for name in &names {
                 expanded_cells += 1;
                 let explicit = &feature["variant_overrides"][syntax][name];
-                let parse = explicit["parse"].as_str().unwrap_or(
-                    default["parse"].as_str().expect("default parser status")
-                );
+                let parse = explicit["parse"]
+                    .as_str()
+                    .unwrap_or(default["parse"].as_str().expect("default parser status"));
                 assert!(
-                    matches!(parse, "unverified" | "fixture_tested" | "representative_only"),
+                    matches!(
+                        parse,
+                        "unverified" | "fixture_tested" | "representative_only"
+                    ),
                     "unexpected per-variant evidence for {syntax}/{name}"
                 );
                 if parse == "fixture_tested" {
                     assert!(
                         fixtures.iter().any(|fixture| {
                             fixture["feature"] == feature["id"]
-                                && required_array(fixture, "dialects")
-                                    .contains(&Value::from(*name))
+                                && required_array(fixture, "dialects").contains(&Value::from(*name))
                                 && required_string(fixture, "sql").contains(syntax)
                         }),
                         "{syntax}/{name}: variant claims need an actual SQL fixture"
@@ -201,9 +237,8 @@ fn parser_and_analysis_claims_are_exercised_by_manifest_fixtures() {
             assert_eq!(cell["parse"], "fixture_tested", "{fixture_id}/{name}");
             assert!(required_array(cell, "fixture_ids").contains(&Value::from(fixture_id)));
             let dialect = dialect_from_name(name).expect("fixture dialect must exist");
-            let analyzed = analyze_sql(sql, name, dialect.as_ref()).unwrap_or_else(|error| {
-                panic!("{fixture_id}/{name} must analyze: {error}")
-            });
+            let analyzed = analyze_sql(sql, name, dialect.as_ref())
+                .unwrap_or_else(|error| panic!("{fixture_id}/{name} must analyze: {error}"));
             if fixture["expect"] == "diagnostic" {
                 let expected = required_string(fixture, "diagnostic");
                 assert!(
