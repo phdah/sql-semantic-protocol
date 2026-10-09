@@ -1,7 +1,7 @@
 ---
 id: TASK-67
 title: Define a composable typed constructive witness algebra
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-09'
@@ -44,3 +44,10 @@ Existing witness types prove individual operators but do not compose into an exe
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Implementation progress (2026-10-09)
+
+- Introduced a typed source-independent obligation and proof-case algebra, inclusive cardinality invariants, shared row variables, tuple predicates, NULL-aware Boolean truth and physical/intermediate producer boundaries.
+- Added source-local Boolean and Join normalization and an optional closed JSON emission contract; unlike producer-graph plans, this is deliberately only operator-local evidence.
+- Added contradiction checks for incompatible output/state cardinalities and conflicting truth of the same predicate on the same row.
+- Still open: fully canonical translations for grouped, window, set and subquery witnesses; proof-strength completeness; source-row existential/universal solver; full physical boundary realization and adapter-equivalence/differential certification. These acceptance criteria remain unchecked. TASK-68 owns graph composition, but TASK-67 must not be marked Done before its own remaining criteria and verification pass.
