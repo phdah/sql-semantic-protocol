@@ -371,9 +371,26 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<GroupWitness> {
         Some(GroupBy::Expressions(grouping)) => grouping
             .iter()
             .map(|item| match item {
-                GroupingExpression::Expression(Expression::Column(column)) => source
-                    .as_ref()
-                    .map(|table| ColumnRef::new(Some(table.clone()), column.name().to_string())),
+                GroupingExpression::Expression(Expression::Column(column)) => {
+                    // An unqualified GROUP BY name may resolve to an output alias.
+                    // Without source-column evidence, alias and input-column precedence
+                    // cannot be established across dialects. Never invent a source key.
+                    let potentially_aliased = column.relation().is_none()
+                        && query.output().columns().iter().any(|output| {
+                            output.name() == column.name()
+                                && !matches!(
+                                    output.expression(),
+                                    Expression::Column(input) if input.name() == column.name()
+                                )
+                        });
+                    if potentially_aliased {
+                        None
+                    } else {
+                        source.as_ref().map(|table| {
+                            ColumnRef::new(Some(table.clone()), column.name().to_string())
+                        })
+                    }
+                }
                 _ => None,
             })
             .collect::<Option<Vec<_>>>(),
@@ -523,8 +540,19 @@ pub(crate) fn refine_output(query: &QueryStatement) -> Output {
         let Ok(threshold) = number.parse::<u64>() else {
             return query.output().clone();
         };
-        let grouped = query.aggregation().and_then(|a| a.group_by()).is_some();
-        let floor = if *kind == GroupAggregate::CountRows && grouped {
+        // Ordinary keyed groups require at least one input row. ROLLUP,
+        // CUBE and GROUPING SETS can include the grand-total (empty) set,
+        // which exists even when the source relation has no rows.
+        let ordinary_keyed_group = matches!(
+            query.aggregation().and_then(|a| a.group_by()),
+            Some(GroupBy::Expressions(grouping))
+                if !grouping.is_empty()
+                    && grouping.iter().all(|item| matches!(
+                        item,
+                        GroupingExpression::Expression(Expression::Column(_))
+                    ))
+        );
+        let floor = if *kind == GroupAggregate::CountRows && ordinary_keyed_group {
             1
         } else {
             0
