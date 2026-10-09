@@ -572,7 +572,7 @@ fn source_index_for_column(column: &ColumnExpression, sources: &[SourceRelation]
     }
 }
 
-fn comparison_domain(operator: ComparisonOperator, literal: &LiteralExpression) -> ValueDomain {
+pub(crate) fn comparison_domain(operator: ComparisonOperator, literal: &LiteralExpression) -> ValueDomain {
     let literal = literal.clone();
 
     if matches!(literal.value(), LiteralValue::Null) {
