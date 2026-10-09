@@ -382,7 +382,11 @@ fn representative_generic_query_matches_complete_protocol_document() {
         }
     });
 
-    eprintln!("REPRESENTATIVE_CONSTRUCTIVE:{}", serde_json::to_string(&actual["layers"][0]["composed_semantics"]["constructive_witnesses"]).expect("serialize proof"));
+    eprintln!(
+        "REPRESENTATIVE_CONSTRUCTIVE:{}",
+        serde_json::to_string(&actual["layers"][0]["composed_semantics"]["constructive_witnesses"])
+            .expect("serialize proof")
+    );
     assert_eq!(actual, expected);
 }
 
