@@ -328,6 +328,19 @@ fn set_count(rule: SetMultiplicityRule, left: CountBounds, right: CountBounds) -
     }
 }
 
+fn same_source_set_count(rule: SetMultiplicityRule, count: CountBounds) -> BagCountProof {
+    match rule {
+        SetMultiplicityRule::Sum => sum(count, count),
+        SetMultiplicityRule::Minimum => BagCountProof::Bounds(count),
+        SetMultiplicityRule::UnionDistinct | SetMultiplicityRule::IntersectDistinct => {
+            BagCountProof::Bounds(presence(count))
+        }
+        SetMultiplicityRule::SaturatingDifference | SetMultiplicityRule::ExceptDistinct => {
+            bounds(0, Some(0))
+        }
+    }
+}
+
 fn matching_join(kind: JoinKind, left: CountBounds, right: CountBounds) -> BagCountProof {
     use JoinKind::*;
     match kind {
@@ -498,7 +511,13 @@ impl BagLaw {
                             reason: "unproved_shared_tuple_identity",
                         };
                     }
-                    set_count(rule, left.bounds(), right.bounds())
+                    if left.source().zip(right.source()).is_some_and(|(a, b)| {
+                        a.physical_relation() == b.physical_relation()
+                    }) {
+                        same_source_set_count(rule, left.bounds())
+                    } else {
+                        set_count(rule, left.bounds(), right.bounds())
+                    }
                 } else {
                     BagCountProof::Residual {
                         reason: "missing_right_input",
@@ -735,11 +754,17 @@ mod tests {
             .with_source(BagSourceIdentity::new("t", "a").expect("source"));
         let second = evidence(3, Some(5), BagScope::CandidateTuple)
             .with_source(BagSourceIdentity::new("t", "b").expect("source"));
-        assert_eq!(
-            BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference)
-                .transfer(first, Some(second)),
-            BagCountProof::Bounds(CountBounds::new(0, Some(0)).expect("zero"))
-        );
+        for (rule, expected) in [
+            (SetMultiplicityRule::Minimum, CountBounds::new(3, Some(4))),
+            (SetMultiplicityRule::SaturatingDifference, CountBounds::new(0, Some(0))),
+            (SetMultiplicityRule::ExceptDistinct, CountBounds::new(0, Some(0))),
+            (SetMultiplicityRule::UnionDistinct, CountBounds::new(1, Some(1))),
+        ] {
+            assert_eq!(
+                BagLaw::SetTuple(rule).transfer(first.clone(), Some(second.clone())),
+                BagCountProof::Bounds(expected.expect("valid bounds"))
+            );
+        }
     }
 
     #[test]
