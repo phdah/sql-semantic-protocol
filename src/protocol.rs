@@ -142,7 +142,7 @@ pub struct QueryStatement {
     aggregation: Option<Box<Aggregation>>,
     group_witness: Option<Box<GroupWitness>>,
     window_witness: Option<Box<WindowWitness>>,
-    subquery_witnesses: Vec<crate::subquery_witness::SubqueryMembershipWitness>,
+    subquery_witnesses: Box<[crate::subquery_witness::SubqueryMembershipWitness]>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -167,7 +167,7 @@ impl QueryStatement {
             aggregation: None,
             group_witness: None,
             window_witness: None,
-            subquery_witnesses: Vec::new(),
+            subquery_witnesses: Vec::new().into_boxed_slice(),
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -181,7 +181,7 @@ impl QueryStatement {
     }
 
     pub(crate) fn with_subquery_witnesses(mut self) -> Self {
-        self.subquery_witnesses = crate::subquery_witness::analyze(&self);
+        self.subquery_witnesses = crate::subquery_witness::analyze(&self).into_boxed_slice();
         self
     }
 
