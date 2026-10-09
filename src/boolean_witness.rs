@@ -654,8 +654,11 @@ fn normalize(
             ) {
                 return residual("null-safe comparison is not part of the integer witness subset");
             }
-            let Some(value) = signed_integer_literal(literal)
-                .and_then(|value| i128::from(value).checked_sub(offset))
+            let Some(value) = signed_integer_literal(literal) else {
+                return residual("comparison literal is not a supported signed integer");
+            };
+            let Some(value) = i128::from(value)
+                .checked_sub(offset)
                 .and_then(|value| i64::try_from(value).ok())
             else {
                 return residual("comparison literal cannot be inverted to a signed integer");
