@@ -3,12 +3,14 @@
 //! A feasible verdict is a constructive proof for the explicitly supported cases.
 //! Missing SQL cardinality or distribution proofs always remain residual.
 
-use std::collections::BTreeSet;
 use std::fmt;
 
 use crate::bundle::{AnalysisBundle, ComposedSemantics, RelationResolution, TransformationLayer};
 use crate::constraints::ConstraintValue;
-use crate::protocol::{Expression, GroupBy, GroupingExpression, ProtocolStatement, QueryStatement};
+use crate::protocol::{
+    Expression, GroupBy, GroupingExpression, LiteralType, LiteralValue, ProtocolStatement,
+    QueryStatement,
+};
 
 /// A requested count for one output scalar, including SQL NULL.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -146,6 +148,8 @@ pub enum OutcomeGoalError {
     DuplicateLayer { layer_id: String },
     /// A goal references a column not present in the projected output.
     UnknownOutputColumn { layer_id: String, column: String },
+    /// Several output projections share the same name.
+    AmbiguousOutputColumn { layer_id: String, column: String },
 }
 
 impl fmt::Display for OutcomeGoalError {
@@ -251,16 +255,20 @@ fn assess_goal(
     };
     let output = resolved.output();
     for distribution in &goal.distributions {
-        if !output.columns().iter().any(|column| column.name() == distribution.column()) {
-            return Err(OutcomeGoalError::UnknownOutputColumn {
+        match output.columns().iter().filter(|column| column.name() == distribution.column()).count() {
+            0 => return Err(OutcomeGoalError::UnknownOutputColumn {
                 layer_id: goal.layer_id.clone(),
                 column: distribution.column().to_string(),
-            });
+            }),
+            1 => {},
+            _ => return Err(OutcomeGoalError::AmbiguousOutputColumn {
+                layer_id: goal.layer_id.clone(),
+                column: distribution.column().to_string(),
+            }),
         }
     }
 
     let singleton = query.is_some_and(QueryStatement::proven_single_row_output)
-        && resolved.dependencies().is_empty()
         && resolved.diagnostics().is_empty();
     let min_rows = u64::from(singleton);
     let max_rows = singleton.then_some(1);
@@ -306,8 +314,32 @@ fn assess_goal(
             return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable, "DISTINCT permits at most one row per value, including NULL", min_rows, max_rows));
         }
 
-        if singleton && goal.distributions.is_empty() && goal.groups.is_none() {
-            return Ok(assessed(goal, OutcomeGoalStatus::Feasible, "SQL proves a singleton output independently of source cardinality", min_rows, max_rows));
+        if singleton && goal.groups.is_none() {
+            // Only literal projections have a value-independent output-frequency proof.
+            // Aggregates still produce one row, but their values depend on source data.
+            let literal_histograms = goal.distributions.iter().map(|distribution| {
+                let projected = query.output().columns().iter().find(|column| column.name() == distribution.column());
+                match projected.map(|column| column.expression()) {
+                    Some(Expression::Literal(literal)) => {
+                        let mut proofs = distribution.values().iter().map(|entry| {
+                            literal_matches_bucket(literal.literal_type(), literal.value(), entry.value())
+                                .map(|matches| matches == (entry.rows() == 1))
+                        });
+                        if proofs.any(|proof| proof == Some(false)) { Some(false) }
+                        else if distribution.values().iter().all(|entry| {
+                            literal_matches_bucket(literal.literal_type(), literal.value(), entry.value()).is_some()
+                        }) { Some(true) }
+                        else { None }
+                    },
+                    _ => None,
+                }
+            }).collect::<Vec<_>>();
+            if literal_histograms.iter().any(|proof| *proof == Some(false)) {
+                return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable, "requested histogram contradicts a constant singleton output value", min_rows, max_rows));
+            }
+            if literal_histograms.iter().all(|proof| *proof == Some(true)) {
+                return Ok(assessed(goal, OutcomeGoalStatus::Feasible, "SQL proves one output row and every requested literal frequency", min_rows, max_rows));
+            }
         }
 
         // An empty physical source is a constructive witness for zero rows only
@@ -327,4 +359,25 @@ fn assess_goal(
     }
 
     Ok(assessed(goal, OutcomeGoalStatus::Residual, "SQL cardinality, grouping, join multiplicity, window and distribution witnesses are not sufficient to prove this request", min_rows, max_rows))
+}
+
+fn literal_matches_bucket(
+    literal_type: LiteralType,
+    value: &LiteralValue,
+    bucket: &ConstraintValue,
+) -> Option<bool> {
+    match (literal_type, value) {
+        (LiteralType::Null, LiteralValue::Null) => Some(matches!(bucket, ConstraintValue::Null)),
+        (LiteralType::Boolean, LiteralValue::Boolean(value)) => Some(matches!(bucket, ConstraintValue::Boolean(other) if value == other)),
+        (LiteralType::Integer, LiteralValue::Number(value)) => {
+            match bucket {
+                ConstraintValue::Integer(other) => value.parse::<i64>().ok().map(|parsed| parsed == *other),
+                ConstraintValue::UnsignedInteger(other) => value.parse::<u64>().ok().map(|parsed| parsed == *other),
+                ConstraintValue::Number(_) => None,
+                _ => Some(false),
+            }
+        }
+        (LiteralType::String, LiteralValue::Text(value)) => Some(matches!(bucket, ConstraintValue::String(other) if value == other)),
+        _ => None,
+    }
 }
