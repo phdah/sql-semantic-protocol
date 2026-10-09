@@ -246,12 +246,17 @@ fn contradictory_source_domains_remain_explicitly_unrealized() {
     let b = bundle(&["SELECT a FROM t WHERE a > 10 AND a < 3"], "postgresql");
     let plan = physical_source_plan(&b, b.layers()[0].id());
     assert_eq!(plan.gap(), Some(PhysicalProofGap::ConflictingDomains));
-    assert!(matches!(plan.qualifying(), WitnessDirection::Residual { .. }));
+    assert!(matches!(
+        plan.qualifying(),
+        WitnessDirection::Residual { .. }
+    ));
     assert!(matches!(plan.zero_output(), WitnessDirection::Feasible(_)));
-    let json: serde_json::Value = serde_json::from_str(
-        &sql_semantic_protocol::to_bundle_json(&b),
-    ).expect("canonical graph");
-    assert_eq!(json["graph"]["physical_source_plans"][0]["gap"], "conflicting_domains");
+    let json: serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).expect("canonical graph");
+    assert_eq!(
+        json["graph"]["physical_source_plans"][0]["gap"],
+        "conflicting_domains"
+    );
 }
 
 #[test]
