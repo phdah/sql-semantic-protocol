@@ -299,6 +299,9 @@ impl QueryStatement {
             .exactness
             .clone()
             .with_declarations(declared);
+        if let Some(witness) = &mut self.boolean_witness {
+            witness.declare_comparison_assumptions(declared);
+        }
     }
 
     /// Return final query output columns in SELECT-list order.
