@@ -423,6 +423,17 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             }))
             .collect::<Vec<_>>());
     }
+    if !semantics.subquery_witnesses().is_empty() {
+        value["subquery_witnesses"] = json!(semantics
+            .subquery_witnesses()
+            .iter()
+            .map(|item| json!({
+                "origin_layer_id": item.origin_layer_id(),
+                "boundary_kind": item.boundary_kind().as_str(),
+                "witness": subquery_membership_witness_to_value(item.witness())
+            }))
+            .collect::<Vec<_>>());
+    }
     if !semantics.set_operations().is_empty() {
         value["set_operations"] = json!(semantics
             .set_operations()
@@ -629,6 +640,13 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
     if let Some(group_witness) = statement.group_witness() {
         value["group_witness"] = group_witness_to_value(group_witness);
     }
+    if !statement.subquery_witnesses().is_empty() {
+        value["subquery_witnesses"] = json!(statement
+            .subquery_witnesses()
+            .iter()
+            .map(subquery_membership_witness_to_value)
+            .collect::<Vec<_>>());
+    }
     if let Some(window_witness) = statement.window_witness() {
         value["window_witness"] = window_witness_to_value(window_witness);
     }
@@ -699,6 +717,42 @@ fn write_value_to_value(value: &WriteValue) -> Value {
         "expression": expression_to_value(value.expression()),
         "domain": value_domain_to_value(value.domain())
     })
+}
+
+fn subquery_membership_witness_to_value(
+    witness: &crate::subquery_witness::SubqueryMembershipWitness,
+) -> Value {
+    json!({
+        "operator": witness.kind().as_str(),
+        "outer_relation": witness.outer_relation(),
+        "inner_relation": witness.inner_relation(),
+        "correlations": witness.correlations().iter().map(|key| json!({
+            "outer": column_ref_to_value(key.outer()),
+            "inner": column_ref_to_value(key.inner())
+        })).collect::<Vec<_>>(),
+        "membership_key": witness.membership_key().map(|key| json!({
+            "outer": column_ref_to_value(key.outer()),
+            "inner": column_ref_to_value(key.inner())
+        })),
+        "inner_column_domains": witness.inner_column_domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
+        "qualifying": subquery_membership_direction_to_value(witness.qualifying()),
+        "rejected": subquery_membership_direction_to_value(witness.rejected())
+    })
+}
+
+fn subquery_membership_direction_to_value(
+    direction: &crate::subquery_witness::SubqueryMembershipDirection,
+) -> Value {
+    match direction {
+        crate::subquery_witness::SubqueryMembershipDirection::Exact(cases) => json!({
+            "status": "exact",
+            "cases": cases.iter().map(|case| case.as_str()).collect::<Vec<_>>()
+        }),
+        crate::subquery_witness::SubqueryMembershipDirection::Residual { reason } => json!({
+            "status": "residual",
+            "reason": reason
+        }),
+    }
 }
 
 fn window_witness_to_value(witness: &crate::window_witness::WindowWitness) -> Value {

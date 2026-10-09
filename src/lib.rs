@@ -14,6 +14,7 @@
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions, predicates, row-condition exactness, and explicit unknown/unsupported values.
 //! - JoinWitness and JoinWitnessDirection describe matched, unmatched and null-extended input obligations.
+//! - SubqueryMembershipWitness describes EXISTS and IN source-row membership and NULL behavior.
 //! - WindowWitness, WindowOrderKey, WindowRankCase, and WindowWitnessDirection describe
 //!   source-partition and strict-order obligations for ranked-row membership.
 
@@ -34,6 +35,7 @@ mod openlineage;
 mod parser;
 pub mod protocol;
 mod relation;
+mod subquery_witness;
 mod window_witness;
 
 use std::fmt;
@@ -45,11 +47,11 @@ pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
     AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
-    ComposedSemantics, ComposedSetOperation, ComposedWindowWitness, CompositionDiagnostic,
-    CompositionFailureReason, ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef,
-    GraphComponent, GraphEdge, GroupBoundaryKind, InputAnalysisError, RelationResolution,
-    ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
-    UnresolvedComposedSemantics,
+    ComposedSemantics, ComposedSetOperation, ComposedSubqueryWitness, ComposedWindowWitness,
+    CompositionDiagnostic, CompositionFailureReason, ConfiguredInputAnalysisError,
+    ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge, GroupBoundaryKind,
+    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
+    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
@@ -103,6 +105,10 @@ pub use protocol::{
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
     RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TimestampZone,
+};
+pub use subquery_witness::{
+    SubqueryCorrelation, SubqueryMembershipCase, SubqueryMembershipDirection,
+    SubqueryMembershipKind, SubqueryMembershipWitness,
 };
 pub use window_witness::{WindowOrderKey, WindowRankCase, WindowWitness, WindowWitnessDirection};
 

@@ -406,3 +406,31 @@ system library instead.
 For a supported simple aggregate comparison, `group_witness` separates proof of a qualifying group from proof of a HAVING-rejected group. The local input relation boundary and group keys identify which rows must share group identity; each independent witness case supplies inclusive total-row and non-NULL contribution bounds, plus typed contributor predicates (`every`, `some`, `sum`). Count(*) includes NULL rows, Count(column) excludes NULL contributors. MIN and MAX use universal or existential restrictions over contributors; SUM uses an aggregate sum comparison. The rejected direction includes all-NULL SUM/MIN/MAX groups because HAVING treats NULL comparison results as unknown. COUNT(*) GROUP BY cannot have an existing zero-row group, so `HAVING COUNT(*) < 1` has no qualifying case.
 
 Aggregate predicates alone must not constrain individual source-column domains (for example `SUM(amount) > 10` cannot imply `amount > 10`). When an output column is exactly the aggregate compared by HAVING, its *output* value domain can instead be restricted by the comparison, preserving physical lineage independently. A residual witness status is not evidence of source-group constructibility; it is deliberately safer than guessed inversion. Complex grouping, non-row-preserving producers, disjunction, aggregate FILTER/DISTINCT, and uncertain source identities remain residual. `condition_exactness` continues to reflect the independent source row-domain contract and may stay residual due to HAVING even with a separately exact group witness.
+
+## EXISTS, IN, and NOT IN witness semantics
+
+The analyzer preserves nested-query predicates and emits additional
+generator-facing subquery membership evidence when both source sides are
+unambiguous. Positive and rejected cases are classified independently,
+including the empty-result and three-valued NULL rules:
+
+- `EXISTS` tests whether any correlated candidate survives; `NOT EXISTS`
+  reverses the two cases. Duplicate candidates do not change the result.
+- `IN` is TRUE on a non-NULL equality match. If the candidate set is empty,
+  it is FALSE even for a NULL outer operand. With candidates, unmatched NULL
+  values on either side result in UNKNOWN and the outer row is rejected.
+- `NOT IN` is TRUE for an empty candidate set, or non-NULL unmatched values
+  with no NULL candidate. Either a match or an UNKNOWN result rejects the row.
+  The analyzer never models NOT IN as NULL-insensitive anti-join.
+
+Correlations are source equality obligations carried jointly, not
+independently sampled value intervals. Inner column domains constrain the
+source witnesses but do not imply correlated Cartesian widening. The
+whole-query condition exactness remains residual where the canonical
+independent domain contract cannot describe membership exactly. Complex
+nested row-set shapes, self-joins, nested joins, unknown physical lineage,
+or unprovable computed correlations produce named residual directions.
+Originating witnesses are retained in multi-layer composition along with
+physical/intermediate boundary provenance so consumers can decide which
+source is controllable. A dbt/SQL adapter provides the same capability if
+it supplies equivalent SQL; metadata-only adapters do not synthesize SQL.

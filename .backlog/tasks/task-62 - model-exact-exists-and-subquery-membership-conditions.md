@@ -1,7 +1,7 @@
 ---
 id: TASK-62
 title: Model exact EXISTS and subquery membership conditions
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-08'
 labels: []
@@ -26,9 +26,17 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Represent provable EXISTS/NOT EXISTS and IN/NOT IN subquery conditions with correlation keys, inner predicates and relation-instance identities.
-- [ ] #2 Preserve SQL three-valued NULL behavior, empty-set behavior and duplicate-insensitive membership; never translate NOT IN to anti-join when NULLs make it unsafe.
-- [ ] #3 Carry constraints through nested subqueries, CTEs, models and layers with provenance and exactness diagnostics.
-- [ ] #4 Test positive and rejected witnesses, correlated and uncorrelated cases, nullable keys, and impossible configurations against DuckDB.
-- [ ] #5 Update protocol contract/docs, assess adapter parity; sql-tdg TASK-26 consumes the representation.
+- [x] #1 Represent provable EXISTS/NOT EXISTS and IN/NOT IN subquery conditions with correlation keys, inner predicates and relation-instance identities.
+- [x] #2 Preserve SQL three-valued NULL behavior, empty-set behavior and duplicate-insensitive membership; never translate NOT IN to anti-join when NULLs make it unsafe.
+- [x] #3 Carry constraints through nested subqueries, CTEs, models and layers with provenance and exactness diagnostics.
+- [x] #4 Test positive and rejected witnesses, correlated and uncorrelated cases, nullable keys, and impossible configurations against DuckDB.
+- [x] #5 Update protocol contract/docs, assess adapter parity; sql-tdg TASK-26 consumes the representation.
 <!-- AC:END -->
+
+## Implementation
+
+- Added typed qualifying and rejected `subquery_witnesses` for EXISTS, NOT EXISTS, IN and NOT IN with physical source columns, source-instance identities, equality correlations, nested input domains, NULL-aware and empty-candidate cases. Duplicate candidates do not change membership; NOT IN is not reduced to an anti-join.
+- Exact operator-local witness directions are emitted only for proven single-relation, candidate-preserving nested queries with plain keys and conjunctive supported correlations. Unsupported nested, CTE, computed, joined, row-shaping, alias-ambiguous and untyped cases remain explicit residual directions, rather than claiming false whole-query exactness.
+- Composed outcomes carry source witness obligations from the originating transformation layer, retaining its layer ID and physical, intermediate or unresolved source boundary; the existing row-condition exactness contract remains authoritative for entire queries.
+- Updated the active JSON schema, public API, protocol/semantics/adapter documentation, direct SQL and dbt snapshot. Added DuckDB differential tests for positive, rejected, nullable, duplicate, empty and impossible cases and tests for dialect variants, nested residuals and composition.
+- Downstream consumer: sql-tdg TASK-26.

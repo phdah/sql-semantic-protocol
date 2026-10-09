@@ -6745,6 +6745,159 @@
         }
       ],
       "status": "resolved",
+      "subquery_witnesses": [
+        {
+          "boundary_kind": "intermediate",
+          "origin_layer_id": "layer-0020",
+          "witness": {
+            "correlations": [
+              {
+                "inner": {
+                  "name": "customer_id",
+                  "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_customers\""
+                },
+                "outer": {
+                  "name": "customer_id",
+                  "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                }
+              }
+            ],
+            "inner_column_domains": [
+              {
+                "column": {
+                  "name": "customer_id",
+                  "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_customers\""
+                },
+                "domain": {
+                  "kind": "unknown",
+                  "reason": "comparison bound is not a scalar literal"
+                }
+              },
+              {
+                "column": {
+                  "name": "customer_id",
+                  "relation": "o"
+                },
+                "domain": {
+                  "kind": "unknown",
+                  "reason": "comparison bound is not a scalar literal"
+                }
+              }
+            ],
+            "inner_relation": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_customers\"",
+            "membership_key": null,
+            "operator": "exists",
+            "outer_relation": "o",
+            "qualifying": {
+              "cases": [
+                "matching_row"
+              ],
+              "status": "exact"
+            },
+            "rejected": {
+              "cases": [
+                "no_candidates"
+              ],
+              "status": "exact"
+            }
+          }
+        },
+        {
+          "boundary_kind": "intermediate",
+          "origin_layer_id": "layer-0020",
+          "witness": {
+            "correlations": [],
+            "inner_column_domains": [],
+            "inner_relation": "\"dbt-core-e2e\".\"raw_analytics\".\"aggregated_orders\"",
+            "membership_key": {
+              "inner": {
+                "name": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"aggregated_orders\""
+              },
+              "outer": {
+                "name": "customer_id",
+                "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+              }
+            },
+            "operator": "in",
+            "outer_relation": "o",
+            "qualifying": {
+              "cases": [
+                "matching_non_null_key"
+              ],
+              "status": "exact"
+            },
+            "rejected": {
+              "cases": [
+                "no_candidates",
+                "no_match_no_null",
+                "no_match_null_candidate",
+                "outer_null_nonempty"
+              ],
+              "status": "exact"
+            }
+          }
+        },
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0020",
+          "witness": {
+            "correlations": [],
+            "inner_column_domains": [
+              {
+                "column": {
+                  "name": "refund_amount",
+                  "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                },
+                "domain": {
+                  "kind": "ranges",
+                  "ranges": [
+                    {
+                      "lower": {
+                        "inclusive": true,
+                        "value": {
+                          "kind": "literal",
+                          "type": "integer",
+                          "value": 50
+                        }
+                      },
+                      "upper": null
+                    }
+                  ]
+                }
+              }
+            ],
+            "inner_relation": "\"dbt-core-e2e\".\"raw\".\"returns\"",
+            "membership_key": {
+              "inner": {
+                "name": "order_id",
+                "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+              },
+              "outer": {
+                "name": "order_id",
+                "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+              }
+            },
+            "operator": "not_in",
+            "outer_relation": "o",
+            "qualifying": {
+              "cases": [
+                "no_candidates",
+                "no_match_no_null"
+              ],
+              "status": "exact"
+            },
+            "rejected": {
+              "cases": [
+                "matching_non_null_key",
+                "no_match_null_candidate",
+                "outer_null_nonempty"
+              ],
+              "status": "exact"
+            }
+          }
+        }
+      ],
       "window_witnesses": [
         {
           "boundary_kind": "intermediate",

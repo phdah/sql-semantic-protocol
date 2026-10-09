@@ -295,12 +295,38 @@
     "joinWitnessCase": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["shape", "min_matches", "max_matches", "null_extended_side"],
+      "required": [
+        "shape",
+        "min_matches",
+        "max_matches",
+        "null_extended_side"
+      ],
       "properties": {
-        "shape": { "enum": ["matched", "left_unmatched", "right_unmatched"] },
-        "min_matches": { "type": "integer", "minimum": 0 },
-        "max_matches": { "type": ["integer", "null"], "minimum": 0 },
-        "null_extended_side": { "enum": ["left", "right", null] }
+        "shape": {
+          "enum": [
+            "matched",
+            "left_unmatched",
+            "right_unmatched"
+          ]
+        },
+        "min_matches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_matches": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "null_extended_side": {
+          "enum": [
+            "left",
+            "right",
+            null
+          ]
+        }
       }
     },
     "joinWitnessDirection": {
@@ -308,29 +334,49 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["status", "cases"],
+          "required": [
+            "status",
+            "cases"
+          ],
           "properties": {
-            "status": { "const": "exact" },
+            "status": {
+              "const": "exact"
+            },
             "cases": {
               "type": "array",
               "minItems": 1,
-              "items": { "$ref": "#/$defs/joinWitnessCase" }
+              "items": {
+                "$ref": "#/$defs/joinWitnessCase"
+              }
             }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["status"],
-          "properties": { "status": { "const": "impossible" } }
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "const": "impossible"
+            }
+          }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["status", "reason"],
+          "required": [
+            "status",
+            "reason"
+          ],
           "properties": {
-            "status": { "const": "residual" },
-            "reason": { "$ref": "#/$defs/nonEmptyString" }
+            "status": {
+              "const": "residual"
+            },
+            "reason": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
           }
         }
       ]
@@ -339,19 +385,73 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "origin_layer_id", "join_kind", "comparison", "left", "right",
-        "unknown_comparison_is_match", "qualifying", "rejected"
+        "origin_layer_id",
+        "join_kind",
+        "comparison",
+        "left",
+        "right",
+        "unknown_comparison_is_match",
+        "qualifying",
+        "rejected"
       ],
       "properties": {
-        "origin_layer_id": { "$ref": "#/$defs/nonEmptyString" },
-        "join_kind": { "enum": ["inner", "left", "right", "full", "cross",
-          "left_semi", "right_semi", "left_anti", "right_anti", "unknown"] },
-        "comparison": { "enum": ["eq", "neq", "lt", "lte", "gt", "gte", null] },
-        "left": { "oneOf": [{ "$ref": "#/$defs/composedJoinColumn" }, { "type": "null" }] },
-        "right": { "oneOf": [{ "$ref": "#/$defs/composedJoinColumn" }, { "type": "null" }] },
-        "unknown_comparison_is_match": { "const": false },
-        "qualifying": { "$ref": "#/$defs/joinWitnessDirection" },
-        "rejected": { "$ref": "#/$defs/joinWitnessDirection" }
+        "origin_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "join_kind": {
+          "enum": [
+            "inner",
+            "left",
+            "right",
+            "full",
+            "cross",
+            "left_semi",
+            "right_semi",
+            "left_anti",
+            "right_anti",
+            "unknown"
+          ]
+        },
+        "comparison": {
+          "enum": [
+            "eq",
+            "neq",
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+            null
+          ]
+        },
+        "left": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/composedJoinColumn"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "right": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/composedJoinColumn"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unknown_comparison_is_match": {
+          "const": false
+        },
+        "qualifying": {
+          "$ref": "#/$defs/joinWitnessDirection"
+        },
+        "rejected": {
+          "$ref": "#/$defs/joinWitnessDirection"
+        }
       }
     },
     "resolvedComposedSemantics": {
@@ -394,7 +494,9 @@
         "join_witnesses": {
           "description": "Optional typed matching, rejection, and null-extension obligations for joins.",
           "type": "array",
-          "items": { "$ref": "#/$defs/composedJoinWitness" }
+          "items": {
+            "$ref": "#/$defs/composedJoinWitness"
+          }
         },
         "output": {
           "$ref": "#/$defs/output"
@@ -427,6 +529,12 @@
           "uniqueItems": true,
           "items": {
             "$ref": "#/$defs/composedWindowWitness"
+          }
+        },
+        "subquery_witnesses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/composedSubqueryMembershipWitness"
           }
         }
       }
@@ -857,6 +965,12 @@
         },
         "window_witness": {
           "$ref": "#/$defs/windowWitness"
+        },
+        "subquery_witnesses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/subqueryMembershipWitness"
+          }
         }
       }
     },
@@ -4250,6 +4364,201 @@
             "intermediate",
             "unresolved"
           ]
+        }
+      }
+    },
+    "subqueryCorrelation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outer",
+        "inner"
+      ],
+      "properties": {
+        "outer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "relation",
+            "name"
+          ],
+          "properties": {
+            "relation": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "inner": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "relation",
+            "name"
+          ],
+          "properties": {
+            "relation": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "subqueryMembershipDirection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "cases"
+          ],
+          "properties": {
+            "status": {
+              "const": "exact"
+            },
+            "cases": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "matching_row",
+                  "matching_non_null_key",
+                  "no_candidates",
+                  "no_match_no_null",
+                  "no_match_null_candidate",
+                  "outer_null_nonempty"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reason"
+          ],
+          "properties": {
+            "status": {
+              "const": "residual"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "subqueryMembershipWitness": {
+      "description": "Operator-local source-level qualifying and rejected witness cases, including UNKNOWN as rejection and the SQL NOT IN NULL-poison rule. Never implies whole-query exactness.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operator",
+        "outer_relation",
+        "inner_relation",
+        "correlations",
+        "membership_key",
+        "inner_column_domains",
+        "qualifying",
+        "rejected"
+      ],
+      "properties": {
+        "operator": {
+          "enum": [
+            "exists",
+            "not_exists",
+            "in",
+            "not_in"
+          ]
+        },
+        "outer_relation": {
+          "type": "string"
+        },
+        "inner_relation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "correlations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/subqueryCorrelation"
+          }
+        },
+        "membership_key": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/subqueryCorrelation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inner_column_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
+        },
+        "qualifying": {
+          "$ref": "#/$defs/subqueryMembershipDirection"
+        },
+        "rejected": {
+          "$ref": "#/$defs/subqueryMembershipDirection"
+        }
+      }
+    },
+    "composedSubqueryMembershipWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_layer_id",
+        "boundary_kind",
+        "witness"
+      ],
+      "properties": {
+        "origin_layer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundary_kind": {
+          "enum": [
+            "physical",
+            "intermediate",
+            "unresolved"
+          ]
+        },
+        "witness": {
+          "$ref": "#/$defs/subqueryMembershipWitness"
         }
       }
     }

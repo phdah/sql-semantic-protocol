@@ -142,6 +142,7 @@ pub struct QueryStatement {
     aggregation: Option<Box<Aggregation>>,
     group_witness: Option<Box<GroupWitness>>,
     window_witness: Option<Box<WindowWitness>>,
+    subquery_witnesses: Box<[crate::subquery_witness::SubqueryMembershipWitness]>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -166,6 +167,7 @@ impl QueryStatement {
             aggregation: None,
             group_witness: None,
             window_witness: None,
+            subquery_witnesses: Vec::new().into_boxed_slice(),
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -175,6 +177,11 @@ impl QueryStatement {
 
     pub(crate) fn with_aggregation(mut self, aggregation: Option<Aggregation>) -> Self {
         self.aggregation = aggregation.map(Box::new);
+        self
+    }
+
+    pub(crate) fn with_subquery_witnesses(mut self) -> Self {
+        self.subquery_witnesses = crate::subquery_witness::analyze(&self).into_boxed_slice();
         self
     }
 
@@ -296,6 +303,12 @@ impl QueryStatement {
     /// Typed source-partition witness obligations for a QUALIFY rank filter.
     pub fn window_witness(&self) -> Option<&WindowWitness> {
         self.window_witness.as_deref()
+    }
+
+    /// Operator-local typed source witnesses for EXISTS and IN subqueries.
+    /// Whole-query condition exactness remains independent of these local proofs.
+    pub fn subquery_witnesses(&self) -> &[crate::subquery_witness::SubqueryMembershipWitness] {
+        &self.subquery_witnesses
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.
@@ -1912,16 +1925,19 @@ pub enum Expression {
 /// where possible, and nested diagnostics stay attached instead of disappearing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SubquerySemantics {
+    sources: Vec<SourceRelation>,
     dependencies: Vec<String>,
     correlations: Vec<LineageSource>,
     joins: Vec<Join>,
     output: Output,
     row_conditions: RowConditions,
+    row_shape_preserves_candidates: bool,
     diagnostics: Vec<Diagnostic>,
 }
 
 impl SubquerySemantics {
     pub(crate) fn new(
+        sources: Vec<SourceRelation>,
         mut dependencies: Vec<String>,
         mut correlations: Vec<LineageSource>,
         joins: Vec<Join>,
@@ -1934,13 +1950,30 @@ impl SubquerySemantics {
         correlations.sort();
         correlations.dedup();
         Self {
+            sources,
             dependencies,
             correlations,
             joins,
             output,
             row_conditions,
+            row_shape_preserves_candidates: false,
             diagnostics,
         }
+    }
+
+    pub(crate) fn with_row_shape_preserves_candidates(mut self, preserves: bool) -> Self {
+        self.row_shape_preserves_candidates = preserves;
+        self
+    }
+
+    /// Return whether the nested SELECT preserves candidate-row existence without row-shaping.
+    pub fn row_shape_preserves_candidates(&self) -> bool {
+        self.row_shape_preserves_candidates
+    }
+
+    /// Return nested source relations and their original SQL instance aliases.
+    pub fn sources(&self) -> &[SourceRelation] {
+        &self.sources
     }
 
     /// Return physical relations read by the nested query.
