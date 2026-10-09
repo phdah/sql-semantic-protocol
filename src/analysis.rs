@@ -327,7 +327,7 @@ fn analyze_update(
         return unsupported_write_statement(
             "update",
             "unsupported_update_target",
-            "UPDATE requires one named target relation",
+            "UPDATE requires one unpartitioned named target relation",
         );
     };
     let target = target_source.name().to_string();
@@ -430,7 +430,7 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         return unsupported_write_statement(
             "delete",
             "unsupported_delete_target",
-            "DELETE requires one named target relation",
+            "DELETE requires one unpartitioned named target relation",
         );
     };
     let target = target_source.name().to_string();
@@ -495,7 +495,7 @@ fn analyze_merge(
         return unsupported_write_statement(
             "merge",
             "unsupported_merge_target",
-            "MERGE target must be a named relation",
+            "MERGE target must be an unpartitioned named relation",
         );
     };
     let target = target_source.name().to_string();
@@ -580,8 +580,9 @@ fn merge_target_relation(table: &TableFactor) -> Option<SourceRelation> {
             name,
             alias,
             args: None,
+            partitions,
             ..
-        } => Some(SourceRelation::new(
+        } if partitions.is_empty() => Some(SourceRelation::new(
             name.to_string(),
             alias.as_ref().map(|alias| alias.name.to_string()),
         )),
