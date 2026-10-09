@@ -237,17 +237,22 @@ fn local_join_case_counts_match_legacy_witness_for_both_directions() {
         panic!("resolved");
     };
     let original = &resolved.join_witnesses()[0];
-    let current = local_constructive_witnesses(resolved).into_iter()
-        .find(|proof| proof.operator() == WitnessOperator::Join).expect("join");
+    let current = local_constructive_witnesses(resolved)
+        .into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Join)
+        .expect("join");
     for (old, new) in [
         (original.qualifying(), current.qualifying()),
         (original.rejected(), current.rejected()),
     ] {
-        let (JoinWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new) else {
+        let (JoinWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new)
+        else {
             panic!("both directions proven");
         };
         assert_eq!(before.len(), after.len());
-        assert!(after.iter().all(|case| case.strength() == ProofStrength::Sufficient));
+        assert!(after
+            .iter()
+            .all(|case| case.strength() == ProofStrength::Sufficient));
     }
 }
 
@@ -262,13 +267,16 @@ fn canonical_group_bounds_are_lossless_against_original_having_cases() {
         panic!("resolved");
     };
     let original = resolved.group_witnesses()[0].witness();
-    let current = local_constructive_witnesses(resolved).into_iter()
-        .find(|proof| proof.operator() == WitnessOperator::Group).expect("group");
+    let current = local_constructive_witnesses(resolved)
+        .into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Group)
+        .expect("group");
     for (old, new) in [
         (original.qualifying(), current.qualifying()),
         (original.rejected(), current.rejected()),
     ] {
-        let (GroupWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new) else {
+        let (GroupWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new)
+        else {
             panic!("both directions proven");
         };
         assert_eq!(before.len(), after.len());
@@ -296,20 +304,26 @@ fn canonical_window_predecessor_bounds_equal_legacy_rank_case() {
         panic!("resolved");
     };
     let original = resolved.window_witnesses()[0].witness();
-    let current = local_constructive_witnesses(resolved).into_iter()
-        .find(|proof| proof.operator() == WitnessOperator::Window).expect("window");
+    let current = local_constructive_witnesses(resolved)
+        .into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Window)
+        .expect("window");
     for (old, new) in [
         (original.qualifying(), current.qualifying()),
         (original.rejected(), current.rejected()),
     ] {
-        let (WindowWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new) else {
+        let (WindowWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new)
+        else {
             panic!("both directions proven");
         };
         assert_eq!(after.len(), 1);
-        assert!(after[0].obligations().iter().any(|obligation| matches!(obligation,
-            WitnessObligation::Ranked { preceding, .. }
-                if preceding.minimum() == before.min_preceding()
-                    && preceding.maximum() == before.max_preceding()
-        )));
+        assert!(after[0]
+            .obligations()
+            .iter()
+            .any(|obligation| matches!(obligation,
+                WitnessObligation::Ranked { preceding, .. }
+                    if preceding.minimum() == before.min_preceding()
+                        && preceding.maximum() == before.max_preceding()
+            )));
     }
 }
