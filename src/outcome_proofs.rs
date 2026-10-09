@@ -215,7 +215,7 @@ fn construct_source(
     rows: u64,
 ) -> Option<OutcomeWitness> {
     if !query.plain_goal_output_shape()
-        || query.joins().len() != 0
+        || !query.joins().is_empty()
         || query.sources().len() != 1
         || query.dependencies().len() != 1
         || !projections_are_plain(query)
