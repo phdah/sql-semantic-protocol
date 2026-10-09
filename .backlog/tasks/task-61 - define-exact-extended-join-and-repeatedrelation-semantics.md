@@ -36,7 +36,7 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 ## Implementation
 
 - Added typed `join_witnesses` with explicit qualifying and rejected source-row cases, matching multiplicity, LEFT/RIGHT/FULL null extension, semi/anti membership, and safe inequality comparisons.
-- Physical source endpoints retain distinct relation-instance aliases for self joins; join evidence composes through linked producer layers with layer provenance. Composite join trees, unsupported predicates, unresolved lineage, and null-safe comparison operators remain explicitly residual.
+- Physical source endpoints retain distinct relation-instance aliases for self joins; join evidence composes through row-preserving plain-copy producer layers with layer provenance. Filtered/row-shaping upstream producers, composite join trees, unsupported predicates, unresolved lineage, and null-safe comparisons remain explicitly residual.
 - Preserved the existing query-level `condition_exactness` residual status when whole-query membership is not provable, while exposing exact local witness directions; existing source/output-domain guarantees remain enforced.
 - Added deterministic schema emission, full-protocol snapshot, DuckDB-backed NULL/missing partner/duplicate/multi-match/self-join tests and parser dialect coverage, plus protocol/semantic documentation. sql-tdg TASK-25 can consume the typed witnesses without parsing SQL.
 - SQL, dbt and other supported adapters share the canonical analyzer and composed emission path. No additional adapter-specific interpretation is introduced.
