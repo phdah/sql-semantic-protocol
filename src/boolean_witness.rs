@@ -220,9 +220,11 @@ impl BooleanWitness {
             .values()
             .filter_map(ColumnRef::relation)
             .collect::<BTreeSet<_>>();
-        let [relation] = relations.iter().copied().collect::<Vec<_>>().as_slice() else {
+        let mut relations = relations.into_iter();
+        let relation = relations.next()?;
+        if relations.next().is_some() {
             return None;
-        };
+        }
         if mapping.values().any(|column| column.relation().is_none()) {
             return None;
         }
@@ -237,7 +239,7 @@ impl BooleanWitness {
             }
         }
         Some(Self {
-            source_relation: (*relation).to_string(),
+            source_relation: relation.to_string(),
             condition: self.condition.mapped_columns(&mapping)?,
             qualifying: self.qualifying.clone(),
             rejected: self.rejected.clone(),
