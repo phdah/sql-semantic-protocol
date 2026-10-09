@@ -107,43 +107,52 @@ including `residual`; `sql-tdg` TASK-30 can use these typed requests
 without reparsing SQL.
 
 
-## Typed constructive witness algebra (TASK-67, in progress)
+## Typed constructive witness algebra (TASK-67)
 
 The optional `layers[].composed_semantics.constructive_witnesses` collection
-normalizes operator-local evidence into a single, parser-independent shape.
-Each item has an `operator`, an `origin_layer_id`, and independent
-`qualifying` and `rejected` directions. A direction has one of three statuses:
+normalizes existing operator-local typed semantics into one parser-independent
+proof format. Each record identifies its operator and originating layer,
+with independent `qualifying` and `rejected` directions.
 
-- `feasible`: one or more jointly enforced cases are sufficient for this
-  classification **at the originating operator boundary only**.
-- `impossible`: no local case of that classification exists.
-- `residual`: the producer, operator, datatype, or whole-input realizability
-  proof is absent; never treat this as impossible or feasible.
+- `feasible`: one or more **sufficient** conjunctive cases at the named operator
+  boundary. A case consists of typed `obligations` with explicit proof
+  `strength` (`sufficient`, `necessary`, or `equivalent`).
+- `impossible`: a supported operator proves no case of that classification.
+- `residual`: proof or physical-source realization is missing. This must not
+  be interpreted as either a possible or impossible output row.
 
-Cases contain `obligations` and a proof `strength` (`sufficient`,
-`necessary`, or `equivalent`). Shared `row` identities prevent independently
-sampling correlated columns. The typed algebra also includes bounded
-existential/universal row-set predicates, NULL-aware row truth, tuple comparison,
-closed-world absence of join partners, group counts, producer boundaries, output
-counts, and before/after state counts. Bounded counts are inclusive.
+The canonical obligations cover coupled Boolean SQL truth on a shared row,
+row cardinality and forall/exists bounds, NULL-sensitive tuple comparisons,
+absence of join partners, grouped counts with contributor tests, strictly
+ordered window predecessor rows, correlated EXISTS/IN membership cases,
+independent branch tuple multiplicities with SQL NULL-safe set equality,
+output cardinality, state counts, and producer realization requirements.
+The set witness count describes **one candidate tuple**, not total output rows.
+Where the legacy local case exposes typed column domains, they are retained
+rather than reconstructed from SQL.
 
-The present normalization supports **source-local** coupled Boolean predicates,
-matched/unmatched joins, and complete grouped and ranked-row cases at directly
-controlled physical boundaries. Group obligations retain the aggregate, DISTINCT,
-argument, contributor tests, grouped row bounds, and non-NULL counts. Ranking
-obligations retain strict ordering and closed-world predecessor counts.
-Subquery and Set operator-local evidence remains `residual` in the new algebra
-until complete translations are proved. The legacy typed operator fields remain
-available during the migration and are not a substitute for physical-source
-realization. Intermediate boundaries must be satisfied by their named producer;
-a `feasible` local case is **not** a complete physical-source plan, and the
-consumer must not directly write an intermediate relation.
+`ConstructiveWitness::logical_and` and `logical_or` combine the independent
+matching/rejection case directions. `logical_not` only swaps TRUE and NOT TRUE
+when the caller has genuinely proven a two-valued (non-UNKNOWN) expression;
+otherwise the qualifying direction stays residual. Case combinations reject
+direct conflicting output/state cardinalities and identical-row contradictory
+SQL truth, but do not pretend to be a complete SMT or cross-layer solver.
 
-`local_constructive_witnesses(&ResolvedComposedSemantics)` is the Rust entry
-point. The active `schema/protocol.schema.json` defines its wire shape as
-`constructiveWitness`, with closed, discriminated obligation variants.
-Cross-layer physical realization, joint terminal feasibility, and all still
-residual operator translations remain open work in TASK-67/68 and later tasks.
+`local_pending_producers` and optional
+`composed_semantics.constructive_pending_producers` list intermediate
+relations that must be realized through their producers. These names are **not
+writable physical source tables**. Operator-local `feasible` does not prove
+that all terminal outputs can be jointly achieved, that every raw input row
+is classified, or that a CTE can be inverted. TASK-68 owns independent
+physical-source realization and transitive DAG proof. TASK-69 onward extends
+bag, operator, and whole-workload laws. No unverified coverage-manifest cell is
+upgraded from this local proof normalization.
+
+The Rust APIs are `local_constructive_witnesses` and
+`local_pending_producers` over `ResolvedComposedSemantics`.
+`schema/protocol.schema.json` owns the optional, versioned, closed wire
+contract. Existing operator witnesses remain available for migration, but
+the canonical typed obligations are the new consumer-facing proof format.
 
 ## Source schemas
 For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
