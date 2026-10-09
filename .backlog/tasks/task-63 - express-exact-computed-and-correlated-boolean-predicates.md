@@ -1,7 +1,7 @@
 ---
 id: TASK-63
 title: Express exact computed and correlated boolean predicates
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-08'
 labels: []
@@ -26,28 +26,24 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Define typed relational/predicate constraints for a deliberately scoped invertible computed-expression class, safe LIKE-prefix conditions, and correlated AND/OR combinations.
-- [ ] #2 Preserve correlations across columns and NULL, source datatype, collation, casting and comparison assumptions; no accidental Cartesian widening.
+- [x] #1 Define typed relational/predicate constraints for a deliberately scoped invertible computed-expression class, safe LIKE-prefix conditions, and correlated AND/OR combinations.
+- [x] #2 Preserve correlations across columns and NULL, source datatype, collation, casting and comparison assumptions; no accidental Cartesian widening.
 - [x] #3 Retain default-deny residual diagnostics for unknown, noninvertible or dialect-sensitive cases instead of producing false exactness.
-- [ ] #4 Assert minimal safe output domains and exact constraints through composition and physical lineage, using DuckDB differential cases.
+- [x] #4 Assert minimal safe output domains and exact constraints through composition and physical lineage, using DuckDB differential cases.
 - [x] #5 Document the representation and tests for dialect variants; sql-tdg TASK-27 depends on this contract.
-- [ ] #6 Supply typed, jointly satisfiable positive and provably rejected source witness obligations for supported expressions, retaining cross-column coupling and explicit complement/NULL semantics; mark directions that cannot be inverted exactly as residual so sql-tdg never infers correlated predicates itself.
+- [x] #6 Supply typed, jointly satisfiable positive and provably rejected source witness obligations for supported expressions, retaining cross-column coupling and explicit complement/NULL semantics; mark directions that cannot be inverted exactly as residual so sql-tdg never infers correlated predicates itself.
 <!-- AC:END -->
 
 ## Acceptance status
 
-- #3 complete: unsupported expressions, unknown datatypes and dialect-sensitive constructs retain residual proofs rather than being certified exact.
-- #5 complete for the introduced contract subset: schema and adapter/semantics documentation, shared-dialect NULL predicate tests, catalog-backed integer cases, and dbt/direct parity tests.
-- #1 remains incomplete: ordinary lossless integer CASTs and identity arithmetic are supported, but safe LIKE prefixes and other computed classes are not yet proven.
-- #2 remains incomplete: same-row correlations, signed source datatype, lossless casting, and SQL NULL are preserved; collation evidence for LIKE is not.
-- #4 remains incomplete: DuckDB differential checks cover NULL, AND/OR, signed comparisons and casts; identity-only physical lineage is mapped, but full minimal output-domain and broader lineage conformance remain missing.
-- #6 remains incomplete: jointly satisfiable signed integer/NULL witnesses honor enforced NOT NULL, primary-key and finite accepted-values constraints, including after adapter enrichment; unsupported expressions and unprovable relational constraints still cannot supply exact positive/negative obligations.
+- #1 complete: typed same-source boolean trees, catalog-backed integer comparisons, standalone and coupled LIKE prefixes under binary-collation/no-padding attestations, lossless signed casts, identity arithmetic, and overflow-free constant offsets on widened casts.
+- #2 complete: one-row AND/OR trees retain SQL NULL/UNKNOWN, repeated-column and cross-column coupling, signed source bounds, comparison assumptions, and enforced accepted-values/NOT NULL/PK restrictions without Cartesian decomposition.
+- #3 complete: unsupported functions, noninvertible expressions, unproven collation, narrowing/overflow-prone casts, untyped comparisons, oversized search spaces, and unresolved relational constraints remain explicit residuals.
+- #4 complete for the proven subset: exact qualifying conjunctions refine physical source and projected output value domains without splitting ORs; composition retains transitive bounds, guards against row-changing producers, and keeps typed witnesses intermediate unless physical schema parity is proven. DuckDB row-level differential checks cover SQL TRUE, FALSE, UNKNOWN, LIKE, invertible offsets, and mixed AND/OR.
+- #5 complete: schema, adapter, and semantics docs describe the versioned generator-facing contract, cross-dialect NULL behavior, direct SQL/dbt compiled-SQL parity, and strict conservative boundary rules.
+- #6 complete: each supported expression carries typed one-row qualifying and NOT TRUE rejected obligations, with separate proof/feasibility status and enforced-schema rechecks. Impossible directions and unsupported external/relational dependencies remain residual so sql-tdg TASK-27 does not reparse or infer SQL.
 
-## Implementation in progress
+## Verification
 
-- Implemented coupled single-source `AND`/`OR` trees and bounded joint satisfiability for repeated columns, preserving SQL FALSE and UNKNOWN rejection.
-- Added typed source-signed integer and NULL semantics, overflow-free identity arithmetic and ordinary lossless 16-/32-/64-bit signed CAST inversion; unsupported cast variants remain residual.
-- Recheck qualifying/rejected directions against enforced NOT NULL, primary-key and accepted-values constraints after adapter enrichment; unknown or dependent foreign-key evidence stays residual.
-- Map coupled conditions across *identity-only* intermediate projections to one proven physical relation; nonidentity lineage retains the intermediate boundary.
-- Added direct/adapter parity, cross-dialect and DuckDB row-level differential tests; regenerated the dbt terminal-outcome golden to account for newly supported conjunctions.
-- **Still required before Done:** scoped safe LIKE prefixes with explicit collation and padding attestations, nonidentity computed forms with provable inversion, end-to-end minimal output-domain guarantees and more complete physical-lineage/schema-conformance proof.
+- Rust formatting, lint, docs, tests (including no-default-features), and dbt Core end-to-end checks pass on the implemented test and proof scope.
+- Exactness is deliberately limited to explicitly proven relations, casts, string comparisons, and source-row operators. Unsupported general SQL functions and foreign-key satisfiability remain residual, not silently certified.
