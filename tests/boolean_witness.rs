@@ -190,6 +190,33 @@ fn null_disjunction_has_jointly_evaluated_exact_truth_directions() {
 }
 
 #[test]
+fn affine_integer_bound_survives_exact_null_conjunct() {
+    let bundle = typed_bundle(
+        "SELECT a FROM t WHERE CAST(a AS BIGINT) + 1 > 3 AND b IS NULL",
+    );
+    let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = composed.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    let ValueDomain::Ranges(ranges) = composed.output().columns()[0].domain() else {
+        panic!("exact NULL conjunct must not erase the independent integer bound");
+    };
+    let [range] = ranges.ranges() else {
+        panic!("expected one integer range");
+    };
+    let lower = range.lower().expect("lower bound");
+    assert_eq!(
+        lower.value().value(),
+        &sql_semantic_protocol::LiteralValue::Number("2".into())
+    );
+    assert!(!lower.inclusive());
+}
+
+#[test]
 fn correlated_predicates_preserve_minimal_scalar_domains() {
     let conjunction = typed_bundle("SELECT a FROM t WHERE a > 2 AND a <= 5");
     let ComposedSemantics::Resolved(composed) = conjunction.layers()[0].composed_semantics() else {
