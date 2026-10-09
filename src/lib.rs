@@ -22,6 +22,7 @@
 //!   requests and their independently proven output-row feasibility.
 //! - OutcomeWitness describes source-complete integer-key, group, join, window and set
 //!   cardinality constructions derived from existing operator witness contracts.
+//! - WriteStateEffect describes conservative INSERT, UPDATE, DELETE and MERGE before/after obligations.
 
 mod analysis;
 mod boolean_witness;
@@ -62,8 +63,9 @@ pub use bundle::{
     ComposedJoinEquality, ComposedSemantics, ComposedSetOperation, ComposedSubqueryWitness,
     ComposedWindowWitness, CompositionDiagnostic, CompositionFailureReason,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
-    GroupBoundaryKind, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
-    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    GroupBoundaryKind, InputAnalysisError, LayerWriteStateEffect, RelationResolution,
+    ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
+    UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
@@ -118,7 +120,10 @@ pub use protocol::{
     SubquerySemantics, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
-    WindowSpecification, WriteKind, WriteOperation, WriteValue, PROTOCOL_VERSION,
+    WindowSpecification, WriteAffectedRows, WriteCardinalityRule, WriteCountError,
+    WriteEffectAction, WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind,
+    WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty, WriteValue,
+    PROTOCOL_VERSION,
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,

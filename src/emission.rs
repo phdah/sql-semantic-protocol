@@ -7,8 +7,8 @@ use serde_json::{json, Value};
 
 use crate::bundle::{
     AnalysisBundle, AnalysisGraph, ComposedSemantics, CompositionDiagnostic, DatasetRef,
-    GraphComponent, GraphEdge, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
-    UnresolvedComposedSemantics,
+    GraphComponent, GraphEdge, LayerWriteStateEffect, ResolvedComposedSemantics, SqlInputSource,
+    TransformationLayer, UnresolvedComposedSemantics,
 };
 use crate::constraints::{
     ConstraintDiagnostic, ConstraintValue, RelationConstraint, RelationConstraintSet,
@@ -25,7 +25,7 @@ use crate::protocol::{
     SetOperation, SourceRelation, SubquerySemantics, UnaryExpression, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
-    WriteOperation, WriteValue,
+    WriteEffectAction, WriteIdempotence, WriteOperation, WritePostState, WriteValue,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
@@ -124,6 +124,16 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                 .relation_constraints()
                 .iter()
                 .map(relation_constraint_set_to_value)
+                .collect(),
+        );
+    }
+
+    let write_effects = bundle.write_state_effects();
+    if !write_effects.is_empty() {
+        value["write_effects"] = Value::Array(
+            write_effects
+                .iter()
+                .map(layer_write_effect_to_value)
                 .collect(),
         );
     }
@@ -782,7 +792,43 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
     value
 }
 
+fn layer_write_effect_to_value(write: &LayerWriteStateEffect) -> Value {
+    json!({
+        "layer_id": write.layer_id(),
+        "target": write.target(),
+        "sources": write.sources(),
+        "state_effect": write_state_effect_to_value(write.effect()),
+        "target_constraints": write.target_constraints()
+            .map_or(Value::Null, relation_constraint_set_to_value),
+    })
+}
+
+fn write_state_effect_to_value(effect: &crate::WriteStateEffect) -> Value {
+    json!({
+        "initial_state": "caller_supplied",
+        "target_columns": effect.target_columns(),
+        "match_condition": effect.match_condition().map_or(Value::Null, predicate_to_value),
+        "cardinality_rule": effect.cardinality_rule().as_str(),
+        "affected_rows": { "minimum": effect.affected_rows().minimum(), "maximum": effect.affected_rows().maximum() },
+        "post_state": match effect.post_state() { WritePostState::Empty => "empty", WritePostState::ApplyToInitial => "apply_to_initial" },
+        "idempotence": match effect.idempotence() { WriteIdempotence::Proven => "proven", WriteIdempotence::Unproven => "unproven" },
+        "branches": effect.branches().iter().map(|branch| json!({
+            "match_kind": branch.match_kind().map(|kind| kind.as_str()),
+            "predicate": branch.predicate().map_or(Value::Null, predicate_to_value),
+            "domains": branch.domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
+            "action": match branch.action() {
+                WriteEffectAction::InsertQuery => json!({"kind": "insert_query"}),
+                WriteEffectAction::Mutation(action) => merge_action_to_value(action),
+            }
+        })).collect::<Vec<_>>(),
+        "residual_reasons": effect.reasons().iter().map(|reason| reason.as_str()).collect::<Vec<_>>(),
+    })
+}
+
 fn write_operation_to_value(write: &WriteOperation) -> Value {
+    let state_effect = write
+        .state_effect()
+        .map(|effect| write_state_effect_to_value(&effect));
     json!({
         "target": write.target(),
         "kind": write.kind().as_str(),
@@ -792,7 +838,14 @@ fn write_operation_to_value(write: &WriteOperation) -> Value {
             .merge_clauses()
             .iter()
             .map(merge_clause_to_value)
-            .collect::<Vec<_>>()
+            .collect::<Vec<_>>(),
+        "selection": write.selection().map_or(Value::Null, predicate_to_value),
+        "selection_domains": write.selection_domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
+        "assignments": write.assignments().iter().map(|assignment| json!({
+            "target": assignment.target(),
+            "value": write_value_to_value(assignment.value())
+        })).collect::<Vec<_>>(),
+        "state_effect": state_effect
     })
 }
 
@@ -800,6 +853,7 @@ fn merge_clause_to_value(clause: &MergeClause) -> Value {
     json!({
         "match_kind": clause.match_kind().as_str(),
         "predicate": clause.predicate().map_or(Value::Null, predicate_to_value),
+        "domains": clause.domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
         "action": merge_action_to_value(clause.action())
     })
 }

@@ -12,9 +12,10 @@ use std::{
 use serde_json::Number;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, CastKind as SqlCastKind, ColumnOption,
-    ConstraintCharacteristics, CreateTable as SqlCreateTable, Distinct as SqlDistinct,
-    DuplicateTreatment, Expr, Function, FunctionArg, FunctionArgExpr, FunctionArguments,
-    GroupByExpr, GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
+    ConstraintCharacteristics, CreateTable as SqlCreateTable, Delete as SqlDelete,
+    Distinct as SqlDistinct, DuplicateTreatment, Expr, FromTable as SqlFromTable, Function,
+    FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
+    GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
     Join as SqlJoin, JoinConstraint, JoinOperator, MergeAction as SqlMergeAction,
     MergeClause as SqlMergeClause, MergeClauseKind as SqlMergeClauseKind, MergeInsertKind,
     NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
@@ -217,6 +218,22 @@ fn analyze_statement(
             )
         }
         SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
+        SqlStatement::Update {
+            table,
+            assignments,
+            from,
+            selection,
+            returning,
+            or,
+        } => analyze_update(
+            table,
+            assignments,
+            from.is_some(),
+            selection.as_ref(),
+            returning.is_some(),
+            or.is_some(),
+        ),
+        SqlStatement::Delete(delete) => analyze_delete(delete),
         SqlStatement::Merge {
             table,
             source,
@@ -286,6 +303,187 @@ fn analyze_insert(insert: &SqlInsert, metadata: &AnalysisMetadata<'_>) -> Protoc
     ProtocolStatement::Query(query)
 }
 
+fn analyze_update(
+    table: &TableWithJoins,
+    assignments: &[sqlparser::ast::Assignment],
+    has_from: bool,
+    selection: Option<&Expr>,
+    has_returning: bool,
+    has_conflict_modifier: bool,
+) -> ProtocolStatement {
+    if has_from
+        || has_returning
+        || has_conflict_modifier
+        || !table.joins.is_empty()
+        || assignments.is_empty()
+    {
+        return unsupported_write_statement(
+            "update",
+            "unsupported_update_form",
+            "only single-target UPDATE SET without FROM, JOIN, RETURNING, or conflict modifiers is supported",
+        );
+    }
+    let Some(target_source) = merge_target_relation(&table.relation) else {
+        return unsupported_write_statement(
+            "update",
+            "unsupported_update_target",
+            "UPDATE requires one unpartitioned named target relation",
+        );
+    };
+    let target = target_source.name().to_string();
+    let mut diagnostics = Vec::new();
+    let mut derived_index = 0;
+    let mut nonlocal_dependencies = BTreeSet::new();
+    if let Some(selection) = selection {
+        collect_expression_dependencies(
+            selection,
+            &BTreeSet::new(),
+            &mut diagnostics,
+            &mut derived_index,
+            &mut nonlocal_dependencies,
+        );
+    }
+    for assignment in assignments {
+        collect_expression_dependencies(
+            &assignment.value,
+            &BTreeSet::new(),
+            &mut diagnostics,
+            &mut derived_index,
+            &mut nonlocal_dependencies,
+        );
+    }
+    if !nonlocal_dependencies.is_empty() {
+        return unsupported_write_statement(
+            "update",
+            "unsupported_update_subquery",
+            "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved",
+        );
+    }
+    let predicate = selection.map(|selection| analyze_predicate(selection, &mut diagnostics));
+    let domains = derive_column_domains(
+        &Predicates::new(predicate.clone(), None, None),
+        std::slice::from_ref(&target_source),
+    );
+    let assignments = assignments
+        .iter()
+        .map(|assignment| {
+            let expression =
+                analyze_expression_with_scope(&assignment.value, &[], &[], &mut diagnostics);
+            let domain = derive_expression_domain_with_column_domains(
+                &expression,
+                &domains,
+                std::slice::from_ref(&target_source),
+            );
+            MergeAssignment::new(
+                assignment.target.to_string(),
+                WriteValue::new(expression, domain),
+            )
+        })
+        .collect();
+    sort_diagnostics(&mut diagnostics);
+    ProtocolStatement::Query(
+        QueryStatement::new(
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            RowConditions::new(
+                Predicates::new(predicate.clone(), None, None),
+                domains.clone(),
+                ConditionExactness::from_residuals(vec![ResidualCondition::new(
+                    ResidualConditionReason::AnalysisDiagnostic,
+                    ConditionClause::RowSetOperator,
+                    "update_requires_initial_state",
+                )]),
+            ),
+            Output::new(Vec::new()),
+            diagnostics,
+        )
+        .with_produced_relation(Some(target.clone()))
+        .with_write(Some(WriteOperation::update(
+            target,
+            predicate,
+            assignments,
+            domains,
+        ))),
+    )
+}
+
+fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
+    let tables = match &delete.from {
+        SqlFromTable::WithFromKeyword(tables) | SqlFromTable::WithoutKeyword(tables) => tables,
+    };
+    if !delete.tables.is_empty()
+        || delete.using.is_some()
+        || delete.returning.is_some()
+        || !delete.order_by.is_empty()
+        || delete.limit.is_some()
+        || tables.len() != 1
+        || !tables[0].joins.is_empty()
+    {
+        return unsupported_write_statement(
+            "delete",
+            "unsupported_delete_form",
+            "only single-target DELETE FROM without USING, JOIN, RETURNING, ORDER BY, or LIMIT is supported",
+        );
+    }
+    let Some(target_source) = merge_target_relation(&tables[0].relation) else {
+        return unsupported_write_statement(
+            "delete",
+            "unsupported_delete_target",
+            "DELETE requires one unpartitioned named target relation",
+        );
+    };
+    let target = target_source.name().to_string();
+    let mut diagnostics = Vec::new();
+    let mut derived_index = 0;
+    let mut nonlocal_dependencies = BTreeSet::new();
+    if let Some(selection) = &delete.selection {
+        collect_expression_dependencies(
+            selection,
+            &BTreeSet::new(),
+            &mut diagnostics,
+            &mut derived_index,
+            &mut nonlocal_dependencies,
+        );
+    }
+    if !nonlocal_dependencies.is_empty() {
+        return unsupported_write_statement(
+            "delete",
+            "unsupported_delete_subquery",
+            "DELETE subqueries require source-row and correlation semantics that cannot yet be proved",
+        );
+    }
+    let predicate = delete
+        .selection
+        .as_ref()
+        .map(|selection| analyze_predicate(selection, &mut diagnostics));
+    let domains = derive_column_domains(
+        &Predicates::new(predicate.clone(), None, None),
+        &[target_source],
+    );
+    sort_diagnostics(&mut diagnostics);
+    ProtocolStatement::Query(
+        QueryStatement::new(
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            RowConditions::new(
+                Predicates::new(predicate.clone(), None, None),
+                domains.clone(),
+                ConditionExactness::from_residuals(vec![ResidualCondition::new(
+                    ResidualConditionReason::AnalysisDiagnostic,
+                    ConditionClause::RowSetOperator,
+                    "delete_requires_initial_state",
+                )]),
+            ),
+            Output::new(Vec::new()),
+            diagnostics,
+        )
+        .with_produced_relation(Some(target.clone()))
+        .with_write(Some(WriteOperation::delete(target, predicate, domains))),
+    )
+}
+
 fn analyze_merge(
     table: &TableFactor,
     source: &TableFactor,
@@ -297,7 +495,7 @@ fn analyze_merge(
         return unsupported_write_statement(
             "merge",
             "unsupported_merge_target",
-            "MERGE target must be a named relation",
+            "MERGE target must be an unpartitioned named relation",
         );
     };
     let target = target_source.name().to_string();
@@ -382,8 +580,9 @@ fn merge_target_relation(table: &TableFactor) -> Option<SourceRelation> {
             name,
             alias,
             args: None,
+            partitions,
             ..
-        } => Some(SourceRelation::new(
+        } if partitions.is_empty() => Some(SourceRelation::new(
             name.to_string(),
             alias.as_ref().map(|alias| alias.name.to_string()),
         )),
@@ -507,7 +706,7 @@ fn analyze_merge_clause(
         },
     };
 
-    ProtocolMergeClause::new(match_kind, predicate, action)
+    ProtocolMergeClause::new(match_kind, predicate, branch_domains, action)
 }
 
 fn merge_branch_predicate(

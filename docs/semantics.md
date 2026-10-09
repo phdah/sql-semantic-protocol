@@ -473,3 +473,25 @@ WHERE, DISTINCT or LIMIT, preserve the intermediate boundary. A physical
 mapping additionally requires a row-preserving producer chain. Type- and
 collation-dependent comparisons remain intermediate across producer layers
 unless source-schema parity is independently established.
+
+
+### DML before/after correctness
+
+An INSERT SELECT, standalone single-target UPDATE or DELETE, or MERGE exposes
+a typed mutation effect. It requires caller-supplied **complete** initial target
+rows, retains branch selection predicates and necessary domains, and never
+invents untouched rows. The complete poststate is an effect applied to that
+initial snapshot, except unconditional DELETE which guarantees the target is
+empty on successful execution. Row conservation is typed and checkable from
+*verified* inserted/updated/deleted target row counts, not estimated from
+source cardinality. These count equations say nothing about whether a
+mutation will succeed: engine-specific MERGE conflict behavior, composite
+keys, NULL semantics, and schema enforcement remain explicit obligations.
+
+The bundle associates every mutation with its resolved source/target relation
+identities and whatever canonical target constraints SQL, dbt, or ODCS
+evidence provides. Missing constraint evidence remains unknown, rather than
+silently being interpreted as no keys. Key uniqueness must be checked across
+inserted, updated, and untouched rows of the actual target. Unknown computed
+predicates and noninvertible assignments keep conservative domains; their
+presence never licenses a generator to claim complete exactness.

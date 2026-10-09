@@ -65,6 +65,12 @@
       "items": {
         "$ref": "#/$defs/outcomeGoal"
       }
+    },
+    "write_effects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/layerWriteStateEffect"
+      }
     }
   },
   "$defs": {
@@ -2421,7 +2427,11 @@
         "kind",
         "target_columns",
         "match_condition",
-        "merge_clauses"
+        "merge_clauses",
+        "selection",
+        "assignments",
+        "state_effect",
+        "selection_domains"
       ],
       "properties": {
         "target": {
@@ -2431,7 +2441,9 @@
           "enum": [
             "definition",
             "append",
-            "conditional_mutation"
+            "conditional_mutation",
+            "update",
+            "delete"
           ]
         },
         "target_columns": {
@@ -2455,6 +2467,38 @@
           "items": {
             "$ref": "#/$defs/mergeClause"
           }
+        },
+        "selection": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mergeAssignment"
+          }
+        },
+        "state_effect": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/writeStateEffect"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selection_domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
         }
       }
     },
@@ -2464,7 +2508,8 @@
       "required": [
         "match_kind",
         "predicate",
-        "action"
+        "action",
+        "domains"
       ],
       "properties": {
         "match_kind": {
@@ -2487,6 +2532,12 @@
         },
         "action": {
           "$ref": "#/$defs/mergeAction"
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
         }
       }
     },
@@ -5257,6 +5308,202 @@
           }
         }
       ]
+    },
+    "writeStateEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "initial_state",
+        "affected_rows",
+        "post_state",
+        "idempotence",
+        "branches",
+        "residual_reasons",
+        "cardinality_rule",
+        "target_columns",
+        "match_condition"
+      ],
+      "properties": {
+        "initial_state": {
+          "const": "caller_supplied"
+        },
+        "affected_rows": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minimum",
+            "maximum"
+          ],
+          "properties": {
+            "minimum": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maximum": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        "post_state": {
+          "enum": [
+            "empty",
+            "apply_to_initial"
+          ]
+        },
+        "idempotence": {
+          "enum": [
+            "proven",
+            "unproven"
+          ]
+        },
+        "branches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/writeEffectBranch"
+          }
+        },
+        "residual_reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "affected_rows_unknown",
+              "constraint_conflicts_unverified",
+              "match_multiplicity_unknown",
+              "predicate_exactness_unverified",
+              "unsupported_action",
+              "implicit_target_columns"
+            ]
+          }
+        },
+        "cardinality_rule": {
+          "enum": [
+            "initial_plus_inserted",
+            "initial",
+            "initial_minus_deleted",
+            "initial_plus_inserted_minus_deleted"
+          ]
+        },
+        "target_columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "match_condition": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "writeEffectBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "match_kind",
+        "predicate",
+        "action",
+        "domains"
+      ],
+      "properties": {
+        "match_kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "matched",
+            "not_matched",
+            "not_matched_by_target",
+            "not_matched_by_source",
+            null
+          ]
+        },
+        "predicate": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/mergeAction"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "insert_query"
+                }
+              }
+            }
+          ]
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+          }
+        }
+      }
+    },
+    "layerWriteStateEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "target",
+        "sources",
+        "state_effect",
+        "target_constraints"
+      ],
+      "properties": {
+        "layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target": {
+          "$ref": "#/$defs/relationName"
+        },
+        "sources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "state_effect": {
+          "$ref": "#/$defs/writeStateEffect"
+        },
+        "target_constraints": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/relationConstraintSet"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     }
   }
 }
