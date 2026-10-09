@@ -109,36 +109,39 @@ without reparsing SQL.
 
 ## Typed constructive witness algebra (TASK-67, in progress)
 
-The optional \`layers[].composed_semantics.constructive_witnesses\` collection
+The optional `layers[].composed_semantics.constructive_witnesses` collection
 normalizes operator-local evidence into a single, parser-independent shape.
-Each item has an \`operator\`, an \`origin_layer_id\`, and independent
-\`qualifying\` and \`rejected\` directions. A direction has one of three statuses:
+Each item has an `operator`, an `origin_layer_id`, and independent
+`qualifying` and `rejected` directions. A direction has one of three statuses:
 
-- \`feasible\`: one or more jointly enforced cases are sufficient for this
+- `feasible`: one or more jointly enforced cases are sufficient for this
   classification **at the originating operator boundary only**.
-- \`impossible\`: no local case of that classification exists.
-- \`residual\`: the producer, operator, datatype, or whole-input realizability
+- `impossible`: no local case of that classification exists.
+- `residual`: the producer, operator, datatype, or whole-input realizability
   proof is absent; never treat this as impossible or feasible.
 
-Cases contain \`obligations\` and a proof \`strength\` (\`sufficient\`,
-\`necessary\`, or \`equivalent\`). Shared \`row\` identities prevent independently
+Cases contain `obligations` and a proof `strength` (`sufficient`,
+`necessary`, or `equivalent`). Shared `row` identities prevent independently
 sampling correlated columns. The typed algebra also includes bounded
 existential/universal row-set predicates, NULL-aware row truth, tuple comparison,
 closed-world absence of join partners, group counts, producer boundaries, output
 counts, and before/after state counts. Bounded counts are inclusive.
 
-The present normalization supports **source-local** coupled Boolean predicates
-and matched/unmatched join cases. It deliberately leaves existing Group, Window,
-Subquery, and Set operator-local evidence as \`residual\` in the new algebra until
-their full translations are proved. The legacy typed operator fields remain
+The present normalization supports **source-local** coupled Boolean predicates,
+matched/unmatched joins, and complete grouped and ranked-row cases at directly
+controlled physical boundaries. Group obligations retain the aggregate, DISTINCT,
+argument, contributor tests, grouped row bounds, and non-NULL counts. Ranking
+obligations retain strict ordering and closed-world predecessor counts.
+Subquery and Set operator-local evidence remains `residual` in the new algebra
+until complete translations are proved. The legacy typed operator fields remain
 available during the migration and are not a substitute for physical-source
 realization. Intermediate boundaries must be satisfied by their named producer;
-a \`feasible\` local case is **not** a complete physical-source plan, and the
+a `feasible` local case is **not** a complete physical-source plan, and the
 consumer must not directly write an intermediate relation.
 
-\`local_constructive_witnesses(&ResolvedComposedSemantics)\` is the Rust entry
-point. The active \`schema/protocol.schema.json\` defines its wire shape as
-\`constructiveWitness\`, with closed, discriminated obligation variants.
+`local_constructive_witnesses(&ResolvedComposedSemantics)` is the Rust entry
+point. The active `schema/protocol.schema.json` defines its wire shape as
+`constructiveWitness`, with closed, discriminated obligation variants.
 Cross-layer physical realization, joint terminal feasibility, and all still
 residual operator translations remain open work in TASK-67/68 and later tasks.
 
