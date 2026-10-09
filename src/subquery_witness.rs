@@ -228,12 +228,7 @@ fn derive(
         .unwrap_or_default();
     let inner_name = subquery.dependencies().first().cloned();
     let residual = |reason: &str| {
-        SubqueryMembershipWitness::residual(
-            kind,
-            outer_name.clone(),
-            inner_name.clone(),
-            reason,
-        )
+        SubqueryMembershipWitness::residual(kind, outer_name.clone(), inner_name.clone(), reason)
     };
 
     let [outer_source] = outer_sources else {
@@ -271,22 +266,17 @@ fn derive(
             return residual("unsupported_inner_predicate_or_correlation");
         }
     }
-    pairs.sort_by(|a, b| {
-        (&a.outer, &a.inner).cmp(&(&b.outer, &b.inner))
-    });
+    pairs.sort_by(|a, b| (&a.outer, &a.inner).cmp(&(&b.outer, &b.inner)));
     pairs.dedup();
     if pairs.len() != subquery.correlations().len() {
         return residual("unresolved_or_non_equality_correlation");
     }
-    if pairs
-        .iter()
-        .any(|pair| {
-            !subquery.correlations().iter().any(|source| {
-                source.relation() == pair.outer.relation().unwrap_or_default()
-                    && source.column() == pair.outer.name()
-            })
+    if pairs.iter().any(|pair| {
+        !subquery.correlations().iter().any(|source| {
+            source.relation() == pair.outer.relation().unwrap_or_default()
+                && source.column() == pair.outer.name()
         })
-    {
+    }) {
         return residual("correlation_not_physical");
     }
 
@@ -376,8 +366,11 @@ fn collect_correlations(
                     let pair = source_column(a, outer, outer_instance)
                         .zip(inner_column(b, outer_instance, inner_relation))
                         .or_else(|| {
-                            source_column(b, outer, outer_instance)
-                                .zip(inner_column(a, outer_instance, inner_relation))
+                            source_column(b, outer, outer_instance).zip(inner_column(
+                                a,
+                                outer_instance,
+                                inner_relation,
+                            ))
                         });
                     if let Some((outer, inner)) = pair {
                         keys.push(SubqueryCorrelation { outer, inner });
@@ -406,7 +399,10 @@ fn source_column(
     instance: &str,
 ) -> Option<ColumnRef> {
     if col.relation() == Some(instance) || col.relation() == Some(outer.name()) {
-        Some(ColumnRef::new(Some(outer.name().to_string()), col.name().to_string()))
+        Some(ColumnRef::new(
+            Some(outer.name().to_string()),
+            col.name().to_string(),
+        ))
     } else {
         None
     }
@@ -423,7 +419,10 @@ fn inner_column(
     }
     // The distinct qualifier is kept as an instance only in the normalized
     // comparison. The physical relation comes from nested dependency evidence.
-    Some(ColumnRef::new(Some(inner_relation.to_string()), col.name().to_string()))
+    Some(ColumnRef::new(
+        Some(inner_relation.to_string()),
+        col.name().to_string(),
+    ))
 }
 
 #[cfg(test)]
@@ -445,21 +444,35 @@ mod tests {
         let item = witness("SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE l.order_id = o.id)");
         assert_eq!(item.kind(), SubqueryMembershipKind::Exists);
         assert_eq!(item.correlations().len(), 1);
-        assert!(matches!(item.qualifying(), SubqueryMembershipDirection::Exact(_)));
-        assert!(matches!(item.rejected(), SubqueryMembershipDirection::Exact(_)));
+        assert!(matches!(
+            item.qualifying(),
+            SubqueryMembershipDirection::Exact(_)
+        ));
+        assert!(matches!(
+            item.rejected(),
+            SubqueryMembershipDirection::Exact(_)
+        ));
     }
 
     #[test]
     fn nullable_not_in_is_not_an_anti_join() {
-        let item = witness("SELECT o.id FROM orders o WHERE o.id NOT IN (SELECT c.id FROM customers c)");
+        let item =
+            witness("SELECT o.id FROM orders o WHERE o.id NOT IN (SELECT c.id FROM customers c)");
         assert_eq!(item.kind(), SubqueryMembershipKind::NotIn);
-        assert!(matches!(item.qualifying(), SubqueryMembershipDirection::Exact(cases) if cases.contains(&SubqueryMembershipCase::NoCandidates)));
-        assert!(matches!(item.rejected(), SubqueryMembershipDirection::Exact(cases) if cases.contains(&SubqueryMembershipCase::NoMatchNullCandidate)));
+        assert!(
+            matches!(item.qualifying(), SubqueryMembershipDirection::Exact(cases) if cases.contains(&SubqueryMembershipCase::NoCandidates))
+        );
+        assert!(
+            matches!(item.rejected(), SubqueryMembershipDirection::Exact(cases) if cases.contains(&SubqueryMembershipCase::NoMatchNullCandidate))
+        );
     }
 
     #[test]
     fn unsupported_correlated_comparison_is_residual() {
         let item = witness("SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE l.order_id > o.id)");
-        assert!(matches!(item.qualifying(), SubqueryMembershipDirection::Residual { .. }));
+        assert!(matches!(
+            item.qualifying(),
+            SubqueryMembershipDirection::Residual { .. }
+        ));
     }
 }
