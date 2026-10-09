@@ -437,7 +437,7 @@ it supplies equivalent SQL; metadata-only adapters do not synthesize SQL.
 
 ## Correlated single-row boolean filters
 
-A cross-column `OR` is not safely describable as a conjunction of individual
+A cross-column `OR` is not safely describable as a conjunction of independent
 column domains. For a single source such as
 `a IS NULL OR b IS NULL`, the analyzer may instead carry a typed
 `boolean_witness` whose `any` branches apply to the **same row**.
@@ -449,6 +449,11 @@ Signed integer comparisons require authoritative catalog datatypes and
 representable signed literals. Only overflow-free identity arithmetic (`+a`, `a+0`, `a-0`) is currently
 invertible. Nonidentity arithmetic, CAST, LIKE, functions and ambiguous sources
 still produce residual directions. Repeated columns are evaluated jointly using bounded integer truth
-partitions and remain residual if their search space is too large. Witnesses
+partitions and remain residual if their search space is too large. Pure
+conjunctions, including contradictory repeated-column comparisons, use the same
+solver. Enforced NOT NULL, primary key and finite accepted-values metadata
+can further reject impossible witness directions, including after adapter
+enrichment. Unknown enforcement or dependent foreign-key satisfiability stays
+residual. Witnesses
 remain associated with the layer and source boundary where they originated
 rather than being silently remapped across nonidentity projections.
