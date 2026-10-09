@@ -11,13 +11,46 @@ use crate::protocol::{
     ColumnRef, ComparisonOperator, Expression, LiteralType, LiteralValue, Predicate, SourceRelation,
 };
 
+/// A logical operand sequence with at least two children.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BooleanOperands {
+    operands: Vec<BooleanRowConstraint>,
+}
+
+impl BooleanOperands {
+    fn new(operands: Vec<BooleanRowConstraint>) -> Option<Self> {
+        (operands.len() >= 2).then_some(Self { operands })
+    }
+
+    /// Return the operands in SQL evaluation-tree order.
+    pub fn as_slice(&self) -> &[BooleanRowConstraint] {
+        &self.operands
+    }
+}
+
+impl std::ops::Deref for BooleanOperands {
+    type Target = [BooleanRowConstraint];
+
+    fn deref(&self) -> &Self::Target {
+        self.as_slice()
+    }
+}
+
+/// Catalog-backed signed integer bounds used to prove feasible truth outcomes.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct SignedIntegerEvidence {
+    pub(crate) minimum: i128,
+    pub(crate) maximum: i128,
+    pub(crate) explicitly_nullable: bool,
+}
+
 /// A generator-facing, typed source-row boolean expression.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BooleanRowConstraint {
     /// Every child must hold on the same source row.
-    All(Vec<BooleanRowConstraint>),
+    All(BooleanOperands),
     /// At least one child must hold on the same source row.
-    Any(Vec<BooleanRowConstraint>),
+    Any(BooleanOperands),
     /// Test a source value for NULL or NOT NULL.
     NullTest {
         /// Resolved source column.
@@ -138,7 +171,7 @@ impl BooleanWitness {
 pub(crate) fn analyze(
     predicate: Option<&Predicate>,
     sources: &[SourceRelation],
-    integer_type_accepts: impl Fn(&ColumnRef, i64) -> bool,
+    integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
 ) -> Option<BooleanWitness> {
     let predicate = predicate?;
     if !has_or(predicate) {
@@ -147,7 +180,7 @@ pub(crate) fn analyze(
     let [source] = sources else {
         return None;
     };
-    let condition = normalize(predicate, sources, &integer_type_accepts);
+    let condition = normalize(predicate, sources, &integer_evidence);
     let mut columns = Vec::new();
     condition.columns(&mut columns);
     let distinct_columns = columns.iter().collect::<BTreeSet<_>>().len();
@@ -155,27 +188,45 @@ pub(crate) fn analyze(
     let resolved_source = columns
         .iter()
         .all(|column| column.relation() == Some(source.name()));
-    let directions =
-        if condition.is_exact() && distinct_columns >= 2 && unique_columns && resolved_source {
-            (
-                BooleanWitnessDirection::Exact(BooleanTruthCase::True),
-                BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue),
-            )
+    let candidate = condition.is_exact()
+        && distinct_columns >= 2
+        && unique_columns
+        && resolved_source;
+    let cases = if candidate {
+        possible_truths(&condition, &integer_evidence)
+    } else {
+        BTreeSet::new()
+    };
+    let unsupported_reason = if distinct_columns < 2 {
+        "source columns cannot be proven to form a supported cross-column predicate"
+    } else if !resolved_source {
+        "predicate columns do not resolve to the same source identity"
+    } else if !unique_columns {
+        "repeated column conditions require joint feasibility analysis"
+    } else {
+        "a boolean branch lacks proven source datatype or supported semantics"
+    };
+    let direction = |truth: BooleanTruthCase, feasible: bool| {
+        if candidate && feasible {
+            BooleanWitnessDirection::Exact(truth)
         } else {
-            let reason = if distinct_columns < 2 {
-                "source columns cannot be proven to form a supported cross-column predicate"
-            } else if !resolved_source {
-                "predicate columns do not resolve to the same source identity"
-            } else if !unique_columns {
-                "repeated column conditions require joint feasibility analysis"
-            } else {
-                "a boolean branch lacks proven source datatype or supported semantics"
-            };
-            let direction = BooleanWitnessDirection::Residual {
-                reason: reason.to_string(),
-            };
-            (direction.clone(), direction)
-        };
+            BooleanWitnessDirection::Residual {
+                reason: if candidate {
+                    "no feasible source-row assignment proves the requested truth direction"
+                        .to_string()
+                } else {
+                    unsupported_reason.to_string()
+                },
+            }
+        }
+    };
+    let directions = (
+        direction(BooleanTruthCase::True, cases.contains(&SqlTruth::True)),
+        direction(
+            BooleanTruthCase::NotTrue,
+            cases.contains(&SqlTruth::False) || cases.contains(&SqlTruth::Unknown),
+        ),
+    );
     Some(BooleanWitness {
         source_relation: source.name().to_string(),
         condition,
@@ -195,23 +246,23 @@ fn has_or(predicate: &Predicate) -> bool {
 fn normalize(
     predicate: &Predicate,
     sources: &[SourceRelation],
-    integer_type_accepts: &impl Fn(&ColumnRef, i64) -> bool,
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
 ) -> BooleanRowConstraint {
     match predicate {
-        Predicate::And(logical) => BooleanRowConstraint::All(
-            logical
+        Predicate::And(logical) | Predicate::Or(logical) => {
+            let operands = logical
                 .operands()
                 .iter()
-                .map(|item| normalize(item, sources, integer_type_accepts))
-                .collect(),
-        ),
-        Predicate::Or(logical) => BooleanRowConstraint::Any(
-            logical
-                .operands()
-                .iter()
-                .map(|item| normalize(item, sources, integer_type_accepts))
-                .collect(),
-        ),
+                .map(|item| normalize(item, sources, integer_evidence))
+                .collect();
+            match BooleanOperands::new(operands) {
+                Some(operands) if matches!(predicate, Predicate::And(_)) => {
+                    BooleanRowConstraint::All(operands)
+                }
+                Some(operands) => BooleanRowConstraint::Any(operands),
+                None => residual("logical predicate has fewer than two operands"),
+            }
+        },
         Predicate::IsNull(test) => {
             if let Expression::Column(column) = test.expression() {
                 BooleanRowConstraint::NullTest {
@@ -224,11 +275,11 @@ fn normalize(
         }
         Predicate::Comparison(comparison) => {
             let (column, operator, literal) = match (comparison.left(), comparison.right()) {
-                (Expression::Column(column), Expression::Literal(literal)) => {
-                    (column, comparison.operator(), literal)
+                (Expression::Column(column), right) if signed_integer_literal(right).is_some() => {
+                    (column, comparison.operator(), right)
                 }
-                (Expression::Literal(literal), Expression::Column(column)) => {
-                    (column, comparison.operator().reversed(), literal)
+                (left, Expression::Column(column)) if signed_integer_literal(left).is_some() => {
+                    (column, comparison.operator().reversed(), left)
                 }
                 _ => return residual("comparison is computed or correlates two source values"),
             };
@@ -238,16 +289,11 @@ fn normalize(
             ) {
                 return residual("null-safe comparison is not part of the integer witness subset");
             }
-            let (LiteralType::Integer, LiteralValue::Number(value)) =
-                (literal.literal_type(), literal.value())
-            else {
-                return residual("comparison literal is not a signed integer");
-            };
-            let Ok(value) = value.parse::<i64>() else {
-                return residual("comparison integer is outside the supported signed range");
+            let Some(value) = signed_integer_literal(literal) else {
+                return residual("comparison literal is not a supported signed integer");
             };
             let column = resolve_column(column, sources);
-            if !integer_type_accepts(&column, value) {
+            if integer_evidence(&column).is_none() {
                 return residual("source datatype does not prove exact signed integer comparison");
             }
             BooleanRowConstraint::IntegerComparison {
@@ -264,5 +310,116 @@ fn normalize(
 fn residual(reason: &str) -> BooleanRowConstraint {
     BooleanRowConstraint::Residual {
         reason: reason.to_string(),
+    }
+}
+
+fn signed_integer_literal(expression: &Expression) -> Option<i64> {
+    use crate::protocol::UnaryOperator;
+    fn number(expression: &Expression) -> Option<i128> {
+        match expression {
+            Expression::Literal(literal) if literal.literal_type() == LiteralType::Integer => {
+                let LiteralValue::Number(value) = literal.value() else {
+                    return None;
+                };
+                value.parse::<i128>().ok()
+            }
+            Expression::Unary(unary) => match unary.operator() {
+                UnaryOperator::Plus => number(unary.operand()),
+                UnaryOperator::Minus => number(unary.operand())?.checked_neg(),
+                UnaryOperator::BitwiseNot => None,
+            },
+            _ => None,
+        }
+    }
+    i64::try_from(number(expression)?).ok()
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum SqlTruth {
+    True,
+    False,
+    Unknown,
+}
+
+impl SqlTruth {
+    fn and(self, other: Self) -> Self {
+        match (self, other) {
+            (Self::False, _) | (_, Self::False) => Self::False,
+            (Self::Unknown, _) | (_, Self::Unknown) => Self::Unknown,
+            _ => Self::True,
+        }
+    }
+
+    fn or(self, other: Self) -> Self {
+        match (self, other) {
+            (Self::True, _) | (_, Self::True) => Self::True,
+            (Self::Unknown, _) | (_, Self::Unknown) => Self::Unknown,
+            _ => Self::False,
+        }
+    }
+}
+
+fn possible_truths(
+    constraint: &BooleanRowConstraint,
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> BTreeSet<SqlTruth> {
+    match constraint {
+        BooleanRowConstraint::All(operands) | BooleanRowConstraint::Any(operands) => {
+            let mut possible = BTreeSet::from([if matches!(constraint, BooleanRowConstraint::All(_)) {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            }]);
+            for operand in operands.iter() {
+                let next = possible_truths(operand, integer_evidence);
+                possible = possible
+                    .iter()
+                    .flat_map(|lhs| {
+                        next.iter().map(move |rhs| {
+                            if matches!(constraint, BooleanRowConstraint::All(_)) {
+                                lhs.and(*rhs)
+                            } else {
+                                lhs.or(*rhs)
+                            }
+                        })
+                    })
+                    .collect();
+            }
+            possible
+        }
+        BooleanRowConstraint::NullTest { column, negated } => {
+            // Without source nullability evidence both NULL and non-NULL remain possible.
+            let may_be_null = integer_evidence(column)
+                .is_none_or(|evidence| evidence.explicitly_nullable);
+            if may_be_null {
+                BTreeSet::from([SqlTruth::True, SqlTruth::False])
+            } else {
+                BTreeSet::from([if *negated { SqlTruth::True } else { SqlTruth::False }])
+            }
+        }
+        BooleanRowConstraint::IntegerComparison { column, operator, literal } => {
+            use crate::protocol::ComparisonOperator as Op;
+            let Some(bounds) = integer_evidence(column) else {
+                return BTreeSet::new();
+            };
+            let value = i128::from(*literal);
+            let (true_possible, false_possible) = match operator {
+                Op::Eq => (bounds.minimum <= value && value <= bounds.maximum,
+                           bounds.minimum < value || value < bounds.maximum),
+                Op::Neq => (bounds.minimum < value || value < bounds.maximum,
+                            bounds.minimum <= value && value <= bounds.maximum),
+                Op::Lt => (bounds.minimum < value, bounds.maximum >= value),
+                Op::Lte => (bounds.minimum <= value, bounds.maximum > value),
+                Op::Gt => (bounds.maximum > value, bounds.minimum <= value),
+                Op::Gte => (bounds.maximum >= value, bounds.minimum < value),
+                Op::IsDistinctFrom | Op::IsNotDistinctFrom => return BTreeSet::new(),
+            };
+            let mut possible = BTreeSet::new();
+            if true_possible { possible.insert(SqlTruth::True); }
+            if false_possible { possible.insert(SqlTruth::False); }
+            if bounds.explicitly_nullable { possible.insert(SqlTruth::Unknown); }
+            possible
+        }
+        BooleanRowConstraint::Residual { .. } => BTreeSet::new(),
     }
 }
