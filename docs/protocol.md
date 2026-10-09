@@ -643,8 +643,10 @@ nodes, each applying its children to the **same source row**. Supported leaf
 nodes are `null_test` (`column`, `negated`) and `integer_comparison`
 (`column`, `operator`, `literal`). Column endpoints use physical relation
 identity and source-column name. Integer comparisons are exact only for
-catalog-confirmed signed integer types and representable literals; without
-type evidence the branch remains `residual`. Casts, computed/functional
+catalog-confirmed bounded signed integer types and `i64` literals; without
+type evidence the branch remains `residual`. Signed unary literal notation
+(`-2` and `+3`) is normalized semantically rather than reparsed as SQL.
+Logical operand sequences always contain at least two children. Casts, computed/functional
 expressions, LIKE and collation-sensitive comparisons are not yet invertible
 and remain residual. Repeated-column predicates, ambiguous relation identity,
 or mixed proven/unproven trees do not produce exact directions.
@@ -654,10 +656,14 @@ Each `qualifying` or `rejected` direction has either
 `{status:"residual",reason:"..."}`. `not_true` explicitly includes
 both SQL FALSE and UNKNOWN. It is **not** a binary negation of each leaf;
 consumers must retain the complete logical tree with SQL three-valued truth
-rules, including nullable source inputs. The exact statuses certify equivalence
-of the coupled row predicate within this supported subset, not general proof
-that nonempty source populations satisfying every other schema constraint
-exist. No Cartesian combination of independent scalar domains may substitute
+rules, including nullable source inputs. An exact direction also requires at least one feasible truth assignment
+within known signed-integer bounds. A contradiction (for example,
+`int32_a > 2147483647 OR int32_b > 2147483647`) leaves the qualifying
+direction residual while allowing the rejected direction to stay exact.
+An SQL datatype alone does not establish a column's NOT NULL constraint.
+The exact statuses certify equivalence of the coupled row predicate within
+this supported subset, not general proof that nonempty source populations
+satisfying every other schema constraint exist. No Cartesian combination of independent scalar domains may substitute
 for these coupled obligations.
 
 This initial contract does **not** complete TASK-63: invertible casts,
