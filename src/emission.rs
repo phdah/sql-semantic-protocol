@@ -128,6 +128,32 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         );
     }
 
+    if !bundle.outcome_goals().is_empty() {
+        value["outcome_goals"] = Value::Array(bundle.outcome_goals().iter().map(|item| {
+            let goal = item.goal();
+            json!({
+                "layer_id": goal.layer_id(),
+                "requested": {
+                    "rows": goal.rows(),
+                    "groups": goal.groups(),
+                    "distributions": goal.distributions().iter().map(|distribution| json!({
+                        "column": distribution.column(),
+                        "values": distribution.values().iter().map(|entry| json!({
+                            "value": constraint_value_to_value(entry.value()),
+                            "rows": entry.rows()
+                        })).collect::<Vec<_>>()
+                    })).collect::<Vec<_>>()
+                },
+                "assessment": {
+                    "status": item.status().as_str(),
+                    "reason": item.reason(),
+                    "min_rows": item.min_rows(),
+                    "max_rows": item.max_rows()
+                }
+            })
+        }).collect());
+    }
+
     if !bundle.constraint_diagnostics().is_empty() {
         value["constraint_diagnostics"] = Value::Array(
             bundle
