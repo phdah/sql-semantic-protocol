@@ -10,8 +10,8 @@ use crate::data_type::DataType;
 use crate::group_witness::{GroupAggregate, GroupWitnessDirection};
 use crate::join_witness::{JoinWitnessDirection, JoinWitnessShape};
 use crate::protocol::{
-    ColumnRef, ComparisonOperator, Expression, JoinKind, LiteralValue, ProtocolStatement,
-    QueryStatement, SetMultiplicityRule, SetWitnessCase, SetWitnessDirection,
+    ColumnRef, ComparisonOperator, Expression, JoinKind, QueryStatement,
+    SetMultiplicityRule, SetWitnessCase, SetWitnessDirection,
 };
 use crate::relation::RelationSchema;
 use crate::window_witness::{WindowOrderKey, WindowWitnessDirection};
@@ -125,16 +125,16 @@ fn value_fits(bundle: &AnalysisBundle, relation: &str, column: &str, value: &Con
     let Some(column) = schema.columns().iter().find(|item| item.name() == column) else { return false };
     match (column.data_type(), value) {
         (DataType::SignedInteger { bits }, ConstraintValue::Integer(value)) => {
-            bits.is_none_or(|width| *width >= 64 || (*width > 0 && {
+            bits.is_none_or(|width| width >= 64 || (width > 0 && {
                 let half = 1_i128 << (width - 1);
                 i128::from(*value) >= -half && i128::from(*value) < half
             }))
         }
         (DataType::UnsignedInteger { bits }, ConstraintValue::UnsignedInteger(value)) => {
-            bits.is_none_or(|width| *width >= 64 || (*width > 0 && u128::from(*value) < (1_u128 << width)))
+            bits.is_none_or(|width| width >= 64 || (width > 0 && u128::from(*value) < (1_u128 << width)))
         }
         (DataType::UnsignedInteger { bits }, ConstraintValue::Integer(value)) if *value >= 0 => {
-            bits.is_none_or(|width| *width >= 64 || (*width > 0 && (*value as u128) < (1_u128 << width)))
+            bits.is_none_or(|width| width >= 64 || (width > 0 && (*value as u128) < (1_u128 << width)))
         }
         (DataType::SignedInteger { .. } | DataType::UnsignedInteger { .. }, ConstraintValue::Null) => true,
         _ => false,
