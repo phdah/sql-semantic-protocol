@@ -4,6 +4,9 @@
 //! sqlparser AST handling.
 
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
+
+use crate::physical_realization::{physical_source_plan, PhysicalPlanNode, PhysicalPlanRef};
 
 use crate::bundle::{
     AnalysisBundle, AnalysisGraph, ComposedSemantics, CompositionDiagnostic, DatasetRef,
@@ -83,6 +86,28 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         "layers": layers,
         "graph": analysis_graph_to_value(bundle.graph())
     });
+
+    // Canonical nodes are stored only once; per-layer plans reference their identities.
+    let plans = bundle
+        .layers()
+        .iter()
+        .map(|layer| physical_source_plan(bundle, layer.id()))
+        .collect::<Vec<_>>();
+    let mut nodes = BTreeMap::<PhysicalPlanRef, PhysicalPlanNode>::new();
+    for plan in &plans {
+        for node in plan.nodes() {
+            nodes.entry(node.id().clone()).or_insert_with(|| node.clone());
+        }
+    }
+    value["graph"]["physical_nodes"] = json!(nodes.values().map(physical_plan_node_to_value).collect::<Vec<_>>());
+    value["graph"]["physical_source_plans"] = json!(plans.iter().map(|plan| json!({
+        "layer_id": plan.target_layer_id(),
+        "node_refs": plan.nodes().iter().map(|node| physical_plan_ref_to_value(node.id())).collect::<Vec<_>>(),
+        "physical_sources": plan.sources(),
+        "qualifying": constructive_direction_to_value(plan.qualifying()),
+        "rejected": constructive_direction_to_value(plan.rejected()),
+        "gap": plan.gap().map(|gap| gap.as_str())
+    })).collect::<Vec<_>>());
 
     if !bundle.comparison_declarations().is_empty() {
         value["declared_comparison_assumptions"] = json!(bundle
@@ -689,6 +714,22 @@ fn analysis_graph_to_value(graph: &AnalysisGraph) -> Value {
             .iter()
             .map(composition_diagnostic_to_value)
             .collect::<Vec<_>>()
+    })
+}
+
+fn physical_plan_ref_to_value(reference: &PhysicalPlanRef) -> Value {
+    match reference {
+        PhysicalPlanRef::Source(name) => json!({ "kind": "source", "id": name }),
+        PhysicalPlanRef::Layer(id) => json!({ "kind": "layer", "id": id }),
+    }
+}
+
+fn physical_plan_node_to_value(node: &PhysicalPlanNode) -> Value {
+    json!({
+        "ref": physical_plan_ref_to_value(node.id()),
+        "inputs": node.inputs().iter().map(physical_plan_ref_to_value).collect::<Vec<_>>(),
+        "produced_relations": node.produced_relations(),
+        "write_kind": node.write_kind().map(|kind| kind.as_str())
     })
 }
 
