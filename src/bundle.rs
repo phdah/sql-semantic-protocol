@@ -658,14 +658,24 @@ impl ComposedWindowWitness {
         witness: crate::window_witness::WindowWitness,
         boundary_kind: GroupBoundaryKind,
     ) -> Self {
-        Self { origin_layer_id, witness, boundary_kind }
+        Self {
+            origin_layer_id,
+            witness,
+            boundary_kind,
+        }
     }
     /// Layer introducing this ranked window filter.
-    pub fn origin_layer_id(&self) -> &str { &self.origin_layer_id }
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
     /// Input-partition and ordered-row obligations at that layer.
-    pub fn witness(&self) -> &crate::window_witness::WindowWitness { &self.witness }
+    pub fn witness(&self) -> &crate::window_witness::WindowWitness {
+        &self.witness
+    }
     /// Physical, intermediate or unresolved input relation boundary.
-    pub fn boundary_kind(&self) -> GroupBoundaryKind { self.boundary_kind }
+    pub fn boundary_kind(&self) -> GroupBoundaryKind {
+        self.boundary_kind
+    }
 }
 
 /// Successfully composed transitive semantics for a transformation layer.
