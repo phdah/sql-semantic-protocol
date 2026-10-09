@@ -416,6 +416,7 @@ impl ComposedSemantics {
             mut group_witnesses,
             mut window_witnesses,
             mut subquery_witnesses,
+            mut boolean_witnesses,
             mut join_witnesses,
         } = witnesses;
         join_equalities.sort_by(composed_join_equality_cmp);
@@ -430,6 +431,8 @@ impl ComposedSemantics {
         window_witnesses.dedup();
         subquery_witnesses.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
         subquery_witnesses.dedup();
+        boolean_witnesses.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
+        boolean_witnesses.dedup();
         diagnostics.sort_by(diagnostic_cmp);
         diagnostics.dedup();
         Self::Resolved(Box::new(ResolvedComposedSemantics {
@@ -441,6 +444,7 @@ impl ComposedSemantics {
             group_witnesses: group_witnesses.into_boxed_slice(),
             window_witnesses: window_witnesses.into_boxed_slice(),
             subquery_witnesses: subquery_witnesses.into_boxed_slice(),
+            boolean_witnesses: boolean_witnesses.into_boxed_slice(),
             condition_exactness,
             output,
             diagnostics,
@@ -591,6 +595,44 @@ pub(crate) struct ComposedWitnessEvidence {
     pub(crate) group_witnesses: Vec<ComposedGroupWitness>,
     pub(crate) window_witnesses: Vec<ComposedWindowWitness>,
     pub(crate) subquery_witnesses: Vec<ComposedSubqueryWitness>,
+    pub(crate) boolean_witnesses: Vec<ComposedBooleanWitness>,
+}
+
+/// A coupled boolean source-row witness retained at its originating layer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComposedBooleanWitness {
+    origin_layer_id: String,
+    witness: crate::boolean_witness::BooleanWitness,
+    boundary_kind: GroupBoundaryKind,
+}
+
+impl ComposedBooleanWitness {
+    pub(crate) fn new(
+        origin_layer_id: String,
+        witness: crate::boolean_witness::BooleanWitness,
+        boundary_kind: GroupBoundaryKind,
+    ) -> Self {
+        Self {
+            origin_layer_id,
+            witness,
+            boundary_kind,
+        }
+    }
+
+    /// Layer where the correlated predicate originated.
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
+
+    /// Coupled source-row proof at that layer.
+    pub fn witness(&self) -> &crate::boolean_witness::BooleanWitness {
+        &self.witness
+    }
+
+    /// Physical, intermediate or unresolved source boundary.
+    pub fn boundary_kind(&self) -> GroupBoundaryKind {
+        self.boundary_kind
+    }
 }
 
 /// One source-membership witness retained at its introducing layer.
@@ -736,6 +778,7 @@ pub struct ResolvedComposedSemantics {
     group_witnesses: Box<[ComposedGroupWitness]>,
     window_witnesses: Box<[ComposedWindowWitness]>,
     subquery_witnesses: Box<[ComposedSubqueryWitness]>,
+    boolean_witnesses: Box<[ComposedBooleanWitness]>,
     condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
@@ -781,6 +824,11 @@ impl ResolvedComposedSemantics {
     /// Subquery membership evidence, with its original layer and boundary.
     pub fn subquery_witnesses(&self) -> &[ComposedSubqueryWitness] {
         &self.subquery_witnesses
+    }
+
+    /// Coupled boolean conditions, each retained at the layer where it was proven.
+    pub fn boolean_witnesses(&self) -> &[ComposedBooleanWitness] {
+        &self.boolean_witnesses
     }
 
     /// Return transitive row-condition exactness for this resolved layer.
@@ -1008,6 +1056,11 @@ impl AnalysisBundle {
                     .condition_exactness
                     .clone()
                     .with_declarations(&self.comparison_declarations);
+                for witness in &mut semantics.boolean_witnesses {
+                    witness
+                        .witness
+                        .declare_comparison_assumptions(&self.comparison_declarations);
+                }
             }
         }
     }
@@ -1021,6 +1074,7 @@ impl AnalysisBundle {
             .map(|set| set.validated_against_schemas(&self.source_schemas))
             .collect::<Vec<_>>();
         merge_relation_constraint_sets(&mut self.relation_constraints, &validated);
+        self.recheck_boolean_witnesses();
     }
 
     /// Merge adapter diagnostics that cannot be scoped to one canonical relation.
@@ -1035,6 +1089,25 @@ impl AnalysisBundle {
         schemas.sort_by(|left, right| left.relation().cmp(right.relation()));
         self.source_schemas = schemas;
         self.validate_existing_constraints();
+        self.recheck_boolean_witnesses();
+    }
+
+    fn recheck_boolean_witnesses(&mut self) {
+        for input in &mut self.inputs {
+            for statement in &mut input.statements {
+                if let ProtocolStatement::Query(query) = statement {
+                    query.restrict_boolean_witness(&self.relation_constraints);
+                }
+            }
+        }
+        for layer in &mut self.layers {
+            if let ComposedSemantics::Resolved(semantics) = &mut layer.composed_semantics {
+                for item in semantics.boolean_witnesses.iter_mut() {
+                    item.witness
+                        .restrict_with_schema_constraints(&self.relation_constraints);
+                }
+            }
+        }
     }
 
     fn validate_existing_constraints(&mut self) {
@@ -1088,7 +1161,7 @@ impl AnalysisBundle {
             layer.composed_semantics = semantics;
         }
 
-        Ok(Self {
+        let mut bundle = Self {
             protocol_version: PROTOCOL_VERSION,
             inputs,
             layers,
@@ -1097,7 +1170,9 @@ impl AnalysisBundle {
             relation_constraints,
             constraint_diagnostics: Vec::new(),
             comparison_declarations: Vec::new(),
-        })
+        };
+        bundle.recheck_boolean_witnesses();
+        Ok(bundle)
     }
 }
 

@@ -536,6 +536,12 @@
           "items": {
             "$ref": "#/$defs/composedSubqueryMembershipWitness"
           }
+        },
+        "boolean_witnesses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/composedBooleanWitness"
+          }
         }
       }
     },
@@ -971,6 +977,9 @@
           "items": {
             "$ref": "#/$defs/subqueryMembershipWitness"
           }
+        },
+        "boolean_witness": {
+          "$ref": "#/$defs/booleanWitness"
         }
       }
     },
@@ -1117,6 +1126,9 @@
           "$ref": "#/$defs/comparisonPredicate"
         },
         {
+          "$ref": "#/$defs/likePrefixPredicate"
+        },
+        {
           "$ref": "#/$defs/andPredicate"
         },
         {
@@ -1150,6 +1162,17 @@
           "$ref": "#/$defs/unsupportedSemantic"
         }
       ]
+    },
+    "likePrefixPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "expression", "prefix", "negated"],
+      "properties": {
+        "kind": {"const": "like_prefix"},
+        "expression": {"$ref": "#/$defs/expression"},
+        "prefix": {"type": "string", "pattern": "^[A-Za-z0-9]+$"},
+        "negated": {"type": "boolean"}
+      }
     },
     "comparisonPredicate": {
       "type": "object",
@@ -1349,6 +1372,9 @@
           "$ref": "#/$defs/windowFunctionExpression"
         },
         {
+          "$ref": "#/$defs/signedIntegerCastExpression"
+        },
+        {
           "$ref": "#/$defs/unaryExpression"
         },
         {
@@ -1459,6 +1485,26 @@
         },
         "distinct": {
           "type": "boolean"
+        }
+      }
+    },
+    "signedIntegerCastExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "target_bits"
+      ],
+      "properties": {
+        "kind": {
+          "const": "signed_integer_cast"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "target_bits": {
+          "enum": [16, 32, 64]
         }
       }
     },
@@ -4559,6 +4605,259 @@
         },
         "witness": {
           "$ref": "#/$defs/subqueryMembershipWitness"
+        }
+      }
+    },
+    "booleanConstraint": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operands"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "all",
+                "any"
+              ]
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "$ref": "#/$defs/booleanConstraint"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "column",
+            "negated"
+          ],
+          "properties": {
+            "kind": {
+              "const": "null_test"
+            },
+            "column": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "relation",
+                "name"
+              ],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "negated": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "column",
+            "operator",
+            "literal"
+          ],
+          "properties": {
+            "kind": {
+              "const": "integer_comparison"
+            },
+            "column": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "relation",
+                "name"
+              ],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "operator": {
+              "enum": [
+                "eq",
+                "neq",
+                "lt",
+                "lte",
+                "gt",
+                "gte"
+              ]
+            },
+            "literal": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "column", "prefix", "negated"],
+          "properties": {
+            "kind": {"const": "string_prefix"},
+            "column": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["relation", "name"],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {"type": "string", "minLength": 1},
+                    {"type": "null"}
+                  ]
+                },
+                "name": {"type": "string", "minLength": 1}
+              }
+            },
+            "prefix": {"type": "string", "pattern": "^[A-Za-z0-9]+$"},
+            "negated": {"type": "boolean"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "reason"
+          ],
+          "properties": {
+            "kind": {
+              "const": "residual"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "booleanWitnessDirection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "truth"
+          ],
+          "properties": {
+            "status": {
+              "const": "exact"
+            },
+            "truth": {
+              "enum": [
+                "true",
+                "not_true"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reason"
+          ],
+          "properties": {
+            "status": {
+              "const": "residual"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "booleanWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_relation",
+        "condition",
+        "qualifying",
+        "rejected"
+      ],
+      "properties": {
+        "source_relation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "condition": {
+          "$ref": "#/$defs/booleanConstraint"
+        },
+        "qualifying": {
+          "$ref": "#/$defs/booleanWitnessDirection"
+        },
+        "rejected": {
+          "$ref": "#/$defs/booleanWitnessDirection"
+        }
+      }
+    },
+    "composedBooleanWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_layer_id",
+        "boundary_kind",
+        "witness"
+      ],
+      "properties": {
+        "origin_layer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundary_kind": {
+          "enum": [
+            "physical",
+            "intermediate",
+            "unresolved"
+          ]
+        },
+        "witness": {
+          "$ref": "#/$defs/booleanWitness"
         }
       }
     }

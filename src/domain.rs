@@ -149,6 +149,11 @@ fn derive_case_leaf_true_domains(
         {
             derive_comparison(predicate, sources)
         }
+        Predicate::LikePrefix(_) => {
+            return CaseDomainDerivation::Unknown(
+                "CASE LIKE prefix comparison requires binary collation evidence".to_string(),
+            );
+        }
         Predicate::Comparison(_) => {
             return CaseDomainDerivation::Unknown(
                 "CASE comparison branch requires one source column and one scalar literal"
@@ -465,6 +470,11 @@ fn case_source_domains_from_derivation(derivation: CaseDomainDerivation) -> Case
 fn derive_predicate_domains(predicate: &Predicate, sources: &[SourceRelation]) -> DomainMap {
     match predicate {
         Predicate::Comparison(predicate) => derive_comparison(predicate, sources),
+        Predicate::LikePrefix(predicate) => unknown_for_expressions(
+            [predicate.expression()],
+            sources,
+            "LIKE prefix requires binary collation and fixed-width behavior attestations",
+        ),
         Predicate::And(predicate) => predicate
             .operands()
             .iter()
@@ -562,7 +572,10 @@ fn source_index_for_column(column: &ColumnExpression, sources: &[SourceRelation]
     }
 }
 
-fn comparison_domain(operator: ComparisonOperator, literal: &LiteralExpression) -> ValueDomain {
+pub(crate) fn comparison_domain(
+    operator: ComparisonOperator,
+    literal: &LiteralExpression,
+) -> ValueDomain {
     let literal = literal.clone();
 
     if matches!(literal.value(), LiteralValue::Null) {
@@ -758,6 +771,9 @@ fn collect_predicate_columns(
     columns: &mut BTreeSet<ColumnRef>,
 ) {
     match predicate {
+        Predicate::LikePrefix(predicate) => {
+            collect_expression_columns(predicate.expression(), sources, columns);
+        }
         Predicate::Comparison(predicate) => {
             collect_expression_columns(predicate.left(), sources, columns);
             collect_expression_columns(predicate.right(), sources, columns);
@@ -824,6 +840,9 @@ fn collect_expression_columns(
         }
         Expression::BooleanPredicate(predicate) => {
             collect_predicate_columns(predicate, sources, columns);
+        }
+        Expression::SignedIntegerCast(expression) => {
+            collect_expression_columns(expression.expression(), sources, columns);
         }
         Expression::Unary(expression) => {
             collect_expression_columns(expression.operand(), sources, columns);

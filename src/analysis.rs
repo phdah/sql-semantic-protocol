@@ -11,10 +11,10 @@ use std::{
 
 use serde_json::Number;
 use sqlparser::ast::{
-    BinaryOperator as SqlBinaryOperator, ColumnOption, ConstraintCharacteristics,
-    CreateTable as SqlCreateTable, Distinct as SqlDistinct, DuplicateTreatment, Expr, Function,
-    FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
-    GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
+    BinaryOperator as SqlBinaryOperator, CastKind as SqlCastKind, ColumnOption,
+    ConstraintCharacteristics, CreateTable as SqlCreateTable, Distinct as SqlDistinct,
+    DuplicateTreatment, Expr, Function, FunctionArg, FunctionArgExpr, FunctionArguments,
+    GroupByExpr, GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
     Join as SqlJoin, JoinConstraint, JoinOperator, MergeAction as SqlMergeAction,
     MergeClause as SqlMergeClause, MergeClauseKind as SqlMergeClauseKind, MergeInsertKind,
     NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
@@ -43,15 +43,15 @@ use crate::protocol::{
     ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
     ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
-    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
-    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LikePrefixPredicate,
+    LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
     RowConditions, ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation,
-    SetOperator, SetQuantifier, SetWitnessBoundary, SourceRelation, SubquerySemantics,
-    UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
-    ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
+    SetOperator, SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression, SourceRelation,
+    SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
+    UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
     WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteOperation,
     WriteValue,
 };
@@ -638,7 +638,66 @@ fn analyze_query(
         .merged_with(&ConditionExactness::from_residuals(
             missing_column_residuals,
         ));
+    let boolean_witness = crate::boolean_witness::analyze(
+        predicates.where_predicate(),
+        &relation_analysis.sources,
+        |column| {
+            let original_type = metadata.column_data_type(column)?;
+            let data_type = match original_type {
+                DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
+            };
+            match data_type {
+                DataType::SignedInteger { bits: Some(bits) } if *bits > 0 && *bits <= 64 => {
+                    let magnitude = 1_i128 << (u32::from(*bits) - 1);
+                    Some(crate::boolean_witness::SignedIntegerEvidence {
+                        minimum: -magnitude,
+                        maximum: magnitude - 1,
+                    })
+                }
+                _ => None,
+            }
+        },
+        |column| {
+            let original_type = metadata.column_data_type(column)?;
+            let data_type = match original_type {
+                DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
+            };
+            match data_type {
+                DataType::String {
+                    length,
+                    fixed: false,
+                } => Some(crate::boolean_witness::StringEvidence { max_chars: *length }),
+                _ => None,
+            }
+        },
+    );
+    let (column_domains, output) =
+        refine_boolean_qualifying_outcomes(column_domains, output, boolean_witness.as_ref());
     sort_diagnostics(&mut diagnostics);
+
+    // Only a plain one-to-one projection preserves all source-row truth
+    // assignments when a downstream boolean witness is mapped to its inputs.
+    // Filtered, limited, grouped, sampled, and joined producers must remain
+    // intermediate witness boundaries, even if their columns are plain copies.
+    let row_preserving_projection = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. })
+                && select.from[0].joins.is_empty()
+                && select.distinct.is_none()
+                && select.top.is_none()
+                && select.selection.is_none()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.lateral_views.is_empty()
+                && select.connect_by.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty()));
 
     QueryStatement::new(
         relation_analysis.sources,
@@ -651,10 +710,80 @@ fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_subquery_witnesses()
+    .with_boolean_witness(boolean_witness)
+    .with_row_preserving_projection(row_preserving_projection)
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))
     .with_produced_relation(produced_relation)
+}
+
+// Exact same-row conjunctions may prove source scalar bounds even where
+// general expression-domain analysis conservatively returned Unknown. Never
+// distribute OR branches into independently sampled per-column intervals.
+fn refine_boolean_qualifying_outcomes(
+    column_domains: Vec<ColumnDomain>,
+    output: Output,
+    witness: Option<&crate::boolean_witness::BooleanWitness>,
+) -> (Vec<ColumnDomain>, Output) {
+    let proven = witness
+        .map(crate::boolean_witness::BooleanWitness::qualifying_conjunctive_domains)
+        .unwrap_or_default();
+    if proven.is_empty() {
+        return (column_domains, output);
+    }
+
+    let mut domains = column_domains
+        .into_iter()
+        .map(|item| (item.column().clone(), item.domain().clone()))
+        .collect::<BTreeMap<_, _>>();
+    for item in proven {
+        let column = item.column().clone();
+        let domain = item.domain().clone();
+        domains
+            .entry(column)
+            .and_modify(|existing| {
+                if matches!(existing, ValueDomain::Unknown(_)) {
+                    *existing = domain.clone();
+                } else {
+                    *existing = intersect_domains(existing, &domain);
+                }
+            })
+            .or_insert(domain);
+    }
+
+    let output = Output::new(
+        output
+            .columns()
+            .iter()
+            .cloned()
+            .map(|column| {
+                let Some(source) = column.plain_copy_source() else {
+                    return column;
+                };
+                let reference = ColumnRef::new(
+                    Some(source.relation().to_string()),
+                    source.column().to_string(),
+                );
+                let Some(domain) = domains.get(&reference) else {
+                    return column;
+                };
+                let refined = match column.domain() {
+                    ValueDomain::Unknown(_) => domain.clone(),
+                    other => intersect_domains(other, domain),
+                };
+                column.with_domain(refined)
+            })
+            .collect(),
+    );
+
+    (
+        domains
+            .into_iter()
+            .map(|(column, domain)| ColumnDomain::new(column, domain))
+            .collect(),
+        output,
+    )
 }
 
 /// Resolve one immediately projected ROW_NUMBER filter through a direct derived
@@ -1854,6 +1983,9 @@ fn predicate_residual_reasons(
                 Vec::new()
             }
         }
+        // Whole-query scalar exactness is independent of an operator-local
+        // binary-prefix witness and requires comparison-setting attestations.
+        Predicate::LikePrefix(_) => vec![ResidualConditionReason::ComputedExpression],
         Predicate::Not(_) => vec![ResidualConditionReason::LogicalNot],
         Predicate::IsNull(predicate) => {
             if matches!(predicate.expression(), Expression::Column(_)) {
@@ -1940,6 +2072,9 @@ fn collect_predicate_column_refs(
     columns: &mut BTreeSet<ColumnRef>,
 ) {
     match predicate {
+        Predicate::LikePrefix(predicate) => {
+            collect_expression_column_refs(predicate.expression(), sources, columns);
+        }
         Predicate::Comparison(comparison) => {
             collect_expression_column_refs(comparison.left(), sources, columns);
             collect_expression_column_refs(comparison.right(), sources, columns);
@@ -2004,6 +2139,9 @@ fn collect_expression_column_refs(
         }
         Expression::BooleanPredicate(predicate) => {
             collect_predicate_column_refs(predicate, sources, columns)
+        }
+        Expression::SignedIntegerCast(cast) => {
+            collect_expression_column_refs(cast.expression(), sources, columns)
         }
         Expression::Unary(unary) => {
             collect_expression_column_refs(unary.operand(), sources, columns)
@@ -2846,6 +2984,11 @@ fn remap_predicate_for_domain_derivation(
     scope: &[OutputRelation],
 ) -> Predicate {
     match predicate {
+        Predicate::LikePrefix(predicate) => Predicate::LikePrefix(LikePrefixPredicate::new(
+            remap_expression_for_domain_derivation(predicate.expression(), scope),
+            predicate.prefix().to_string(),
+            predicate.negated(),
+        )),
         Predicate::Comparison(comparison) => Predicate::Comparison(ComparisonPredicate::new(
             remap_expression_for_domain_derivation(comparison.left(), scope),
             comparison.operator(),
@@ -3133,6 +3276,10 @@ fn uncarried_local_predicate_reason(
                     .to_string()
             })
         }
+        Predicate::LikePrefix(_) => Some(
+            "LIKE prefix needs declared collation and cannot be reduced to independent domains"
+                .to_string(),
+        ),
         Predicate::Not(_) => Some(
             "logical NOT cannot always be reduced safely to independent physical column domains"
                 .to_string(),
@@ -3200,6 +3347,9 @@ fn collect_local_predicate_source_columns(
     columns: &mut BTreeSet<LineageSource>,
 ) {
     match predicate {
+        Predicate::LikePrefix(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
         Predicate::Comparison(comparison) => {
             collect_local_expression_source_column(comparison.left(), scope, columns);
             collect_local_expression_source_column(comparison.right(), scope, columns);
@@ -4656,6 +4806,25 @@ fn analyze_predicate_with_windows(
             ComparisonOperator::IsNotDistinctFrom,
             analyze_predicate_expression(right, named_windows, output_aliases, scope, diagnostics),
         ),
+        Expr::Like {
+            negated,
+            any: false,
+            expr,
+            pattern,
+            escape_char: None,
+        } if safe_like_prefix(pattern).is_some() => {
+            Predicate::LikePrefix(LikePrefixPredicate::new(
+                analyze_predicate_expression(
+                    expr,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                safe_like_prefix(pattern).expect("guarded LIKE prefix"),
+                *negated,
+            ))
+        }
         Expr::IsNull(inner) => Predicate::IsNull(IsNullPredicate::new(
             analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             false,
@@ -4769,6 +4938,21 @@ fn analyze_predicate_with_windows(
     }
 }
 
+// Only an unescaped alphabetic/digit prefix and one final wildcard is
+// independent of dialect-specific LIKE escape, collation and tokenization rules.
+// Non-ASCII and embedded wildcards remain regular unsupported SQL expressions.
+fn safe_like_prefix(pattern: &Expr) -> Option<String> {
+    let Expr::Value(value) = pattern else {
+        return None;
+    };
+    let sqlparser::ast::Value::SingleQuotedString(text) = &value.value else {
+        return None;
+    };
+    let prefix = text.strip_suffix('%')?;
+    (!prefix.is_empty() && prefix.bytes().all(|byte| byte.is_ascii_alphanumeric()))
+        .then(|| prefix.to_string())
+}
+
 fn is_plain_boolean_column(expression: &Expr) -> bool {
     match expression {
         Expr::Identifier(_) | Expr::CompoundIdentifier(_) => true,
@@ -4807,6 +4991,79 @@ fn analyze_predicate_expression(
                 named_windows,
                 diagnostics,
             );
+        }
+    }
+
+    // Keep the operands of scoped integer arithmetic in the predicate model.
+    // In particular, the cast in CAST(a AS BIGINT) + 1 must not be lost
+    // when normalizing the enclosing arithmetic expression.
+    if let Expr::Nested(inner) = expression {
+        return analyze_predicate_expression(
+            inner,
+            named_windows,
+            output_aliases,
+            scope,
+            diagnostics,
+        );
+    }
+    if let Expr::BinaryOp { left, op, right } = expression {
+        let operator = match op {
+            SqlBinaryOperator::Plus => Some(BinaryOperator::Add),
+            SqlBinaryOperator::Minus => Some(BinaryOperator::Subtract),
+            _ => None,
+        };
+        if let Some(operator) = operator {
+            return Expression::Binary(BinaryExpression::new(
+                operator,
+                analyze_predicate_expression(
+                    left,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                analyze_predicate_expression(
+                    right,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+            ));
+        }
+    }
+
+    // Normalize only ordinary, formatting-free signed integer casts in
+    // predicates. TRY/SAFE_CAST, string/decimal casts, ambiguous targets and
+    // narrowing remain unsupported rather than gaining spurious exactness.
+    if let Expr::Cast {
+        kind: SqlCastKind::Cast,
+        expr,
+        data_type,
+        format: None,
+    } = expression
+    {
+        use sqlparser::ast::DataType as SqlDataType;
+        let bits = match data_type {
+            SqlDataType::SmallInt(_) | SqlDataType::Int2(_) | SqlDataType::Int16 => Some(16),
+            SqlDataType::Int(_)
+            | SqlDataType::Integer(_)
+            | SqlDataType::Int4(_)
+            | SqlDataType::Int32 => Some(32),
+            SqlDataType::BigInt(_) | SqlDataType::Int8(_) | SqlDataType::Int64 => Some(64),
+            _ => None,
+        };
+        if let Some(bits) = bits {
+            return Expression::SignedIntegerCast(SignedIntegerCastExpression::new(
+                analyze_predicate_expression(
+                    expr,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                bits,
+            ));
         }
     }
 
@@ -6320,6 +6577,9 @@ fn derive_output_domain(expression: &Expression) -> ValueDomain {
             );
             union_domains(&domain, &else_domain)
         }
+        Expression::SignedIntegerCast(_) => ValueDomain::unknown(
+            "signed integer cast output domain requires source datatype evidence",
+        ),
         Expression::Unary(unary) => derive_unary_output_domain(unary),
         Expression::Binary(binary) => derive_binary_output_domain(binary),
         Expression::ScalarSubquery(subquery) => {
@@ -6644,6 +6904,7 @@ fn nested_projection_preserves_candidate_rows(expression: &Expression) -> bool {
         }
         Expression::AggregateFunction(_)
         | Expression::WindowFunction(_)
+        | Expression::SignedIntegerCast(_)
         | Expression::Case(_)
         | Expression::BooleanPredicate(_)
         | Expression::ScalarSubquery(_)

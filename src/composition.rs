@@ -191,6 +191,51 @@ impl<'a> Composer<'a> {
                 )]
             })
             .unwrap_or_default();
+        let mut boolean_witnesses = query
+            .boolean_witness()
+            .map(|witness| {
+                let boundary_kind = edges
+                    .iter()
+                    .find(|edge| edge.relation() == witness.source_relation())
+                    .map_or(
+                        crate::bundle::GroupBoundaryKind::Unresolved,
+                        |edge| match edge.resolution() {
+                            RelationResolution::External => {
+                                crate::bundle::GroupBoundaryKind::Physical
+                            }
+                            RelationResolution::Resolved => {
+                                crate::bundle::GroupBoundaryKind::Intermediate
+                            }
+                            _ => crate::bundle::GroupBoundaryKind::Unresolved,
+                        },
+                    );
+                let (witness, boundary_kind) = if boundary_kind
+                    == crate::bundle::GroupBoundaryKind::Intermediate
+                    && self.boolean_source_has_passthrough_path(&layer, witness.source_relation())
+                {
+                    match witness.mapped_to_physical(|column| {
+                        self.resolve_column_identity(&layer, &query, column)
+                            .ok()
+                            .map(|source| {
+                                ColumnRef::new(
+                                    Some(source.relation().to_string()),
+                                    source.column().to_string(),
+                                )
+                            })
+                    }) {
+                        Some(mapped) => (mapped, crate::bundle::GroupBoundaryKind::Physical),
+                        None => (witness.clone(), boundary_kind),
+                    }
+                } else {
+                    (witness.clone(), boundary_kind)
+                };
+                vec![crate::bundle::ComposedBooleanWitness::new(
+                    layer.id().to_string(),
+                    witness,
+                    boundary_kind,
+                )]
+            })
+            .unwrap_or_default();
         let mut subquery_witnesses = query
             .subquery_witnesses()
             .iter()
@@ -258,6 +303,7 @@ impl<'a> Composer<'a> {
                             window_witnesses.extend(upstream.window_witnesses().iter().cloned());
                             subquery_witnesses
                                 .extend(upstream.subquery_witnesses().iter().cloned());
+                            boolean_witnesses.extend(upstream.boolean_witnesses().iter().cloned());
                             condition_exactness =
                                 condition_exactness.merged_with(upstream.condition_exactness());
                         }
@@ -344,6 +390,7 @@ impl<'a> Composer<'a> {
                 group_witnesses,
                 window_witnesses,
                 subquery_witnesses,
+                boolean_witnesses,
                 join_witnesses,
             },
             condition_exactness,
@@ -609,6 +656,42 @@ impl<'a> Composer<'a> {
             physical.column().to_string(),
             relation_instance,
         ))
+    }
+
+    // A column may have exact identity lineage without a row surviving an
+    // intermediate filter. A physical witness requires row-set identity too.
+    fn boolean_source_has_passthrough_path(
+        &self,
+        consumer: &TransformationLayer,
+        relation: &str,
+    ) -> bool {
+        let Some(edge) = self.edge_for_source(consumer.id(), relation) else {
+            return false;
+        };
+        match edge.resolution() {
+            RelationResolution::External => true,
+            RelationResolution::Resolved => {
+                let [producer_id] = edge.producer_layer_ids() else {
+                    return false;
+                };
+                let Some(producer) = self.layer_by_id(producer_id) else {
+                    return false;
+                };
+                let Some(query) = self.query_for_layer(producer) else {
+                    return false;
+                };
+                let [source] = query.sources() else {
+                    return false;
+                };
+                query.row_preserving_projection()
+                    && self.boolean_source_has_passthrough_path(producer, source.name())
+            }
+            RelationResolution::Missing
+            | RelationResolution::Ambiguous
+            | RelationResolution::Cycle
+            | RelationResolution::Partial
+            | RelationResolution::Unsupported => false,
+        }
     }
 
     fn resolve_column_identity(

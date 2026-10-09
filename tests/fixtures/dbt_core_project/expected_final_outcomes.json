@@ -69,6 +69,36 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -207,6 +237,69 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0003",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "column": {
+                    "name": "score",
+                    "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+                  },
+                  "kind": "integer_comparison",
+                  "literal": 0,
+                  "operator": "gte"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "comparison literal is not a supported signed integer"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          }
+        },
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -1087,6 +1180,69 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0003",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "column": {
+                    "name": "score",
+                    "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+                  },
+                  "kind": "integer_comparison",
+                  "literal": 0,
+                  "operator": "gte"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "comparison literal is not a supported signed integer"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          }
+        },
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -2335,6 +2491,36 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -2473,6 +2659,36 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -2628,6 +2844,36 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -2852,6 +3098,69 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0003",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "column": {
+                    "name": "score",
+                    "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+                  },
+                  "kind": "integer_comparison",
+                  "literal": 0,
+                  "operator": "gte"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "comparison literal is not a supported signed integer"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          }
+        },
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -4096,6 +4405,36 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -4234,6 +4573,36 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -4455,6 +4824,36 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -4694,6 +5093,69 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0003",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "column": {
+                    "name": "score",
+                    "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+                  },
+                  "kind": "integer_comparison",
+                  "literal": 0,
+                  "operator": "gte"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "comparison literal is not a supported signed integer"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          }
+        },
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {
@@ -5607,6 +6069,106 @@
   },
   {
     "composed_semantics": {
+      "boolean_witnesses": [
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0003",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "column": {
+                    "name": "score",
+                    "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+                  },
+                  "kind": "integer_comparison",
+                  "literal": 0,
+                  "operator": "gte"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "comparison literal is not a supported signed integer"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          }
+        },
+        {
+          "boundary_kind": "physical",
+          "origin_layer_id": "layer-0004",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          }
+        },
+        {
+          "boundary_kind": "intermediate",
+          "origin_layer_id": "layer-0020",
+          "witness": {
+            "condition": {
+              "kind": "all",
+              "operands": [
+                {
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "computed, function, collation, cast or other predicate is not invertible"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "computed, function, collation, cast or other predicate is not invertible"
+                    }
+                  ]
+                },
+                {
+                  "kind": "residual",
+                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                }
+              ]
+            },
+            "qualifying": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "rejected": {
+              "reason": "predicate has no resolved source columns",
+              "status": "residual"
+            },
+            "source_relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+          }
+        }
+      ],
       "column_domains": [
         {
           "column": {

@@ -5,6 +5,7 @@
 
 use std::collections::BTreeSet;
 
+use crate::boolean_witness::BooleanWitness;
 use crate::constraints::RelationConstraintSet;
 use crate::group_witness::GroupWitness;
 use crate::window_witness::WindowWitness;
@@ -58,6 +59,11 @@ impl Protocol {
         relation_constraints: Vec<RelationConstraintSet>,
     ) -> Self {
         self.relation_constraints = relation_constraints;
+        for statement in &mut self.statements {
+            if let ProtocolStatement::Query(query) = statement {
+                query.restrict_boolean_witness(&self.relation_constraints);
+            }
+        }
         self
     }
 
@@ -138,11 +144,13 @@ pub struct QueryStatement {
     dependencies: Vec<String>,
     joins: Vec<Join>,
     row_conditions: Box<RowConditions>,
-    output: Output,
+    output: Box<Output>,
     aggregation: Option<Box<Aggregation>>,
     group_witness: Option<Box<GroupWitness>>,
     window_witness: Option<Box<WindowWitness>>,
     subquery_witnesses: Box<[crate::subquery_witness::SubqueryMembershipWitness]>,
+    boolean_witness: Option<Box<BooleanWitness>>,
+    row_preserving_projection: bool,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -163,11 +171,13 @@ impl QueryStatement {
             dependencies,
             joins,
             row_conditions: Box::new(row_conditions),
-            output,
+            output: Box::new(output),
             aggregation: None,
             group_witness: None,
             window_witness: None,
             subquery_witnesses: Vec::new().into_boxed_slice(),
+            boolean_witness: None,
+            row_preserving_projection: false,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -185,10 +195,24 @@ impl QueryStatement {
         self
     }
 
+    pub(crate) fn with_boolean_witness(mut self, witness: Option<BooleanWitness>) -> Self {
+        self.boolean_witness = witness.map(Box::new);
+        self
+    }
+
+    pub(crate) fn with_row_preserving_projection(mut self, preserved: bool) -> Self {
+        self.row_preserving_projection = preserved;
+        self
+    }
+
+    pub(crate) fn row_preserving_projection(&self) -> bool {
+        self.row_preserving_projection
+    }
+
     pub(crate) fn with_group_witness(mut self) -> Self {
         self.group_witness = crate::group_witness::analyze(&self).map(Box::new);
         if self.group_witness.is_some() {
-            self.output = crate::group_witness::refine_output(&self);
+            self.output = Box::new(crate::group_witness::refine_output(&self));
         }
         self
     }
@@ -202,7 +226,7 @@ impl QueryStatement {
         {
             self.row_conditions.exactness =
                 self.row_conditions.exactness.without_qualify_residual();
-            self.output = crate::window_witness::refine_output(&self);
+            self.output = Box::new(crate::window_witness::refine_output(&self));
         }
         self
     }
@@ -220,8 +244,11 @@ impl QueryStatement {
                     .row_conditions
                     .exactness
                     .without_projected_rank_where_residual();
-                self.output =
-                    crate::window_witness::refine_projected_output(&self.output, &alias, &witness);
+                self.output = Box::new(crate::window_witness::refine_projected_output(
+                    &self.output,
+                    &alias,
+                    &witness,
+                ));
             }
             self.window_witness = Some(Box::new(witness));
         }
@@ -283,6 +310,9 @@ impl QueryStatement {
             .exactness
             .clone()
             .with_declarations(declared);
+        if let Some(witness) = &mut self.boolean_witness {
+            witness.declare_comparison_assumptions(declared);
+        }
     }
 
     /// Return final query output columns in SELECT-list order.
@@ -309,6 +339,17 @@ impl QueryStatement {
     /// Whole-query condition exactness remains independent of these local proofs.
     pub fn subquery_witnesses(&self) -> &[crate::subquery_witness::SubqueryMembershipWitness] {
         &self.subquery_witnesses
+    }
+
+    /// A typed, coupled source-row predicate proof, independent of scalar domain exactness.
+    pub fn boolean_witness(&self) -> Option<&BooleanWitness> {
+        self.boolean_witness.as_deref()
+    }
+
+    pub(crate) fn restrict_boolean_witness(&mut self, sets: &[RelationConstraintSet]) {
+        if let Some(witness) = &mut self.boolean_witness {
+            witness.restrict_with_schema_constraints(sets);
+        }
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.
@@ -690,7 +731,7 @@ impl SetBranch {
             sources: query.sources.clone(),
             predicates: (*query.row_conditions.predicates).clone(),
             column_domains: query.row_conditions.column_domains.clone(),
-            output: query.output.clone(),
+            output: query.output().clone(),
             condition_exactness: query.row_conditions.exactness.clone(),
             dependencies: query.dependencies.clone(),
             witness_boundary,
@@ -1906,6 +1947,8 @@ pub enum Expression {
     Case(CaseExpression),
     /// A predicate used as a boolean-valued scalar expression.
     BooleanPredicate(Box<Predicate>),
+    /// A signed integer cast with an explicit canonical target width.
+    SignedIntegerCast(SignedIntegerCastExpression),
     /// A supported unary operation.
     Unary(UnaryExpression),
     /// A supported binary operation.
@@ -2793,6 +2836,37 @@ pub enum WindowFrameBound {
     Following(Box<Expression>),
 }
 
+/// A statically typed integer cast recorded in a predicate expression.
+///
+/// Only explicit signed widths (16, 32, 64) are constructible. The source
+/// datatype must independently establish lossless widening before a witness
+/// can treat this as an invertible expression.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SignedIntegerCastExpression {
+    expression: Box<Expression>,
+    target_bits: u16,
+}
+
+impl SignedIntegerCastExpression {
+    pub(crate) fn new(expression: Expression, target_bits: u16) -> Self {
+        debug_assert!(matches!(target_bits, 16 | 32 | 64));
+        Self {
+            expression: Box::new(expression),
+            target_bits,
+        }
+    }
+
+    /// Expression being cast.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Signed target width in bits.
+    pub fn target_bits(&self) -> u16 {
+        self.target_bits
+    }
+}
+
 /// A normalized unary operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnaryExpression {
@@ -2918,6 +2992,8 @@ impl BinaryOperator {
 pub enum Predicate {
     /// A comparison between two expressions.
     Comparison(ComparisonPredicate),
+    /// A strictly normalized prefix LIKE predicate, retaining NULL-sensitive negation.
+    LikePrefix(LikePrefixPredicate),
     /// Logical conjunction preserving SQL tree order.
     And(LogicalPredicate),
     /// Logical disjunction preserving SQL tree order.
@@ -2940,6 +3016,46 @@ pub enum Predicate {
     Unknown(UnknownSemantic),
     /// The producer recognizes the feature but does not support its semantics yet.
     Unsupported(UnsupportedSemantic),
+}
+
+/// A deliberately narrow SQL LIKE 'prefix%' predicate.
+///
+/// Only unescaped nonempty ASCII alphanumeric prefixes qualify for this
+/// normalized type. Collation and padding attestations are evaluated separately
+/// before any source-row witness direction can become exact.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LikePrefixPredicate {
+    expression: Expression,
+    prefix: String,
+    negated: bool,
+}
+
+impl LikePrefixPredicate {
+    pub(crate) fn new(expression: Expression, prefix: String, negated: bool) -> Self {
+        debug_assert!(
+            !prefix.is_empty() && prefix.bytes().all(|byte| byte.is_ascii_alphanumeric())
+        );
+        Self {
+            expression,
+            prefix,
+            negated,
+        }
+    }
+
+    /// String-valued source expression tested by LIKE.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Literal prefix with the trailing wildcard removed.
+    pub fn prefix(&self) -> &str {
+        &self.prefix
+    }
+
+    /// True for SQL NOT LIKE, with UNKNOWN preserved for NULL input.
+    pub fn negated(&self) -> bool {
+        self.negated
+    }
 }
 
 /// A comparison predicate.

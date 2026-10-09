@@ -434,3 +434,42 @@ Originating witnesses are retained in multi-layer composition along with
 physical/intermediate boundary provenance so consumers can decide which
 source is controllable. A dbt/SQL adapter provides the same capability if
 it supplies equivalent SQL; metadata-only adapters do not synthesize SQL.
+
+## Correlated single-row boolean filters
+
+A cross-column `OR` is not safely describable as a conjunction of independent
+column domains. For a single source such as
+`a IS NULL OR b IS NULL`, the analyzer may instead carry a typed
+`boolean_witness` whose `any` branches apply to the **same row**.
+Its qualifying truth is TRUE, while its rejected truth is FALSE **or UNKNOWN**.
+A fully proven conjunctive integer filter can additionally tighten the
+independent source and projected output domains. Disjunctions retain their
+conservative independent `column_domains`; neither case grants
+whole-query row-membership exactness without all other proof obligations.
+
+Signed integer comparisons require authoritative catalog datatypes and
+representable signed literals. Overflow-free identity arithmetic (`+a`, `a+0`, `0+a`, `a-0`),
+catalog-proven lossless ordinary signed-integer CASTs and constant additions
+or subtractions on a widened signed cast are inverted. The arithmetic
+result must fit the explicit cast target width for the *entire* source
+integer domain; its comparison threshold is translated to the source
+column. Uncast nonzero offsets, narrowing and TRY/SAFE_CAST variants,
+functions, ambiguous sources and expressions that can overflow remain residual. Ordinary LIKE/NOT LIKE with one trailing wildcard after an
+unescaped ASCII alphanumeric prefix is represented as a typed, jointly solved
+source-row `string_prefix`; both `binary_collation` and `no_char_padding`
+attestations are required before either direction can become exact. SQL NULL
+remains UNKNOWN, also under NOT LIKE; embedded wildcards, ILIKE, escaped
+patterns and fixed-width or unknown string types default to residual. Repeated columns are evaluated jointly using bounded integer truth
+partitions and remain residual if their search space is too large. Pure
+conjunctions, including contradictory repeated-column comparisons, use the same
+solver. Enforced NOT NULL, primary key and finite accepted-values metadata
+can further reject impossible witness directions, including after adapter
+enrichment. Unknown enforcement or dependent foreign-key satisfiability stays
+residual. Witnesses
+retain their originating layer. Only a proven single-relation, identity-only
+lineage chain can remap the coupled condition to physical column references;
+computed or ambiguous projections, and even identity projections behind
+WHERE, DISTINCT or LIMIT, preserve the intermediate boundary. A physical
+mapping additionally requires a row-preserving producer chain. Type- and
+collation-dependent comparisons remain intermediate across producer layers
+unless source-schema parity is independently established.

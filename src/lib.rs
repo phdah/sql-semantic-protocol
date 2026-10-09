@@ -15,10 +15,12 @@
 //!   expressions, predicates, row-condition exactness, and explicit unknown/unsupported values.
 //! - JoinWitness and JoinWitnessDirection describe matched, unmatched and null-extended input obligations.
 //! - SubqueryMembershipWitness describes EXISTS and IN source-row membership and NULL behavior.
+//! - BooleanWitness describes coupled single-row boolean obligations and their proof boundaries.
 //! - WindowWitness, WindowOrderKey, WindowRankCase, and WindowWitnessDirection describe
 //!   source-partition and strict-order obligations for ranked-row membership.
 
 mod analysis;
+mod boolean_witness;
 mod bundle;
 mod composition;
 mod constraints;
@@ -43,15 +45,19 @@ use std::fmt;
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
+pub use boolean_witness::{
+    BooleanOperands, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
+    BooleanWitnessDirection,
+};
 pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
-    AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
-    ComposedSemantics, ComposedSetOperation, ComposedSubqueryWitness, ComposedWindowWitness,
-    CompositionDiagnostic, CompositionFailureReason, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge, GroupBoundaryKind,
-    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
-    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    AnalysisGraph, AnalyzedInput, ComposedBooleanWitness, ComposedGroupWitness, ComposedJoinColumn,
+    ComposedJoinEquality, ComposedSemantics, ComposedSetOperation, ComposedSubqueryWitness,
+    ComposedWindowWitness, CompositionDiagnostic, CompositionFailureReason,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
+    GroupBoundaryKind, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
+    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
@@ -91,12 +97,13 @@ pub use protocol::{
     ConditionExactness, ConditionExactnessStatus, ConditionalCondition, Diagnostic, DiagnosticArea,
     DiagnosticSeverity, ExistsPredicate, Expression, FunctionExpression, GroupBy,
     GroupingExpression, InPredicate, InSubqueryPredicate, IsNullPredicate, Join, JoinKind,
-    LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, MergeAction,
-    MergeAssignment, MergeClause, MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate,
-    Predicates, Protocol, ProtocolSource, ProtocolStatement, QueryStatement, RangesDomain,
-    RelationRef, ResidualCondition, ResidualConditionReason, ScalarSubqueryExpression, SetBranch,
-    SetDomain, SetMode, SetMultiplicityRule, SetOperand, SetOperation, SetOperator, SetQuantifier,
-    SetWitnessBoundary, SetWitnessCase, SetWitnessDirection, SetWitnessObligation, SourceRelation,
+    LikePrefixPredicate, LineageSource, LiteralExpression, LiteralType, LiteralValue,
+    LogicalPredicate, MergeAction, MergeAssignment, MergeClause, MergeMatchKind, NotPredicate,
+    Output, OutputColumn, Predicate, Predicates, Protocol, ProtocolSource, ProtocolStatement,
+    QueryStatement, RangesDomain, RelationRef, ResidualCondition, ResidualConditionReason,
+    ScalarSubqueryExpression, SetBranch, SetDomain, SetMode, SetMultiplicityRule, SetOperand,
+    SetOperation, SetOperator, SetQuantifier, SetWitnessBoundary, SetWitnessCase,
+    SetWitnessDirection, SetWitnessObligation, SignedIntegerCastExpression, SourceRelation,
     SubquerySemantics, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
