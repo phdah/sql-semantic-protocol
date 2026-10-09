@@ -1063,10 +1063,11 @@ or the entire DAG are jointly realizable.
 
 `zero_output` is a separate closed-world sufficient construction for **zero
 terminal output rows** when every transformation is a safe single-source
-row-preserving projection or a single-source filter. It requires complete
+row-preserving projection or filter, or a fully identified, non-aggregating
+join over controlled sources. All participating physical leaves must be empty. It requires complete
 control of the physical source with `0..0` rows, including explicit
 `closed_world` evidence; it is never inferred for global aggregates,
-joins, sets, or missing producer evidence. This conservative construction
+opaque joined relations, sets, or missing producer evidence. This conservative construction
 does not establish nonzero cardinality or prove that unrelated output
 goals can be satisfied simultaneously.
 
