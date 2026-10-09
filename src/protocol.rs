@@ -2978,6 +2978,8 @@ impl BinaryOperator {
 pub enum Predicate {
     /// A comparison between two expressions.
     Comparison(ComparisonPredicate),
+    /// A strictly normalized prefix LIKE predicate, retaining NULL-sensitive negation.
+    LikePrefix(LikePrefixPredicate),
     /// Logical conjunction preserving SQL tree order.
     And(LogicalPredicate),
     /// Logical disjunction preserving SQL tree order.
@@ -3000,6 +3002,44 @@ pub enum Predicate {
     Unknown(UnknownSemantic),
     /// The producer recognizes the feature but does not support its semantics yet.
     Unsupported(UnsupportedSemantic),
+}
+
+/// A deliberately narrow SQL LIKE 'prefix%' predicate.
+///
+/// Only unescaped nonempty ASCII alphanumeric prefixes qualify for this
+/// normalized type. Collation and padding attestations are evaluated separately
+/// before any source-row witness direction can become exact.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LikePrefixPredicate {
+    expression: Expression,
+    prefix: String,
+    negated: bool,
+}
+
+impl LikePrefixPredicate {
+    pub(crate) fn new(expression: Expression, prefix: String, negated: bool) -> Self {
+        debug_assert!(!prefix.is_empty() && prefix.bytes().all(|byte| byte.is_ascii_alphanumeric()));
+        Self {
+            expression,
+            prefix,
+            negated,
+        }
+    }
+
+    /// String-valued source expression tested by LIKE.
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    /// Literal prefix with the trailing wildcard removed.
+    pub fn prefix(&self) -> &str {
+        &self.prefix
+    }
+
+    /// True for SQL NOT LIKE, with UNKNOWN preserved for NULL input.
+    pub fn negated(&self) -> bool {
+        self.negated
+    }
 }
 
 /// A comparison predicate.
