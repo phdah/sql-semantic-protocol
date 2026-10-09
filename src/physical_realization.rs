@@ -280,9 +280,7 @@ impl<'a> Walker<'a> {
             }
         }
         // Prefer precise graph-edge failure reasons over generic unresolved semantics.
-        if !partial_write
-            && !matches!(layer.composed_semantics(), ComposedSemantics::Resolved(_))
-        {
+        if !partial_write && !matches!(layer.composed_semantics(), ComposedSemantics::Resolved(_)) {
             return Err(PhysicalProofGap::UnresolvedSemantics);
         }
         inputs.sort();
