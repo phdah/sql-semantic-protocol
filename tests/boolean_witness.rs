@@ -153,6 +153,37 @@ fn repeated_column_conditions_are_checked_jointly() {
 }
 
 #[test]
+fn identity_arithmetic_is_invertible_but_nonidentity_arithmetic_stays_residual() {
+    for sql in [
+        "SELECT a FROM t WHERE (a + 0) > 2 OR (0 + b) < 0",
+        "SELECT a FROM t WHERE (a - 0) > 2 OR (+b) < 0",
+    ] {
+        let bundle = typed_bundle(sql);
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        let witness = semantics.boolean_witnesses()[0].witness();
+        assert!(matches!(
+            witness.qualifying(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+        ));
+        assert!(matches!(
+            witness.rejected(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        ));
+    }
+
+    let bundle = typed_bundle("SELECT a FROM t WHERE (a + 1) > 2 OR b < 0");
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+}
+
+#[test]
 fn source_witness_is_emitted_locally_and_retains_origin_through_composition() {
     let sql = "CREATE TABLE selected AS SELECT a FROM t WHERE a IS NULL OR b IS NULL";
     let bundle = analyze_inputs(
@@ -350,6 +381,7 @@ fn duckdb_differential_matches_generated_witness_for_every_source_row() {
         "a > 2 OR b < 0",
         "a > -2 OR b <= 1",
         "(a > 2 AND a < 1) OR b < 0",
+        "(a + 0) > 2 OR (0 + b) < 0",
     ] {
         let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
         let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
