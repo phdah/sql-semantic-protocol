@@ -236,7 +236,10 @@ fn readable_matrix_and_upstream_owners_match_inventory() {
     let task_ids: BTreeSet<String> = tasks
         .filter_map(Result::ok)
         .filter_map(|entry| entry.file_name().to_str().map(str::to_owned))
-        .filter_map(|name| name.split_once(" - ").map(|(id, _)| id.to_ascii_uppercase()))
+        .filter_map(|name| {
+            name.split_once(" - ")
+                .map(|(id, _)| id.to_ascii_uppercase())
+        })
         .collect();
 
     for feature in required_array(&manifest, "features") {
