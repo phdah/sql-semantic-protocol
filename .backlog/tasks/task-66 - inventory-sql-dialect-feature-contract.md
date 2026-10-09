@@ -46,4 +46,4 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 - **Still required** before Done: independent parser + canonical + constructive positive/negative + cardinality + engine/version oracles for **each** reviewed variant/dialect scope; triage executable parser-boundary and residual evidence with TASK-88 and the feature owners, then secure maintainer approval of scope and the sql-tdg TASK-35/36 decisions. The current fixture tests sample evidence, not full feature certification.
 - This is an **infrastructure-only inventory**. There are no changes to the active SQL protocol schema, library public types, or dbt/ODCS adapters, because no new canonical semantic capability is claimed by this task. Later TASK-67..90 must update those interfaces and tests together.
 
-Implementation PR: pending creation.
+Implementation PR: https://github.com/phdah/sql-semantic-protocol/pull/88
