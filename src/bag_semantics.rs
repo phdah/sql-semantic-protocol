@@ -31,6 +31,40 @@ impl BagTupleIdentity {
     }
 }
 
+/// One physical source, with an instance name for aliases and self-joins.
+///
+/// Different aliases of the same physical relation are not independently
+/// writable data sources. Source identity must be mapped through the producer
+/// graph before callers supply it to a count transfer.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BagSourceIdentity {
+    physical_relation: String,
+    relation_instance: String,
+}
+
+impl BagSourceIdentity {
+    /// Reject empty source names so identity cannot silently be lost.
+    pub fn new(physical_relation: &str, relation_instance: &str) -> Option<Self> {
+        if physical_relation.is_empty() || relation_instance.is_empty() {
+            return None;
+        }
+        Some(Self {
+            physical_relation: physical_relation.to_string(),
+            relation_instance: relation_instance.to_string(),
+        })
+    }
+
+    /// Relation to populate once, even when referenced by multiple aliases.
+    pub fn physical_relation(&self) -> &str {
+        &self.physical_relation
+    }
+
+    /// SQL relation instance/alias introducing this reference.
+    pub fn relation_instance(&self) -> &str {
+        &self.relation_instance
+    }
+}
+
 /// Input evidence for a bag transfer: an inclusive count and its closed-world scope.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BagEvidence {
@@ -38,6 +72,7 @@ pub struct BagEvidence {
     scope: BagScope,
     closed_world: bool,
     tuple_identity: Option<BagTupleIdentity>,
+    source: Option<BagSourceIdentity>,
 }
 
 impl BagEvidence {
@@ -49,6 +84,7 @@ impl BagEvidence {
             scope,
             closed_world,
             tuple_identity: None,
+            source: None,
         }
     }
 
@@ -66,6 +102,17 @@ impl BagEvidence {
     /// Stable candidate-tuple identity, if one was proven.
     pub fn tuple_identity(self) -> Option<BagTupleIdentity> {
         self.tuple_identity
+    }
+
+    /// Bind source identity after canonical physical-source resolution.
+    pub fn with_source(mut self, source: BagSourceIdentity) -> Self {
+        self.source = Some(source);
+        self
+    }
+
+    /// Physical relation and occurrence, if resolved.
+    pub fn source(&self) -> Option<&BagSourceIdentity> {
+        self.source.as_ref()
     }
 
     /// Count interval of the controlled scope.
@@ -222,6 +269,10 @@ fn product(a: CountBounds, b: CountBounds) -> BagCountProof {
             .and_then(|(x, y)| x.checked_mul(y))
     };
     bounds(min, max)
+}
+
+fn intersect(a: CountBounds, b: CountBounds) -> Option<CountBounds> {
+    CountBounds::new(a.minimum().max(b.minimum()), min_upper(a.maximum(), b.maximum()))
 }
 
 fn min_upper(a: Option<u64>, b: Option<u64>) -> Option<u64> {
@@ -389,6 +440,33 @@ impl BagLaw {
                 Some(other)
             }
             _ => None,
+        };
+        // Repeated references to one physical source have correlated counts.
+        // Merge their compatible bounds instead of inventing two inputs. For
+        // tuple evidence this applies only to the same complete tuple class.
+        let (left, pair) = if let Some(right) = pair {
+            if let (Some(a), Some(b)) = (left.source(), right.source()) {
+                if a.physical_relation() == b.physical_relation()
+                    && left.scope() == right.scope()
+                    && (left.scope() == BagScope::CompleteRelation
+                        || (left.tuple_identity().is_some()
+                            && left.tuple_identity() == right.tuple_identity()))
+                {
+                    let Some(shared) = intersect(left.bounds(), right.bounds()) else {
+                        return BagCountProof::Impossible;
+                    };
+                    (
+                        BagEvidence { bounds: shared, ..left },
+                        Some(BagEvidence { bounds: shared, ..right }),
+                    )
+                } else {
+                    (left, Some(right))
+                }
+            } else {
+                (left, Some(right))
+            }
+        } else {
+            (left, None)
         };
         match self {
             RowPreservingProjection if left.scope() == BagScope::CompleteRelation => {
@@ -605,6 +683,45 @@ mod tests {
             BagCountProof::Residual {
                 reason: "unproved_shared_tuple_identity"
             }
+        );
+    }
+
+    #[test]
+    fn aliased_complete_sources_are_correlated_not_two_independent_tables() {
+        let same = |min, max, alias| {
+            evidence(min, Some(max), BagScope::CompleteRelation).with_source(
+                BagSourceIdentity::new("physical.orders", alias).expect("valid source"),
+            )
+        };
+        let left = same(2, 5, "a");
+        let right = same(4, 6, "b");
+        let join = BagLaw::EquiJoin {
+            kind: JoinKind::Inner,
+            keys: BagJoinKeys::EqualNonNull,
+        };
+        assert_eq!(
+            join.transfer(left.clone(), Some(right.clone())),
+            BagCountProof::Bounds(CountBounds::new(16, Some(25)).expect("intersection"))
+        );
+        let contradictory = same(6, 8, "c");
+        assert_eq!(
+            join.transfer(left, Some(contradictory)),
+            BagCountProof::Impossible
+        );
+    }
+
+    #[test]
+    fn repeated_set_branches_share_candidate_multiplicity() {
+        let first = evidence(2, Some(4), BagScope::CandidateTuple).with_source(
+            BagSourceIdentity::new("t", "a").expect("source"),
+        );
+        let second = evidence(3, Some(5), BagScope::CandidateTuple).with_source(
+            BagSourceIdentity::new("t", "b").expect("source"),
+        );
+        assert_eq!(
+            BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference)
+                .transfer(first, Some(second)),
+            BagCountProof::Bounds(CountBounds::new(0, Some(0)).expect("zero"))
         );
     }
 
