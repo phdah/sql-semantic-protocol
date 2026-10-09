@@ -527,11 +527,7 @@ fn assess_goal(
     if goal.groups().is_none() && goal.distributions().is_empty() {
         if let Some(rows) = goal.rows() {
             if matches!(
-                crate::physical_realization::physical_row_count_plan(
-                    bundle,
-                    layer.id(),
-                    rows,
-                ),
+                crate::physical_realization::physical_row_count_plan(bundle, layer.id(), rows,),
                 crate::constructive::WitnessDirection::Feasible(_)
             ) {
                 let physical =
