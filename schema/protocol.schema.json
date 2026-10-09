@@ -5319,7 +5319,9 @@
         "idempotence",
         "branches",
         "residual_reasons",
-        "cardinality_rule"
+        "cardinality_rule",
+        "target_columns",
+        "match_condition"
       ],
       "properties": {
         "initial_state": {
@@ -5372,7 +5374,8 @@
               "affected_rows_unknown",
               "constraint_conflicts_unverified",
               "match_multiplicity_unknown",
-              "predicate_exactness_unverified"
+              "predicate_exactness_unverified",
+              "unsupported_action"
             ]
           }
         },
@@ -5382,6 +5385,22 @@
             "initial",
             "initial_minus_deleted",
             "initial_plus_inserted_minus_deleted"
+          ]
+        },
+        "target_columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "match_condition": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/predicate"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       }

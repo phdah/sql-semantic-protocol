@@ -848,6 +848,12 @@ ODCS provides only metadata. Neither adapter may invent mutation effects.
 
 ### Canonical DML effects and observable row-count conservation
 
+The bundle-level `state_effect` repeats the normalized `match_condition`
+for MERGE ON and the explicit `target_columns` for INSERT SELECT; consumers
+do not need to reparse SQL or reconstruct the join predicate and write mapping.
+An unsupported MERGE branch adds `unsupported_action` to residual reasons
+and retains its typed unsupported action with a cause.
+
 For every partial mutation, the bundle contains a `write_effects` entry with
 `layer_id`, resolved `target`, sorted resolved `sources`, the `state_effect`
 and `target_constraints`. The latter is either a full canonical

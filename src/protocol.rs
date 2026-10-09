@@ -656,6 +656,11 @@ impl WriteOperation {
                 )
             }
             WriteKind::ConditionalMutation => {
+                if self.merge_clauses.iter().any(|clause|
+                    matches!(clause.action(), MergeAction::Unsupported(_))
+                ) {
+                    reasons.push(WriteUncertainty::UnsupportedAction);
+                }
                 reasons.push(WriteUncertainty::PredicateExactnessUnverified);
                 reasons.push(WriteUncertainty::MatchMultiplicityUnknown);
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
@@ -681,6 +686,8 @@ impl WriteOperation {
             idempotence,
             branches,
             reasons,
+            target_columns: self.target_columns.clone(),
+            match_condition: self.match_condition.clone(),
             cardinality_rule: match self.kind {
                 WriteKind::Append => WriteCardinalityRule::Append,
                 WriteKind::Update => WriteCardinalityRule::Preserve,
@@ -746,6 +753,8 @@ pub enum WriteUncertainty {
     MatchMultiplicityUnknown,
     /// Predicate truth under NULL and dialect comparison rules is not proved exact.
     PredicateExactnessUnverified,
+    /// An unsupported MERGE branch cannot be constructed or verified.
+    UnsupportedAction,
 }
 
 impl WriteUncertainty {
@@ -755,6 +764,7 @@ impl WriteUncertainty {
             Self::ConstraintConflictsUnverified => "constraint_conflicts_unverified",
             Self::MatchMultiplicityUnknown => "match_multiplicity_unknown",
             Self::PredicateExactnessUnverified => "predicate_exactness_unverified",
+            Self::UnsupportedAction => "unsupported_action",
         }
     }
 }
@@ -890,6 +900,8 @@ impl std::error::Error for WriteCountError {}
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteStateEffect {
     initial: WriteInitialState,
+    target_columns: Vec<String>,
+    match_condition: Option<Predicate>,
     affected_rows: WriteAffectedRows,
     post_state: WritePostState,
     idempotence: WriteIdempotence,
@@ -899,6 +911,11 @@ pub struct WriteStateEffect {
 }
 
 impl WriteStateEffect {
+    /// Ordered target columns for an INSERT SELECT result, or empty for other writes.
+    pub fn target_columns(&self) -> &[String] { &self.target_columns }
+    /// MERGE ON condition (None for non-MERGE writes).
+    pub fn match_condition(&self) -> Option<&Predicate> { self.match_condition.as_ref() }
+
     /// Initial target state precondition.
     pub fn initial(&self) -> WriteInitialState {
         self.initial

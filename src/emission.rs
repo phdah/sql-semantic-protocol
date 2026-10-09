@@ -806,6 +806,8 @@ fn layer_write_effect_to_value(write: &LayerWriteStateEffect) -> Value {
 fn write_state_effect_to_value(effect: &crate::WriteStateEffect) -> Value {
     json!({
         "initial_state": "caller_supplied",
+        "target_columns": effect.target_columns(),
+        "match_condition": effect.match_condition().map_or(Value::Null, predicate_to_value),
         "cardinality_rule": effect.cardinality_rule().as_str(),
         "affected_rows": { "minimum": effect.affected_rows().minimum(), "maximum": effect.affected_rows().maximum() },
         "post_state": match effect.post_state() { WritePostState::Empty => "empty", WritePostState::ApplyToInitial => "apply_to_initial" },
