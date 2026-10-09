@@ -11,10 +11,10 @@ use std::{
 
 use serde_json::Number;
 use sqlparser::ast::{
-    BinaryOperator as SqlBinaryOperator, CastKind as SqlCastKind, ColumnOption, ConstraintCharacteristics,
-    CreateTable as SqlCreateTable, Distinct as SqlDistinct, DuplicateTreatment, Expr, Function,
-    FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
-    GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
+    BinaryOperator as SqlBinaryOperator, CastKind as SqlCastKind, ColumnOption,
+    ConstraintCharacteristics, CreateTable as SqlCreateTable, Distinct as SqlDistinct,
+    DuplicateTreatment, Expr, Function, FunctionArg, FunctionArgExpr, FunctionArguments,
+    GroupByExpr, GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
     Join as SqlJoin, JoinConstraint, JoinOperator, MergeAction as SqlMergeAction,
     MergeClause as SqlMergeClause, MergeClauseKind as SqlMergeClauseKind, MergeInsertKind,
     NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
@@ -44,14 +44,14 @@ use crate::protocol::{
     ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
     InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
-    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, SignedIntegerCastExpression,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
     RowConditions, ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation,
-    SetOperator, SetQuantifier, SetWitnessBoundary, SourceRelation, SubquerySemantics,
-    UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement,
-    ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
+    SetOperator, SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression, SourceRelation,
+    SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
+    UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
     WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteOperation,
     WriteValue,
 };
