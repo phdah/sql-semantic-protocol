@@ -7,8 +7,8 @@ use serde_json::{json, Value};
 
 use crate::bundle::{
     AnalysisBundle, AnalysisGraph, ComposedSemantics, CompositionDiagnostic, DatasetRef,
-    GraphComponent, GraphEdge, LayerWriteStateEffect, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
-    UnresolvedComposedSemantics,
+    GraphComponent, GraphEdge, LayerWriteStateEffect, ResolvedComposedSemantics, SqlInputSource,
+    TransformationLayer, UnresolvedComposedSemantics,
 };
 use crate::constraints::{
     ConstraintDiagnostic, ConstraintValue, RelationConstraint, RelationConstraintSet,
@@ -131,7 +131,10 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
     let write_effects = bundle.write_state_effects();
     if !write_effects.is_empty() {
         value["write_effects"] = Value::Array(
-            write_effects.iter().map(layer_write_effect_to_value).collect(),
+            write_effects
+                .iter()
+                .map(layer_write_effect_to_value)
+                .collect(),
         );
     }
 
@@ -821,7 +824,9 @@ fn write_state_effect_to_value(effect: &crate::WriteStateEffect) -> Value {
 }
 
 fn write_operation_to_value(write: &WriteOperation) -> Value {
-    let state_effect = write.state_effect().map(|effect| write_state_effect_to_value(&effect));
+    let state_effect = write
+        .state_effect()
+        .map(|effect| write_state_effect_to_value(&effect));
     json!({
         "target": write.target(),
         "kind": write.kind().as_str(),

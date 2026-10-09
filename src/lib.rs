@@ -63,8 +63,9 @@ pub use bundle::{
     ComposedJoinEquality, ComposedSemantics, ComposedSetOperation, ComposedSubqueryWitness,
     ComposedWindowWitness, CompositionDiagnostic, CompositionFailureReason,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
-    GroupBoundaryKind, InputAnalysisError, LayerWriteStateEffect, RelationResolution, ResolvedComposedSemantics, SqlInput,
-    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    GroupBoundaryKind, InputAnalysisError, LayerWriteStateEffect, RelationResolution,
+    ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
+    UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
@@ -121,8 +122,8 @@ pub use protocol::{
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
     WindowSpecification, WriteAffectedRows, WriteCardinalityRule, WriteCountError,
     WriteEffectAction, WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind,
-    WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty,
-    WriteValue, PROTOCOL_VERSION,
+    WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty, WriteValue,
+    PROTOCOL_VERSION,
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,

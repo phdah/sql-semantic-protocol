@@ -528,7 +528,11 @@ impl WriteOperation {
         }
     }
 
-    pub(crate) fn delete(target: String, selection: Option<Predicate>, selection_domains: Vec<ColumnDomain>) -> Self {
+    pub(crate) fn delete(
+        target: String,
+        selection: Option<Predicate>,
+        selection_domains: Vec<ColumnDomain>,
+    ) -> Self {
         Self {
             target,
             kind: WriteKind::Delete,
@@ -832,15 +836,25 @@ pub struct WriteRowCounts {
 impl WriteRowCounts {
     /// Record verified logical target-row counts.
     pub fn new(inserted: u64, updated: u64, deleted: u64) -> Self {
-        Self { inserted, updated, deleted }
+        Self {
+            inserted,
+            updated,
+            deleted,
+        }
     }
 
     /// Rows appended to the target.
-    pub fn inserted(self) -> u64 { self.inserted }
+    pub fn inserted(self) -> u64 {
+        self.inserted
+    }
     /// Existing rows updated, not newly inserted.
-    pub fn updated(self) -> u64 { self.updated }
+    pub fn updated(self) -> u64 {
+        self.updated
+    }
     /// Existing rows removed.
-    pub fn deleted(self) -> u64 { self.deleted }
+    pub fn deleted(self) -> u64 {
+        self.deleted
+    }
 }
 
 /// Why verified DML counts cannot satisfy the stated target-state contract.
@@ -861,7 +875,9 @@ impl std::fmt::Display for WriteCountError {
         let reason = match self {
             Self::InvalidActionCounts => "observed action counts contradict the DML kind",
             Self::ExceedsInitialRows => "affected existing rows exceed the initial target size",
-            Self::UnconditionalDeleteMismatch => "unconditional DELETE must remove every initial row",
+            Self::UnconditionalDeleteMismatch => {
+                "unconditional DELETE must remove every initial row"
+            }
             Self::Overflow => "computed final row count exceeds u64",
         };
         formatter.write_str(reason)
@@ -919,9 +935,15 @@ impl WriteStateEffect {
     /// SQL execution successfully performed these actions. It does not verify
     /// branch predicates, key conflicts, exact row values, or transaction success.
     /// In particular it is unsafe to supply source-row counts as MERGE updates.
-    pub fn resulting_rows(&self, initial: u64, counts: WriteRowCounts) -> Result<u64, WriteCountError> {
+    pub fn resulting_rows(
+        &self,
+        initial: u64,
+        counts: WriteRowCounts,
+    ) -> Result<u64, WriteCountError> {
         let (inserted, updated, deleted) = (counts.inserted(), counts.updated(), counts.deleted());
-        let target_changed = updated.checked_add(deleted).ok_or(WriteCountError::Overflow)?;
+        let target_changed = updated
+            .checked_add(deleted)
+            .ok_or(WriteCountError::Overflow)?;
         if target_changed > initial {
             return Err(WriteCountError::ExceedsInitialRows);
         }
@@ -935,13 +957,16 @@ impl WriteStateEffect {
             WriteCardinalityRule::SubtractDeletes if inserted != 0 || updated != 0 => {
                 return Err(WriteCountError::InvalidActionCounts);
             }
-            WriteCardinalityRule::Append | WriteCardinalityRule::Preserve |
-            WriteCardinalityRule::SubtractDeletes | WriteCardinalityRule::Merge => {}
+            WriteCardinalityRule::Append
+            | WriteCardinalityRule::Preserve
+            | WriteCardinalityRule::SubtractDeletes
+            | WriteCardinalityRule::Merge => {}
         }
         if self.post_state == WritePostState::Empty && deleted != initial {
             return Err(WriteCountError::UnconditionalDeleteMismatch);
         }
-        initial.checked_sub(deleted)
+        initial
+            .checked_sub(deleted)
             .and_then(|remaining| remaining.checked_add(inserted))
             .ok_or(WriteCountError::Overflow)
     }

@@ -996,13 +996,21 @@ pub struct LayerWriteStateEffect {
 
 impl LayerWriteStateEffect {
     /// Stable layer identity of the mutation.
-    pub fn layer_id(&self) -> &str { &self.layer_id }
+    pub fn layer_id(&self) -> &str {
+        &self.layer_id
+    }
     /// Resolved target relation identity.
-    pub fn target(&self) -> &str { &self.target }
+    pub fn target(&self) -> &str {
+        &self.target
+    }
     /// Resolved input relations; the pre-existing target is separate.
-    pub fn sources(&self) -> &[String] { &self.sources }
+    pub fn sources(&self) -> &[String] {
+        &self.sources
+    }
     /// Typed mutation obligations, including row-count conservation.
-    pub fn effect(&self) -> &WriteStateEffect { &self.effect }
+    pub fn effect(&self) -> &WriteStateEffect {
+        &self.effect
+    }
     /// Available target constraints with enforcement/provenance.
     pub fn target_constraints(&self) -> Option<&RelationConstraintSet> {
         self.target_constraints.as_ref()
@@ -1059,23 +1067,37 @@ impl AnalysisBundle {
     /// Missing constraint evidence is reported as None, not as an empty set of
     /// guaranteed collision-free keys. Source relations exclude the initial target.
     pub fn write_state_effects(&self) -> Vec<LayerWriteStateEffect> {
-        self.layers.iter().filter_map(|layer| {
-            let input = self.inputs.iter().find(|input| input.id() == layer.input_id())?;
-            let ProtocolStatement::Query(query) = input.statements().get(layer.statement_index())? else {
-                return None;
-            };
-            let effect = query.write()?.state_effect()?;
-            let target = layer.produces().iter().find_map(|dataset| dataset.relation_name())?;
-            let constraints = self.relation_constraints.iter()
-                .find(|set| set.relation() == target).cloned();
-            Some(LayerWriteStateEffect {
-                layer_id: layer.id().to_string(),
-                target: target.to_string(),
-                sources: layer.consumes().to_vec(),
-                effect,
-                target_constraints: constraints,
+        self.layers
+            .iter()
+            .filter_map(|layer| {
+                let input = self
+                    .inputs
+                    .iter()
+                    .find(|input| input.id() == layer.input_id())?;
+                let ProtocolStatement::Query(query) =
+                    input.statements().get(layer.statement_index())?
+                else {
+                    return None;
+                };
+                let effect = query.write()?.state_effect()?;
+                let target = layer
+                    .produces()
+                    .iter()
+                    .find_map(|dataset| dataset.relation_name())?;
+                let constraints = self
+                    .relation_constraints
+                    .iter()
+                    .find(|set| set.relation() == target)
+                    .cloned();
+                Some(LayerWriteStateEffect {
+                    layer_id: layer.id().to_string(),
+                    target: target.to_string(),
+                    sources: layer.consumes().to_vec(),
+                    effect,
+                    target_constraints: constraints,
+                })
             })
-        }).collect()
+            .collect()
     }
 
     /// Return constraint diagnostics that cannot be scoped to one canonical relation.
