@@ -632,7 +632,7 @@ with the application.
 
 ## Coupled source-row boolean witnesses (TASK-63, initial subset)
 
-A query with a cross-column `OR` over one unambiguous source relation may
+A query with a coupled `AND` or `OR` over one unambiguous source relation may
 carry a `boolean_witness`; resolved composed outcomes retain it in
 `boolean_witnesses` with `origin_layer_id` and `boundary_kind`. The
 representation is **operator-local evidence**, not a promotion of
@@ -649,8 +649,8 @@ type evidence the branch remains `residual`. Signed unary literal notation
 Logical operand sequences always contain at least two children. Only identity arithmetic (`+a`, `a+0`, `a-0`) is
 invertible; casts, nonidentity computed/functional expressions, LIKE and
 collation-sensitive comparisons are not yet invertible
-and remain residual. Repeated-column predicates are solved jointly using bounded source-value
-partitions; ambiguous relation identity or mixed proven/unproven trees remain
+and remain residual. All supported predicates, including repeated-column conjunctions,
+are solved jointly using bounded source-value partitions; ambiguous relation identity or mixed proven/unproven trees remain
 residual. Oversized search spaces also remain residual.
 
 Each `qualifying` or `rejected` direction has either
@@ -663,11 +663,16 @@ within known signed-integer bounds. A contradiction (for example,
 `int32_a > 2147483647 OR int32_b > 2147483647`) leaves the qualifying
 direction residual while allowing the rejected direction to stay exact.
 An SQL datatype alone does not establish a column's NOT NULL constraint.
-The exact statuses certify equivalence of the coupled row predicate within
-this supported subset, not general proof that nonempty source populations
-satisfying every other schema constraint exist. No Cartesian combination of independent scalar domains may substitute
+When enforced primary-key, NOT NULL, or finite accepted-values constraints are available,
+the analyzer rechecks the coupled truth directions against those restrictions, including
+constraints added after initial composition by dbt or ODCS enrichment. An impossible
+direction is downgraded to residual. Unknown enforcement, incompatible metadata and
+foreign-key witness dependencies are conservative residuals. Rechecking can only
+downgrade an existing direction; it never manufactures exactness. These proof statuses
+do not establish complete physical-lineage invertibility, or satisfiability of arbitrary
+warehouse constraints that the protocol does not represent. No Cartesian combination of independent scalar domains may substitute
 for these coupled obligations.
 
-This initial contract does **not** complete TASK-63: invertible casts,
-LIKE-prefix constraints, richer comparisons, and rigorous source
-satisfiability and dialect-specific collation evidence remain to be added.
+This initial contract does **not** complete TASK-63: invertible casts and
+nonidentity computations, safe LIKE-prefix constraints, full physical-lineage
+inversion, output-domain conformance, and dialect-specific collation evidence remain to be added.
