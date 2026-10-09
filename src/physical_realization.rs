@@ -11,7 +11,8 @@ use crate::bundle::{
     AnalysisBundle, ComposedSemantics, GroupBoundaryKind, RelationResolution, TransformationLayer,
 };
 use crate::constructive::{
-    local_constructive_witnesses, ClosedWorldCoverage, CountBounds, ProofStrength, RowQuantifier,
+    local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage, ConstructiveWitness,
+    CountBounds, ProofStrength, RowQuantifier,
     WitnessBoundary, WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation,
     WitnessOperator, WitnessTerm,
 };
@@ -34,6 +35,8 @@ pub struct PhysicalPlanNode {
     inputs: Vec<PhysicalPlanRef>,
     produced_relations: Vec<String>,
     write_kind: Option<WriteKind>,
+    operator_witnesses: Vec<ConstructiveWitness>,
+    pending_producers: Vec<WitnessObligation>,
 }
 
 impl PhysicalPlanNode {
@@ -55,6 +58,17 @@ impl PhysicalPlanNode {
     /// None for query results and external physical sources.
     pub fn write_kind(&self) -> Option<WriteKind> {
         self.write_kind
+    }
+
+    /// Operator-local facts originating in this node, not claims that
+    /// distinct sufficient cases can be satisfied simultaneously.
+    pub fn operator_witnesses(&self) -> &[ConstructiveWitness] {
+        &self.operator_witnesses
+    }
+
+    /// Intermediate boundaries requiring upstream producer realization.
+    pub fn pending_producers(&self) -> &[WitnessObligation] {
+        &self.pending_producers
     }
 }
 
@@ -238,6 +252,8 @@ impl<'a> Walker<'a> {
                             inputs: Vec::new(),
                             produced_relations: vec![relation],
                             write_kind: None,
+                            operator_witnesses: Vec::new(),
+                            pending_producers: Vec::new(),
                         });
                     }
                     inputs.push(reference);
@@ -264,6 +280,24 @@ impl<'a> Walker<'a> {
         }
         inputs.sort();
         inputs.dedup();
+
+        let (operator_witnesses, pending_producers) = match layer.composed_semantics() {
+            ComposedSemantics::Resolved(resolved) => (
+                local_constructive_witnesses(resolved)
+                    .into_iter()
+                    .filter(|w| w.origin_layer_id() == layer.id())
+                    .collect(),
+                local_pending_producers(resolved)
+                    .into_iter()
+                    .filter(|obligation| matches!(
+                        obligation,
+                        WitnessObligation::Producer { boundary, .. }
+                            if boundary.origin_layer_id() == layer.id()
+                    ))
+                    .collect(),
+            ),
+            ComposedSemantics::Unresolved(_) => (Vec::new(), Vec::new()),
+        };
         self.nodes.push(PhysicalPlanNode {
             id: PhysicalPlanRef::Layer(layer.id().to_string()),
             inputs,
@@ -273,6 +307,8 @@ impl<'a> Walker<'a> {
                 .filter_map(|p| p.relation_name().map(str::to_string))
                 .collect(),
             write_kind: layer.write_kind(),
+            operator_witnesses,
+            pending_producers,
         });
         self.visited.insert(layer_id.to_string());
         Ok(())
