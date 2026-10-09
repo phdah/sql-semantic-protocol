@@ -46,7 +46,9 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   cyclic, partial and unproved producer paths return typed residual reasons.
 - Reused proven local Boolean witnesses to classify individual source rows
   through safe projection/filter boundaries without treating intermediate
-  relations as writable tables.
+  relations as writable tables. Added a whole-path joint solver for sequences
+  of NULL-sensitive, identity-mapped WHERE filters, preserving intermediate
+  local witness boundaries until the complete path is proved.
 - Proved the independent zero-output construction for controlled, empty
   source inputs passed through row-preserving, filtering, or safely identified
   join producer chains, including shared/self-join physical sources. This proof requires both explicit exact zero-row bounds and
@@ -54,17 +56,20 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
 - Added exact schema-backed source count construction through fully
   row-preserving producer DAGs, including jointly compatible terminal
   outputs that share one physical source and explicit conflicts when
-  requests cannot both be satisfied.
+  requests cannot both be satisfied. Opt-in outcome-goal evaluation can now
+  emit existing source_rows/empty_sources evidence for these transitive cases.
 - Attached operator-local typed witnesses and pending producer obligations
   to canonical graph nodes so multi-parent and join/group/window/set facts
   remain visible without pretending that residuals are feasible.
 - Added cross-dialect, NULL, DuckDB, metadata and schema-contract tests and
   extended the canonical emission examples and coverage inventory.
 
-**Still blocking:** Multi-operator and multi-parent joint satisfiability,
-mixed-join and aggregate/window/set DAG construction, positive nonzero
-cardinality and distribution counts, general absence classification, and
-full DML before/after state proofs. Release 3.0.0 remains held.
+**Still blocking:** General multi-operator and multi-parent joint
+satisfiability, mixed-join and aggregate/window/set DAG construction,
+positive nonzero counts beyond the verified transparent-source subset,
+complete output distributions, general negative closed-world exclusion,
+full DML before/after state proofs, and exact sql-tdg fixture sign-off.
+Release 3.0.0 remains held.
 
 ## Delivery guidance
 
