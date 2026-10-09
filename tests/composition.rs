@@ -675,7 +675,13 @@ fn outer_and_self_join_equalities_remain_conservative() {
     )
     .expect("self join should analyze");
     let self_join = resolved(layer_for_relation(&self_join, "mart.self_join"));
-    assert!(self_join.join_equalities().is_empty());
+    let [equality] = self_join.join_equalities() else {
+        panic!("self-join equality must preserve independent input instances");
+    };
+    assert_eq!(equality.left().relation(), "raw.t");
+    assert_eq!(equality.right().relation(), "raw.t");
+    assert_eq!(equality.left().relation_instance(), "a");
+    assert_eq!(equality.right().relation_instance(), "b");
     assert!(!self_join.condition_exactness().is_exact());
 }
 
