@@ -1167,6 +1167,27 @@ mod tests {
     }
 
     #[test]
+    fn distinct_sufficient_examples_are_not_a_joint_satisfiability_proof() {
+        let sufficient = |count| WitnessDirection::feasible(vec![
+            WitnessCase::new(
+                vec![WitnessObligation::OutputRows {
+                    layer_id: "terminal".to_string(),
+                    bounds: bound(count, Some(count)),
+                }],
+                ProofStrength::Sufficient,
+            ).expect("case")
+        ]).expect("direction");
+        assert!(matches!(
+            sufficient(1).all(&sufficient(2)),
+            WitnessDirection::Residual { .. }
+        ));
+        assert!(matches!(
+            sufficient(1).all(&sufficient(1)),
+            WitnessDirection::Feasible(_)
+        ));
+    }
+
+    #[test]
     fn residual_is_not_impossible_and_sufficient_or_branch_survives_it() {
         let residual = WitnessDirection::Residual {
             reason: "unknown".into(),
