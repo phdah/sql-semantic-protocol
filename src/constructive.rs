@@ -973,6 +973,73 @@ mod tests {
         CountBounds::new(min, max).expect("valid test bounds")
     }
 
+    fn counted(rows: u64) -> WitnessDirection {
+        WitnessDirection::feasible(vec![WitnessCase::new(
+            vec![WitnessObligation::OutputRows {
+                layer_id: "terminal".to_owned(),
+                bounds: bound(rows, Some(rows)),
+            }],
+            ProofStrength::Equivalent,
+        ).expect("valid proof")]).expect("feasible")
+    }
+
+    #[test]
+    fn conjunction_detects_shared_conflicting_counts_but_disjunction_preserves_cases() {
+        let a = counted(1);
+        let b = counted(2);
+        assert_eq!(a.all(&b), WitnessDirection::Impossible);
+        let WitnessDirection::Feasible(options) = a.any(&b) else {
+            panic!("disjoint cases are alternatives");
+        };
+        assert_eq!(options.len(), 2);
+        assert_eq!(options[0].strength(), ProofStrength::Equivalent);
+        assert_eq!(counted(1).all(&counted(1)), counted(1).all(&counted(1)));
+    }
+
+    #[test]
+    fn residual_is_not_impossible_and_sufficient_or_branch_survives_it() {
+        let residual = WitnessDirection::Residual { reason: "unknown".into() };
+        assert_eq!(residual.all(&counted(1)), WitnessDirection::Residual {
+            reason: "conjunctive_operand_not_proven".to_owned(),
+        });
+        assert_eq!(residual.any(&counted(1)), counted(1));
+        assert_eq!(residual.all(&WitnessDirection::Impossible), WitnessDirection::Impossible);
+    }
+
+    #[test]
+    fn sql_not_does_not_turn_unknown_into_false() {
+        let w = ConstructiveWitness {
+            operator: WitnessOperator::Boolean,
+            origin_layer_id: "layer".into(),
+            qualifying: counted(1),
+            rejected: counted(2),
+        };
+        let nullable = w.logical_not(false);
+        assert!(matches!(nullable.qualifying(), WitnessDirection::Residual { .. }));
+        assert_eq!(nullable.rejected(), w.qualifying());
+        let two_valued = w.logical_not(true);
+        assert_eq!(two_valued.qualifying(), w.rejected());
+        assert_eq!(two_valued.rejected(), w.qualifying());
+    }
+
+    #[test]
+    fn and_or_propagate_classifications_independently() {
+        let w = ConstructiveWitness {
+            operator: WitnessOperator::Boolean,
+            origin_layer_id: "layer".into(),
+            qualifying: counted(1),
+            rejected: counted(2),
+        };
+        let both = w.logical_and(&w).expect("same layer");
+        assert!(matches!(both.qualifying(), WitnessDirection::Feasible(_)));
+        assert!(matches!(both.rejected(), WitnessDirection::Feasible(_)));
+        let either = w.logical_or(&w).expect("same layer");
+        assert_eq!(either.qualifying(), w.qualifying());
+        assert_eq!(either.rejected(), w.rejected());
+        let other = ConstructiveWitness { origin_layer_id: "different".into(), ..w.clone() };
+        assert!(w.logical_or(&other).is_none());
+    }
+
     #[test]
     fn invalid_bounds_and_empty_names_cannot_be_created() {
         assert!(CountBounds::new(3, Some(2)).is_none());
