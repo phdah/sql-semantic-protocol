@@ -1937,6 +1937,38 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "strict_unique": strict_unique,
             "closed_world": closed_world
         }),
+        crate::WitnessObligation::Membership {
+            outer, inner, case, correlations, membership_key, inner_domains, closed_world,
+        } => json!({
+            "kind": "membership",
+            "outer": constructive_row_to_value(outer),
+            "inner": constructive_boundary_to_value(inner),
+            "case": case.as_str(),
+            "correlations": correlations.iter().map(|pair| json!({
+                "outer": column_ref_to_value(pair.outer()),
+                "inner": column_ref_to_value(pair.inner())
+            })).collect::<Vec<_>>(),
+            "membership_key": membership_key.as_ref().map(|pair| json!({
+                "outer": column_ref_to_value(pair.outer()),
+                "inner": column_ref_to_value(pair.inner())
+            })),
+            "inner_domains": inner_domains.iter().map(column_domain_to_value).collect::<Vec<_>>(),
+            "closed_world": closed_world
+        }),
+        crate::WitnessObligation::SetTuple {
+            branch_identity, boundary, tuple_columns, matching_rows, column_domains, closed_world,
+        } => json!({
+            "kind": "set_tuple",
+            "branch_identity": branch_identity,
+            "boundary": constructive_boundary_to_value(boundary),
+            "tuple_columns": tuple_columns,
+            "matching_rows": matching_rows,
+            "column_domains": column_domains.iter().map(column_domain_to_value).collect::<Vec<_>>(),
+            "closed_world": closed_world
+        }),
+        crate::WitnessObligation::SetResultTuple { matching_rows, nulls_equal } => json!({
+            "kind": "set_result_tuple", "matching_rows": matching_rows, "nulls_equal": nulls_equal
+        }),
         crate::WitnessObligation::OutputRows { layer_id, bounds } => json!({
             "kind": "output_rows",
             "layer_id": layer_id,
