@@ -5,8 +5,8 @@
 //! avoids assuming which row wins a tie or a dialect's default NULL placement.
 
 use crate::protocol::{
-    Bound, ColumnRef, ComparisonOperator, Expression, LiteralExpression, LiteralType,
-    LiteralValue, Output, Predicate, QueryStatement, SourceRelation, ValueDomain, ValueRange,
+    Bound, ColumnRef, ComparisonOperator, Expression, LiteralExpression, LiteralType, LiteralValue,
+    Output, Predicate, QueryStatement, SourceRelation, ValueDomain, ValueRange,
 };
 
 /// Order key at the controllable source boundary, in window ORDER BY priority.
@@ -45,7 +45,10 @@ pub struct WindowRankCase {
 
 impl WindowRankCase {
     fn new(min_preceding: u64, max_preceding: Option<u64>) -> Self {
-        Self { min_preceding, max_preceding }
+        Self {
+            min_preceding,
+            max_preceding,
+        }
     }
     /// Minimum number of rows ordered before the candidate.
     pub fn min_preceding(&self) -> u64 {
@@ -82,19 +85,33 @@ pub struct WindowWitness {
 
 impl WindowWitness {
     /// Single controllable input relation for the window partition, if proven.
-    pub fn boundary(&self) -> Option<&str> { self.boundary.as_deref() }
+    pub fn boundary(&self) -> Option<&str> {
+        self.boundary.as_deref()
+    }
     /// Physical or intermediate keys whose values must match the candidate.
-    pub fn partition_by(&self) -> &[ColumnRef] { &self.partition_by }
+    pub fn partition_by(&self) -> &[ColumnRef] {
+        &self.partition_by
+    }
     /// Strict order required for the candidate and its preceding witnesses.
-    pub fn order_by(&self) -> &[WindowOrderKey] { &self.order_by }
+    pub fn order_by(&self) -> &[WindowOrderKey] {
+        &self.order_by
+    }
     /// Supported ranking comparison operator.
-    pub fn operator(&self) -> Option<ComparisonOperator> { self.operator }
+    pub fn operator(&self) -> Option<ComparisonOperator> {
+        self.operator
+    }
     /// Right-hand integer ranking threshold.
-    pub fn limit(&self) -> Option<u64> { self.limit }
+    pub fn limit(&self) -> Option<u64> {
+        self.limit
+    }
     /// Constructible candidate which survives QUALIFY or a proven rank filter.
-    pub fn qualifying(&self) -> &WindowWitnessDirection { &self.qualifying }
+    pub fn qualifying(&self) -> &WindowWitnessDirection {
+        &self.qualifying
+    }
     /// Constructible candidate which fails QUALIFY or a proven rank filter.
-    pub fn rejected(&self) -> &WindowWitnessDirection { &self.rejected }
+    pub fn rejected(&self) -> &WindowWitnessDirection {
+        &self.rejected
+    }
     pub(crate) fn is_exact(&self) -> bool {
         !matches!(self.qualifying, WindowWitnessDirection::Residual { .. })
             && !matches!(self.rejected, WindowWitnessDirection::Residual { .. })
@@ -105,11 +122,20 @@ fn residual(reason: &'static str) -> WindowWitnessDirection {
     WindowWitnessDirection::Residual { reason }
 }
 
-fn source_column(column: &crate::protocol::ColumnExpression, source: &SourceRelation) -> Option<ColumnRef> {
-    if column.relation().is_some_and(|name| name != source.name() && Some(name) != source.alias()) {
+fn source_column(
+    column: &crate::protocol::ColumnExpression,
+    source: &SourceRelation,
+) -> Option<ColumnRef> {
+    if column
+        .relation()
+        .is_some_and(|name| name != source.name() && Some(name) != source.alias())
+    {
         return None;
     }
-    Some(ColumnRef::new(Some(source.name().to_string()), column.name().to_string()))
+    Some(ColumnRef::new(
+        Some(source.name().to_string()),
+        column.name().to_string(),
+    ))
 }
 
 /// Analyze a direct QUALIFY comparison against one ROW_NUMBER result.
@@ -127,7 +153,9 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<WindowWitness> {
         qualifying: residual("unsupported_qualify_predicate"),
         rejected: residual("unsupported_qualify_predicate"),
     };
-    let Predicate::Comparison(compare) = predicate else { return Some(result) };
+    let Predicate::Comparison(compare) = predicate else {
+        return Some(result);
+    };
     let (window, operator, bound) = match (compare.left(), compare.right()) {
         (Expression::WindowFunction(window), Expression::Literal(bound)) => {
             (window, compare.operator(), bound)
@@ -147,11 +175,15 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<WindowWitness> {
         result.rejected = residual("unsupported_window_function_arguments");
         return Some(result);
     }
-    let LiteralValue::Number(text) = bound.value() else { return Some(result) };
+    let LiteralValue::Number(text) = bound.value() else {
+        return Some(result);
+    };
     if bound.literal_type() != LiteralType::Integer {
         return Some(result);
     }
-    let Ok(threshold) = text.parse::<u64>() else { return Some(result) };
+    let Ok(threshold) = text.parse::<u64>() else {
+        return Some(result);
+    };
     if !matches!(operator, ComparisonOperator::Lte)
         && !(operator == ComparisonOperator::Eq && threshold == 1)
     {
@@ -191,7 +223,9 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<WindowWitness> {
             result.rejected = residual("computed_partition_key");
             return Some(result);
         };
-        let Some(column) = source_column(column, source) else { return Some(result) };
+        let Some(column) = source_column(column, source) else {
+            return Some(result);
+        };
         result.partition_by.push(column);
     }
     for order in window_spec.order_by() {
@@ -201,13 +235,16 @@ pub(crate) fn analyze(query: &QueryStatement) -> Option<WindowWitness> {
             return Some(result);
         };
         let (Some(column), Some(nulls_first)) =
-            (source_column(column, source), order.nulls_first()) else {
+            (source_column(column, source), order.nulls_first())
+        else {
             result.qualifying = residual("implicit_null_ordering_or_unresolved_column");
             result.rejected = residual("implicit_null_ordering_or_unresolved_column");
             return Some(result);
         };
         result.order_by.push(WindowOrderKey {
-            column, ascending: order.ascending().unwrap_or(true), nulls_first,
+            column,
+            ascending: order.ascending().unwrap_or(true),
+            nulls_first,
         });
     }
 
@@ -225,7 +262,9 @@ pub(crate) fn refine_output(query: &QueryStatement) -> Output {
     let Some(witness) = query.window_witness().filter(|witness| witness.is_exact()) else {
         return query.output().clone();
     };
-    let Some(limit) = witness.limit() else { return query.output().clone() };
+    let Some(limit) = witness.limit() else {
+        return query.output().clone();
+    };
     let Some(Predicate::Comparison(compare)) = query.predicates().qualify_predicate() else {
         return query.output().clone();
     };
@@ -237,9 +276,16 @@ pub(crate) fn refine_output(query: &QueryStatement) -> Output {
     let bounded = if limit == 0 {
         ValueDomain::Empty
     } else {
-        let lower = LiteralExpression::new(LiteralType::Integer, LiteralValue::Number("1".to_string()));
-        let upper = LiteralExpression::new(LiteralType::Integer, LiteralValue::Number(limit.to_string()));
-        ValueDomain::ranges(vec![ValueRange::new(Some(Bound::new(lower, true)), Some(Bound::new(upper, true)))])
+        let lower =
+            LiteralExpression::new(LiteralType::Integer, LiteralValue::Number("1".to_string()));
+        let upper = LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(limit.to_string()),
+        );
+        ValueDomain::ranges(vec![ValueRange::new(
+            Some(Bound::new(lower, true)),
+            Some(Bound::new(upper, true)),
+        )])
     };
     Output::new(query.output().columns().iter().cloned().map(|column| {
         if matches!(column.expression(), Expression::WindowFunction(candidate) if candidate == expression) {
