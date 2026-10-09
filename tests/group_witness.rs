@@ -169,6 +169,86 @@ fn sum_min_max_emit_rejected_null_and_value_proofs_with_oracle_checks() {
 }
 
 #[test]
+fn group_by_output_aliases_do_not_invent_physical_group_keys() {
+    for sql in [
+        "SELECT category AS grp, COUNT(*) FROM sales GROUP BY grp HAVING COUNT(*) > 1",
+        "SELECT UPPER(category) AS grp, COUNT(*) FROM sales GROUP BY grp HAVING COUNT(*) > 1",
+    ] {
+        let protocol = analyze(sql);
+        let witness = first_query(&protocol).group_witness().unwrap();
+        assert_eq!(witness.boundary(), Some("sales"));
+        assert!(witness.group_keys().is_empty(), "{sql}");
+        assert!(
+            matches!(witness.qualifying(), GroupWitnessDirection::Residual { .. }),
+            "{sql}"
+        );
+        assert!(
+            matches!(witness.rejected(), GroupWitnessDirection::Residual { .. }),
+            "{sql}"
+        );
+    }
+
+    // A grouping column is still provable when the query explicitly groups
+    // by the physical column rather than the projection alias.
+    let ordinary =
+        analyze("SELECT category AS grp, COUNT(*) FROM sales GROUP BY category HAVING COUNT(*) > 1");
+    let witness = first_query(&ordinary).group_witness().unwrap();
+    assert!(matches!(
+        witness.qualifying(),
+        GroupWitnessDirection::Exact(_)
+    ));
+    assert_eq!(witness.group_keys()[0].name(), "category");
+
+    let connection = Connection::open_in_memory().unwrap();
+    connection
+        .execute_batch(
+            "CREATE TABLE sales(category VARCHAR);
+             INSERT INTO sales VALUES ('a'), ('a'), ('b');",
+        )
+        .unwrap();
+    assert_eq!(
+        count_sql(
+            &connection,
+            "SELECT COUNT(*) FROM (SELECT category AS grp, COUNT(*) FROM sales GROUP BY grp HAVING COUNT(*) > 1)"
+        ),
+        1
+    );
+}
+
+#[test]
+fn empty_grouping_sets_allow_zero_count_from_an_empty_relation() {
+    let connection = Connection::open_in_memory().unwrap();
+    connection
+        .execute_batch("CREATE TABLE sales(category VARCHAR);")
+        .unwrap();
+
+    for sql in [
+        "SELECT COUNT(*) FROM sales GROUP BY ROLLUP(category) HAVING COUNT(*) = 0",
+        "SELECT COUNT(*) FROM sales GROUP BY CUBE(category) HAVING COUNT(*) = 0",
+        "SELECT COUNT(*) FROM sales GROUP BY GROUPING SETS ((), (category)) HAVING COUNT(*) = 0",
+    ] {
+        let protocol = analyze(sql);
+        let query = first_query(&protocol);
+        let witness = query.group_witness().unwrap();
+        assert!(
+            matches!(witness.qualifying(), GroupWitnessDirection::Residual { .. }),
+            "{sql}"
+        );
+        assert_ne!(query.output().columns()[0].domain(), &ValueDomain::Empty);
+        let value: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
+        let domain = &value["inputs"][0]["statements"][0]["output"]["columns"][0]["domain"];
+        assert_eq!(domain["kind"], "ranges", "{sql}");
+        assert_eq!(domain["ranges"][0]["lower"]["value"]["value"], 0, "{sql}");
+        assert_eq!(domain["ranges"][0]["upper"]["value"]["value"], 0, "{sql}");
+        assert_eq!(
+            count_sql(&connection, &format!("SELECT COUNT(*) FROM ({sql})")),
+            1,
+            "{sql}"
+        );
+    }
+}
+
+#[test]
 fn complex_predicates_and_uncontrolled_source_boundaries_remain_residual() {
     for sql in [
         "SELECT category, SUM(amount) FROM sales GROUP BY category HAVING SUM(amount) > 10 OR SUM(amount) < 0",
