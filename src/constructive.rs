@@ -1050,6 +1050,36 @@ mod tests {
     }
 
     #[test]
+    fn malformed_quantifiers_tuples_and_closed_world_absence_are_unrepresentable() {
+        let boundary = WitnessBoundary::new("raw.orders", GroupBoundaryKind::Physical, "layer")
+            .expect("boundary");
+        let row = RowVariable::new("raw.orders", "o", "candidate").expect("row");
+        let value = WitnessTerm::Integer(1);
+        let tautology = WitnessFormula::IsNull { term: value.clone(), negated: true };
+        let case = |obligation| WitnessCase::new(vec![obligation], ProofStrength::Sufficient);
+        assert!(case(WitnessObligation::Rows {
+            boundary: boundary.clone(), quantifier: RowQuantifier::ForAll,
+            bounds: bound(0, Some(1)), predicate: tautology.clone(), closed_world: false,
+        }).is_none());
+        assert!(case(WitnessObligation::Rows {
+            boundary: boundary.clone(), quantifier: RowQuantifier::Exists,
+            bounds: bound(0, Some(1)), predicate: tautology.clone(), closed_world: true,
+        }).is_none());
+        assert!(case(WitnessObligation::Predicate(WitnessFormula::TupleComparison {
+            left: vec![value.clone()], equal: true,
+            right: vec![value.clone(), value.clone()],
+        })).is_none());
+        assert!(case(WitnessObligation::NoMatchingPartner {
+            candidate: row.clone(), partner: row.clone(),
+            comparison: ComparisonOperator::Eq,
+            left: ColumnRef::new(Some("raw.orders".into()), "id".into()),
+            right: ColumnRef::new(Some("raw.orders".into()), "id".into()),
+            closed_world: false,
+        }).is_none());
+        assert!(case(WitnessObligation::Producer { boundary }).is_none());
+    }
+
+    #[test]
     fn sql_not_does_not_turn_unknown_into_false() {
         let w = ConstructiveWitness {
             operator: WitnessOperator::Boolean,
