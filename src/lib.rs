@@ -27,6 +27,7 @@
 //!   source obligations without pretending to solve full physical-source DAGs.
 //! - BagLaw transfers closed-world count bounds through proven bag operators without
 //!   claiming source construction or guessing unsupported NULL/key semantics.
+//! - physical_source_plan builds a reference-based physical dependency DAG and conservatively proves single-row WHERE witnesses across transparent producer chains.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
 //!   multiplicities with NULL, duplicates and shared physical aliases.
 
@@ -51,6 +52,7 @@ mod openlineage;
 mod outcome_goals;
 mod outcome_proofs;
 mod parser;
+mod physical_realization;
 pub mod protocol;
 mod relation;
 mod subquery_witness;
@@ -123,6 +125,7 @@ pub use outcome_goals::{
 };
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
+pub use physical_realization::{physical_source_plan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalSourcePlan};
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
