@@ -173,8 +173,9 @@ operands; unmatched or unknown identities remain residual. A physical
 source identity records provenance, **not** logical population equality:
 separately filtered branches can have different tuple counts despite
 originating from the same table. `BagPopulationIdentity` is an explicit
-upstream attestation that two operands select exactly the same logical
-row population. Only when both the physical source and the population
+upstream attestation that two operands have the same counted logical
+bag, including the same tuple-producing expressions and predicates for
+candidate-tuple counts. Only when both the physical source and the population
 identity agree do aliases and self-joins intersect compatible count
 constraints. For tuple counts the tuple identity must also agree.
 Conflicting evidence for a proven identical population is impossible;
