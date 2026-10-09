@@ -235,12 +235,17 @@ column-only identity is insufficient for exact source witness obligations.
 ## DML state-effect parity
 
 The canonical DML effect is constructed at the SQL analysis boundary for
-direct SQL, dbt compiled SQL, and any other adapter supplying SQL statements.
-It is not inferred from dbt manifest metadata or catalog types. Source
-metadata adapters (dbt and optional ODCS) contribute the existing canonical
-relation-constraint evidence, including primary/unique keys, enforcement and
-provenance; the bundle resolves that evidence against the written target.
-A missing schema or constraint set remains explicitly unavailable. Compiled
-SQL and direct SQL with equivalent schema evidence must expose identical
-write effects; no adapter fabricates an initial target state, mutation counts,
-or conflict-freedom from a catalog.
+direct SQL and other adapters that actually supply DML statements. It is
+not inferred from dbt manifest metadata or catalog types. dbt's existing
+manifest adapter wraps compiled model SELECT statements in CREATE VIEW;
+those model artifacts do **not** contain executed incremental INSERT/MERGE
+operations and cannot provide equivalent DML evidence. Consequently the dbt
+adapter must not fabricate write effects for them. The optional ODCS adapter
+also supplies schema evidence only, not executable DML.
+
+Canonical primary/unique/foreign-key and column constraints from SQL,
+dbt or ODCS are represented by the shared `RelationConstraintSet` types.
+Where a write and target evidence coexist in an analysis bundle, the
+`write_effects` contract binds that evidence to the normalized target.
+Missing metadata stays `null`: no adapter may invent the initial snapshot,
+mutation counts or conflict-freedom from a catalog.
