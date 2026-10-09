@@ -137,6 +137,38 @@ fn distribution_arithmetic_catches_impossible_totals_and_overflow() {
 }
 
 #[test]
+fn singleton_literal_histograms_are_proven_and_checked_by_duckdb() {
+    let sql = "SELECT 1 AS x";
+    let mut bundle = analyze(sql);
+    let exact = OutputDistribution::new("x", vec![
+        OutputValueCount::new(ConstraintValue::Integer(1), 1)
+    ]).expect("histogram");
+    request(&mut bundle, Some(1), None, vec![exact]);
+    assert_eq!(bundle.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
+
+    let impossible = OutputDistribution::new("x", vec![
+        OutputValueCount::new(ConstraintValue::Integer(2), 1)
+    ]).expect("histogram");
+    request(&mut bundle, Some(1), None, vec![impossible]);
+    assert_eq!(bundle.outcome_goals()[0].status(), OutcomeGoalStatus::Unsatisfiable);
+
+    let connection = Connection::open_in_memory().expect("DuckDB");
+    assert_eq!(oracle_count(&connection, sql), 1);
+    let actual: i64 = connection.query_row(sql, [], |row| row.get(0)).expect("literal value");
+    assert_eq!(actual, 1);
+}
+
+#[test]
+fn null_literal_histogram_is_exact() {
+    let mut bundle = analyze("SELECT NULL AS x");
+    let histogram = OutputDistribution::new("x", vec![
+        OutputValueCount::new(ConstraintValue::Null, 1)
+    ]).expect("histogram");
+    request(&mut bundle, Some(1), None, vec![histogram]);
+    assert_eq!(bundle.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
+}
+
+#[test]
 fn complex_join_window_and_group_distribution_require_real_witnesses() {
     let mut bundle = analyze("SELECT a.id FROM a JOIN b ON a.id = b.id");
     request(&mut bundle, Some(3), None, vec![]);
