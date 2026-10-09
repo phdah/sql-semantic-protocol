@@ -6618,6 +6618,7 @@ fn analyze_subquery_semantics(
         });
 
     SubquerySemantics::new(
+        relations.sources,
         relations.dependencies.into_iter().collect(),
         correlations,
         relations.joins,
