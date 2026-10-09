@@ -197,7 +197,7 @@ fn shared_update_and_delete_syntax_runs_across_all_supported_parser_dialects() {
                 Ok(b) => {
                     assert_eq!(b.write_state_effects().len(), 1, "{sql} {dialect_name}");
                 }
-                Err(sql_semantic_protocol::InputAnalysisError::Parse { .. }) => {
+                Err(error) if matches!(error.error(), sql_semantic_protocol::Error::Parse(_)) => {
                     // Parser-boundary rejection is not silently treated as supported SQL.
                 }
                 Err(other) => panic!("unexpected failure for {dialect_name}: {other}"),
