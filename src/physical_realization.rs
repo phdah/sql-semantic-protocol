@@ -265,7 +265,15 @@ impl<'a> Walker<'a> {
                 RelationResolution::Missing => return Err(PhysicalProofGap::MissingProducer),
                 RelationResolution::Ambiguous => return Err(PhysicalProofGap::AmbiguousProducer),
                 RelationResolution::Cycle => return Err(PhysicalProofGap::Cycle),
-                RelationResolution::Partial => return Err(PhysicalProofGap::PartialProducer),
+                RelationResolution::Partial => {
+                    // Preserve all known partial producer nodes and write-kind
+                    // references for the consumer, but never treat their
+                    // result state as a complete generated relation.
+                    for producer in edge.producer_layer_ids() {
+                        let _ = self.visit(producer);
+                    }
+                    return Err(PhysicalProofGap::PartialProducer);
+                }
                 RelationResolution::Unsupported => {
                     return Err(PhysicalProofGap::UnsupportedDependency)
                 }
