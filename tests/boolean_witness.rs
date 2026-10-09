@@ -149,6 +149,38 @@ fn repeated_column_conditions_are_checked_jointly() {
 }
 
 #[test]
+fn conjunctions_are_coupled_even_without_an_or() {
+    let impossible = typed_bundle("SELECT a FROM t WHERE a > 2 AND a < 1");
+    let ComposedSemantics::Resolved(semantics) = impossible.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(witness.condition(), BooleanRowConstraint::All(_)));
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+
+    let feasible = typed_bundle("SELECT a FROM t WHERE a > 2 AND b < 1");
+    let ComposedSemantics::Resolved(semantics) = feasible.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+}
+
+#[test]
 fn identity_arithmetic_is_invertible_but_nonidentity_arithmetic_stays_residual() {
     for sql in [
         "SELECT a FROM t WHERE (a + 0) > 2 OR (0 + b) < 0",
