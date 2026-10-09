@@ -63,7 +63,7 @@ pub use bundle::{
     ComposedJoinEquality, ComposedSemantics, ComposedSetOperation, ComposedSubqueryWitness,
     ComposedWindowWitness, CompositionDiagnostic, CompositionFailureReason,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
-    GroupBoundaryKind, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
+    GroupBoundaryKind, InputAnalysisError, LayerWriteStateEffect, RelationResolution, ResolvedComposedSemantics, SqlInput,
     SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use constraints::{

@@ -65,6 +65,12 @@
       "items": {
         "$ref": "#/$defs/outcomeGoal"
       }
+    },
+    "write_effects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/layerWriteStateEffect"
+      }
     }
   },
   "$defs": {
@@ -5437,6 +5443,45 @@
           "items": {
             "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
           }
+        }
+      }
+    },
+    "layerWriteStateEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "target",
+        "sources",
+        "state_effect",
+        "target_constraints"
+      ],
+      "properties": {
+        "layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "target": {
+          "$ref": "#/$defs/relationName"
+        },
+        "sources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "state_effect": {
+          "$ref": "#/$defs/writeStateEffect"
+        },
+        "target_constraints": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/relationConstraintSet"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     }

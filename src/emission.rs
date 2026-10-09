@@ -7,7 +7,7 @@ use serde_json::{json, Value};
 
 use crate::bundle::{
     AnalysisBundle, AnalysisGraph, ComposedSemantics, CompositionDiagnostic, DatasetRef,
-    GraphComponent, GraphEdge, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
+    GraphComponent, GraphEdge, LayerWriteStateEffect, ResolvedComposedSemantics, SqlInputSource, TransformationLayer,
     UnresolvedComposedSemantics,
 };
 use crate::constraints::{
@@ -125,6 +125,13 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                 .iter()
                 .map(relation_constraint_set_to_value)
                 .collect(),
+        );
+    }
+
+    let write_effects = bundle.write_state_effects();
+    if !write_effects.is_empty() {
+        value["write_effects"] = Value::Array(
+            write_effects.iter().map(layer_write_effect_to_value).collect(),
         );
     }
 
@@ -782,26 +789,39 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
     value
 }
 
+fn layer_write_effect_to_value(write: &LayerWriteStateEffect) -> Value {
+    json!({
+        "layer_id": write.layer_id(),
+        "target": write.target(),
+        "sources": write.sources(),
+        "state_effect": write_state_effect_to_value(write.effect()),
+        "target_constraints": write.target_constraints()
+            .map_or(Value::Null, relation_constraint_set_to_value),
+    })
+}
+
+fn write_state_effect_to_value(effect: &crate::WriteStateEffect) -> Value {
+    json!({
+        "initial_state": "caller_supplied",
+        "cardinality_rule": effect.cardinality_rule().as_str(),
+        "affected_rows": { "minimum": effect.affected_rows().minimum(), "maximum": effect.affected_rows().maximum() },
+        "post_state": match effect.post_state() { WritePostState::Empty => "empty", WritePostState::ApplyToInitial => "apply_to_initial" },
+        "idempotence": match effect.idempotence() { WriteIdempotence::Proven => "proven", WriteIdempotence::Unproven => "unproven" },
+        "branches": effect.branches().iter().map(|branch| json!({
+            "match_kind": branch.match_kind().map(|kind| kind.as_str()),
+            "predicate": branch.predicate().map_or(Value::Null, predicate_to_value),
+            "domains": branch.domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
+            "action": match branch.action() {
+                WriteEffectAction::InsertQuery => json!({"kind": "insert_query"}),
+                WriteEffectAction::Mutation(action) => merge_action_to_value(action),
+            }
+        })).collect::<Vec<_>>(),
+        "residual_reasons": effect.reasons().iter().map(|reason| reason.as_str()).collect::<Vec<_>>(),
+    })
+}
+
 fn write_operation_to_value(write: &WriteOperation) -> Value {
-    let state_effect = write.state_effect().map(|effect| {
-        json!({
-            "initial_state": "caller_supplied",
-            "cardinality_rule": effect.cardinality_rule().as_str(),
-            "affected_rows": { "minimum": effect.affected_rows().minimum(), "maximum": effect.affected_rows().maximum() },
-            "post_state": match effect.post_state() { WritePostState::Empty => "empty", WritePostState::ApplyToInitial => "apply_to_initial" },
-            "idempotence": match effect.idempotence() { WriteIdempotence::Proven => "proven", WriteIdempotence::Unproven => "unproven" },
-            "branches": effect.branches().iter().map(|branch| json!({
-                "match_kind": branch.match_kind().map(|kind| kind.as_str()),
-                "predicate": branch.predicate().map_or(Value::Null, predicate_to_value),
-                "domains": branch.domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
-                "action": match branch.action() {
-                    WriteEffectAction::InsertQuery => json!({"kind": "insert_query"}),
-                    WriteEffectAction::Mutation(action) => merge_action_to_value(action),
-                }
-            })).collect::<Vec<_>>(),
-            "residual_reasons": effect.reasons().iter().map(|reason| reason.as_str()).collect::<Vec<_>>(),
-        })
-    });
+    let state_effect = write.state_effect().map(|effect| write_state_effect_to_value(&effect));
     json!({
         "target": write.target(),
         "kind": write.kind().as_str(),

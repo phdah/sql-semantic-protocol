@@ -13,7 +13,7 @@ use crate::constraints::{
 };
 use crate::protocol::{
     ColumnDomain, ComparisonAssumption, ConditionExactness, DiagnosticSeverity, JoinKind, Output,
-    Protocol, ProtocolStatement, SetOperation, WriteKind, PROTOCOL_VERSION,
+    Protocol, ProtocolStatement, SetOperation, WriteKind, WriteStateEffect, PROTOCOL_VERSION,
 };
 use crate::relation::{
     RelationCatalog, RelationContext, RelationResolutionError, RelationResolver, RelationSchema,
@@ -982,6 +982,33 @@ impl TransformationLayer {
     }
 }
 
+/// One partial write's canonical effect, target identity and constraint evidence.
+///
+/// Absent constraint evidence is not a proof that a target has no keys.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LayerWriteStateEffect {
+    layer_id: String,
+    target: String,
+    sources: Vec<String>,
+    effect: WriteStateEffect,
+    target_constraints: Option<RelationConstraintSet>,
+}
+
+impl LayerWriteStateEffect {
+    /// Stable layer identity of the mutation.
+    pub fn layer_id(&self) -> &str { &self.layer_id }
+    /// Resolved target relation identity.
+    pub fn target(&self) -> &str { &self.target }
+    /// Resolved input relations; the pre-existing target is separate.
+    pub fn sources(&self) -> &[String] { &self.sources }
+    /// Typed mutation obligations, including row-count conservation.
+    pub fn effect(&self) -> &WriteStateEffect { &self.effect }
+    /// Available target constraints with enforcement/provenance.
+    pub fn target_constraints(&self) -> Option<&RelationConstraintSet> {
+        self.target_constraints.as_ref()
+    }
+}
+
 /// Multi-input analysis result with deterministic local layers and relation dependency graph.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisBundle {
@@ -1025,6 +1052,30 @@ impl AnalysisBundle {
     /// Return canonical relation constraints from SQL and metadata adapters.
     pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
         &self.relation_constraints
+    }
+
+    /// Resolve partial writes against canonical target identities and constraint evidence.
+    ///
+    /// Missing constraint evidence is reported as None, not as an empty set of
+    /// guaranteed collision-free keys. Source relations exclude the initial target.
+    pub fn write_state_effects(&self) -> Vec<LayerWriteStateEffect> {
+        self.layers.iter().filter_map(|layer| {
+            let input = self.inputs.iter().find(|input| input.id() == layer.input_id())?;
+            let ProtocolStatement::Query(query) = input.statements().get(layer.statement_index())? else {
+                return None;
+            };
+            let effect = query.write()?.state_effect()?;
+            let target = layer.produces().iter().find_map(|dataset| dataset.relation_name())?;
+            let constraints = self.relation_constraints.iter()
+                .find(|set| set.relation() == target).cloned();
+            Some(LayerWriteStateEffect {
+                layer_id: layer.id().to_string(),
+                target: target.to_string(),
+                sources: layer.consumes().to_vec(),
+                effect,
+                target_constraints: constraints,
+            })
+        }).collect()
     }
 
     /// Return constraint diagnostics that cannot be scoped to one canonical relation.
