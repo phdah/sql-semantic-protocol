@@ -434,3 +434,19 @@ Originating witnesses are retained in multi-layer composition along with
 physical/intermediate boundary provenance so consumers can decide which
 source is controllable. A dbt/SQL adapter provides the same capability if
 it supplies equivalent SQL; metadata-only adapters do not synthesize SQL.
+
+## Correlated single-row boolean filters
+
+A cross-column `OR` is not safely describable as a conjunction of individual
+column domains. For a single source such as
+`a IS NULL OR b IS NULL`, the analyzer may instead carry a typed
+`boolean_witness` whose `any` branches apply to the **same row**.
+Its qualifying truth is TRUE, while its rejected truth is FALSE **or UNKNOWN**.
+This does not alter the conservative independent `column_domains` or grant
+whole-query row-membership exactness.
+
+Signed integer comparisons require authoritative catalog datatypes and
+representable signed literals. Arithmetic, CAST, LIKE, functions, repeated
+columns and ambiguous sources still produce residual directions. Witnesses
+remain associated with the layer and source boundary where they originated
+rather than being silently remapped across nonidentity projections.
