@@ -122,6 +122,10 @@ fn final_outcome_snapshot(protocol: &Value) -> Value {
                 .as_object_mut()
                 .expect("composed semantics should be an object")
                 .remove("constructive_witnesses");
+            composed_semantics
+                .as_object_mut()
+                .expect("composed semantics should be an object")
+                .remove("constructive_pending_producers");
             outcomes.push(serde_json::json!({
                 "relation": relation,
                 "model_id": layer["statement"]["input_id"].clone(),
