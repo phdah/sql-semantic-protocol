@@ -689,9 +689,15 @@ impl SqlTruth {
     }
 }
 
+#[derive(Default)]
+struct ColumnThresholds {
+    integers: BTreeSet<i128>,
+    prefixes: BTreeSet<String>,
+}
+
 fn collect_comparison_literals(
     condition: &BooleanRowConstraint,
-    thresholds: &mut std::collections::BTreeMap<ColumnRef, BTreeSet<i128>>,
+    thresholds: &mut BTreeMap<ColumnRef, ColumnThresholds>,
 ) {
     match condition {
         BooleanRowConstraint::All(operands) | BooleanRowConstraint::Any(operands) => {
@@ -708,7 +714,15 @@ fn collect_comparison_literals(
             thresholds
                 .entry(column.clone())
                 .or_default()
+                .integers
                 .insert(i128::from(*literal));
+        }
+        BooleanRowConstraint::StringPrefix { column, prefix, .. } => {
+            thresholds
+                .entry(column.clone())
+                .or_default()
+                .prefixes
+                .insert(prefix.clone());
         }
         BooleanRowConstraint::Residual { .. } => {}
     }
@@ -716,7 +730,8 @@ fn collect_comparison_literals(
 
 fn possible_joint_truths(
     constraint: &BooleanRowConstraint,
-    evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
     restrictions: Option<&BTreeMap<String, ColumnRestriction>>,
 ) -> BTreeSet<SqlTruth> {
     const MAX_ASSIGNMENTS: usize = 4096;
@@ -725,32 +740,71 @@ fn possible_joint_truths(
     let mut assignments = vec![BTreeMap::new()];
     for (column, literals) in thresholds {
         let restriction = restrictions.and_then(|items| items.get(column.name()));
-        let bounds = evidence(&column);
-        let mut values = BTreeSet::new();
+        let integer_bounds = integer_evidence(&column);
+        let string_bounds = string_evidence(&column);
+        if !literals.integers.is_empty() && !literals.prefixes.is_empty() {
+            // A single source column cannot simultaneously be an integer and a
+            // string under the scoped typed comparison semantics.
+            return BTreeSet::new();
+        }
+        let mut values = BTreeSet::<Option<RowScalar>>::new();
         if let Some(allowed) = restriction.and_then(|item| item.accepted.as_ref()) {
             for value in allowed {
-                if bounds.is_none_or(|bounds| bounds.minimum <= *value && *value <= bounds.maximum)
-                {
-                    values.insert(Some(*value));
+                let fits = match value {
+                    RowScalar::Integer(value) if !literals.integers.is_empty() => {
+                        integer_bounds.is_some_and(|bounds| {
+                            bounds.minimum <= *value && *value <= bounds.maximum
+                        })
+                    }
+                    RowScalar::String(value) if !literals.prefixes.is_empty() => {
+                        string_bounds.is_some_and(|bounds| {
+                            bounds
+                                .max_chars
+                                .is_none_or(|max| value.chars().count() as u64 <= max)
+                        })
+                    }
+                    // A pure NULL test admits a source value of any scalar kind.
+                    _ if literals.integers.is_empty() && literals.prefixes.is_empty() => true,
+                    _ => false,
+                };
+                if fits {
+                    values.insert(Some(value.clone()));
                 }
             }
-        } else if literals.is_empty() {
-            // A NULL test can be decided using any non-NULL witness.
-            values.insert(Some(0_i128));
-        } else {
-            let Some(bounds) = bounds else {
+        } else if !literals.integers.is_empty() {
+            let Some(bounds) = integer_bounds else {
                 return BTreeSet::new();
             };
-            values.extend([Some(bounds.minimum), Some(bounds.maximum)]);
-            for literal in literals {
+            values.insert(Some(RowScalar::Integer(bounds.minimum)));
+            values.insert(Some(RowScalar::Integer(bounds.maximum)));
+            for literal in literals.integers {
                 for value in [literal - 1, literal, literal + 1] {
                     if bounds.minimum <= value && value <= bounds.maximum {
-                        values.insert(Some(value));
+                        values.insert(Some(RowScalar::Integer(value)));
                     }
                 }
             }
+        } else if !literals.prefixes.is_empty() {
+            let Some(bounds) = string_bounds else {
+                return BTreeSet::new();
+            };
+            // Under attested binary/no-padding semantics, every ASCII prefix
+            // pattern changes truth only at its prefix. Each literal prefix
+            // and the empty string give representatives of the joint truth
+            // regions, including overlapping and negated prefixes.
+            values.insert(Some(RowScalar::String(String::new())));
+            for prefix in literals.prefixes {
+                if bounds
+                    .max_chars
+                    .is_none_or(|max| prefix.chars().count() as u64 <= max)
+                {
+                    values.insert(Some(RowScalar::String(prefix)));
+                }
+            }
+        } else {
+            // A NULL-only test only distinguishes NULL from non-NULL.
+            values.insert(Some(RowScalar::Integer(0)));
         }
-        // NULL remains possible unless enforcement explicitly excludes it.
         if !restriction.is_some_and(|item| item.not_null) {
             values.insert(None);
         }
@@ -761,7 +815,7 @@ fn possible_joint_truths(
         for assignment in assignments {
             for value in &values {
                 let mut candidate = assignment.clone();
-                candidate.insert(column.clone(), *value);
+                candidate.insert(column.clone(), value.clone());
                 expanded.push(candidate);
             }
         }
@@ -775,7 +829,7 @@ fn possible_joint_truths(
 
 fn eval_joint_truth(
     condition: &BooleanRowConstraint,
-    assignment: &std::collections::BTreeMap<ColumnRef, Option<i128>>,
+    assignment: &BTreeMap<ColumnRef, Option<RowScalar>>,
 ) -> Option<SqlTruth> {
     match condition {
         BooleanRowConstraint::All(operands) => {
@@ -807,8 +861,9 @@ fn eval_joint_truth(
         } => {
             use crate::protocol::ComparisonOperator as Op;
             let value = match assignment.get(column)? {
-                Some(value) => *value,
+                Some(RowScalar::Integer(value)) => *value,
                 None => return Some(SqlTruth::Unknown),
+                _ => return None,
             };
             let literal = i128::from(*literal);
             let result = match operator {
@@ -821,6 +876,23 @@ fn eval_joint_truth(
                 Op::IsDistinctFrom | Op::IsNotDistinctFrom => return None,
             };
             Some(if result {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            })
+        }
+        BooleanRowConstraint::StringPrefix {
+            column,
+            prefix,
+            negated,
+        } => {
+            let value = match assignment.get(column)? {
+                Some(RowScalar::String(value)) => value,
+                None => return Some(SqlTruth::Unknown),
+                _ => return None,
+            };
+            let matching = value.starts_with(prefix) != *negated;
+            Some(if matching {
                 SqlTruth::True
             } else {
                 SqlTruth::False
