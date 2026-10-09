@@ -12,7 +12,7 @@ use sql_semantic_protocol::{
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
     let dialect_impl = dialect_from_name(dialect).expect("recognized dialect");
-    let schemas = ["t", "l", "r"]
+    let schemas = ["t", "l", "r", "stage", "mart"]
         .into_iter()
         .map(|relation| {
             RelationSchema::new(
