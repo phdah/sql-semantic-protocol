@@ -169,7 +169,11 @@ SQL-equal candidate tuple. Incomplete candidate sampling is never a
 proof of zero occurrences or anti-membership.
 
 Candidate tuples must carry the same typed `BagTupleIdentity` across
-operands; unmatched or unknown identities remain residual.
+operands; unmatched or unknown identities remain residual. Aliases and
+self-joins with the same `BagSourceIdentity::physical_relation`
+intersect their complete count constraints before applying a transfer
+law. Conflicting interval evidence for one physical relation is
+impossible, not two independent source inputs.
 
 Given complete evidence, `BagLaw::SetTuple` reuses the *existing*
 `SetMultiplicityRule`, including SQL NULL-equal DISTINCT/ALL tuple
