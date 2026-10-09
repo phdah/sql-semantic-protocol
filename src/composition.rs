@@ -460,9 +460,11 @@ impl<'a> Composer<'a> {
                     || query.predicates().qualify_predicate().is_some()
                     || !query.condition_exactness().is_exact()
                     || !query.diagnostics().is_empty()
-                    || query.output().columns().iter().any(|column| {
-                        column.plain_copy_source().is_none()
-                    })
+                    || query
+                        .output()
+                        .columns()
+                        .iter()
+                        .any(|column| column.plain_copy_source().is_none())
                 {
                     return false;
                 }
