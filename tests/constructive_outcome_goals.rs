@@ -24,7 +24,7 @@ fn typed(sql: &str, sources: &[(&str, &[&str])]) -> sql_semantic_protocol::Analy
         })
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
-    let dialect = dialect_from_name("postgresql").expect("dialect");
+    let dialect = dialect_from_name("generic").expect("dialect");
     let input = SqlInput::inline(sql);
     analyze_configured_inputs_with_catalog(
         &[ConfiguredSqlInput::new(
