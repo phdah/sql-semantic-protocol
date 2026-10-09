@@ -13,8 +13,8 @@ use crate::group_witness::{GroupAggregate, GroupWitnessDirection};
 use crate::join_witness::{JoinWitnessDirection, JoinWitnessShape};
 use crate::outcome_goals::{OutcomeGoal, OutputValueCount};
 use crate::protocol::{
-    ColumnRef, ComparisonOperator, Expression, JoinKind, QueryStatement,
-    SetMultiplicityRule, SetWitnessCase, SetWitnessDirection,
+    ColumnRef, ComparisonOperator, Expression, JoinKind, QueryStatement, SetMultiplicityRule,
+    SetWitnessCase, SetWitnessDirection,
 };
 use crate::relation::RelationSchema;
 use crate::window_witness::{WindowOrderKey, WindowWitnessDirection};
@@ -178,23 +178,41 @@ fn integer_key(bundle: &AnalysisBundle, relation: &str, column: &str, count: u64
     }
 }
 
-fn value_fits(bundle: &AnalysisBundle, relation: &str, column: &str, value: &ConstraintValue) -> bool {
-    let Some(schema) = schema(bundle, relation) else { return false };
-    let Some(column) = schema.columns().iter().find(|item| item.name() == column) else { return false };
+fn value_fits(
+    bundle: &AnalysisBundle,
+    relation: &str,
+    column: &str,
+    value: &ConstraintValue,
+) -> bool {
+    let Some(schema) = schema(bundle, relation) else {
+        return false;
+    };
+    let Some(column) = schema.columns().iter().find(|item| item.name() == column) else {
+        return false;
+    };
     match (column.data_type(), value) {
         (DataType::SignedInteger { bits }, ConstraintValue::Integer(value)) => {
-            bits.is_none_or(|width| width >= 64 || (width > 0 && {
-                let half = 1_i128 << (width - 1);
-                i128::from(*value) >= -half && i128::from(*value) < half
-            }))
+            bits.is_none_or(|width| {
+                width >= 64
+                    || (width > 0 && {
+                        let half = 1_i128 << (width - 1);
+                        i128::from(*value) >= -half && i128::from(*value) < half
+                    })
+            })
         }
-        (DataType::UnsignedInteger { bits }, ConstraintValue::UnsignedInteger(value)) => {
-            bits.is_none_or(|width| width >= 64 || (width > 0 && u128::from(*value) < (1_u128 << width)))
-        }
+        (DataType::UnsignedInteger { bits }, ConstraintValue::UnsignedInteger(value)) => bits
+            .is_none_or(|width| {
+                width >= 64 || (width > 0 && u128::from(*value) < (1_u128 << width))
+            }),
         (DataType::UnsignedInteger { bits }, ConstraintValue::Integer(value)) if *value >= 0 => {
-            bits.is_none_or(|width| width >= 64 || (width > 0 && (*value as u128) < (1_u128 << width)))
+            bits.is_none_or(|width| {
+                width >= 64 || (width > 0 && (*value as u128) < (1_u128 << width))
+            })
         }
-        (DataType::SignedInteger { .. } | DataType::UnsignedInteger { .. }, ConstraintValue::Null) => true,
+        (
+            DataType::SignedInteger { .. } | DataType::UnsignedInteger { .. },
+            ConstraintValue::Null,
+        ) => true,
         _ => false,
     }
 }
@@ -584,18 +602,31 @@ fn construct_set(
     let case = cases
         .into_iter()
         .find(|case| case.output_tuple_count() == 1 && case.obligations().len() == 2)?;
-    let scale_by_value_rows = matches!(operation.multiplicity_rule()?,
-        SetMultiplicityRule::Sum | SetMultiplicityRule::Minimum | SetMultiplicityRule::SaturatingDifference);
-    let tuples = if values.is_empty() { rows } else {
+    let scale_by_value_rows = matches!(
+        operation.multiplicity_rule()?,
+        SetMultiplicityRule::Sum
+            | SetMultiplicityRule::Minimum
+            | SetMultiplicityRule::SaturatingDifference
+    );
+    let tuples = if values.is_empty() {
+        rows
+    } else {
         values.iter().filter(|entry| entry.rows() > 0).count() as u64
     };
     if !scale_by_value_rows && values.iter().any(|entry| entry.rows() > 1) {
         return None;
     }
     // Scaling the branch tuple counts must never overflow their integer contract.
-    if values.iter().any(|entry| case.obligations().iter().any(|obligation| {
-        obligation.matching_tuple_count().checked_mul(entry.rows()).is_none()
-    })) { return None; }
+    if values.iter().any(|entry| {
+        case.obligations().iter().any(|obligation| {
+            obligation
+                .matching_tuple_count()
+                .checked_mul(entry.rows())
+                .is_none()
+        })
+    }) {
+        return None;
+    }
     Some(OutcomeWitness::SetTuples {
         tuples,
         case,
