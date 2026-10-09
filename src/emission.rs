@@ -448,8 +448,8 @@ fn join_witness_to_value(witness: &crate::JoinWitness) -> Value {
         "origin_layer_id": witness.origin_layer_id(),
         "join_kind": witness.kind().as_str(),
         "comparison": witness.comparison().map(|op| op.as_str()),
-        "left": witness.left().map(&endpoint),
-        "right": witness.right().map(&endpoint),
+        "left": witness.left().map(endpoint),
+        "right": witness.right().map(endpoint),
         "unknown_comparison_is_match": false,
         "qualifying": join_witness_direction_to_value(witness.qualifying()),
         "rejected": join_witness_direction_to_value(witness.rejected())
