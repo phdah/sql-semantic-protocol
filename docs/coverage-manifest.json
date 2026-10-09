@@ -10553,5 +10553,35 @@
       "fail_closed": "unsupported_or_residual",
       "safe_subset_release_blocking": true
     }
+  ],
+  "canonical_equivalence_cases": [
+    {
+      "id": "integer_filter_and_projection",
+      "sql": "SELECT id FROM orders WHERE id >= 5 AND id < 10",
+      "dialects": "all_exposed",
+      "compare": "full_protocol_except_source_dialect",
+      "status": "representative_not_complete_coverage"
+    },
+    {
+      "id": "null_check",
+      "sql": "SELECT id FROM orders WHERE id IS NULL",
+      "dialects": "all_exposed",
+      "compare": "full_protocol_except_source_dialect",
+      "status": "representative_not_complete_coverage"
+    },
+    {
+      "id": "equality_inner_join",
+      "sql": "SELECT l.id FROM left_rows AS l INNER JOIN right_rows AS r ON l.id = r.id",
+      "dialects": "all_exposed",
+      "compare": "full_protocol_except_source_dialect",
+      "status": "representative_not_complete_coverage"
+    },
+    {
+      "id": "cte_filter",
+      "sql": "WITH selected AS (SELECT id FROM orders WHERE id > 0) SELECT id FROM selected",
+      "dialects": "all_exposed",
+      "compare": "full_protocol_except_source_dialect",
+      "status": "representative_not_complete_coverage"
+    }
   ]
 }
