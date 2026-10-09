@@ -1069,6 +1069,7 @@ impl AnalysisBundle {
             .map(|set| set.validated_against_schemas(&self.source_schemas))
             .collect::<Vec<_>>();
         merge_relation_constraint_sets(&mut self.relation_constraints, &validated);
+        self.recheck_boolean_witnesses();
     }
 
     /// Merge adapter diagnostics that cannot be scoped to one canonical relation.
@@ -1083,6 +1084,25 @@ impl AnalysisBundle {
         schemas.sort_by(|left, right| left.relation().cmp(right.relation()));
         self.source_schemas = schemas;
         self.validate_existing_constraints();
+        self.recheck_boolean_witnesses();
+    }
+
+    fn recheck_boolean_witnesses(&mut self) {
+        for input in &mut self.inputs {
+            for statement in &mut input.statements {
+                if let ProtocolStatement::Query(query) = statement {
+                    query.restrict_boolean_witness(&self.relation_constraints);
+                }
+            }
+        }
+        for layer in &mut self.layers {
+            if let ComposedSemantics::Resolved(semantics) = &mut layer.composed_semantics {
+                for item in semantics.boolean_witnesses.iter_mut() {
+                    item.witness
+                        .restrict_with_schema_constraints(&self.relation_constraints);
+                }
+            }
+        }
     }
 
     fn validate_existing_constraints(&mut self) {
@@ -1136,7 +1156,7 @@ impl AnalysisBundle {
             layer.composed_semantics = semantics;
         }
 
-        Ok(Self {
+        let mut bundle = Self {
             protocol_version: PROTOCOL_VERSION,
             inputs,
             layers,
@@ -1145,7 +1165,9 @@ impl AnalysisBundle {
             relation_constraints,
             constraint_diagnostics: Vec::new(),
             comparison_declarations: Vec::new(),
-        })
+        };
+        bundle.recheck_boolean_witnesses();
+        Ok(bundle)
     }
 }
 
