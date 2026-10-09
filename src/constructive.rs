@@ -497,7 +497,8 @@ impl WitnessDirection {
                 if left.len().checked_mul(right.len()).is_none_or(|n| n > 256) {
                     return Self::residual("conjunctive_case_limit");
                 }
-                let fully_equivalent = left.len() == 1 && right.len() == 1
+                let fully_equivalent = left.len() == 1
+                    && right.len() == 1
                     && left[0].strength() == ProofStrength::Equivalent
                     && right[0].strength() == ProofStrength::Equivalent;
                 let mut cases = Vec::new();
@@ -527,11 +528,16 @@ impl WitnessDirection {
                 }
                 if !cases.is_empty() {
                     Self::Feasible(cases)
-                } else if fully_equivalent && directly_conflicts(
-                    &left[0].obligations().iter().cloned()
-                        .chain(right[0].obligations().iter().cloned())
-                        .collect::<Vec<_>>()
-                ) {
+                } else if fully_equivalent
+                    && directly_conflicts(
+                        &left[0]
+                            .obligations()
+                            .iter()
+                            .cloned()
+                            .chain(right[0].obligations().iter().cloned())
+                            .collect::<Vec<_>>(),
+                    )
+                {
                     Self::Impossible
                 } else if unproved {
                     Self::residual("conjunctive_realization_unproven")
