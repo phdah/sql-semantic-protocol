@@ -31,7 +31,7 @@ fn analyze(sql: &str, columns: &[(&str, &str)]) -> ResolvedComposedSemantics {
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
         .expect("analysis should succeed");
     match bundle.layers()[0].composed_semantics() {
-        ComposedSemantics::Resolved(semantics) => semantics.clone(),
+        ComposedSemantics::Resolved(semantics) => semantics.as_ref().clone(),
         other => panic!("expected resolved semantics, got {other:?}"),
     }
 }
