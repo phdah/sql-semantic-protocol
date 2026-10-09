@@ -198,7 +198,9 @@ fn projected_rank_filters_keep_the_original_partition_and_boundary() {
         assert_eq!(witness.partition_by()[0].name(), "account_id");
         assert_eq!(
             query.condition_exactness().status(),
-            ConditionExactnessStatus::Exact
+            ConditionExactnessStatus::Exact,
+            "unexpected nested residuals: {:?}",
+            query.condition_exactness().residual_conditions()
         );
         assert_eq!(query.output().columns()[0].lineage().len(), 2);
         assert!(matches!(
