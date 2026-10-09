@@ -44,7 +44,7 @@ use crate::protocol::{
     ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
     InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
-    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    LikePrefixPredicate, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
@@ -4681,6 +4681,25 @@ fn analyze_predicate_with_windows(
             ComparisonOperator::IsNotDistinctFrom,
             analyze_predicate_expression(right, named_windows, output_aliases, scope, diagnostics),
         ),
+        Expr::Like {
+            negated,
+            any: false,
+            expr,
+            pattern,
+            escape_char: None,
+        } if safe_like_prefix(pattern).is_some() => Predicate::LikePrefix(
+            LikePrefixPredicate::new(
+                analyze_predicate_expression(
+                    expr,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                safe_like_prefix(pattern).expect("guarded LIKE prefix"),
+                *negated,
+            ),
+        ),
         Expr::IsNull(inner) => Predicate::IsNull(IsNullPredicate::new(
             analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             false,
@@ -4792,6 +4811,21 @@ fn analyze_predicate_with_windows(
             diagnostics,
         )),
     }
+}
+
+// Only an unescaped alphabetic/digit prefix and one final wildcard is
+// independent of dialect-specific LIKE escape, collation and tokenization rules.
+// Non-ASCII and embedded wildcards remain regular unsupported SQL expressions.
+fn safe_like_prefix(pattern: &Expr) -> Option<String> {
+    let Expr::Value(value) = pattern else {
+        return None;
+    };
+    let sqlparser::ast::Value::SingleQuotedString(text) = &value.value else {
+        return None;
+    };
+    let prefix = text.strip_suffix('%')?;
+    (!prefix.is_empty() && prefix.bytes().all(|byte| byte.is_ascii_alphanumeric()))
+        .then(|| prefix.to_string())
 }
 
 fn is_plain_boolean_column(expression: &Expr) -> bool {
