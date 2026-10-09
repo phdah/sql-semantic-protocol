@@ -203,9 +203,15 @@ fn correlated_predicates_preserve_minimal_scalar_domains() {
     };
     let lower = range.lower().expect("lower bound");
     let upper = range.upper().expect("upper bound");
-    assert_eq!(lower.value().value(), &sql_semantic_protocol::LiteralValue::Number("2".into()));
+    assert_eq!(
+        lower.value().value(),
+        &sql_semantic_protocol::LiteralValue::Number("2".into())
+    );
     assert!(!lower.inclusive());
-    assert_eq!(upper.value().value(), &sql_semantic_protocol::LiteralValue::Number("5".into()));
+    assert_eq!(
+        upper.value().value(),
+        &sql_semantic_protocol::LiteralValue::Number("5".into())
+    );
     assert!(upper.inclusive());
 
     let disjunction = typed_bundle("SELECT a FROM t WHERE a > 2 OR b < 0");
@@ -225,9 +231,7 @@ fn correlated_predicates_preserve_minimal_scalar_domains() {
 fn filtered_upstream_domains_survive_without_false_physical_witnesses() {
     let bundle = analyze_inputs(
         &[
-            SqlInput::inline(
-                "CREATE TABLE stage AS SELECT a, b FROM raw_t WHERE a > 2 AND a <= 5",
-            ),
+            SqlInput::inline("CREATE TABLE stage AS SELECT a, b FROM raw_t WHERE a > 2 AND a <= 5"),
             SqlInput::inline(
                 "CREATE TABLE mart AS SELECT a FROM stage WHERE a IS NULL OR b IS NULL",
             ),
@@ -239,7 +243,12 @@ fn filtered_upstream_domains_survive_without_false_physical_witnesses() {
     let mart = bundle
         .layers()
         .iter()
-        .find(|layer| layer.produces().iter().any(|relation| relation.relation_name() == Some("mart")))
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|relation| relation.relation_name() == Some("mart"))
+        })
         .unwrap();
     let ComposedSemantics::Resolved(composed) = mart.composed_semantics() else {
         panic!("expected composition");
@@ -259,7 +268,11 @@ fn filtered_upstream_domains_survive_without_false_physical_witnesses() {
         &sql_semantic_protocol::LiteralValue::Number("5".into())
     );
     assert_eq!(
-        composed.boolean_witnesses().last().expect("mart witness").boundary_kind(),
+        composed
+            .boolean_witnesses()
+            .last()
+            .expect("mart witness")
+            .boundary_kind(),
         GroupBoundaryKind::Intermediate
     );
 }
