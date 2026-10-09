@@ -435,7 +435,11 @@ fn joint_physical_filters(
                 || query.predicates().having_predicate().is_some()
                 || query.predicates().qualify_predicate().is_some()
                 || !query.diagnostics().is_empty()
-                || !query.output().columns().iter().all(|c| c.plain_copy_source().is_some())
+                || !query
+                    .output()
+                    .columns()
+                    .iter()
+                    .all(|c| c.plain_copy_source().is_some())
             {
                 return None;
             }
@@ -451,18 +455,16 @@ fn joint_physical_filters(
         crate::boolean_witness::BooleanWitness::conjoin_physical_filters(&physical_witnesses)?;
     let row = crate::constructive::RowVariable::new(source, source, "candidate")?;
     let translate = |direction: &crate::boolean_witness::BooleanWitnessDirection| match direction {
-        crate::boolean_witness::BooleanWitnessDirection::Exact(truth) => {
-            WitnessCase::new(
-                vec![WitnessObligation::Predicate(WitnessFormula::RowTruth {
-                    row: row.clone(),
-                    predicate: joint.condition().clone(),
-                    truth: *truth,
-                })],
-                ProofStrength::Sufficient,
-            )
-            .and_then(|case| WitnessDirection::feasible(vec![case]))
-            .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
-        }
+        crate::boolean_witness::BooleanWitnessDirection::Exact(truth) => WitnessCase::new(
+            vec![WitnessObligation::Predicate(WitnessFormula::RowTruth {
+                row: row.clone(),
+                predicate: joint.condition().clone(),
+                truth: *truth,
+            })],
+            ProofStrength::Sufficient,
+        )
+        .and_then(|case| WitnessDirection::feasible(vec![case]))
+        .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven)),
         crate::boolean_witness::BooleanWitnessDirection::Residual { .. } => {
             residual(PhysicalProofGap::LocalWitnessUnproven)
         }
@@ -501,10 +503,7 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                     .column_domains()
                     .iter()
                     .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty))
-                    && semantics
-                        .boolean_witnesses()
-                        .len()
-                        == proofs.len()
+                    && semantics.boolean_witnesses().len() == proofs.len()
                 {
                     if let Some((qualifying, rejected)) =
                         joint_physical_filters(bundle, &walker, semantics)
