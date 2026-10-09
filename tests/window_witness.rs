@@ -171,3 +171,23 @@ fn shared_qualify_syntax_is_checked_at_every_parser_boundary() {
     }
     assert!(supported > 0);
 }
+
+#[test]
+fn projected_rank_filters_keep_the_original_partition_and_boundary() {
+    for sql in [
+        "SELECT ranked.rn FROM (SELECT ROW_NUMBER() OVER (
+             PARTITION BY account_id ORDER BY score NULLS LAST) AS rn FROM events) ranked
+         WHERE ranked.rn <= 2",
+        "WITH ranked AS (SELECT ROW_NUMBER() OVER (
+             PARTITION BY account_id ORDER BY score NULLS LAST) AS rn FROM events)
+         SELECT rn FROM ranked WHERE rn = 1",
+    ] {
+        let protocol = analyze(sql);
+        let query = first(&protocol);
+        let witness = query.window_witness().expect("nested ranked projection should retain witness");
+        assert_eq!(witness.boundary(), Some("events"));
+        assert_eq!(witness.partition_by()[0].name(), "account_id");
+        assert!(matches!(witness.qualifying(), WindowWitnessDirection::Exact(_)));
+        assert!(matches!(witness.rejected(), WindowWitnessDirection::Exact(_)));
+    }
+}
