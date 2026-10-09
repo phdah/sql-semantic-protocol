@@ -1220,6 +1220,11 @@ fn expression_to_value(expression: &Expression) -> Value {
             "kind": "boolean_predicate",
             "predicate": predicate_to_value(predicate)
         }),
+        Expression::SignedIntegerCast(expression) => json!({
+            "kind": "signed_integer_cast",
+            "expression": expression_to_value(expression.expression()),
+            "target_bits": expression.target_bits()
+        }),
         Expression::Unary(expression) => unary_expression_to_value(expression),
         Expression::Binary(expression) => binary_expression_to_value(expression),
         Expression::ScalarSubquery(expression) => scalar_subquery_expression_to_value(expression),
