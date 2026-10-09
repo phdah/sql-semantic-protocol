@@ -23,7 +23,9 @@ Requests target `layer_id` rather than a relation name so parallel and
 multi-outcome bundles cannot silently redirect them. `select_targets` drops
 goals for outputs outside the selected graph while retaining the original
 identities for selected layers. The SQL, dbt, and ODCS adapters share the same
-evaluation path once an `AnalysisBundle` is constructed.
+evaluation path once an `AnalysisBundle` is constructed. If source schemas,
+constraints or comparison evidence are enriched after goals are set, their
+assessments are reevaluated so stale constructive witnesses cannot remain feasible.
 
 Each goal has optional `rows`, optional `groups`, and complete `distributions`
 per named **output** column. Histogram values are canonical typed scalars,
@@ -91,7 +93,9 @@ Positive proofs for integer-key classes require compatible, complete
 and independent external source boundaries. The admitted construction
 deliberately excludes unsupported functions, additional filters,
 unmodeled producer-layer cardinalities, shared sources, and complex
-cross-column distributions; those requests remain `residual`.
+cross-column distributions; those requests remain `residual`. A parenthesized
+set branch with its own LIMIT or FETCH cannot be treated as an unmodified
+physical-source boundary, even when its projected columns are direct copies.
 The existing typed row-membership witnesses remain authoritative for
 the join, set, grouped and rank operators: a positive goal never turns
 unknown comparison semantics into an exact source witness.
