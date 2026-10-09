@@ -11,6 +11,7 @@ use crate::constraints::ConstraintValue;
 use crate::data_type::DataType;
 use crate::group_witness::{GroupAggregate, GroupWitnessDirection};
 use crate::join_witness::{JoinWitnessDirection, JoinWitnessShape};
+use crate::outcome_goals::{OutcomeGoal, OutputValueCount};
 use crate::protocol::{
     ColumnRef, ComparisonOperator, Expression, JoinKind, QueryStatement,
     SetMultiplicityRule, SetWitnessCase, SetWitnessDirection,
