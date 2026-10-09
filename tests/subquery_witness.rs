@@ -167,6 +167,34 @@ fn unsupported_subquery_shapes_retain_residual_directions() {
 }
 
 #[test]
+fn uncorrelated_not_exists_tests_empty_and_nonempty_inner_sources() {
+    let sql = "SELECT o.id FROM orders o WHERE NOT EXISTS (SELECT 1 FROM lines l)";
+    let item = witness(sql);
+    assert_eq!(item.kind(), SubqueryMembershipKind::NotExists);
+    assert!(item.correlations().is_empty());
+    assert!(matches!(item.qualifying(), SubqueryMembershipDirection::Exact(cases) if cases == &[SubqueryMembershipCase::NoCandidates]));
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE orders(id INTEGER); CREATE TABLE lines(id INTEGER);
+        INSERT INTO orders VALUES (1), (2);").unwrap();
+    assert_eq!(count(&db, "SELECT COUNT(*) FROM orders o WHERE NOT EXISTS (SELECT 1 FROM lines l)"), 2);
+    db.execute_batch("INSERT INTO lines VALUES (NULL), (NULL);").unwrap();
+    assert_eq!(count(&db, "SELECT COUNT(*) FROM orders o WHERE NOT EXISTS (SELECT 1 FROM lines l)"), 0);
+}
+
+#[test]
+fn impossible_inner_membership_and_unknown_aliases_remain_residual() {
+    for sql in [
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE 1 = 0)",
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE absent.id = o.id)",
+        "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE EXISTS (SELECT 1 FROM taxes t))",
+    ] {
+        let item = witness(sql);
+        assert!(matches!(item.qualifying(), SubqueryMembershipDirection::Residual { .. }), "{sql}");
+        assert!(matches!(item.rejected(), SubqueryMembershipDirection::Residual { .. }), "{sql}");
+    }
+}
+
+#[test]
 fn membership_witnesses_are_emitted_in_local_and_composed_contract() {
     let sql = "CREATE TABLE current_orders AS SELECT o.id FROM orders o WHERE o.id IN (SELECT l.order_id FROM lines l)";
     let bundle = analyze_inputs(&[SqlInput::inline(sql)], "generic", &GenericDialect {}).unwrap();
