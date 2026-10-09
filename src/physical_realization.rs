@@ -662,3 +662,159 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         gap: Some(gap),
     }
 }
+
+/// Produce typed, whole-physical-source obligations for an exact terminal
+/// row-count request. This is an independent constructive plan; it never
+/// upgrades the single-candidate row classification returned by
+/// [`physical_source_plan`].
+///
+/// Nonzero cardinality is currently constructive for source-free singleton
+/// outputs and verified single-source, unfiltered row-preserving producer
+/// chains. The first physical producer must pass the same schema and source
+/// constraint checks as the existing direct outcome witness evaluator.
+/// A filter, join, aggregate, set, partial write or ambiguous source remains
+/// residual rather than silently assuming independently sampled rows.
+pub fn physical_row_count_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    rows: u64,
+) -> WitnessDirection {
+    let physical = physical_source_plan(bundle, target_layer_id);
+    if rows == 0 {
+        if let WitnessDirection::Feasible(cases) = physical.zero_output() {
+            let Some(bounds) = CountBounds::new(0, Some(0)) else {
+                return residual(PhysicalProofGap::NoWitness);
+            };
+            let cases = cases
+                .iter()
+                .filter_map(|case| {
+                    let mut obligations = case.obligations().to_vec();
+                    obligations.push(WitnessObligation::OutputRows {
+                        layer_id: target_layer_id.to_string(),
+                        bounds,
+                    });
+                    WitnessCase::new(obligations, ProofStrength::Sufficient)
+                })
+                .collect::<Vec<_>>();
+            return WitnessDirection::feasible(cases)
+                .unwrap_or_else(|| residual(PhysicalProofGap::NoWitness));
+        }
+    }
+    if physical.nodes().is_empty() {
+        return residual(physical.gap().unwrap_or(PhysicalProofGap::NoWitness));
+    }
+    let Some(target) = bundle.layers().iter().find(|l| l.id() == target_layer_id) else {
+        return residual(PhysicalProofGap::UnknownTarget);
+    };
+    let Some(query) = query_for(bundle, target) else {
+        return residual(PhysicalProofGap::UnresolvedSemantics);
+    };
+    if query.proven_single_row_output() && physical.sources().is_empty() {
+        if rows != 1 {
+            return WitnessDirection::Impossible;
+        }
+        let Some(bounds) = CountBounds::new(1, Some(1)) else {
+            return residual(PhysicalProofGap::NoWitness);
+        };
+        let case = WitnessCase::new(
+            vec![WitnessObligation::OutputRows {
+                layer_id: target_layer_id.to_string(),
+                bounds,
+            }],
+            ProofStrength::Sufficient,
+        );
+        return case
+            .and_then(|case| WitnessDirection::feasible(vec![case]))
+            .unwrap_or_else(|| residual(PhysicalProofGap::NoWitness));
+    }
+    if physical.sources().len() != 1 {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    }
+    if physical.nodes().iter().any(|node| {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            return false;
+        };
+        let Some(layer) = bundle.layers().iter().find(|layer| layer.id() == id) else {
+            return true;
+        };
+        let Some(query) = query_for(bundle, layer) else {
+            return true;
+        };
+        !query.row_preserving_projection()
+            || query.sources().len() != 1
+            || !query.joins().is_empty()
+            || query.aggregation().is_some()
+            || query.set_operation().is_some()
+            || query.window_witness().is_some()
+            || !query.subquery_witnesses().is_empty()
+            || !query.diagnostics().is_empty()
+    }) {
+        return residual(PhysicalProofGap::NonInvertibleTransformation);
+    }
+    let Some(first_layer) = physical.nodes().iter().find_map(|node| {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            return None;
+        };
+        bundle.layers().iter().find(|layer| layer.id() == id)
+    }) else {
+        return residual(PhysicalProofGap::MissingProducer);
+    };
+    let Some(first_query) = query_for(bundle, first_layer) else {
+        return residual(PhysicalProofGap::UnresolvedSemantics);
+    };
+    let goal = match crate::outcome_goals::OutcomeGoal::new(
+        first_layer.id(),
+        Some(rows),
+        None,
+        Vec::new(),
+    ) {
+        Ok(goal) => goal,
+        Err(_) => return residual(PhysicalProofGap::NoWitness),
+    };
+    let Some(crate::outcome_proofs::OutcomeWitness::SourceRows {
+        relation,
+        rows: witness_rows,
+        ..
+    }) = crate::outcome_proofs::construct(bundle, first_layer, first_query, &goal)
+    else {
+        return residual(PhysicalProofGap::LocalWitnessUnproven);
+    };
+    if physical.sources().first() != Some(&relation) || witness_rows != rows {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    }
+    let Some(boundary) =
+        WitnessBoundary::new(&relation, GroupBoundaryKind::Physical, target_layer_id)
+    else {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    };
+    let Some(bounds) = CountBounds::new(rows, Some(rows)) else {
+        return residual(PhysicalProofGap::NoWitness);
+    };
+    let Some(case) = WitnessCase::new(
+        vec![
+            WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds,
+                predicate: WitnessFormula::IsNull {
+                    term: WitnessTerm::Integer(1),
+                    negated: true,
+                },
+                closed_world: true,
+            },
+            WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            },
+            WitnessObligation::OutputRows {
+                layer_id: target_layer_id.to_string(),
+                bounds,
+            },
+        ],
+        ProofStrength::Sufficient,
+    ) else {
+        return residual(PhysicalProofGap::LocalWitnessUnproven);
+    };
+    WitnessDirection::feasible(vec![case])
+        .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
+}
