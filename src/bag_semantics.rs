@@ -830,10 +830,14 @@ mod tests {
         let source = |alias| BagSourceIdentity::new("t", alias).expect("source");
         let left = exact(2, BagScope::CandidateTuple)
             .with_source(source("flag_1"))
-            .with_population_identity(BagPopulationIdentity::new("t:k:flag=1").expect("population"));
+            .with_population_identity(
+                BagPopulationIdentity::new("t:k:flag=1").expect("population"),
+            );
         let right = exact(1, BagScope::CandidateTuple)
             .with_source(source("flag_2"))
-            .with_population_identity(BagPopulationIdentity::new("t:k:flag=2").expect("population"));
+            .with_population_identity(
+                BagPopulationIdentity::new("t:k:flag=2").expect("population"),
+            );
         let difference = BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference)
             .transfer(left.clone(), Some(right.clone()));
         assert_eq!(
