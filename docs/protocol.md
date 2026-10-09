@@ -467,6 +467,44 @@ assumptions are declared.
 
 Resolved `composed_semantics.join_equalities` is the canonical consumer-facing representation of those correlations. Each entry names both physical leaf relation/column endpoints, a relation-instance identity, the join kind, and the originating transformation layer. Equalities from referenced CTEs, derived tables, and resolved producer layers compose transitively through plain-copy lineage. A column equality in `WHERE` between distinct relation instances, including comma/CROSS-join syntax, is represented as an implicit inner equality rather than an `unknown` scalar domain. Outer-join equalities are listed with their join kind while the scope remains residual. Repeated/self-joins remain residual when physical instance identity cannot be proven safely.
 
+
+
+Typed `composed_semantics.join_witnesses` adds per-join **qualifying** and **rejected**
+source-row obligations, retaining `origin_layer_id`, physical `relation`/`column`, and
+distinct `relation_instance` identifiers. The canonical `comparison` is one of
+`eq`, `neq`, `lt`, `lte`, `gt`, or `gte`; reversing the SQL operands also
+reverses the comparison so the endpoints always follow JOIN left/right orientation.
+`unknown_comparison_is_match: false` means a SQL `ON` comparison must evaluate
+to TRUE, never NULL/UNKNOWN, for rows to match. In particular, an ordinary matched
+comparison requires non-NULL keys. With fixed source values, SQL's comparison
+settings still apply; this is not proof that a specific pair of values matches.
+
+Directions are `exact` (enumerated `cases`), `impossible`, or `residual`
+(with a stable `reason`). A case `matched` requires at least one matching partner
+(`min_matches: 1`, `max_matches: null`), allowing duplicates and multi-matches.
+`left_unmatched` or `right_unmatched` require **zero** TRUE-matching partners
+(`min_matches: 0`, `max_matches: 0`), including when a key is NULL.
+A qualifying unmatched row for LEFT, RIGHT or FULL carries
+`null_extended_side` (`right` or `left`); those NULLs are output padding and
+must not be inserted as a real matching source row. Semi joins output only rows from
+their preserved side with a match, anti joins only rows with no match. Rejected
+directions describe source rows that do not independently produce an output row;
+a FULL join has no such source-row case before downstream filtering.
+
+The analyzer currently proves these witness directions only for one binary JOIN
+whose ON/USING condition normalizes to a single physical column-to-column
+comparison with unambiguous instance lineage. Self-joins preserve separate alias
+identities even when both endpoints name the same physical relation. Join trees,
+disjunctions, multiple ON terms, computed operands, null-safe comparisons,
+unresolved projection lineage, and unrecognized join kinds emit **residual**
+directions, never a guessed pair of witnesses. Upstream witness evidence is carried
+with its originating layer through composition, not silently reinterpreted against
+the downstream join. The older whole-scope `condition_exactness` remains residual
+for outer/semi/anti joins and repeated relations: proving a local join witness does
+not automatically prove exact membership of the entire query. Consumers must inspect
+both witness directions, the scope exactness, source datatypes and comparison
+assumptions before treating a generated output as fully exact.
+
 Everything else is default-denied unless analysis proves an exact representation. Residual cases include cross-column OR correlations, logical `NOT` outside the directly normalized negated forms above, non-equality column-to-column comparisons outside join equality, computed/function/CAST/pattern predicates, subquery predicates, `HAVING`, `QUALIFY`, outer/semi/anti or otherwise unsupported joins, repeated instances of the same physical relation, `LIMIT`, `OFFSET`, `FETCH`, `TOP`, `DISTINCT ON`, `TABLESAMPLE`, and set operations. UNION is currently residual as well, including branches with different constraints; INTERSECT and EXCEPT are residual.
 
 Nested subqueries carry their own joins, column domains, and exactness contract. A correlated subquery is residual in its nested scope because its membership depends on the outer row. Resolved bundle composition carries this contract transitively. A composed layer is exact only when its owning query, every referenced CTE or derived-table scope, and every resolved ancestor layer are exact. Each composed residual includes an `origin` object containing the originating `layer_id` and scope identity, using `query` for the layer query and identities such as `cte:x` or `derived:d` for local relations. Residuals from unreferenced CTEs do not participate. Domain intersection is default-deny as well: once any contributing constraint for a column is `unknown`, intersection with known, unbounded, or empty domains remains `unknown` with its reason, so composition cannot accidentally regain false precision.
