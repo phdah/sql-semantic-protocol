@@ -421,9 +421,11 @@ fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                     ClosedWorldCoverage::CandidateTuple {
                         branch_identity,
                         columns,
-                    } => branch_identity.is_empty()
-                        || columns.is_empty()
-                        || columns.iter().any(String::is_empty),
+                    } => {
+                        branch_identity.is_empty()
+                            || columns.is_empty()
+                            || columns.iter().any(String::is_empty)
+                    }
                 }
         }
         WitnessObligation::Producer {
@@ -921,7 +923,9 @@ pub fn local_constructive_witnesses(
                             .iter()
                             .any(|relation| relation == partner.relation())
                         {
-                            return WitnessDirection::residual("unproved_physical_partner_relation");
+                            return WitnessDirection::residual(
+                                "unproved_physical_partner_relation",
+                            );
                         }
                         let Some(boundary) = WitnessBoundary::new(
                             partner.relation(),
@@ -935,8 +939,7 @@ pub fn local_constructive_witnesses(
                             coverage: ClosedWorldCoverage::EntireRelation,
                         });
                     }
-                    let Some(case) =
-                        WitnessCase::new(obligations, ProofStrength::Sufficient)
+                    let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient)
                     else {
                         return WitnessDirection::residual("invalid_join_case");
                     };
