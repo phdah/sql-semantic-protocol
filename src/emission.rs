@@ -106,6 +106,7 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         "physical_sources": plan.sources(),
         "qualifying": constructive_direction_to_value(plan.qualifying()),
         "rejected": constructive_direction_to_value(plan.rejected()),
+        "zero_output": constructive_direction_to_value(plan.zero_output()),
         "gap": plan.gap().map(|gap| gap.as_str())
     })).collect::<Vec<_>>());
 
