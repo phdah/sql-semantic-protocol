@@ -215,3 +215,13 @@ compiled EXISTS, IN and NOT IN queries, including the physical/intermediate
 origin boundary. ODCS enriches relation metadata but does not synthesize SQL
 predicates or invent membership witnesses. No adapter requires SQL text
 reparsing by downstream generators.
+
+### Coupled boolean witnesses and adapter evidence
+
+The SQL and dbt compiled-SQL paths share one typed `boolean_witness`
+analysis. Exact signed-integer comparison branches require source datatypes
+from authoritative relation schema/catalog evidence. A plain SQL invocation
+without a catalog cannot prove those branches exact, and dbt adapters must
+not infer warehouse datatypes from compiled SQL or unconstrained manifest
+text. Null-test-only boolean trees need no datatype evidence. Unsupported
+casts, collation-dependent LIKE and computed functions stay residual.
