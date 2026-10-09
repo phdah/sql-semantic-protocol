@@ -628,6 +628,50 @@ impl ConstructiveWitness {
     }
 }
 
+/// Return typed intermediate-source obligations that cannot be satisfied by
+/// inserting rows directly into a derived relation.
+///
+/// Consumers must discharge these against the producer graph, with the physical
+/// leaf dependencies in `ResolvedComposedSemantics::dependencies`. A pending
+/// producer is not a proof that physical realization is possible (TASK-68).
+pub fn local_pending_producers(semantics: &ResolvedComposedSemantics) -> Vec<WitnessObligation> {
+    let mut boundaries = Vec::new();
+    let mut add = |relation: Option<&str>, kind: GroupBoundaryKind, layer_id: &str| {
+        if kind != GroupBoundaryKind::Intermediate {
+            return;
+        }
+        if let Some(boundary) = relation.and_then(|r| WitnessBoundary::new(r, kind, layer_id)) {
+            if !boundaries.contains(&boundary) {
+                boundaries.push(boundary);
+            }
+        }
+    };
+    for witness in semantics.boolean_witnesses() {
+        add(Some(witness.witness().source_relation()), witness.boundary_kind(), witness.origin_layer_id());
+    }
+    for witness in semantics.group_witnesses() {
+        add(witness.witness().boundary(), witness.boundary_kind(), witness.origin_layer_id());
+    }
+    for witness in semantics.window_witnesses() {
+        add(witness.witness().boundary(), witness.boundary_kind(), witness.origin_layer_id());
+    }
+    for witness in semantics.subquery_witnesses() {
+        add(witness.witness().inner_relation(), witness.boundary_kind(), witness.origin_layer_id());
+    }
+    for item in semantics.set_operations() {
+        let operation = item.operation();
+        for branch in operation.branches() {
+            if let Some(boundary) = branch.witness_boundary() {
+                if boundary.is_intermediate() {
+                    add(Some(boundary.relation()), GroupBoundaryKind::Intermediate, item.origin_layer_id());
+                }
+            }
+        }
+    }
+    boundaries.sort_by(|a,b| (&a.origin_layer_id, &a.relation).cmp(&(&b.origin_layer_id, &b.relation)));
+    boundaries.into_iter().map(|boundary| WitnessObligation::Producer { boundary }).collect()
+}
+
 /// Translate existing operator-local proofs into one deterministic typed API.
 ///
 /// No physical-source DAG realization is inferred. Operator families not yet
