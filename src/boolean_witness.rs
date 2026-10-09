@@ -271,14 +271,14 @@ fn normalize(
             }
         }
         Predicate::Comparison(comparison) => {
-            let (column, operator, literal) = match (comparison.left(), comparison.right()) {
-                (Expression::Column(column), right) if signed_integer_literal(right).is_some() => {
-                    (column, comparison.operator(), right)
-                }
-                (left, Expression::Column(column)) if signed_integer_literal(left).is_some() => {
-                    (column, comparison.operator().reversed(), left)
-                }
-                _ => return residual("comparison is computed or correlates two source values"),
+            let (column, operator, literal) = if let Some(column) =
+                identity_integer_column(comparison.left())
+            {
+                (column, comparison.operator(), comparison.right())
+            } else if let Some(column) = identity_integer_column(comparison.right()) {
+                (column, comparison.operator().reversed(), comparison.left())
+            } else {
+                return residual("comparison is noninvertible or correlates two source values");
             };
             if matches!(
                 operator,
@@ -307,6 +307,32 @@ fn normalize(
 fn residual(reason: &str) -> BooleanRowConstraint {
     BooleanRowConstraint::Residual {
         reason: reason.to_string(),
+    }
+}
+
+// Unary plus and arithmetic with zero are identity transformations on
+// signed integer columns, including SQL NULL. Other arithmetic can overflow
+// or change source values and therefore must remain residual.
+fn identity_integer_column(expression: &Expression) -> Option<&crate::protocol::ColumnExpression> {
+    use crate::protocol::{BinaryOperator, UnaryOperator};
+    match expression {
+        Expression::Column(column) => Some(column),
+        Expression::Unary(unary) if unary.operator() == UnaryOperator::Plus => {
+            identity_integer_column(unary.operand())
+        }
+        Expression::Binary(binary) => match binary.operator() {
+            BinaryOperator::Add if signed_integer_literal(binary.right()) == Some(0) => {
+                identity_integer_column(binary.left())
+            }
+            BinaryOperator::Add if signed_integer_literal(binary.left()) == Some(0) => {
+                identity_integer_column(binary.right())
+            }
+            BinaryOperator::Subtract if signed_integer_literal(binary.right()) == Some(0) => {
+                identity_integer_column(binary.left())
+            }
+            _ => None,
+        },
+        _ => None,
     }
 }
 
