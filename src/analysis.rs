@@ -662,8 +662,12 @@ fn projected_window_filter(
     query: &SqlQuery,
     metadata: &AnalysisMetadata<'_>,
 ) -> Option<(crate::window_witness::WindowWitness, String)> {
-    let SetExpr::Select(select) = query.body.as_ref() else { return None };
-    let [source] = select.from.as_slice() else { return None };
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return None;
+    };
+    let [source] = select.from.as_slice() else {
+        return None;
+    };
     if !source.joins.is_empty()
         || select.having.is_some()
         || select.qualify.is_some()
@@ -677,7 +681,9 @@ fn projected_window_filter(
         TableFactor::Derived { subquery, .. } => subquery.as_ref(),
         TableFactor::Table { name, .. } => {
             let with = query.with.as_ref()?;
-            let [cte] = with.cte_tables.as_slice() else { return None };
+            let [cte] = with.cte_tables.as_slice() else {
+                return None;
+            };
             if cte.alias.name.value != name.to_string() {
                 return None;
             }
@@ -697,8 +703,9 @@ fn projected_window_filter(
             _ => return None,
         },
         match &source.relation {
-            TableFactor::Table { alias, .. } | TableFactor::Derived { alias, .. } =>
-                alias.as_ref().map(|alias| alias.name.value.clone()),
+            TableFactor::Table { alias, .. } | TableFactor::Derived { alias, .. } => {
+                alias.as_ref().map(|alias| alias.name.value.clone())
+            }
             _ => None,
         },
     );
