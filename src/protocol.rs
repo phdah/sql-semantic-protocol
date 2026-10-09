@@ -152,6 +152,7 @@ pub struct QueryStatement {
     boolean_witness: Option<Box<BooleanWitness>>,
     row_preserving_projection: bool,
     proven_single_row_output: bool,
+    group_rows_match_surviving_groups: bool,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -180,6 +181,7 @@ impl QueryStatement {
             boolean_witness: None,
             row_preserving_projection: false,
             proven_single_row_output: false,
+            group_rows_match_surviving_groups: false,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -220,6 +222,17 @@ impl QueryStatement {
     /// This is independent of whether any source table contains rows.
     pub fn proven_single_row_output(&self) -> bool {
         self.proven_single_row_output
+    }
+
+    pub(crate) fn with_group_row_correspondence(mut self, proven: bool) -> Self {
+        self.group_rows_match_surviving_groups = proven;
+        self
+    }
+
+    /// Whether SQL proves one final result row for every surviving ordinary GROUP BY group.
+    /// DISTINCT, QUALIFY and result limits can invalidate this correspondence.
+    pub fn group_rows_match_surviving_groups(&self) -> bool {
+        self.group_rows_match_surviving_groups
     }
 
     pub(crate) fn with_group_witness(mut self) -> Self {
