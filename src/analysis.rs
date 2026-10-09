@@ -747,9 +747,15 @@ fn analyze_query(
                         && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
                             if items.is_empty() && modifiers.is_empty())
                         && select.from.len() == 1
-                        && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. }) =>
+                        && matches!(
+                            &select.from[0].relation,
+                            TableFactor::Table { sample: None, .. }
+                        ) =>
                 {
-                    (select.qualify.is_none(), select.qualify.is_some() && select.from[0].joins.is_empty())
+                    (
+                        select.qualify.is_none(),
+                        select.qualify.is_some() && select.from[0].joins.is_empty(),
+                    )
                 }
                 _ => (false, false),
             }
