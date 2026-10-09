@@ -149,6 +149,16 @@ impl BooleanRowConstraint {
         }
     }
 
+    fn requires_source_type_evidence(&self) -> bool {
+        match self {
+            Self::All(children) | Self::Any(children) => {
+                children.iter().any(Self::requires_source_type_evidence)
+            }
+            Self::IntegerComparison { .. } | Self::StringPrefix { .. } => true,
+            Self::NullTest { .. } | Self::Residual { .. } => false,
+        }
+    }
+
     fn contains_string_prefix(&self) -> bool {
         match self {
             Self::All(operands) | Self::Any(operands) => {
@@ -303,6 +313,12 @@ impl BooleanWitness {
         &self,
         mut resolve: impl FnMut(&ColumnRef) -> Option<ColumnRef>,
     ) -> Option<Self> {
+        // A copied value preserves SQL NULL, but intermediate catalog types
+        // and collation attestations do not prove equivalent physical source
+        // types. Never transport typed comparison proof across that boundary.
+        if self.condition.requires_source_type_evidence() {
+            return None;
+        }
         let mut columns = Vec::new();
         self.condition.columns(&mut columns);
         let mut mapping = BTreeMap::new();
