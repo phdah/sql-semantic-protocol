@@ -452,7 +452,6 @@ fn unsupported_multi_relation_writes_remain_explicit() {
     }
 }
 
-
 #[test]
 fn update_delete_subqueries_do_not_silently_omit_external_dependencies() {
     let cases = [
