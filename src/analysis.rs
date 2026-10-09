@@ -652,7 +652,57 @@ fn analyze_query(
     .with_set_operation(set_operation)
     .with_group_witness()
     .with_window_witness()
+    .with_projected_window_witness(projected_window_filter(query, metadata))
     .with_produced_relation(produced_relation)
+}
+
+/// Resolve one immediately projected ROW_NUMBER filter through a direct derived
+/// table or one local CTE. Refuse joins and other row-set shaping at this boundary.
+fn projected_window_filter(
+    query: &SqlQuery,
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<(crate::window_witness::WindowWitness, String)> {
+    let SetExpr::Select(select) = query.body.as_ref() else { return None };
+    let [source] = select.from.as_slice() else { return None };
+    if !source.joins.is_empty()
+        || select.having.is_some()
+        || select.qualify.is_some()
+        || query.limit_clause.is_some()
+        || query.fetch.is_some()
+        || select.distinct.is_some()
+    {
+        return None;
+    }
+    let nested = match &source.relation {
+        TableFactor::Derived { subquery, .. } => subquery.as_ref(),
+        TableFactor::Table { name, .. } => {
+            let with = query.with.as_ref()?;
+            let [cte] = with.cte_tables.as_slice() else { return None };
+            if cte.alias.name.value != name.to_string() {
+                return None;
+            }
+            cte.query.as_ref()
+        }
+        _ => return None,
+    };
+    let nested_analysis = analyze_query(nested, None, metadata);
+    let mut diagnostics = Vec::new();
+    let scope = build_output_scope(select, &BTreeMap::new(), &[], &mut diagnostics, None);
+    let predicates = analyze_select_predicates_with_scope(select, &scope, &mut diagnostics);
+    let filter = predicates.where_predicate()?;
+    let outer_source = SourceRelation::new(
+        match &source.relation {
+            TableFactor::Table { name, .. } => name.to_string(),
+            TableFactor::Derived { .. } => source.relation.to_string(),
+            _ => return None,
+        },
+        match &source.relation {
+            TableFactor::Table { alias, .. } | TableFactor::Derived { alias, .. } =>
+                alias.as_ref().map(|alias| alias.name.value.clone()),
+            _ => None,
+        },
+    );
+    crate::window_witness::analyze_projected(&nested_analysis, filter, &outer_source)
 }
 
 /// Verify physical column references where typed source schema evidence exists.
