@@ -6,9 +6,9 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_row_count_plan,
-    physical_source_plan,
-    AnalysisBundle, ConfiguredSqlInput, PhysicalPlanRef, PhysicalProofGap, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula, WitnessObligation,
+    physical_source_plan, AnalysisBundle, ConfiguredSqlInput, PhysicalPlanRef, PhysicalProofGap,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
+    WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -62,16 +62,13 @@ fn simple_filter_has_both_physical_row_classifications_across_dialects() {
             plan.nodes()[1].operator_witnesses()[0].origin_layer_id(),
             plan.target_layer_id()
         );
-        let wire: serde_json::Value = serde_json::from_str(
-            &sql_semantic_protocol::to_bundle_json(&b),
-        ).expect("typed graph JSON");
+        let wire: serde_json::Value =
+            serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b))
+                .expect("typed graph JSON");
         let node = &wire["graph"]["physical_nodes"]
             .as_array()
             .expect("physical nodes")[1];
-        assert_eq!(
-            node["operator_witnesses"][0]["operator"],
-            "boolean",
-        );
+        assert_eq!(node["operator_witnesses"][0]["operator"], "boolean",);
 
         let WitnessDirection::Feasible(cases) = plan.rejected() else {
             panic!("expected deliberate rejection");
@@ -569,9 +566,12 @@ fn exact_terminal_cardinality_is_constructive_through_shared_schema_backed_produ
          INSERT INTO t VALUES (NULL,NULL), (NULL,NULL), (1,1);
          CREATE TABLE stage AS SELECT a,b FROM t;
          CREATE TABLE mart AS SELECT a,b FROM stage;",
-    ).expect("materialized chain");
+    )
+    .expect("materialized chain");
     let output: i64 = conn
-        .query_row("SELECT COUNT(*) FROM (SELECT a FROM mart)", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM (SELECT a FROM mart)", [], |row| {
+            row.get(0)
+        })
         .expect("terminal rows");
     assert_eq!(output, 3);
 }
@@ -600,9 +600,12 @@ fn row_count_constructor_does_not_guess_after_filters_or_join_multiplicities() {
         "SELECT COUNT(*) AS c FROM t",
     ] {
         let b = bundle(&[query], "postgresql");
-        assert!(!matches!(
-            physical_row_count_plan(&b, b.layers()[0].id(), 4),
-            WitnessDirection::Feasible(_)
-        ), "{query}");
+        assert!(
+            !matches!(
+                physical_row_count_plan(&b, b.layers()[0].id(), 4),
+                WitnessDirection::Feasible(_)
+            ),
+            "{query}"
+        );
     }
 }
