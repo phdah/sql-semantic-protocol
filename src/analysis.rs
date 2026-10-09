@@ -6611,7 +6611,10 @@ fn analyze_subquery_semantics(
                 && select.top.is_none()
                 && matches!(&select.group_by, GroupByExpr::Expressions(expressions, _) if expressions.is_empty()))
         && !output.columns().iter().any(|column| {
-            matches!(column.expression(), Expression::AggregateFunction(_) | Expression::WindowFunction(_))
+            matches!(
+                column.expression(),
+                Expression::AggregateFunction(_) | Expression::WindowFunction(_)
+            )
         });
 
     SubquerySemantics::new(
