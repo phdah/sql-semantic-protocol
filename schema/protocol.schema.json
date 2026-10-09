@@ -5375,7 +5375,8 @@
               "constraint_conflicts_unverified",
               "match_multiplicity_unknown",
               "predicate_exactness_unverified",
-              "unsupported_action"
+              "unsupported_action",
+              "implicit_target_columns"
             ]
           }
         },
