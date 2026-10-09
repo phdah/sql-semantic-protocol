@@ -37,6 +37,7 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 ## Implementation in progress
 
 - Added typed single-source boolean witness trees for cross-column OR, preserving same-row AND/OR coupling and FALSE/UNKNOWN rejection.
+- Verified source-range and repeated-column joint feasibility for supported signed integers, plus overflow-free identity arithmetic.
 - NULL tests and catalog-proven signed-integer/literal comparisons can emit exact operator-local directions; untyped or unsupported expressions retain residual diagnostics.
 - Retained witness origin and boundary across composition and documented the initial public schema; added direct, cross-dialect and DuckDB tests.
 - **Still required before Done:** invertible computed expressions/CAST, safe LIKE prefixes, mixed predicate feasibility, deeper physical-lineage inversion, adapter parity fixtures and fuller differential conformance.
