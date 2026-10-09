@@ -580,7 +580,24 @@ pub(crate) fn analyze(
 }
 
 fn has_logical_predicate(predicate: &Predicate) -> bool {
-    matches!(predicate, Predicate::And(_) | Predicate::Or(_))
+    match predicate {
+        Predicate::And(_) | Predicate::Or(_) | Predicate::LikePrefix(_) => true,
+        Predicate::Comparison(comparison) => {
+            // A lone direct column comparison already has a scalar domain;
+            // computed operands need a typed inversion witness.
+            [comparison.left(), comparison.right()]
+                .iter()
+                .any(|expression| {
+                    matches!(
+                        expression,
+                        Expression::SignedIntegerCast(_)
+                            | Expression::Binary(_)
+                            | Expression::Unary(_)
+                    )
+                })
+        }
+        _ => false,
+    }
 }
 
 fn normalize(
