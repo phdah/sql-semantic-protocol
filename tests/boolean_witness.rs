@@ -7,8 +7,8 @@ use sql_semantic_protocol::{
     parse_dbt_catalog, parse_dbt_manifest, to_json, BooleanRowConstraint, BooleanTruthCase,
     BooleanWitnessDirection, ComparisonOperator, ComposedSemantics, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
-    ConstraintValue, ProtocolStatement, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput,
+    ConstraintValue, GroupBoundaryKind, ProtocolStatement, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect, PostgreSqlDialect};
 
@@ -381,6 +381,63 @@ fn source_witness_is_emitted_locally_and_retains_origin_through_composition() {
         witness["condition"]["operands"][0]["column"]["relation"],
         "t"
     );
+}
+
+#[test]
+fn identity_lineage_maps_coupled_witnesses_to_physical_source() {
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline("CREATE TABLE stage AS SELECT a, b FROM raw_t"),
+            SqlInput::inline("CREATE TABLE sink AS SELECT a FROM stage WHERE a IS NULL OR b IS NULL"),
+        ],
+        "generic",
+        &GenericDialect {},
+    )
+    .unwrap();
+    let sink = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.produces().iter().any(|output| output.relation_name() == Some("sink")))
+        .unwrap();
+    let ComposedSemantics::Resolved(composed) = sink.composed_semantics() else {
+        panic!("expected physical composition");
+    };
+    let witness = &composed.boolean_witnesses()[0];
+    assert_eq!(witness.boundary_kind(), GroupBoundaryKind::Physical);
+    assert_eq!(witness.witness().source_relation(), "raw_t");
+    let BooleanRowConstraint::Any(items) = witness.witness().condition() else {
+        panic!("expected source-row disjunction");
+    };
+    for item in items.iter() {
+        let BooleanRowConstraint::NullTest { column, .. } = item else {
+            panic!("expected null test");
+        };
+        assert_eq!(column.relation(), Some("raw_t"));
+    }
+}
+
+#[test]
+fn computed_lineage_does_not_claim_a_physical_boolean_witness() {
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline("CREATE TABLE stage AS SELECT a + 1 AS a, b FROM raw_t"),
+            SqlInput::inline("CREATE TABLE sink AS SELECT a FROM stage WHERE a IS NULL OR b IS NULL"),
+        ],
+        "generic",
+        &GenericDialect {},
+    )
+    .unwrap();
+    let sink = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.produces().iter().any(|output| output.relation_name() == Some("sink")))
+        .unwrap();
+    let ComposedSemantics::Resolved(composed) = sink.composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = &composed.boolean_witnesses()[0];
+    assert_eq!(witness.boundary_kind(), GroupBoundaryKind::Intermediate);
+    assert_eq!(witness.witness().source_relation(), "stage");
 }
 
 #[test]
