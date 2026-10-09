@@ -51,6 +51,13 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   source inputs passed through row-preserving, filtering, or safely identified
   join producer chains, including shared/self-join physical sources. This proof requires both explicit exact zero-row bounds and
   entire-relation closed-world coverage.
+- Added exact schema-backed source count construction through fully
+  row-preserving producer DAGs, including jointly compatible terminal
+  outputs that share one physical source and explicit conflicts when
+  requests cannot both be satisfied.
+- Attached operator-local typed witnesses and pending producer obligations
+  to canonical graph nodes so multi-parent and join/group/window/set facts
+  remain visible without pretending that residuals are feasible.
 - Added cross-dialect, NULL, DuckDB, metadata and schema-contract tests and
   extended the canonical emission examples and coverage inventory.
 
