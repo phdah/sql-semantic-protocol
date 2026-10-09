@@ -89,6 +89,39 @@ impl BooleanRowConstraint {
         }
     }
 
+    fn mapped_columns(&self, mapped: &BTreeMap<ColumnRef, ColumnRef>) -> Option<Self> {
+        match self {
+            Self::All(items) => Some(Self::All(BooleanOperands::new(
+                items
+                    .iter()
+                    .map(|item| item.mapped_columns(mapped))
+                    .collect::<Option<Vec<_>>>()?,
+            )?)),
+            Self::Any(items) => Some(Self::Any(BooleanOperands::new(
+                items
+                    .iter()
+                    .map(|item| item.mapped_columns(mapped))
+                    .collect::<Option<Vec<_>>>()?,
+            )?)),
+            Self::NullTest { column, negated } => Some(Self::NullTest {
+                column: mapped.get(column)?.clone(),
+                negated: *negated,
+            }),
+            Self::IntegerComparison {
+                column,
+                operator,
+                literal,
+            } => Some(Self::IntegerComparison {
+                column: mapped.get(column)?.clone(),
+                operator: *operator,
+                literal: *literal,
+            }),
+            Self::Residual { reason } => Some(Self::Residual {
+                reason: reason.clone(),
+            }),
+        }
+    }
+
     fn columns(&self, output: &mut Vec<ColumnRef>) {
         match self {
             Self::All(children) | Self::Any(children) => {
@@ -165,6 +198,51 @@ impl BooleanWitness {
     /// Obligation that makes the filtered row fail WHERE (FALSE or UNKNOWN).
     pub fn rejected(&self) -> &BooleanWitnessDirection {
         &self.rejected
+    }
+
+    /// Replace intermediate references with proven identity-only physical source columns.
+    ///
+    /// Every column must reach the same physical relation without a cast,
+    /// computation, ambiguous projection or lossy transformation.
+    pub(crate) fn mapped_to_physical(
+        &self,
+        mut resolve: impl FnMut(&ColumnRef) -> Option<ColumnRef>,
+    ) -> Option<Self> {
+        let mut columns = Vec::new();
+        self.condition.columns(&mut columns);
+        let mut mapping = BTreeMap::new();
+        for column in columns {
+            if !mapping.contains_key(&column) {
+                mapping.insert(column.clone(), resolve(&column)?);
+            }
+        }
+        let relations = mapping
+            .values()
+            .filter_map(ColumnRef::relation)
+            .collect::<BTreeSet<_>>();
+        let [relation] = relations.iter().copied().collect::<Vec<_>>().as_slice() else {
+            return None;
+        };
+        if mapping.values().any(|column| column.relation().is_none()) {
+            return None;
+        }
+        let mut integer_bounds = BTreeMap::new();
+        for (column, evidence) in &self.integer_bounds {
+            let mapped = mapping.get(column)?.clone();
+            if integer_bounds
+                .insert(mapped, *evidence)
+                .is_some_and(|old| old != *evidence)
+            {
+                return None;
+            }
+        }
+        Some(Self {
+            source_relation: (*relation).to_string(),
+            condition: self.condition.mapped_columns(&mapping)?,
+            qualifying: self.qualifying.clone(),
+            rejected: self.rejected.clone(),
+            integer_bounds,
+        })
     }
 
     /// Recheck witness directions against enforced source constraints supplied later by adapters.
