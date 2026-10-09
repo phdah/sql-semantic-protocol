@@ -37,6 +37,28 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
 - [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
+## Implementation progress (PR #92)
+
+- Added a canonical, reference-based physical dependency graph in both the Rust
+  API and emitted protocol JSON. Shared producers and physical leaves are
+  defined only once and referenced by stable typed identities.
+- Preserved definition writes and fail-closed producer resolution. Ambiguous,
+  cyclic, partial and unproved producer paths return typed residual reasons.
+- Reused proven local Boolean witnesses to classify individual source rows
+  through safe projection/filter boundaries without treating intermediate
+  relations as writable tables.
+- Proved the independent zero-output construction for controlled, empty
+  single-source inputs passed through row-preserving or filtering producer
+  chains. This proof requires both explicit exact zero-row bounds and
+  entire-relation closed-world coverage.
+- Added cross-dialect, NULL, DuckDB, metadata and schema-contract tests and
+  extended the canonical emission examples and coverage inventory.
+
+**Still blocking:** Multi-operator and multi-parent joint satisfiability,
+mixed-join and aggregate/window/set DAG construction, positive nonzero
+cardinality and distribution counts, general absence classification, and
+full DML before/after state proofs. Release 3.0.0 remains held.
+
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
