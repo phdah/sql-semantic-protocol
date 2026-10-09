@@ -1925,6 +1925,7 @@ pub enum Expression {
 /// where possible, and nested diagnostics stay attached instead of disappearing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SubquerySemantics {
+    sources: Vec<SourceRelation>,
     dependencies: Vec<String>,
     correlations: Vec<LineageSource>,
     joins: Vec<Join>,
@@ -1936,6 +1937,7 @@ pub struct SubquerySemantics {
 
 impl SubquerySemantics {
     pub(crate) fn new(
+        sources: Vec<SourceRelation>,
         mut dependencies: Vec<String>,
         mut correlations: Vec<LineageSource>,
         joins: Vec<Join>,
@@ -1949,6 +1951,7 @@ impl SubquerySemantics {
         correlations.sort();
         correlations.dedup();
         Self {
+            sources,
             dependencies,
             correlations,
             joins,
@@ -1962,6 +1965,11 @@ impl SubquerySemantics {
     /// Return whether the nested SELECT preserves candidate-row existence without row-shaping.
     pub fn row_shape_preserves_candidates(&self) -> bool {
         self.row_shape_preserves_candidates
+    }
+
+    /// Return nested source relations and their original SQL instance aliases.
+    pub fn sources(&self) -> &[SourceRelation] {
+        &self.sources
     }
 
     /// Return physical relations read by the nested query.
