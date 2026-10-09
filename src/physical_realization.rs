@@ -421,9 +421,11 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         }) {
             Some(semantics) => {
                 let proofs = local_constructive_witnesses(semantics);
-                gap = if semantics.column_domains().iter().any(|domain| {
-                    matches!(domain.domain(), crate::protocol::ValueDomain::Empty)
-                }) {
+                gap = if semantics
+                    .column_domains()
+                    .iter()
+                    .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty))
+                {
                     Some(PhysicalProofGap::ConflictingDomains)
                 } else if proofs.is_empty() {
                     Some(PhysicalProofGap::NoWitness)
