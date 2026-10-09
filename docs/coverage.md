@@ -1,8 +1,8 @@
 # SQL generator release coverage inventory
 
-**Scope decisions approved 2026-10-09**, with addendums on seeded randomized per-terminal rejection, a unified dbt + scripted DML/DDL E2E gate, future-extensible opaque semantics, and exact canonical equivalence across 13 parsing dialects. [Approved requirements](coverage-signoff.md). **Feature evidence and 3.0.0 release sign-off remain pending.** This is the scope inventory for the planned single protocol **3.0.0** release and sql-tdg milestone **m-3**, not a statement that every feature works.
+**Scope decisions approved 2026-10-09**, with addendums on seeded randomized per-terminal rejection, a unified dbt + scripted DML/DDL E2E gate, future-extensible opaque semantics, and exact canonical equivalence across 13 parsing dialects. [Approved requirements](coverage-signoff.md). **TASK-66 is complete as the reviewed inventory and cross-repo task handoff; feature evidence and 3.0.0 release sign-off remain pending under TASK-67..91.** This is the scope inventory for the planned single protocol **3.0.0** release and sql-tdg milestone **m-3**, not a statement that every feature works.
 
-The authoritative, machine-readable source is [`coverage-manifest.json`](coverage-manifest.json). [`tests/coverage_manifest.rs`](../tests/coverage_manifest.rs) checks each dialect/feature cell, parser fixtures and DuckDB SQL oracles. Adding or extending a dialect or semantic feature requires updating the manifest and corresponding tests.
+The authoritative, machine-readable source is [`coverage-manifest.json`](coverage-manifest.json). Each `?` and `unverified` status is an **explicit open release-proof requirement**, not unfinished inventory work or an approved capability claim. [`tests/coverage_manifest.rs`](../tests/coverage_manifest.rs) checks each dialect/feature cell, parser fixtures and DuckDB SQL oracles. Adding or extending a dialect or semantic feature requires updating the manifest and corresponding tests.
 
 ## Evidence semantics
 
