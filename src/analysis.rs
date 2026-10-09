@@ -650,6 +650,7 @@ fn analyze_query(
     )
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
+    .with_subquery_witnesses()
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))
@@ -6599,12 +6600,27 @@ fn analyze_subquery_semantics(
     );
     sort_diagnostics(&mut diagnostics);
 
+    let row_shape_preserves_candidates = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && select.from[0].joins.is_empty()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.top.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(expressions, _) if expressions.is_empty()))
+        && !output.columns().iter().any(|column| {
+            matches!(column.expression(), Expression::AggregateFunction(_) | Expression::WindowFunction(_))
+        });
+
     SubquerySemantics::new(
         relations.dependencies.into_iter().collect(),
         correlations,
         relations.joins,
         output,
         RowConditions::new(predicates, column_domains, condition_exactness),
+        row_shape_preserves_candidates,
         diagnostics,
     )
 }
