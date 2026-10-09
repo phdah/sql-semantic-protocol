@@ -5,6 +5,7 @@
 
 use std::collections::BTreeSet;
 
+use crate::boolean_witness::BooleanWitness;
 use crate::constraints::RelationConstraintSet;
 use crate::group_witness::GroupWitness;
 use crate::window_witness::WindowWitness;
@@ -143,6 +144,7 @@ pub struct QueryStatement {
     group_witness: Option<Box<GroupWitness>>,
     window_witness: Option<Box<WindowWitness>>,
     subquery_witnesses: Box<[crate::subquery_witness::SubqueryMembershipWitness]>,
+    boolean_witness: Option<Box<BooleanWitness>>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -168,6 +170,7 @@ impl QueryStatement {
             group_witness: None,
             window_witness: None,
             subquery_witnesses: Vec::new().into_boxed_slice(),
+            boolean_witness: None,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -182,6 +185,11 @@ impl QueryStatement {
 
     pub(crate) fn with_subquery_witnesses(mut self) -> Self {
         self.subquery_witnesses = crate::subquery_witness::analyze(&self).into_boxed_slice();
+        self
+    }
+
+    pub(crate) fn with_boolean_witness(mut self, witness: Option<BooleanWitness>) -> Self {
+        self.boolean_witness = witness.map(Box::new);
         self
     }
 
@@ -309,6 +317,11 @@ impl QueryStatement {
     /// Whole-query condition exactness remains independent of these local proofs.
     pub fn subquery_witnesses(&self) -> &[crate::subquery_witness::SubqueryMembershipWitness] {
         &self.subquery_witnesses
+    }
+
+    /// A typed, coupled source-row predicate proof, independent of scalar domain exactness.
+    pub fn boolean_witness(&self) -> Option<&BooleanWitness> {
+        self.boolean_witness.as_deref()
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.
