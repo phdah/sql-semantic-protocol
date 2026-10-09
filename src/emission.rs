@@ -510,6 +510,12 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .map(composition_diagnostic_to_value)
             .collect::<Vec<_>>()
     });
+    let constructive = crate::constructive::local_constructive_witnesses(semantics);
+    if !constructive.is_empty() {
+        value["constructive_witnesses"] = Value::Array(
+            constructive.iter().map(constructive_witness_to_value).collect()
+        );
+    }
     if !semantics.join_witnesses().is_empty() {
         value["join_witnesses"] = json!(semantics
             .join_witnesses()
@@ -1703,4 +1709,181 @@ fn diagnostic_to_value(diagnostic: &Diagnostic) -> Value {
         "area": diagnostic.area().as_str(),
         "message": diagnostic.message()
     })
+}
+
+
+fn constructive_witness_to_value(witness: &crate::ConstructiveWitness) -> Value {
+    json!({
+        "operator": witness.operator().as_str(),
+        "origin_layer_id": witness.origin_layer_id(),
+        "qualifying": constructive_direction_to_value(witness.qualifying()),
+        "rejected": constructive_direction_to_value(witness.rejected())
+    })
+}
+
+fn constructive_direction_to_value(direction: &crate::WitnessDirection) -> Value {
+    match direction {
+        crate::WitnessDirection::Feasible(cases) => json!({
+            "status": "feasible",
+            "cases": cases.iter().map(constructive_case_to_value).collect::<Vec<_>>()
+        }),
+        crate::WitnessDirection::Impossible => json!({ "status": "impossible" }),
+        crate::WitnessDirection::Residual { reason } => json!({
+            "status": "residual", "reason": reason
+        }),
+    }
+}
+
+fn constructive_case_to_value(case: &crate::WitnessCase) -> Value {
+    let strength = match case.strength() {
+        crate::ProofStrength::Sufficient => "sufficient",
+        crate::ProofStrength::Necessary => "necessary",
+        crate::ProofStrength::Equivalent => "equivalent",
+    };
+    json!({
+        "strength": strength,
+        "obligations": case.obligations().iter().map(constructive_obligation_to_value).collect::<Vec<_>>()
+    })
+}
+
+fn constructive_bounds_to_value(bounds: crate::CountBounds) -> Value {
+    json!({ "minimum": bounds.minimum(), "maximum": bounds.maximum() })
+}
+
+fn constructive_row_to_value(row: &crate::RowVariable) -> Value {
+    json!({
+        "relation": row.relation(),
+        "instance": row.instance(),
+        "name": row.name()
+    })
+}
+
+fn constructive_boundary_to_value(boundary: &crate::WitnessBoundary) -> Value {
+    json!({
+        "relation": boundary.relation(),
+        "kind": boundary.kind().as_str(),
+        "origin_layer_id": boundary.origin_layer_id()
+    })
+}
+
+fn constructive_term_to_value(term: &crate::WitnessTerm) -> Value {
+    match term {
+        crate::WitnessTerm::Column { row, column } => json!({
+            "kind": "column", "row": constructive_row_to_value(row),
+            "column": column_ref_to_value(column)
+        }),
+        crate::WitnessTerm::Integer(value) => json!({ "kind": "integer", "value": value }),
+        crate::WitnessTerm::Null => json!({ "kind": "null" }),
+    }
+}
+
+fn constructive_formula_to_value(formula: &crate::WitnessFormula) -> Value {
+    match formula {
+        crate::WitnessFormula::All(operands) => json!({
+            "kind": "all",
+            "operands": operands.iter().map(constructive_formula_to_value).collect::<Vec<_>>()
+        }),
+        crate::WitnessFormula::Any(operands) => json!({
+            "kind": "any",
+            "operands": operands.iter().map(constructive_formula_to_value).collect::<Vec<_>>()
+        }),
+        crate::WitnessFormula::Not(operand) => json!({
+            "kind": "not", "operand": constructive_formula_to_value(operand)
+        }),
+        crate::WitnessFormula::RowTruth { row, predicate, truth } => json!({
+            "kind": "row_truth",
+            "row": constructive_row_to_value(row),
+            "predicate": boolean_constraint_to_value(predicate),
+            "truth": truth.as_str()
+        }),
+        crate::WitnessFormula::Comparison { left, operator, right } => json!({
+            "kind": "comparison",
+            "left": constructive_term_to_value(left),
+            "operator": operator.as_str(),
+            "right": constructive_term_to_value(right)
+        }),
+        crate::WitnessFormula::IsNull { term, negated } => json!({
+            "kind": "is_null",
+            "term": constructive_term_to_value(term),
+            "negated": negated
+        }),
+        crate::WitnessFormula::TupleComparison { left, equal, right } => json!({
+            "kind": "tuple_comparison",
+            "left": left.iter().map(constructive_term_to_value).collect::<Vec<_>>(),
+            "equal": equal,
+            "right": right.iter().map(constructive_term_to_value).collect::<Vec<_>>()
+        }),
+        crate::WitnessFormula::StringPrefix { term, prefix, negated } => json!({
+            "kind": "string_prefix",
+            "term": constructive_term_to_value(term),
+            "prefix": prefix,
+            "negated": negated
+        }),
+    }
+}
+
+fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Value {
+    match obligation {
+        crate::WitnessObligation::Predicate(formula) => json!({
+            "kind": "predicate",
+            "formula": constructive_formula_to_value(formula)
+        }),
+        crate::WitnessObligation::Rows {
+            boundary, quantifier, bounds, predicate, closed_world,
+        } => json!({
+            "kind": "rows",
+            "boundary": constructive_boundary_to_value(boundary),
+            "quantifier": match quantifier {
+                crate::RowQuantifier::Exists => "exists",
+                crate::RowQuantifier::ForAll => "for_all"
+            },
+            "bounds": constructive_bounds_to_value(*bounds),
+            "predicate": constructive_formula_to_value(predicate),
+            "closed_world": closed_world
+        }),
+        crate::WitnessObligation::NoMatchingPartner {
+            candidate, partner, comparison, left, right, closed_world,
+        } => json!({
+            "kind": "no_matching_partner",
+            "candidate": constructive_row_to_value(candidate),
+            "partner": constructive_row_to_value(partner),
+            "comparison": comparison.as_str(),
+            "left": column_ref_to_value(left),
+            "right": column_ref_to_value(right),
+            "closed_world": closed_world
+        }),
+        crate::WitnessObligation::JoinPair {
+            left_row, right_row, left, right, comparison, null_extended,
+        } => json!({
+            "kind": "join_pair",
+            "left_row": constructive_row_to_value(left_row),
+            "right_row": constructive_row_to_value(right_row),
+            "left": column_ref_to_value(left),
+            "right": column_ref_to_value(right),
+            "comparison": comparison.as_str(),
+            "null_extended": null_extended.map(|side| side.as_str())
+        }),
+        crate::WitnessObligation::Group { boundary, key, rows, non_null } => json!({
+            "kind": "group",
+            "boundary": constructive_boundary_to_value(boundary),
+            "key": key.iter().map(column_ref_to_value).collect::<Vec<_>>(),
+            "rows": constructive_bounds_to_value(*rows),
+            "non_null": constructive_bounds_to_value(*non_null)
+        }),
+        crate::WitnessObligation::OutputRows { layer_id, bounds } => json!({
+            "kind": "output_rows",
+            "layer_id": layer_id,
+            "bounds": constructive_bounds_to_value(*bounds)
+        }),
+        crate::WitnessObligation::StateRows { relation, before, after } => json!({
+            "kind": "state_rows",
+            "relation": relation,
+            "before": constructive_bounds_to_value(*before),
+            "after": constructive_bounds_to_value(*after)
+        }),
+        crate::WitnessObligation::Producer { boundary } => json!({
+            "kind": "producer",
+            "boundary": constructive_boundary_to_value(boundary)
+        }),
+    }
 }
