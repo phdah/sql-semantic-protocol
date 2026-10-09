@@ -289,7 +289,8 @@ pub(crate) fn refine_output(query: &QueryStatement) -> Output {
     };
     Output::new(query.output().columns().iter().cloned().map(|column| {
         if matches!(column.expression(), Expression::WindowFunction(candidate) if candidate == expression) {
-            column.with_domain(crate::domain::intersect_domains(column.domain(), &bounded))
+            let domain = crate::domain::intersect_domains(column.domain(), &bounded);
+            column.with_domain(domain)
         } else { column }
     }).collect())
 }
