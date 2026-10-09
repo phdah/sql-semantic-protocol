@@ -544,7 +544,7 @@ pub(crate) fn analyze(
     string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
 ) -> Option<BooleanWitness> {
     let predicate = predicate?;
-    if !has_logical_predicate(predicate) {
+    if !is_witness_candidate(predicate) {
         return None;
     }
     let [source] = sources else {
@@ -579,7 +579,7 @@ pub(crate) fn analyze(
     Some(witness)
 }
 
-fn has_logical_predicate(predicate: &Predicate) -> bool {
+fn is_witness_candidate(predicate: &Predicate) -> bool {
     match predicate {
         Predicate::And(_) | Predicate::Or(_) | Predicate::LikePrefix(_) => true,
         Predicate::Comparison(comparison) => {
