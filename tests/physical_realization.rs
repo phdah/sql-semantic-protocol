@@ -242,6 +242,19 @@ fn graph_cycle_and_ambiguous_producers_are_distinct_typed_residuals() {
 }
 
 #[test]
+fn contradictory_source_domains_remain_explicitly_unrealized() {
+    let b = bundle(&["SELECT a FROM t WHERE a > 10 AND a < 3"], "postgresql");
+    let plan = physical_source_plan(&b, b.layers()[0].id());
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::ConflictingDomains));
+    assert!(matches!(plan.qualifying(), WitnessDirection::Residual { .. }));
+    assert!(matches!(plan.zero_output(), WitnessDirection::Feasible(_)));
+    let json: serde_json::Value = serde_json::from_str(
+        &sql_semantic_protocol::to_bundle_json(&b),
+    ).expect("canonical graph");
+    assert_eq!(json["graph"]["physical_source_plans"][0]["gap"], "conflicting_domains");
+}
+
+#[test]
 fn zero_output_is_a_closed_world_empty_physical_source_obligation() {
     let b = bundle(
         &[
