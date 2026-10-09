@@ -209,3 +209,75 @@ fn projected_rank_filters_keep_the_original_partition_and_boundary() {
         ));
     }
 }
+
+#[test]
+fn partition_fixed_order_keys_cannot_construct_a_rejected_candidate() {
+    for predicate in ["rn = 1", "rn <= 3"] {
+        let sql = format!(
+            "SELECT ROW_NUMBER() OVER (
+                PARTITION BY account_id ORDER BY account_id NULLS LAST
+             ) AS rn FROM events QUALIFY {predicate}"
+        );
+        let protocol = analyze(&sql);
+        let query = first(&protocol);
+        let witness = query.window_witness().expect("typed witness");
+
+        assert!(matches!(
+            witness.qualifying(),
+            WindowWitnessDirection::Exact(_)
+        ));
+        assert!(matches!(
+            witness.rejected(),
+            WindowWitnessDirection::Residual {
+                reason: "order_keys_constant_within_partition"
+            }
+        ));
+        assert_eq!(
+            query.condition_exactness().status(),
+            ConditionExactnessStatus::Residual
+        );
+    }
+
+    // No predecessor is needed to reject a candidate for an impossible
+    // positive rank bound, even if all order keys are partition constants.
+    let zero = analyze(
+        "SELECT ROW_NUMBER() OVER (
+            PARTITION BY account_id ORDER BY account_id NULLS LAST
+         ) AS rn FROM events QUALIFY rn <= 0",
+    );
+    assert!(matches!(
+        first(&zero).window_witness().unwrap().rejected(),
+        WindowWitnessDirection::Exact(case) if case.min_preceding() == 0
+    ));
+
+    // An additional key not fixed by the partition makes a strict predecessor
+    // order constructible again.
+    let ordered = analyze(
+        "SELECT ROW_NUMBER() OVER (
+            PARTITION BY account_id
+            ORDER BY account_id NULLS LAST, score NULLS LAST
+         ) AS rn FROM events QUALIFY rn = 1",
+    );
+    assert!(matches!(
+        first(&ordered).window_witness().unwrap().rejected(),
+        WindowWitnessDirection::Exact(case) if case.min_preceding() == 1
+    ));
+}
+
+#[test]
+fn projected_window_witness_rejects_outer_row_shaping() {
+    for sql in [
+        "SELECT rn FROM (
+             SELECT ROW_NUMBER() OVER (ORDER BY score NULLS LAST) AS rn FROM events
+         ) ranked WHERE rn <= 2 GROUP BY rn",
+        "SELECT TOP 1 rn FROM (
+             SELECT ROW_NUMBER() OVER (ORDER BY score NULLS LAST) AS rn FROM events
+         ) ranked WHERE rn <= 2",
+    ] {
+        let protocol = analyze(sql);
+        assert!(
+            first(&protocol).window_witness().is_none(),
+            "outer row shaping must not produce an exact witness: {sql}"
+        );
+    }
+}

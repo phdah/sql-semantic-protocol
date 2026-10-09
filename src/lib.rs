@@ -13,6 +13,8 @@
 //! - dialect_from_name resolves built-in dialects for consumers without a direct sqlparser dependency.
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions, predicates, row-condition exactness, and explicit unknown/unsupported values.
+//! - WindowWitness, WindowOrderKey, WindowRankCase, and WindowWitnessDirection describe
+//!   source-partition and strict-order obligations for ranked-row membership.
 
 mod analysis;
 mod bundle;

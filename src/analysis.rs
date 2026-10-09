@@ -674,6 +674,15 @@ fn projected_window_filter(
         || query.limit_clause.is_some()
         || query.fetch.is_some()
         || select.distinct.is_some()
+        || select.top.is_some()
+        || select.prewhere.is_some()
+        || !select.lateral_views.is_empty()
+        || select.connect_by.is_some()
+        || !matches!(
+            &select.group_by,
+            GroupByExpr::Expressions(expressions, modifiers)
+                if expressions.is_empty() && modifiers.is_empty()
+        )
     {
         return None;
     }

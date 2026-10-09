@@ -302,7 +302,21 @@ fn analyze_predicate(query: &QueryStatement, predicate: &Predicate) -> Option<Wi
     } else {
         WindowWitnessDirection::Exact(WindowRankCase::new(0, Some(threshold - 1)))
     };
-    result.rejected = WindowWitnessDirection::Exact(WindowRankCase::new(threshold, None));
+    // A predecessor must sort strictly before the candidate. If all ordering
+    // keys are already fixed by the partition identity, there is no distinct
+    // ordering tuple we can construct, even though the database might assign
+    // ROW_NUMBER values arbitrarily to tied rows. A zero-bound filter can
+    // reject a lone candidate without needing any predecessors.
+    result.rejected = if threshold > 0
+        && result
+            .order_by
+            .iter()
+            .all(|key| result.partition_by.contains(&key.column))
+    {
+        residual("order_keys_constant_within_partition")
+    } else {
+        WindowWitnessDirection::Exact(WindowRankCase::new(threshold, None))
+    };
     Some(result)
 }
 
