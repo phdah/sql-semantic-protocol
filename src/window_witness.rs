@@ -154,9 +154,7 @@ pub(crate) fn analyze_projected(
     outer_source: &SourceRelation,
 ) -> Option<(WindowWitness, String)> {
     // Earlier row-set shaping invalidates predecessor cardinalities at this boundary.
-    if inner.predicates().qualify_predicate().is_some()
-        || !inner.condition_exactness().is_exact()
-    {
+    if inner.predicates().qualify_predicate().is_some() || !inner.condition_exactness().is_exact() {
         return None;
     }
     let Predicate::Comparison(compare) = filter else {
