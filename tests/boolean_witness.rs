@@ -755,6 +755,91 @@ fn witness_truth(
     }
 }
 
+fn string_witness_truth(
+    condition: &BooleanRowConstraint,
+    a: Option<&str>,
+    b: Option<&str>,
+) -> Option<bool> {
+    match condition {
+        BooleanRowConstraint::All(operands) => operands.iter().fold(Some(true), |acc, operand| {
+            sql_and(acc, string_witness_truth(operand, a, b))
+        }),
+        BooleanRowConstraint::Any(operands) => operands.iter().fold(Some(false), |acc, operand| {
+            sql_or(acc, string_witness_truth(operand, a, b))
+        }),
+        BooleanRowConstraint::NullTest { column, negated } => {
+            let value = match column.name() {
+                "a" => a,
+                "b" => b,
+                other => panic!("unexpected source column {other}"),
+            };
+            Some(value.is_none() != *negated)
+        }
+        BooleanRowConstraint::StringPrefix {
+            column,
+            prefix,
+            negated,
+        } => {
+            let value = match column.name() {
+                "a" => a,
+                "b" => b,
+                other => panic!("unexpected source column {other}"),
+            };
+            value.map(|text| text.starts_with(prefix) != *negated)
+        }
+        other => panic!("unsupported string differential node: {other:?}"),
+    }
+}
+
+#[test]
+fn duckdb_like_prefix_differential_covers_null_negation_and_nested_coupling() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a VARCHAR, b VARCHAR);
+         INSERT INTO t VALUES (NULL,'ab'), ('a','z'), ('ab','ab'),
+         ('zz',NULL), ('xy','xy'), ('AB','ab'), ('',''),
+         ('abc','def'), ('aba','zz');",
+    )
+    .unwrap();
+    for predicate in [
+        "a LIKE 'ab%' OR b LIKE 'ab%'",
+        "a LIKE 'ab%' AND b NOT LIKE 'ab%'",
+        "a LIKE 'ab%' OR a LIKE 'a%'",
+        "a LIKE 'a%' AND a NOT LIKE 'ab%'",
+        "a NOT LIKE 'ab%' OR b IS NULL",
+    ] {
+        let mut bundle = text_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
+        bundle.declare_comparison_assumptions(&[
+            ComparisonAssumption::BinaryCollation,
+            ComparisonAssumption::NoCharPadding,
+        ]);
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        let witness = semantics.boolean_witnesses()[0].witness();
+        assert!(matches!(
+            witness.qualifying(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+        ), "{predicate}");
+        let mut statement = db.prepare(&format!("SELECT a, b, ({predicate}) FROM t")).unwrap();
+        let actual = statement.query_map([], |row| {
+            Ok((
+                row.get::<_, Option<String>>(0)?,
+                row.get::<_, Option<String>>(1)?,
+                row.get::<_, Option<bool>>(2)?,
+            ))
+        }).unwrap();
+        for row in actual {
+            let (a, b, sql_result) = row.unwrap();
+            let computed = string_witness_truth(witness.condition(), a.as_deref(), b.as_deref());
+            assert_eq!(
+                computed, sql_result,
+                "LIKE witness differs for {predicate} at ({a:?}, {b:?})"
+            );
+        }
+    }
+}
+
 #[test]
 fn duckdb_differential_matches_generated_witness_for_every_source_row() {
     let db = Connection::open_in_memory().unwrap();
