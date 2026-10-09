@@ -253,6 +253,49 @@ fn parser_and_analysis_claims_are_exercised_by_manifest_fixtures() {
 }
 
 #[test]
+fn dbt_fixture_and_write_workloads_have_explicit_unproven_owners() {
+    let manifest = manifest();
+    let inventory = &manifest["dbt_fixture_inventory"];
+    assert_eq!(inventory["source_repo"], "phdah/sql-tdg");
+    assert_eq!(inventory["current_gate"], "not_certified");
+    let feature_ids: BTreeSet<_> = required_array(&manifest, "features")
+        .iter()
+        .map(|feature| required_string(feature, "id"))
+        .collect();
+
+    let models = required_array(inventory, "models");
+    assert_eq!(models.len(), 11);
+    let mut model_names = BTreeSet::new();
+    for model in models {
+        let name = required_string(model, "name");
+        assert!(model_names.insert(name), "duplicate model {name}");
+        assert!(
+            required_string(model, "sql_path").ends_with(&format!("/{name}.sql")),
+            "model path must be explicit"
+        );
+        assert_eq!(model["physical_positive"], "not_end_to_end_proven");
+        assert_eq!(model["physical_negative"], "not_end_to_end_proven");
+        assert_eq!(model["output_oracle"], "pending_TASK-36");
+        assert!(!required_string(model, "tdg_task").is_empty());
+        for feature in required_array(model, "feature_ids") {
+            assert!(
+                feature_ids.contains(feature.as_str().expect("feature ID")),
+                "{name} references an untracked feature"
+            );
+        }
+    }
+    let writes = required_array(inventory, "scripted_workloads");
+    assert_eq!(writes.len(), 5);
+    for workload in writes {
+        assert_eq!(workload["generation_oracle"], "pending");
+        assert!(
+            workload["tdg_task"] == "TASK-31" || workload["tdg_task"] == "TASK-36",
+            "all write/DDL workloads need downstream owners"
+        );
+    }
+}
+
+#[test]
 fn duckdb_oracles_cover_feasible_impossible_null_and_duplicate_cases() {
     let manifest = manifest();
     let cases = required_array(&manifest, "duckdb_oracle_cases");
