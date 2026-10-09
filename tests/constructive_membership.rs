@@ -8,28 +8,47 @@ use sql_semantic_protocol::{
 };
 
 fn analyze(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
-    let schemas = ["l", "r"].iter().map(|relation| {
-        RelationSchema::new(*relation, vec![
-            SchemaColumn::from_sql_type("k", "BIGINT", "postgresql").expect("type"),
-        ]).expect("schema")
-    }).collect::<Vec<_>>();
+    let schemas = ["l", "r"]
+        .iter()
+        .map(|relation| {
+            RelationSchema::new(
+                *relation,
+                vec![SchemaColumn::from_sql_type("k", "BIGINT", "postgresql").expect("type")],
+            )
+            .expect("schema")
+        })
+        .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
     let dialect = dialect_from_name("postgresql").expect("dialect");
     let sql_input = SqlInput::inline(sql);
     analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("proof", &sql_input, "postgresql", dialect.as_ref())],
+        &[ConfiguredSqlInput::new(
+            "proof",
+            &sql_input,
+            "postgresql",
+            dialect.as_ref(),
+        )],
         &catalog,
-    ).expect("analysis")
+    )
+    .expect("analysis")
 }
 
-fn proof(sql: &str, kind: WitnessOperator) -> (sql_semantic_protocol::ConstructiveWitness, serde_json::Value) {
+fn proof(
+    sql: &str,
+    kind: WitnessOperator,
+) -> (
+    sql_semantic_protocol::ConstructiveWitness,
+    serde_json::Value,
+) {
     let bundle = analyze(sql);
     let layer = bundle.layers().last().expect("query layer");
     let ComposedSemantics::Resolved(ref semantics) = layer.composed_semantics() else {
         panic!("resolved semantics expected");
     };
-    let proof = local_constructive_witnesses(semantics).into_iter()
-        .find(|witness| witness.operator() == kind).expect("operator evidence");
+    let proof = local_constructive_witnesses(semantics)
+        .into_iter()
+        .find(|witness| witness.operator() == kind)
+        .expect("operator evidence");
     let json = serde_json::from_str(&to_bundle_json(&bundle)).expect("json");
     (proof, json)
 }
@@ -46,20 +65,34 @@ fn exists_membership_keeps_correlated_keys_and_closed_world_absence() {
     let WitnessDirection::Feasible(failing) = w.rejected() else {
         panic!("expected EXISTS absent witness: {:?}", w.rejected());
     };
-    assert!(passing.iter().any(|case| case.obligations().iter().any(|obligation| {
+    assert!(passing
+        .iter()
+        .any(|case| {
+            case.obligations().iter().any(|obligation| {
         matches!(obligation, WitnessObligation::Membership { correlations, closed_world: true, .. }
             if correlations.len() == 1)
-    })));
-    assert!(failing.iter().any(|case| case.obligations().iter().any(|obligation| {
-        matches!(obligation, WitnessObligation::Membership {
-            case: sql_semantic_protocol::SubqueryMembershipCase::NoCandidates, .. })
-    })));
+    })
+        }));
+    assert!(failing
+        .iter()
+        .any(|case| case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::Membership {
+                    case: sql_semantic_protocol::SubqueryMembershipCase::NoCandidates,
+                    ..
+                }
+            )
+        })));
     assert!(json.to_string().contains("\"constructive_witnesses\""));
 }
 
 #[test]
 fn not_in_retains_independent_nullable_rejection_cases() {
-    let (w, _) = proof("SELECT l.k FROM l WHERE l.k NOT IN (SELECT r.k FROM r)", WitnessOperator::Subquery);
+    let (w, _) = proof(
+        "SELECT l.k FROM l WHERE l.k NOT IN (SELECT r.k FROM r)",
+        WitnessOperator::Subquery,
+    );
     let WitnessDirection::Feasible(passing) = w.qualifying() else {
         panic!("positive NOT IN cases: {:?}", w.qualifying());
     };
@@ -68,30 +101,65 @@ fn not_in_retains_independent_nullable_rejection_cases() {
     };
     assert!(passing.len() >= 2);
     assert!(failing.len() >= 3);
-    assert!(failing.iter().any(|case| case.obligations().iter().any(|obligation| {
-        matches!(obligation, WitnessObligation::Membership {
-            case: sql_semantic_protocol::SubqueryMembershipCase::NoMatchNullCandidate, .. })
-    })));
+    assert!(failing
+        .iter()
+        .any(|case| case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::Membership {
+                    case: sql_semantic_protocol::SubqueryMembershipCase::NoMatchNullCandidate,
+                    ..
+                }
+            )
+        })));
 }
 
 #[test]
 fn set_all_duplicate_count_and_closed_world_zero_are_preserved() {
-    let (w, _) = proof("SELECT k FROM l EXCEPT ALL SELECT k FROM r", WitnessOperator::Set);
+    let (w, _) = proof(
+        "SELECT k FROM l EXCEPT ALL SELECT k FROM r",
+        WitnessOperator::Set,
+    );
     let WitnessDirection::Feasible(passing) = w.qualifying() else {
         panic!("set positive cases: {:?}", w.qualifying());
     };
     let WitnessDirection::Feasible(failing) = w.rejected() else {
         panic!("set rejected cases: {:?}", w.rejected());
     };
-    assert!(passing.iter().any(|case| case.obligations().iter().any(|obligation| {
-        matches!(obligation, WitnessObligation::SetResultTuple { matching_rows: 1, nulls_equal: true })
-    })));
-    assert!(failing.iter().any(|case| case.obligations().iter().any(|obligation| {
-        matches!(obligation, WitnessObligation::SetResultTuple { matching_rows: 0, nulls_equal: true })
-    })));
-    assert!(passing.iter().all(|case| case.obligations().iter().filter(|obligation|
-        matches!(obligation, WitnessObligation::SetTuple { closed_world: true, .. })
-    ).count() == 2));
+    assert!(passing
+        .iter()
+        .any(|case| case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::SetResultTuple {
+                    matching_rows: 1,
+                    nulls_equal: true
+                }
+            )
+        })));
+    assert!(failing
+        .iter()
+        .any(|case| case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::SetResultTuple {
+                    matching_rows: 0,
+                    nulls_equal: true
+                }
+            )
+        })));
+    assert!(passing.iter().all(|case| case
+        .obligations()
+        .iter()
+        .filter(|obligation| matches!(
+            obligation,
+            WitnessObligation::SetTuple {
+                closed_world: true,
+                ..
+            }
+        ))
+        .count()
+        == 2));
 }
 
 #[test]
@@ -101,24 +169,43 @@ fn sql_engine_oracle_agrees_on_duplicate_set_membership_and_null_truth() {
         "CREATE TABLE l(k BIGINT); CREATE TABLE r(k BIGINT);
          INSERT INTO l VALUES (1), (1), (NULL);
          INSERT INTO r VALUES (1), (NULL);",
-    ).expect("rows");
-    let except_rows: i64 = db.query_row(
-        "SELECT COUNT(*) FROM (SELECT k FROM l EXCEPT ALL SELECT k FROM r)",
-        [], |row| row.get(0)
-    ).expect("count");
-    let membership_rows: i64 = db.query_row(
-        "SELECT COUNT(*) FROM l WHERE k NOT IN (SELECT k FROM r)",
-        [], |row| row.get(0)
-    ).expect("count");
+    )
+    .expect("rows");
+    let except_rows: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT k FROM l EXCEPT ALL SELECT k FROM r)",
+            [],
+            |row| row.get(0),
+        )
+        .expect("count");
+    let membership_rows: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM l WHERE k NOT IN (SELECT k FROM r)",
+            [],
+            |row| row.get(0),
+        )
+        .expect("count");
     assert_eq!((except_rows, membership_rows), (1, 0));
-    let (set_proof, _) = proof("SELECT k FROM l EXCEPT ALL SELECT k FROM r", WitnessOperator::Set);
-    let (in_proof, _) = proof("SELECT l.k FROM l WHERE l.k NOT IN (SELECT r.k FROM r)", WitnessOperator::Subquery);
-    assert!(matches!(set_proof.qualifying(), WitnessDirection::Feasible(_)));
+    let (set_proof, _) = proof(
+        "SELECT k FROM l EXCEPT ALL SELECT k FROM r",
+        WitnessOperator::Set,
+    );
+    let (in_proof, _) = proof(
+        "SELECT l.k FROM l WHERE l.k NOT IN (SELECT r.k FROM r)",
+        WitnessOperator::Subquery,
+    );
+    assert!(matches!(
+        set_proof.qualifying(),
+        WitnessDirection::Feasible(_)
+    ));
     assert!(matches!(in_proof.rejected(), WitnessDirection::Feasible(_)));
 }
 
 #[test]
 fn unsupported_set_modifiers_do_not_get_normalized_as_constructive() {
-    let (w, _) = proof("SELECT k FROM l UNION ALL SELECT k FROM r LIMIT 1", WitnessOperator::Set);
+    let (w, _) = proof(
+        "SELECT k FROM l UNION ALL SELECT k FROM r LIMIT 1",
+        WitnessOperator::Set,
+    );
     assert!(matches!(w.qualifying(), WitnessDirection::Residual { .. }));
 }
