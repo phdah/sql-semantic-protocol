@@ -12,9 +12,10 @@ use std::{
 use serde_json::Number;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, CastKind as SqlCastKind, ColumnOption,
-    ConstraintCharacteristics, CreateTable as SqlCreateTable, Distinct as SqlDistinct,
-    Delete as SqlDelete, DuplicateTreatment, Expr, FromTable as SqlFromTable, Function, FunctionArg, FunctionArgExpr, FunctionArguments,
-    GroupByExpr, GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
+    ConstraintCharacteristics, CreateTable as SqlCreateTable, Delete as SqlDelete,
+    Distinct as SqlDistinct, DuplicateTreatment, Expr, FromTable as SqlFromTable, Function,
+    FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
+    GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
     Join as SqlJoin, JoinConstraint, JoinOperator, MergeAction as SqlMergeAction,
     MergeClause as SqlMergeClause, MergeClauseKind as SqlMergeClauseKind, MergeInsertKind,
     NamedWindowDefinition, NamedWindowExpr, Query as SqlQuery, Select, SelectItem, SetExpr,
@@ -217,8 +218,21 @@ fn analyze_statement(
             )
         }
         SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
-        SqlStatement::Update { table, assignments, from, selection, returning, or } =>
-            analyze_update(table, assignments, from.is_some(), selection.as_ref(), returning.is_some(), or.is_some()),
+        SqlStatement::Update {
+            table,
+            assignments,
+            from,
+            selection,
+            returning,
+            or,
+        } => analyze_update(
+            table,
+            assignments,
+            from.is_some(),
+            selection.as_ref(),
+            returning.is_some(),
+            or.is_some(),
+        ),
         SqlStatement::Delete(delete) => analyze_delete(delete),
         SqlStatement::Merge {
             table,
@@ -297,7 +311,12 @@ fn analyze_update(
     has_returning: bool,
     has_conflict_modifier: bool,
 ) -> ProtocolStatement {
-    if has_from || has_returning || has_conflict_modifier || !table.joins.is_empty() || assignments.is_empty() {
+    if has_from
+        || has_returning
+        || has_conflict_modifier
+        || !table.joins.is_empty()
+        || assignments.is_empty()
+    {
         return unsupported_write_statement(
             "update",
             "unsupported_update_form",
@@ -305,7 +324,11 @@ fn analyze_update(
         );
     }
     let Some(target_source) = merge_target_relation(&table.relation) else {
-        return unsupported_write_statement("update", "unsupported_update_target", "UPDATE requires one named target relation");
+        return unsupported_write_statement(
+            "update",
+            "unsupported_update_target",
+            "UPDATE requires one named target relation",
+        );
     };
     let target = target_source.name().to_string();
     let mut diagnostics = Vec::new();
@@ -314,11 +337,22 @@ fn analyze_update(
         &Predicates::new(predicate.clone(), None, None),
         &[target_source.clone()],
     );
-    let assignments = assignments.iter().map(|assignment| {
-        let expression = analyze_expression_with_scope(&assignment.value, &[], &[], &mut diagnostics);
-        let domain = derive_expression_domain_with_column_domains(&expression, &domains, &[target_source.clone()]);
-        MergeAssignment::new(assignment.target.to_string(), WriteValue::new(expression, domain))
-    }).collect();
+    let assignments = assignments
+        .iter()
+        .map(|assignment| {
+            let expression =
+                analyze_expression_with_scope(&assignment.value, &[], &[], &mut diagnostics);
+            let domain = derive_expression_domain_with_column_domains(
+                &expression,
+                &domains,
+                &[target_source.clone()],
+            );
+            MergeAssignment::new(
+                assignment.target.to_string(),
+                WriteValue::new(expression, domain),
+            )
+        })
+        .collect();
     sort_diagnostics(&mut diagnostics);
     ProtocolStatement::Query(
         QueryStatement::new(
@@ -338,7 +372,7 @@ fn analyze_update(
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::update(target, predicate, assignments)))
+        .with_write(Some(WriteOperation::update(target, predicate, assignments))),
     )
 }
 
@@ -346,8 +380,12 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
     let tables = match &delete.from {
         SqlFromTable::WithFromKeyword(tables) | SqlFromTable::WithoutKeyword(tables) => tables,
     };
-    if !delete.tables.is_empty() || delete.using.is_some() || delete.returning.is_some()
-        || !delete.order_by.is_empty() || delete.limit.is_some() || tables.len() != 1
+    if !delete.tables.is_empty()
+        || delete.using.is_some()
+        || delete.returning.is_some()
+        || !delete.order_by.is_empty()
+        || delete.limit.is_some()
+        || tables.len() != 1
         || !tables[0].joins.is_empty()
     {
         return unsupported_write_statement(
@@ -357,11 +395,18 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         );
     }
     let Some(target_source) = merge_target_relation(&tables[0].relation) else {
-        return unsupported_write_statement("delete", "unsupported_delete_target", "DELETE requires one named target relation");
+        return unsupported_write_statement(
+            "delete",
+            "unsupported_delete_target",
+            "DELETE requires one named target relation",
+        );
     };
     let target = target_source.name().to_string();
     let mut diagnostics = Vec::new();
-    let predicate = delete.selection.as_ref().map(|selection| analyze_predicate(selection, &mut diagnostics));
+    let predicate = delete
+        .selection
+        .as_ref()
+        .map(|selection| analyze_predicate(selection, &mut diagnostics));
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
         &[target_source],
@@ -385,7 +430,7 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::delete(target, predicate)))
+        .with_write(Some(WriteOperation::delete(target, predicate))),
     )
 }
 

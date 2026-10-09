@@ -577,53 +577,81 @@ impl WriteOperation {
     /// idempotence regardless of the initial rows.
     pub fn state_effect(&self) -> Option<WriteStateEffect> {
         let initial = WriteInitialState::CallerSupplied;
-        let unbounded = WriteAffectedRows { minimum: 0, maximum: None };
+        let unbounded = WriteAffectedRows {
+            minimum: 0,
+            maximum: None,
+        };
         let mut reasons = vec![WriteUncertainty::AffectedRowsUnknown];
         let (branches, post_state, idempotence) = match self.kind {
             WriteKind::Definition => return None,
             WriteKind::Append => {
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
-                (vec![WriteEffectBranch {
-                    match_kind: None,
-                    predicate: None,
-                    action: WriteEffectAction::InsertQuery,
-                }], WritePostState::ApplyToInitial, WriteIdempotence::Unproven)
+                (
+                    vec![WriteEffectBranch {
+                        match_kind: None,
+                        predicate: None,
+                        action: WriteEffectAction::InsertQuery,
+                    }],
+                    WritePostState::ApplyToInitial,
+                    WriteIdempotence::Unproven,
+                )
             }
             WriteKind::Update => {
                 if self.selection.is_some() {
                     reasons.push(WriteUncertainty::PredicateExactnessUnverified);
                 }
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
-                (vec![WriteEffectBranch {
-                    match_kind: None,
-                    predicate: self.selection.clone(),
-                    action: WriteEffectAction::Mutation(MergeAction::Update {
-                        assignments: self.assignments.clone(),
-                    }),
-                }], WritePostState::ApplyToInitial, WriteIdempotence::Unproven)
+                (
+                    vec![WriteEffectBranch {
+                        match_kind: None,
+                        predicate: self.selection.clone(),
+                        action: WriteEffectAction::Mutation(MergeAction::Update {
+                            assignments: self.assignments.clone(),
+                        }),
+                    }],
+                    WritePostState::ApplyToInitial,
+                    WriteIdempotence::Unproven,
+                )
             }
             WriteKind::Delete => {
                 let unconditional = self.selection.is_none();
                 if !unconditional {
                     reasons.push(WriteUncertainty::PredicateExactnessUnverified);
                 }
-                (vec![WriteEffectBranch {
-                    match_kind: None,
-                    predicate: self.selection.clone(),
-                    action: WriteEffectAction::Mutation(MergeAction::Delete),
-                }],
-                if unconditional { WritePostState::Empty } else { WritePostState::ApplyToInitial },
-                if unconditional { WriteIdempotence::Proven } else { WriteIdempotence::Unproven })
+                (
+                    vec![WriteEffectBranch {
+                        match_kind: None,
+                        predicate: self.selection.clone(),
+                        action: WriteEffectAction::Mutation(MergeAction::Delete),
+                    }],
+                    if unconditional {
+                        WritePostState::Empty
+                    } else {
+                        WritePostState::ApplyToInitial
+                    },
+                    if unconditional {
+                        WriteIdempotence::Proven
+                    } else {
+                        WriteIdempotence::Unproven
+                    },
+                )
             }
             WriteKind::ConditionalMutation => {
                 reasons.push(WriteUncertainty::PredicateExactnessUnverified);
                 reasons.push(WriteUncertainty::MatchMultiplicityUnknown);
                 reasons.push(WriteUncertainty::ConstraintConflictsUnverified);
-                (self.merge_clauses.iter().map(|clause| WriteEffectBranch {
-                    match_kind: Some(clause.match_kind()),
-                    predicate: clause.predicate().cloned(),
-                    action: WriteEffectAction::Mutation(clause.action().clone()),
-                }).collect(), WritePostState::ApplyToInitial, WriteIdempotence::Unproven)
+                (
+                    self.merge_clauses
+                        .iter()
+                        .map(|clause| WriteEffectBranch {
+                            match_kind: Some(clause.match_kind()),
+                            predicate: clause.predicate().cloned(),
+                            action: WriteEffectAction::Mutation(clause.action().clone()),
+                        })
+                        .collect(),
+                    WritePostState::ApplyToInitial,
+                    WriteIdempotence::Unproven,
+                )
             }
         };
         Some(WriteStateEffect {
@@ -671,9 +699,13 @@ pub struct WriteAffectedRows {
 
 impl WriteAffectedRows {
     /// Inclusive minimum affected row count.
-    pub fn minimum(&self) -> u64 { self.minimum }
+    pub fn minimum(&self) -> u64 {
+        self.minimum
+    }
     /// Inclusive maximum, or None when no bound is provable.
-    pub fn maximum(&self) -> Option<u64> { self.maximum }
+    pub fn maximum(&self) -> Option<u64> {
+        self.maximum
+    }
 }
 
 /// A residual obligation before a generator can verify the write.
@@ -710,11 +742,17 @@ pub struct WriteEffectBranch {
 
 impl WriteEffectBranch {
     /// MERGE matched/unmatched classification; None for standalone DML.
-    pub fn match_kind(&self) -> Option<MergeMatchKind> { self.match_kind }
+    pub fn match_kind(&self) -> Option<MergeMatchKind> {
+        self.match_kind
+    }
     /// Additional branch/WHERE predicate; only SQL TRUE selects rows.
-    pub fn predicate(&self) -> Option<&Predicate> { self.predicate.as_ref() }
+    pub fn predicate(&self) -> Option<&Predicate> {
+        self.predicate.as_ref()
+    }
     /// Written action, with normalized expressions and conservative domains.
-    pub fn action(&self) -> &WriteEffectAction { &self.action }
+    pub fn action(&self) -> &WriteEffectAction {
+        &self.action
+    }
 }
 
 /// Source-backed INSERT or normalized row mutation.
@@ -739,17 +777,29 @@ pub struct WriteStateEffect {
 
 impl WriteStateEffect {
     /// Initial target state precondition.
-    pub fn initial(&self) -> WriteInitialState { self.initial }
+    pub fn initial(&self) -> WriteInitialState {
+        self.initial
+    }
     /// Affected row count bounds.
-    pub fn affected_rows(&self) -> &WriteAffectedRows { &self.affected_rows }
+    pub fn affected_rows(&self) -> &WriteAffectedRows {
+        &self.affected_rows
+    }
     /// Proven final state, or a delta requiring the initial snapshot.
-    pub fn post_state(&self) -> WritePostState { self.post_state }
+    pub fn post_state(&self) -> WritePostState {
+        self.post_state
+    }
     /// Proven or unproven idempotence.
-    pub fn idempotence(&self) -> WriteIdempotence { self.idempotence }
+    pub fn idempotence(&self) -> WriteIdempotence {
+        self.idempotence
+    }
     /// Ordered operation branches.
-    pub fn branches(&self) -> &[WriteEffectBranch] { &self.branches }
+    pub fn branches(&self) -> &[WriteEffectBranch] {
+        &self.branches
+    }
     /// Explicit outstanding verification obligations.
-    pub fn reasons(&self) -> &[WriteUncertainty] { &self.reasons }
+    pub fn reasons(&self) -> &[WriteUncertainty] {
+        &self.reasons
+    }
 }
 
 /// MERGE clause match category.

@@ -25,7 +25,7 @@ use crate::protocol::{
     SetOperation, SourceRelation, SubquerySemantics, UnaryExpression, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFunctionExpression, WindowOrderExpression, WindowSpecification,
-    WriteEffectAction, WriteOperation, WritePostState, WriteIdempotence, WriteValue,
+    WriteEffectAction, WriteIdempotence, WriteOperation, WritePostState, WriteValue,
 };
 
 /// Serialize single-input analysis using the one active protocol document shape.
