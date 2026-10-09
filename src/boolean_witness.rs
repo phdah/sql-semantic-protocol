@@ -150,21 +150,20 @@ pub(crate) fn analyze(
     let condition = normalize(predicate, sources, &integer_type_accepts);
     let mut columns = Vec::new();
     condition.columns(&mut columns);
-    // There must actually be a cross-column logical relation to preserve.
-    if columns.iter().collect::<BTreeSet<_>>().len() < 2 {
-        return None;
-    }
-    let unique_columns = columns.iter().collect::<BTreeSet<_>>().len() == columns.len();
+    let distinct_columns = columns.iter().collect::<BTreeSet<_>>().len();
+    let unique_columns = distinct_columns == columns.len();
     let resolved_source = columns
         .iter()
         .all(|column| column.relation() == Some(source.name()));
-    let directions = if condition.is_exact() && unique_columns && resolved_source {
+    let directions = if condition.is_exact() && distinct_columns >= 2 && unique_columns && resolved_source {
         (
             BooleanWitnessDirection::Exact(BooleanTruthCase::True),
             BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue),
         )
     } else {
-        let reason = if !resolved_source {
+        let reason = if distinct_columns < 2 {
+            "source columns cannot be proven to form a supported cross-column predicate"
+        } else if !resolved_source {
             "predicate columns do not resolve to the same source identity"
         } else if !unique_columns {
             "repeated column conditions require joint feasibility analysis"
