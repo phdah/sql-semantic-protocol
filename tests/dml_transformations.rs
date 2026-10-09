@@ -4,7 +4,7 @@ use sql_semantic_protocol::{
     MergeAction, MergeMatchKind, ProtocolStatement, RelationResolution, SqlInput, ValueDomain,
     WriteEffectAction, WriteIdempotence, WriteKind, WritePostState, WriteUncertainty,
 };
-use sqlparser::dialect::{GenericDialect, SnowflakeDialect};
+use sqlparser::dialect::{GenericDialect, MySqlDialect, SnowflakeDialect};
 
 #[test]
 fn insert_select_records_append_semantics_and_partial_downstream_link() {
@@ -475,5 +475,59 @@ fn update_delete_subqueries_do_not_silently_omit_external_dependencies() {
         };
         assert_eq!(statement.category(), category);
         assert_eq!(statement.diagnostics()[0].code(), code);
+    }
+}
+
+#[test]
+fn partition_scoped_update_delete_cannot_claim_full_target_state() {
+    let cases = [
+        (
+            "DELETE FROM orders PARTITION (p0)",
+            "delete",
+            "unsupported_delete_target",
+        ),
+        (
+            "DELETE FROM orders PARTITION (p0) WHERE id = 1",
+            "delete",
+            "unsupported_delete_target",
+        ),
+        (
+            "UPDATE orders PARTITION (p0) SET balance = 7",
+            "update",
+            "unsupported_update_target",
+        ),
+        (
+            "UPDATE orders PARTITION (p0) SET balance = 7 WHERE id = 1",
+            "update",
+            "unsupported_update_target",
+        ),
+    ];
+
+    for (dialect_name, dialect) in [
+        ("mysql", &MySqlDialect {} as &dyn sqlparser::dialect::Dialect),
+        ("generic", &GenericDialect {} as &dyn sqlparser::dialect::Dialect),
+    ] {
+        for (sql, kind, diagnostic_code) in cases {
+            let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect)
+                .expect("partition-scoped DML should parse");
+            assert!(bundle.layers().is_empty(), "{dialect_name}: {sql}");
+            assert!(bundle.write_state_effects().is_empty(), "{dialect_name}: {sql}");
+            let ProtocolStatement::Unsupported(statement) = &bundle.inputs()[0].statements()[0]
+            else {
+                panic!("partition selection cannot be ignored: {dialect_name}: {sql}");
+            };
+            assert_eq!(statement.category(), kind, "{dialect_name}: {sql}");
+            assert_eq!(
+                statement.diagnostics()[0].code(),
+                diagnostic_code,
+                "{dialect_name}: {sql}"
+            );
+            let emitted: serde_json::Value =
+                serde_json::from_str(&to_bundle_json(&bundle)).expect("valid JSON");
+            assert!(
+                emitted.get("write_effects").is_none(),
+                "{dialect_name}: {sql}"
+            );
+        }
     }
 }
