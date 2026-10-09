@@ -45,7 +45,10 @@ pub struct OutputDistribution {
 
 impl OutputDistribution {
     /// Construct a deterministic histogram. Each value may appear only once.
-    pub fn new(column: impl Into<String>, mut values: Vec<OutputValueCount>) -> Result<Self, OutcomeGoalError> {
+    pub fn new(
+        column: impl Into<String>,
+        mut values: Vec<OutputValueCount>,
+    ) -> Result<Self, OutcomeGoalError> {
         let column = column.into();
         if column.trim().is_empty() {
             return Err(OutcomeGoalError::EmptyColumn);
@@ -99,10 +102,18 @@ impl OutcomeGoal {
             return Err(OutcomeGoalError::DistributionRequiresRows);
         }
         distributions.sort_by(|left, right| left.column.cmp(&right.column));
-        if distributions.windows(2).any(|pair| pair[0].column == pair[1].column) {
+        if distributions
+            .windows(2)
+            .any(|pair| pair[0].column == pair[1].column)
+        {
             return Err(OutcomeGoalError::DuplicateColumn);
         }
-        Ok(Self { layer_id, rows, groups, distributions })
+        Ok(Self {
+            layer_id,
+            rows,
+            groups,
+            distributions,
+        })
     }
 
     /// Stable identity of the query layer whose *final* output is targeted.
@@ -215,30 +226,58 @@ impl EvaluatedOutcomeGoal {
     }
 }
 
-pub(crate) fn evaluate(bundle: &AnalysisBundle, goals: &[OutcomeGoal]) -> Result<Vec<EvaluatedOutcomeGoal>, OutcomeGoalError> {
+pub(crate) fn evaluate(
+    bundle: &AnalysisBundle,
+    goals: &[OutcomeGoal],
+) -> Result<Vec<EvaluatedOutcomeGoal>, OutcomeGoalError> {
     let mut ordered = goals.to_vec();
     ordered.sort_by(|left, right| left.layer_id.cmp(&right.layer_id));
     for pair in ordered.windows(2) {
         if pair[0].layer_id == pair[1].layer_id {
-            return Err(OutcomeGoalError::DuplicateLayer { layer_id: pair[0].layer_id.clone() });
+            return Err(OutcomeGoalError::DuplicateLayer {
+                layer_id: pair[0].layer_id.clone(),
+            });
         }
     }
 
-    ordered.into_iter().map(|goal| {
-        let layer = bundle.layers().iter().find(|layer| layer.id() == goal.layer_id)
-            .ok_or_else(|| OutcomeGoalError::UnknownLayer { layer_id: goal.layer_id.clone() })?;
-        let query = bundle.inputs().iter().find(|input| input.id() == layer.input_id())
-            .and_then(|input| input.statements().get(layer.statement_index()))
-            .and_then(|statement| match statement {
-                ProtocolStatement::Query(query) => Some(query),
-                ProtocolStatement::Unsupported(_) => None,
-            });
-        assess_goal(bundle, layer, query, goal)
-    }).collect()
+    ordered
+        .into_iter()
+        .map(|goal| {
+            let layer = bundle
+                .layers()
+                .iter()
+                .find(|layer| layer.id() == goal.layer_id)
+                .ok_or_else(|| OutcomeGoalError::UnknownLayer {
+                    layer_id: goal.layer_id.clone(),
+                })?;
+            let query = bundle
+                .inputs()
+                .iter()
+                .find(|input| input.id() == layer.input_id())
+                .and_then(|input| input.statements().get(layer.statement_index()))
+                .and_then(|statement| match statement {
+                    ProtocolStatement::Query(query) => Some(query),
+                    ProtocolStatement::Unsupported(_) => None,
+                });
+            assess_goal(bundle, layer, query, goal)
+        })
+        .collect()
 }
 
-fn assessed(goal: OutcomeGoal, status: OutcomeGoalStatus, reason: &str, min_rows: u64, max_rows: Option<u64>) -> EvaluatedOutcomeGoal {
-    EvaluatedOutcomeGoal { goal, status, reason: reason.to_string(), min_rows, max_rows }
+fn assessed(
+    goal: OutcomeGoal,
+    status: OutcomeGoalStatus,
+    reason: &str,
+    min_rows: u64,
+    max_rows: Option<u64>,
+) -> EvaluatedOutcomeGoal {
+    EvaluatedOutcomeGoal {
+        goal,
+        status,
+        reason: reason.to_string(),
+        min_rows,
+        max_rows,
+    }
 }
 
 fn assess_goal(
@@ -250,21 +289,36 @@ fn assess_goal(
     let resolved = match layer.composed_semantics() {
         ComposedSemantics::Resolved(resolved) => resolved,
         ComposedSemantics::Unresolved(_) => {
-            return Ok(assessed(goal, OutcomeGoalStatus::Residual, "target layer composition is unresolved", 0, None))
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Residual,
+                "target layer composition is unresolved",
+                0,
+                None,
+            ))
         }
     };
     let output = resolved.output();
     for distribution in &goal.distributions {
-        match output.columns().iter().filter(|column| column.name() == distribution.column()).count() {
-            0 => return Err(OutcomeGoalError::UnknownOutputColumn {
-                layer_id: goal.layer_id.clone(),
-                column: distribution.column().to_string(),
-            }),
-            1 => {},
-            _ => return Err(OutcomeGoalError::AmbiguousOutputColumn {
-                layer_id: goal.layer_id.clone(),
-                column: distribution.column().to_string(),
-            }),
+        match output
+            .columns()
+            .iter()
+            .filter(|column| column.name() == distribution.column())
+            .count()
+        {
+            0 => {
+                return Err(OutcomeGoalError::UnknownOutputColumn {
+                    layer_id: goal.layer_id.clone(),
+                    column: distribution.column().to_string(),
+                })
+            }
+            1 => {}
+            _ => {
+                return Err(OutcomeGoalError::AmbiguousOutputColumn {
+                    layer_id: goal.layer_id.clone(),
+                    column: distribution.column().to_string(),
+                })
+            }
         }
     }
 
@@ -274,7 +328,13 @@ fn assess_goal(
     let max_rows = singleton.then_some(1);
     if let Some(rows) = goal.rows {
         if singleton && rows != 1 {
-            return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable, "query provably produces exactly one output row", min_rows, max_rows));
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Unsatisfiable,
+                "query provably produces exactly one output row",
+                min_rows,
+                max_rows,
+            ));
         }
     }
 
@@ -284,12 +344,24 @@ fn assess_goal(
             match sum.checked_add(item.rows()) {
                 Some(next) => sum = next,
                 None => {
-                    return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable, "distribution count overflows the representable output row count", min_rows, max_rows));
+                    return Ok(assessed(
+                        goal,
+                        OutcomeGoalStatus::Unsatisfiable,
+                        "distribution count overflows the representable output row count",
+                        min_rows,
+                        max_rows,
+                    ));
                 }
             }
         }
         if Some(sum) != goal.rows {
-            return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable, "complete distribution does not sum to requested output rows", min_rows, max_rows));
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Unsatisfiable,
+                "complete distribution does not sum to requested output rows",
+                min_rows,
+                max_rows,
+            ));
         }
     }
 
@@ -297,64 +369,142 @@ fn assess_goal(
         let simple_groups = query.aggregation().and_then(|aggregation| aggregation.group_by())
             .is_some_and(|group_by| matches!(group_by, GroupBy::Expressions(items)
                 if !items.is_empty() && items.iter().all(|item| matches!(item, GroupingExpression::Expression(_)))));
-        if simple_groups && goal.rows.is_some() && goal.groups != goal.rows && goal.groups.is_some() {
-            return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable, "an ordinary GROUP BY emits exactly one output row per surviving group", min_rows, max_rows));
+        if simple_groups && goal.rows.is_some() && goal.groups != goal.rows && goal.groups.is_some()
+        {
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Unsatisfiable,
+                "an ordinary GROUP BY emits exactly one output row per surviving group",
+                min_rows,
+                max_rows,
+            ));
         }
         if singleton && goal.groups.is_some() {
             // Explicit GROUP BY / aggregate group feasibility must not be inferred from
             // the singleton row bound alone.
-            return Ok(assessed(goal, OutcomeGoalStatus::Residual, "group cardinality is not proved by a singleton output bound", min_rows, max_rows));
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Residual,
+                "group cardinality is not proved by a singleton output bound",
+                min_rows,
+                max_rows,
+            ));
         }
 
         let distinct_one_column = output.columns().len() == 1
-            && query.aggregation().is_some_and(|aggregation| aggregation.distinct() && aggregation.distinct_on().is_empty());
-        if distinct_one_column && goal.distributions().iter().any(|distribution| {
-            distribution.values().iter().any(|item| item.rows() > 1)
-        }) {
-            return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable, "DISTINCT permits at most one row per value, including NULL", min_rows, max_rows));
+            && query.aggregation().is_some_and(|aggregation| {
+                aggregation.distinct() && aggregation.distinct_on().is_empty()
+            });
+        if distinct_one_column
+            && goal
+                .distributions()
+                .iter()
+                .any(|distribution| distribution.values().iter().any(|item| item.rows() > 1))
+        {
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Unsatisfiable,
+                "DISTINCT permits at most one row per value, including NULL",
+                min_rows,
+                max_rows,
+            ));
         }
 
         if singleton && goal.groups.is_none() {
             // Only literal projections have a value-independent output-frequency proof.
             // Aggregates still produce one row, but their values depend on source data.
-            let literal_histograms = goal.distributions.iter().map(|distribution| {
-                let projected = query.output().columns().iter().find(|column| column.name() == distribution.column());
-                match projected.map(|column| column.expression()) {
-                    Some(Expression::Literal(literal)) => {
-                        let mut proofs = distribution.values().iter().map(|entry| {
-                            literal_matches_bucket(literal.literal_type(), literal.value(), entry.value())
+            let literal_histograms = goal
+                .distributions
+                .iter()
+                .map(|distribution| {
+                    let projected = query
+                        .output()
+                        .columns()
+                        .iter()
+                        .find(|column| column.name() == distribution.column());
+                    match projected.map(|column| column.expression()) {
+                        Some(Expression::Literal(literal)) => {
+                            let mut proofs = distribution.values().iter().map(|entry| {
+                                literal_matches_bucket(
+                                    literal.literal_type(),
+                                    literal.value(),
+                                    entry.value(),
+                                )
                                 .map(|matches| matches == (entry.rows() == 1))
-                        });
-                        if proofs.any(|proof| proof == Some(false)) { Some(false) }
-                        else if distribution.values().iter().all(|entry| {
-                            literal_matches_bucket(literal.literal_type(), literal.value(), entry.value()).is_some()
-                        }) { Some(true) }
-                        else { None }
-                    },
-                    _ => None,
-                }
-            }).collect::<Vec<_>>();
+                            });
+                            if proofs.any(|proof| proof == Some(false)) {
+                                Some(false)
+                            } else if distribution.values().iter().all(|entry| {
+                                literal_matches_bucket(
+                                    literal.literal_type(),
+                                    literal.value(),
+                                    entry.value(),
+                                )
+                                .is_some()
+                            }) {
+                                Some(true)
+                            } else {
+                                None
+                            }
+                        }
+                        _ => None,
+                    }
+                })
+                .collect::<Vec<_>>();
             if literal_histograms.iter().any(|proof| *proof == Some(false)) {
-                return Ok(assessed(goal, OutcomeGoalStatus::Unsatisfiable, "requested histogram contradicts a constant singleton output value", min_rows, max_rows));
+                return Ok(assessed(
+                    goal,
+                    OutcomeGoalStatus::Unsatisfiable,
+                    "requested histogram contradicts a constant singleton output value",
+                    min_rows,
+                    max_rows,
+                ));
             }
             if literal_histograms.iter().all(|proof| *proof == Some(true)) {
-                return Ok(assessed(goal, OutcomeGoalStatus::Feasible, "SQL proves one output row and every requested literal frequency", min_rows, max_rows));
+                return Ok(assessed(
+                    goal,
+                    OutcomeGoalStatus::Feasible,
+                    "SQL proves one output row and every requested literal frequency",
+                    min_rows,
+                    max_rows,
+                ));
             }
         }
 
         // An empty physical source is a constructive witness for zero rows only
         // for an ordinary, direct, predicate-free and projection-preserving query.
         let direct_external = layer.consumes().len() == 1
-            && bundle.graph().edges().iter().filter(|edge| edge.consumer_layer_id() == layer.id())
+            && bundle
+                .graph()
+                .edges()
+                .iter()
+                .filter(|edge| edge.consumer_layer_id() == layer.id())
                 .all(|edge| edge.resolution() == RelationResolution::External);
         let simple_projection = query.row_preserving_projection()
-            && query.output().columns().iter().all(|column| matches!(column.expression(), Expression::Column(_) | Expression::Literal(_)))
+            && query.output().columns().iter().all(|column| {
+                matches!(
+                    column.expression(),
+                    Expression::Column(_) | Expression::Literal(_)
+                )
+            })
             && query.diagnostics().is_empty()
             && resolved.diagnostics().is_empty()
             && direct_external;
-        if simple_projection && goal.rows == Some(0) && goal.groups.is_none()
-            && goal.distributions.iter().all(|distribution| distribution.values().is_empty()) {
-            return Ok(assessed(goal, OutcomeGoalStatus::Feasible, "an empty external source yields an empty row-preserving projection", min_rows, max_rows));
+        if simple_projection
+            && goal.rows == Some(0)
+            && goal.groups.is_none()
+            && goal
+                .distributions
+                .iter()
+                .all(|distribution| distribution.values().is_empty())
+        {
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Feasible,
+                "an empty external source yields an empty row-preserving projection",
+                min_rows,
+                max_rows,
+            ));
         }
     }
 
@@ -368,16 +518,22 @@ fn literal_matches_bucket(
 ) -> Option<bool> {
     match (literal_type, value) {
         (LiteralType::Null, LiteralValue::Null) => Some(matches!(bucket, ConstraintValue::Null)),
-        (LiteralType::Boolean, LiteralValue::Boolean(value)) => Some(matches!(bucket, ConstraintValue::Boolean(other) if value == other)),
-        (LiteralType::Integer, LiteralValue::Number(value)) => {
-            match bucket {
-                ConstraintValue::Integer(other) => value.parse::<i64>().ok().map(|parsed| parsed == *other),
-                ConstraintValue::UnsignedInteger(other) => value.parse::<u64>().ok().map(|parsed| parsed == *other),
-                ConstraintValue::Number(_) => None,
-                _ => Some(false),
-            }
+        (LiteralType::Boolean, LiteralValue::Boolean(value)) => {
+            Some(matches!(bucket, ConstraintValue::Boolean(other) if value == other))
         }
-        (LiteralType::String, LiteralValue::Text(value)) => Some(matches!(bucket, ConstraintValue::String(other) if value == other)),
+        (LiteralType::Integer, LiteralValue::Number(value)) => match bucket {
+            ConstraintValue::Integer(other) => {
+                value.parse::<i64>().ok().map(|parsed| parsed == *other)
+            }
+            ConstraintValue::UnsignedInteger(other) => {
+                value.parse::<u64>().ok().map(|parsed| parsed == *other)
+            }
+            ConstraintValue::Number(_) => None,
+            _ => Some(false),
+        },
+        (LiteralType::String, LiteralValue::Text(value)) => {
+            Some(matches!(bucket, ConstraintValue::String(other) if value == other))
+        }
         _ => None,
     }
 }
