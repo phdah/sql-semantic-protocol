@@ -180,7 +180,7 @@ fn duckdb_terminal_rows_agree_with_physical_source_membership_classification() {
     let b = bundle(
         &[
             "CREATE TABLE stage AS SELECT a, b FROM t",
-            "SELECT a FROM stage WHERE a > 2 OR b < 0",
+            "SELECT a FROM stage WHERE a IS NOT NULL OR b IS NULL",
         ],
         "postgresql",
     );
@@ -194,7 +194,7 @@ fn duckdb_terminal_rows_agree_with_physical_source_membership_classification() {
     )
     .expect("fixture");
     let mut stmt = conn
-        .prepare("SELECT a FROM stage WHERE a > 2 OR b < 0")
+        .prepare("SELECT a FROM stage WHERE a IS NOT NULL OR b IS NULL")
         .expect("query");
     let output = stmt
         .query_map([], |row| row.get::<_, i32>(0))
