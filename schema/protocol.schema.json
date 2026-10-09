@@ -1358,6 +1358,9 @@
           "$ref": "#/$defs/windowFunctionExpression"
         },
         {
+          "$ref": "#/$defs/signedIntegerCastExpression"
+        },
+        {
           "$ref": "#/$defs/unaryExpression"
         },
         {
@@ -1468,6 +1471,26 @@
         },
         "distinct": {
           "type": "boolean"
+        }
+      }
+    },
+    "signedIntegerCastExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expression",
+        "target_bits"
+      ],
+      "properties": {
+        "kind": {
+          "const": "signed_integer_cast"
+        },
+        "expression": {
+          "$ref": "#/$defs/expression"
+        },
+        "target_bits": {
+          "enum": [16, 32, 64]
         }
       }
     },
