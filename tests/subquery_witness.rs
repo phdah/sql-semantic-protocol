@@ -239,6 +239,37 @@ fn membership_witnesses_are_emitted_in_local_and_composed_contract() {
 }
 
 #[test]
+fn nested_layer_preserves_originating_subquery_witness() {
+    let bundle = analyze_inputs(
+        &[
+            SqlInput::inline(
+                "CREATE TABLE matching_orders AS SELECT o.id FROM orders o WHERE EXISTS
+                 (SELECT 1 FROM lines l WHERE l.order_id = o.id)",
+            ),
+            SqlInput::inline("CREATE TABLE downstream AS SELECT id FROM matching_orders"),
+        ],
+        "generic",
+        &GenericDialect {},
+    )
+    .unwrap();
+    let origin = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.produces().iter().any(|out| out.relation_name() == Some("matching_orders")))
+        .expect("producing layer");
+    let downstream = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.produces().iter().any(|out| out.relation_name() == Some("downstream")))
+        .expect("consuming layer");
+    let ComposedSemantics::Resolved(semantics) = downstream.composed_semantics() else {
+        panic!("must compose nested layer");
+    };
+    assert_eq!(semantics.subquery_witnesses().len(), 1);
+    assert_eq!(semantics.subquery_witnesses()[0].origin_layer_id(), origin.id());
+}
+
+#[test]
 fn shared_exists_and_in_syntax_is_consistent_across_dialects() {
     for dialect_name in DIALECTS {
         let dialect = dialect_from_str(dialect_name).expect("supported dialect");
