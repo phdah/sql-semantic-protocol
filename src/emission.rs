@@ -395,7 +395,8 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .collect::<Vec<_>>()
     });
     if !semantics.join_witnesses().is_empty() {
-        value["join_witnesses"] = json!(semantics.join_witnesses()
+        value["join_witnesses"] = json!(semantics
+            .join_witnesses()
             .iter()
             .map(join_witness_to_value)
             .collect::<Vec<_>>());
@@ -436,11 +437,13 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
 }
 
 fn join_witness_to_value(witness: &crate::JoinWitness) -> Value {
-    let endpoint = |column: &crate::ComposedJoinColumn| json!({
-        "relation": column.relation(),
-        "column": column.column(),
-        "relation_instance": column.relation_instance()
-    });
+    let endpoint = |column: &crate::ComposedJoinColumn| {
+        json!({
+            "relation": column.relation(),
+            "column": column.column(),
+            "relation_instance": column.relation_instance()
+        })
+    };
     json!({
         "origin_layer_id": witness.origin_layer_id(),
         "join_kind": witness.kind().as_str(),
@@ -456,8 +459,9 @@ fn join_witness_to_value(witness: &crate::JoinWitness) -> Value {
 fn join_witness_direction_to_value(direction: &crate::JoinWitnessDirection) -> Value {
     match direction {
         crate::JoinWitnessDirection::Impossible => json!({"status": "impossible"}),
-        crate::JoinWitnessDirection::Residual { reason } =>
-            json!({"status": "residual", "reason": reason}),
+        crate::JoinWitnessDirection::Residual { reason } => {
+            json!({"status": "residual", "reason": reason})
+        }
         crate::JoinWitnessDirection::Exact(cases) => json!({
             "status": "exact",
             "cases": cases.iter().map(|case| json!({
@@ -466,7 +470,7 @@ fn join_witness_direction_to_value(direction: &crate::JoinWitnessDirection) -> V
                 "max_matches": case.shape().max_matches(),
                 "null_extended_side": case.null_extended_side().map(|side| side.as_str())
             })).collect::<Vec<_>>()
-        })
+        }),
     }
 }
 
