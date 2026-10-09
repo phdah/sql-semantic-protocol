@@ -234,8 +234,10 @@ fn outcome_witness_to_value(witness: &crate::outcome_proofs::OutcomeWitness) -> 
             tuples,
             case,
             values,
+            scale_by_value_rows,
         } => json!({
             "kind": "set_tuples", "tuples": tuples,
+            "scale_by_value_rows": scale_by_value_rows,
             "case": set_witness_case_to_value(case),
             "values": values.iter().map(|item| json!({
                 "value": constraint_value_to_value(item.value()),
