@@ -104,19 +104,19 @@ The manifest tracks each of the 11 SQL models currently in `sql-tdg/tests/fixtur
 
 Scripted oracle inputs are separately mapped for INSERT, UPDATE, DELETE, MERGE and CTAS/replace. The local protocol test files demonstrate partial analyses and some DuckDB behavior, but **none** proves that sql-tdg generates a complete prestate/source/afterstate witness. `make all` in sql-tdg's dbt fixture remains the final TASK-36 acceptance gate, with its default 100 matching and 10 rejected rows and no target.
 
-## Triage and currently unresolved decisions
+## Triage and remaining executable evidence
 
 All in-scope families above have a concrete downstream and upstream task owner. The release-blocking gaps map to protocol TASK-67..90 and to downstream TASK-24..31/35/36, with task-level proof requirements. Where current implementation is operator-local, the missing proof belongs to **TASK-67** (shared typed witness algebra) and **TASK-68** (physical-source DAG realization). A parser success cannot close either.
 
-Maintainer review is required for: (1) sql-tdg TASK-35's definition of rejected rows across terminals, (2) TASK-36's decision about how to verify DML transitions in or outside the dbt fixture, (3) fail-closed scope for arbitrary UDFs, probabilistic sampling and unbounded recursion, and (4) which vendor SQL engines/versions are unavailable and therefore remain uncertified. None are approved exclusions yet.
+The maintainer **approved scope decisions 1–4** on 2026-10-09, with the addendums in [coverage-signoff.md](coverage-signoff.md). Remaining work is engineering and evidence: full per-terminal seeded negative alternatives, mandatory dbt and DML/DDL `make all`, exact canonical equivalence tests for every claimed variant/dialect, explicit typed conditional deferrals, and documentation that DuckDB tests do not establish native vendor-engine certification.
 
 Unparseable SQL is not an implicit capability. Until parser-boundary regression fixtures exist for a dialect-specific variant, its cell remains `?`; semantic unsupported-but-parseable variants must eventually carry a typed residual or failure reason and a negative generator test. TASK-88 owns per-dialect parser boundaries, engine-specific laws, NULL/collation/timezone assumptions and executable oracle attribution.
 
 ## Reproducible evidence
 
-`tests/coverage_manifest.rs` uses the manifest as fixture input, checks shared scalar range and NULL filters and UNION ALL across all 13 dialects, checks a generic unsupported LIMIT diagnostic and Snowflake MINUS parsing, and runs DuckDB examples for feasible, impossible, NULL and duplicate-result cases. These tests do **not** certify downstream data generation or adapter parity. TASK-87 owns dbt/catalog/ODCS adapter parity; TASK-89 owns full compiled dbt and cross-operator oracle coverage.
+`tests/coverage_manifest.rs` uses the manifest as fixture input, checks 18 named parser fixtures and four **exact canonical protocol equivalence** baselines across all 13 dialects (the sole ignored field is source dialect provenance), checks generic unsupported LIMIT diagnostics and Snowflake MINUS parsing, and runs ten DuckDB SQL oracles for feasible, impossible, NULL, duplicate-result, and output-snapshot cases. These tests do **not** certify downstream data generation or adapter parity. TASK-87 owns dbt/catalog/ODCS adapter parity; TASK-89 owns full compiled dbt and cross-operator oracle coverage.
 
-**Required release sequence:** approve the finite scope, land TASK-67..90 implementations and full vendor/parser evidence (or explicitly reviewed fail-closed exclusions), run sql-tdg pinned-candidate integration including default `--rejected 10` and dbt `make all`, approve TASK-91, then publish one 3.0.0 release.
+**Required release sequence:** scope decisions are **approved**; land TASK-67..90 implementations and complete parser/canonical equivalence evidence across all supported dialects (with proven fail-closed conditional deferrals), run sql-tdg pinned-candidate integration including default `--rejected 10`, multi-seed negative coverage and mandatory dbt plus scripted DML/DDL `make all`, verify TASK-91, then publish one 3.0.0 release. Future TASK-92 is not required to publish 3.0.0 unless a deferred capability is newly advertised as supported.
 
 ## Approved engineering gates (not final release approval)
 
