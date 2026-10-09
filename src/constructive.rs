@@ -300,6 +300,13 @@ impl WitnessCase {
     /// This local check is deliberately incomplete: success does not prove cross-row
     /// satisfiability, type compatibility, or producer realizability.
     pub fn new(obligations: Vec<WitnessObligation>, strength: ProofStrength) -> Option<Self> {
+        let mut unique = Vec::new();
+        for obligation in obligations {
+            if !unique.contains(&obligation) {
+                unique.push(obligation);
+            }
+        }
+        let obligations = unique;
         if obligations.is_empty()
             || obligations.iter().any(invalid_obligation)
             || directly_conflicts(&obligations)
