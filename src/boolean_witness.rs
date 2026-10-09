@@ -172,7 +172,10 @@ impl BooleanWitness {
     /// This can only downgrade proofs. It never upgrades a previously residual direction,
     /// and unknown or unsupported constraint evidence cannot invent source rows.
     pub(crate) fn restrict_with_schema_constraints(&mut self, sets: &[RelationConstraintSet]) {
-        let Some(set) = sets.iter().find(|set| set.relation() == self.source_relation) else {
+        let Some(set) = sets
+            .iter()
+            .find(|set| set.relation() == self.source_relation)
+        else {
             return;
         };
         let mut restrictions = BTreeMap::<String, ColumnRestriction>::new();
@@ -234,9 +237,9 @@ impl BooleanWitness {
         }
         // Even constraints on columns absent from the predicate can make the whole
         // relation unsatisfiable.
-        unsupported |= restrictions.values().any(|item| {
-            item.not_null && item.accepted.as_ref().is_some_and(BTreeSet::is_empty)
-        });
+        unsupported |= restrictions
+            .values()
+            .any(|item| item.not_null && item.accepted.as_ref().is_some_and(BTreeSet::is_empty));
         let cases = if unsupported {
             BTreeSet::new()
         } else {
@@ -528,7 +531,8 @@ fn possible_joint_truths(
         let mut values = BTreeSet::new();
         if let Some(allowed) = restriction.and_then(|item| item.accepted.as_ref()) {
             for value in allowed {
-                if bounds.is_none_or(|bounds| bounds.minimum <= *value && *value <= bounds.maximum) {
+                if bounds.is_none_or(|bounds| bounds.minimum <= *value && *value <= bounds.maximum)
+                {
                     values.insert(Some(*value));
                 }
             }
