@@ -643,9 +643,9 @@ fn analyze_query(
         &relation_analysis.sources,
         |column| {
             let original_type = metadata.column_data_type(column)?;
-            let (data_type, explicitly_nullable) = match original_type {
-                DataType::Nullable(inner) => (inner.as_ref(), true),
-                other => (other, false),
+            let data_type = match original_type {
+                DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
             };
             match data_type {
                 DataType::SignedInteger { bits: Some(bits) } if *bits > 0 && *bits <= 64 => {
@@ -653,7 +653,6 @@ fn analyze_query(
                     Some(crate::boolean_witness::SignedIntegerEvidence {
                         minimum: -magnitude,
                         maximum: magnitude - 1,
-                        explicitly_nullable,
                     })
                 }
                 _ => None,
