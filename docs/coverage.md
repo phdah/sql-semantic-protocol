@@ -1,6 +1,6 @@
 # SQL generator release coverage inventory
 
-**Status:** not signed off. [Four specific maintainer decisions](coverage-signoff.md) are recorded separately. This is the scope inventory for the planned single protocol **3.0.0** release and sql-tdg milestone **m-3**, not a statement that every feature works.
+**Scope decisions approved 2026-10-09**, with addendums on seeded randomized per-terminal rejection, a unified dbt + scripted DML/DDL E2E gate, future-extensible opaque semantics, and exact canonical equivalence across 13 parsing dialects. [Approved requirements](coverage-signoff.md). **Feature evidence and 3.0.0 release sign-off remain pending.** This is the scope inventory for the planned single protocol **3.0.0** release and sql-tdg milestone **m-3**, not a statement that every feature works.
 
 The authoritative, machine-readable source is [`coverage-manifest.json`](coverage-manifest.json). [`tests/coverage_manifest.rs`](../tests/coverage_manifest.rs) checks each dialect/feature cell, parser fixtures and DuckDB SQL oracles. Adding or extending a dialect or semantic feature requires updating the manifest and corresponding tests.
 
@@ -10,7 +10,7 @@ The authoritative, machine-readable source is [`coverage-manifest.json`](coverag
 - **?**: no verified fixture for this exact dialect/feature pair. It is **not** an exclusion and **not** supported by assertion.
 - **Operator-local**: an existing typed local witness may describe an operator, but the upstream physical-source DAG proof, constructive positive/negative cases, and exact cardinality have **not** yet been certified.
 - **E**: only DuckDB fixture execution is available in this repository. Even E is one exercised SQL shape, not an engine-version or arbitrary-workload guarantee.
-- **Release blocking**: every uncertified in-scope combination remains blocking until resolved by its owner and independently verified. **Pending exclusion** requires explicit maintainer approval and fail-closed evidence before sign-off.
+- **Release blocking**: every uncertified in-scope combination remains blocking until resolved by its owner and independently verified. **Conditionally deferred** means opaque or inherently unprovable cases require typed external evidence before future support; it is not a permanent feature-family exclusion. Safely bounded variants remain release-blocking. Parser and semantic proof for all claimed supported dialect/variant pairs remains mandatory before 3.0.0 sign-off.
 
 Dialect names here are **inventory entries only**, never a production runtime whitelist. The existing `postgres` alias maps to `postgresql`. Engine versions have not been certified for any external vendor; DuckDB fixture tests use the in-process dependency pinned in `Cargo.toml`.
 
@@ -47,11 +47,11 @@ Dialect names here are **inventory entries only**, never a production runtime wh
 | `subqueries.in` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-75, TASK-69 | TASK-26 |
 | `subqueries.scalar_quantified` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-75 | TASK-26 |
 | `scopes.cte` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-78, TASK-68 | TASK-24, TASK-25, TASK-26, TASK-28, TASK-29 |
-| `scopes.recursive_cte` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Approval | TASK-78 | TASK-36 |
+| `scopes.recursive_cte` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Conditional | TASK-78 | TASK-36 |
 | `scopes.derived_lateral` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-78, TASK-77 | TASK-26 |
 | `ordering.sort` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-76 | TASK-29, TASK-30 |
 | `ordering.pagination` | ? | ? | ? | ? | ? | P | ? | ? | ? | ? | ? | ? | ? | Block | TASK-76 | TASK-29, TASK-30 |
-| `ordering.sampling` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Approval | TASK-76 | TASK-30 |
+| `ordering.sampling` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Conditional | TASK-76 | TASK-30 |
 | `relations.advanced_sources` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-77 | TASK-25, TASK-26 |
 | `types.structural` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-79 | TASK-27, TASK-31 |
 | `schema.constraints` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-79, TASK-87 | TASK-27, TASK-31 |
@@ -70,7 +70,7 @@ Dialect names here are **inventory entries only**, never a production runtime wh
 | `outcomes.dag` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-67, TASK-68 | TASK-24, TASK-25, TASK-26, TASK-27, TASK-28, TASK-29, TASK-31, TASK-35 |
 | `execution.dialect_equivalence` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-88, TASK-89 | TASK-33, TASK-36 |
 | `execution.dbt_fixture` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-89, TASK-91 | TASK-36 |
-| `execution.unsupported_opaque` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Approval | TASK-66, TASK-88, TASK-91 | TASK-33, TASK-36 |
+| `execution.unsupported_opaque` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Conditional | TASK-66, TASK-88, TASK-91 | TASK-33, TASK-36 |
 
 **Coverage counts:** 18 parser fixtures (including a known residual); 10 DuckDB SQL oracle cases; 11 recorded downstream dbt models. **Every row** currently has `physical_source_positive = not_end_to_end_proven`, `physical_source_negative = not_end_to_end_proven`, and `output_cardinality = unverified`. This prevents the local witnesses for TASK-58..65 from being mistaken for complete constructive generator plans. The manifest also expands **251 named syntax/semantic variants across 13 dialects (3,263 logical variant cells)** from fail-closed defaults, with only fixture-backed sparse overrides. The matrix above shows **representative parser evidence**, not proof of every variant in its family. Each variant inherits `variant_evidence_defaults` unless an independent fixture justifies an override. The manifest contains existing local witness status, all dialect records, variant evidence and fixture IDs.
 
@@ -117,3 +117,7 @@ Unparseable SQL is not an implicit capability. Until parser-boundary regression 
 `tests/coverage_manifest.rs` uses the manifest as fixture input, checks shared scalar range and NULL filters and UNION ALL across all 13 dialects, checks a generic unsupported LIMIT diagnostic and Snowflake MINUS parsing, and runs DuckDB examples for feasible, impossible, NULL and duplicate-result cases. These tests do **not** certify downstream data generation or adapter parity. TASK-87 owns dbt/catalog/ODCS adapter parity; TASK-89 owns full compiled dbt and cross-operator oracle coverage.
 
 **Required release sequence:** approve the finite scope, land TASK-67..90 implementations and full vendor/parser evidence (or explicitly reviewed fail-closed exclusions), run sql-tdg pinned-candidate integration including default `--rejected 10` and dbt `make all`, approve TASK-91, then publish one 3.0.0 release.
+
+## Approved engineering gates (not final release approval)
+
+The maintainer approved [scope decisions 1–4](coverage-signoff.md) on 2026-10-09. The protocol must carry typed per-terminal negative alternatives that downstream can sample with a deterministic seed, across every provably rejectable predicate/column, and verify absence across full SQL execution. The downstream dbt fixture `make all` must invoke a required DuckDB DML/DDL script harness as well as native dbt model DAGs and assert complete source/target results. Unsupported opaque functions, stochastic behaviors, recursion and vendor laws are *future-extensibility cases*, not permanent exclusions; unsupported evidence fails closed today. For semantically equivalent shared SQL, all thirteen supported parsing dialects must emit equivalent canonical protocol outcomes rather than merely parse successfully; executable DuckDB E2E is distinct from unverified native vendor-engine execution.
