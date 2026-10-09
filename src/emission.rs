@@ -423,6 +423,13 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             }))
             .collect::<Vec<_>>());
     }
+    if !semantics.boolean_witnesses().is_empty() {
+        value["boolean_witnesses"] = json!(semantics.boolean_witnesses().iter().map(|item| json!({
+            "origin_layer_id": item.origin_layer_id(),
+            "boundary_kind": item.boundary_kind().as_str(),
+            "witness": boolean_witness_to_value(item.witness())
+        })).collect::<Vec<_>>());
+    }
     if !semantics.subquery_witnesses().is_empty() {
         value["subquery_witnesses"] = json!(semantics
             .subquery_witnesses()
@@ -640,6 +647,9 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
     if let Some(group_witness) = statement.group_witness() {
         value["group_witness"] = group_witness_to_value(group_witness);
     }
+    if let Some(witness) = statement.boolean_witness() {
+        value["boolean_witness"] = boolean_witness_to_value(witness);
+    }
     if !statement.subquery_witnesses().is_empty() {
         value["subquery_witnesses"] = json!(statement
             .subquery_witnesses()
@@ -717,6 +727,49 @@ fn write_value_to_value(value: &WriteValue) -> Value {
         "expression": expression_to_value(value.expression()),
         "domain": value_domain_to_value(value.domain())
     })
+}
+
+fn boolean_witness_to_value(witness: &crate::BooleanWitness) -> Value {
+    json!({
+        "source_relation": witness.source_relation(),
+        "condition": boolean_constraint_to_value(witness.condition()),
+        "qualifying": boolean_witness_direction_to_value(witness.qualifying()),
+        "rejected": boolean_witness_direction_to_value(witness.rejected())
+    })
+}
+
+fn boolean_witness_direction_to_value(direction: &crate::BooleanWitnessDirection) -> Value {
+    match direction {
+        crate::BooleanWitnessDirection::Exact(case) => json!({
+            "status": "exact",
+            "truth": case.as_str()
+        }),
+        crate::BooleanWitnessDirection::Residual { reason } => json!({
+            "status": "residual",
+            "reason": reason
+        }),
+    }
+}
+
+fn boolean_constraint_to_value(constraint: &crate::BooleanRowConstraint) -> Value {
+    match constraint {
+        crate::BooleanRowConstraint::All(children) => json!({
+            "kind": "all", "operands": children.iter().map(boolean_constraint_to_value).collect::<Vec<_>>()
+        }),
+        crate::BooleanRowConstraint::Any(children) => json!({
+            "kind": "any", "operands": children.iter().map(boolean_constraint_to_value).collect::<Vec<_>>()
+        }),
+        crate::BooleanRowConstraint::NullTest { column, negated } => json!({
+            "kind": "null_test", "column": column_ref_to_value(column), "negated": negated
+        }),
+        crate::BooleanRowConstraint::IntegerComparison { column, operator, literal } => json!({
+            "kind": "integer_comparison", "column": column_ref_to_value(column),
+            "operator": operator.as_str(), "literal": literal
+        }),
+        crate::BooleanRowConstraint::Residual { reason } => json!({
+            "kind": "residual", "reason": reason
+        }),
+    }
 }
 
 fn subquery_membership_witness_to_value(
