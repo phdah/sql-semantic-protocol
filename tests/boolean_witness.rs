@@ -761,12 +761,20 @@ fn string_witness_truth(
     b: Option<&str>,
 ) -> Option<bool> {
     match condition {
-        BooleanRowConstraint::All(operands) => operands.iter().fold(Some(true), |acc, operand| {
-            sql_and(acc, string_witness_truth(operand, a, b))
-        }),
-        BooleanRowConstraint::Any(operands) => operands.iter().fold(Some(false), |acc, operand| {
-            sql_or(acc, string_witness_truth(operand, a, b))
-        }),
+        BooleanRowConstraint::All(operands) => {
+            let mut result = Some(true);
+            for operand in operands.iter() {
+                result = sql_and(result, string_witness_truth(operand, a, b));
+            }
+            result
+        }
+        BooleanRowConstraint::Any(operands) => {
+            let mut result = Some(false);
+            for operand in operands.iter() {
+                result = sql_or(result, string_witness_truth(operand, a, b));
+            }
+            result
+        }
         BooleanRowConstraint::NullTest { column, negated } => {
             let value = match column.name() {
                 "a" => a,
