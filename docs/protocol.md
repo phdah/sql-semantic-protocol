@@ -201,7 +201,8 @@ physical key-frequency distribution keyed by canonical typed
 underlying physical expression, independent of the SQL alias. Histograms
 from the same physical source must agree **only when this key-expression
 identity also agrees**; two different join columns of one self-joined
-table can have different histograms. `equijoin_key_histogram` computes exact output
+table can have different histograms, but their total physical row counts
+must still agree. `equijoin_key_histogram` computes exact output
 frequency under INNER, LEFT, RIGHT, FULL, SEMI and ANTI equality joins.
 It distinguishes SQL NULL comparisons from set NULL-equality,
 computes duplicate-pair products per key, preserves unmatched source
