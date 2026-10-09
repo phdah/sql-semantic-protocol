@@ -216,9 +216,6 @@ impl<'a> Walker<'a> {
         if !matches!(layer.write_kind(), None | Some(WriteKind::Definition)) {
             return Err(PhysicalProofGap::PartialProducer);
         }
-        if !matches!(layer.composed_semantics(), ComposedSemantics::Resolved(_)) {
-            return Err(PhysicalProofGap::UnresolvedSemantics);
-        }
         let mut inputs = Vec::new();
         for edge in self
             .bundle
@@ -257,6 +254,10 @@ impl<'a> Walker<'a> {
                     return Err(PhysicalProofGap::UnsupportedDependency)
                 }
             }
+        }
+        // Prefer precise graph-edge failure reasons over generic unresolved semantics.
+        if !matches!(layer.composed_semantics(), ComposedSemantics::Resolved(_)) {
+            return Err(PhysicalProofGap::UnresolvedSemantics);
         }
         inputs.sort();
         inputs.dedup();
