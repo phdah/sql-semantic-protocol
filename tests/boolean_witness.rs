@@ -123,6 +123,36 @@ fn typed_integer_disjunction_retains_comparison_operators_without_cross_product(
 }
 
 #[test]
+fn repeated_column_conditions_are_checked_jointly() {
+    let bundle = typed_bundle(
+        "SELECT a FROM t WHERE (a > 2 AND a < 1) OR b < 0",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+
+    let impossible = typed_bundle(
+        "SELECT a FROM t WHERE (a > 2 AND a < 1) OR (b > 3 AND b < 2)",
+    );
+    let ComposedSemantics::Resolved(semantics) = impossible.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+}
+
+#[test]
 fn source_witness_is_emitted_locally_and_retains_origin_through_composition() {
     let sql = "CREATE TABLE selected AS SELECT a FROM t WHERE a IS NULL OR b IS NULL";
     let bundle = analyze_inputs(
@@ -319,6 +349,7 @@ fn duckdb_differential_matches_generated_witness_for_every_source_row() {
         "a IS NULL OR b IS NULL",
         "a > 2 OR b < 0",
         "a > -2 OR b <= 1",
+        "(a > 2 AND a < 1) OR b < 0",
     ] {
         let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
         let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
