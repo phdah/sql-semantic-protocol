@@ -65,14 +65,12 @@ fn exists_membership_keeps_correlated_keys_and_closed_world_absence() {
     let WitnessDirection::Feasible(failing) = w.rejected() else {
         panic!("expected EXISTS absent witness: {:?}", w.rejected());
     };
-    assert!(passing
-        .iter()
-        .any(|case| {
-            case.obligations().iter().any(|obligation| {
+    assert!(passing.iter().any(|case| {
+        case.obligations().iter().any(|obligation| {
         matches!(obligation, WitnessObligation::Membership { correlations, closed_world: true, .. }
             if correlations.len() == 1)
     })
-        }));
+    }));
     assert!(failing
         .iter()
         .any(|case| case.obligations().iter().any(|obligation| {
