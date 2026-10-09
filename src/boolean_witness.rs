@@ -167,7 +167,7 @@ impl BooleanWitness {
 ///
 /// Signed integer comparisons require authoritative source datatype evidence, and
 /// every supported leaf must bind unambiguously to the same relation. Repeated
-/// references remain residual until their joint feasibility can be proved.
+/// references are evaluated together rather than independently.
 pub(crate) fn analyze(
     predicate: Option<&Predicate>,
     sources: &[SourceRelation],
@@ -188,10 +188,11 @@ pub(crate) fn analyze(
     let resolved_source = columns
         .iter()
         .all(|column| column.relation() == Some(source.name()));
-    let candidate =
-        condition.is_exact() && distinct_columns >= 2 && unique_columns && resolved_source;
-    let cases = if candidate {
+    let candidate = condition.is_exact() && distinct_columns >= 2 && resolved_source;
+    let cases = if candidate && unique_columns {
         possible_truths(&condition, &integer_evidence)
+    } else if candidate {
+        possible_joint_truths(&condition, &integer_evidence)
     } else {
         BTreeSet::new()
     };
@@ -199,8 +200,6 @@ pub(crate) fn analyze(
         "source columns cannot be proven to form a supported cross-column predicate"
     } else if !resolved_source {
         "predicate columns do not resolve to the same source identity"
-    } else if !unique_columns {
-        "repeated column conditions require joint feasibility analysis"
     } else {
         "a boolean branch lacks proven source datatype or supported semantics"
     };
@@ -430,5 +429,123 @@ fn possible_truths(
             possible
         }
         BooleanRowConstraint::Residual { .. } => BTreeSet::new(),
+    }
+}
+
+fn collect_comparison_literals(
+    condition: &BooleanRowConstraint,
+    thresholds: &mut std::collections::BTreeMap<ColumnRef, BTreeSet<i128>>,
+) {
+    match condition {
+        BooleanRowConstraint::All(operands) | BooleanRowConstraint::Any(operands) => {
+            for operand in operands.iter() {
+                collect_comparison_literals(operand, thresholds);
+            }
+        }
+        BooleanRowConstraint::NullTest { column, .. } => {
+            thresholds.entry(column.clone()).or_default();
+        }
+        BooleanRowConstraint::IntegerComparison { column, literal, .. } => {
+            thresholds.entry(column.clone()).or_default().insert(i128::from(*literal));
+        }
+        BooleanRowConstraint::Residual { .. } => {}
+    }
+}
+
+fn possible_joint_truths(
+    constraint: &BooleanRowConstraint,
+    evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> BTreeSet<SqlTruth> {
+    const MAX_ASSIGNMENTS: usize = 4096;
+    let mut thresholds = std::collections::BTreeMap::new();
+    collect_comparison_literals(constraint, &mut thresholds);
+    let mut assignments = vec![std::collections::BTreeMap::new()];
+    for (column, literals) in thresholds {
+        let mut values = BTreeSet::new();
+        if literals.is_empty() {
+            // A NULL test can be decided using any non-NULL witness.
+            values.insert(Some(0_i128));
+        } else {
+            let Some(bounds) = evidence(&column) else {
+                return BTreeSet::new();
+            };
+            values.extend([Some(bounds.minimum), Some(bounds.maximum)]);
+            for literal in literals {
+                for value in [literal - 1, literal, literal + 1] {
+                    if bounds.minimum <= value && value <= bounds.maximum {
+                        values.insert(Some(value));
+                    }
+                }
+            }
+        }
+        // In the absence of enforced NOT NULL evidence, NULL remains a possible
+        // SQL source value. It must remain coupled across all uses of this column.
+        values.insert(None);
+        if assignments.len().saturating_mul(values.len()) > MAX_ASSIGNMENTS {
+            return BTreeSet::new();
+        }
+        assignments = assignments
+            .into_iter()
+            .flat_map(|assignment| {
+                values.iter().map(move |value| {
+                    let mut assignment = assignment.clone();
+                    assignment.insert(column.clone(), *value);
+                    assignment
+                })
+            })
+            .collect();
+    }
+    assignments
+        .iter()
+        .filter_map(|assignment| eval_joint_truth(constraint, assignment))
+        .collect()
+}
+
+fn eval_joint_truth(
+    condition: &BooleanRowConstraint,
+    assignment: &std::collections::BTreeMap<ColumnRef, Option<i128>>,
+) -> Option<SqlTruth> {
+    match condition {
+        BooleanRowConstraint::All(operands) => {
+            let mut truth = SqlTruth::True;
+            for operand in operands.iter() {
+                truth = truth.and(eval_joint_truth(operand, assignment)?);
+            }
+            Some(truth)
+        }
+        BooleanRowConstraint::Any(operands) => {
+            let mut truth = SqlTruth::False;
+            for operand in operands.iter() {
+                truth = truth.or(eval_joint_truth(operand, assignment)?);
+            }
+            Some(truth)
+        }
+        BooleanRowConstraint::NullTest { column, negated } => {
+            let is_null = assignment.get(column)?.is_none();
+            Some(if is_null != *negated {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            })
+        }
+        BooleanRowConstraint::IntegerComparison { column, operator, literal } => {
+            use crate::protocol::ComparisonOperator as Op;
+            let value = match assignment.get(column)? {
+                Some(value) => *value,
+                None => return Some(SqlTruth::Unknown),
+            };
+            let literal = i128::from(*literal);
+            let result = match operator {
+                Op::Eq => value == literal,
+                Op::Neq => value != literal,
+                Op::Lt => value < literal,
+                Op::Lte => value <= literal,
+                Op::Gt => value > literal,
+                Op::Gte => value >= literal,
+                Op::IsDistinctFrom | Op::IsNotDistinctFrom => return None,
+            };
+            Some(if result { SqlTruth::True } else { SqlTruth::False })
+        }
+        BooleanRowConstraint::Residual { .. } => None,
     }
 }
