@@ -700,16 +700,7 @@ impl<'a> Composer<'a> {
                 let [source] = query.sources() else {
                     return false;
                 };
-                // Filtering removes rows, but does not change the values of
-                // surviving copied columns. Allow a typed, identity-preserving
-                // WHERE producer in the provenance path; full joint feasibility
-                // of all such filters is verified separately downstream.
-                (query.row_preserving_projection() || query.filter_only_row_shape())
-                    && query
-                        .output()
-                        .columns()
-                        .iter()
-                        .all(|column| column.plain_copy_source().is_some())
+                query.row_preserving_projection()
                     && self.boolean_source_has_passthrough_path(producer, source.name())
             }
             RelationResolution::Missing
