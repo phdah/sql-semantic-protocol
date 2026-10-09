@@ -43,8 +43,8 @@ use crate::protocol::{
     ComparisonAssumption, ComparisonOperator, ComparisonPredicate, ConditionClause,
     ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
-    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
-    LikePrefixPredicate, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LikePrefixPredicate,
+    LineageSource, LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
@@ -668,9 +668,7 @@ fn analyze_query(
                 DataType::String {
                     length,
                     fixed: false,
-                } => Some(crate::boolean_witness::StringEvidence {
-                    max_chars: *length,
-                }),
+                } => Some(crate::boolean_witness::StringEvidence { max_chars: *length }),
                 _ => None,
             }
         },
@@ -4703,8 +4701,8 @@ fn analyze_predicate_with_windows(
             expr,
             pattern,
             escape_char: None,
-        } if safe_like_prefix(pattern).is_some() => Predicate::LikePrefix(
-            LikePrefixPredicate::new(
+        } if safe_like_prefix(pattern).is_some() => {
+            Predicate::LikePrefix(LikePrefixPredicate::new(
                 analyze_predicate_expression(
                     expr,
                     named_windows,
@@ -4714,8 +4712,8 @@ fn analyze_predicate_with_windows(
                 ),
                 safe_like_prefix(pattern).expect("guarded LIKE prefix"),
                 *negated,
-            ),
-        ),
+            ))
+        }
         Expr::IsNull(inner) => Predicate::IsNull(IsNullPredicate::new(
             analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             false,
