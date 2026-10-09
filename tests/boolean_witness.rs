@@ -817,18 +817,25 @@ fn duckdb_like_prefix_differential_covers_null_negation_and_nested_coupling() {
             panic!("expected composition");
         };
         let witness = semantics.boolean_witnesses()[0].witness();
-        assert!(matches!(
-            witness.qualifying(),
-            BooleanWitnessDirection::Exact(BooleanTruthCase::True)
-        ), "{predicate}");
-        let mut statement = db.prepare(&format!("SELECT a, b, ({predicate}) FROM t")).unwrap();
-        let actual = statement.query_map([], |row| {
-            Ok((
-                row.get::<_, Option<String>>(0)?,
-                row.get::<_, Option<String>>(1)?,
-                row.get::<_, Option<bool>>(2)?,
-            ))
-        }).unwrap();
+        assert!(
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+            ),
+            "{predicate}"
+        );
+        let mut statement = db
+            .prepare(&format!("SELECT a, b, ({predicate}) FROM t"))
+            .unwrap();
+        let actual = statement
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, Option<String>>(0)?,
+                    row.get::<_, Option<String>>(1)?,
+                    row.get::<_, Option<bool>>(2)?,
+                ))
+            })
+            .unwrap();
         for row in actual {
             let (a, b, sql_result) = row.unwrap();
             let computed = string_witness_truth(witness.condition(), a.as_deref(), b.as_deref());
