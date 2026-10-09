@@ -28,7 +28,6 @@ mod domain;
 mod emission;
 mod group_witness;
 mod join_witness;
-mod subquery_witness;
 mod manifest;
 #[cfg(feature = "odcs")]
 mod odcs;
@@ -36,6 +35,7 @@ mod openlineage;
 mod parser;
 pub mod protocol;
 mod relation;
+mod subquery_witness;
 mod window_witness;
 
 use std::fmt;
@@ -47,12 +47,11 @@ pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
     AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
-    ComposedSubqueryWitness,
-    ComposedSemantics, ComposedSetOperation, ComposedWindowWitness, CompositionDiagnostic,
-    CompositionFailureReason, ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef,
-    GraphComponent, GraphEdge, GroupBoundaryKind, InputAnalysisError, RelationResolution,
-    ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
-    UnresolvedComposedSemantics,
+    ComposedSemantics, ComposedSetOperation, ComposedSubqueryWitness, ComposedWindowWitness,
+    CompositionDiagnostic, CompositionFailureReason, ConfiguredInputAnalysisError,
+    ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge, GroupBoundaryKind,
+    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
+    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
@@ -72,10 +71,6 @@ pub use group_witness::{
 };
 pub use join_witness::{
     JoinSide, JoinWitness, JoinWitnessCase, JoinWitnessDirection, JoinWitnessShape,
-};
-pub use subquery_witness::{
-    SubqueryCorrelation, SubqueryMembershipCase, SubqueryMembershipDirection,
-    SubqueryMembershipKind, SubqueryMembershipWitness,
 };
 pub use manifest::{
     parse_analysis_manifest, AnalysisManifest, ManifestError, ManifestInput, ManifestInputSource,
@@ -110,6 +105,10 @@ pub use protocol::{
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
     RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TimestampZone,
+};
+pub use subquery_witness::{
+    SubqueryCorrelation, SubqueryMembershipCase, SubqueryMembershipDirection,
+    SubqueryMembershipKind, SubqueryMembershipWitness,
 };
 pub use window_witness::{WindowOrderKey, WindowRankCase, WindowWitness, WindowWitnessDirection};
 
