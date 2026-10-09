@@ -6108,6 +6108,157 @@
           "additionalProperties": false,
           "required": [
             "kind",
+            "outer",
+            "inner",
+            "case",
+            "correlations",
+            "membership_key",
+            "inner_domains",
+            "closed_world"
+          ],
+          "properties": {
+            "kind": {
+              "const": "membership"
+            },
+            "outer": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "inner": {
+              "$ref": "#/$defs/constructiveBoundary"
+            },
+            "case": {
+              "enum": [
+                "matching_row",
+                "matching_non_null_key",
+                "no_candidates",
+                "no_match_no_null",
+                "no_match_null_candidate",
+                "outer_null_nonempty"
+              ]
+            },
+            "correlations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "outer",
+                  "inner"
+                ],
+                "properties": {
+                  "outer": {
+                    "$ref": "#/$defs/groupWitnessColumn"
+                  },
+                  "inner": {
+                    "$ref": "#/$defs/groupWitnessColumn"
+                  }
+                }
+              }
+            },
+            "membership_key": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "outer",
+                    "inner"
+                  ],
+                  "properties": {
+                    "outer": {
+                      "$ref": "#/$defs/groupWitnessColumn"
+                    },
+                    "inner": {
+                      "$ref": "#/$defs/groupWitnessColumn"
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "inner_domains": {
+              "type": "array",
+              "items": {
+                "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+              }
+            },
+            "closed_world": {
+              "const": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "branch_identity",
+            "boundary",
+            "tuple_columns",
+            "matching_rows",
+            "column_domains",
+            "closed_world"
+          ],
+          "properties": {
+            "kind": {
+              "const": "set_tuple"
+            },
+            "branch_identity": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "boundary": {
+              "$ref": "#/$defs/constructiveBoundary"
+            },
+            "tuple_columns": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/nonEmptyString"
+              },
+              "minItems": 1
+            },
+            "matching_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "column_domains": {
+              "type": "array",
+              "items": {
+                "$ref": "https://raw.githubusercontent.com/phdah/sql-semantic-protocol/main/schema/protocol-v0.schema.json#/$defs/columnDomain"
+              }
+            },
+            "closed_world": {
+              "const": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "matching_rows",
+            "nulls_equal"
+          ],
+          "properties": {
+            "kind": {
+              "const": "set_result_tuple"
+            },
+            "matching_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "nulls_equal": {
+              "const": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
             "layer_id",
             "bounds"
           ],
