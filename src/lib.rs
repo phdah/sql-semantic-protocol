@@ -13,6 +13,7 @@
 //! - dialect_from_name resolves built-in dialects for consumers without a direct sqlparser dependency.
 //! - protocol contains the parser-independent public protocol model, including normalized
 //!   expressions, predicates, row-condition exactness, and explicit unknown/unsupported values.
+//! - JoinWitness and JoinWitnessDirection describe matched, unmatched and null-extended input obligations.
 //! - WindowWitness, WindowOrderKey, WindowRankCase, and WindowWitnessDirection describe
 //!   source-partition and strict-order obligations for ranked-row membership.
 
@@ -25,6 +26,7 @@ mod dbt;
 mod domain;
 mod emission;
 mod group_witness;
+mod join_witness;
 mod manifest;
 #[cfg(feature = "odcs")]
 mod odcs;
@@ -62,6 +64,7 @@ pub use dbt::{
     DbtManifest, DbtManifestError, SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
 pub use emission::{to_bundle_json, to_json};
+pub use join_witness::{JoinSide, JoinWitness, JoinWitnessCase, JoinWitnessDirection, JoinWitnessShape};
 pub use group_witness::{
     GroupAggregate, GroupValueTest, GroupWitness, GroupWitnessCase, GroupWitnessDirection,
 };
