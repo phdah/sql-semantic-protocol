@@ -57,6 +57,8 @@ One consolidated 3.0.0 release is requested. The existing Release Please PR #79 
 - [ ] #4 Decide and document final scope for arbitrary UDFs, stochastic operators, nonterminating recursion and unavailable vendor engines with explicit fail-closed behavior. No universal-support claims.
 - [ ] #5 Maintainer signs off complete feature/dialect matrix and final dbt Makefile workflow before PR #79 is made ready/merged. Only then publish v3.0.0 once and switch sql-tdg to the published crate.
 - [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [ ] #7 Verify CI for each supported dialect's shared and dialect-specific SQL equivalence to the **same canonical semantic outcomes** where meanings are equivalent, including safe conditional session laws, while DuckDB E2E executes the complete supported transformation and DML/DDL sequence.
+- [ ] #8 Verify seeded randomized rejected predicate/column alternatives, multi-seed coverage of every feasible alternative, and exact per-terminal presence/absence against complete generated DuckDB output snapshots.
 <!-- AC:END -->
 
 ## Delivery guidance
@@ -67,6 +69,10 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 The executable coverage inventory lives in [docs/coverage-manifest.json](../../docs/coverage-manifest.json), with its readable [dialect matrix](../../docs/coverage.md) and [Rust fixtures](../../tests/coverage_manifest.rs). TASK-66 owns scope/variant evidence; TASK-88 owns parser and vendor engine laws; TASK-89 owns cross-feature oracle and dbt fixture certification. Each sql-tdg TASK-24..31/35/36 maps to upstream TASK-67..90 in the matrix. sql-tdg TASK-43 must pin a protocol **Git commit SHA** before protocol 3.0.0 is published.
 
-**Gate remains closed** for all cells marked unverified, operator-local, residual, or pending exclusion approval. The maintainer must decide sql-tdg TASK-35 rejection semantics, TASK-36 DML test location, and explicit exclusions before TASK-91 and Release Please PR #79 can close.
+**Gate remains closed** for all cells marked unverified, operator-local, residual, or pending exclusion approval. The maintainer has **approved** sql-tdg TASK-35 per-terminal rejection with seeded randomized rejecting alternatives, TASK-36's unified dbt `make all` plus required scripted DML/DDL gate, and conditional future deferral for unproved opaque behavior. Implementation, canonical equivalence across all supported dialect/variants, and full executable release evidence remain pending.
 
 **Maintainer scope choices:** [docs/coverage-signoff.md](../../docs/coverage-signoff.md). They cover sql-tdg TASK-35's negative row meaning, TASK-36's DML test location, opaque/unbounded exclusions, and non-DuckDB engine certification. A scope approval is **not** final release approval.
+
+## Approved decisions versus release approval (2026-10-09)
+
+[The four maintainer scope decisions](../../docs/coverage-signoff.md) are approved, **not** final release approval. Protocol TASK-66..90, all variant/dialect equivalence cases, the seeded multi-terminal negative contract, physical-source constructive proofs, and sql-tdg TASK-31/35/36 whole-project dbt `make all` plus scripted DuckDB DML/DDL must finish before final TASK-91 sign-off or Release Please PR #79 merge. Safe future UDF/recursion/stochastic extensions tracked in TASK-92 are not permanently prohibited and are not v3 blockers unless explicitly advertised as supported.
