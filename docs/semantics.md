@@ -446,9 +446,11 @@ This does not alter the conservative independent `column_domains` or grant
 whole-query row-membership exactness.
 
 Signed integer comparisons require authoritative catalog datatypes and
-representable signed literals. Only overflow-free identity arithmetic (`+a`, `a+0`, `a-0`) is currently
-invertible. Nonidentity arithmetic, CAST, LIKE, functions and ambiguous sources
-still produce residual directions. Repeated columns are evaluated jointly using bounded integer truth
+representable signed literals. Only overflow-free identity arithmetic (`+a`, `a+0`, `0+a`, `a-0`) and
+catalog-proven lossless ordinary signed-integer CASTs are inverted. Casts
+retain their target width in the normalized expression; narrowing casts,
+TRY/SAFE_CAST, nonidentity arithmetic, LIKE, functions, and ambiguous sources
+remain residual. Repeated columns are evaluated jointly using bounded integer truth
 partitions and remain residual if their search space is too large. Pure
 conjunctions, including contradictory repeated-column comparisons, use the same
 solver. Enforced NOT NULL, primary key and finite accepted-values metadata
