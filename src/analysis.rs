@@ -388,7 +388,7 @@ fn analyze_update(
             Vec::new(),
             RowConditions::new(
                 Predicates::new(predicate.clone(), None, None),
-                domains,
+                domains.clone(),
                 ConditionExactness::from_residuals(vec![ResidualCondition::new(
                     ResidualConditionReason::AnalysisDiagnostic,
                     ConditionClause::RowSetOperator,
@@ -399,7 +399,7 @@ fn analyze_update(
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::update(target, predicate, assignments, domains.clone()))),
+        .with_write(Some(WriteOperation::update(target, predicate, assignments, domains))),
     )
 }
 
@@ -464,7 +464,7 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             Vec::new(),
             RowConditions::new(
                 Predicates::new(predicate.clone(), None, None),
-                domains,
+                domains.clone(),
                 ConditionExactness::from_residuals(vec![ResidualCondition::new(
                     ResidualConditionReason::AnalysisDiagnostic,
                     ConditionClause::RowSetOperator,
@@ -475,7 +475,7 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::delete(target, predicate, domains.clone()))),
+        .with_write(Some(WriteOperation::delete(target, predicate, domains))),
     )
 }
 
