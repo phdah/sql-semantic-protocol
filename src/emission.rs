@@ -513,7 +513,10 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
     let constructive = crate::constructive::local_constructive_witnesses(semantics);
     if !constructive.is_empty() {
         value["constructive_witnesses"] = Value::Array(
-            constructive.iter().map(constructive_witness_to_value).collect()
+            constructive
+                .iter()
+                .map(constructive_witness_to_value)
+                .collect(),
         );
     }
     if !semantics.join_witnesses().is_empty() {
@@ -1711,7 +1714,6 @@ fn diagnostic_to_value(diagnostic: &Diagnostic) -> Value {
     })
 }
 
-
 fn constructive_witness_to_value(witness: &crate::ConstructiveWitness) -> Value {
     json!({
         "operator": witness.operator().as_str(),
@@ -1790,13 +1792,21 @@ fn constructive_formula_to_value(formula: &crate::WitnessFormula) -> Value {
         crate::WitnessFormula::Not(operand) => json!({
             "kind": "not", "operand": constructive_formula_to_value(operand)
         }),
-        crate::WitnessFormula::RowTruth { row, predicate, truth } => json!({
+        crate::WitnessFormula::RowTruth {
+            row,
+            predicate,
+            truth,
+        } => json!({
             "kind": "row_truth",
             "row": constructive_row_to_value(row),
             "predicate": boolean_constraint_to_value(predicate),
             "truth": truth.as_str()
         }),
-        crate::WitnessFormula::Comparison { left, operator, right } => json!({
+        crate::WitnessFormula::Comparison {
+            left,
+            operator,
+            right,
+        } => json!({
             "kind": "comparison",
             "left": constructive_term_to_value(left),
             "operator": operator.as_str(),
@@ -1813,7 +1823,11 @@ fn constructive_formula_to_value(formula: &crate::WitnessFormula) -> Value {
             "equal": equal,
             "right": right.iter().map(constructive_term_to_value).collect::<Vec<_>>()
         }),
-        crate::WitnessFormula::StringPrefix { term, prefix, negated } => json!({
+        crate::WitnessFormula::StringPrefix {
+            term,
+            prefix,
+            negated,
+        } => json!({
             "kind": "string_prefix",
             "term": constructive_term_to_value(term),
             "prefix": prefix,
@@ -1829,7 +1843,11 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "formula": constructive_formula_to_value(formula)
         }),
         crate::WitnessObligation::Rows {
-            boundary, quantifier, bounds, predicate, closed_world,
+            boundary,
+            quantifier,
+            bounds,
+            predicate,
+            closed_world,
         } => json!({
             "kind": "rows",
             "boundary": constructive_boundary_to_value(boundary),
@@ -1842,7 +1860,12 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "closed_world": closed_world
         }),
         crate::WitnessObligation::NoMatchingPartner {
-            candidate, partner, comparison, left, right, closed_world,
+            candidate,
+            partner,
+            comparison,
+            left,
+            right,
+            closed_world,
         } => json!({
             "kind": "no_matching_partner",
             "candidate": constructive_row_to_value(candidate),
@@ -1853,7 +1876,12 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "closed_world": closed_world
         }),
         crate::WitnessObligation::JoinPair {
-            left_row, right_row, left, right, comparison, null_extended,
+            left_row,
+            right_row,
+            left,
+            right,
+            comparison,
+            null_extended,
         } => json!({
             "kind": "join_pair",
             "left_row": constructive_row_to_value(left_row),
@@ -1863,7 +1891,12 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "comparison": comparison.as_str(),
             "null_extended": null_extended.map(|side| side.as_str())
         }),
-        crate::WitnessObligation::Group { boundary, key, rows, non_null } => json!({
+        crate::WitnessObligation::Group {
+            boundary,
+            key,
+            rows,
+            non_null,
+        } => json!({
             "kind": "group",
             "boundary": constructive_boundary_to_value(boundary),
             "key": key.iter().map(column_ref_to_value).collect::<Vec<_>>(),
@@ -1875,7 +1908,11 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "layer_id": layer_id,
             "bounds": constructive_bounds_to_value(*bounds)
         }),
-        crate::WitnessObligation::StateRows { relation, before, after } => json!({
+        crate::WitnessObligation::StateRows {
+            relation,
+            before,
+            after,
+        } => json!({
             "kind": "state_rows",
             "relation": relation,
             "before": constructive_bounds_to_value(*before),
