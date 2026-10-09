@@ -30,6 +30,7 @@ mod openlineage;
 mod parser;
 pub mod protocol;
 mod relation;
+mod window_witness;
 
 use std::fmt;
 
@@ -39,7 +40,7 @@ pub use analysis::AnalysisError;
 pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
-    AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
+    AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedWindowWitness, ComposedJoinColumn, ComposedJoinEquality,
     ComposedSemantics, ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
     GroupBoundaryKind, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
@@ -91,6 +92,7 @@ pub use protocol::{
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
     WindowSpecification, WriteKind, WriteOperation, WriteValue, PROTOCOL_VERSION,
 };
+pub use window_witness::{WindowOrderKey, WindowRankCase, WindowWitness, WindowWitnessDirection};
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
     RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TimestampZone,
