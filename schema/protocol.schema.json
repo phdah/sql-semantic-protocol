@@ -5230,7 +5230,8 @@
             "kind",
             "tuples",
             "case",
-            "values"
+            "values",
+            "scale_by_value_rows"
           ],
           "properties": {
             "kind": {
@@ -5249,6 +5250,9 @@
               "items": {
                 "$ref": "#/$defs/outcomeValueCount"
               }
+            },
+            "scale_by_value_rows": {
+              "type": "boolean"
             }
           }
         }
