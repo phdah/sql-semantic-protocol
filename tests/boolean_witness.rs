@@ -283,6 +283,45 @@ fn identity_arithmetic_is_invertible_but_nonidentity_arithmetic_stays_residual()
 }
 
 #[test]
+fn widening_integer_casts_are_invertible_and_narrowing_casts_are_residual() {
+    for sql in [
+        "SELECT a FROM t WHERE CAST(a AS BIGINT) > 2 OR CAST(b AS INTEGER) < 0",
+        "SELECT a FROM t WHERE 5 < CAST(a AS BIGINT) AND b < 0",
+    ] {
+        let bundle = typed_bundle(sql);
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        let witness = semantics.boolean_witnesses()[0].witness();
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Exact(_)),
+            "{sql}: {:?}",
+            witness.qualifying()
+        );
+        assert!(matches!(
+            witness.rejected(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        ));
+    }
+
+    for sql in [
+        "SELECT a FROM t WHERE CAST(a AS SMALLINT) > 2 OR b < 0",
+        "SELECT a FROM t WHERE CAST(a AS VARCHAR) > '2' OR b < 0",
+        "SELECT a FROM t WHERE TRY_CAST(a AS BIGINT) > 2 OR b < 0",
+    ] {
+        let bundle = typed_bundle(sql);
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        let witness = semantics.boolean_witnesses()[0].witness();
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }),
+            "{sql}"
+        );
+    }
+}
+
+#[test]
 fn dbt_compiled_sql_and_direct_catalog_sql_emit_the_same_boolean_witness() {
     let mut manifest_value: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
@@ -607,6 +646,8 @@ fn duckdb_differential_matches_generated_witness_for_every_source_row() {
         "(a > 2 AND a < 1) OR b < 0",
         "(a + 0) > 2 OR (0 + b) < 0",
         "a > 2 AND b < 0",
+        "CAST(a AS BIGINT) > 2 OR b < 0",
+        "CAST(a AS INTEGER) > 2 AND b < 0",
         "a IS NULL AND b IS NOT NULL",
         "(a > 2 OR b < 0) AND a < 5",
     ] {
