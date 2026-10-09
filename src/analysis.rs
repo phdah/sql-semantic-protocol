@@ -11,7 +11,7 @@ use std::{
 
 use serde_json::Number;
 use sqlparser::ast::{
-    BinaryOperator as SqlBinaryOperator, ColumnOption, ConstraintCharacteristics,
+    BinaryOperator as SqlBinaryOperator, CastKind as SqlCastKind, ColumnOption, ConstraintCharacteristics,
     CreateTable as SqlCreateTable, Distinct as SqlDistinct, DuplicateTreatment, Expr, Function,
     FunctionArg, FunctionArgExpr, FunctionArguments, GroupByExpr,
     GroupByWithModifier as SqlGroupByWithModifier, IndexColumn, Insert as SqlInsert,
@@ -44,7 +44,7 @@ use crate::protocol::{
     ConditionExactness, ConditionalCondition, Diagnostic, DiagnosticArea, DiagnosticSeverity,
     ExistsPredicate, Expression, FunctionExpression, GroupBy, GroupingExpression, InPredicate,
     InSubqueryPredicate, IsNullPredicate, Join as ProtocolJoin, JoinKind, LineageSource,
-    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate,
+    LiteralExpression, LiteralType, LiteralValue, LogicalPredicate, SignedIntegerCastExpression,
     MergeAction as ProtocolMergeAction, MergeAssignment, MergeClause as ProtocolMergeClause,
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
@@ -4829,6 +4829,40 @@ fn analyze_predicate_expression(
                 named_windows,
                 diagnostics,
             );
+        }
+    }
+
+    // Normalize only ordinary, formatting-free signed integer casts in
+    // predicates. TRY/SAFE_CAST, string/decimal casts, ambiguous targets and
+    // narrowing remain unsupported rather than gaining spurious exactness.
+    if let Expr::Cast {
+        kind: SqlCastKind::Cast,
+        expr,
+        data_type,
+        format: None,
+    } = expression
+    {
+        use sqlparser::ast::DataType as SqlDataType;
+        let bits = match data_type {
+            SqlDataType::SmallInt(_) | SqlDataType::Int2(_) | SqlDataType::Int16 => Some(16),
+            SqlDataType::Int(_)
+            | SqlDataType::Integer(_)
+            | SqlDataType::Int4(_)
+            | SqlDataType::Int32 => Some(32),
+            SqlDataType::BigInt(_) | SqlDataType::Int8(_) | SqlDataType::Int64 => Some(64),
+            _ => None,
+        };
+        if let Some(bits) = bits {
+            return Expression::SignedIntegerCast(SignedIntegerCastExpression::new(
+                analyze_predicate_expression(
+                    expr,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                bits,
+            ));
         }
     }
 
