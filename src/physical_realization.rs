@@ -11,10 +11,9 @@ use crate::bundle::{
     AnalysisBundle, ComposedSemantics, GroupBoundaryKind, RelationResolution, TransformationLayer,
 };
 use crate::constructive::{
-    local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage, ConstructiveWitness,
-    CountBounds, ProofStrength, RowQuantifier,
-    WitnessBoundary, WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation,
-    WitnessOperator, WitnessTerm,
+    local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
+    ConstructiveWitness, CountBounds, ProofStrength, RowQuantifier, WitnessBoundary, WitnessCase,
+    WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 use crate::protocol::{ProtocolStatement, QueryStatement, WriteKind};
 
@@ -289,11 +288,13 @@ impl<'a> Walker<'a> {
                     .collect(),
                 local_pending_producers(resolved)
                     .into_iter()
-                    .filter(|obligation| matches!(
-                        obligation,
-                        WitnessObligation::Producer { boundary, .. }
-                            if boundary.origin_layer_id() == layer.id()
-                    ))
+                    .filter(|obligation| {
+                        matches!(
+                            obligation,
+                            WitnessObligation::Producer { boundary, .. }
+                                if boundary.origin_layer_id() == layer.id()
+                        )
+                    })
                     .collect(),
             ),
             ComposedSemantics::Unresolved(_) => (Vec::new(), Vec::new()),
@@ -446,9 +447,11 @@ fn resolve_filter_column(
     }
     let layer = walker.layers.get(consumer_id).copied()?;
     let canonical = layer.canonical_relation(column.relation()?);
-    let edge = bundle.graph().edges().iter().find(|edge| {
-        edge.consumer_layer_id() == consumer_id && edge.relation() == canonical
-    })?;
+    let edge = bundle
+        .graph()
+        .edges()
+        .iter()
+        .find(|edge| edge.consumer_layer_id() == consumer_id && edge.relation() == canonical)?;
     match edge.resolution() {
         RelationResolution::External => Some(crate::protocol::ColumnRef::new(
             Some(edge.relation().to_string()),
@@ -501,9 +504,10 @@ fn joint_physical_filters(
         return None;
     }
     let source = walker.sources.iter().next()?;
-    if filters.iter().any(|filter| {
-        filter.boundary_kind() == GroupBoundaryKind::Unresolved
-    }) {
+    if filters
+        .iter()
+        .any(|filter| filter.boundary_kind() == GroupBoundaryKind::Unresolved)
+    {
         return None;
     }
     let origin_ids = filters
