@@ -446,11 +446,13 @@ This does not alter the conservative independent `column_domains` or grant
 whole-query row-membership exactness.
 
 Signed integer comparisons require authoritative catalog datatypes and
-representable signed literals. Only overflow-free identity arithmetic (`+a`, `a+0`, `0+a`, `a-0`) and
-catalog-proven lossless ordinary signed-integer CASTs are inverted. Casts
-retain their target width in the normalized expression; narrowing casts,
-TRY/SAFE_CAST, nonidentity arithmetic, functions, and ambiguous sources
-remain residual. Ordinary LIKE/NOT LIKE with one trailing wildcard after an
+representable signed literals. Overflow-free identity arithmetic (`+a`, `a+0`, `0+a`, `a-0`),
+catalog-proven lossless ordinary signed-integer CASTs and constant additions
+or subtractions on a widened signed cast are inverted. The arithmetic
+result must fit the explicit cast target width for the *entire* source
+integer domain; its comparison threshold is translated to the source
+column. Uncast nonzero offsets, narrowing and TRY/SAFE_CAST variants,
+functions, ambiguous sources and expressions that can overflow remain residual. Ordinary LIKE/NOT LIKE with one trailing wildcard after an
 unescaped ASCII alphanumeric prefix is represented as a typed, jointly solved
 source-row `string_prefix`; both `binary_collation` and `no_char_padding`
 attestations are required before either direction can become exact. SQL NULL
@@ -464,4 +466,6 @@ enrichment. Unknown enforcement or dependent foreign-key satisfiability stays
 residual. Witnesses
 retain their originating layer. Only a proven single-relation, identity-only
 lineage chain can remap the coupled condition to physical column references;
-computed or ambiguous projections preserve the intermediate boundary.
+computed or ambiguous projections, and even identity projections behind
+WHERE, DISTINCT or LIMIT, preserve the intermediate boundary. A physical
+mapping additionally requires a row-preserving producer chain.
