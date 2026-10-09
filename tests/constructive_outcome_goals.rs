@@ -1,13 +1,26 @@
 //! DuckDB execution checks for complete source-row cardinality witnesses.
 
+mod common;
+
+use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution,
-    OutputValueCount, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    OutputValueCount, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn typed(sql: &str, sources: &[(&str, &[&str])]) -> sql_semantic_protocol::AnalysisBundle {
+    typed_for_dialect(sql, sources, "generic")
+}
+
+fn typed_for_dialect(
+    sql: &str,
+    sources: &[(&str, &[&str])],
+    dialect_name: &str,
+) -> sql_semantic_protocol::AnalysisBundle {
     let schemas = sources
         .iter()
         .map(|(relation, columns)| {
@@ -24,13 +37,13 @@ fn typed(sql: &str, sources: &[(&str, &[&str])]) -> sql_semantic_protocol::Analy
         })
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
-    let dialect = dialect_from_name("generic").expect("dialect");
+    let dialect = dialect_from_name(dialect_name).expect("dialect");
     let input = SqlInput::inline(sql);
     analyze_configured_inputs_with_catalog(
         &[ConfiguredSqlInput::new(
             "sql",
             &input,
-            "postgresql",
+            dialect_name,
             dialect.as_ref(),
         )],
         &catalog,
@@ -320,4 +333,135 @@ fn all_set_histogram_scales_branch_counts() {
         }
     }
     assert_eq!(count(&db, sql), 3);
+}
+
+#[test]
+fn enrichment_reassesses_existing_constructive_goals() {
+    let sql = "SELECT id FROM source_data";
+    let mut bundle = typed(sql, &[("source_data", &["id"])]);
+    assess(&mut bundle, 2, None, Vec::new());
+    assert_eq!(
+        bundle.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Feasible
+    );
+    assert!(matches!(
+        bundle.outcome_goals()[0].witness(),
+        Some(OutcomeWitness::SourceRows { rows: 2, .. })
+    ));
+
+    let evidence = ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "test-constraint")
+            .expect("source"),
+        ConstraintEnforcement::Unknown,
+    );
+    let constraint = RelationConstraint::not_null("id", vec![evidence]).expect("constraint");
+    let set = RelationConstraintSet::new("source_data", vec![constraint]).expect("constraint set");
+    bundle.enrich_relation_constraints(&[set]);
+
+    let assessed = &bundle.outcome_goals()[0];
+    assert_eq!(assessed.goal().rows(), Some(2), "retain the caller's goal");
+    assert_eq!(assessed.status(), OutcomeGoalStatus::Residual);
+    assert!(assessed.witness().is_none());
+    let json: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+    assert_eq!(json["outcome_goals"][0]["assessment"]["status"], "residual");
+    assert!(json["outcome_goals"][0].get("witness").is_none());
+}
+
+#[test]
+fn branch_local_limits_are_not_physical_set_witnesses() {
+    // Parenthesized branches apply LIMIT before UNION ALL. Loading any number
+    // of source rows can never make either branch emit a row.
+    let sql = "(SELECT id FROM l LIMIT 0) UNION ALL (SELECT id FROM r LIMIT 0)";
+    let mut bundle = typed_for_dialect(sql, &[("l", &["id"]), ("r", &["id"])], "duckdb");
+    assess(&mut bundle, 1, None, Vec::new());
+    assert_eq!(bundle.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
+    assert!(bundle.outcome_goals()[0].witness().is_none());
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(id BIGINT); CREATE TABLE r(id BIGINT);
+         INSERT INTO l VALUES (1), (2); INSERT INTO r VALUES (3), (4);",
+    )
+    .unwrap();
+    assert_eq!(count(&db, sql), 0);
+}
+
+#[test]
+fn shared_constructive_goal_classes_are_dialect_independent() {
+    let sources: &[(&str, &[&str])] = &[
+        ("source_data", &["id"]),
+        ("l", &["id"]),
+        ("r", &["id"]),
+        ("sales", &["category"]),
+    ];
+    let classes = [
+        ("SELECT id FROM source_data", 3, None, OutcomeGoalStatus::Feasible),
+        (
+            "SELECT l.id FROM l JOIN r ON l.id = r.id",
+            2,
+            None,
+            OutcomeGoalStatus::Feasible,
+        ),
+        (
+            "SELECT category, COUNT(*) AS n FROM sales GROUP BY category HAVING COUNT(*) >= 2",
+            2,
+            Some(2),
+            OutcomeGoalStatus::Feasible,
+        ),
+        (
+            "SELECT id FROM l UNION ALL SELECT id FROM r",
+            2,
+            None,
+            OutcomeGoalStatus::Feasible,
+        ),
+        (
+            "SELECT category, COUNT(*) AS n FROM sales GROUP BY category",
+            1,
+            Some(2),
+            OutcomeGoalStatus::Unsatisfiable,
+        ),
+    ];
+    for dialect_name in DIALECTS {
+        let dialect = dialect_from_name(dialect_name).expect("registered dialect");
+        let mut parsed = 0;
+        for (sql, rows, groups, status) in classes {
+            // Treat rejected syntax as a parser-boundary limitation, not an
+            // excuse to infer a different semantic outcome.
+            match sqlparser::parser::Parser::parse_sql(dialect.as_ref(), sql) {
+                Ok(_) => {
+                    parsed += 1;
+                    let mut bundle = typed_for_dialect(sql, sources, dialect_name);
+                    assess(&mut bundle, rows, groups, Vec::new());
+                    assert_eq!(
+                        bundle.outcome_goals()[0].status(),
+                        status,
+                        "dialect {dialect_name}: {sql}"
+                    );
+                }
+                Err(error) => eprintln!("{dialect_name} parser does not accept {sql}: {error}"),
+            }
+        }
+        assert!(parsed > 0, "{dialect_name} must support some shared SQL");
+    }
+}
+
+#[test]
+fn qualify_goal_bounds_follow_every_dialect_that_parses_qualify() {
+    let sql = "SELECT ROW_NUMBER() OVER (ORDER BY score ASC NULLS LAST) AS rn FROM events QUALIFY rn <= 3";
+    let mut supported = 0;
+    for dialect_name in DIALECTS {
+        let dialect = dialect_from_name(dialect_name).expect("registered dialect");
+        match sqlparser::parser::Parser::parse_sql(dialect.as_ref(), sql) {
+            Ok(_) => {
+                supported += 1;
+                let mut bundle = typed_for_dialect(sql, &[("events", &["score"])], dialect_name);
+                assess(&mut bundle, 4, None, Vec::new());
+                let goal = &bundle.outcome_goals()[0];
+                assert_eq!(goal.status(), OutcomeGoalStatus::Unsatisfiable, "{dialect_name}");
+                assert_eq!(goal.max_rows(), Some(3), "{dialect_name}");
+            }
+            Err(error) => eprintln!("{dialect_name} QUALIFY parser boundary: {error}"),
+        }
+    }
+    assert!(supported > 0, "at least one parser must accept QUALIFY");
 }
