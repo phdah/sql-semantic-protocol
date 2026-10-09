@@ -22,6 +22,7 @@ mod data_type;
 mod dbt;
 mod domain;
 mod emission;
+mod group_witness;
 mod manifest;
 #[cfg(feature = "odcs")]
 mod odcs;
@@ -38,11 +39,11 @@ pub use analysis::AnalysisError;
 pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
-    AnalysisGraph, AnalyzedInput, ComposedJoinColumn, ComposedJoinEquality, ComposedSemantics,
-    ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason,
+    AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
+    ComposedSemantics, ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
-    InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput, SqlInputSource,
-    TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    GroupBoundaryKind, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
+    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
@@ -57,6 +58,9 @@ pub use dbt::{
     DbtManifest, DbtManifestError, SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
 pub use emission::{to_bundle_json, to_json};
+pub use group_witness::{
+    GroupAggregate, GroupValueTest, GroupWitness, GroupWitnessCase, GroupWitnessDirection,
+};
 pub use manifest::{
     parse_analysis_manifest, AnalysisManifest, ManifestError, ManifestInput, ManifestInputSource,
     ManifestOutputScope, ManifestRelationContext, ANALYSIS_MANIFEST_VERSION,

@@ -6,6 +6,7 @@
 use std::collections::BTreeSet;
 
 use crate::constraints::RelationConstraintSet;
+use crate::group_witness::GroupWitness;
 
 /// Current protocol version emitted by this crate.
 pub const PROTOCOL_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -138,6 +139,7 @@ pub struct QueryStatement {
     row_conditions: Box<RowConditions>,
     output: Output,
     aggregation: Option<Box<Aggregation>>,
+    group_witness: Option<Box<GroupWitness>>,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
     write: Option<Box<WriteOperation>>,
@@ -160,6 +162,7 @@ impl QueryStatement {
             row_conditions: Box::new(row_conditions),
             output,
             aggregation: None,
+            group_witness: None,
             set_operation: None,
             produced_relation: None,
             write: None,
@@ -169,6 +172,14 @@ impl QueryStatement {
 
     pub(crate) fn with_aggregation(mut self, aggregation: Option<Aggregation>) -> Self {
         self.aggregation = aggregation.map(Box::new);
+        self
+    }
+
+    pub(crate) fn with_group_witness(mut self) -> Self {
+        self.group_witness = crate::group_witness::analyze(&self).map(Box::new);
+        if self.group_witness.is_some() {
+            self.output = crate::group_witness::refine_output(&self);
+        }
         self
     }
 
@@ -237,6 +248,11 @@ impl QueryStatement {
     /// Return SELECT DISTINCT and GROUP BY semantics when they affect this query.
     pub fn aggregation(&self) -> Option<&Aggregation> {
         self.aggregation.as_deref()
+    }
+
+    /// Return typed qualifying and HAVING-rejected group witness plans, when HAVING exists.
+    pub fn group_witness(&self) -> Option<&GroupWitness> {
+        self.group_witness.as_deref()
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.

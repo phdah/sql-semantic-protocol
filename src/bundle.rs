@@ -406,22 +406,29 @@ impl ComposedSemantics {
         dependencies: Vec<String>,
         column_domains: Vec<ColumnDomain>,
         mut join_equalities: Vec<ComposedJoinEquality>,
-        mut set_operations: Vec<ComposedSetOperation>,
+        witnesses: ComposedWitnessEvidence,
         condition_exactness: ConditionExactness,
         output: Output,
         mut diagnostics: Vec<CompositionDiagnostic>,
     ) -> Self {
+        let ComposedWitnessEvidence {
+            mut set_operations,
+            mut group_witnesses,
+        } = witnesses;
         join_equalities.sort_by(composed_join_equality_cmp);
         join_equalities.dedup();
         set_operations.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
         set_operations.dedup();
+        group_witnesses.sort_by(|a, b| a.origin_layer_id.cmp(&b.origin_layer_id));
+        group_witnesses.dedup();
         diagnostics.sort_by(diagnostic_cmp);
         diagnostics.dedup();
         Self::Resolved(ResolvedComposedSemantics {
             dependencies,
             column_domains,
             join_equalities,
-            set_operations,
+            set_operations: set_operations.into_boxed_slice(),
+            group_witnesses: group_witnesses.into_boxed_slice(),
             condition_exactness,
             output,
             diagnostics,
@@ -564,13 +571,82 @@ impl ComposedSetOperation {
     }
 }
 
+/// Locally and transitively composed generator-facing witness evidence.
+/// Each witness retains the layer that introduced it and its own proof boundary.
+pub(crate) struct ComposedWitnessEvidence {
+    pub(crate) set_operations: Vec<ComposedSetOperation>,
+    pub(crate) group_witnesses: Vec<ComposedGroupWitness>,
+}
+
+/// Relation class of an originating grouped witness boundary.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GroupBoundaryKind {
+    /// The grouped relation is an external physical input.
+    Physical,
+    /// The grouped relation is an upstream producer's output.
+    Intermediate,
+    /// A single controllable boundary could not be established.
+    Unresolved,
+}
+
+impl GroupBoundaryKind {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Physical => "physical",
+            Self::Intermediate => "intermediate",
+            Self::Unresolved => "unresolved",
+        }
+    }
+}
+
+/// A grouped HAVING witness introduced at one SQL or dbt transformation layer.
+///
+/// This is provenance-bearing local evidence, not a claim that an arbitrary
+/// downstream transformation preserves the group membership.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ComposedGroupWitness {
+    origin_layer_id: String,
+    witness: crate::group_witness::GroupWitness,
+    boundary_kind: GroupBoundaryKind,
+}
+
+impl ComposedGroupWitness {
+    pub(crate) fn new(
+        origin_layer_id: String,
+        witness: crate::group_witness::GroupWitness,
+        boundary_kind: GroupBoundaryKind,
+    ) -> Self {
+        Self {
+            origin_layer_id,
+            witness,
+            boundary_kind,
+        }
+    }
+
+    /// Layer introducing these HAVING obligations.
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
+
+    /// Local HAVING proof at its origin boundary.
+    pub fn witness(&self) -> &crate::group_witness::GroupWitness {
+        &self.witness
+    }
+
+    /// Whether that boundary is physical, intermediate, or unresolved.
+    pub fn boundary_kind(&self) -> GroupBoundaryKind {
+        self.boundary_kind
+    }
+}
+
 /// Successfully composed transitive semantics for a transformation layer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ResolvedComposedSemantics {
     dependencies: Vec<String>,
     column_domains: Vec<ColumnDomain>,
     join_equalities: Vec<ComposedJoinEquality>,
-    set_operations: Vec<ComposedSetOperation>,
+    set_operations: Box<[ComposedSetOperation]>,
+    group_witnesses: Box<[ComposedGroupWitness]>,
     condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
@@ -596,6 +672,11 @@ impl ResolvedComposedSemantics {
     /// This does not grant exactness or a proven physical-source witness direction.
     pub fn set_operations(&self) -> &[ComposedSetOperation] {
         &self.set_operations
+    }
+
+    /// Upstream and local group witness evidence, each identified by its originating layer.
+    pub fn group_witnesses(&self) -> &[ComposedGroupWitness] {
+        &self.group_witnesses
     }
 
     /// Return transitive row-condition exactness for this resolved layer.

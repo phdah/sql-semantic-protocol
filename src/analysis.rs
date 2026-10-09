@@ -650,6 +650,7 @@ fn analyze_query(
     )
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
+    .with_group_witness()
     .with_produced_relation(produced_relation)
 }
 

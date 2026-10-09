@@ -394,6 +394,17 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .map(composition_diagnostic_to_value)
             .collect::<Vec<_>>()
     });
+    if !semantics.group_witnesses().is_empty() {
+        value["group_witnesses"] = json!(semantics
+            .group_witnesses()
+            .iter()
+            .map(|item| json!({
+                "origin_layer_id": item.origin_layer_id(),
+                "boundary_kind": item.boundary_kind().as_str(),
+                "witness": group_witness_to_value(item.witness())
+            }))
+            .collect::<Vec<_>>());
+    }
     if !semantics.set_operations().is_empty() {
         value["set_operations"] = json!(semantics
             .set_operations()
@@ -559,6 +570,10 @@ fn query_statement_to_value(statement: &QueryStatement) -> Value {
         value["aggregation"] = aggregation_to_value(aggregation);
     }
 
+    if let Some(group_witness) = statement.group_witness() {
+        value["group_witness"] = group_witness_to_value(group_witness);
+    }
+
     if let Some(set_operation) = statement.set_operation() {
         value["set_operation"] = set_operation_to_value(set_operation);
     }
@@ -625,6 +640,45 @@ fn write_value_to_value(value: &WriteValue) -> Value {
         "expression": expression_to_value(value.expression()),
         "domain": value_domain_to_value(value.domain())
     })
+}
+
+fn group_witness_to_value(witness: &crate::group_witness::GroupWitness) -> Value {
+    json!({
+        "boundary": witness.boundary(),
+        "group_keys": witness.group_keys().iter().map(column_ref_to_value).collect::<Vec<_>>(),
+        "aggregate": witness.aggregate().map(|aggregate| aggregate.as_str()),
+        "distinct": witness.distinct(),
+        "argument": witness.argument().map_or(Value::Null, column_ref_to_value),
+        "predicate": witness.predicate().map(|(operator, bound)| json!({
+            "operator": operator.as_str(), "bound": literal_expression_to_value(bound)
+        })),
+        "qualifying": group_witness_direction_to_value(witness.qualifying()),
+        "rejected": group_witness_direction_to_value(witness.rejected())
+    })
+}
+
+fn group_witness_direction_to_value(
+    direction: &crate::group_witness::GroupWitnessDirection,
+) -> Value {
+    match direction {
+        crate::group_witness::GroupWitnessDirection::Residual { reason } => json!({
+            "status": "residual", "reason": reason
+        }),
+        crate::group_witness::GroupWitnessDirection::Exact(cases) => json!({
+            "status": "exact",
+            "cases": cases.iter().map(|case| json!({
+                "min_rows": case.min_rows(),
+                "max_rows": case.max_rows(),
+                "min_non_null": case.min_non_null(),
+                "max_non_null": case.max_non_null(),
+                "tests": case.tests().iter().map(|test| json!({
+                    "kind": test.kind(),
+                    "operator": test.operator().as_str(),
+                    "bound": literal_expression_to_value(test.bound())
+                })).collect::<Vec<_>>()
+            })).collect::<Vec<_>>()
+        }),
+    }
 }
 
 fn aggregation_to_value(aggregation: &Aggregation) -> Value {
