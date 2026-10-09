@@ -522,7 +522,10 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
     let pending = crate::constructive::local_pending_producers(semantics);
     if !pending.is_empty() {
         value["constructive_pending_producers"] = Value::Array(
-            pending.iter().map(constructive_obligation_to_value).collect()
+            pending
+                .iter()
+                .map(constructive_obligation_to_value)
+                .collect(),
         );
     }
     if !semantics.join_witnesses().is_empty() {
