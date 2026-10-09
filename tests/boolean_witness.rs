@@ -278,6 +278,60 @@ fn filtered_upstream_domains_survive_without_false_physical_witnesses() {
 }
 
 #[test]
+fn standalone_computed_predicates_emit_exact_typed_witnesses() {
+    for predicate in [
+        "CAST(a AS BIGINT) + 1 > 3",
+        "CAST(a AS BIGINT) > 3",
+    ] {
+        let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
+        let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        let [item] = composed.boolean_witnesses() else {
+            panic!("single computed expression should emit a coupled witness");
+        };
+        assert!(
+            matches!(
+                item.witness().qualifying(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+            ),
+            "{predicate}"
+        );
+        assert!(matches!(
+            item.witness().rejected(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        ));
+        assert!(
+            matches!(
+                composed.output().columns()[0].domain(),
+                ValueDomain::Ranges(_)
+            ),
+            "standalone computed filters must preserve safe outcome bounds"
+        );
+    }
+
+    let mut bundle = text_bundle("SELECT a FROM t WHERE a LIKE 'ab%'");
+    let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        composed.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    bundle.declare_comparison_assumptions(&[
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]);
+    let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        composed.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+}
+
+#[test]
 fn widened_cast_offsets_produce_exact_composed_scalar_bounds() {
     let bundle = typed_bundle(
         "SELECT a FROM t WHERE CAST(a AS BIGINT) + 1 > 3 AND CAST(a AS BIGINT) - 1 <= 9",
