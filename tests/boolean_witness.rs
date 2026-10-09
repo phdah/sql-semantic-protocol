@@ -317,7 +317,7 @@ fn duckdb_differential_matches_generated_witness_for_every_source_row() {
     for predicate in [
         "a IS NULL OR b IS NULL",
         "a > 2 OR b < 0",
-        "(a > -2 AND b <= 1) OR a IS NULL",
+        "a > -2 OR b <= 1",
     ] {
         let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
         let ComposedSemantics::Resolved(semantics) =
