@@ -6311,7 +6311,8 @@
           "additionalProperties": false,
           "required": [
             "kind",
-            "boundary"
+            "boundary",
+            "physical_sources"
           ],
           "properties": {
             "kind": {
@@ -6319,6 +6320,13 @@
             },
             "boundary": {
               "$ref": "#/$defs/constructiveBoundary"
+            },
+            "physical_sources": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/relationName"
+              }
             }
           }
         }
