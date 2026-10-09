@@ -124,6 +124,61 @@ fn filtered_upstream_and_downstream_require_joint_satisfiability_proof() {
 }
 
 #[test]
+fn null_sensitive_filters_from_two_layers_are_jointly_solved_at_one_physical_leaf() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t WHERE a IS NOT NULL OR b IS NOT NULL",
+                "SELECT a, b FROM stage WHERE a IS NULL OR b IS NOT NULL",
+            ],
+            dialect,
+        );
+        let plan = physical_source_plan(&b, b.layers()[1].id());
+        assert_eq!(plan.gap(), None, "{dialect}: {plan:?}");
+        assert_eq!(plan.sources(), &["t".to_string()]);
+        for direction in [plan.qualifying(), plan.rejected()] {
+            let WitnessDirection::Feasible(cases) = direction else {
+                panic!("{dialect}: coupled physical filters must be jointly feasible: {plan:?}");
+            };
+            assert!(cases.iter().all(|case| case.obligations().iter().any(|o| {
+                matches!(o, WitnessObligation::Predicate(WitnessFormula::RowTruth { row, .. })
+                    if row.relation() == "t")
+            })));
+        }
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (1,2),(NULL,3),(1,NULL),(NULL,NULL);
+         CREATE TABLE stage AS SELECT a,b FROM t WHERE a IS NOT NULL OR b IS NOT NULL;",
+    ).expect("joint rows");
+    let included: i64 = conn
+        .query_row("SELECT COUNT(*) FROM stage WHERE a IS NULL OR b IS NOT NULL", [], |r| r.get(0))
+        .expect("terminal count");
+    assert_eq!(included, 2);
+    let rejected: i64 = conn
+        .query_row("SELECT COUNT(*) FROM t WHERE ((a IS NOT NULL OR b IS NOT NULL) AND (a IS NULL OR b IS NOT NULL)) IS NOT TRUE", [], |r| r.get(0))
+        .expect("rejections");
+    assert_eq!(rejected, 2);
+}
+
+#[test]
+fn contradictory_multilayer_filter_rejects_without_false_positive_realization() {
+    let b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t WHERE a IS NULL AND b IS NOT NULL",
+            "SELECT a FROM stage WHERE a IS NOT NULL OR b IS NULL",
+        ],
+        "postgresql",
+    );
+    let plan = physical_source_plan(&b, b.layers()[1].id());
+    assert!(!matches!(plan.qualifying(), WitnessDirection::Feasible(_)));
+    assert!(matches!(plan.rejected(), WitnessDirection::Feasible(_)));
+    assert_eq!(plan.sources(), &["t".to_string()]);
+}
+
+#[test]
 fn computed_and_row_limited_projections_do_not_upgrade_local_evidence() {
     for query in [
         "SELECT a + 1 AS b FROM t WHERE a > 2 OR b < 0",
