@@ -30,6 +30,26 @@ analysis (walks the AST and builds the semantic model), and emission (serializes
 into the protocol format). The CLI in `main.rs` only reads input, calls the library, and
 writes output. It holds no analysis logic.
 
+**Canonical semantic graph**
+The protocol is an application-independent semantic representation,
+not an implementation tailored to any particular consumer.
+
+Model relational operations, expressions, and dependencies as a
+canonical, reference-based graph with stable identities. Each
+semantic fact should have one authoritative representation, with
+explicit references connecting producers, consumers, and outcomes.
+
+Prefer symbolic composition over duplicating or expanding transitive
+semantics. Preserve provenance, constraints, uncertainty, and proof
+strength throughout the graph.
+
+Independent consumers must be able to reason about transformations,
+their outcomes, and their dependencies using only the protocol,
+without reparsing SQL or reconstructing missing semantics.
+
+Keep consumer-specific concerns such as data generation,
+optimization objectives, and SQL rendering outside the canonical
+semantic model.
 
 **Adapter parity for canonical semantics** Canonical protocol semantics are source-independent.
 Whenever a protocol capability is added or changed, evaluate every currently supported evidence
