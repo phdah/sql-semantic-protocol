@@ -993,6 +993,7 @@ pub struct AnalysisBundle {
     relation_constraints: Vec<RelationConstraintSet>,
     constraint_diagnostics: Vec<ConstraintDiagnostic>,
     comparison_declarations: Vec<ComparisonAssumption>,
+    outcome_goals: Vec<crate::outcome_goals::EvaluatedOutcomeGoal>,
 }
 
 impl AnalysisBundle {
@@ -1034,6 +1035,22 @@ impl AnalysisBundle {
     /// Return the explicitly declared comparison settings, in deterministic order.
     pub fn comparison_declarations(&self) -> &[ComparisonAssumption] {
         &self.comparison_declarations
+    }
+
+    /// Return optional caller goals and their conservative feasibility assessments.
+    pub fn outcome_goals(&self) -> &[crate::outcome_goals::EvaluatedOutcomeGoal] {
+        &self.outcome_goals
+    }
+
+    /// Replace requested outcome goals. Requests are evaluated only against proved semantics;
+    /// this does not modify source predicates or any SQL-derived value domain.
+    pub fn set_outcome_goals(
+        &mut self,
+        goals: &[crate::outcome_goals::OutcomeGoal],
+    ) -> Result<(), crate::outcome_goals::OutcomeGoalError> {
+        let evaluated = crate::outcome_goals::evaluate(self, goals)?;
+        self.outcome_goals = evaluated;
+        Ok(())
     }
 
     /// Attest warehouse comparison settings and apply them to local and composed scopes.
@@ -1170,6 +1187,7 @@ impl AnalysisBundle {
             relation_constraints,
             constraint_diagnostics: Vec::new(),
             comparison_declarations: Vec::new(),
+            outcome_goals: Vec::new(),
         };
         bundle.recheck_boolean_witnesses();
         Ok(bundle)
@@ -1763,6 +1781,10 @@ pub fn select_targets(
         relation_constraints: bundle.relation_constraints.clone(),
         constraint_diagnostics: bundle.constraint_diagnostics.clone(),
         comparison_declarations: bundle.comparison_declarations.clone(),
+        outcome_goals: bundle.outcome_goals.iter()
+            .filter(|item| selected_layer_ids.contains(item.goal().layer_id()))
+            .cloned()
+            .collect(),
     })
 }
 
