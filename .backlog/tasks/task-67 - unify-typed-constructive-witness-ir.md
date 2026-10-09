@@ -48,6 +48,6 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 ## Implementation progress (2026-10-09)
 
 - Introduced a typed source-independent obligation and proof-case algebra, inclusive cardinality invariants, shared row variables, tuple predicates, NULL-aware Boolean truth and physical/intermediate producer boundaries.
-- Added source-local Boolean and Join normalization and an optional closed JSON emission contract; unlike producer-graph plans, this is deliberately only operator-local evidence.
+- Added source-local Boolean, Join, Group and Window normalization and an optional closed JSON emission contract; unlike producer-graph plans, this is deliberately only operator-local evidence.
 - Added contradiction checks for incompatible output/state cardinalities and conflicting truth of the same predicate on the same row.
-- Still open: fully canonical translations for grouped, window, set and subquery witnesses; proof-strength completeness; source-row existential/universal solver; full physical boundary realization and adapter-equivalence/differential certification. These acceptance criteria remain unchecked. TASK-68 owns graph composition, but TASK-67 must not be marked Done before its own remaining criteria and verification pass.
+- Still open: fully canonical translations for set and subquery witnesses; proof-strength completeness; source-row existential/universal solver; full physical boundary realization and adapter-equivalence/differential certification. These acceptance criteria remain unchecked. TASK-68 owns graph composition, but TASK-67 must not be marked Done before its own remaining criteria and verification pass.
