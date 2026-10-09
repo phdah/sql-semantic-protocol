@@ -334,12 +334,14 @@ impl WitnessCase {
 
 fn invalid_formula(formula: &WitnessFormula) -> bool {
     match formula {
-        WitnessFormula::All(children) | WitnessFormula::Any(children) =>
-            children.is_empty() || children.iter().any(invalid_formula),
+        WitnessFormula::All(children) | WitnessFormula::Any(children) => {
+            children.is_empty() || children.iter().any(invalid_formula)
+        }
         WitnessFormula::Not(child) => invalid_formula(child),
         WitnessFormula::RowTruth { predicate, .. } => !predicate.is_exact(),
-        WitnessFormula::TupleComparison { left, right, .. } =>
-            left.is_empty() || left.len() != right.len(),
+        WitnessFormula::TupleComparison { left, right, .. } => {
+            left.is_empty() || left.len() != right.len()
+        }
         WitnessFormula::Comparison { .. }
         | WitnessFormula::IsNull { .. }
         | WitnessFormula::StringPrefix { .. } => false,
@@ -349,27 +351,50 @@ fn invalid_formula(formula: &WitnessFormula) -> bool {
 fn invalid_obligation(obligation: &WitnessObligation) -> bool {
     match obligation {
         WitnessObligation::Predicate(formula) => invalid_formula(formula),
-        WitnessObligation::Rows { quantifier, bounds, predicate, closed_world, .. } => {
+        WitnessObligation::Rows {
+            quantifier,
+            bounds,
+            predicate,
+            closed_world,
+            ..
+        } => {
             invalid_formula(predicate)
                 || (matches!(quantifier, RowQuantifier::Exists) && bounds.minimum() == 0)
                 || (matches!(quantifier, RowQuantifier::ForAll) && !closed_world)
         }
         WitnessObligation::NoMatchingPartner { closed_world, .. } => !closed_world,
         WitnessObligation::JoinPair { null_extended, .. } => null_extended.is_some(),
-        WitnessObligation::Group { rows, non_null, .. } =>
-            non_null.minimum() > rows.maximum().unwrap_or(u64::MAX),
-        WitnessObligation::Ranked { strict_unique, closed_world, order_by, .. } =>
-            !strict_unique || !closed_world || order_by.is_empty(),
+        WitnessObligation::Group { rows, non_null, .. } => {
+            non_null.minimum() > rows.maximum().unwrap_or(u64::MAX)
+        }
+        WitnessObligation::Ranked {
+            strict_unique,
+            closed_world,
+            order_by,
+            ..
+        } => !strict_unique || !closed_world || order_by.is_empty(),
         WitnessObligation::Membership { closed_world, .. } => !closed_world,
-        WitnessObligation::SetTuple { branch_identity, tuple_columns, matching_rows, closed_world, .. } =>
-            branch_identity.is_empty() || tuple_columns.is_empty()
-                || (*matching_rows == 0 && !closed_world),
+        WitnessObligation::SetTuple {
+            branch_identity,
+            tuple_columns,
+            matching_rows,
+            closed_world,
+            ..
+        } => {
+            branch_identity.is_empty()
+                || tuple_columns.is_empty()
+                || (*matching_rows == 0 && !closed_world)
+        }
         WitnessObligation::SetResultTuple { nulls_equal, .. } => !nulls_equal,
         WitnessObligation::OutputRows { layer_id, .. } => layer_id.is_empty(),
         WitnessObligation::StateRows { relation, .. } => relation.is_empty(),
-        WitnessObligation::Producer { boundary, physical_sources } =>
+        WitnessObligation::Producer {
+            boundary,
+            physical_sources,
+        } => {
             boundary.kind() != GroupBoundaryKind::Intermediate
-                || physical_sources.iter().any(String::is_empty),
+                || physical_sources.iter().any(String::is_empty)
+        }
     }
 }
 
@@ -659,32 +684,56 @@ pub fn local_pending_producers(semantics: &ResolvedComposedSemantics) -> Vec<Wit
         }
     };
     for witness in semantics.boolean_witnesses() {
-        add(Some(witness.witness().source_relation()), witness.boundary_kind(), witness.origin_layer_id());
+        add(
+            Some(witness.witness().source_relation()),
+            witness.boundary_kind(),
+            witness.origin_layer_id(),
+        );
     }
     for witness in semantics.group_witnesses() {
-        add(witness.witness().boundary(), witness.boundary_kind(), witness.origin_layer_id());
+        add(
+            witness.witness().boundary(),
+            witness.boundary_kind(),
+            witness.origin_layer_id(),
+        );
     }
     for witness in semantics.window_witnesses() {
-        add(witness.witness().boundary(), witness.boundary_kind(), witness.origin_layer_id());
+        add(
+            witness.witness().boundary(),
+            witness.boundary_kind(),
+            witness.origin_layer_id(),
+        );
     }
     for witness in semantics.subquery_witnesses() {
-        add(witness.witness().inner_relation(), witness.boundary_kind(), witness.origin_layer_id());
+        add(
+            witness.witness().inner_relation(),
+            witness.boundary_kind(),
+            witness.origin_layer_id(),
+        );
     }
     for item in semantics.set_operations() {
         let operation = item.operation();
         for branch in operation.branches() {
             if let Some(boundary) = branch.witness_boundary() {
                 if boundary.is_intermediate() {
-                    add(Some(boundary.relation()), GroupBoundaryKind::Intermediate, item.origin_layer_id());
+                    add(
+                        Some(boundary.relation()),
+                        GroupBoundaryKind::Intermediate,
+                        item.origin_layer_id(),
+                    );
                 }
             }
         }
     }
-    boundaries.sort_by(|a,b| (&a.origin_layer_id, &a.relation).cmp(&(&b.origin_layer_id, &b.relation)));
-    boundaries.into_iter().map(|boundary| WitnessObligation::Producer {
-        boundary,
-        physical_sources: semantics.dependencies().to_vec(),
-    }).collect()
+    boundaries
+        .sort_by(|a, b| (&a.origin_layer_id, &a.relation).cmp(&(&b.origin_layer_id, &b.relation)));
+    boundaries
+        .into_iter()
+        .map(|boundary| WitnessObligation::Producer {
+            boundary,
+            physical_sources: semantics.dependencies().to_vec(),
+        })
+        .collect()
 }
 
 /// Translate existing operator-local proofs into one deterministic typed API.
@@ -1082,7 +1131,9 @@ mod tests {
                 bounds: bound(rows, Some(rows)),
             }],
             ProofStrength::Equivalent,
-        ).expect("valid proof")]).expect("feasible")
+        )
+        .expect("valid proof")])
+        .expect("feasible")
     }
 
     #[test]
@@ -1100,12 +1151,20 @@ mod tests {
 
     #[test]
     fn residual_is_not_impossible_and_sufficient_or_branch_survives_it() {
-        let residual = WitnessDirection::Residual { reason: "unknown".into() };
-        assert_eq!(residual.all(&counted(1)), WitnessDirection::Residual {
-            reason: "conjunctive_operand_not_proven".to_owned(),
-        });
+        let residual = WitnessDirection::Residual {
+            reason: "unknown".into(),
+        };
+        assert_eq!(
+            residual.all(&counted(1)),
+            WitnessDirection::Residual {
+                reason: "conjunctive_operand_not_proven".to_owned(),
+            }
+        );
         assert_eq!(residual.any(&counted(1)), counted(1));
-        assert_eq!(residual.all(&WitnessDirection::Impossible), WitnessDirection::Impossible);
+        assert_eq!(
+            residual.all(&WitnessDirection::Impossible),
+            WitnessDirection::Impossible
+        );
     }
 
     #[test]
@@ -1114,30 +1173,49 @@ mod tests {
             .expect("boundary");
         let row = RowVariable::new("raw.orders", "o", "candidate").expect("row");
         let value = WitnessTerm::Integer(1);
-        let tautology = WitnessFormula::IsNull { term: value.clone(), negated: true };
+        let tautology = WitnessFormula::IsNull {
+            term: value.clone(),
+            negated: true,
+        };
         let case = |obligation| WitnessCase::new(vec![obligation], ProofStrength::Sufficient);
         assert!(case(WitnessObligation::Rows {
-            boundary: boundary.clone(), quantifier: RowQuantifier::ForAll,
-            bounds: bound(0, Some(1)), predicate: tautology.clone(), closed_world: false,
-        }).is_none());
+            boundary: boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds: bound(0, Some(1)),
+            predicate: tautology.clone(),
+            closed_world: false,
+        })
+        .is_none());
         assert!(case(WitnessObligation::Rows {
-            boundary: boundary.clone(), quantifier: RowQuantifier::Exists,
-            bounds: bound(0, Some(1)), predicate: tautology.clone(), closed_world: true,
-        }).is_none());
-        assert!(case(WitnessObligation::Predicate(WitnessFormula::TupleComparison {
-            left: vec![value.clone()], equal: true,
-            right: vec![value.clone(), value.clone()],
-        })).is_none());
+            boundary: boundary.clone(),
+            quantifier: RowQuantifier::Exists,
+            bounds: bound(0, Some(1)),
+            predicate: tautology.clone(),
+            closed_world: true,
+        })
+        .is_none());
+        assert!(case(WitnessObligation::Predicate(
+            WitnessFormula::TupleComparison {
+                left: vec![value.clone()],
+                equal: true,
+                right: vec![value.clone(), value.clone()],
+            }
+        ))
+        .is_none());
         assert!(case(WitnessObligation::NoMatchingPartner {
-            candidate: row.clone(), partner: row.clone(),
+            candidate: row.clone(),
+            partner: row.clone(),
             comparison: ComparisonOperator::Eq,
             left: ColumnRef::new(Some("raw.orders".into()), "id".into()),
             right: ColumnRef::new(Some("raw.orders".into()), "id".into()),
             closed_world: false,
-        }).is_none());
+        })
+        .is_none());
         assert!(case(WitnessObligation::Producer {
-            boundary, physical_sources: vec!["raw.orders".into()],
-        }).is_none());
+            boundary,
+            physical_sources: vec!["raw.orders".into()],
+        })
+        .is_none());
     }
 
     #[test]
@@ -1149,7 +1227,10 @@ mod tests {
             rejected: counted(2),
         };
         let nullable = w.logical_not(false);
-        assert!(matches!(nullable.qualifying(), WitnessDirection::Residual { .. }));
+        assert!(matches!(
+            nullable.qualifying(),
+            WitnessDirection::Residual { .. }
+        ));
         assert_eq!(nullable.rejected(), w.qualifying());
         let two_valued = w.logical_not(true);
         assert_eq!(two_valued.qualifying(), w.rejected());
@@ -1170,7 +1251,10 @@ mod tests {
         let either = w.logical_or(&w).expect("same layer");
         assert_eq!(either.qualifying(), w.qualifying());
         assert_eq!(either.rejected(), w.rejected());
-        let other = ConstructiveWitness { origin_layer_id: "different".into(), ..w.clone() };
+        let other = ConstructiveWitness {
+            origin_layer_id: "different".into(),
+            ..w.clone()
+        };
         assert!(w.logical_or(&other).is_none());
     }
 
