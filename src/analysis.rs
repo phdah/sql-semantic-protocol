@@ -638,6 +638,23 @@ fn analyze_query(
         .merged_with(&ConditionExactness::from_residuals(
             missing_column_residuals,
         ));
+    let boolean_witness = crate::boolean_witness::analyze(
+        predicates.where_predicate(),
+        &relation_analysis.sources,
+        |column, value| {
+            let data_type = match metadata.column_data_type(column) {
+                Some(DataType::Nullable(inner)) => Some(inner.as_ref()),
+                other => other,
+            };
+            match data_type {
+                Some(DataType::SignedInteger { bits: Some(bits) }) if *bits > 0 && *bits <= 64 => {
+                    let magnitude = 1_i128 << (u32::from(*bits) - 1);
+                    i128::from(value) >= -magnitude && i128::from(value) < magnitude
+                }
+                _ => false,
+            }
+        },
+    );
     sort_diagnostics(&mut diagnostics);
 
     QueryStatement::new(
@@ -651,6 +668,7 @@ fn analyze_query(
     .with_aggregation(aggregation)
     .with_set_operation(set_operation)
     .with_subquery_witnesses()
+    .with_boolean_witness(boolean_witness)
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))
