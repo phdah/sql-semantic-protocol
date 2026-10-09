@@ -668,9 +668,12 @@ the analyzer rechecks the coupled truth directions against those restrictions, i
 constraints added after initial composition by dbt or ODCS enrichment. An impossible
 direction is downgraded to residual. Unknown enforcement, incompatible metadata and
 foreign-key witness dependencies are conservative residuals. Rechecking can only
-downgrade an existing direction; it never manufactures exactness. These proof statuses
-do not establish complete physical-lineage invertibility, or satisfiability of arbitrary
-warehouse constraints that the protocol does not represent. No Cartesian combination of independent scalar domains may substitute
+downgrade an existing direction; it never manufactures exactness. For identity-only projections through named producer layers, composition can map
+the entire coupled witness onto one physical source relation and change its
+`boundary_kind` to `physical`. Computed projections, unresolved or many-to-one
+lineage keep their intermediate/unresolved boundary. These proof statuses do
+not establish general physical-lineage invertibility or satisfiability of
+arbitrary warehouse constraints that the protocol does not represent. No Cartesian combination of independent scalar domains may substitute
 for these coupled obligations.
 
 This initial contract does **not** complete TASK-63: invertible casts and
