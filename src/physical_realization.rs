@@ -308,12 +308,9 @@ fn transparent_projection(query: &QueryStatement) -> bool {
 /// An empty source is not a constructive proof of any positive cardinality,
 /// and must not be applied to global aggregates or source-free projections.
 fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -> WitnessDirection {
-    if walker.sources.len() != 1 {
+    if walker.sources.is_empty() {
         return residual(PhysicalProofGap::UnboundPhysicalSource);
     }
-    let Some(source) = walker.sources.iter().next() else {
-        return residual(PhysicalProofGap::UnboundPhysicalSource);
-    };
     for node in &walker.nodes {
         let PhysicalPlanRef::Layer(id) = node.id() else {
             continue;
@@ -324,43 +321,63 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
         let Some(query) = query_for(bundle, layer) else {
             return residual(PhysicalProofGap::UnresolvedSemantics);
         };
-        if query.sources().len() != 1
-            || !query.joins().is_empty()
+        if query.sources().is_empty()
             || query.aggregation().is_some()
             || query.set_operation().is_some()
             || query.proven_single_row_output()
             || !query.diagnostics().is_empty()
-            || !(query.row_preserving_projection() || query.filter_only_row_shape())
         {
             return residual(PhysicalProofGap::NonInvertibleTransformation);
         }
+        if query.joins().is_empty() {
+            // Single-source transparent copies and filter-only queries are
+            // zero-preserving. No assumption about predicate satisfiability is
+            // needed when the entire physical source is controlled as empty.
+            if query.sources().len() != 1
+                || !(query.row_preserving_projection() || query.filter_only_row_shape())
+            {
+                return residual(PhysicalProofGap::NonInvertibleTransformation);
+            }
+        } else {
+            // A known binary join of *named, controlled* row sources is empty
+            // when all inputs are empty, regardless of INNER/OUTER/SEMI/ANTI
+            // multiplicity. An opaque joined relation or row producer may
+            // emit rows independently of the named physical sources.
+            let names = query.sources().iter().map(|source| source.name())
+                .collect::<BTreeSet<_>>();
+            if query.joins().iter().any(|join| {
+                join.kind() == crate::protocol::JoinKind::Unknown
+                    || !names.contains(join.left().relation())
+                    || !names.contains(join.right().relation())
+            }) || names.iter().any(|name| !layer.consumes().contains(&layer.canonical_relation(name))) {
+                return residual(PhysicalProofGap::UnsupportedOperator);
+            }
+        }
     }
-    let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, target) else {
-        return residual(PhysicalProofGap::UnboundPhysicalSource);
-    };
     let Some(bounds) = CountBounds::new(0, Some(0)) else {
         return residual(PhysicalProofGap::UnresolvedSemantics);
     };
-    let tautology = WitnessFormula::IsNull {
-        term: WitnessTerm::Integer(1),
-        negated: true,
-    };
-    let Some(case) = WitnessCase::new(
-        vec![
-            WitnessObligation::Rows {
-                boundary: boundary.clone(),
-                quantifier: RowQuantifier::ForAll,
-                bounds,
-                predicate: tautology,
-                closed_world: true,
+    let mut obligations = Vec::new();
+    for source in &walker.sources {
+        let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, target) else {
+            return residual(PhysicalProofGap::UnboundPhysicalSource);
+        };
+        obligations.push(WitnessObligation::Rows {
+            boundary: boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds,
+            predicate: WitnessFormula::IsNull {
+                term: WitnessTerm::Integer(1),
+                negated: true,
             },
-            WitnessObligation::ClosedWorld {
-                boundary,
-                coverage: ClosedWorldCoverage::EntireRelation,
-            },
-        ],
-        ProofStrength::Sufficient,
-    ) else {
+            closed_world: true,
+        });
+        obligations.push(WitnessObligation::ClosedWorld {
+            boundary,
+            coverage: ClosedWorldCoverage::EntireRelation,
+        });
+    }
+    let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) else {
         return residual(PhysicalProofGap::UnresolvedSemantics);
     };
     WitnessDirection::feasible(vec![case])
