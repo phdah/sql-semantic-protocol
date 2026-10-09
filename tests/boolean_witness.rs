@@ -58,6 +58,13 @@ fn null_disjunction_has_jointly_evaluated_exact_truth_directions() {
     assert!(branches.iter().all(BooleanRowConstraint::is_exact));
     // Independent scalar domains do not establish an exact OR across two columns.
     assert!(!query.condition_exactness().is_exact());
+    // Either disjunct can select a row with any value in the other column.
+    // The independent output domain must not be narrowed to NULL.
+    assert!(matches!(
+        query.output().columns()[0].domain(),
+        sql_semantic_protocol::ValueDomain::Unbounded
+            | sql_semantic_protocol::ValueDomain::Unknown(_)
+    ));
 }
 
 #[test]
