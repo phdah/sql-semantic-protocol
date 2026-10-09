@@ -6,7 +6,9 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs, analyze_sql,
     parse_dbt_catalog, parse_dbt_manifest, to_json, BooleanRowConstraint, BooleanTruthCase,
     BooleanWitnessDirection, ComparisonOperator, ComposedSemantics, ConfiguredSqlInput,
-    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    ConstraintValue, ProtocolStatement, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect, PostgreSqlDialect};
 
@@ -173,6 +175,75 @@ fn conjunctions_are_coupled_even_without_an_or() {
     assert!(matches!(
         witness.qualifying(),
         BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+}
+
+fn enforced_evidence() -> Vec<ConstraintEvidence> {
+    vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "witness-test").unwrap(),
+        ConstraintEnforcement::Enforced,
+    )]
+}
+
+#[test]
+fn enforced_not_null_constraints_reject_impossible_positive_witness() {
+    let mut bundle = typed_bundle("SELECT a FROM t WHERE a IS NULL OR b IS NULL");
+    let constraints = RelationConstraintSet::new(
+        "t",
+        vec![
+            RelationConstraint::not_null("a", enforced_evidence()).unwrap(),
+            RelationConstraint::not_null("b", enforced_evidence()).unwrap(),
+        ],
+    )
+    .unwrap();
+    bundle.enrich_relation_constraints(&[constraints]);
+
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+}
+
+#[test]
+fn enforced_accepted_values_restrict_joint_comparison_feasibility() {
+    let mut bundle = typed_bundle("SELECT a FROM t WHERE a > 2 OR b > 2");
+    let constraints = RelationConstraintSet::new(
+        "t",
+        ["a", "b"]
+            .iter()
+            .map(|name| {
+                RelationConstraint::accepted_values(
+                    *name,
+                    vec![ConstraintValue::Integer(1)],
+                    false,
+                    enforced_evidence(),
+                )
+                .unwrap()
+            })
+            .collect(),
+    )
+    .unwrap();
+    bundle.enrich_relation_constraints(&[constraints]);
+
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Residual { .. }
     ));
     assert!(matches!(
         witness.rejected(),
