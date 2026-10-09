@@ -6,8 +6,8 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_sql, dialect_from_name, BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys,
-    BagLaw, BagScope, BagSourceIdentity, BagTupleIdentity, CountBounds, JoinKind, ProtocolStatement,
-    SetMultiplicityRule,
+    BagLaw, BagScope, BagSourceIdentity, BagTupleIdentity, CountBounds, JoinKind,
+    ProtocolStatement, SetMultiplicityRule,
 };
 
 fn exact(n: u64, scope: BagScope) -> BagEvidence {
@@ -208,7 +208,9 @@ fn duckdb_complete_histograms_prove_positive_duplicate_and_absent_tuple_counts()
             histogram_sum,
             observed(
                 &db,
-                &format!("SELECT COUNT(*) FROM (SELECT k FROM l {keyword} SELECT k FROM r) AS output"),
+                &format!(
+                    "SELECT COUNT(*) FROM (SELECT k FROM l {keyword} SELECT k FROM r) AS output"
+                ),
             ),
             "{keyword} complete histogram must account for every result tuple"
         );
@@ -221,7 +223,8 @@ fn duckdb_group_rank_and_multirow_write_counts_preserve_cardinality() {
     db.execute_batch(
         "CREATE TABLE t(id INTEGER, k INTEGER);
          INSERT INTO t VALUES (1, 1), (2, 1), (3, 2), (4, NULL), (5, NULL);",
-    ).expect("SQL setup");
+    )
+    .expect("SQL setup");
 
     let count = |q: &str| observed(&db, q);
     let grouping = BagLaw::GroupKey;
@@ -235,16 +238,22 @@ fn duckdb_group_rank_and_multirow_write_counts_preserve_cardinality() {
             actual
         );
     }
-    let rank = BagLaw::RankedPrefix { limit: 2, strict_total_order: true };
-    let actual = count("SELECT COUNT(*) FROM
+    let rank = BagLaw::RankedPrefix {
+        limit: 2,
+        strict_total_order: true,
+    };
+    let actual = count(
+        "SELECT COUNT(*) FROM
         (SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS position FROM t)
-        WHERE position <= 2");
+        WHERE position <= 2",
+    );
     assert_eq!(
         checked_count(rank.transfer(exact(5, BagScope::CompleteRelation), None)),
         actual
     );
 
-    db.execute_batch("DELETE FROM t WHERE id IN (2, 4)").expect("delete");
+    db.execute_batch("DELETE FROM t WHERE id IN (2, 4)")
+        .expect("delete");
     assert_eq!(
         checked_count(BagLaw::DeleteRows.transfer(
             exact(5, BagScope::CompleteRelation),
@@ -252,7 +261,8 @@ fn duckdb_group_rank_and_multirow_write_counts_preserve_cardinality() {
         )),
         count("SELECT COUNT(*) FROM t")
     );
-    db.execute_batch("UPDATE t SET k = 99 WHERE id = 1").expect("update");
+    db.execute_batch("UPDATE t SET k = 99 WHERE id = 1")
+        .expect("update");
     assert_eq!(
         checked_count(BagLaw::UpdateRows.transfer(
             exact(3, BagScope::CompleteRelation),
@@ -260,7 +270,8 @@ fn duckdb_group_rank_and_multirow_write_counts_preserve_cardinality() {
         )),
         count("SELECT COUNT(*) FROM t")
     );
-    db.execute_batch("INSERT INTO t VALUES (6, 1), (7, NULL)").expect("append");
+    db.execute_batch("INSERT INTO t VALUES (6, 1), (7, NULL)")
+        .expect("append");
     assert_eq!(
         checked_count(BagLaw::AppendRows.transfer(
             exact(3, BagScope::CompleteRelation),
