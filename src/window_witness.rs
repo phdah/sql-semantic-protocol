@@ -153,23 +153,35 @@ pub(crate) fn analyze_projected(
     filter: &Predicate,
     outer_source: &SourceRelation,
 ) -> Option<(WindowWitness, String)> {
-    let Predicate::Comparison(compare) = filter else { return None };
+    let Predicate::Comparison(compare) = filter else {
+        return None;
+    };
     let (column, operator, bound) = match (compare.left(), compare.right()) {
-        (Expression::Column(column), Expression::Literal(bound)) =>
-            (column, compare.operator(), bound),
-        (Expression::Literal(bound), Expression::Column(column)) =>
-            (column, compare.operator().reversed(), bound),
+        (Expression::Column(column), Expression::Literal(bound)) => {
+            (column, compare.operator(), bound)
+        }
+        (Expression::Literal(bound), Expression::Column(column)) => {
+            (column, compare.operator().reversed(), bound)
+        }
         _ => return None,
     };
-    if column.relation().is_some_and(|name| name != outer_source.name()
-        && Some(name) != outer_source.alias()) {
+    if column
+        .relation()
+        .is_some_and(|name| name != outer_source.name() && Some(name) != outer_source.alias())
+    {
         return None;
     }
-    let output = inner.output().columns().iter()
+    let output = inner
+        .output()
+        .columns()
+        .iter()
         .find(|item| item.name() == column.name())?;
-    let Expression::WindowFunction(window) = output.expression() else { return None };
+    let Expression::WindowFunction(window) = output.expression() else {
+        return None;
+    };
     let predicate = Predicate::Comparison(crate::protocol::ComparisonPredicate::new(
-        Expression::WindowFunction(window.clone()), operator,
+        Expression::WindowFunction(window.clone()),
+        operator,
         Expression::Literal(bound.clone()),
     ));
     let witness = analyze_predicate(inner, &predicate)?;
@@ -292,32 +304,48 @@ fn analyze_predicate(query: &QueryStatement, predicate: &Predicate) -> Option<Wi
 
 /// Apply a proved rank bound to an outer projection of the nested rank alias.
 pub(crate) fn refine_projected_output(
-    output: &Output, alias: &str, witness: &WindowWitness,
+    output: &Output,
+    alias: &str,
+    witness: &WindowWitness,
 ) -> Output {
-    let Some(limit) = witness.limit() else { return output.clone() };
+    let Some(limit) = witness.limit() else {
+        return output.clone();
+    };
     let bounded = rank_domain(limit);
-    Output::new(output.columns().iter().cloned().map(|column| {
-        if matches!(column.expression(), Expression::Column(expr) if expr.name() == alias) {
-            let domain = if matches!(column.domain(), ValueDomain::Unknown(_)) {
-                bounded.clone()
-            } else {
-                crate::domain::intersect_domains(column.domain(), &bounded)
-            };
-            column.with_domain(domain)
-        } else { column }
-    }).collect())
+    Output::new(
+        output
+            .columns()
+            .iter()
+            .cloned()
+            .map(|column| {
+                if matches!(column.expression(), Expression::Column(expr) if expr.name() == alias) {
+                    let domain = if matches!(column.domain(), ValueDomain::Unknown(_)) {
+                        bounded.clone()
+                    } else {
+                        crate::domain::intersect_domains(column.domain(), &bounded)
+                    };
+                    column.with_domain(domain)
+                } else {
+                    column
+                }
+            })
+            .collect(),
+    )
 }
 
 fn rank_domain(limit: u64) -> ValueDomain {
     if limit == 0 {
         ValueDomain::Empty
     } else {
-        let lower = LiteralExpression::new(
-            LiteralType::Integer, LiteralValue::Number("1".to_string()));
+        let lower =
+            LiteralExpression::new(LiteralType::Integer, LiteralValue::Number("1".to_string()));
         let upper = LiteralExpression::new(
-            LiteralType::Integer, LiteralValue::Number(limit.to_string()));
+            LiteralType::Integer,
+            LiteralValue::Number(limit.to_string()),
+        );
         ValueDomain::ranges(vec![ValueRange::new(
-            Some(Bound::new(lower, true)), Some(Bound::new(upper, true)),
+            Some(Bound::new(lower, true)),
+            Some(Bound::new(upper, true)),
         )])
     }
 }
