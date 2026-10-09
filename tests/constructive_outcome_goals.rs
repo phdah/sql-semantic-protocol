@@ -8,8 +8,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution,
-    OutputValueCount, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput,
+    OutputValueCount, RelationCatalog, RelationConstraint, RelationConstraintSet, RelationSchema,
+    SchemaColumn, SqlInput,
 };
 
 fn typed(sql: &str, sources: &[(&str, &[&str])]) -> sql_semantic_protocol::AnalysisBundle {
@@ -374,7 +374,10 @@ fn branch_local_limits_are_not_physical_set_witnesses() {
     let sql = "(SELECT id FROM l LIMIT 0) UNION ALL (SELECT id FROM r LIMIT 0)";
     let mut bundle = typed_for_dialect(sql, &[("l", &["id"]), ("r", &["id"])], "duckdb");
     assess(&mut bundle, 1, None, Vec::new());
-    assert_eq!(bundle.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
+    assert_eq!(
+        bundle.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Residual
+    );
     assert!(bundle.outcome_goals()[0].witness().is_none());
 
     let db = Connection::open_in_memory().unwrap();
@@ -395,7 +398,12 @@ fn shared_constructive_goal_classes_are_dialect_independent() {
         ("sales", &["category"]),
     ];
     let classes = [
-        ("SELECT id FROM source_data", 3, None, OutcomeGoalStatus::Feasible),
+        (
+            "SELECT id FROM source_data",
+            3,
+            None,
+            OutcomeGoalStatus::Feasible,
+        ),
         (
             "SELECT l.id FROM l JOIN r ON l.id = r.id",
             2,
@@ -457,7 +465,11 @@ fn qualify_goal_bounds_follow_every_dialect_that_parses_qualify() {
                 let mut bundle = typed_for_dialect(sql, &[("events", &["score"])], dialect_name);
                 assess(&mut bundle, 4, None, Vec::new());
                 let goal = &bundle.outcome_goals()[0];
-                assert_eq!(goal.status(), OutcomeGoalStatus::Unsatisfiable, "{dialect_name}");
+                assert_eq!(
+                    goal.status(),
+                    OutcomeGoalStatus::Unsatisfiable,
+                    "{dialect_name}"
+                );
                 assert_eq!(goal.max_rows(), Some(3), "{dialect_name}");
             }
             Err(error) => eprintln!("{dialect_name} QUALIFY parser boundary: {error}"),
