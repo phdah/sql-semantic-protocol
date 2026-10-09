@@ -649,11 +649,12 @@ type evidence the branch remains `residual`. Signed unary literal notation
 (`-2` and `+3`) is normalized semantically rather than reparsed as SQL.
 Logical operand sequences always contain at least two children. The proven
 invertible expression subset includes identity arithmetic (`+a`, `a+0`,
-`0+a`, `a-0`) and explicit ordinary signed-integer CASTs where catalog
-source bounds fit entirely within the 16-, 32-, or 64-bit signed target.
+`0+a`, `a-0`), explicit ordinary signed-integer CASTs and constant offsets
+on such casts where every possible source value and computed result fits
+the 16-, 32-, or 64-bit signed cast target.
 The normalized `signed_integer_cast` expression stores `expression` and
 `target_bits`, while its coupled witness is inverted back to a comparison
-on the original source column. Narrowing, TRY/SAFE_CAST, nonidentity
+on the original source column. Narrowing, TRY/SAFE_CAST, uncast or overflow-prone nonidentity
 arithmetic, functional and unattested collation-sensitive predicates remain
 residual. A normalized `like_prefix` predicate is supported only when an
 ordinary LIKE/NOT LIKE has exactly one trailing `%`, a nonempty unescaped
@@ -680,16 +681,18 @@ the analyzer rechecks the coupled truth directions against those restrictions, i
 constraints added after initial composition by dbt or ODCS enrichment. An impossible
 direction is downgraded to residual. Unknown enforcement, incompatible metadata and
 foreign-key witness dependencies are conservative residuals. Rechecking can only
-downgrade an existing direction; it never manufactures exactness. For identity-only projections through named producer layers, composition can map
-the entire coupled witness onto one physical source relation and change its
-`boundary_kind` to `physical`. Computed projections, unresolved or many-to-one
+downgrade an existing direction; it never manufactures exactness. For identity-only *row-preserving* projections through named producer layers,
+composition can map the entire coupled witness onto one physical source relation
+and change its `boundary_kind` to `physical`. Filtered, limited, distinct or
+otherwise row-changing producers retain the intermediate boundary. Computed projections, unresolved or many-to-one
 lineage keep their intermediate/unresolved boundary. These proof statuses do
 not establish general physical-lineage invertibility or satisfiability of
 arbitrary warehouse constraints that the protocol does not represent. No Cartesian combination of independent scalar domains may substitute
 for these coupled obligations.
 
 The scoped exact subset is intentionally smaller than arbitrary SQL:
-nonidentity arithmetic and functional predicates, unsafe cast forms, LIKE
+noninvertible or overflow-prone arithmetic and functional predicates,
+unsafe cast forms, LIKE
 under unknown collation, and nondirect physical lineage remain residual.
 Independent output scalar domains are not widened or narrowed by splitting
 correlated conditions into separate per-column domains; the coupled
