@@ -675,6 +675,28 @@ fn analyze_query(
     );
     sort_diagnostics(&mut diagnostics);
 
+    // Only a plain one-to-one projection preserves all source-row truth
+    // assignments when a downstream boolean witness is mapped to its inputs.
+    // Filtered, limited, grouped, sampled, and joined producers must remain
+    // intermediate witness boundaries, even if their columns are plain copies.
+    let row_preserving_projection = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { .. })
+                && select.from[0].joins.is_empty()
+                && select.distinct.is_none()
+                && select.top.is_none()
+                && select.selection.is_none()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.lateral_views.is_empty()
+                && select.connect_by.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty()));
+
     QueryStatement::new(
         relation_analysis.sources,
         relation_analysis.dependencies.into_iter().collect(),
@@ -687,6 +709,7 @@ fn analyze_query(
     .with_set_operation(set_operation)
     .with_subquery_witnesses()
     .with_boolean_witness(boolean_witness)
+    .with_row_preserving_projection(row_preserving_projection)
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))
