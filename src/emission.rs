@@ -1892,16 +1892,37 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "null_extended": null_extended.map(|side| side.as_str())
         }),
         crate::WitnessObligation::Group {
-            boundary,
-            key,
-            rows,
-            non_null,
+            boundary, key, aggregate, distinct, argument, rows, non_null, tests,
         } => json!({
             "kind": "group",
             "boundary": constructive_boundary_to_value(boundary),
             "key": key.iter().map(column_ref_to_value).collect::<Vec<_>>(),
+            "aggregate": aggregate.as_str(),
+            "distinct": distinct,
+            "argument": argument.as_ref().map_or(Value::Null, column_ref_to_value),
             "rows": constructive_bounds_to_value(*rows),
-            "non_null": constructive_bounds_to_value(*non_null)
+            "non_null": constructive_bounds_to_value(*non_null),
+            "tests": tests.iter().map(|test| json!({
+                "kind": test.kind(),
+                "operator": test.operator().as_str(),
+                "bound": literal_expression_to_value(test.bound())
+            })).collect::<Vec<_>>()
+        }),
+        crate::WitnessObligation::Ranked {
+            boundary, candidate, partition_by, order_by, preceding, strict_unique, closed_world,
+        } => json!({
+            "kind": "ranked",
+            "boundary": constructive_boundary_to_value(boundary),
+            "candidate": constructive_row_to_value(candidate),
+            "partition_by": partition_by.iter().map(column_ref_to_value).collect::<Vec<_>>(),
+            "order_by": order_by.iter().map(|key| json!({
+                "column": column_ref_to_value(key.column()),
+                "ascending": key.ascending(),
+                "nulls_first": key.nulls_first()
+            })).collect::<Vec<_>>(),
+            "preceding": constructive_bounds_to_value(*preceding),
+            "strict_unique": strict_unique,
+            "closed_world": closed_world
         }),
         crate::WitnessObligation::OutputRows { layer_id, bounds } => json!({
             "kind": "output_rows",
