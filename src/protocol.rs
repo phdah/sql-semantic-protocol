@@ -659,9 +659,11 @@ impl WriteOperation {
                 )
             }
             WriteKind::ConditionalMutation => {
-                if self.merge_clauses.iter().any(|clause|
-                    matches!(clause.action(), MergeAction::Unsupported(_))
-                ) {
+                if self
+                    .merge_clauses
+                    .iter()
+                    .any(|clause| matches!(clause.action(), MergeAction::Unsupported(_)))
+                {
                     reasons.push(WriteUncertainty::UnsupportedAction);
                 }
                 reasons.push(WriteUncertainty::PredicateExactnessUnverified);
@@ -918,9 +920,13 @@ pub struct WriteStateEffect {
 
 impl WriteStateEffect {
     /// Ordered target columns for an INSERT SELECT result, or empty for other writes.
-    pub fn target_columns(&self) -> &[String] { &self.target_columns }
+    pub fn target_columns(&self) -> &[String] {
+        &self.target_columns
+    }
     /// MERGE ON condition (None for non-MERGE writes).
-    pub fn match_condition(&self) -> Option<&Predicate> { self.match_condition.as_ref() }
+    pub fn match_condition(&self) -> Option<&Predicate> {
+        self.match_condition.as_ref()
+    }
 
     /// Initial target state precondition.
     pub fn initial(&self) -> WriteInitialState {

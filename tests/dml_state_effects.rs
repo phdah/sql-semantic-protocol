@@ -258,7 +258,6 @@ fn shared_update_and_delete_syntax_runs_across_all_supported_parser_dialects() {
     }
 }
 
-
 #[test]
 fn merger_exports_matching_predicate_and_insert_mapping_without_sql_reparsing() {
     let merge = bundle(
@@ -317,6 +316,9 @@ fn duplicate_unmatched_merge_insert_conflicts_with_enforced_primary_key() {
          INSERT INTO source VALUES (2, 3), (2, 4);",
     )
     .expect("fixtures");
-    assert!(db.execute_batch(sql).is_err(), "duplicate unmatched source keys conflict");
+    assert!(
+        db.execute_batch(sql).is_err(),
+        "duplicate unmatched source keys conflict"
+    );
     assert_eq!(count(&db, "target"), 0);
 }
