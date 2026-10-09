@@ -8,9 +8,7 @@ use crate::boolean_witness::{BooleanRowConstraint, BooleanTruthCase, BooleanWitn
 use crate::bundle::{GroupBoundaryKind, ResolvedComposedSemantics};
 use crate::group_witness::{GroupAggregate, GroupValueTest, GroupWitnessDirection};
 use crate::join_witness::{JoinSide, JoinWitnessDirection, JoinWitnessShape};
-use crate::protocol::{
-    ColumnDomain, ColumnRef, ComparisonOperator, SetWitnessDirection,
-};
+use crate::protocol::{ColumnDomain, ColumnRef, ComparisonOperator, SetWitnessDirection};
 use crate::subquery_witness::{
     SubqueryCorrelation, SubqueryMembershipCase, SubqueryMembershipDirection,
 };
@@ -412,8 +410,9 @@ impl WitnessDirection {
     pub fn all(&self, other: &Self) -> Self {
         match (self, other) {
             (Self::Impossible, _) | (_, Self::Impossible) => Self::Impossible,
-            (Self::Residual { .. }, _) | (_, Self::Residual { .. }) =>
-                Self::residual("conjunctive_operand_not_proven"),
+            (Self::Residual { .. }, _) | (_, Self::Residual { .. }) => {
+                Self::residual("conjunctive_operand_not_proven")
+            }
             (Self::Feasible(left), Self::Feasible(right)) => {
                 if left.len().checked_mul(right.len()).is_none_or(|n| n > 256) {
                     return Self::residual("conjunctive_case_limit");
@@ -424,17 +423,24 @@ impl WitnessDirection {
                         let mut obligations = a.obligations().to_vec();
                         obligations.extend_from_slice(b.obligations());
                         let strength = if a.strength() == ProofStrength::Equivalent
-                            && b.strength() == ProofStrength::Equivalent {
+                            && b.strength() == ProofStrength::Equivalent
+                        {
                             ProofStrength::Equivalent
                         } else {
                             ProofStrength::Sufficient
                         };
                         if let Some(case) = WitnessCase::new(obligations, strength) {
-                            if !cases.contains(&case) { cases.push(case); }
+                            if !cases.contains(&case) {
+                                cases.push(case);
+                            }
                         }
                     }
                 }
-                if cases.is_empty() { Self::Impossible } else { Self::Feasible(cases) }
+                if cases.is_empty() {
+                    Self::Impossible
+                } else {
+                    Self::Feasible(cases)
+                }
             }
         }
     }
@@ -445,7 +451,9 @@ impl WitnessDirection {
             (Self::Feasible(a), Self::Feasible(b)) => {
                 let mut cases = a.clone();
                 for case in b {
-                    if !cases.contains(case) { cases.push(case.clone()); }
+                    if !cases.contains(case) {
+                        cases.push(case.clone());
+                    }
                 }
                 Self::Feasible(cases)
             }
@@ -526,7 +534,9 @@ impl ConstructiveWitness {
     /// TRUE requires both inputs TRUE; FALSE or UNKNOWN requires at least
     /// one input NOT TRUE. Both directions retain sufficient witness cases.
     pub fn logical_and(&self, other: &Self) -> Option<Self> {
-        if self.origin_layer_id != other.origin_layer_id { return None; }
+        if self.origin_layer_id != other.origin_layer_id {
+            return None;
+        }
         Some(Self {
             operator: WitnessOperator::Boolean,
             origin_layer_id: self.origin_layer_id.clone(),
@@ -537,7 +547,9 @@ impl ConstructiveWitness {
 
     /// SQL OR of two classifications introduced at the same operator boundary.
     pub fn logical_or(&self, other: &Self) -> Option<Self> {
-        if self.origin_layer_id != other.origin_layer_id { return None; }
+        if self.origin_layer_id != other.origin_layer_id {
+            return None;
+        }
         Some(Self {
             operator: WitnessOperator::Boolean,
             origin_layer_id: self.origin_layer_id.clone(),
@@ -556,16 +568,19 @@ impl ConstructiveWitness {
         let (qualifying, rejected) = if proven_two_valued {
             (self.rejected.clone(), self.qualifying.clone())
         } else {
-            (WitnessDirection::residual("sql_not_requires_false_vs_unknown_proof"),
-             match &self.qualifying {
-                 WitnessDirection::Feasible(_) => self.qualifying.clone(),
-                 _ => WitnessDirection::residual("nullable_not_rejection_unproven"),
-             })
+            (
+                WitnessDirection::residual("sql_not_requires_false_vs_unknown_proof"),
+                match &self.qualifying {
+                    WitnessDirection::Feasible(_) => self.qualifying.clone(),
+                    _ => WitnessDirection::residual("nullable_not_rejection_unproven"),
+                },
+            )
         };
         Self {
             operator: WitnessOperator::Boolean,
             origin_layer_id: self.origin_layer_id.clone(),
-            qualifying, rejected,
+            qualifying,
+            rejected,
         }
     }
 }
@@ -813,8 +828,12 @@ pub fn local_constructive_witnesses(
         let witness = item.witness();
         let translate = |direction: &SubqueryMembershipDirection| -> WitnessDirection {
             match direction {
-                SubqueryMembershipDirection::Residual { reason } => WitnessDirection::residual(reason),
-                SubqueryMembershipDirection::Exact(cases) if cases.is_empty() => WitnessDirection::Impossible,
+                SubqueryMembershipDirection::Residual { reason } => {
+                    WitnessDirection::residual(reason)
+                }
+                SubqueryMembershipDirection::Exact(cases) if cases.is_empty() => {
+                    WitnessDirection::Impossible
+                }
                 SubqueryMembershipDirection::Exact(cases) => {
                     if item.boundary_kind() != GroupBoundaryKind::Physical {
                         return WitnessDirection::residual("requires_physical_source_realization");
@@ -822,21 +841,28 @@ pub fn local_constructive_witnesses(
                     let Some(inner_name) = witness.inner_relation() else {
                         return WitnessDirection::residual("missing_inner_source_identity");
                     };
-                    let mut outer_relations = semantics.dependencies().iter()
+                    let mut outer_relations = semantics
+                        .dependencies()
+                        .iter()
                         .filter(|relation| relation.as_str() != inner_name);
-                    let (Some(outer_name), None) = (outer_relations.next(), outer_relations.next()) else {
+                    let (Some(outer_name), None) = (outer_relations.next(), outer_relations.next())
+                    else {
                         return WitnessDirection::residual("unresolved_outer_source_identity");
                     };
                     let (Some(outer), Some(inner)) = (
                         RowVariable::new(outer_name, witness.outer_relation(), "candidate"),
-                        WitnessBoundary::new(inner_name, item.boundary_kind(), item.origin_layer_id()),
+                        WitnessBoundary::new(
+                            inner_name,
+                            item.boundary_kind(),
+                            item.origin_layer_id(),
+                        ),
                     ) else {
                         return WitnessDirection::residual("invalid_subquery_identity");
                     };
                     let mut translated = Vec::new();
                     for case in cases {
-                        let Some(translated_case) = WitnessCase::new(vec![
-                            WitnessObligation::Membership {
+                        let Some(translated_case) = WitnessCase::new(
+                            vec![WitnessObligation::Membership {
                                 outer: outer.clone(),
                                 inner: inner.clone(),
                                 case: *case,
@@ -844,8 +870,9 @@ pub fn local_constructive_witnesses(
                                 membership_key: witness.membership_key().cloned(),
                                 inner_domains: witness.inner_column_domains().to_vec(),
                                 closed_world: true,
-                            }
-                        ], ProofStrength::Sufficient) else {
+                            }],
+                            ProofStrength::Sufficient,
+                        ) else {
                             return WitnessDirection::residual("invalid_membership_case");
                         };
                         translated.push(translated_case);
@@ -868,7 +895,9 @@ pub fn local_constructive_witnesses(
         let translate = |direction: SetWitnessDirection| -> WitnessDirection {
             match direction {
                 SetWitnessDirection::Residual { reason, .. } => WitnessDirection::residual(reason),
-                SetWitnessDirection::Exact(cases) if cases.is_empty() => WitnessDirection::Impossible,
+                SetWitnessDirection::Exact(cases) if cases.is_empty() => {
+                    WitnessDirection::Impossible
+                }
                 SetWitnessDirection::Exact(cases) => {
                     let mut translated = Vec::new();
                     for case in cases {
@@ -883,16 +912,22 @@ pub fn local_constructive_witnesses(
                             // Producer realization is a separate task. A local tuple
                             // count cannot be turned into a direct write at a CTE.
                             if kind != GroupBoundaryKind::Physical {
-                                return WitnessDirection::residual("requires_physical_source_realization");
+                                return WitnessDirection::residual(
+                                    "requires_physical_source_realization",
+                                );
                             }
                             let Some(boundary) = WitnessBoundary::new(
-                                source.relation(), kind, item.origin_layer_id()
+                                source.relation(),
+                                kind,
+                                item.origin_layer_id(),
                             ) else {
                                 return WitnessDirection::residual("invalid_set_boundary");
                             };
-                            let Some(branch) = operation.branches().iter().find(
-                                |branch| branch.identity() == original.branch_identity()
-                            ) else {
+                            let Some(branch) = operation
+                                .branches()
+                                .iter()
+                                .find(|branch| branch.identity() == original.branch_identity())
+                            else {
                                 return WitnessDirection::residual("missing_set_branch_evidence");
                             };
                             obligations.push(WitnessObligation::SetTuple {
@@ -908,9 +943,9 @@ pub fn local_constructive_witnesses(
                             matching_rows: case.output_tuple_count(),
                             nulls_equal: true,
                         });
-                        let Some(translated_case) = WitnessCase::new(
-                            obligations, ProofStrength::Sufficient
-                        ) else {
+                        let Some(translated_case) =
+                            WitnessCase::new(obligations, ProofStrength::Sufficient)
+                        else {
                             return WitnessDirection::residual("invalid_set_case");
                         };
                         translated.push(translated_case);
