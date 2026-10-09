@@ -1,7 +1,7 @@
 ---
 id: TASK-68
 title: Prove end-to-end physical-source realizability across layers
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-09'
