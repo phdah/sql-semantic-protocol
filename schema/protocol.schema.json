@@ -1126,6 +1126,9 @@
           "$ref": "#/$defs/comparisonPredicate"
         },
         {
+          "$ref": "#/$defs/likePrefixPredicate"
+        },
+        {
           "$ref": "#/$defs/andPredicate"
         },
         {
@@ -1159,6 +1162,17 @@
           "$ref": "#/$defs/unsupportedSemantic"
         }
       ]
+    },
+    "likePrefixPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "expression", "prefix", "negated"],
+      "properties": {
+        "kind": {"const": "like_prefix"},
+        "expression": {"$ref": "#/$defs/expression"},
+        "prefix": {"type": "string", "pattern": "^[A-Za-z0-9]+$"},
+        "negated": {"type": "boolean"}
+      }
     },
     "comparisonPredicate": {
       "type": "object",
