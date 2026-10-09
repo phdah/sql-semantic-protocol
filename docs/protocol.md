@@ -580,3 +580,50 @@ For example `GROUP BY category HAVING COUNT(*) >= 3` requires at least three sou
 Exact local group plans are deliberately limited to one direct relation boundary, physical or intermediate, simple physical GROUP BY columns, one aggregate comparison against a supported numeric literal, and no WHERE, JOIN, QUALIFY, set operation, FILTER, DISTINCT aggregate or analysis diagnostics. Cases express necessary bounds and sufficient constructions for **membership under SQL semantics**, conditional on legal, representable source rows. Schema constraints and warehouse type/comparison assumptions must still be checked by the consumer before materialization. Other grouping variants (ROLLUP, CUBE, grouping sets, GROUP BY ALL), derived/non-row-preserving producers, disjunction, correlations, and computed HAVING expressions remain residual. The original `condition_exactness` may still say `residual` with reason `having`; it does not supersede the separate typed group witness contract.
 
 This additive JSON field extends the strict query and resolved composition schemas and is version-gated as a breaking protocol change for consumers. `sql-tdg TASK-28` should consume these typed obligations, **not re-parse HAVING**. The local source group witness is emitted through direct SQL and dbt compiled model SQL using the same analysis path. A logically exact witness at an intermediate dbt model input is not an independently realizable *physical* witness without proving upstream input construction. Metadata-only ODCS sources supply canonical schema constraints but no synthetic SQL HAVING witness.
+
+## Typed EXISTS and subquery-membership source witnesses (TASK-62)
+
+A query may include an optional `subquery_witnesses` array, and the composed
+outcome may include provenance-bearing `subquery_witnesses` entries with
+`origin_layer_id`, `boundary_kind`, and `witness`. Each witness identifies
+the `operator` (`exists`, `not_exists`, `in`, `not_in`), the outer and
+inner source relations, correlation equalities, and the optional pair of
+membership keys. Physical column names use the existing `{relation,name}`
+endpoint shape. The inner column domains are source constraints on the
+candidate population, not independent guarantees about the outer result.
+
+`qualifying` and `rejected` are separate tagged directions:
+`{status:"exact",cases:[...]}` or `{status:"residual",reason:"..."}`.
+Exact case names describe typed construction obligations:
+
+| Case | Source obligation | SQL truth |
+| --- | --- | --- |
+| `matching_row` | At least one correlated inner row satisfies the inner filters | EXISTS TRUE |
+| `matching_non_null_key` | A non-NULL equal inner/outer key pair exists | IN TRUE, NOT IN FALSE |
+| `no_candidates` | No inner row survives the inner filters or correlations | EXISTS FALSE, IN FALSE, NOT IN TRUE |
+| `no_match_no_null` | Nonempty inner candidates, non-NULL outer key, no equal or NULL candidate key | IN FALSE, NOT IN TRUE |
+| `no_match_null_candidate` | Nonempty inner candidates, no match, at least one NULL candidate key | IN/NOT IN UNKNOWN |
+| `outer_null_nonempty` | NULL outer key and nonempty inner candidates, without a preceding equal match | IN/NOT IN UNKNOWN |
+
+`NOT IN` must not be interpreted as a simple anti-join. A single NULL
+candidate makes the nonmatching case UNKNOWN rather than TRUE. Duplicate
+candidate values do not affect membership. For correlated conditions, the
+matching/no-candidate obligations apply after correlation equalities and all
+represented inner filters. The cases do **not** by themselves assert that a
+whole query's other WHERE predicates or an upstream transformation are exact.
+
+Proofs are currently limited to one distinct physical source instance on
+each side, straightforward candidate-preserving subqueries, plain membership
+columns, and conjunctive simple equality correlations. Unsupported shaping,
+aggregate/window output, computed/multiple keys, joins, unproven comparisons,
+non-equality correlations and ambiguous repeated physical relations are
+explicit residual directions. This is deliberately narrower than SQL syntax
+support. Composed entries retain their origin even when an inner boundary is
+intermediate or unresolved, and consumers must honor that boundary instead of
+treating it as independently generated physical input. The pre-existing
+`condition_exactness` remains the whole-query contract.
+
+The same normalized SQL analyzer is used by direct SQL and dbt model SQL;
+the ODCS adapter supplies metadata but does not invent membership evidence.
+This schema addition is a protocol contract change and must be versioned
+with the application.
