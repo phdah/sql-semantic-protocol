@@ -520,6 +520,50 @@ fn assess_goal(
         }
     }
 
+    // A complete physical-source DAG construction can discharge a row-count
+    // request even when the local operator witness was insufficient because
+    // the requested output is produced through transparent materialized layers.
+    // Histogram and group goals need additional typed value/group evidence.
+    if goal.groups().is_none() && goal.distributions().is_empty() {
+        if let Some(rows) = goal.rows() {
+            if matches!(
+                crate::physical_realization::physical_row_count_plan(
+                    bundle,
+                    layer.id(),
+                    rows,
+                ),
+                crate::constructive::WitnessDirection::Feasible(_)
+            ) {
+                let physical =
+                    crate::physical_realization::physical_source_plan(bundle, layer.id());
+                let witness = if rows == 0 {
+                    Some(crate::outcome_proofs::OutcomeWitness::EmptySources {
+                        relations: physical.sources().to_vec(),
+                    })
+                } else if let [relation] = physical.sources() {
+                    Some(crate::outcome_proofs::OutcomeWitness::SourceRows {
+                        relation: relation.clone(),
+                        rows,
+                        columns: Vec::new(),
+                    })
+                } else if physical.sources().is_empty() && rows == 1 {
+                    Some(crate::outcome_proofs::OutcomeWitness::Singleton)
+                } else {
+                    None
+                };
+                if let Some(witness) = witness {
+                    return Ok(proved(
+                        goal,
+                        "complete physical-source DAG row-count obligations are constructively satisfied",
+                        min_rows,
+                        max_rows,
+                        witness,
+                    ));
+                }
+            }
+        }
+    }
+
     Ok(assessed(goal, OutcomeGoalStatus::Residual, "SQL cardinality, grouping, join multiplicity, window and distribution witnesses are not sufficient to prove this request", min_rows, max_rows))
 }
 
