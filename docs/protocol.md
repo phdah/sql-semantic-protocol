@@ -12,6 +12,58 @@ Implementations should preserve caller order and generate deterministic IDs when
 
 Inline source labels are optional. File sources retain their path. Raw SQL text is intentionally not part of the semantic protocol.
 
+
+## Optional output cardinality and distribution goals
+
+Result goals are **caller requests**, not SQL-derived facts and not part of
+`condition_exactness`. The Rust API `AnalysisBundle::set_outcome_goals(&[OutcomeGoal])`
+evaluates typed requests against each target layer's composed output; unrequested
+analyses retain byte-identical JSON and omit `outcome_goals` entirely.
+Requests target `layer_id` rather than a relation name so parallel and
+multi-outcome bundles cannot silently redirect them. `select_targets` drops
+goals for outputs outside the selected graph while retaining the original
+identities for selected layers. The SQL, dbt, and ODCS adapters share the same
+evaluation path once an `AnalysisBundle` is constructed.
+
+Each goal has optional `rows`, optional `groups`, and complete `distributions`
+per named **output** column. Histogram values are canonical typed scalars,
+including a distinct NULL value; their counts must sum to `rows`. Zero-count
+histograms can represent empty results. A group count means the number of
+*surviving result groups* after HAVING, not source rows, and is only comparable
+directly to output rows for an ordinary non-grouping-sets GROUP BY.
+A goal cannot alter column domains, source row membership, or downstream
+witness obligations. A consumer must not infer a source-row count from a
+requested output count.
+
+The `assessment` includes `status` (`feasible`, `unsatisfiable` or
+`residual`), a reason and proven `min_rows`/`max_rows` bounds.
+`null` as a maximum means no finite maximum has been proved.
+`feasible` is reserved for a constructive witness: a source-free literal
+singleton, an ungrouped global aggregate's single output row, or an
+empty external source through a plain row-preserving projection.
+Impossible singleton row counts, inconsistent full histograms,
+duplicated values in a single-column DISTINCT output (including repeated
+NULL), and mismatched simple GROUP BY output/group counts are
+`unsatisfiable`. These proofs do not depend on independent sampling
+of predicate intervals.
+
+Joins may expand or contract row multiplicity, DISTINCT can collapse
+tuples, grouped aggregates transform input rows into result groups,
+QUALIFY/window predicates affect surviving ranks, and NULL comparison
+behavior changes which tuples are duplicates. Without a proven witness
+for all interactions, a request remains `residual`; exact row-condition
+predicates alone never upgrade output cardinality to exact. Grouping sets,
+nontrivial distributions, nested row-shaping, and unproven cross-layer
+multiplicity remain residual rather than guessing feasible output goals.
+An unknown output column, duplicate target or histogram entry is a
+caller-input error rather than a semantic feasibility result.
+
+The optional root property is additive and absent by default. The
+application and active protocol version remain aligned through Release
+Please. Consumers accepting opt-in goals must handle all three statuses,
+including `residual`; `sql-tdg` TASK-30 can use these typed requests
+without reparsing SQL.
+
 ## Source schemas
 For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
 types when a relation is present there. When a physical dependency or a physical relation referenced only by a canonical constraint
