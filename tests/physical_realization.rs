@@ -212,3 +212,105 @@ fn duckdb_terminal_rows_agree_with_physical_source_membership_classification() {
         .expect("rejected rows");
     assert_eq!(count, 1);
 }
+
+
+#[test]
+fn zero_output_is_a_closed_world_empty_physical_source_obligation() {
+    let b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t",
+            "SELECT a + 1 FROM stage WHERE a > 2",
+        ],
+        "postgresql",
+    );
+    let plan = physical_source_plan(&b, b.layers()[1].id());
+    let WitnessDirection::Feasible(cases) = plan.zero_output() else {
+        panic!("single-source filter cannot create a row from an empty input");
+    };
+    assert_eq!(cases.len(), 1);
+    assert!(cases[0].obligations().iter().any(|obligation| matches!(
+        obligation,
+        WitnessObligation::Rows { boundary, bounds, closed_world: true, .. }
+            if boundary.relation() == "t"
+                && bounds.minimum() == 0
+                && bounds.maximum() == Some(0)
+    )));
+    assert!(cases[0].obligations().iter().any(|obligation| matches!(
+        obligation,
+        WitnessObligation::ClosedWorld { boundary, .. }
+            if boundary.relation() == "t"
+    )));
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch("CREATE TABLE t(a INTEGER, b INTEGER);
+        CREATE TABLE stage AS SELECT a, b FROM t;")
+        .expect("empty source");
+    let count: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a + 1 FROM stage WHERE a > 2)",
+            [],
+            |row| row.get(0),
+        )
+        .expect("count");
+    assert_eq!(count, 0);
+}
+
+#[test]
+fn zero_output_does_not_mistake_global_aggregate_for_empty_result() {
+    let b = bundle(&["SELECT COUNT(*) FROM t"], "postgresql");
+    let plan = physical_source_plan(&b, b.layers()[0].id());
+    assert!(matches!(plan.zero_output(), WitnessDirection::Residual { .. }));
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch("CREATE TABLE t(a INTEGER, b INTEGER)")
+        .expect("empty source");
+    let count: i64 = conn.query_row("SELECT COUNT(*) FROM t", [], |row| row.get(0)).expect("global count");
+    assert_eq!(count, 0);
+    let rows: i64 = conn.query_row("SELECT COUNT(*) FROM (SELECT COUNT(*) FROM t)", [], |row| row.get(0)).expect("aggregate row");
+    assert_eq!(rows, 1);
+}
+
+#[test]
+fn canonical_wire_graph_deduplicates_producer_nodes_and_references() {
+    let b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t",
+            "CREATE TABLE mart AS SELECT a, b FROM stage",
+            "SELECT a FROM stage WHERE a > 2 OR b < 0",
+        ],
+        "postgresql",
+    );
+    let raw: serde_json::Value = serde_json::from_str(
+        &sql_semantic_protocol::to_bundle_json(&b),
+    ).expect("valid canonical protocol");
+    let graph = &raw["graph"];
+    let nodes = graph["physical_nodes"].as_array().expect("physical nodes");
+    let plans = graph["physical_source_plans"].as_array().expect("physical plans");
+    assert_eq!(nodes.len(), 4, "one unique node per physical source or layer");
+    assert_eq!(plans.len(), b.layers().len());
+    assert_eq!(
+        nodes.iter().filter(|n| n["ref"] == serde_json::json!({"kind":"source","id":"t"})).count(),
+        1,
+    );
+    let mart = plans.iter().find(|p| p["layer_id"] == "layer-0002").expect("mart");
+    assert_eq!(mart["node_refs"].as_array().expect("refs").len(), 3);
+    assert_eq!(mart["physical_sources"], serde_json::json!(["t"]));
+    assert_eq!(mart["zero_output"]["status"], "feasible");
+    assert_eq!(mart["qualifying"]["status"], "residual");
+    assert_eq!(mart["gap"], "no_witness");
+
+    let schema: serde_json::Value = serde_json::from_str(
+        include_str!("../schema/protocol.schema.json"),
+    ).expect("schema parses");
+    assert_eq!(
+        schema["$defs"]["graph"]["properties"]["physical_source_plans"]["items"]["$ref"],
+        "#/$defs/physicalSourcePlan",
+    );
+    assert_eq!(
+        schema["$defs"]["physicalSourcePlan"]["properties"]["zero_output"]["$ref"],
+        "#/$defs/constructiveDirection",
+    );
+    assert_eq!(
+        sql_semantic_protocol::to_bundle_json(&b),
+        sql_semantic_protocol::to_bundle_json(&b),
+        "protocol must remain deterministic",
+    );
+}
