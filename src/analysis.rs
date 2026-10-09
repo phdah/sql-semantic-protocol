@@ -6624,9 +6624,9 @@ fn analyze_subquery_semantics(
         relations.joins,
         output,
         RowConditions::new(predicates, column_domains, condition_exactness),
-        row_shape_preserves_candidates,
         diagnostics,
     )
+    .with_row_shape_preserves_candidates(row_shape_preserves_candidates)
 }
 
 fn collect_query_correlations(
