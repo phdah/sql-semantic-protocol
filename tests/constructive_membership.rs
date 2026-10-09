@@ -404,3 +404,26 @@ fn downstream_join_does_not_invalidate_exact_upstream_membership_source() {
             WitnessObligation::Membership { outer, .. } if outer.relation() == "l"
         ))));
 }
+
+#[test]
+fn intermediate_group_pending_producer_identifies_its_own_physical_source() {
+    let b = analyze(
+        "CREATE TABLE stage_l AS SELECT k FROM l;
+         CREATE TABLE stage_r AS SELECT k FROM r;
+         SELECT k, COUNT(*) AS n FROM stage_l GROUP BY k HAVING COUNT(*) >= 2",
+    );
+    let ComposedSemantics::Resolved(ref semantics) = b
+        .layers()
+        .last()
+        .expect("terminal layer")
+        .composed_semantics()
+    else {
+        panic!("resolved terminal");
+    };
+    let pending = sql_semantic_protocol::local_pending_producers(semantics);
+    assert!(pending.iter().any(|obligation| matches!(
+        obligation,
+        WitnessObligation::Producer { boundary, physical_sources }
+            if boundary.relation() == "stage_l" && physical_sources == &["l".to_string()]
+    )));
+}

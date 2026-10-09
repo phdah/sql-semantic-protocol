@@ -4,7 +4,7 @@
 
 The authoritative, machine-readable source is [`coverage-manifest.json`](coverage-manifest.json). Each `?` and `unverified` status is an **explicit open release-proof requirement**, not unfinished inventory work or an approved capability claim. [`tests/coverage_manifest.rs`](../tests/coverage_manifest.rs) checks each dialect/feature cell, parser fixtures and DuckDB SQL oracles. Adding or extending a dialect or semantic feature requires updating the manifest and corresponding tests.
 
-## TASK-67 canonical witness foundation (in progress)
+## TASK-67 canonical witness foundation
 
 PR #89 adds a normalized typed local witness algebra covering Boolean, join,
 group/HAVING, window/ROW_NUMBER, subquery membership and set tuple counts.
