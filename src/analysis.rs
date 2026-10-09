@@ -673,11 +673,8 @@ fn analyze_query(
             }
         },
     );
-    let (column_domains, output) = refine_boolean_qualifying_outcomes(
-        column_domains,
-        output,
-        boolean_witness.as_ref(),
-    );
+    let (column_domains, output) =
+        refine_boolean_qualifying_outcomes(column_domains, output, boolean_witness.as_ref());
     sort_diagnostics(&mut diagnostics);
 
     // Only a plain one-to-one projection preserves all source-row truth
@@ -746,10 +743,11 @@ fn refine_boolean_qualifying_outcomes(
         domains
             .entry(column)
             .and_modify(|existing| {
-                *existing = match existing {
-                    ValueDomain::Unknown(_) => domain.clone(),
-                    other => intersect_domains(other, &domain),
-                };
+                if matches!(existing, ValueDomain::Unknown(_)) {
+                    *existing = domain.clone();
+                } else {
+                    *existing = intersect_domains(existing, &domain);
+                }
             })
             .or_insert(domain);
     }
