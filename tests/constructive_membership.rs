@@ -278,6 +278,37 @@ fn membership_case_counts_match_legacy_exact_truth_directions() {
 }
 
 #[test]
+fn intermediate_boundaries_require_producer_realization_instead_of_direct_writes() {
+    use sql_semantic_protocol::{local_pending_producers, GroupBoundaryKind};
+    let b = analyze(
+        "WITH left_cte AS (SELECT k FROM l WHERE k > 0), right_cte AS (SELECT k FROM r)
+         SELECT k FROM left_cte UNION ALL SELECT k FROM right_cte"
+    );
+    let ComposedSemantics::Resolved(ref semantics) = b.layers()[0].composed_semantics() else {
+        panic!("resolved");
+    };
+    let intermediate = semantics.set_operations().iter().flat_map(|op| op.operation().branches())
+        .filter_map(|branch| branch.witness_boundary())
+        .any(|boundary| boundary.is_intermediate());
+    let pending = local_pending_producers(semantics);
+    if intermediate {
+        assert!(!pending.is_empty());
+        for obligation in pending {
+            let WitnessObligation::Producer { boundary, physical_sources } = obligation else {
+                panic!("only unresolved producer requirements");
+            };
+            assert_eq!(boundary.kind(), GroupBoundaryKind::Intermediate);
+            assert!(physical_sources.iter().all(|source| source == "l" || source == "r"));
+        }
+    } else {
+        let normalized = local_constructive_witnesses(semantics);
+        let set = normalized.iter().find(|proof| proof.operator() == WitnessOperator::Set)
+            .expect("set evidence");
+        assert!(matches!(set.qualifying(), WitnessDirection::Residual { .. }));
+    }
+}
+
+#[test]
 fn unsupported_set_modifiers_do_not_get_normalized_as_constructive() {
     let (w, _) = proof(
         "SELECT k FROM l UNION ALL SELECT k FROM r LIMIT 1",
