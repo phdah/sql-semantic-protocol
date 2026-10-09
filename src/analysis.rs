@@ -733,6 +733,30 @@ fn analyze_query(
                     if !items.is_empty() && modifiers.is_empty()
                         && items.iter().all(|item| !matches!(item, Expr::GroupingSets(_) | Expr::Cube(_) | Expr::Rollup(_)))));
 
+    let (plain_goal_output_shape, ranked_goal_output_shape) =
+        if query.with.is_none() && query.limit_clause.is_none() && query.fetch.is_none() {
+            match query.body.as_ref() {
+                SetExpr::Select(select)
+                    if select.top.is_none()
+                        && select.distinct.is_none()
+                        && select.selection.is_none()
+                        && select.having.is_none()
+                        && select.prewhere.is_none()
+                        && select.connect_by.is_none()
+                        && select.lateral_views.is_empty()
+                        && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                            if items.is_empty() && modifiers.is_empty())
+                        && select.from.len() == 1
+                        && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. }) =>
+                {
+                    (select.qualify.is_none(), select.qualify.is_some() && select.from[0].joins.is_empty())
+                }
+                _ => (false, false),
+            }
+        } else {
+            (false, false)
+        };
+
     QueryStatement::new(
         relation_analysis.sources,
         relation_analysis.dependencies.into_iter().collect(),
@@ -748,6 +772,7 @@ fn analyze_query(
     .with_row_preserving_projection(row_preserving_projection)
     .with_proven_single_row_output(proven_single_row_output)
     .with_group_row_correspondence(group_rows_match_surviving_groups)
+    .with_goal_shapes(plain_goal_output_shape, ranked_goal_output_shape)
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))
