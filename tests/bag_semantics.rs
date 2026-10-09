@@ -6,7 +6,7 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_sql, dialect_from_name, BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys,
-    BagLaw, BagScope, BagTupleIdentity, CountBounds, JoinKind, ProtocolStatement,
+    BagLaw, BagScope, BagSourceIdentity, BagTupleIdentity, CountBounds, JoinKind, ProtocolStatement,
     SetMultiplicityRule,
 };
 
@@ -153,4 +153,117 @@ fn negative_counts_and_open_world_are_not_promoted_to_feasible_source_plans() {
             reason: "right_open_world"
         }
     ));
+}
+
+#[test]
+fn duckdb_complete_histograms_prove_positive_duplicate_and_absent_tuple_counts() {
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE l(k INTEGER); CREATE TABLE r(k INTEGER);
+         INSERT INTO l VALUES (1), (1), (1), (2), (NULL), (NULL);
+         INSERT INTO r VALUES (1), (3), (NULL), (NULL), (NULL);",
+    )
+    .expect("SQL seed");
+
+    for (rule, keyword) in [
+        (SetMultiplicityRule::Sum, "UNION ALL"),
+        (SetMultiplicityRule::UnionDistinct, "UNION"),
+        (SetMultiplicityRule::Minimum, "INTERSECT ALL"),
+        (SetMultiplicityRule::IntersectDistinct, "INTERSECT"),
+        (SetMultiplicityRule::SaturatingDifference, "EXCEPT ALL"),
+        (SetMultiplicityRule::ExceptDistinct, "EXCEPT"),
+    ] {
+        let mut histogram_sum = 0;
+        for (index, literal) in ["1", "2", "3", "NULL"].iter().enumerate() {
+            let l_count = observed(
+                &db,
+                &format!("SELECT COUNT(*) FROM l WHERE k IS NOT DISTINCT FROM {literal}"),
+            );
+            let r_count = observed(
+                &db,
+                &format!("SELECT COUNT(*) FROM r WHERE k IS NOT DISTINCT FROM {literal}"),
+            );
+            let tuple = BagTupleIdentity::new(index as u64);
+            let l = exact(l_count, BagScope::CandidateTuple)
+                .with_tuple_identity(tuple)
+                .with_source(BagSourceIdentity::new("l", "l").expect("physical source"));
+            let r = exact(r_count, BagScope::CandidateTuple)
+                .with_tuple_identity(tuple)
+                .with_source(BagSourceIdentity::new("r", "r").expect("physical source"));
+            let expected = checked_count(BagLaw::SetTuple(rule).transfer(l, Some(r)));
+            let actual = observed(
+                &db,
+                &format!(
+                    "SELECT COUNT(*) FROM
+                     (SELECT k FROM l {keyword} SELECT k FROM r) AS output
+                     WHERE k IS NOT DISTINCT FROM {literal}"
+                ),
+            );
+            assert_eq!(expected, actual, "{keyword} candidate {literal}");
+            histogram_sum += expected;
+        }
+        assert_eq!(
+            histogram_sum,
+            observed(
+                &db,
+                &format!("SELECT COUNT(*) FROM (SELECT k FROM l {keyword} SELECT k FROM r) AS output"),
+            ),
+            "{keyword} complete histogram must account for every result tuple"
+        );
+    }
+}
+
+#[test]
+fn duckdb_group_rank_and_multirow_write_counts_preserve_cardinality() {
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE t(id INTEGER, k INTEGER);
+         INSERT INTO t VALUES (1, 1), (2, 1), (3, 2), (4, NULL), (5, NULL);",
+    ).expect("SQL setup");
+
+    let count = |q: &str| observed(&db, q);
+    let grouping = BagLaw::GroupKey;
+    for (literal, source_count) in [("1", 2), ("2", 1), ("NULL", 2)] {
+        let actual = count(&format!(
+            "SELECT COUNT(*) FROM (SELECT k FROM t GROUP BY k) AS result
+             WHERE k IS NOT DISTINCT FROM {literal}"
+        ));
+        assert_eq!(
+            checked_count(grouping.transfer(exact(source_count, BagScope::CandidateTuple), None)),
+            actual
+        );
+    }
+    let rank = BagLaw::RankedPrefix { limit: 2, strict_total_order: true };
+    let actual = count("SELECT COUNT(*) FROM
+        (SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS position FROM t)
+        WHERE position <= 2");
+    assert_eq!(
+        checked_count(rank.transfer(exact(5, BagScope::CompleteRelation), None)),
+        actual
+    );
+
+    db.execute_batch("DELETE FROM t WHERE id IN (2, 4)").expect("delete");
+    assert_eq!(
+        checked_count(BagLaw::DeleteRows.transfer(
+            exact(5, BagScope::CompleteRelation),
+            Some(exact(2, BagScope::CompleteRelation))
+        )),
+        count("SELECT COUNT(*) FROM t")
+    );
+    db.execute_batch("UPDATE t SET k = 99 WHERE id = 1").expect("update");
+    assert_eq!(
+        checked_count(BagLaw::UpdateRows.transfer(
+            exact(3, BagScope::CompleteRelation),
+            Some(exact(1, BagScope::CompleteRelation))
+        )),
+        count("SELECT COUNT(*) FROM t")
+    );
+    db.execute_batch("INSERT INTO t VALUES (6, 1), (7, NULL)").expect("append");
+    assert_eq!(
+        checked_count(BagLaw::AppendRows.transfer(
+            exact(3, BagScope::CompleteRelation),
+            Some(exact(2, BagScope::CompleteRelation))
+        )),
+        count("SELECT COUNT(*) FROM t")
+    );
 }
