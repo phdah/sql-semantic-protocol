@@ -209,8 +209,10 @@ impl QueryStatement {
         }
         if let Some((witness, alias)) = projected {
             if witness.is_exact() {
-                self.row_conditions.exactness =
-                    self.row_conditions.exactness.without_projected_rank_where_residual();
+                self.row_conditions.exactness = self
+                    .row_conditions
+                    .exactness
+                    .without_projected_rank_where_residual();
                 self.output =
                     crate::window_witness::refine_projected_output(&self.output, &alias, &witness);
             }
