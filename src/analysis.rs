@@ -480,11 +480,7 @@ fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
             diagnostics,
         )
         .with_produced_relation(Some(target.clone()))
-        .with_write(Some(WriteOperation::delete(
-            target,
-            predicate,
-            domains,
-        ))),
+        .with_write(Some(WriteOperation::delete(target, predicate, domains))),
     )
 }
 
