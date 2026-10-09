@@ -251,7 +251,7 @@ fn derive(
     if !subquery.joins().is_empty() || !subquery.diagnostics().is_empty() {
         return residual("nested_join_or_analysis_diagnostic");
     }
-    if subquery.condition_exactness().required_assumptions().len() > 0 {
+    if !subquery.condition_exactness().required_assumptions().is_empty() {
         return residual("undeclared_inner_comparison_assumptions");
     }
     if subquery.condition_exactness().residual_conditions().iter().any(|item| {
