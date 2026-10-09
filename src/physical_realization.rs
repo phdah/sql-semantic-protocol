@@ -894,3 +894,99 @@ pub fn physical_row_count_plan(
     WitnessDirection::feasible(vec![case])
         .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
 }
+
+/// Construct one jointly sufficient closed-world source assignment for a set
+/// of terminal row-count goals, preserving shared physical row identity.
+///
+/// This solver is intentionally restricted to exactly row-preserving,
+/// schema-checked source chains: two terminal projections of the same physical
+/// table require the *same* complete source-row count. Conflicts are impossible
+/// in this subset, not independently satisfiable examples. Filters, joins,
+/// writes, grouping and unknown external constraints stay residual.
+pub fn physical_joint_row_count_plan(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> WitnessDirection {
+    if targets.is_empty() {
+        return residual(PhysicalProofGap::NoWitness);
+    }
+    let mut outputs = BTreeMap::<String, u64>::new();
+    let mut sources = BTreeMap::<String, u64>::new();
+    for &(layer_id, rows) in targets {
+        if outputs
+            .insert(layer_id.to_string(), rows)
+            .is_some_and(|existing| existing != rows)
+        {
+            return WitnessDirection::Impossible;
+        }
+        let individual = physical_row_count_plan(bundle, layer_id, rows);
+        match individual {
+            WitnessDirection::Impossible => return WitnessDirection::Impossible,
+            WitnessDirection::Residual { .. } => {
+                return residual(PhysicalProofGap::LocalWitnessUnproven);
+            }
+            WitnessDirection::Feasible(_) => {}
+        }
+        // Establish a constructive positive count on every non-source-free
+        // path even for a requested zero. This rejects a filtered zero proof
+        // that only works by emptying the whole source and cannot be combined
+        // with an unrelated positive goal for that same physical source.
+        let positive = physical_row_count_plan(bundle, layer_id, 1);
+        if !matches!(positive, WitnessDirection::Feasible(_)) {
+            return residual(PhysicalProofGap::NonInvertibleTransformation);
+        }
+        let physical = physical_source_plan(bundle, layer_id);
+        match physical.sources() {
+            [] => {
+                if rows != 1 {
+                    return WitnessDirection::Impossible;
+                }
+            }
+            [relation] => {
+                if sources
+                    .insert(relation.clone(), rows)
+                    .is_some_and(|existing| existing != rows)
+                {
+                    return WitnessDirection::Impossible;
+                }
+            }
+            _ => return residual(PhysicalProofGap::UnboundPhysicalSource),
+        }
+    }
+    let origin = outputs.keys().next().map(String::as_str).unwrap_or("");
+    let mut obligations = Vec::new();
+    for (relation, rows) in sources {
+        let Some(boundary) = WitnessBoundary::new(&relation, GroupBoundaryKind::Physical, origin)
+        else {
+            return residual(PhysicalProofGap::UnboundPhysicalSource);
+        };
+        let Some(bounds) = CountBounds::new(rows, Some(rows)) else {
+            return residual(PhysicalProofGap::LocalWitnessUnproven);
+        };
+        obligations.push(WitnessObligation::Rows {
+            boundary: boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds,
+            predicate: WitnessFormula::IsNull {
+                term: WitnessTerm::Integer(1),
+                negated: true,
+            },
+            closed_world: true,
+        });
+        obligations.push(WitnessObligation::ClosedWorld {
+            boundary,
+            coverage: ClosedWorldCoverage::EntireRelation,
+        });
+    }
+    for (layer_id, rows) in outputs {
+        let Some(bounds) = CountBounds::new(rows, Some(rows)) else {
+            return residual(PhysicalProofGap::LocalWitnessUnproven);
+        };
+        obligations.push(WitnessObligation::OutputRows { layer_id, bounds });
+    }
+    let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) else {
+        return residual(PhysicalProofGap::LocalWitnessUnproven);
+    };
+    WitnessDirection::feasible(vec![case])
+        .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
+}
