@@ -191,9 +191,7 @@ fn null_disjunction_has_jointly_evaluated_exact_truth_directions() {
 
 #[test]
 fn affine_integer_bound_survives_exact_null_conjunct() {
-    let bundle = typed_bundle(
-        "SELECT a FROM t WHERE CAST(a AS BIGINT) + 1 > 3 AND b IS NULL",
-    );
+    let bundle = typed_bundle("SELECT a FROM t WHERE CAST(a AS BIGINT) + 1 > 3 AND b IS NULL");
     let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
         panic!("expected composition");
     };
