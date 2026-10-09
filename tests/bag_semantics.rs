@@ -5,7 +5,7 @@ mod common;
 use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_sql, dialect_from_name, BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys,
+    analyze_sql, dialect_from_name, equijoin_key_histogram, BagCountProof, BagCountTarget, BagEvidence, BagHistogramProof, BagJoinKeys, BagKeyHistogram,
     BagLaw, BagScope, BagSourceIdentity, BagTupleIdentity, CountBounds, JoinKind,
     ProtocolStatement, SetMultiplicityRule,
 };
@@ -279,4 +279,70 @@ fn duckdb_group_rank_and_multirow_write_counts_preserve_cardinality() {
         )),
         count("SELECT COUNT(*) FROM t")
     );
+}
+
+#[test]
+fn duckdb_join_histogram_oracle_covers_mixed_many_to_many_and_null_keys() {
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE l(k INTEGER); CREATE TABLE r(k INTEGER);
+         INSERT INTO l VALUES (1), (1), (1), (2), (NULL), (NULL);
+         INSERT INTO r VALUES (1), (1), (3), (3), (3), (3), (NULL);",
+    )
+    .expect("seed SQL");
+
+    let source = |name: &str| BagSourceIdentity::new(name, name).expect("relation");
+    let values = |items: &[(Option<i64>, u64)]| {
+        items
+            .iter()
+            .map(|(value, count)| (
+                value.map_or(ConstraintValue::Null, ConstraintValue::Integer),
+                *count,
+            ))
+            .collect::<Vec<_>>()
+    };
+    let left = BagKeyHistogram::new(
+        source("l"),
+        values(&[(Some(1), 3), (Some(2), 1), (None, 2)]),
+    )
+    .expect("complete left");
+    let right = BagKeyHistogram::new(
+        source("r"),
+        values(&[(Some(1), 2), (Some(3), 4), (None, 1)]),
+    )
+    .expect("complete right");
+
+    for (kind, join) in [
+        (JoinKind::Inner, "JOIN"),
+        (JoinKind::Left, "LEFT JOIN"),
+        (JoinKind::Right, "RIGHT JOIN"),
+        (JoinKind::Full, "FULL JOIN"),
+    ] {
+        let proof = equijoin_key_histogram(kind, &left, &right);
+        let BagHistogramProof::Exact(entries) = proof else {
+            panic!("known integer keys must be exact: {kind:?}");
+        };
+        let sql = format!("SELECT COALESCE(l.k, r.k) AS k FROM l {join} r ON l.k = r.k");
+        for (value, rows) in &entries {
+            let literal = match value {
+                ConstraintValue::Null => "NULL".to_string(),
+                ConstraintValue::Integer(n) => n.to_string(),
+                other => panic!("unsupported key in integer oracle: {other:?}"),
+            };
+            let actual = observed(
+                &db,
+                &format!(
+                    "SELECT COUNT(*) FROM ({sql}) AS bag
+                     WHERE k IS NOT DISTINCT FROM {literal}"
+                ),
+            );
+            assert_eq!(*rows, actual, "{join}: {literal}");
+        }
+        let expected = entries.values().sum::<u64>();
+        assert_eq!(
+            expected,
+            observed(&db, &format!("SELECT COUNT(*) FROM ({sql}) AS bag")),
+            "{join}: total bag multiplicity"
+        );
+    }
 }
