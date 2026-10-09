@@ -992,7 +992,7 @@
         },
         "gap": {
           "description": "Proof limitation. null means supported single-row classifications only, not a proof of full target cardinality.",
-          "enum": [null, "unknown_target", "missing_producer", "ambiguous_producer", "cycle", "partial_producer", "unsupported_dependency", "unresolved_semantics", "no_witness", "local_witness_unproven", "multiple_witnesses", "non_invertible_transformation", "unsupported_operator", "intermediate_boundary", "unbound_physical_source"]
+          "enum": [null, "unknown_target", "missing_producer", "ambiguous_producer", "cycle", "partial_producer", "unsupported_dependency", "unresolved_semantics", "no_witness", "conflicting_domains", "local_witness_unproven", "multiple_witnesses", "non_invertible_transformation", "unsupported_operator", "intermediate_boundary", "unbound_physical_source"]
         }
       }
     },
