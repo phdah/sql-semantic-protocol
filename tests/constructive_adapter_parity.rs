@@ -68,3 +68,39 @@ fn dbt_catalog_and_direct_sql_normalize_the_same_source_boolean_obligations() {
     assert!(matches!(dbt.qualifying(), WitnessDirection::Feasible(_)));
     assert!(matches!(dbt.rejected(), WitnessDirection::Feasible(_)));
 }
+
+#[test]
+fn schema_evidence_source_kinds_share_one_canonical_witness_model() {
+    use sql_semantic_protocol::SchemaSourceKind;
+    let dialect = PostgreSqlDialect {};
+    let mut baseline = None;
+    for kind in [
+        SchemaSourceKind::DbtCatalog,
+        SchemaSourceKind::DbtManifest,
+        SchemaSourceKind::ExternalMetadata,
+    ] {
+        let source = RelationSchema::new(
+            "warehouse.raw.orders", vec![
+                SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").expect("id"),
+                SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").expect("amount"),
+            ]
+        ).expect("source schema").with_source_kind(kind);
+        let catalog = RelationCatalog::from_schemas(&[source]).expect("catalog");
+        let sql_input = SqlInput::inline(SQL);
+        let bundle = analyze_configured_inputs_with_catalog(
+            &[ConfiguredSqlInput::new("direct", &sql_input, "postgresql", &dialect)],
+            &catalog,
+        ).expect("analysis");
+        let ComposedSemantics::Resolved(ref semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("resolved");
+        };
+        let witness = local_constructive_witnesses(semantics).into_iter()
+            .find(|w| w.operator() == WitnessOperator::Boolean)
+            .expect("typed witness");
+        if let Some(ref expected) = baseline {
+            assert_eq!(witness.qualifying(), expected);
+        } else {
+            baseline = Some(witness.qualifying().clone());
+        }
+    }
+}
