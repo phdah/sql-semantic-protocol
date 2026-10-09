@@ -47,6 +47,7 @@ pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
     AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
+    ComposedSubqueryWitness,
     ComposedSemantics, ComposedSetOperation, ComposedWindowWitness, CompositionDiagnostic,
     CompositionFailureReason, ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef,
     GraphComponent, GraphEdge, GroupBoundaryKind, InputAnalysisError, RelationResolution,
