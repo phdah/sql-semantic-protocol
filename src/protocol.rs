@@ -1943,7 +1943,6 @@ impl SubquerySemantics {
         joins: Vec<Join>,
         output: Output,
         row_conditions: RowConditions,
-        row_shape_preserves_candidates: bool,
         diagnostics: Vec<Diagnostic>,
     ) -> Self {
         dependencies.sort();
@@ -1957,9 +1956,14 @@ impl SubquerySemantics {
             joins,
             output,
             row_conditions,
-            row_shape_preserves_candidates,
+            row_shape_preserves_candidates: false,
             diagnostics,
         }
+    }
+
+    pub(crate) fn with_row_shape_preserves_candidates(mut self, preserves: bool) -> Self {
+        self.row_shape_preserves_candidates = preserves;
+        self
     }
 
     /// Return whether the nested SELECT preserves candidate-row existence without row-shaping.
