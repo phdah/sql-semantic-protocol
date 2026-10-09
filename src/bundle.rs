@@ -689,7 +689,7 @@ pub struct ResolvedComposedSemantics {
     dependencies: Vec<String>,
     column_domains: Vec<ColumnDomain>,
     join_equalities: Vec<ComposedJoinEquality>,
-    join_witnesses: Box<[crate::join_witness::JoinWitness]>, 
+    join_witnesses: Box<[crate::join_witness::JoinWitness]>,
     set_operations: Box<[ComposedSetOperation]>,
     group_witnesses: Box<[ComposedGroupWitness]>,
     window_witnesses: Box<[ComposedWindowWitness]>,
