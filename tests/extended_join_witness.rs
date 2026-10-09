@@ -9,7 +9,6 @@ use sql_semantic_protocol::{
     ComposedSemantics, ConfiguredSqlInput, JoinSide, JoinWitness, JoinWitnessDirection,
     JoinWitnessShape, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
-use sqlparser::parser::Parser;
 
 fn schema(name: &str) -> RelationSchema {
     RelationSchema::new(
@@ -39,18 +38,6 @@ fn analyze(sql: &str, dialect: &str) -> AnalysisBundle {
         &catalog,
     )
     .unwrap_or_else(|error| panic!("analysis for {dialect} {sql}: {error}"))
-}
-
-/// Exercise each exposed dialect when its parser accepts a syntax variant.
-fn analyze_if_parsed(sql: &str, dialect: &str) -> Option<AnalysisBundle> {
-    let parser = dialect_from_name(dialect).expect("documented dialect");
-    match Parser::parse_sql(parser.as_ref(), sql) {
-        Ok(_) => Some(analyze(sql, dialect)),
-        Err(error) => {
-            eprintln!("{dialect} rejects join syntax at the parser boundary: {error}");
-            None
-        }
-    }
 }
 
 fn witnesses(bundle: &AnalysisBundle) -> &[JoinWitness] {
@@ -127,8 +114,7 @@ fn left_right_and_full_preserve_unmatched_null_and_duplicate_rows() {
         assert_eq!(count(&db, sql), expected_count, "{kind}");
         for &dialect in DIALECTS {
             let query = format!("SELECT l.id FROM {sql}");
-            let bundle = analyze_if_parsed(&query, dialect)
-                .unwrap_or_else(|| panic!("{dialect} must parse standard {kind} JOIN syntax"));
+            let bundle = analyze(&query, dialect);
             let [witness] = witnesses(&bundle) else {
                 panic!("expected one {kind} witness in {dialect}");
             };
@@ -174,9 +160,7 @@ fn semi_and_anti_witnesses_are_duplicate_insensitive() {
         assert_eq!(count(&db, sql), expected_count);
         let query = format!("SELECT l.id FROM {sql}");
         for &dialect in DIALECTS {
-            let Some(bundle) = analyze_if_parsed(&query, dialect) else {
-                continue;
-            };
+            let bundle = analyze(&query, dialect);
             let [witness] = witnesses(&bundle) else {
                 panic!("one semi/anti witness in {dialect}")
             };
@@ -192,8 +176,7 @@ fn inequality_matches_and_nulls_follow_three_valued_on_logic() {
     assert_eq!(count(&db, "l LEFT JOIN r ON l.k < r.k"), 5);
     let query = "SELECT l.id FROM l LEFT JOIN r ON l.k < r.k";
     for &dialect in DIALECTS {
-        let bundle = analyze_if_parsed(query, dialect)
-            .unwrap_or_else(|| panic!("{dialect} must parse standard inequality JOIN syntax"));
+        let bundle = analyze(query, dialect);
         let [witness] = witnesses(&bundle) else {
             panic!("inequality witness in {dialect}")
         };
@@ -216,8 +199,7 @@ fn self_join_preserves_distinct_physical_source_instances() {
     assert_eq!(count(&db, "l a LEFT JOIN l b ON a.k = b.k"), 7);
     let query = "SELECT a.id FROM l a LEFT JOIN l b ON a.k = b.k";
     for &dialect in DIALECTS {
-        let bundle = analyze_if_parsed(query, dialect)
-            .unwrap_or_else(|| panic!("{dialect} must parse standard self JOIN syntax"));
+        let bundle = analyze(query, dialect);
         let [witness] = witnesses(&bundle) else {
             panic!("self-join witness in {dialect}")
         };
