@@ -380,13 +380,12 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                         WitnessDirection::Impossible | WitnessDirection::Residual { .. } => true,
                     };
                     if physical(proofs[0].qualifying()) && physical(proofs[0].rejected()) {
-                        let still_residual = matches!(
-                            proofs[0].qualifying(),
-                            WitnessDirection::Residual { .. }
-                        ) || matches!(
-                            proofs[0].rejected(),
-                            WitnessDirection::Residual { .. }
-                        );
+                        let still_residual =
+                            matches!(proofs[0].qualifying(), WitnessDirection::Residual { .. })
+                                || matches!(
+                                    proofs[0].rejected(),
+                                    WitnessDirection::Residual { .. }
+                                );
                         return PhysicalSourcePlan {
                             target_layer_id: target_layer_id.to_string(),
                             nodes: walker.nodes,
