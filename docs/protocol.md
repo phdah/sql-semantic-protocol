@@ -844,3 +844,43 @@ shape and write-kind enum change, this is a breaking contract change requiring
 a major SemVer release through Release Please. SQL, dbt-compiled SQL and other
 SQL-bearing adapters share the same parser-independent representation; metadata
 adapters do not invent mutation operations.
+
+### Canonical DML effects and observable row-count conservation
+
+For every partial mutation, the bundle contains a `write_effects` entry with
+`layer_id`, resolved `target`, sorted resolved `sources`, the `state_effect`
+and `target_constraints`. The latter is either a full canonical
+`relationConstraintSet` including constraint enforcement, key columns and
+provenance, or `null` when there is no evidence. `null` **does not**
+mean an unconstrained target. Primary, unique, foreign-key, not-null, and
+accepted-value constraints retain their normal canonical meanings. For
+enforced primary and unique keys, generators must validate the candidate
+poststate, including collisions with untouched pre-existing rows, before
+claiming the mutation is feasible. SQL NULL in a unique key is not a primary
+key value; use the canonical nullability and source-engine equality rules.
+
+Every `state_effect.cardinality_rule` is conditional upon a successful SQL
+statement and verified logical target-row action counts:
+
+| Rule | DML | Resulting target count |
+| --- | --- | --- |
+| `initial_plus_inserted` | INSERT SELECT | initial + inserted |
+| `initial` | UPDATE | initial |
+| `initial_minus_deleted` | DELETE | initial - deleted |
+| `initial_plus_inserted_minus_deleted` | MERGE | initial + inserted - deleted |
+
+The Rust `WriteStateEffect::resulting_rows(initial, WriteRowCounts)` checks
+this identity with overflow, invalid action kinds, more existing target rows
+affected than available and unconditional-DELETE mismatches returning typed
+`WriteCountError` values. It **never** predicts logical action counts from
+input rows or proves feasibility against constraints by arithmetic alone.
+`updated + deleted` denotes distinct pre-existing target rows; a conflicting
+multi-source MERGE is residual until its match cardinalities are verified.
+
+`selection_domains` on standalone UPDATE/DELETE and `domains` on each
+`merge_clause` / effect branch are conservative **necessary** predicate
+domains, not an unconditional witness that all rows in those intervals match.
+The original predicate retains AND/OR and SQL UNKNOWN distinctions. For
+MERGE NOT MATCHED branches, the anti-match obligation is separate from the
+branch's local WHERE domain. SQL statement order, first-applicable MERGE
+clause precedence and unsupported actions remain authoritative.
