@@ -77,9 +77,9 @@ pub use constraints::{
     RelationConstraint, RelationConstraintSet,
 };
 pub use constructive::{
-    local_constructive_witnesses, local_pending_producers, ConstructiveWitness, CountBounds, ProofStrength, RowQuantifier,
-    RowVariable, WitnessBoundary, WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation,
-    WitnessOperator, WitnessTerm,
+    local_constructive_witnesses, local_pending_producers, ConstructiveWitness, CountBounds,
+    ProofStrength, RowQuantifier, RowVariable, WitnessBoundary, WitnessCase, WitnessDirection,
+    WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{
