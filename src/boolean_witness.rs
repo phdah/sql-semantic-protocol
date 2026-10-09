@@ -319,11 +319,10 @@ impl BooleanWitness {
     fn recheck_truth_directions(&mut self) {
         let mut columns = Vec::new();
         self.condition.columns(&mut columns);
-        let candidate = self.condition.is_exact()
-            && !columns.is_empty()
-            && columns
-                .iter()
-                .all(|column| column.relation() == Some(&self.source_relation));
+        let resolved_source = columns
+            .iter()
+            .all(|column| column.relation() == Some(&self.source_relation));
+        let candidate = self.condition.is_exact() && !columns.is_empty() && resolved_source;
         let prefix_licensed = !self.condition.contains_string_prefix()
             || (self
                 .comparison_assumptions
@@ -345,8 +344,12 @@ impl BooleanWitness {
         } else {
             BTreeSet::new()
         };
-        let reason = if !candidate {
-            "unresolved, noninvertible or unsupported source-row predicate"
+        let reason = if columns.is_empty() {
+            "predicate has no resolved source columns"
+        } else if !resolved_source {
+            "predicate columns do not resolve to the same source identity"
+        } else if !self.condition.is_exact() {
+            "a boolean branch lacks proven source datatype or supported semantics"
         } else if !prefix_licensed {
             "LIKE prefix requires binary_collation and no_char_padding attestations"
         } else if restrictions.is_none() {
