@@ -315,7 +315,10 @@ fn widening_integer_casts_are_invertible_and_narrowing_casts_are_residual() {
         };
         let witness = semantics.boolean_witnesses()[0].witness();
         assert!(
-            matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }),
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
             "{sql}"
         );
     }
