@@ -427,3 +427,103 @@ fn intermediate_group_pending_producer_identifies_its_own_physical_source() {
             if boundary.relation() == "stage_l" && physical_sources == &["l".to_string()]
     )));
 }
+
+#[test]
+fn negative_partner_and_subquery_proofs_close_complete_physical_relations() {
+    use sql_semantic_protocol::{ClosedWorldCoverage, GroupBoundaryKind};
+
+    for (sql, operator, relation) in [
+        (
+            "SELECT l.k FROM l LEFT JOIN r ON l.k = r.k",
+            WitnessOperator::Join,
+            "r",
+        ),
+        (
+            "SELECT l.k FROM l WHERE NOT EXISTS (SELECT 1 FROM r WHERE r.k = l.k)",
+            WitnessOperator::Subquery,
+            "r",
+        ),
+    ] {
+        let (proof, wire) = proof(sql, operator);
+        assert!(matches!(proof.qualifying(), WitnessDirection::Feasible(_)));
+        let both = [proof.qualifying(), proof.rejected()];
+        let closures = both.into_iter().flat_map(|direction| match direction {
+            WitnessDirection::Feasible(cases) => cases.iter().collect::<Vec<_>>(),
+            _ => Vec::new(),
+        });
+        assert!(closures.into_iter().any(|case| case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::ClosedWorld { boundary, coverage: ClosedWorldCoverage::EntireRelation }
+                    if boundary.relation() == relation && boundary.kind() == GroupBoundaryKind::Physical
+            )
+        })), "missing physical closure for {sql}");
+
+        let encoded = &wire["layers"][0]["composed_semantics"]["constructive_witnesses"];
+        assert!(encoded.as_array().expect("canonical witnesses").iter().any(|proof| {
+            proof["qualifying"]["cases"].as_array().into_iter().flatten()
+                .chain(proof["rejected"]["cases"].as_array().into_iter().flatten())
+                .any(|case| {
+                    case["obligations"].as_array().into_iter().flatten().any(|item| {
+                        item["kind"] == "closed_world"
+                            && item["coverage"]["kind"] == "entire_relation"
+                            && item["boundary"]["relation"] == relation
+                    })
+                })
+        }));
+    }
+}
+
+#[test]
+fn absent_set_tuple_closes_only_candidate_class_not_entire_relation() {
+    use sql_semantic_protocol::ClosedWorldCoverage;
+
+    let (proof, wire) = proof(
+        "SELECT k FROM l EXCEPT ALL SELECT k FROM r",
+        WitnessOperator::Set,
+    );
+    let directions = [proof.qualifying(), proof.rejected()];
+    let all = directions.into_iter().flat_map(|direction| match direction {
+        WitnessDirection::Feasible(cases) => cases.iter().collect::<Vec<_>>(),
+        _ => Vec::new(),
+    });
+    let mut found = false;
+    for case in all {
+        for obligation in case.obligations() {
+            if let WitnessObligation::SetTuple {
+                matching_rows: 0,
+                branch_identity,
+                boundary,
+                tuple_columns,
+                ..
+            } = obligation {
+                assert!(case.obligations().iter().any(|other| matches!(
+                    other,
+                    WitnessObligation::ClosedWorld {
+                        boundary: closed,
+                        coverage: ClosedWorldCoverage::CandidateTuple {
+                            branch_identity: closed_branch,
+                            columns
+                        }
+                    } if closed.relation() == boundary.relation()
+                        && closed_branch == branch_identity
+                        && columns == tuple_columns
+                )));
+                found = true;
+            }
+        }
+    }
+    assert!(found, "EXCEPT ALL must prove a zero candidate-tuple count");
+    let wire = &wire["layers"][0]["composed_semantics"]["constructive_witnesses"];
+    assert!(wire.as_array().expect("canonical proofs").iter().any(|item| {
+        [ "qualifying", "rejected" ].into_iter().any(|direction| {
+            item[direction]["cases"].as_array().into_iter().flatten().any(|case| {
+                case["obligations"].as_array().into_iter().flatten().any(|ob| {
+                    ob["kind"] == "closed_world"
+                        && ob["coverage"]["kind"] == "candidate_tuple"
+                        && ob["coverage"]["columns"].is_array()
+                })
+            })
+        })
+    }));
+}
