@@ -135,7 +135,7 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                 .iter()
                 .map(|item| {
                     let goal = item.goal();
-                    json!({
+                    let mut entry = json!({
                         "layer_id": goal.layer_id(),
                         "requested": {
                             "rows": goal.rows(),
@@ -154,7 +154,11 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                             "min_rows": item.min_rows(),
                             "max_rows": item.max_rows()
                         }
-                    })
+                    });
+                    if let Some(witness) = item.witness() {
+                        entry["witness"] = outcome_witness_to_value(witness);
+                    }
+                    entry
                 })
                 .collect(),
         );
@@ -171,6 +175,56 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
     }
 
     value
+}
+
+fn outcome_witness_to_value(witness: &crate::outcome_proofs::OutcomeWitness) -> Value {
+    use crate::outcome_proofs::OutcomeWitness;
+    match witness {
+        OutcomeWitness::Singleton => json!({ "kind": "singleton" }),
+        OutcomeWitness::EmptySources { relations } => {
+            json!({ "kind": "empty_sources", "relations": relations })
+        }
+        OutcomeWitness::SourceRows { relation, rows, columns } => json!({
+            "kind": "source_rows",
+            "relation": relation,
+            "rows": rows,
+            "columns": columns.iter().map(|column| json!({
+                "column": column.column(),
+                "values": column.values().iter().map(|entry| json!({
+                    "value": constraint_value_to_value(entry.value()), "rows": entry.rows()
+                })).collect::<Vec<_>>()
+            })).collect::<Vec<_>>()
+        }),
+        OutcomeWitness::JoinPairs { left, right, pairs } => json!({
+            "kind": "join_pairs",
+            "left": { "relation": left.relation(), "column": left.column(), "relation_instance": left.relation_instance() },
+            "right": { "relation": right.relation(), "column": right.column(), "relation_instance": right.relation_instance() },
+            "pairs": pairs
+        }),
+        OutcomeWitness::Groups { relation, key, groups, rows_per_group } => json!({
+            "kind": "groups", "relation": relation,
+            "key": column_ref_to_value(key), "groups": groups,
+            "rows_per_group": rows_per_group
+        }),
+        OutcomeWitness::Ranked { relation, partition_key, order_by, rows } => json!({
+            "kind": "ranked", "relation": relation,
+            "partition_key": partition_key.as_ref().map(column_ref_to_value),
+            "order_by": order_by.iter().map(|key| json!({
+                "column": column_ref_to_value(key.column()),
+                "ascending": key.ascending(),
+                "nulls_first": key.nulls_first()
+            })).collect::<Vec<_>>(),
+            "rows": rows
+        }),
+        OutcomeWitness::SetTuples { tuples, case, values } => json!({
+            "kind": "set_tuples", "tuples": tuples,
+            "case": set_witness_case_to_value(case),
+            "values": values.iter().map(|item| json!({
+                "value": constraint_value_to_value(item.value()),
+                "rows": item.rows()
+            })).collect::<Vec<_>>()
+        })
+    }
 }
 
 fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> Value {
@@ -1000,20 +1054,24 @@ fn set_witness_direction_to_value(direction: &crate::protocol::SetWitnessDirecti
         }),
         crate::protocol::SetWitnessDirection::Exact(cases) => json!({
             "status": "exact",
-            "cases": cases.iter().map(|case| json!({
-                "output_tuple_count": case.output_tuple_count(),
-                "obligations": case.obligations().iter().map(|obligation| json!({
-                    "branch_identity": obligation.branch_identity(),
-                    "boundary": {
-                        "kind": if obligation.boundary().is_intermediate() { "intermediate" } else { "physical" },
-                        "relation": obligation.boundary().relation(),
-                        "tuple_columns": obligation.boundary().tuple_columns()
-                    },
-                    "matching_tuple_count": obligation.matching_tuple_count()
-                })).collect::<Vec<_>>()
-            })).collect::<Vec<_>>()
+            "cases": cases.iter().map(set_witness_case_to_value).collect::<Vec<_>>()
         }),
     }
+}
+
+fn set_witness_case_to_value(case: &crate::protocol::SetWitnessCase) -> Value {
+    json!({
+        "output_tuple_count": case.output_tuple_count(),
+        "obligations": case.obligations().iter().map(|obligation| json!({
+            "branch_identity": obligation.branch_identity(),
+            "boundary": {
+                "kind": if obligation.boundary().is_intermediate() { "intermediate" } else { "physical" },
+                "relation": obligation.boundary().relation(),
+                "tuple_columns": obligation.boundary().tuple_columns()
+            },
+            "matching_tuple_count": obligation.matching_tuple_count()
+        })).collect::<Vec<_>>()
+    })
 }
 
 fn set_operand_to_value(operand: &SetOperand) -> Value {
