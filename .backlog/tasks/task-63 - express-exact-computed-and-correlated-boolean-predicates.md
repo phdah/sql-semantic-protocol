@@ -28,11 +28,17 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 <!-- AC:BEGIN -->
 - [ ] #1 Define typed relational/predicate constraints for a deliberately scoped invertible computed-expression class, safe LIKE-prefix conditions, and correlated AND/OR combinations.
 - [ ] #2 Preserve correlations across columns and NULL, source datatype, collation, casting and comparison assumptions; no accidental Cartesian widening.
-- [ ] #3 Retain default-deny residual diagnostics for unknown, noninvertible or dialect-sensitive cases instead of producing false exactness.
+- [x] #3 Retain default-deny residual diagnostics for unknown, noninvertible or dialect-sensitive cases instead of producing false exactness.
 - [ ] #4 Assert minimal safe output domains and exact constraints through composition and physical lineage, using DuckDB differential cases.
-- [ ] #5 Document the representation and tests for dialect variants; sql-tdg TASK-27 depends on this contract.
+- [x] #5 Document the representation and tests for dialect variants; sql-tdg TASK-27 depends on this contract.
 - [ ] #6 Supply typed, jointly satisfiable positive and provably rejected source witness obligations for supported expressions, retaining cross-column coupling and explicit complement/NULL semantics; mark directions that cannot be inverted exactly as residual so sql-tdg never infers correlated predicates itself.
 <!-- AC:END -->
+
+## Acceptance status
+
+- #3 complete: unsupported expressions, unknown datatypes and dialect-sensitive constructs retain residual proofs rather than being certified exact.
+- #5 complete for the introduced contract subset: schema and adapter/semantics documentation, shared-dialect NULL predicate tests, catalog-backed integer cases, and dbt/direct parity tests.
+- #1, #2, #4 and #6 remain incomplete: the initial implementation does not prove safe LIKE prefixes or nonidentity casts, derive all minimal physical output domains, or establish exact physical-lineage and schema-constrained satisfiability for all intended expressions.
 
 ## Implementation in progress
 
