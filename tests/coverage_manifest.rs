@@ -341,6 +341,19 @@ fn duckdb_oracles_cover_feasible_impossible_null_and_duplicate_cases() {
             case["expected_rows"].as_i64().expect("expected row count"),
             "{id}: observed SQL result changed"
         );
+        if let Some(expected) = case["expected_values"].as_str() {
+            let column = required_string(case, "snapshot_column");
+            let snapshot_query = format!(
+                "SELECT STRING_AGG(COALESCE(CAST({column} AS VARCHAR), 'NULL'), ',' \\
+                 ORDER BY {column} NULLS LAST) FROM ({}) AS coverage_oracle",
+                required_string(case, "sql")
+            );
+            let observed: Option<String> = connection
+                .query_row(&snapshot_query, [], |row| row.get(0))
+                .unwrap_or_else(|error| panic!("{id}: snapshot SQL failed: {error}"));
+            assert_eq!(observed.as_deref(), Some(expected), "{id}: full SQL output changed");
+        }
+
     }
     assert_eq!(
         kinds,
