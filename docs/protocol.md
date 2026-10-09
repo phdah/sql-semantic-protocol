@@ -159,6 +159,43 @@ The Rust APIs are `local_constructive_witnesses` and
 contract. Existing operator witnesses remain available for migration, but
 the canonical typed obligations are the new consumer-facing proof format.
 
+## Closed-world bag-count transfer foundation (TASK-69)
+
+The Rust API exposes `BagEvidence`, `BagScope`, `BagLaw`,
+`BagCountProof` and `BagCountTarget` as conservative cardinality
+**laws**, not as whole-source constructive witnesses. Evidence must
+identify either a complete relation or the complete multiplicity of one
+SQL-equal candidate tuple. Incomplete candidate sampling is never a
+proof of zero occurrences or anti-membership.
+
+Given complete evidence, `BagLaw::SetTuple` reuses the *existing*
+`SetMultiplicityRule`, including SQL NULL-equal DISTINCT/ALL tuple
+counts, checked SUM, MIN, and subtract-clamped-at-zero semantics.
+Other explicitly authorized transfer laws cover row-preserving
+projection, DISTINCT, one grouping key versus global aggregation,
+rank-prefix counts with proved strict ordering, known-key equijoins,
+and append/delete/update counts with complete affected subsets.
+Join pair multiplication is only valid when **all** candidate keys are
+proved equal and non-NULL; unknown key relationships fail closed.
+NULL join keys never compare equal under ordinary SQL equality.
+
+Results distinguish bounded, impossible and residual. Bounds, even exact
+bounds, are **not** certificates that a physical-source fixture exists;
+`BagCountProof::assess` only establishes entailed, impossible or
+unproved count targets. A residual never means an impossible row.
+Arithmetic overflow never silently produces a false finite upper bound.
+
+The existing emitted contract already owns set multiplicity
+(`set_operations[].operation.multiplicity_rule`) and local typed
+`set_tuple` / `set_result_tuple` obligations; no competing JSON
+wire format is introduced for this foundation. The library evaluator
+requires a caller to supply **proven** closed-world source scope and
+operator applicability. It does not yet infer those facts from the
+whole bundle, compose shared-source plans, or emit additional relation-
+wide closure obligations. These are still release-blocking parts of
+TASK-69 and TASK-68, and **no** unverified coverage-manifest cell
+has been upgraded.
+
 ## Source schemas
 For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
 types when a relation is present there. When a physical dependency or a physical relation referenced only by a canonical constraint
