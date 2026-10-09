@@ -228,3 +228,88 @@ fn independent_rows_and_sql_null_are_observed_by_duckdb_oracle() {
     assert!(matches!(proof.qualifying(), WitnessDirection::Feasible(_)));
     assert!(matches!(proof.rejected(), WitnessDirection::Feasible(_)));
 }
+
+#[test]
+fn local_join_case_counts_match_legacy_witness_for_both_directions() {
+    use sql_semantic_protocol::JoinWitnessDirection;
+    let b = bundle("SELECT l.a FROM l LEFT JOIN r ON l.k = r.k", "postgresql");
+    let ComposedSemantics::Resolved(ref resolved) = b.layers()[0].composed_semantics() else {
+        panic!("resolved");
+    };
+    let original = &resolved.join_witnesses()[0];
+    let current = local_constructive_witnesses(resolved).into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Join).expect("join");
+    for (old, new) in [
+        (original.qualifying(), current.qualifying()),
+        (original.rejected(), current.rejected()),
+    ] {
+        let (JoinWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new) else {
+            panic!("both directions proven");
+        };
+        assert_eq!(before.len(), after.len());
+        assert!(after.iter().all(|case| case.strength() == ProofStrength::Sufficient));
+    }
+}
+
+#[test]
+fn canonical_group_bounds_are_lossless_against_original_having_cases() {
+    use sql_semantic_protocol::GroupWitnessDirection;
+    let b = bundle(
+        "SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(ref resolved) = b.layers()[0].composed_semantics() else {
+        panic!("resolved");
+    };
+    let original = resolved.group_witnesses()[0].witness();
+    let current = local_constructive_witnesses(resolved).into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Group).expect("group");
+    for (old, new) in [
+        (original.qualifying(), current.qualifying()),
+        (original.rejected(), current.rejected()),
+    ] {
+        let (GroupWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new) else {
+            panic!("both directions proven");
+        };
+        assert_eq!(before.len(), after.len());
+        for (a, b) in before.iter().zip(after) {
+            assert!(b.obligations().iter().any(|obligation| matches!(obligation,
+                WitnessObligation::Group { rows, non_null, tests, .. }
+                    if rows.minimum() == a.min_rows()
+                        && rows.maximum() == a.max_rows()
+                        && non_null.minimum() == a.min_non_null()
+                        && non_null.maximum() == a.max_non_null()
+                        && tests == a.tests()
+            )));
+        }
+    }
+}
+
+#[test]
+fn canonical_window_predecessor_bounds_equal_legacy_rank_case() {
+    use sql_semantic_protocol::WindowWitnessDirection;
+    let b = bundle(
+        "SELECT ROW_NUMBER() OVER (ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn <= 2",
+        "snowflake",
+    );
+    let ComposedSemantics::Resolved(ref resolved) = b.layers()[0].composed_semantics() else {
+        panic!("resolved");
+    };
+    let original = resolved.window_witnesses()[0].witness();
+    let current = local_constructive_witnesses(resolved).into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Window).expect("window");
+    for (old, new) in [
+        (original.qualifying(), current.qualifying()),
+        (original.rejected(), current.rejected()),
+    ] {
+        let (WindowWitnessDirection::Exact(before), WitnessDirection::Feasible(after)) = (old, new) else {
+            panic!("both directions proven");
+        };
+        assert_eq!(after.len(), 1);
+        assert!(after[0].obligations().iter().any(|obligation| matches!(obligation,
+            WitnessObligation::Ranked { preceding, .. }
+                if preceding.minimum() == before.min_preceding()
+                    && preceding.maximum() == before.max_preceding()
+        )));
+    }
+}
