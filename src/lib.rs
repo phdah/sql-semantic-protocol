@@ -59,7 +59,8 @@ use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
 pub use bag_semantics::{
-    BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagScope, BagSourceIdentity, BagTupleIdentity,
+    BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagScope, BagSourceIdentity,
+    BagTupleIdentity,
 };
 pub use boolean_witness::{
     BooleanOperands, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
@@ -83,9 +84,9 @@ pub use constraints::{
     RelationConstraint, RelationConstraintSet,
 };
 pub use constructive::{
-    local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage, ConstructiveWitness, CountBounds,
-    ProofStrength, RowQuantifier, RowVariable, WitnessBoundary, WitnessCase, WitnessDirection,
-    WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
+    local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
+    ConstructiveWitness, CountBounds, ProofStrength, RowQuantifier, RowVariable, WitnessBoundary,
+    WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{
