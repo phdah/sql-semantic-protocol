@@ -38,12 +38,16 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 
 - #3 complete: unsupported expressions, unknown datatypes and dialect-sensitive constructs retain residual proofs rather than being certified exact.
 - #5 complete for the introduced contract subset: schema and adapter/semantics documentation, shared-dialect NULL predicate tests, catalog-backed integer cases, and dbt/direct parity tests.
-- #1, #2, #4 and #6 remain incomplete: the initial implementation does not prove safe LIKE prefixes or nonidentity casts, derive all minimal physical output domains, or establish exact physical-lineage and schema-constrained satisfiability for all intended expressions.
+- #1 remains incomplete: ordinary lossless integer CASTs and identity arithmetic are supported, but safe LIKE prefixes and other computed classes are not yet proven.
+- #2 remains incomplete: same-row correlations, signed source datatype, lossless casting, and SQL NULL are preserved; collation evidence for LIKE is not.
+- #4 remains incomplete: DuckDB differential checks cover NULL, AND/OR, signed comparisons and casts; identity-only physical lineage is mapped, but full minimal output-domain and broader lineage conformance remain missing.
+- #6 remains incomplete: jointly satisfiable signed integer/NULL witnesses honor enforced NOT NULL, primary-key and finite accepted-values constraints, including after adapter enrichment; unsupported expressions and unprovable relational constraints still cannot supply exact positive/negative obligations.
 
 ## Implementation in progress
 
-- Added typed single-source boolean witness trees for cross-column OR, preserving same-row AND/OR coupling and FALSE/UNKNOWN rejection.
-- Verified source-range and repeated-column joint feasibility for supported signed integers, plus overflow-free identity arithmetic.
-- NULL tests and catalog-proven signed-integer/literal comparisons can emit exact operator-local directions; untyped or unsupported expressions retain residual diagnostics.
-- Retained witness origin and boundary across composition and documented the initial public schema; added direct, cross-dialect and DuckDB tests.
-- **Still required before Done:** invertible computed expressions/CAST, safe LIKE prefixes, mixed predicate feasibility, deeper physical-lineage inversion, adapter parity fixtures and fuller differential conformance.
+- Implemented coupled single-source `AND`/`OR` trees and bounded joint satisfiability for repeated columns, preserving SQL FALSE and UNKNOWN rejection.
+- Added typed source-signed integer and NULL semantics, overflow-free identity arithmetic and ordinary lossless 16-/32-/64-bit signed CAST inversion; unsupported cast variants remain residual.
+- Recheck qualifying/rejected directions against enforced NOT NULL, primary-key and accepted-values constraints after adapter enrichment; unknown or dependent foreign-key evidence stays residual.
+- Map coupled conditions across *identity-only* intermediate projections to one proven physical relation; nonidentity lineage retains the intermediate boundary.
+- Added direct/adapter parity, cross-dialect and DuckDB row-level differential tests; regenerated the dbt terminal-outcome golden to account for newly supported conjunctions.
+- **Still required before Done:** scoped safe LIKE prefixes with explicit collation and padding attestations, nonidentity computed forms with provable inversion, end-to-end minimal output-domain guarantees and more complete physical-lineage/schema-conformance proof.
