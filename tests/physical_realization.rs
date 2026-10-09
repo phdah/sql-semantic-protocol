@@ -169,7 +169,7 @@ fn partial_writes_and_missing_targets_fail_closed() {
         "postgresql",
     );
     let plan = physical_source_plan(&b, b.layers()[1].id());
-    assert_eq!(plan.gap(), Some(PhysicalProofGap::UnresolvedSemantics));
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::PartialProducer));
     let missing = physical_source_plan(&b, "nonexistent");
     assert_eq!(missing.gap(), Some(PhysicalProofGap::UnknownTarget));
     assert!(missing.sources().is_empty());
@@ -211,6 +211,34 @@ fn duckdb_terminal_rows_agree_with_physical_source_membership_classification() {
         )
         .expect("rejected rows");
     assert_eq!(count, 1);
+}
+
+#[test]
+fn graph_cycle_and_ambiguous_producers_are_distinct_typed_residuals() {
+    let cyclic = bundle(
+        &[
+            "CREATE TABLE first AS SELECT a FROM second",
+            "CREATE TABLE second AS SELECT a FROM first",
+        ],
+        "postgresql",
+    );
+    assert_eq!(
+        physical_source_plan(&cyclic, cyclic.layers()[0].id()).gap(),
+        Some(PhysicalProofGap::Cycle),
+    );
+
+    let ambiguous = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t",
+            "CREATE TABLE stage AS SELECT a FROM r",
+            "SELECT a FROM stage",
+        ],
+        "postgresql",
+    );
+    assert_eq!(
+        physical_source_plan(&ambiguous, ambiguous.layers()[2].id()).gap(),
+        Some(PhysicalProofGap::AmbiguousProducer),
+    );
 }
 
 #[test]
