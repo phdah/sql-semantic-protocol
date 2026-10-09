@@ -116,17 +116,7 @@ fn final_outcome_snapshot(protocol: &Value) -> Value {
                 .as_object_mut()
                 .expect("composed semantics should be an object")
                 .remove("join_witnesses");
-            // Keep the historical golden focused on existing semantics; the
-            // constructive proof extension has dedicated contract tests.
-            composed_semantics
-                .as_object_mut()
-                .expect("composed semantics should be an object")
-                .remove("constructive_witnesses");
-            composed_semantics
-                .as_object_mut()
-                .expect("composed semantics should be an object")
-                .remove("constructive_pending_producers");
-            outcomes.push(serde_json::json!({
+             outcomes.push(serde_json::json!({
                 "relation": relation,
                 "model_id": layer["statement"]["input_id"].clone(),
                 "composed_semantics": composed_semantics
@@ -889,6 +879,16 @@ fn dbt_core_project_covers_supported_model_semantics_end_to_end() {
     ))
     .expect("expected final-outcome fixture should be valid JSON");
     let actual_final_outcomes = final_outcome_snapshot(&protocol);
+    for outcome in actual_final_outcomes.as_array().expect("outcomes") {
+        let name = outcome["model_id"].as_str().expect("model");
+        let semantic = &outcome["composed_semantics"];
+        if !semantic["constructive_witnesses"].is_null() || !semantic["constructive_pending_producers"].is_null() {
+            eprintln!("DBT_CONSTRUCTIVE_FIELD:{}:{}", name, serde_json::json!({
+                "constructive_witnesses": semantic.get("constructive_witnesses"),
+                "constructive_pending_producers": semantic.get("constructive_pending_producers")
+            }));
+        }
+    }
     assert_eq!(
         actual_final_outcomes,
         expected_final_outcomes,

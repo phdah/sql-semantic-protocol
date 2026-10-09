@@ -8,7 +8,7 @@ use sql_semantic_protocol::{
 };
 
 fn analyze(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
-    let schemas = ["l", "r"]
+    let schemas = ["l", "r", "extra"]
         .iter()
         .map(|relation| {
             RelationSchema::new(
@@ -337,4 +337,47 @@ fn unsupported_set_modifiers_do_not_get_normalized_as_constructive() {
         WitnessOperator::Set,
     );
     assert!(matches!(w.qualifying(), WitnessDirection::Residual { .. }));
+}
+
+#[test]
+fn distinct_intermediate_producers_keep_their_own_physical_leaves() {
+    let b = analyze(
+        "CREATE TABLE stage_l AS SELECT k FROM l;
+         CREATE TABLE stage_r AS SELECT k FROM r;
+         SELECT stage_l.k FROM stage_l INNER JOIN stage_r ON stage_l.k = stage_r.k",
+    );
+    let ComposedSemantics::Resolved(ref semantics) =
+        b.layers().last().expect("terminal layer").composed_semantics()
+    else {
+        panic!("resolved terminal");
+    };
+    assert_eq!(semantics.producer_physical_sources("stage_l"), Some(&["l".to_string()][..]));
+    assert_eq!(semantics.producer_physical_sources("stage_r"), Some(&["r".to_string()][..]));
+    assert_eq!(semantics.dependencies(), &["l".to_string(), "r".to_string()]);
+}
+
+#[test]
+fn downstream_join_does_not_invalidate_exact_upstream_membership_source() {
+    let b = analyze(
+        "CREATE TABLE stage AS
+           SELECT l.k FROM l WHERE l.k IN (SELECT r.k FROM r);
+         SELECT stage.k FROM stage JOIN extra ON stage.k = extra.k",
+    );
+    let ComposedSemantics::Resolved(ref semantics) =
+        b.layers().last().expect("terminal layer").composed_semantics()
+    else {
+        panic!("resolved terminal");
+    };
+    assert_eq!(semantics.dependencies(), &["extra".to_string(), "l".to_string(), "r".to_string()]);
+    let original = local_constructive_witnesses(semantics)
+        .into_iter()
+        .find(|w| w.operator() == WitnessOperator::Subquery)
+        .expect("upstream membership retained");
+    let WitnessDirection::Feasible(cases) = original.qualifying() else {
+        panic!("original exact proof should survive downstream join: {:?}", original.qualifying());
+    };
+    assert!(cases.iter().all(|case| case.obligations().iter().any(|obligation| matches!(
+        obligation,
+        WitnessObligation::Membership { outer, .. } if outer.relation() == "l"
+    ))));
 }

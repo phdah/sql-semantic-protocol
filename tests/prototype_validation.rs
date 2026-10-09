@@ -15,14 +15,8 @@ fn representative_generic_query_matches_complete_protocol_document() {
     )
     .expect("representative query should analyze");
 
-    let mut actual: serde_json::Value =
+    let actual: serde_json::Value =
         serde_json::from_str(&to_json(&protocol)).expect("protocol should serialize as JSON");
-    // This golden snapshot predates the optional constructive proof extension.
-    // New proof fields are asserted independently in tests/constructive_witness.rs.
-    actual["layers"][0]["composed_semantics"]
-        .as_object_mut()
-        .expect("resolved semantics")
-        .remove("constructive_witnesses");
 
     let expected = json!({
         "protocol_version": env!("CARGO_PKG_VERSION"),
@@ -388,6 +382,7 @@ fn representative_generic_query_matches_complete_protocol_document() {
         }
     });
 
+    eprintln!("REPRESENTATIVE_CONSTRUCTIVE:{}", serde_json::to_string(&actual["layers"][0]["composed_semantics"]["constructive_witnesses"]).expect("serialize proof"));
     assert_eq!(actual, expected);
 }
 
