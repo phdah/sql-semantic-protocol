@@ -388,14 +388,10 @@ fn possible_truths(
             possible
         }
         BooleanRowConstraint::NullTest { column, negated } => {
-            // Without source nullability evidence both NULL and non-NULL remain possible.
-            let may_be_null = integer_evidence(column)
-                .is_none_or(|evidence| evidence.explicitly_nullable);
-            if may_be_null {
-                BTreeSet::from([SqlTruth::True, SqlTruth::False])
-            } else {
-                BTreeSet::from([if *negated { SqlTruth::True } else { SqlTruth::False }])
-            }
+            // SQL datatypes alone do not prove NOT NULL. The current catalog
+            // does not provide enforced nullability constraints for this proof.
+            let _ = (column, negated);
+            BTreeSet::from([SqlTruth::True, SqlTruth::False])
         }
         BooleanRowConstraint::IntegerComparison { column, operator, literal } => {
             use crate::protocol::ComparisonOperator as Op;
