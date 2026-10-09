@@ -658,6 +658,22 @@ fn analyze_query(
                 _ => None,
             }
         },
+        |column| {
+            let original_type = metadata.column_data_type(column)?;
+            let data_type = match original_type {
+                DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
+            };
+            match data_type {
+                DataType::String {
+                    length,
+                    fixed: false,
+                } => Some(crate::boolean_witness::StringEvidence {
+                    max_chars: *length,
+                }),
+                _ => None,
+            }
+        },
     );
     sort_diagnostics(&mut diagnostics);
 
