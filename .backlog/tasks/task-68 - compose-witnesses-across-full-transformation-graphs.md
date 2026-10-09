@@ -48,8 +48,8 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   through safe projection/filter boundaries without treating intermediate
   relations as writable tables.
 - Proved the independent zero-output construction for controlled, empty
-  single-source inputs passed through row-preserving or filtering producer
-  chains. This proof requires both explicit exact zero-row bounds and
+  source inputs passed through row-preserving, filtering, or safely identified
+  join producer chains, including shared/self-join physical sources. This proof requires both explicit exact zero-row bounds and
   entire-relation closed-world coverage.
 - Added cross-dialect, NULL, DuckDB, metadata and schema-contract tests and
   extended the canonical emission examples and coverage inventory.
