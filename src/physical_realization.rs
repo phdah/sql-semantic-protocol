@@ -430,6 +430,64 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
         .unwrap_or_else(|| residual(PhysicalProofGap::UnresolvedSemantics))
 }
 
+/// Follow an identity-only column through an intermediate producer. The
+/// producer is permitted to filter its own rows because the *joint* terminal
+/// proof later requires all filters, but the intermediate's local witness is
+/// never independently relabeled as a physical-source sufficient proof.
+fn resolve_filter_column(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    consumer_id: &str,
+    column: &crate::protocol::ColumnRef,
+    depth: usize,
+) -> Option<crate::protocol::ColumnRef> {
+    if depth > walker.layers.len() {
+        return None;
+    }
+    let layer = walker.layers.get(consumer_id).copied()?;
+    let canonical = layer.canonical_relation(column.relation()?);
+    let edge = bundle.graph().edges().iter().find(|edge| {
+        edge.consumer_layer_id() == consumer_id && edge.relation() == canonical
+    })?;
+    match edge.resolution() {
+        RelationResolution::External => Some(crate::protocol::ColumnRef::new(
+            Some(edge.relation().to_string()),
+            column.name().to_string(),
+        )),
+        RelationResolution::Resolved => {
+            let [producer_id] = edge.producer_layer_ids() else {
+                return None;
+            };
+            let producer = walker.layers.get(producer_id.as_str()).copied()?;
+            let query = query_for(bundle, producer)?;
+            if query.sources().len() != 1
+                || !(query.row_preserving_projection() || query.filter_only_row_shape())
+                || !query.joins().is_empty()
+                || query.aggregation().is_some()
+                || query.set_operation().is_some()
+                || !query.diagnostics().is_empty()
+            {
+                return None;
+            }
+            let mut output = query
+                .output()
+                .columns()
+                .iter()
+                .filter(|item| item.name() == column.name());
+            let actual = output.next()?.plain_copy_source()?;
+            if output.next().is_some() {
+                return None;
+            }
+            let upstream = crate::protocol::ColumnRef::new(
+                Some(actual.relation().to_string()),
+                actual.column().to_string(),
+            );
+            resolve_filter_column(bundle, walker, producer.id(), &upstream, depth + 1)
+        }
+        _ => None,
+    }
+}
+
 /// Normalize sequential physical WHERE filters into one candidate-row
 /// formula, then solve TRUE versus FALSE/UNKNOWN jointly. Distinct independent
 /// sufficient examples must never simply be conjoined without this proof.
@@ -444,8 +502,7 @@ fn joint_physical_filters(
     }
     let source = walker.sources.iter().next()?;
     if filters.iter().any(|filter| {
-        filter.boundary_kind() != GroupBoundaryKind::Physical
-            || filter.witness().source_relation() != source
+        filter.boundary_kind() == GroupBoundaryKind::Unresolved
     }) {
         return None;
     }
@@ -485,10 +542,25 @@ fn joint_physical_filters(
     }
     let physical_witnesses = filters
         .iter()
-        .map(|filter| filter.witness())
-        .collect::<Vec<_>>();
+        .map(|filter| match filter.boundary_kind() {
+            GroupBoundaryKind::Physical => {
+                (filter.witness().source_relation() == source).then(|| filter.witness().clone())
+            }
+            GroupBoundaryKind::Intermediate => filter.witness().mapped_to_physical(|column| {
+                resolve_filter_column(bundle, walker, filter.origin_layer_id(), column, 0)
+            }),
+            GroupBoundaryKind::Unresolved => None,
+        })
+        .collect::<Option<Vec<_>>>()?;
+    if physical_witnesses
+        .iter()
+        .any(|witness| witness.source_relation() != source)
+    {
+        return None;
+    }
+    let physical_references = physical_witnesses.iter().collect::<Vec<_>>();
     let joint =
-        crate::boolean_witness::BooleanWitness::conjoin_physical_filters(&physical_witnesses)?;
+        crate::boolean_witness::BooleanWitness::conjoin_physical_filters(&physical_references)?;
     let row = crate::constructive::RowVariable::new(source, source, "candidate")?;
     let translate = |direction: &crate::boolean_witness::BooleanWitnessDirection| match direction {
         crate::boolean_witness::BooleanWitnessDirection::Exact(truth) => WitnessCase::new(
