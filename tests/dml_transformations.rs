@@ -504,14 +504,23 @@ fn partition_scoped_update_delete_cannot_claim_full_target_state() {
     ];
 
     for (dialect_name, dialect) in [
-        ("mysql", &MySqlDialect {} as &dyn sqlparser::dialect::Dialect),
-        ("generic", &GenericDialect {} as &dyn sqlparser::dialect::Dialect),
+        (
+            "mysql",
+            &MySqlDialect {} as &dyn sqlparser::dialect::Dialect,
+        ),
+        (
+            "generic",
+            &GenericDialect {} as &dyn sqlparser::dialect::Dialect,
+        ),
     ] {
         for (sql, kind, diagnostic_code) in cases {
             let bundle = analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect)
                 .expect("partition-scoped DML should parse");
             assert!(bundle.layers().is_empty(), "{dialect_name}: {sql}");
-            assert!(bundle.write_state_effects().is_empty(), "{dialect_name}: {sql}");
+            assert!(
+                bundle.write_state_effects().is_empty(),
+                "{dialect_name}: {sql}"
+            );
             let ProtocolStatement::Unsupported(statement) = &bundle.inputs()[0].statements()[0]
             else {
                 panic!("partition selection cannot be ignored: {dialect_name}: {sql}");
