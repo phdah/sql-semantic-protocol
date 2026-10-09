@@ -8,8 +8,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution,
-    OutputValueCount, RelationCatalog, RelationConstraint, RelationConstraintSet, RelationSchema,
-    SchemaColumn, SqlInput,
+    OutputValueCount, ProtocolStatement, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SetWitnessDirection, SqlInput,
 };
 
 fn typed(sql: &str, sources: &[(&str, &[&str])]) -> sql_semantic_protocol::AnalysisBundle {
@@ -373,6 +373,21 @@ fn branch_local_limits_are_not_physical_set_witnesses() {
     // of source rows can never make either branch emit a row.
     let sql = "(SELECT id FROM l LIMIT 0) UNION ALL (SELECT id FROM r LIMIT 0)";
     let mut bundle = typed_for_dialect(sql, &[("l", &["id"]), ("r", &["id"])], "duckdb");
+    let Some(ProtocolStatement::Query(query)) = bundle.inputs()[0].statements().first() else {
+        panic!("expected set query");
+    };
+    let operation = query.set_operation().expect("set operation");
+    assert!(
+        operation
+            .branches()
+            .iter()
+            .all(|branch| branch.witness_boundary().is_none()),
+        "LIMIT must prevent a source-row set witness before goal evaluation"
+    );
+    assert!(matches!(
+        operation.witness_directions().0,
+        SetWitnessDirection::Residual { .. }
+    ));
     assess(&mut bundle, 1, None, Vec::new());
     assert_eq!(
         bundle.outcome_goals()[0].status(),
