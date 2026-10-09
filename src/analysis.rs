@@ -1890,6 +1890,9 @@ fn predicate_residual_reasons(
                 Vec::new()
             }
         }
+        // Whole-query scalar exactness is independent of an operator-local
+        // binary-prefix witness and requires comparison-setting attestations.
+        Predicate::LikePrefix(_) => vec![ResidualConditionReason::ComputedExpression],
         Predicate::Not(_) => vec![ResidualConditionReason::LogicalNot],
         Predicate::IsNull(predicate) => {
             if matches!(predicate.expression(), Expression::Column(_)) {
@@ -1976,6 +1979,9 @@ fn collect_predicate_column_refs(
     columns: &mut BTreeSet<ColumnRef>,
 ) {
     match predicate {
+        Predicate::LikePrefix(predicate) => {
+            collect_expression_column_refs(predicate.expression(), sources, columns);
+        }
         Predicate::Comparison(comparison) => {
             collect_expression_column_refs(comparison.left(), sources, columns);
             collect_expression_column_refs(comparison.right(), sources, columns);
@@ -2885,6 +2891,11 @@ fn remap_predicate_for_domain_derivation(
     scope: &[OutputRelation],
 ) -> Predicate {
     match predicate {
+        Predicate::LikePrefix(predicate) => Predicate::LikePrefix(LikePrefixPredicate::new(
+            remap_expression_for_domain_derivation(predicate.expression(), scope),
+            predicate.prefix().to_string(),
+            predicate.negated(),
+        )),
         Predicate::Comparison(comparison) => Predicate::Comparison(ComparisonPredicate::new(
             remap_expression_for_domain_derivation(comparison.left(), scope),
             comparison.operator(),
@@ -3172,6 +3183,10 @@ fn uncarried_local_predicate_reason(
                     .to_string()
             })
         }
+        Predicate::LikePrefix(_) => Some(
+            "LIKE prefix needs declared collation and cannot be reduced to independent domains"
+                .to_string(),
+        ),
         Predicate::Not(_) => Some(
             "logical NOT cannot always be reduced safely to independent physical column domains"
                 .to_string(),
@@ -3239,6 +3254,9 @@ fn collect_local_predicate_source_columns(
     columns: &mut BTreeSet<LineageSource>,
 ) {
     match predicate {
+        Predicate::LikePrefix(predicate) => {
+            collect_local_expression_source_column(predicate.expression(), scope, columns);
+        }
         Predicate::Comparison(comparison) => {
             collect_local_expression_source_column(comparison.left(), scope, columns);
             collect_local_expression_source_column(comparison.right(), scope, columns);
