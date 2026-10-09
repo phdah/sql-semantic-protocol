@@ -92,8 +92,8 @@ pub use odcs::{
 };
 pub use openlineage::{to_openlineage_json, OpenLineageExportError};
 pub use outcome_goals::{
-    EvaluatedOutcomeGoal, OutcomeGoal, OutcomeGoalError, OutcomeGoalStatus,
-    OutputDistribution, OutputValueCount,
+    EvaluatedOutcomeGoal, OutcomeGoal, OutcomeGoalError, OutcomeGoalStatus, OutputDistribution,
+    OutputValueCount,
 };
 pub use parser::ParseError;
 pub use protocol::{
