@@ -381,16 +381,33 @@ fn all_empty_join_sources_prove_zero_output_through_downstream_filter() {
         assert_eq!(plan.sources(), &["l".to_string(), "r".to_string()]);
         assert_eq!(cases.len(), 1);
         let obligations = cases[0].obligations();
-        assert_eq!(obligations.iter().filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. })).count(), 2);
-        assert_eq!(obligations.iter().filter(|o| matches!(o, WitnessObligation::Rows { .. })).count(), 2);
+        assert_eq!(
+            obligations
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                .count(),
+            2
+        );
+        assert_eq!(
+            obligations
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::Rows { .. }))
+                .count(),
+            2
+        );
     }
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
         "CREATE TABLE l(a INTEGER, k INTEGER); CREATE TABLE r(b INTEGER, k INTEGER);
          CREATE TABLE stage AS SELECT l.a, r.b FROM l FULL JOIN r ON l.k=r.k;",
-    ).expect("empty join sources");
+    )
+    .expect("empty join sources");
     let count: i64 = conn
-        .query_row("SELECT COUNT(*) FROM stage WHERE a IS NOT NULL", [], |row| row.get(0))
+        .query_row(
+            "SELECT COUNT(*) FROM stage WHERE a IS NOT NULL",
+            [],
+            |row| row.get(0),
+        )
         .expect("empty count");
     assert_eq!(count, 0);
 }
@@ -406,7 +423,12 @@ fn self_join_reuses_one_physical_empty_source_obligation() {
     let WitnessDirection::Feasible(cases) = plan.zero_output() else {
         panic!("self join of an empty controlled source must remain empty");
     };
-    assert_eq!(cases[0].obligations().iter().filter(|o| matches!(
-        o, WitnessObligation::ClosedWorld { .. }
-    )).count(), 1);
+    assert_eq!(
+        cases[0]
+            .obligations()
+            .iter()
+            .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+            .count(),
+        1
+    );
 }
