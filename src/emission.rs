@@ -2007,7 +2007,10 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "before": constructive_bounds_to_value(*before),
             "after": constructive_bounds_to_value(*after)
         }),
-        crate::WitnessObligation::Producer { boundary, physical_sources } => json!({
+        crate::WitnessObligation::Producer {
+            boundary,
+            physical_sources,
+        } => json!({
             "kind": "producer",
             "boundary": constructive_boundary_to_value(boundary),
             "physical_sources": physical_sources
