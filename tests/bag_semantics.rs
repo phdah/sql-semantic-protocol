@@ -89,7 +89,9 @@ fn duckdb_duplicate_and_null_tuple_counts_obey_all_six_set_laws() {
             &format!("SELECT COUNT(*) FROM (SELECT k FROM l {sql} SELECT k FROM r) AS bag"),
         );
         assert_eq!(
-            checked_count(BagLaw::SetTuple(rule).transfer(inputs.0.clone(), Some(inputs.1.clone()))),
+            checked_count(
+                BagLaw::SetTuple(rule).transfer(inputs.0.clone(), Some(inputs.1.clone()))
+            ),
             actual,
             "{sql}"
         );
