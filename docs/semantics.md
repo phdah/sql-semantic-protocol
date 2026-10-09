@@ -514,7 +514,7 @@ no CTE, limit, DISTINCT, join, grouping or other row-shaping, and proven
 physical row identity. Projection computed columns cannot be inverted by
 this proof. The two directions remain independent and can be residual.
 
-**This is not a whole-DAG constructive solver.** It does not yet prove
+The optional JSON contract and closed-world zero-output direction are documented in [the protocol contract](protocol.md). This is not a whole-DAG constructive solver. It does not yet prove
 joint satisfiability of multiple operator witnesses, multiple physical
 sources, full output cardinality, or materialized final states. In these
 cases the physical graph remains available and both row classifications
