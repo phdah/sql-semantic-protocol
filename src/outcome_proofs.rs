@@ -97,7 +97,11 @@ pub(crate) fn construct(
     query: &QueryStatement,
     goal: &OutcomeGoal,
 ) -> Option<OutcomeWitness> {
-    let rows = goal.rows()?;
+    let rows = goal.rows().or_else(|| {
+        query.group_rows_match_surviving_groups()
+            .then(|| goal.groups())
+            .flatten()
+    })?;
     let ComposedSemantics::Resolved(resolved) = layer.composed_semantics() else {
         return None;
     };
