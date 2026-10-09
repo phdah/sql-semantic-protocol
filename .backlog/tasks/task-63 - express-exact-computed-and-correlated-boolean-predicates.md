@@ -1,7 +1,7 @@
 ---
 id: TASK-63
 title: Express exact computed and correlated boolean predicates
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-08'
 labels: []
@@ -33,3 +33,10 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 - [ ] #5 Document the representation and tests for dialect variants; sql-tdg TASK-27 depends on this contract.
 - [ ] #6 Supply typed, jointly satisfiable positive and provably rejected source witness obligations for supported expressions, retaining cross-column coupling and explicit complement/NULL semantics; mark directions that cannot be inverted exactly as residual so sql-tdg never infers correlated predicates itself.
 <!-- AC:END -->
+
+## Implementation in progress
+
+- Added typed single-source boolean witness trees for cross-column OR, preserving same-row AND/OR coupling and FALSE/UNKNOWN rejection.
+- NULL tests and catalog-proven signed-integer/literal comparisons can emit exact operator-local directions; untyped or unsupported expressions retain residual diagnostics.
+- Retained witness origin and boundary across composition and documented the initial public schema; added direct, cross-dialect and DuckDB tests.
+- **Still required before Done:** invertible computed expressions/CAST, safe LIKE prefixes, mixed and repeated-column feasibility, deeper physical-lineage inversion, adapter parity fixtures and fuller differential conformance.
