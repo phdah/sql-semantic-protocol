@@ -7,9 +7,7 @@ use std::fmt;
 
 use crate::bundle::{AnalysisBundle, ComposedSemantics, RelationResolution, TransformationLayer};
 use crate::constraints::ConstraintValue;
-use crate::protocol::{
-    Expression, LiteralType, LiteralValue, ProtocolStatement, QueryStatement,
-};
+use crate::protocol::{Expression, LiteralType, LiteralValue, ProtocolStatement, QueryStatement};
 
 /// A requested count for one output scalar, including SQL NULL.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
