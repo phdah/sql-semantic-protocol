@@ -841,9 +841,10 @@ semantics in the dependency graph.
 This versioned field extends the existing strict `write` JSON schema and
 the public Rust `WriteOperation::state_effect()` API. Since the active protocol
 shape and write-kind enum change, this is a breaking contract change requiring
-a major SemVer release through Release Please. SQL, dbt-compiled SQL and other
-SQL-bearing adapters share the same parser-independent representation; metadata
-adapters do not invent mutation operations.
+a major SemVer release through Release Please. Every SQL-bearing adapter that supplies actual DML uses the shared,
+parser-independent representation. The current dbt manifest adapter creates
+views from model SELECT SQL, not executed incremental DML statements, while
+ODCS provides only metadata. Neither adapter may invent mutation effects.
 
 ### Canonical DML effects and observable row-count conservation
 
