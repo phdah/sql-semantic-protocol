@@ -210,7 +210,12 @@ impl<'a> Composer<'a> {
                         },
                     );
                 let (witness, boundary_kind) =
-                    if boundary_kind == crate::bundle::GroupBoundaryKind::Intermediate {
+                    if boundary_kind == crate::bundle::GroupBoundaryKind::Intermediate
+                        && self.boolean_source_has_passthrough_path(
+                            &layer,
+                            witness.source_relation(),
+                        )
+                    {
                         match witness.mapped_to_physical(|column| {
                             self.resolve_column_identity(&layer, &query, column)
                                 .ok()
@@ -654,6 +659,42 @@ impl<'a> Composer<'a> {
             physical.column().to_string(),
             relation_instance,
         ))
+    }
+
+    // A column may have exact identity lineage without a row surviving an
+    // intermediate filter. A physical witness requires row-set identity too.
+    fn boolean_source_has_passthrough_path(
+        &self,
+        consumer: &TransformationLayer,
+        relation: &str,
+    ) -> bool {
+        let Some(edge) = self.edge_for_source(consumer.id(), relation) else {
+            return false;
+        };
+        match edge.resolution() {
+            RelationResolution::External => true,
+            RelationResolution::Resolved => {
+                let [producer_id] = edge.producer_layer_ids() else {
+                    return false;
+                };
+                let Some(producer) = self.layer_by_id(producer_id) else {
+                    return false;
+                };
+                let Some(query) = self.query_for_layer(producer) else {
+                    return false;
+                };
+                let [source] = query.sources() else {
+                    return false;
+                };
+                query.row_preserving_projection()
+                    && self.boolean_source_has_passthrough_path(producer, source.name())
+            }
+            RelationResolution::Missing
+            | RelationResolution::Ambiguous
+            | RelationResolution::Cycle
+            | RelationResolution::Partial
+            | RelationResolution::Unsupported => false,
+        }
     }
 
     fn resolve_column_identity(
