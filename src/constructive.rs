@@ -170,6 +170,23 @@ impl WitnessBoundary {
     }
 }
 
+/// Which complete physical input must be controlled to prove an absence.
+///
+/// Closing a candidate tuple class does not imply the entire relation is empty.
+/// SQL set tuple equality treats NULLs as equal, unlike join predicates.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ClosedWorldCoverage {
+    /// Enumerate every row in the entire physical source relation.
+    EntireRelation,
+    /// Enumerate all rows equal to one branch's candidate tuple.
+    CandidateTuple {
+        /// Originating set branch used to bind the positional tuple.
+        branch_identity: String,
+        /// Typed positional source columns determining tuple equivalence.
+        columns: Vec<String>,
+    },
+}
+
 /// One required fact. None of these grant physical-source realizability on their own.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WitnessObligation {
@@ -273,6 +290,13 @@ pub enum WitnessObligation {
         relation: String,
         before: CountBounds,
         after: CountBounds,
+    },
+    /// Exact negative evidence requires a complete physical closed-world scope.
+    ClosedWorld {
+        /// The actual writable physical source whose rows are controlled.
+        boundary: WitnessBoundary,
+        /// Entire relation or one complete candidate-tuple equivalence class.
+        coverage: ClosedWorldCoverage,
     },
     /// A computed boundary must be realized through its named upstream producer.
     Producer {
@@ -390,6 +414,18 @@ fn invalid_obligation(obligation: &WitnessObligation) -> bool {
         WitnessObligation::SetResultTuple { nulls_equal, .. } => !nulls_equal,
         WitnessObligation::OutputRows { layer_id, .. } => layer_id.is_empty(),
         WitnessObligation::StateRows { relation, .. } => relation.is_empty(),
+        WitnessObligation::ClosedWorld { boundary, coverage } => {
+            boundary.kind() != GroupBoundaryKind::Physical
+                || match coverage {
+                    ClosedWorldCoverage::EntireRelation => false,
+                    ClosedWorldCoverage::CandidateTuple {
+                        branch_identity,
+                        columns,
+                    } => branch_identity.is_empty()
+                        || columns.is_empty()
+                        || columns.iter().any(String::is_empty),
+                }
+        }
         WitnessObligation::Producer {
             boundary,
             physical_sources,
@@ -876,7 +912,31 @@ pub fn local_constructive_witnesses(
                             closed_world: true,
                         },
                     };
-                    let Some(case) = WitnessCase::new(vec![obligation], ProofStrength::Sufficient)
+                    let mut obligations = vec![obligation];
+                    if let Some(WitnessObligation::NoMatchingPartner { partner, .. }) =
+                        obligations.first()
+                    {
+                        if !semantics
+                            .dependencies()
+                            .iter()
+                            .any(|relation| relation == partner.relation())
+                        {
+                            return WitnessDirection::residual("unproved_physical_partner_relation");
+                        }
+                        let Some(boundary) = WitnessBoundary::new(
+                            partner.relation(),
+                            GroupBoundaryKind::Physical,
+                            source.origin_layer_id(),
+                        ) else {
+                            return WitnessDirection::residual("invalid_partner_boundary");
+                        };
+                        obligations.push(WitnessObligation::ClosedWorld {
+                            boundary,
+                            coverage: ClosedWorldCoverage::EntireRelation,
+                        });
+                    }
+                    let Some(case) =
+                        WitnessCase::new(obligations, ProofStrength::Sufficient)
                     else {
                         return WitnessDirection::residual("invalid_join_case");
                     };
@@ -1043,15 +1103,21 @@ pub fn local_constructive_witnesses(
                     let mut translated = Vec::new();
                     for case in cases {
                         let Some(translated_case) = WitnessCase::new(
-                            vec![WitnessObligation::Membership {
-                                outer: outer.clone(),
-                                inner: inner.clone(),
-                                case: *case,
-                                correlations: witness.correlations().to_vec(),
-                                membership_key: witness.membership_key().cloned(),
-                                inner_domains: witness.inner_column_domains().to_vec(),
-                                closed_world: true,
-                            }],
+                            vec![
+                                WitnessObligation::Membership {
+                                    outer: outer.clone(),
+                                    inner: inner.clone(),
+                                    case: *case,
+                                    correlations: witness.correlations().to_vec(),
+                                    membership_key: witness.membership_key().cloned(),
+                                    inner_domains: witness.inner_column_domains().to_vec(),
+                                    closed_world: true,
+                                },
+                                WitnessObligation::ClosedWorld {
+                                    boundary: inner.clone(),
+                                    coverage: ClosedWorldCoverage::EntireRelation,
+                                },
+                            ],
                             ProofStrength::Sufficient,
                         ) else {
                             return WitnessDirection::residual("invalid_membership_case");
@@ -1113,12 +1179,21 @@ pub fn local_constructive_witnesses(
                             };
                             obligations.push(WitnessObligation::SetTuple {
                                 branch_identity: original.branch_identity().to_string(),
-                                boundary,
+                                boundary: boundary.clone(),
                                 tuple_columns: source.tuple_columns().to_vec(),
                                 matching_rows: original.matching_tuple_count(),
                                 column_domains: branch.column_domains().to_vec(),
                                 closed_world: true,
                             });
+                            if original.matching_tuple_count() == 0 {
+                                obligations.push(WitnessObligation::ClosedWorld {
+                                    boundary,
+                                    coverage: ClosedWorldCoverage::CandidateTuple {
+                                        branch_identity: original.branch_identity().to_string(),
+                                        columns: source.tuple_columns().to_vec(),
+                                    },
+                                });
+                            }
                         }
                         obligations.push(WitnessObligation::SetResultTuple {
                             matching_rows: case.output_tuple_count(),
