@@ -831,8 +831,11 @@ primary/unique keys must be checked against the target's current rows, not
 inferred from SELECT lineage or a catalog alone.
 
 The supported standalone UPDATE/DELETE subset is one named target without
-FROM/USING/JOIN, RETURNING, conflict modifiers, ORDER BY or LIMIT. Unsupported
-forms remain statement-level Unsupported with an actionable diagnostic.
+partition selection, FROM/USING/JOIN, RETURNING, conflict modifiers, ORDER BY
+or LIMIT. Partition-scoped mutations are rejected rather than being treated
+as whole-table mutations (particularly important for unconditional DELETE's
+empty-poststate claim). Unsupported forms remain statement-level Unsupported
+with an actionable diagnostic.
 INSERT SELECT with write-changing modifiers is likewise unsupported. MERGE
 branches that could not be normalized retain their explicit unsupported
 actions. No newly recognized DML source claims complete produced-relation
