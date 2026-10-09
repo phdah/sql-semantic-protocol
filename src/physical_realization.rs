@@ -7,9 +7,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::bundle::{
-    AnalysisBundle, ComposedSemantics, RelationResolution, TransformationLayer,
-};
+use crate::bundle::{AnalysisBundle, ComposedSemantics, RelationResolution, TransformationLayer};
 use crate::constructive::{
     local_constructive_witnesses, WitnessDirection, WitnessObligation, WitnessOperator,
 };
@@ -196,7 +194,11 @@ impl<'a> Walker<'a> {
     }
 
     fn visit_inputs(&mut self, layer_id: &str) -> Result<(), PhysicalProofGap> {
-        let layer = self.layers.get(layer_id).copied().ok_or(PhysicalProofGap::MissingProducer)?;
+        let layer = self
+            .layers
+            .get(layer_id)
+            .copied()
+            .ok_or(PhysicalProofGap::MissingProducer)?;
         if !matches!(layer.write_kind(), None | Some(WriteKind::Definition)) {
             return Err(PhysicalProofGap::PartialProducer);
         }
@@ -204,7 +206,13 @@ impl<'a> Walker<'a> {
             return Err(PhysicalProofGap::UnresolvedSemantics);
         }
         let mut inputs = Vec::new();
-        for edge in self.bundle.graph().edges().iter().filter(|e| e.consumer_layer_id() == layer_id) {
+        for edge in self
+            .bundle
+            .graph()
+            .edges()
+            .iter()
+            .filter(|e| e.consumer_layer_id() == layer_id)
+        {
             match edge.resolution() {
                 RelationResolution::External => {
                     let relation = edge.relation().to_string();
@@ -231,7 +239,9 @@ impl<'a> Walker<'a> {
                 RelationResolution::Ambiguous => return Err(PhysicalProofGap::AmbiguousProducer),
                 RelationResolution::Cycle => return Err(PhysicalProofGap::Cycle),
                 RelationResolution::Partial => return Err(PhysicalProofGap::PartialProducer),
-                RelationResolution::Unsupported => return Err(PhysicalProofGap::UnsupportedDependency),
+                RelationResolution::Unsupported => {
+                    return Err(PhysicalProofGap::UnsupportedDependency)
+                }
             }
         }
         inputs.sort();
@@ -239,7 +249,11 @@ impl<'a> Walker<'a> {
         self.nodes.push(PhysicalPlanNode {
             id: PhysicalPlanRef::Layer(layer.id().to_string()),
             inputs,
-            produced_relations: layer.produces().iter().filter_map(|p| p.relation_name().map(str::to_string)).collect(),
+            produced_relations: layer
+                .produces()
+                .iter()
+                .filter_map(|p| p.relation_name().map(str::to_string))
+                .collect(),
             write_kind: layer.write_kind(),
         });
         self.visited.insert(layer_id.to_string());
@@ -247,8 +261,14 @@ impl<'a> Walker<'a> {
     }
 }
 
-fn query_for<'a>(bundle: &'a AnalysisBundle, layer: &TransformationLayer) -> Option<&'a QueryStatement> {
-    let input = bundle.inputs().iter().find(|input| input.id() == layer.input_id())?;
+fn query_for<'a>(
+    bundle: &'a AnalysisBundle,
+    layer: &TransformationLayer,
+) -> Option<&'a QueryStatement> {
+    let input = bundle
+        .inputs()
+        .iter()
+        .find(|input| input.id() == layer.input_id())?;
     match input.statements().get(layer.statement_index())? {
         ProtocolStatement::Query(query) => Some(query),
         ProtocolStatement::Unsupported(_) => None,
@@ -260,7 +280,11 @@ fn transparent_projection(query: &QueryStatement) -> bool {
         && query.sources().len() == 1
         && query.diagnostics().is_empty()
         && query.condition_exactness().is_exact()
-        && query.output().columns().iter().all(|column| column.plain_copy_source().is_some())
+        && query
+            .output()
+            .columns()
+            .iter()
+            .all(|column| column.plain_copy_source().is_some())
 }
 
 /// Construct canonical producer references, and lift an individual physical-row
@@ -285,38 +309,58 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         }) {
             Some(semantics) => {
                 let proofs = local_constructive_witnesses(semantics);
-                let origin_proofs = proofs.iter().filter(|p| matches!(
-                    (p.qualifying(), p.rejected()),
-                    (WitnessDirection::Feasible(_), _) | (_, WitnessDirection::Feasible(_))
-                )).collect::<Vec<_>>();
+                let origin_proofs = proofs
+                    .iter()
+                    .filter(|p| {
+                        matches!(
+                            (p.qualifying(), p.rejected()),
+                            (WitnessDirection::Feasible(_), _) | (_, WitnessDirection::Feasible(_))
+                        )
+                    })
+                    .collect::<Vec<_>>();
                 gap = if proofs.len() != 1 || origin_proofs.len() != 1 {
-                    Some(if proofs.is_empty() { PhysicalProofGap::NoWitness } else { PhysicalProofGap::MultipleWitnesses })
+                    Some(if proofs.is_empty() {
+                        PhysicalProofGap::NoWitness
+                    } else {
+                        PhysicalProofGap::MultipleWitnesses
+                    })
                 } else if proofs[0].operator() != WitnessOperator::Boolean {
                     Some(PhysicalProofGap::UnsupportedOperator)
                 } else if walker.sources.len() != 1 {
                     Some(PhysicalProofGap::UnboundPhysicalSource)
-                } else if !walker.nodes.iter().filter_map(|node| match &node.id {
-                    PhysicalPlanRef::Layer(id) => walker.layers.get(id.as_str()).copied(),
-                    PhysicalPlanRef::Source(_) => None,
-                }).all(|layer| {
-                    let Some(query) = query_for(bundle, layer) else { return false; };
-                    if layer.id() == proofs[0].origin_layer_id() {
-                        query.filter_only_row_shape()
-                            && query.sources().len() == 1
-                            && query.joins().is_empty()
-                            && query.aggregation().is_none()
-                            && query.set_operation().is_none()
-                            && query.window_witness().is_none()
-                            && query.subquery_witnesses().is_empty()
-                            && query.predicates().where_predicate().is_some()
-                            && query.predicates().having_predicate().is_none()
-                            && query.predicates().qualify_predicate().is_none()
-                            && query.diagnostics().is_empty()
-                            && query.output().columns().iter().all(|c| c.plain_copy_source().is_some())
-                    } else {
-                        transparent_projection(query)
-                    }
-                }) {
+                } else if !walker
+                    .nodes
+                    .iter()
+                    .filter_map(|node| match &node.id {
+                        PhysicalPlanRef::Layer(id) => walker.layers.get(id.as_str()).copied(),
+                        PhysicalPlanRef::Source(_) => None,
+                    })
+                    .all(|layer| {
+                        let Some(query) = query_for(bundle, layer) else {
+                            return false;
+                        };
+                        if layer.id() == proofs[0].origin_layer_id() {
+                            query.filter_only_row_shape()
+                                && query.sources().len() == 1
+                                && query.joins().is_empty()
+                                && query.aggregation().is_none()
+                                && query.set_operation().is_none()
+                                && query.window_witness().is_none()
+                                && query.subquery_witnesses().is_empty()
+                                && query.predicates().where_predicate().is_some()
+                                && query.predicates().having_predicate().is_none()
+                                && query.predicates().qualify_predicate().is_none()
+                                && query.diagnostics().is_empty()
+                                && query
+                                    .output()
+                                    .columns()
+                                    .iter()
+                                    .all(|c| c.plain_copy_source().is_some())
+                        } else {
+                            transparent_projection(query)
+                        }
+                    })
+                {
                     Some(PhysicalProofGap::NonInvertibleTransformation)
                 } else if matches!(proofs[0].qualifying(), WitnessDirection::Residual { .. })
                     || matches!(proofs[0].rejected(), WitnessDirection::Residual { .. })
@@ -326,11 +370,16 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
                     let only_source = walker.sources.iter().next().map(String::as_str);
                     let physical = |direction: &WitnessDirection| match direction {
                         WitnessDirection::Feasible(cases) => cases.iter().all(|case| {
-                            case.obligations().iter().all(|obligation| match obligation {
-                                WitnessObligation::Predicate(crate::constructive::WitnessFormula::RowTruth { row, .. }) =>
-                                    Some(row.relation()) == only_source,
-                                _ => false,
-                            })
+                            case.obligations()
+                                .iter()
+                                .all(|obligation| match obligation {
+                                    WitnessObligation::Predicate(
+                                        crate::constructive::WitnessFormula::RowTruth {
+                                            row, ..
+                                        },
+                                    ) => Some(row.relation()) == only_source,
+                                    _ => false,
+                                })
                         }),
                         _ => false,
                     };
