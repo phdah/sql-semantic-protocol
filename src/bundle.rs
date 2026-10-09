@@ -607,7 +607,11 @@ impl ComposedSubqueryWitness {
         witness: crate::subquery_witness::SubqueryMembershipWitness,
         boundary_kind: GroupBoundaryKind,
     ) -> Self {
-        Self { origin_layer_id, witness, boundary_kind }
+        Self {
+            origin_layer_id,
+            witness,
+            boundary_kind,
+        }
     }
 
     /// Layer that introduced the subquery membership predicate.
