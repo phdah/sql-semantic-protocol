@@ -52,8 +52,14 @@ Operator-local unit tests are insufficient. Sign-off requires holistic construct
 - [ ] #4 Persist reproducible SQL, seed, input data, protocol snapshot, output snapshots and reason diagnostics for every counterexample.
 - [ ] #5 No false exact result allowed; fail CI on any semantic mismatch, missing outcome coverage or disabled fixture.
 - [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [ ] #7 The committed sql-tdg dbt fixture `make all` runs dbt models **and** the mandatory scripted DuckDB DML/DDL transition harness, asserting complete before/after physical state, terminal output data, multiplicity, row classifications and randomized negative selection across seeds.
+- [ ] #8 Match the full approved feature/dialect inventory using parser/canonical equivalence on all dialects and executable DuckDB results for meaning-preserving rewrites; unsupported vendor-only behavior must be explicitly residual and never represented as an executed oracle.
 <!-- AC:END -->
 
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Maintainer decision (2026-10-09)
+
+Approved [unified E2E gate](../../docs/coverage-signoff.md): rebuild/extend dbt model DAG for all feasible transformations and add a **required scripted DML/DDL suite invoked by the same top-level `make all`**, not an unrelated optional job. Include CREATE/ALTER/REPLACE/DROP, INSERT/UPDATE/DELETE/MERGE/conflicts, transactions, snapshots, complete output snapshots and per-terminal randomized negatives. No false universal claims for unsupported opaque external behavior.
