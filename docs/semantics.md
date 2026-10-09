@@ -455,5 +455,6 @@ solver. Enforced NOT NULL, primary key and finite accepted-values metadata
 can further reject impossible witness directions, including after adapter
 enrichment. Unknown enforcement or dependent foreign-key satisfiability stays
 residual. Witnesses
-remain associated with the layer and source boundary where they originated
-rather than being silently remapped across nonidentity projections.
+retain their originating layer. Only a proven single-relation, identity-only
+lineage chain can remap the coupled condition to physical column references;
+computed or ambiguous projections preserve the intermediate boundary.
