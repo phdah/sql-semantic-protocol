@@ -4901,6 +4901,45 @@ fn analyze_predicate_expression(
         }
     }
 
+    // Keep the operands of scoped integer arithmetic in the predicate model.
+    // In particular, the cast in CAST(a AS BIGINT) + 1 must not be lost
+    // when normalizing the enclosing arithmetic expression.
+    if let Expr::Nested(inner) = expression {
+        return analyze_predicate_expression(
+            inner,
+            named_windows,
+            output_aliases,
+            scope,
+            diagnostics,
+        );
+    }
+    if let Expr::BinaryOp { left, op, right } = expression {
+        let operator = match op {
+            SqlBinaryOperator::Plus => Some(BinaryOperator::Add),
+            SqlBinaryOperator::Minus => Some(BinaryOperator::Subtract),
+            _ => None,
+        };
+        if let Some(operator) = operator {
+            return Expression::Binary(BinaryExpression::new(
+                operator,
+                analyze_predicate_expression(
+                    left,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                analyze_predicate_expression(
+                    right,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+            ));
+        }
+    }
+
     // Normalize only ordinary, formatting-free signed integer casts in
     // predicates. TRY/SAFE_CAST, string/decimal casts, ambiguous targets and
     // narrowing remain unsupported rather than gaining spurious exactness.
