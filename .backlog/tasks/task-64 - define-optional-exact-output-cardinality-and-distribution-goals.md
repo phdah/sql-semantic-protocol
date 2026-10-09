@@ -1,7 +1,7 @@
 ---
 id: TASK-64
 title: Define optional exact output cardinality and distribution goals
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-08'
 labels: []
@@ -34,9 +34,23 @@ SQL parsing, normalized semantics, lineage, and exactness remain owned by SQL Se
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Add a separate optional typed outcome-goal contract for feasible result cardinalities, group cardinalities and distributions without redefining source-row exactness.
+- [x] #1 Add a separate optional typed outcome-goal contract for feasible result cardinalities, group cardinalities and distributions without redefining source-row exactness.
 - [ ] #2 Specify interaction with DISTINCT, join multiplicity, aggregation, windows and NULL, including unsatisfiable goal reporting.
-- [ ] #3 Preserve cross-layer and multi-outcome identity and distinguish semantic facts from caller-requested goals.
+- [x] #3 Preserve cross-layer and multi-outcome identity and distinguish semantic facts from caller-requested goals.
 - [ ] #4 Test output bounds and representative feasible/impossible goals against a SQL execution engine.
-- [ ] #5 Keep backward compatibility or document appropriate protocol versioning; sql-tdg TASK-30 consumes this feature.
+- [x] #5 Keep backward compatibility or document appropriate protocol versioning; sql-tdg TASK-30 consumes this feature.
 <!-- AC:END -->
+
+## Implementation notes (2026-10-09)
+
+The opt-in Rust API `AnalysisBundle::set_outcome_goals` evaluates exact output-row,
+surviving-group and complete typed histogram requests by stable output layer.
+The current proofs cover literal/global-aggregate singleton rows, simple GROUP BY
+row-to-group consistency, single-column DISTINCT/NULL uniqueness, complete-histogram
+arithmetic, and empty direct physical-source projections. Unsupported combinations,
+including more complex join/window multiplicities and nonliteral distribution
+feasibility, retain actionable residuals rather than claiming exactness.
+
+Remaining acceptance work: broaden constructive cardinality and distribution
+witnesses for supported grouping/set/window/join classes, and extend differential
+execution coverage to those cases before marking the task Done.
