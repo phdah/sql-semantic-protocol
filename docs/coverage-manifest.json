@@ -126,229 +126,400 @@
       "dialects": {
         "ansi": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "bigquery": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "clickhouse": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "databricks": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "duckdb": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "fixture_duckdb_only",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "generic": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "hive": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "mssql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "mysql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "postgresql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "redshift": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "snowflake": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         },
         "sqlite": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_integer_range"
+            "shared_integer_range",
+            "shared_between"
           ]
         }
       },
       "variant_overrides": {
         "<": {
           "ansi": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "bigquery": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "clickhouse": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "databricks": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "duckdb": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "generic": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "hive": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "mssql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "mysql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "postgresql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "redshift": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "snowflake": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "sqlite": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           }
         },
         ">=": {
           "ansi": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "bigquery": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "clickhouse": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "databricks": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "duckdb": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "generic": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "hive": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "mssql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "mysql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "postgresql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "redshift": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "snowflake": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
           },
           "sqlite": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_integer_range"
+            ]
+          }
+        },
+        "BETWEEN": {
+          "ansi": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "bigquery": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "clickhouse": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "databricks": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "duckdb": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "generic": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "hive": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "mssql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "mysql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "postgresql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "redshift": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "snowflake": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
+          },
+          "sqlite": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_between"
+            ]
           }
         }
       }
@@ -377,124 +548,231 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_or"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "OR": {
+          "ansi": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "bigquery": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "clickhouse": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "databricks": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "duckdb": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "generic": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "hive": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "mssql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "mysql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "postgresql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "redshift": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "snowflake": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          },
+          "sqlite": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_or"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "predicates.null_truth",
@@ -523,188 +801,320 @@
       "dialects": {
         "ansi": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "bigquery": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "clickhouse": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "databricks": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "duckdb": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "fixture_duckdb_only",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "generic": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "hive": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "mssql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "mysql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "postgresql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "redshift": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "snowflake": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         },
         "sqlite": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "shared_null"
+            "shared_null",
+            "shared_is_not_null"
           ]
         }
       },
       "variant_overrides": {
         "IS NULL": {
           "ansi": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "bigquery": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "clickhouse": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "databricks": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "duckdb": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "generic": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "hive": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "mssql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "mysql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "postgresql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "redshift": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "snowflake": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
           },
           "sqlite": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_null"
+            ]
+          }
+        },
+        "IS NOT NULL": {
+          "ansi": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "bigquery": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "clickhouse": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "databricks": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "duckdb": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "generic": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "hive": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "mssql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "mysql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "postgresql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "redshift": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "snowflake": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
+          },
+          "sqlite": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_is_not_null"
+            ]
           }
         }
       }
@@ -880,124 +1290,231 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_case"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "CASE": {
+          "ansi": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "bigquery": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "clickhouse": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "databricks": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "duckdb": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "generic": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "hive": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "mssql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "mysql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "postgresql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "redshift": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "snowflake": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          },
+          "sqlite": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_case"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "predicates.temporal",
@@ -1311,124 +1828,231 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_inner_join"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "ON equality": {
+          "ansi": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "bigquery": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "clickhouse": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "databricks": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "duckdb": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "hive": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "mssql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "mysql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "postgresql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "redshift": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "snowflake": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          },
+          "sqlite": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_inner_join"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "joins.outer",
@@ -2027,7 +2651,7 @@
       "dialects": {
         "ansi": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2038,7 +2662,7 @@
         },
         "bigquery": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2049,7 +2673,7 @@
         },
         "clickhouse": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2060,7 +2684,7 @@
         },
         "databricks": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2071,7 +2695,7 @@
         },
         "duckdb": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2082,7 +2706,7 @@
         },
         "generic": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2093,7 +2717,7 @@
         },
         "hive": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2104,7 +2728,7 @@
         },
         "mssql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2115,7 +2739,7 @@
         },
         "mysql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2126,7 +2750,7 @@
         },
         "postgresql": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2137,7 +2761,7 @@
         },
         "redshift": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2148,7 +2772,7 @@
         },
         "snowflake": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2159,7 +2783,7 @@
         },
         "sqlite": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -2172,43 +2796,82 @@
       "variant_overrides": {
         "UNION ALL": {
           "ansi": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "bigquery": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "clickhouse": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "databricks": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "duckdb": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "generic": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "hive": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "mssql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "mysql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "postgresql": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "redshift": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "snowflake": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           },
           "sqlite": {
-            "parse": "fixture_tested"
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union_all"
+            ]
           }
         }
       }
@@ -2237,124 +2900,231 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_union"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "UNION DISTINCT": {
+          "ansi": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "bigquery": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "clickhouse": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "databricks": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "duckdb": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "generic": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "hive": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "mssql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "mysql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "postgresql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "redshift": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "snowflake": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          },
+          "sqlite": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_union"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "sets.intersect",
@@ -2380,124 +3150,231 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_intersect"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "INTERSECT/INTERSECT ALL": {
+          "ansi": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "bigquery": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "clickhouse": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "databricks": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "duckdb": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "hive": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "mssql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "mysql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "postgresql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "redshift": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "snowflake": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          },
+          "sqlite": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_intersect"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "sets.except",
@@ -2524,129 +3401,230 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "bigquery": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "clickhouse": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "databricks": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "duckdb": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "generic": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "hive": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "mssql": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "mysql": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "postgresql": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "redshift": {
-          "parse": "unverified",
-          "canonical": "unverified",
-          "positive": "not_end_to_end_proven",
-          "negative": "not_end_to_end_proven",
-          "cardinality": "unverified",
-          "oracle": "unverified",
-          "fixture_ids": []
-        },
-        "snowflake": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
           "fixture_ids": [
-            "snowflake_minus"
+            "shared_except"
           ]
         },
-        "sqlite": {
-          "parse": "unverified",
+        "bigquery": {
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "clickhouse": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "databricks": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "duckdb": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "generic": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "hive": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "mssql": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "mysql": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "postgresql": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "redshift": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
+        },
+        "snowflake": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "snowflake_minus",
+            "shared_except"
+          ]
+        },
+        "sqlite": {
+          "parse": "fixture_tested",
+          "canonical": "unverified",
+          "positive": "not_end_to_end_proven",
+          "negative": "not_end_to_end_proven",
+          "cardinality": "unverified",
+          "oracle": "unverified",
+          "fixture_ids": [
+            "shared_except"
+          ]
         }
       },
       "variant_overrides": {
         "EXCEPT/MINUS": {
           "snowflake": {
-            "parse": "representative_only"
+            "parse": "representative_only",
+            "fixture_ids": [
+              "snowflake_minus",
+              "shared_except"
+            ]
+          },
+          "ansi": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "bigquery": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "clickhouse": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "databricks": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "duckdb": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "hive": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "mssql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "mysql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "postgresql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "redshift": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
+          },
+          "sqlite": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_except"
+            ]
           }
         }
       }
@@ -2821,124 +3799,311 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_group_by"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "COUNT": {
+          "ansi": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "bigquery": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "clickhouse": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "databricks": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "duckdb": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "hive": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "mssql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "mysql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "postgresql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "redshift": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "snowflake": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "sqlite": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          }
+        },
+        "GROUP BY columns/expressions": {
+          "ansi": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "bigquery": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "clickhouse": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "databricks": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "duckdb": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "hive": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "mssql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "mysql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "postgresql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "redshift": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "snowflake": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          },
+          "sqlite": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_group_by"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "grouping.advanced",
@@ -3247,124 +4412,231 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_having"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "HAVING COUNT/SUM/MIN/MAX/AVG with composite predicates and joined inputs": {
+          "ansi": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "bigquery": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "clickhouse": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "databricks": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "duckdb": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "hive": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "mssql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "mysql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "postgresql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "redshift": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "snowflake": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          },
+          "sqlite": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_having"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "windows.row_number",
@@ -3390,124 +4662,311 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_window_projection"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "ROW_NUMBER": {
+          "ansi": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "bigquery": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "clickhouse": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "databricks": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "duckdb": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "generic": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "hive": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "mssql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "mysql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "postgresql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "redshift": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "snowflake": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "sqlite": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          }
+        },
+        "partitioned ordering": {
+          "ansi": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "bigquery": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "clickhouse": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "databricks": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "duckdb": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "generic": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "hive": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "mssql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "mysql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "postgresql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "redshift": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "snowflake": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          },
+          "sqlite": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_window_projection"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "windows.ranking",
@@ -3963,124 +5422,311 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_exists"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "EXISTS": {
+          "ansi": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "bigquery": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "clickhouse": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "databricks": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "duckdb": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "hive": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "mssql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "mysql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "postgresql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "redshift": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "snowflake": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "sqlite": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          }
+        },
+        "correlated": {
+          "ansi": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "bigquery": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "clickhouse": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "databricks": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "duckdb": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "hive": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "mssql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "mysql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "postgresql": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "redshift": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "snowflake": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          },
+          "sqlite": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "shared_exists"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "subqueries.in",
@@ -4398,124 +6044,231 @@
       "exclusion": null,
       "dialects": {
         "ansi": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "bigquery": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "clickhouse": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "databricks": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "duckdb": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "generic": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "hive": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "mssql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "mysql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "postgresql": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "redshift": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "snowflake": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         },
         "sqlite": {
-          "parse": "unverified",
+          "parse": "fixture_tested",
           "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
           "oracle": "unverified",
-          "fixture_ids": []
+          "fixture_ids": [
+            "shared_cte"
+          ]
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "WITH": {
+          "ansi": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "bigquery": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "clickhouse": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "databricks": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "duckdb": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "generic": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "hive": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "mssql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "mysql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "postgresql": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "redshift": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "snowflake": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          },
+          "sqlite": {
+            "parse": "fixture_tested",
+            "fixture_ids": [
+              "shared_cte"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "scopes.recursive_cte",
@@ -5016,7 +6769,7 @@
         },
         "generic": {
           "parse": "fixture_tested",
-          "canonical": "fixture_tested",
+          "canonical": "unverified",
           "positive": "not_end_to_end_proven",
           "negative": "not_end_to_end_proven",
           "cardinality": "unverified",
@@ -5089,7 +6842,16 @@
           "fixture_ids": []
         }
       },
-      "variant_overrides": {}
+      "variant_overrides": {
+        "LIMIT/OFFSET": {
+          "generic": {
+            "parse": "representative_only",
+            "fixture_ids": [
+              "residual_limit"
+            ]
+          }
+        }
+      }
     },
     {
       "id": "ordering.sampling",
@@ -7989,7 +9751,12 @@
       ],
       "sql": "SELECT id FROM orders WHERE id >= 0 AND id < 10",
       "expect": "analyzed",
-      "oracle": "duckdb"
+      "oracle": "duckdb",
+      "covered_variants": [
+        "<",
+        ">="
+      ],
+      "variant_status": "fixture_tested"
     },
     {
       "id": "shared_null",
@@ -8011,7 +9778,11 @@
       ],
       "sql": "SELECT id FROM orders WHERE id IS NULL",
       "expect": "analyzed",
-      "oracle": "duckdb"
+      "oracle": "duckdb",
+      "covered_variants": [
+        "IS NULL"
+      ],
+      "variant_status": "fixture_tested"
     },
     {
       "id": "shared_union_all",
@@ -8033,7 +9804,11 @@
       ],
       "sql": "SELECT id FROM left_rows UNION ALL SELECT id FROM right_rows",
       "expect": "analyzed",
-      "oracle": "duckdb"
+      "oracle": "duckdb",
+      "covered_variants": [
+        "UNION ALL"
+      ],
+      "variant_status": "fixture_tested"
     },
     {
       "id": "residual_limit",
@@ -8044,7 +9819,11 @@
       "sql": "SELECT id FROM orders LIMIT 2",
       "expect": "diagnostic",
       "diagnostic": "unsupported_limit",
-      "oracle": "duckdb"
+      "oracle": "duckdb",
+      "covered_variants": [
+        "LIMIT/OFFSET"
+      ],
+      "variant_status": "representative_only"
     },
     {
       "id": "snowflake_minus",
@@ -8054,7 +9833,352 @@
       ],
       "sql": "SELECT id FROM left_rows MINUS SELECT id FROM right_rows",
       "expect": "analyzed",
-      "oracle": "none"
+      "oracle": "none",
+      "covered_variants": [
+        "EXCEPT/MINUS"
+      ],
+      "variant_status": "representative_only"
+    },
+    {
+      "id": "shared_inner_join",
+      "feature": "joins.inner",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT l.id FROM left_rows AS l INNER JOIN right_rows AS r ON l.id = r.id",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "ON equality"
+      ],
+      "variant_status": "representative_only"
+    },
+    {
+      "id": "shared_cte",
+      "feature": "scopes.cte",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "WITH positive_orders AS (SELECT id FROM orders WHERE id > 0) SELECT id FROM positive_orders",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "WITH"
+      ],
+      "variant_status": "fixture_tested"
+    },
+    {
+      "id": "shared_group_by",
+      "feature": "grouping.basic",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT region, COUNT(*) AS n FROM orders GROUP BY region",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "COUNT",
+        "GROUP BY columns/expressions"
+      ],
+      "variant_status": "representative_only"
+    },
+    {
+      "id": "shared_having",
+      "feature": "grouping.having",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT region, COUNT(*) AS n FROM orders GROUP BY region HAVING COUNT(*) > 1",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "HAVING COUNT/SUM/MIN/MAX/AVG with composite predicates and joined inputs"
+      ],
+      "variant_status": "representative_only"
+    },
+    {
+      "id": "shared_exists",
+      "feature": "subqueries.exists",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT id FROM orders AS o WHERE EXISTS (SELECT 1 FROM customers AS c WHERE c.id = o.id)",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "EXISTS",
+        "correlated"
+      ],
+      "variant_status": "representative_only"
+    },
+    {
+      "id": "shared_window_projection",
+      "feature": "windows.row_number",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT id, ROW_NUMBER() OVER (PARTITION BY region ORDER BY id) AS rn FROM orders",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "ROW_NUMBER",
+        "partitioned ordering"
+      ],
+      "variant_status": "fixture_tested"
+    },
+    {
+      "id": "shared_or",
+      "feature": "predicates.boolean_logic",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT id FROM orders WHERE id = 1 OR id = 2",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "OR"
+      ],
+      "variant_status": "fixture_tested"
+    },
+    {
+      "id": "shared_between",
+      "feature": "predicates.integer_ranges",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT id FROM orders WHERE id BETWEEN 1 AND 10",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "BETWEEN"
+      ],
+      "variant_status": "fixture_tested"
+    },
+    {
+      "id": "shared_is_not_null",
+      "feature": "predicates.null_truth",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT id FROM orders WHERE id IS NOT NULL",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "IS NOT NULL"
+      ],
+      "variant_status": "fixture_tested"
+    },
+    {
+      "id": "shared_union",
+      "feature": "sets.union_distinct",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT id FROM left_rows UNION SELECT id FROM right_rows",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "UNION DISTINCT"
+      ],
+      "variant_status": "fixture_tested"
+    },
+    {
+      "id": "shared_intersect",
+      "feature": "sets.intersect",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT id FROM left_rows INTERSECT SELECT id FROM right_rows",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "INTERSECT/INTERSECT ALL"
+      ],
+      "variant_status": "representative_only"
+    },
+    {
+      "id": "shared_except",
+      "feature": "sets.except",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT id FROM left_rows EXCEPT SELECT id FROM right_rows",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "EXCEPT/MINUS"
+      ],
+      "variant_status": "representative_only"
+    },
+    {
+      "id": "shared_case",
+      "feature": "predicates.computed",
+      "dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "sql": "SELECT CASE WHEN id > 0 THEN 1 ELSE 0 END AS flag FROM orders",
+      "expect": "analyzed",
+      "oracle": "none",
+      "covered_variants": [
+        "CASE"
+      ],
+      "variant_status": "fixture_tested"
     }
   ],
   "duckdb_oracle_cases": [
@@ -8119,7 +10243,7 @@
     "engine_oracle": "unverified",
     "boundary": "needs_fixture_or_approved_exclusion"
   },
-  "variant_matrix_semantics": "Each variant/dialect cell inherits variant_evidence_defaults unless a named fixture-backed override is present; feature-level parser fixture P never certifies other variants. No positive/negative/end-to-end physical-source proof is certified.",
+  "variant_matrix_semantics": "Variant/dialect cells inherit fail-closed defaults. Only named fixtures may override parse evidence; representative_only is partial sampling of combined variants, not full syntax-variant certification. Analysis success alone does NOT prove canonical meaning, generator construction, absence or cardinality.",
   "dbt_fixture_inventory": {
     "source_repo": "phdah/sql-tdg",
     "path": "tests/fixtures/dbt_core_project",
