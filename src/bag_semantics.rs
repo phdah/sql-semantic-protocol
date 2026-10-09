@@ -34,11 +34,11 @@ impl BagTupleIdentity {
     }
 }
 
-/// Identity of the complete logical row population being counted.
+/// Identity of one complete logical bag being counted.
 ///
-/// Equal identities attest that the two operands select exactly the same rows
-/// after filtering and other transformations. Sharing a physical source alone
-/// does not establish this equivalence.
+/// Equal identities attest equivalence after filtering and projection: for
+/// candidate-tuple counts, both branches must also use the same tuple-producing
+/// expressions. Sharing a physical source alone is not sufficient.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BagPopulationIdentity(String);
 
@@ -128,8 +128,8 @@ impl BagEvidence {
     }
 
     /// Attest the complete logical population being counted. Two operands
-    /// may share this identity only when their row populations are equivalent;
-    /// a shared physical source or candidate tuple is insufficient.
+    /// may share this identity only when their counted bags are equivalent,
+    /// including candidate-tuple projections and predicates.
     pub fn with_population_identity(mut self, identity: BagPopulationIdentity) -> Self {
         self.population_identity = Some(identity);
         self
@@ -771,8 +771,12 @@ mod tests {
     fn aliased_complete_sources_are_correlated_not_two_independent_tables() {
         let same = |min, max, alias| {
             evidence(min, Some(max), BagScope::CompleteRelation)
-                .with_source(BagSourceIdentity::new("physical.orders", alias).expect("valid source"))
-                .with_population_identity(BagPopulationIdentity::new("orders:all").expect("population"))
+                .with_source(
+                    BagSourceIdentity::new("physical.orders", alias).expect("valid source"),
+                )
+                .with_population_identity(
+                    BagPopulationIdentity::new("orders:all").expect("population"),
+                )
         };
         let left = same(2, 5, "a");
         let right = same(4, 6, "b");
@@ -821,21 +825,26 @@ mod tests {
         }
     }
 
-
     #[test]
     fn separately_filtered_branches_do_not_inherit_physical_source_counts() {
         let source = |alias| BagSourceIdentity::new("t", alias).expect("source");
         let left = exact(2, BagScope::CandidateTuple)
             .with_source(source("flag_1"))
-            .with_population_identity(BagPopulationIdentity::new("t:flag=1").expect("population"));
+            .with_population_identity(BagPopulationIdentity::new("t:k:flag=1").expect("population"));
         let right = exact(1, BagScope::CandidateTuple)
             .with_source(source("flag_2"))
-            .with_population_identity(BagPopulationIdentity::new("t:flag=2").expect("population"));
-        let difference =
-            BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference).transfer(left.clone(), Some(right.clone()));
-        assert_eq!(number(difference), CountBounds::new(1, Some(1)).expect("count"));
+            .with_population_identity(BagPopulationIdentity::new("t:k:flag=2").expect("population"));
+        let difference = BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference)
+            .transfer(left.clone(), Some(right.clone()));
         assert_eq!(
-            number(BagLaw::SetTuple(SetMultiplicityRule::Minimum).transfer(left.clone(), Some(right.clone()))),
+            number(difference),
+            CountBounds::new(1, Some(1)).expect("count")
+        );
+        assert_eq!(
+            number(
+                BagLaw::SetTuple(SetMultiplicityRule::Minimum)
+                    .transfer(left.clone(), Some(right.clone()))
+            ),
             CountBounds::new(1, Some(1)).expect("count")
         );
         // Without equivalent-population evidence, a shared physical relation
@@ -859,7 +868,9 @@ mod tests {
             .with_population_identity(BagPopulationIdentity::new("t:all").expect("population"));
         let affected = exact(2, BagScope::AffectedRows)
             .with_source(source())
-            .with_population_identity(BagPopulationIdentity::new("t:id_in_2_4").expect("population"));
+            .with_population_identity(
+                BagPopulationIdentity::new("t:id_in_2_4").expect("population"),
+            );
         assert_eq!(
             number(BagLaw::DeleteRows.transfer(original.clone(), Some(affected.clone()))),
             CountBounds::new(3, Some(3)).expect("count")
@@ -973,7 +984,10 @@ mod tests {
             BagCountProof::Residual { .. }
         ));
         assert_eq!(
-            number(BagLaw::AppendRows.transfer(initial, Some(exact(3, BagScope::CompleteRelation)))).minimum(),
+            number(
+                BagLaw::AppendRows.transfer(initial, Some(exact(3, BagScope::CompleteRelation)))
+            )
+            .minimum(),
             5
         );
     }
