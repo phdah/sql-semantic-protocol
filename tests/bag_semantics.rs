@@ -7,7 +7,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_sql, dialect_from_name, equijoin_key_histogram, BagCountProof, BagCountTarget,
     BagEvidence, BagHistogramProof, BagJoinKeys, BagKeyHistogram, BagLaw, BagScope,
-    BagSourceIdentity, BagTupleIdentity, CountBounds, JoinKind, ProtocolStatement,
+    BagSourceIdentity, BagTupleIdentity, ConstraintValue, CountBounds, JoinKind, ProtocolStatement,
     SetMultiplicityRule,
 };
 
