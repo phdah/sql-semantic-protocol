@@ -378,11 +378,8 @@ impl<'a> Composer<'a> {
             let Ok(right_endpoint) = self.compose_join_column(layer, query, right, Some(join)) else {
                 return residual("unresolved_right_physical_lineage");
             };
-            let participant_instance = |participant: &RelationRef| {
-                participant.alias().unwrap_or(participant.relation())
-            };
-            let left_name = participant_instance(join.left());
-            let right_name = participant_instance(join.right());
+            let left_name = join.left().alias().unwrap_or(join.left().relation());
+            let right_name = join.right().alias().unwrap_or(join.right().relation());
             if left_name == right_name {
                 return residual("ambiguous_relation_instances");
             }
