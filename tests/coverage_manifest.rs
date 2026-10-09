@@ -31,7 +31,7 @@ fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
     assert_eq!(manifest["release_target"], "3.0.0");
     assert_eq!(
         manifest["review_status"],
-        "maintainer_and_sql_tdg_review_pending"
+        "maintainer_scope_approved_coverage_evidence_pending"
     );
 
     let dialects = required_array(&manifest, "dialects");
@@ -83,14 +83,14 @@ fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
         );
         let scope = required_string(feature, "scope");
         assert!(
-            matches!(scope, "release_blocking" | "pending_exclusion_approval"),
+            matches!(scope, "release_blocking" | "approved_conditional_deferral"),
             "{id} has an unaudited scope: {scope}"
         );
-        if scope == "pending_exclusion_approval" {
+        if scope == "approved_conditional_deferral" {
             pending += 1;
             assert!(
-                feature["exclusion"].as_str().is_some(),
-                "{id} needs a reason"
+                feature["deferral"].as_str().is_some(),
+                "{id} needs a documented future deferral"
             );
         }
         assert_eq!(
@@ -150,6 +150,73 @@ fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
     );
     assert!(feature_ids.contains("execution.dbt_fixture"));
     assert!(feature_ids.contains("outcomes.classification"));
+}
+
+#[test]
+fn maintainer_approval_does_not_waive_generator_evidence() {
+    let manifest = manifest();
+    let approved = &manifest["scope_decisions"];
+    assert_eq!(approved["approval_date"], "2026-10-09");
+    assert_eq!(approved["approval_type"], "feature_scope_only_not_release_signoff");
+    assert_eq!(approved["release_approved"], false);
+    assert_eq!(
+        approved["per_terminal_rejection"],
+        "seeded_random_provably_rejecting_alternative"
+    );
+    assert_eq!(
+        approved["dml_ddl_e2e"],
+        "single_required_dbt_make_all_with_scripted_duckdb_transition_harness"
+    );
+    assert_eq!(
+        approved["dialect_contract"],
+        "all_13_cross_dialect_equivalent_canonical_outcomes_duckdb_e2e"
+    );
+    for deferred in required_array(&manifest, "deferred_capabilities") {
+        assert_eq!(deferred["fail_closed"], "unsupported_or_residual");
+        assert_eq!(deferred["safe_subset_release_blocking"], true);
+        assert!(!required_array(deferred, "future_evidence").is_empty());
+    }
+    for feature in required_array(&manifest, "features") {
+        if feature["scope"] == "approved_conditional_deferral" {
+            assert_eq!(feature["safe_subset_release_blocking"], true);
+        }
+    }
+}
+
+#[test]
+fn identical_meaning_produces_the_same_canonical_protocol_across_all_dialects() {
+    let manifest = manifest();
+    let names: Vec<&str> = required_array(&manifest, "dialects")
+        .iter()
+        .map(|dialect| required_string(dialect, "name"))
+        .collect();
+
+    for fixture in required_array(&manifest, "canonical_equivalence_cases") {
+        let id = required_string(fixture, "id");
+        let sql = required_string(fixture, "sql");
+        assert_eq!(fixture["dialects"], "all_exposed");
+        assert_eq!(fixture["compare"], "full_protocol_except_source_dialect");
+        let mut baseline = None;
+        for dialect_name in &names {
+            let dialect = dialect_from_name(dialect_name).expect("known dialect");
+            let protocol = analyze_sql(sql, dialect_name, dialect.as_ref()).unwrap_or_else(|error| {
+                panic!("{id}/{dialect_name}: semantically shared syntax must parse: {error}")
+            });
+            let mut normalized: Value =
+                serde_json::from_str(&to_json(&protocol)).expect("valid canonical protocol");
+            // Parsing dialect is provenance, not a semantic difference in the SQL outcome.
+            assert_eq!(normalized["inputs"][0]["dialect"], *dialect_name);
+            normalized["inputs"][0]["dialect"] = Value::Null;
+            if let Some(reference) = &baseline {
+                assert_eq!(
+                    &normalized, reference,
+                    "{id}/{dialect_name}: canonical outcome diverged by dialect"
+                );
+            } else {
+                baseline = Some(normalized);
+            }
+        }
+    }
 }
 
 #[test]
@@ -257,7 +324,7 @@ fn readable_matrix_and_upstream_owners_match_inventory() {
         let scope = if feature["scope"] == "release_blocking" {
             "Block"
         } else {
-            "Approval"
+            "Conditional"
         };
         let owners: Vec<&str> = required_array(feature, "protocol_tasks")
             .iter()
