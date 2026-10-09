@@ -25,8 +25,11 @@
 //! - WriteStateEffect describes conservative INSERT, UPDATE, DELETE and MERGE before/after obligations.
 //! - ConstructiveWitness and local_constructive_witnesses normalize proven operator-local
 //!   source obligations without pretending to solve full physical-source DAGs.
+//! - BagLaw transfers closed-world count bounds through proven bag operators without
+//!   claiming source construction or guessing unsupported NULL/key semantics.
 
 mod analysis;
+mod bag_semantics;
 mod boolean_witness;
 mod bundle;
 mod composition;
@@ -55,6 +58,7 @@ use std::fmt;
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
+pub use bag_semantics::{BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagScope};
 pub use boolean_witness::{
     BooleanOperands, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
     BooleanWitnessDirection,
