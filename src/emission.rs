@@ -184,7 +184,11 @@ fn outcome_witness_to_value(witness: &crate::outcome_proofs::OutcomeWitness) -> 
         OutcomeWitness::EmptySources { relations } => {
             json!({ "kind": "empty_sources", "relations": relations })
         }
-        OutcomeWitness::SourceRows { relation, rows, columns } => json!({
+        OutcomeWitness::SourceRows {
+            relation,
+            rows,
+            columns,
+        } => json!({
             "kind": "source_rows",
             "relation": relation,
             "rows": rows,
@@ -201,12 +205,22 @@ fn outcome_witness_to_value(witness: &crate::outcome_proofs::OutcomeWitness) -> 
             "right": { "relation": right.relation(), "column": right.column(), "relation_instance": right.relation_instance() },
             "pairs": pairs
         }),
-        OutcomeWitness::Groups { relation, key, groups, rows_per_group } => json!({
+        OutcomeWitness::Groups {
+            relation,
+            key,
+            groups,
+            rows_per_group,
+        } => json!({
             "kind": "groups", "relation": relation,
             "key": column_ref_to_value(key), "groups": groups,
             "rows_per_group": rows_per_group
         }),
-        OutcomeWitness::Ranked { relation, partition_key, order_by, rows } => json!({
+        OutcomeWitness::Ranked {
+            relation,
+            partition_key,
+            order_by,
+            rows,
+        } => json!({
             "kind": "ranked", "relation": relation,
             "partition_key": partition_key.as_ref().map(column_ref_to_value),
             "order_by": order_by.iter().map(|key| json!({
@@ -216,14 +230,18 @@ fn outcome_witness_to_value(witness: &crate::outcome_proofs::OutcomeWitness) -> 
             })).collect::<Vec<_>>(),
             "rows": rows
         }),
-        OutcomeWitness::SetTuples { tuples, case, values } => json!({
+        OutcomeWitness::SetTuples {
+            tuples,
+            case,
+            values,
+        } => json!({
             "kind": "set_tuples", "tuples": tuples,
             "case": set_witness_case_to_value(case),
             "values": values.iter().map(|item| json!({
                 "value": constraint_value_to_value(item.value()),
                 "rows": item.rows()
             })).collect::<Vec<_>>()
-        })
+        }),
     }
 }
 
