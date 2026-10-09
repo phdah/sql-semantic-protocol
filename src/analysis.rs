@@ -335,7 +335,7 @@ fn analyze_update(
     let predicate = selection.map(|selection| analyze_predicate(selection, &mut diagnostics));
     let domains = derive_column_domains(
         &Predicates::new(predicate.clone(), None, None),
-        &[target_source.clone()],
+        std::slice::from_ref(&target_source),
     );
     let assignments = assignments
         .iter()
@@ -345,7 +345,7 @@ fn analyze_update(
             let domain = derive_expression_domain_with_column_domains(
                 &expression,
                 &domains,
-                &[target_source.clone()],
+                std::slice::from_ref(&target_source),
             );
             MergeAssignment::new(
                 assignment.target.to_string(),
