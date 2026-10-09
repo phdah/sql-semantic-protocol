@@ -194,11 +194,17 @@ fn nested_projection_aggregates_and_windows_are_residual() {
     )
     .unwrap();
     assert_eq!(
-        count(&db, "SELECT COUNT(*) FROM orders o WHERE EXISTS (SELECT COUNT(*) + 1 FROM lines l)"),
+        count(
+            &db,
+            "SELECT COUNT(*) FROM orders o WHERE EXISTS (SELECT COUNT(*) + 1 FROM lines l)"
+        ),
         2
     );
     assert_eq!(
-        count(&db, "SELECT COUNT(*) FROM orders o WHERE NOT EXISTS (SELECT COUNT(*) + 1 FROM lines l)"),
+        count(
+            &db,
+            "SELECT COUNT(*) FROM orders o WHERE NOT EXISTS (SELECT COUNT(*) + 1 FROM lines l)"
+        ),
         0
     );
 }
@@ -230,11 +236,17 @@ fn unqualified_nested_columns_without_proven_ownership_are_residual() {
     )
     .unwrap();
     assert_eq!(
-        count(&db, "SELECT COUNT(*) FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE id = 1)"),
+        count(
+            &db,
+            "SELECT COUNT(*) FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE id = 1)"
+        ),
         1
     );
     assert_eq!(
-        count(&db, "SELECT COUNT(*) FROM orders o WHERE o.id IN (SELECT id FROM lines l)"),
+        count(
+            &db,
+            "SELECT COUNT(*) FROM orders o WHERE o.id IN (SELECT id FROM lines l)"
+        ),
         2
     );
 }

@@ -309,7 +309,8 @@ fn derive(
             };
             // Without schema evidence, an unqualified SELECT column can resolve
             // to an enclosing scope when the inner table lacks that column.
-            if !matches!(projected.expression(), Expression::Column(column) if column.relation().is_some()) {
+            if !matches!(projected.expression(), Expression::Column(column) if column.relation().is_some())
+            {
                 return residual("membership_key_requires_qualified_inner_column");
             }
             let Some(inner_column) = projected.plain_copy_source() else {

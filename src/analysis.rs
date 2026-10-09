@@ -6637,9 +6637,7 @@ fn nested_projection_preserves_candidate_rows(expression: &Expression) -> bool {
             .arguments()
             .iter()
             .all(nested_projection_preserves_candidate_rows),
-        Expression::Unary(unary) => {
-            nested_projection_preserves_candidate_rows(unary.operand())
-        }
+        Expression::Unary(unary) => nested_projection_preserves_candidate_rows(unary.operand()),
         Expression::Binary(binary) => {
             nested_projection_preserves_candidate_rows(binary.left())
                 && nested_projection_preserves_candidate_rows(binary.right())
