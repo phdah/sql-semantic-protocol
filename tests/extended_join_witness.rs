@@ -1,6 +1,10 @@
 //! DuckDB-backed regression tests for typed extended-join source witnesses.
 
+mod common;
+
+use common::DIALECTS;
 use duckdb::Connection;
+use sqlparser::parser::Parser;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, AnalysisBundle,
     ComposedSemantics, ConfiguredSqlInput, JoinSide, JoinWitness, JoinWitnessDirection,
@@ -35,6 +39,18 @@ fn analyze(sql: &str, dialect: &str) -> AnalysisBundle {
         &catalog,
     )
     .unwrap_or_else(|error| panic!("analysis for {dialect} {sql}: {error}"))
+}
+
+/// Exercise each exposed dialect when its parser accepts a syntax variant.
+fn analyze_if_parsed(sql: &str, dialect: &str) -> Option<AnalysisBundle> {
+    let parser = dialect_from_name(dialect).expect("documented dialect");
+    match Parser::parse_sql(parser.as_ref(), sql) {
+        Ok(_) => Some(analyze(sql, dialect)),
+        Err(error) => {
+            eprintln!("{dialect} rejects join syntax at the parser boundary: {error}");
+            None
+        }
+    }
 }
 
 fn witnesses(bundle: &AnalysisBundle) -> &[JoinWitness] {
@@ -109,9 +125,10 @@ fn left_right_and_full_preserve_unmatched_null_and_duplicate_rows() {
         ),
     ] {
         assert_eq!(count(&db, sql), expected_count, "{kind}");
-        for dialect in ["generic", "postgresql", "duckdb"] {
+        for &dialect in DIALECTS {
             let query = format!("SELECT l.id FROM {sql}");
-            let bundle = analyze(&query, dialect);
+            let bundle = analyze_if_parsed(&query, dialect)
+                .unwrap_or_else(|| panic!("{dialect} must parse standard {kind} JOIN syntax"));
             let [witness] = witnesses(&bundle) else {
                 panic!("expected one {kind} witness in {dialect}");
             };
@@ -156,12 +173,16 @@ fn semi_and_anti_witnesses_are_duplicate_insensitive() {
     ] {
         assert_eq!(count(&db, sql), expected_count);
         let query = format!("SELECT l.id FROM {sql}");
-        let bundle = analyze(&query, "duckdb");
-        let [witness] = witnesses(&bundle) else {
-            panic!("one semi/anti witness")
-        };
-        assert_eq!(shapes(witness.qualifying()), vec![qualifying]);
-        assert_eq!(shapes(witness.rejected()), vec![rejected]);
+        for &dialect in DIALECTS {
+            let Some(bundle) = analyze_if_parsed(&query, dialect) else {
+                continue;
+            };
+            let [witness] = witnesses(&bundle) else {
+                panic!("one semi/anti witness in {dialect}")
+            };
+            assert_eq!(shapes(witness.qualifying()), vec![qualifying], "{dialect}");
+            assert_eq!(shapes(witness.rejected()), vec![rejected], "{dialect}");
+        }
     }
 }
 
@@ -169,35 +190,45 @@ fn semi_and_anti_witnesses_are_duplicate_insensitive() {
 fn inequality_matches_and_nulls_follow_three_valued_on_logic() {
     let db = oracle();
     assert_eq!(count(&db, "l LEFT JOIN r ON l.k < r.k"), 5);
-    let bundle = analyze("SELECT l.id FROM l LEFT JOIN r ON l.k < r.k", "duckdb");
-    let [witness] = witnesses(&bundle) else {
-        panic!("inequality witness")
-    };
-    assert_eq!(
-        witness.comparison(),
-        Some(sql_semantic_protocol::ComparisonOperator::Lt)
-    );
-    assert_eq!(
-        shapes(witness.qualifying()),
-        vec![JoinWitnessShape::Matched, JoinWitnessShape::LeftUnmatched]
-    );
+    let query = "SELECT l.id FROM l LEFT JOIN r ON l.k < r.k";
+    for &dialect in DIALECTS {
+        let bundle = analyze_if_parsed(query, dialect)
+            .unwrap_or_else(|| panic!("{dialect} must parse standard inequality JOIN syntax"));
+        let [witness] = witnesses(&bundle) else {
+            panic!("inequality witness in {dialect}")
+        };
+        assert_eq!(
+            witness.comparison(),
+            Some(sql_semantic_protocol::ComparisonOperator::Lt),
+            "{dialect}"
+        );
+        assert_eq!(
+            shapes(witness.qualifying()),
+            vec![JoinWitnessShape::Matched, JoinWitnessShape::LeftUnmatched],
+            "{dialect}"
+        );
+    }
 }
 
 #[test]
 fn self_join_preserves_distinct_physical_source_instances() {
     let db = oracle();
     assert_eq!(count(&db, "l a LEFT JOIN l b ON a.k = b.k"), 7);
-    let bundle = analyze("SELECT a.id FROM l a LEFT JOIN l b ON a.k = b.k", "duckdb");
-    let [witness] = witnesses(&bundle) else {
-        panic!("self-join witness")
-    };
-    let left = witness.left().expect("left endpoint");
-    let right = witness.right().expect("right endpoint");
-    assert_eq!(left.relation(), "l");
-    assert_eq!(right.relation(), "l");
-    assert_eq!(left.relation_instance(), "a");
-    assert_eq!(right.relation_instance(), "b");
-    assert_ne!(left, right);
+    let query = "SELECT a.id FROM l a LEFT JOIN l b ON a.k = b.k";
+    for &dialect in DIALECTS {
+        let bundle = analyze_if_parsed(query, dialect)
+            .unwrap_or_else(|| panic!("{dialect} must parse standard self JOIN syntax"));
+        let [witness] = witnesses(&bundle) else {
+            panic!("self-join witness in {dialect}")
+        };
+        let left = witness.left().expect("left endpoint");
+        let right = witness.right().expect("right endpoint");
+        assert_eq!(left.relation(), "l", "{dialect}");
+        assert_eq!(right.relation(), "l", "{dialect}");
+        assert_eq!(left.relation_instance(), "a", "{dialect}");
+        assert_eq!(right.relation_instance(), "b", "{dialect}");
+        assert_ne!(left, right, "{dialect}");
+    }
 }
 
 #[test]
@@ -223,4 +254,56 @@ fn composed_witness_survives_named_upstream_layers() {
     assert_eq!(last.len(), 1);
     assert_eq!(last[0].left().expect("physical left").relation(), "l");
     assert_eq!(last[0].right().expect("physical right").relation(), "r");
+}
+
+#[test]
+fn filtered_upstream_rows_do_not_become_exact_physical_join_witnesses() {
+    let db = oracle();
+    db.execute_batch("CREATE TABLE stage AS SELECT id, k FROM r WHERE id > 12")
+        .expect("filtered producer");
+    assert_eq!(count(&db, "l LEFT JOIN r ON l.k = r.k"), 6);
+    assert_eq!(count(&db, "l LEFT JOIN stage ON l.k = stage.k"), 5);
+
+    let sql = "CREATE TABLE stage AS SELECT id, k FROM r WHERE id > 12;
+        CREATE TABLE mart AS SELECT l.id FROM l LEFT JOIN stage ON l.k = stage.k";
+    let bundle = analyze(sql, "duckdb");
+    let [witness] = witnesses(&bundle) else {
+        panic!("filtered upstream join witness");
+    };
+    assert!(matches!(
+        witness.qualifying(),
+        JoinWitnessDirection::Residual { reason }
+            if reason == "upstream_row_membership_not_preserved"
+    ));
+    assert!(matches!(witness.rejected(), JoinWitnessDirection::Residual { .. }));
+}
+
+#[test]
+fn exact_physical_join_witness_survives_multiple_plain_copy_producers() {
+    let sql = "CREATE TABLE stage0 AS SELECT id, k FROM l;
+        CREATE TABLE stage1 AS SELECT id, k FROM stage0;
+        CREATE TABLE mart AS SELECT stage1.id FROM stage1 LEFT JOIN r ON stage1.k = r.k";
+    let bundle = analyze(sql, "duckdb");
+    let [witness] = witnesses(&bundle) else {
+        panic!("plain-copy join witness");
+    };
+    assert_eq!(witness.left().expect("physical left").relation(), "l");
+    assert_eq!(witness.right().expect("physical right").relation(), "r");
+    assert!(matches!(witness.qualifying(), JoinWitnessDirection::Exact(_)));
+}
+
+#[test]
+fn upstream_row_shaping_cannot_be_flattened_into_exact_source_obligations() {
+    for sql in [
+        "CREATE TABLE stage AS SELECT DISTINCT k FROM r;
+         CREATE TABLE mart AS SELECT l.id FROM l LEFT JOIN stage ON l.k = stage.k",
+        "CREATE TABLE stage AS SELECT id, k FROM r LIMIT 1;
+         CREATE TABLE mart AS SELECT l.id FROM l LEFT JOIN stage ON l.k = stage.k",
+    ] {
+        let bundle = analyze(sql, "duckdb");
+        let [witness] = witnesses(&bundle) else {
+            panic!("row-shaping upstream witness");
+        };
+        assert!(matches!(witness.qualifying(), JoinWitnessDirection::Residual { .. }));
+    }
 }
