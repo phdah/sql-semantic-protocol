@@ -405,6 +405,57 @@ impl WitnessDirection {
         Some(Self::Feasible(cases))
     }
 
+    /// Conjoin sufficient cases at the same proof boundary, preserving shared row variables.
+    ///
+    /// A finite 256-pair bound prevents explosive proof enumeration. Unknown
+    /// satisfiability remains residual, while proven direct contradictions are impossible.
+    pub fn all(&self, other: &Self) -> Self {
+        match (self, other) {
+            (Self::Impossible, _) | (_, Self::Impossible) => Self::Impossible,
+            (Self::Residual { .. }, _) | (_, Self::Residual { .. }) =>
+                Self::residual("conjunctive_operand_not_proven"),
+            (Self::Feasible(left), Self::Feasible(right)) => {
+                if left.len().checked_mul(right.len()).is_none_or(|n| n > 256) {
+                    return Self::residual("conjunctive_case_limit");
+                }
+                let mut cases = Vec::new();
+                for a in left {
+                    for b in right {
+                        let mut obligations = a.obligations().to_vec();
+                        obligations.extend_from_slice(b.obligations());
+                        let strength = if a.strength() == ProofStrength::Equivalent
+                            && b.strength() == ProofStrength::Equivalent {
+                            ProofStrength::Equivalent
+                        } else {
+                            ProofStrength::Sufficient
+                        };
+                        if let Some(case) = WitnessCase::new(obligations, strength) {
+                            if !cases.contains(&case) { cases.push(case); }
+                        }
+                    }
+                }
+                if cases.is_empty() { Self::Impossible } else { Self::Feasible(cases) }
+            }
+        }
+    }
+
+    /// Disjoin sufficient alternatives; one proven branch suffices even when the other is residual.
+    pub fn any(&self, other: &Self) -> Self {
+        match (self, other) {
+            (Self::Feasible(a), Self::Feasible(b)) => {
+                let mut cases = a.clone();
+                for case in b {
+                    if !cases.contains(case) { cases.push(case.clone()); }
+                }
+                Self::Feasible(cases)
+            }
+            (Self::Feasible(_), _) => self.clone(),
+            (_, Self::Feasible(_)) => other.clone(),
+            (Self::Impossible, Self::Impossible) => Self::Impossible,
+            _ => Self::residual("disjunctive_operand_not_proven"),
+        }
+    }
+
     fn residual(reason: &str) -> Self {
         Self::Residual {
             reason: reason.to_string(),
@@ -468,6 +519,54 @@ impl ConstructiveWitness {
     /// Rejected classification, independently proven.
     pub fn rejected(&self) -> &WitnessDirection {
         &self.rejected
+    }
+
+    /// SQL AND of two classifications introduced at the same operator boundary.
+    ///
+    /// TRUE requires both inputs TRUE; FALSE or UNKNOWN requires at least
+    /// one input NOT TRUE. Both directions retain sufficient witness cases.
+    pub fn logical_and(&self, other: &Self) -> Option<Self> {
+        if self.origin_layer_id != other.origin_layer_id { return None; }
+        Some(Self {
+            operator: WitnessOperator::Boolean,
+            origin_layer_id: self.origin_layer_id.clone(),
+            qualifying: self.qualifying.all(&other.qualifying),
+            rejected: self.rejected.any(&other.rejected),
+        })
+    }
+
+    /// SQL OR of two classifications introduced at the same operator boundary.
+    pub fn logical_or(&self, other: &Self) -> Option<Self> {
+        if self.origin_layer_id != other.origin_layer_id { return None; }
+        Some(Self {
+            operator: WitnessOperator::Boolean,
+            origin_layer_id: self.origin_layer_id.clone(),
+            qualifying: self.qualifying.any(&other.qualifying),
+            rejected: self.rejected.all(&other.rejected),
+        })
+    }
+
+    /// SQL NOT at this boundary. A nullable expression's NOT TRUE is not
+    /// equivalent to FALSE: an UNKNOWN input remains UNKNOWN under SQL NOT.
+    ///
+    /// An explicitly proven two-valued expression permits swapping directions.
+    /// Otherwise qualifying is residual and known TRUE cases remain sufficient
+    /// for a rejected NOT, but an impossible TRUE does not prove NOT impossible.
+    pub fn logical_not(&self, proven_two_valued: bool) -> Self {
+        let (qualifying, rejected) = if proven_two_valued {
+            (self.rejected.clone(), self.qualifying.clone())
+        } else {
+            (WitnessDirection::residual("sql_not_requires_false_vs_unknown_proof"),
+             match &self.qualifying {
+                 WitnessDirection::Feasible(_) => self.qualifying.clone(),
+                 _ => WitnessDirection::residual("nullable_not_rejection_unproven"),
+             })
+        };
+        Self {
+            operator: WitnessOperator::Boolean,
+            origin_layer_id: self.origin_layer_id.clone(),
+            qualifying, rejected,
+        }
     }
 }
 
