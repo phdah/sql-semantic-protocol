@@ -245,6 +245,19 @@ fn partial_writes_and_missing_targets_fail_closed() {
     );
     let plan = physical_source_plan(&b, b.layers()[1].id());
     assert_eq!(plan.gap(), Some(PhysicalProofGap::PartialProducer));
+    assert!(plan.nodes().iter().any(|node| {
+        matches!(node.id(), PhysicalPlanRef::Layer(_))
+            && node.write_kind().is_some()
+    }), "partial producer kind must survive as a reference node");
+    let effect_bundle: serde_json::Value = serde_json::from_str(
+        &sql_semantic_protocol::to_bundle_json(&b),
+    ).expect("DML emitted");
+    assert!(effect_bundle["graph"]["physical_nodes"]
+        .as_array()
+        .expect("graph nodes")
+        .iter()
+        .any(|n| n["write_kind"] == "append"));
+
     let missing = physical_source_plan(&b, "nonexistent");
     assert_eq!(missing.gap(), Some(PhysicalProofGap::UnknownTarget));
     assert!(missing.sources().is_empty());
