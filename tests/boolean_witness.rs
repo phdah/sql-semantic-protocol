@@ -4,10 +4,9 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs, analyze_sql,
-    parse_dbt_catalog, parse_dbt_manifest, to_json,
-    BooleanRowConstraint, BooleanTruthCase, BooleanWitnessDirection, ComparisonOperator,
-    ComposedSemantics, ConfiguredSqlInput, ProtocolStatement, RelationCatalog, RelationSchema,
-    SchemaColumn, SqlInput,
+    parse_dbt_catalog, parse_dbt_manifest, to_json, BooleanRowConstraint, BooleanTruthCase,
+    BooleanWitnessDirection, ComparisonOperator, ComposedSemantics, ConfiguredSqlInput,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect, PostgreSqlDialect};
 
@@ -191,10 +190,15 @@ fn dbt_compiled_sql_and_direct_catalog_sql_emit_the_same_boolean_witness() {
     let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
     let dialect = PostgreSqlDialect {};
     let dbt = analyze_dbt_artifacts(&manifest, &catalog, "postgres", &dialect).unwrap();
-    let stage = dbt.layers().iter()
-        .find(|layer| layer.produces().iter().any(|item| {
-            item.relation_name() == Some("warehouse.analytics.stg_orders")
-        }))
+    let stage = dbt
+        .layers()
+        .iter()
+        .find(|layer| {
+            layer
+                .produces()
+                .iter()
+                .any(|item| item.relation_name() == Some("warehouse.analytics.stg_orders"))
+        })
         .unwrap();
     let ComposedSemantics::Resolved(dbt_semantics) = stage.composed_semantics() else {
         panic!("dbt composition");
@@ -207,13 +211,15 @@ fn dbt_compiled_sql_and_direct_catalog_sql_emit_the_same_boolean_witness() {
             SchemaColumn::from_sql_type("id", "BIGINT", "postgres").unwrap(),
             SchemaColumn::from_sql_type("amount", "INTEGER", "postgres").unwrap(),
         ],
-    ).unwrap();
+    )
+    .unwrap();
     let source_catalog = RelationCatalog::from_schemas(&[source_schema]).unwrap();
     let input = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("direct", &input, "postgres", &dialect)];
+    let configured = [ConfiguredSqlInput::new(
+        "direct", &input, "postgres", &dialect,
+    )];
     let direct = analyze_configured_inputs_with_catalog(&configured, &source_catalog).unwrap();
-    let ComposedSemantics::Resolved(direct_semantics) =
-        direct.layers()[0].composed_semantics()
+    let ComposedSemantics::Resolved(direct_semantics) = direct.layers()[0].composed_semantics()
     else {
         panic!("direct composition");
     };
