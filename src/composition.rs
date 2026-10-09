@@ -164,6 +164,22 @@ impl<'a> Composer<'a> {
                 )]
             })
             .unwrap_or_default();
+        let mut window_witnesses = query
+            .window_witness()
+            .map(|witness| {
+                let boundary_kind = witness
+                    .boundary()
+                    .and_then(|boundary| edges.iter().find(|edge| edge.relation() == boundary))
+                    .map_or(crate::bundle::GroupBoundaryKind::Unresolved, |edge| match edge.resolution() {
+                        RelationResolution::External => crate::bundle::GroupBoundaryKind::Physical,
+                        RelationResolution::Resolved => crate::bundle::GroupBoundaryKind::Intermediate,
+                        _ => crate::bundle::GroupBoundaryKind::Unresolved,
+                    });
+                vec![crate::bundle::ComposedWindowWitness::new(
+                    layer.id().to_string(), witness.clone(), boundary_kind,
+                )]
+            })
+            .unwrap_or_default();
         let mut diagnostics = Vec::<CompositionDiagnostic>::new();
         let mut condition_exactness: ConditionExactness = query
             .condition_exactness()
@@ -200,6 +216,7 @@ impl<'a> Composer<'a> {
                             join_equalities.extend(upstream.join_equalities().iter().cloned());
                             set_operations.extend(upstream.set_operations().iter().cloned());
                             group_witnesses.extend(upstream.group_witnesses().iter().cloned());
+                            window_witnesses.extend(upstream.window_witnesses().iter().cloned());
                             condition_exactness =
                                 condition_exactness.merged_with(upstream.condition_exactness());
                         }
@@ -284,6 +301,7 @@ impl<'a> Composer<'a> {
             crate::bundle::ComposedWitnessEvidence {
                 set_operations,
                 group_witnesses,
+                window_witnesses,
             },
             condition_exactness,
             output,
