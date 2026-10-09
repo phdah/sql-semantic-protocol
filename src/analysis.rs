@@ -689,7 +689,7 @@ fn analyze_query(
         && query.fetch.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
             if select.from.len() == 1
-                && matches!(&select.from[0].relation, TableFactor::Table { .. })
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. })
                 && select.from[0].joins.is_empty()
                 && select.distinct.is_none()
                 && select.top.is_none()
