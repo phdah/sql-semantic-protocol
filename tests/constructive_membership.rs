@@ -200,6 +200,84 @@ fn sql_engine_oracle_agrees_on_duplicate_set_membership_and_null_truth() {
 }
 
 #[test]
+fn branch_tuple_counts_are_identical_to_existing_operator_local_cases() {
+    use sql_semantic_protocol::{ProtocolStatement, SetWitnessDirection};
+    let analyzed = analyze("SELECT k FROM l EXCEPT ALL SELECT k FROM r");
+    let ProtocolStatement::Query(query) = &analyzed.inputs()[0].statements()[0] else {
+        panic!("expected query");
+    };
+    let set = query.set_operation().expect("set");
+    let (original_positive, original_negative) = set.witness_directions();
+    let ComposedSemantics::Resolved(ref semantics) = analyzed.layers()[0].composed_semantics() else {
+        panic!("resolved");
+    };
+    let normalized = local_constructive_witnesses(semantics).into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Set).expect("set proof");
+    for (original, current) in [
+        (original_positive, normalized.qualifying()),
+        (original_negative, normalized.rejected()),
+    ] {
+        let (SetWitnessDirection::Exact(cases), WitnessDirection::Feasible(converted)) =
+            (original, current) else {
+            panic!("both directions must remain exact");
+        };
+        assert_eq!(cases.len(), converted.len());
+        for (case, translated) in cases.iter().zip(converted) {
+            assert_eq!(
+                case.obligations().len(),
+                translated.obligations().iter().filter(|item|
+                    matches!(item, WitnessObligation::SetTuple { .. })
+                ).count()
+            );
+            assert!(translated.obligations().iter().any(|item| matches!(item,
+                WitnessObligation::SetResultTuple { matching_rows, nulls_equal: true }
+                    if *matching_rows == case.output_tuple_count()
+            )));
+            for original_branch in case.obligations() {
+                assert!(translated.obligations().iter().any(|item| matches!(
+                    item, WitnessObligation::SetTuple {
+                        branch_identity, matching_rows, closed_world: true, ..
+                    } if branch_identity == original_branch.branch_identity()
+                        && *matching_rows == original_branch.matching_tuple_count()
+                )));
+            }
+        }
+    }
+}
+
+#[test]
+fn membership_case_counts_match_legacy_exact_truth_directions() {
+    use sql_semantic_protocol::{ProtocolStatement, SubqueryMembershipDirection};
+    let analyzed = analyze(
+        "SELECT l.k FROM l WHERE l.k NOT IN (SELECT r.k FROM r)"
+    );
+    let ProtocolStatement::Query(query) = &analyzed.inputs()[0].statements()[0] else {
+        panic!("expected query");
+    };
+    let original = &query.subquery_witnesses()[0];
+    let ComposedSemantics::Resolved(ref semantics) = analyzed.layers()[0].composed_semantics() else {
+        panic!("resolved");
+    };
+    let normalized = local_constructive_witnesses(semantics).into_iter()
+        .find(|proof| proof.operator() == WitnessOperator::Subquery).expect("membership proof");
+    for (before, after) in [
+        (original.qualifying(), normalized.qualifying()),
+        (original.rejected(), normalized.rejected()),
+    ] {
+        let (SubqueryMembershipDirection::Exact(old), WitnessDirection::Feasible(new)) =
+            (before, after) else {
+            panic!("both directions must remain exact");
+        };
+        assert_eq!(old.len(), new.len());
+        for (law, case) in old.iter().zip(new) {
+            assert!(case.obligations().iter().any(|item| matches!(
+                item, WitnessObligation::Membership { case: candidate, .. } if law == candidate
+            )));
+        }
+    }
+}
+
+#[test]
 fn unsupported_set_modifiers_do_not_get_normalized_as_constructive() {
     let (w, _) = proof(
         "SELECT k FROM l UNION ALL SELECT k FROM r LIMIT 1",
