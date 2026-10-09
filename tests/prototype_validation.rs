@@ -260,6 +260,47 @@ fn representative_generic_query_matches_complete_protocol_document() {
                             "origin_layer_id": "layer-0001"
                         }
                     ],
+                    "join_witnesses": [
+                        {
+                            "origin_layer_id": "layer-0001",
+                            "join_kind": "inner",
+                            "comparison": "eq",
+                            "left": {
+                                "relation": "sales.orders",
+                                "column": "customer_id",
+                                "relation_instance": "o"
+                            },
+                            "right": {
+                                "relation": "crm.customers",
+                                "column": "id",
+                                "relation_instance": "c"
+                            },
+                            "unknown_comparison_is_match": false,
+                            "qualifying": {
+                                "status": "exact",
+                                "cases": [{
+                                    "shape": "matched",
+                                    "min_matches": 1,
+                                    "max_matches": null,
+                                    "null_extended_side": null
+                                }]
+                            },
+                            "rejected": {
+                                "status": "exact",
+                                "cases": [{
+                                    "shape": "left_unmatched",
+                                    "min_matches": 0,
+                                    "max_matches": 0,
+                                    "null_extended_side": null
+                                }, {
+                                    "shape": "right_unmatched",
+                                    "min_matches": 0,
+                                    "max_matches": 0,
+                                    "null_extended_side": null
+                                }]
+                            }
+                        }
+                    ],
                     "condition_exactness": {
                         "status": "exact",
                         "residual_conditions": [],
