@@ -125,7 +125,9 @@ pub use outcome_goals::{
 };
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
-pub use physical_realization::{physical_source_plan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalSourcePlan};
+pub use physical_realization::{
+    physical_source_plan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalSourcePlan,
+};
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
     BinaryExpression, BinaryOperator, Bound, CaseBranch, CaseExpression,
