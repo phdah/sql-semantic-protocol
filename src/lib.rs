@@ -61,10 +61,12 @@ use std::fmt;
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
 pub use analysis::AnalysisError;
-pub use bag_histogram::{equijoin_key_histogram, BagHistogramProof, BagKeyHistogram};
+pub use bag_histogram::{
+    equijoin_key_histogram, BagHistogramProof, BagKeyExpressionIdentity, BagKeyHistogram,
+};
 pub use bag_semantics::{
-    BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagScope, BagSourceIdentity,
-    BagTupleIdentity,
+    BagCountProof, BagCountTarget, BagEvidence, BagJoinKeys, BagLaw, BagPopulationIdentity,
+    BagScope, BagSourceIdentity, BagTupleIdentity,
 };
 pub use boolean_witness::{
     BooleanOperands, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,

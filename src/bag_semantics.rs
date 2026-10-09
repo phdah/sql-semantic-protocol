@@ -15,6 +15,9 @@ pub enum BagScope {
     CompleteRelation,
     /// Every occurrence of one projected tuple, with NULLs equal for set laws.
     CandidateTuple,
+    /// Every row in the selected subset affected by DELETE or UPDATE.
+    /// This is not the entire physical relation, even when it originates there.
+    AffectedRows,
 }
 
 /// Stable identity of one corresponding tuple across set-operation branches.
@@ -28,6 +31,24 @@ impl BagTupleIdentity {
     /// Name a tuple equivalence class within one transfer proof.
     pub fn new(value: u64) -> Self {
         Self(value)
+    }
+}
+
+/// Identity of one complete logical bag being counted.
+///
+/// Equal identities attest equivalence after filtering and projection: for
+/// candidate-tuple counts, both branches must also use the same tuple-producing
+/// expressions. Sharing a physical source alone is not sufficient.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BagPopulationIdentity(String);
+
+impl BagPopulationIdentity {
+    /// Construct a nonempty, canonical population identity established upstream.
+    pub fn new(value: &str) -> Option<Self> {
+        if value.is_empty() {
+            return None;
+        }
+        Some(Self(value.to_string()))
     }
 }
 
@@ -72,6 +93,7 @@ pub struct BagEvidence {
     scope: BagScope,
     closed_world: bool,
     tuple_identity: Option<BagTupleIdentity>,
+    population_identity: Option<BagPopulationIdentity>,
     source: Option<BagSourceIdentity>,
 }
 
@@ -84,6 +106,7 @@ impl BagEvidence {
             scope,
             closed_world,
             tuple_identity: None,
+            population_identity: None,
             source: None,
         }
     }
@@ -102,6 +125,19 @@ impl BagEvidence {
     /// Stable candidate-tuple identity, if one was proven.
     pub fn tuple_identity(&self) -> Option<BagTupleIdentity> {
         self.tuple_identity
+    }
+
+    /// Attest the complete logical population being counted. Two operands
+    /// may share this identity only when their counted bags are equivalent,
+    /// including candidate-tuple projections and predicates.
+    pub fn with_population_identity(mut self, identity: BagPopulationIdentity) -> Self {
+        self.population_identity = Some(identity);
+        self
+    }
+
+    /// Proven logical population identity, when supplied.
+    pub fn population_identity(&self) -> Option<&BagPopulationIdentity> {
+        self.population_identity.as_ref()
     }
 
     /// Bind source identity after canonical physical-source resolution.
@@ -457,12 +493,15 @@ impl BagLaw {
             }
             _ => None,
         };
-        // Repeated references to one physical source have correlated counts.
-        // Merge their compatible bounds instead of inventing two inputs. For
-        // tuple evidence this applies only to the same complete tuple class.
+        // The same physical source can feed different filtered populations or
+        // affected-row subsets. Intersect bounds only after the caller proves
+        // both complete populations are identical. Candidate tuple counts also
+        // require the same positional tuple class.
         let (left, pair) = if let Some(right) = pair {
             if let (Some(a), Some(b)) = (left.source(), right.source()) {
                 if a.physical_relation() == b.physical_relation()
+                    && left.population_identity().is_some()
+                    && left.population_identity() == right.population_identity()
                     && left.scope() == right.scope()
                     && (left.scope() == BagScope::CompleteRelation
                         || (left.tuple_identity().is_some()
@@ -515,6 +554,8 @@ impl BagLaw {
                         .source()
                         .zip(right.source())
                         .is_some_and(|(a, b)| a.physical_relation() == b.physical_relation())
+                        && left.population_identity().is_some()
+                        && left.population_identity() == right.population_identity()
                     {
                         same_source_set_count(rule, left.bounds())
                     } else {
@@ -585,7 +626,7 @@ impl BagLaw {
                 if left.scope() == BagScope::CompleteRelation
                     && pair
                         .as_ref()
-                        .is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                        .is_some_and(|r| r.scope() == BagScope::AffectedRows) =>
             {
                 if let Some(right) = pair {
                     if left
@@ -622,7 +663,7 @@ impl BagLaw {
                 if left.scope() == BagScope::CompleteRelation
                     && pair
                         .as_ref()
-                        .is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                        .is_some_and(|r| r.scope() == BagScope::AffectedRows) =>
             {
                 if let Some(right) = pair {
                     if left
@@ -729,9 +770,13 @@ mod tests {
     #[test]
     fn aliased_complete_sources_are_correlated_not_two_independent_tables() {
         let same = |min, max, alias| {
-            evidence(min, Some(max), BagScope::CompleteRelation).with_source(
-                BagSourceIdentity::new("physical.orders", alias).expect("valid source"),
-            )
+            evidence(min, Some(max), BagScope::CompleteRelation)
+                .with_source(
+                    BagSourceIdentity::new("physical.orders", alias).expect("valid source"),
+                )
+                .with_population_identity(
+                    BagPopulationIdentity::new("orders:all").expect("population"),
+                )
         };
         let left = same(2, 5, "a");
         let right = same(4, 6, "b");
@@ -753,9 +798,11 @@ mod tests {
     #[test]
     fn repeated_set_branches_share_candidate_multiplicity() {
         let first = evidence(2, Some(4), BagScope::CandidateTuple)
-            .with_source(BagSourceIdentity::new("t", "a").expect("source"));
+            .with_source(BagSourceIdentity::new("t", "a").expect("source"))
+            .with_population_identity(BagPopulationIdentity::new("t:k").expect("population"));
         let second = evidence(3, Some(5), BagScope::CandidateTuple)
-            .with_source(BagSourceIdentity::new("t", "b").expect("source"));
+            .with_source(BagSourceIdentity::new("t", "b").expect("source"))
+            .with_population_identity(BagPopulationIdentity::new("t:k").expect("population"));
         for (rule, expected) in [
             (SetMultiplicityRule::Minimum, CountBounds::new(3, Some(4))),
             (
@@ -776,6 +823,70 @@ mod tests {
                 BagCountProof::Bounds(expected.expect("valid bounds"))
             );
         }
+    }
+
+    #[test]
+    fn separately_filtered_branches_do_not_inherit_physical_source_counts() {
+        let source = |alias| BagSourceIdentity::new("t", alias).expect("source");
+        let left = exact(2, BagScope::CandidateTuple)
+            .with_source(source("flag_1"))
+            .with_population_identity(
+                BagPopulationIdentity::new("t:k:flag=1").expect("population"),
+            );
+        let right = exact(1, BagScope::CandidateTuple)
+            .with_source(source("flag_2"))
+            .with_population_identity(
+                BagPopulationIdentity::new("t:k:flag=2").expect("population"),
+            );
+        let difference = BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference)
+            .transfer(left.clone(), Some(right.clone()));
+        assert_eq!(
+            number(difference),
+            CountBounds::new(1, Some(1)).expect("count")
+        );
+        assert_eq!(
+            number(
+                BagLaw::SetTuple(SetMultiplicityRule::Minimum)
+                    .transfer(left.clone(), Some(right.clone()))
+            ),
+            CountBounds::new(1, Some(1)).expect("count")
+        );
+        // Without equivalent-population evidence, a shared physical relation
+        // cannot justify treating these branch counts as identical either.
+        let unknown_left = exact(2, BagScope::CandidateTuple).with_source(source("a"));
+        let unknown_right = exact(1, BagScope::CandidateTuple).with_source(source("b"));
+        assert_eq!(
+            number(
+                BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference)
+                    .transfer(unknown_left, Some(unknown_right))
+            ),
+            CountBounds::new(1, Some(1)).expect("count")
+        );
+    }
+
+    #[test]
+    fn affected_rows_are_not_the_whole_physical_relation() {
+        let source = || BagSourceIdentity::new("t", "t").expect("source");
+        let original = exact(5, BagScope::CompleteRelation)
+            .with_source(source())
+            .with_population_identity(BagPopulationIdentity::new("t:all").expect("population"));
+        let affected = exact(2, BagScope::AffectedRows)
+            .with_source(source())
+            .with_population_identity(
+                BagPopulationIdentity::new("t:id_in_2_4").expect("population"),
+            );
+        assert_eq!(
+            number(BagLaw::DeleteRows.transfer(original.clone(), Some(affected.clone()))),
+            CountBounds::new(3, Some(3)).expect("count")
+        );
+        assert_eq!(
+            number(BagLaw::UpdateRows.transfer(original.clone(), Some(affected))),
+            CountBounds::new(5, Some(5)).expect("count")
+        );
+        assert!(matches!(
+            BagLaw::DeleteRows.transfer(original, Some(exact(2, BagScope::CompleteRelation))),
+            BagCountProof::Residual { .. }
+        ));
     }
 
     #[test]
@@ -862,7 +973,7 @@ mod tests {
     #[test]
     fn impossible_and_underdetermined_mutations_are_not_constructive_proofs() {
         let initial = exact(2, BagScope::CompleteRelation);
-        let too_many = exact(3, BagScope::CompleteRelation);
+        let too_many = exact(3, BagScope::AffectedRows);
         assert_eq!(
             BagLaw::DeleteRows.transfer(initial.clone(), Some(too_many.clone())),
             BagCountProof::Impossible
@@ -871,13 +982,16 @@ mod tests {
             BagLaw::UpdateRows.transfer(initial.clone(), Some(too_many.clone())),
             BagCountProof::Impossible
         );
-        let partial = evidence(0, Some(3), BagScope::CompleteRelation);
+        let partial = evidence(0, Some(3), BagScope::AffectedRows);
         assert!(matches!(
             BagLaw::DeleteRows.transfer(initial.clone(), Some(partial)),
             BagCountProof::Residual { .. }
         ));
         assert_eq!(
-            number(BagLaw::AppendRows.transfer(initial, Some(too_many))).minimum(),
+            number(
+                BagLaw::AppendRows.transfer(initial, Some(exact(3, BagScope::CompleteRelation)))
+            )
+            .minimum(),
             5
         );
     }

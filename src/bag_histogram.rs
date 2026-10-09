@@ -11,6 +11,23 @@ use crate::bag_semantics::BagSourceIdentity;
 use crate::constraints::ConstraintValue;
 use crate::protocol::JoinKind;
 
+/// Canonical identity of a physical key expression, independent of SQL alias.
+///
+/// Equal identities assert the same expression over the same physical rows;
+/// two different columns of one table must carry different identities.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BagKeyExpressionIdentity(String);
+
+impl BagKeyExpressionIdentity {
+    /// Construct a nonempty physical expression identity established upstream.
+    pub fn new(value: &str) -> Option<Self> {
+        if value.is_empty() {
+            return None;
+        }
+        Some(Self(value.to_string()))
+    }
+}
+
 /// Complete, typed frequency distribution of one SQL join-key expression.
 ///
 /// Rows with SQL NULL are counted but do not join to other NULL rows. Only
@@ -20,6 +37,7 @@ use crate::protocol::JoinKind;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BagKeyHistogram {
     source: BagSourceIdentity,
+    key_expression: BagKeyExpressionIdentity,
     frequencies: BTreeMap<ConstraintValue, u64>,
     total: u64,
 }
@@ -30,6 +48,7 @@ impl BagKeyHistogram {
     /// relation, not merely an absent candidate tuple.
     pub fn new(
         source: BagSourceIdentity,
+        key_expression: BagKeyExpressionIdentity,
         frequencies: Vec<(ConstraintValue, u64)>,
     ) -> Option<Self> {
         let mut entries = BTreeMap::new();
@@ -43,6 +62,7 @@ impl BagKeyHistogram {
         }
         Some(Self {
             source,
+            key_expression,
             frequencies: entries,
             total,
         })
@@ -51,6 +71,11 @@ impl BagKeyHistogram {
     /// Identity of the underlying physical source and its SQL relation instance.
     pub fn source(&self) -> &BagSourceIdentity {
         &self.source
+    }
+
+    /// Canonical physical expression used to compute this frequency distribution.
+    pub fn key_expression(&self) -> &BagKeyExpressionIdentity {
+        &self.key_expression
     }
 
     /// Number of all physical rows, including SQL NULL keys.
@@ -143,9 +168,10 @@ fn matching_frequency(kind: JoinKind, left: u64, right: u64, is_null: bool) -> O
 
 /// Prove per-key bag multiplicities for an equality join with complete keys.
 ///
-/// Inputs are complete histograms of the *same compared expression* on their
-/// respective physical relations. Different SQL aliases of one physical source
-/// must carry identical histograms; conflicting evidence is impossible.
+/// Inputs are complete histograms of their respective compared key expressions.
+/// Only aliases evaluating the *same* physical key expression over the same
+/// complete source must have identical histograms. Different expressions of the
+/// same table can legitimately have different distributions.
 /// Unlike a single total-count product, mixed key matches, NULL/nonmatches,
 /// duplicate pairs, outer rows and semi/anti membership are all evaluated.
 ///
@@ -158,7 +184,9 @@ pub fn equijoin_key_histogram(
     right: &BagKeyHistogram,
 ) -> BagHistogramProof {
     if left.source().physical_relation() == right.source().physical_relation()
-        && left.entries() != right.entries()
+        && (left.total_rows() != right.total_rows()
+            || (left.key_expression() == right.key_expression()
+                && left.entries() != right.entries()))
     {
         return BagHistogramProof::Impossible;
     }
@@ -217,13 +245,15 @@ mod tests {
         BagSourceIdentity::new(relation, instance).expect("valid physical relation")
     }
 
-    fn histogram(
+    fn histogram_for_key(
         relation: &str,
         instance: &str,
+        key_expression: &str,
         entries: &[(Option<i64>, u64)],
     ) -> BagKeyHistogram {
         BagKeyHistogram::new(
             source(relation, instance),
+            BagKeyExpressionIdentity::new(key_expression).expect("key expression"),
             entries
                 .iter()
                 .map(|(value, rows)| {
@@ -235,6 +265,14 @@ mod tests {
                 .collect(),
         )
         .expect("complete histogram")
+    }
+
+    fn histogram(
+        relation: &str,
+        instance: &str,
+        entries: &[(Option<i64>, u64)],
+    ) -> BagKeyHistogram {
+        histogram_for_key(relation, instance, "k", entries)
     }
 
     #[test]
@@ -285,10 +323,44 @@ mod tests {
     }
 
     #[test]
+    fn self_join_distinct_physical_key_expressions_may_have_different_histograms() {
+        // Three physical rows: (id, manager_id) = (1, 1), (2, 1), (3, 2).
+        let managers = histogram_for_key(
+            "employees",
+            "a",
+            "manager_id",
+            &[(Some(1), 2), (Some(2), 1)],
+        );
+        let ids = histogram_for_key(
+            "employees",
+            "b",
+            "id",
+            &[(Some(1), 1), (Some(2), 1), (Some(3), 1)],
+        );
+        assert_eq!(
+            equijoin_key_histogram(JoinKind::Inner, &managers, &ids).total_rows(),
+            Some(3)
+        );
+        // Contradictory complete evidence for one and the same expression
+        // remains impossible, even across different relation aliases.
+        let other_managers = histogram_for_key("employees", "b", "manager_id", &[(Some(1), 3)]);
+        assert_eq!(
+            equijoin_key_histogram(JoinKind::Inner, &managers, &other_managers),
+            BagHistogramProof::Impossible
+        );
+        let incomplete_ids = histogram_for_key("employees", "b", "id", &[(Some(1), 2)]);
+        assert_eq!(
+            equijoin_key_histogram(JoinKind::Inner, &managers, &incomplete_ids),
+            BagHistogramProof::Impossible
+        );
+    }
+
+    #[test]
     fn implicit_cross_type_comparisons_must_not_be_assumed() {
         let signed = histogram("l", "l", &[(Some(1), 2)]);
         let unsigned = BagKeyHistogram::new(
             source("r", "r"),
+            BagKeyExpressionIdentity::new("k").expect("key"),
             vec![(ConstraintValue::UnsignedInteger(1), 3)],
         )
         .expect("input");
@@ -304,6 +376,7 @@ mod tests {
     fn unknown_collation_and_arithmetic_overflow_remain_residual() {
         let strings = BagKeyHistogram::new(
             source("l", "l"),
+            BagKeyExpressionIdentity::new("k").expect("key"),
             vec![(ConstraintValue::String("a".to_string()), 1)],
         )
         .expect("input");

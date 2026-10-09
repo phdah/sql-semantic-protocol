@@ -6,9 +6,9 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_sql, dialect_from_name, equijoin_key_histogram, BagCountProof, BagCountTarget,
-    BagEvidence, BagHistogramProof, BagJoinKeys, BagKeyHistogram, BagLaw, BagScope,
-    BagSourceIdentity, BagTupleIdentity, ConstraintValue, CountBounds, JoinKind, ProtocolStatement,
-    SetMultiplicityRule,
+    BagEvidence, BagHistogramProof, BagJoinKeys, BagKeyExpressionIdentity, BagKeyHistogram, BagLaw,
+    BagPopulationIdentity, BagScope, BagSourceIdentity, BagTupleIdentity, ConstraintValue,
+    CountBounds, JoinKind, ProtocolStatement, SetMultiplicityRule,
 };
 
 fn exact(n: u64, scope: BagScope) -> BagEvidence {
@@ -258,7 +258,7 @@ fn duckdb_group_rank_and_multirow_write_counts_preserve_cardinality() {
     assert_eq!(
         checked_count(BagLaw::DeleteRows.transfer(
             exact(5, BagScope::CompleteRelation),
-            Some(exact(2, BagScope::CompleteRelation))
+            Some(exact(2, BagScope::AffectedRows))
         )),
         count("SELECT COUNT(*) FROM t")
     );
@@ -267,7 +267,7 @@ fn duckdb_group_rank_and_multirow_write_counts_preserve_cardinality() {
     assert_eq!(
         checked_count(BagLaw::UpdateRows.transfer(
             exact(3, BagScope::CompleteRelation),
-            Some(exact(1, BagScope::CompleteRelation))
+            Some(exact(1, BagScope::AffectedRows))
         )),
         count("SELECT COUNT(*) FROM t")
     );
@@ -306,11 +306,13 @@ fn duckdb_join_histogram_oracle_covers_mixed_many_to_many_and_null_keys() {
     };
     let left = BagKeyHistogram::new(
         source("l"),
+        BagKeyExpressionIdentity::new("k").expect("key"),
         values(&[(Some(1), 3), (Some(2), 1), (None, 2)]),
     )
     .expect("complete left");
     let right = BagKeyHistogram::new(
         source("r"),
+        BagKeyExpressionIdentity::new("k").expect("key"),
         values(&[(Some(1), 2), (Some(3), 4), (None, 1)]),
     )
     .expect("complete right");
@@ -348,4 +350,100 @@ fn duckdb_join_histogram_oracle_covers_mixed_many_to_many_and_null_keys() {
             "{join}: total bag multiplicity"
         );
     }
+}
+
+#[test]
+fn duckdb_same_table_filtered_set_branches_keep_distinct_row_populations() {
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE t(k INTEGER, flag INTEGER);
+         INSERT INTO t VALUES (1, 1), (1, 1), (1, 2);",
+    )
+    .expect("seed SQL");
+
+    let source = |alias| BagSourceIdentity::new("t", alias).expect("source");
+    let left = exact(2, BagScope::CandidateTuple)
+        .with_source(source("left_branch"))
+        .with_population_identity(BagPopulationIdentity::new("t:k:flag=1").expect("population"));
+    let right = exact(1, BagScope::CandidateTuple)
+        .with_source(source("right_branch"))
+        .with_population_identity(BagPopulationIdentity::new("t:k:flag=2").expect("population"));
+    assert_eq!(
+        checked_count(
+            BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference).transfer(left, Some(right))
+        ),
+        observed(
+            &db,
+            "SELECT COUNT(*) FROM (
+                SELECT k FROM t WHERE flag = 1
+                EXCEPT ALL
+                SELECT k FROM t WHERE flag = 2
+            ) AS output"
+        )
+    );
+}
+
+#[test]
+fn duckdb_self_join_different_physical_key_columns_has_valid_histograms() {
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE employees(id INTEGER, manager_id INTEGER);
+         INSERT INTO employees VALUES (1, 1), (2, 1), (3, 2);",
+    )
+    .expect("seed SQL");
+    let source = |alias| BagSourceIdentity::new("employees", alias).expect("source");
+    let managers = BagKeyHistogram::new(
+        source("a"),
+        BagKeyExpressionIdentity::new("manager_id").expect("key"),
+        vec![
+            (ConstraintValue::Integer(1), 2),
+            (ConstraintValue::Integer(2), 1),
+        ],
+    )
+    .expect("histogram");
+    let ids = BagKeyHistogram::new(
+        source("b"),
+        BagKeyExpressionIdentity::new("id").expect("key"),
+        vec![
+            (ConstraintValue::Integer(1), 1),
+            (ConstraintValue::Integer(2), 1),
+            (ConstraintValue::Integer(3), 1),
+        ],
+    )
+    .expect("histogram");
+    assert_eq!(
+        equijoin_key_histogram(JoinKind::Inner, &managers, &ids).total_rows(),
+        Some(observed(
+            &db,
+            "SELECT COUNT(*) FROM employees a JOIN employees b ON a.manager_id = b.id"
+        ))
+    );
+}
+
+#[test]
+fn duckdb_mutation_subsets_keep_their_physical_source_without_conflating_counts() {
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE t(id INTEGER);
+         INSERT INTO t VALUES (1), (2), (3), (4), (5);",
+    )
+    .expect("seed SQL");
+    let source = || BagSourceIdentity::new("t", "t").expect("source");
+    let initial = exact(5, BagScope::CompleteRelation)
+        .with_source(source())
+        .with_population_identity(BagPopulationIdentity::new("t:all").expect("population"));
+    let affected = exact(2, BagScope::AffectedRows)
+        .with_source(source())
+        .with_population_identity(BagPopulationIdentity::new("t:id_in_2_4").expect("population"));
+    let after_delete = checked_count(BagLaw::DeleteRows.transfer(initial, Some(affected.clone())));
+    db.execute_batch("DELETE FROM t WHERE id IN (2, 4)")
+        .expect("delete");
+    assert_eq!(after_delete, observed(&db, "SELECT COUNT(*) FROM t"));
+    let after_update = checked_count(BagLaw::UpdateRows.transfer(
+        exact(3, BagScope::CompleteRelation).with_source(source()),
+        Some(exact(1, BagScope::AffectedRows).with_source(source())),
+    ));
+    db.execute_batch("UPDATE t SET id = id + 10 WHERE id = 1")
+        .expect("update");
+    assert_eq!(after_update, observed(&db, "SELECT COUNT(*) FROM t"));
 }
