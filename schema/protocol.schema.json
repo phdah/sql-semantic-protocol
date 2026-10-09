@@ -354,6 +354,13 @@
           "items": {
             "$ref": "#/$defs/composedGroupWitness"
           }
+        },
+        "window_witnesses": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/composedWindowWitness"
+          }
         }
       }
     },
@@ -780,6 +787,9 @@
         },
         "group_witness": {
           "$ref": "#/$defs/groupWitness"
+        },
+        "window_witness": {
+          "$ref": "#/$defs/windowWitness"
         }
       }
     },
@@ -3995,6 +4005,177 @@
         },
         "witness": {
           "$ref": "#/$defs/groupWitness"
+        },
+        "boundary_kind": {
+          "enum": [
+            "physical",
+            "intermediate",
+            "unresolved"
+          ]
+        }
+      }
+    },
+    "windowWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boundary",
+        "partition_by",
+        "order_by",
+        "predicate",
+        "qualifying",
+        "rejected"
+      ],
+      "properties": {
+        "boundary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "partition_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/groupWitnessColumn"
+          }
+        },
+        "order_by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/windowOrderKey"
+          }
+        },
+        "predicate": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "operator",
+                "limit"
+              ],
+              "properties": {
+                "operator": {
+                  "enum": [
+                    "eq",
+                    "lte"
+                  ]
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualifying": {
+          "$ref": "#/$defs/windowWitnessDirection"
+        },
+        "rejected": {
+          "$ref": "#/$defs/windowWitnessDirection"
+        }
+      }
+    },
+    "windowOrderKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "column",
+        "ascending",
+        "nulls_first",
+        "strict_unique"
+      ],
+      "properties": {
+        "column": {
+          "$ref": "#/$defs/groupWitnessColumn"
+        },
+        "ascending": {
+          "type": "boolean"
+        },
+        "nulls_first": {
+          "type": "boolean"
+        },
+        "strict_unique": {
+          "const": true
+        }
+      }
+    },
+    "windowWitnessDirection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "min_preceding",
+            "max_preceding"
+          ],
+          "properties": {
+            "status": {
+              "const": "exact"
+            },
+            "min_preceding": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_preceding": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "const": "impossible"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reason"
+          ],
+          "properties": {
+            "status": {
+              "const": "residual"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "composedWindowWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_layer_id",
+        "witness",
+        "boundary_kind"
+      ],
+      "properties": {
+        "origin_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "witness": {
+          "$ref": "#/$defs/windowWitness"
         },
         "boundary_kind": {
           "enum": [
