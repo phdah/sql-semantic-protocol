@@ -231,7 +231,7 @@ fn independent_rows_and_sql_null_are_observed_by_duckdb_oracle() {
 
 #[test]
 fn local_join_case_counts_match_legacy_witness_for_both_directions() {
-    use sql_semantic_protocol::JoinWitnessDirection;
+    use sql_semantic_protocol::{JoinWitnessDirection, JoinWitnessShape};
     let b = bundle("SELECT l.a FROM l LEFT JOIN r ON l.k = r.k", "postgresql");
     let ComposedSemantics::Resolved(ref resolved) = b.layers()[0].composed_semantics() else {
         panic!("resolved");
@@ -253,6 +253,18 @@ fn local_join_case_counts_match_legacy_witness_for_both_directions() {
         assert!(after
             .iter()
             .all(|case| case.strength() == ProofStrength::Sufficient));
+        for (original, converted) in before.iter().zip(after) {
+            let actual_side = converted.obligations().iter().find_map(|obligation| match obligation {
+                WitnessObligation::JoinPair { null_extended, .. }
+                | WitnessObligation::NoMatchingPartner { null_extended, .. } => Some(*null_extended),
+                _ => None,
+            });
+            assert_eq!(actual_side, Some(original.null_extended_side()));
+            assert_eq!(
+                matches!(original.shape(), JoinWitnessShape::Matched),
+                matches!(converted.obligations()[0], WitnessObligation::JoinPair { .. })
+            );
+        }
     }
 }
 

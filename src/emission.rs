@@ -1874,6 +1874,7 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             comparison,
             left,
             right,
+            null_extended,
             closed_world,
         } => json!({
             "kind": "no_matching_partner",
@@ -1882,6 +1883,7 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "comparison": comparison.as_str(),
             "left": column_ref_to_value(left),
             "right": column_ref_to_value(right),
+            "null_extended": null_extended.map(|side| side.as_str()),
             "closed_world": closed_world
         }),
         crate::WitnessObligation::JoinPair {

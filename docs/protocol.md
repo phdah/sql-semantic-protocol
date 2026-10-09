@@ -123,7 +123,7 @@ with independent `qualifying` and `rejected` directions.
 
 The canonical obligations cover coupled Boolean SQL truth on a shared row,
 row cardinality and forall/exists bounds, NULL-sensitive tuple comparisons,
-absence of join partners, grouped counts with contributor tests, strictly
+absence of join partners with preserved NULL-extension sides, grouped counts with contributor tests, strictly
 ordered window predecessor rows, correlated EXISTS/IN membership cases,
 independent branch tuple multiplicities with SQL NULL-safe set equality,
 output cardinality, state counts, and producer realization requirements.
@@ -143,8 +143,10 @@ rejected, but no complete SMT or cross-layer solver is claimed.
 
 `local_pending_producers` and optional
 `composed_semantics.constructive_pending_producers` list intermediate
-relations that must be realized through their producers. These names are **not
-writable physical source tables**. Operator-local `feasible` does not prove
+relations that must be realized through their producers. The `physical_sources`
+array is specific to the named producer, not the enclosing terminal layer; an
+empty array means its leaf sources could not be established. These names are
+**not writable physical source tables**. Operator-local `feasible` does not prove
 that all terminal outputs can be jointly achieved, that every raw input row
 is classified, or that a CTE can be inverted. TASK-68 owns independent
 physical-source realization and transitive DAG proof. TASK-69 onward extends

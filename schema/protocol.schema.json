@@ -5900,6 +5900,7 @@
             "comparison",
             "left",
             "right",
+            "null_extended",
             "closed_world"
           ],
           "properties": {
@@ -5929,6 +5930,13 @@
             },
             "right": {
               "$ref": "#/$defs/groupWitnessColumn"
+            },
+            "null_extended": {
+              "enum": [
+                "left",
+                "right",
+                null
+              ]
             },
             "closed_world": {
               "type": "boolean"

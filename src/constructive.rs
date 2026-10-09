@@ -1258,6 +1258,7 @@ mod tests {
             comparison: ComparisonOperator::Eq,
             left: ColumnRef::new(Some("raw.orders".into()), "id".into()),
             right: ColumnRef::new(Some("raw.orders".into()), "id".into()),
+            null_extended: None,
             closed_world: false,
         })
         .is_none());
