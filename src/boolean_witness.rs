@@ -4,7 +4,11 @@
 //! originating relation boundary, retaining the logical tree and SQL's three-valued
 //! WHERE semantics. No independent Cartesian sampling or SQL reparsing is implied.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
+
+use crate::constraints::{
+    ConstraintEnforcement, ConstraintValue, RelationConstraint, RelationConstraintSet,
+};
 
 use crate::domain::resolve_column;
 use crate::protocol::{
@@ -37,7 +41,7 @@ impl std::ops::Deref for BooleanOperands {
 }
 
 /// Catalog-backed signed integer bounds used to prove feasible truth outcomes.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct SignedIntegerEvidence {
     pub(crate) minimum: i128,
     pub(crate) maximum: i128,
@@ -138,6 +142,8 @@ pub struct BooleanWitness {
     condition: BooleanRowConstraint,
     qualifying: BooleanWitnessDirection,
     rejected: BooleanWitnessDirection,
+    // Non-emitted source type bounds retained to recheck proofs when constraints arrive later.
+    integer_bounds: BTreeMap<ColumnRef, SignedIntegerEvidence>,
 }
 
 impl BooleanWitness {
@@ -160,6 +166,108 @@ impl BooleanWitness {
     pub fn rejected(&self) -> &BooleanWitnessDirection {
         &self.rejected
     }
+
+    /// Recheck witness directions against enforced source constraints supplied later by adapters.
+    ///
+    /// This can only downgrade proofs. It never upgrades a previously residual direction,
+    /// and unknown or unsupported constraint evidence cannot invent source rows.
+    pub(crate) fn restrict_with_schema_constraints(&mut self, sets: &[RelationConstraintSet]) {
+        let Some(set) = sets.iter().find(|set| set.relation() == self.source_relation) else {
+            return;
+        };
+        let mut restrictions = BTreeMap::<String, ColumnRestriction>::new();
+        let mut unsupported = !set.diagnostics().is_empty();
+        for constraint in set.constraints() {
+            if !constraint
+                .evidence()
+                .iter()
+                .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
+            {
+                // Unknown enforcement is not evidence that a declared restriction holds.
+                // A generated row cannot be certified without resolving that uncertainty.
+                unsupported |= constraint
+                    .evidence()
+                    .iter()
+                    .any(|e| e.enforcement() == ConstraintEnforcement::Unknown);
+                continue;
+            }
+            match constraint {
+                RelationConstraint::PrimaryKey(key) => {
+                    for column in key.columns() {
+                        restrictions.entry(column.clone()).or_default().not_null = true;
+                    }
+                }
+                RelationConstraint::NotNull(item) => {
+                    restrictions
+                        .entry(item.column().to_string())
+                        .or_default()
+                        .not_null = true;
+                }
+                RelationConstraint::AcceptedValues(item) => {
+                    let restriction = restrictions.entry(item.column().to_string()).or_default();
+                    let mut accepted = BTreeSet::new();
+                    for value in item.values() {
+                        match value {
+                            ConstraintValue::Integer(value) => {
+                                accepted.insert(i128::from(*value));
+                            }
+                            ConstraintValue::UnsignedInteger(value) => {
+                                accepted.insert(i128::from(*value));
+                            }
+                            ConstraintValue::Null => {}
+                            _ => unsupported = true,
+                        }
+                    }
+                    restriction.accepted = Some(match restriction.accepted.take() {
+                        Some(existing) => existing.intersection(&accepted).copied().collect(),
+                        None => accepted,
+                    });
+                }
+                RelationConstraint::UniqueKey(_) => {
+                    // Uniqueness imposes no additional restriction on an individual row.
+                }
+                RelationConstraint::ForeignKey(_) => {
+                    // A standalone row is not proven constructible without referenced rows.
+                    unsupported = true;
+                }
+            }
+        }
+        // Even constraints on columns absent from the predicate can make the whole
+        // relation unsatisfiable.
+        unsupported |= restrictions.values().any(|item| {
+            item.not_null && item.accepted.as_ref().is_some_and(BTreeSet::is_empty)
+        });
+        let cases = if unsupported {
+            BTreeSet::new()
+        } else {
+            possible_joint_truths(
+                &self.condition,
+                &|column| self.integer_bounds.get(column).copied(),
+                Some(&restrictions),
+            )
+        };
+        if matches!(self.qualifying, BooleanWitnessDirection::Exact(_))
+            && !cases.contains(&SqlTruth::True)
+        {
+            self.qualifying = BooleanWitnessDirection::Residual {
+                reason: "no provable qualifying assignment respects source constraints".to_string(),
+            };
+        }
+        if matches!(self.rejected, BooleanWitnessDirection::Exact(_))
+            && !cases.contains(&SqlTruth::False)
+            && !cases.contains(&SqlTruth::Unknown)
+        {
+            self.rejected = BooleanWitnessDirection::Residual {
+                reason: "no provable rejected assignment respects source constraints".to_string(),
+            };
+        }
+    }
+}
+
+#[derive(Default)]
+struct ColumnRestriction {
+    not_null: bool,
+    accepted: Option<BTreeSet<i128>>,
 }
 
 /// Establish an operator-local witness without changing whole-query exactness.
@@ -190,7 +298,7 @@ pub(crate) fn analyze(
     // Treating even different columns independently would be wrong once source
     // constraints or repeated appearances narrow the possible assignments.
     let cases = if candidate {
-        possible_joint_truths(&condition, &integer_evidence)
+        possible_joint_truths(&condition, &integer_evidence, None)
     } else {
         BTreeSet::new()
     };
@@ -222,11 +330,16 @@ pub(crate) fn analyze(
             cases.contains(&SqlTruth::False) || cases.contains(&SqlTruth::Unknown),
         ),
     );
+    let integer_bounds = columns
+        .into_iter()
+        .filter_map(|column| integer_evidence(&column).map(|bounds| (column, bounds)))
+        .collect();
     Some(BooleanWitness {
         source_relation: source.name().to_string(),
         condition,
         qualifying: directions.0,
         rejected: directions.1,
+        integer_bounds,
     })
 }
 
@@ -403,18 +516,27 @@ fn collect_comparison_literals(
 fn possible_joint_truths(
     constraint: &BooleanRowConstraint,
     evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    restrictions: Option<&BTreeMap<String, ColumnRestriction>>,
 ) -> BTreeSet<SqlTruth> {
     const MAX_ASSIGNMENTS: usize = 4096;
-    let mut thresholds = std::collections::BTreeMap::new();
+    let mut thresholds = BTreeMap::new();
     collect_comparison_literals(constraint, &mut thresholds);
-    let mut assignments = vec![std::collections::BTreeMap::new()];
+    let mut assignments = vec![BTreeMap::new()];
     for (column, literals) in thresholds {
+        let restriction = restrictions.and_then(|items| items.get(column.name()));
+        let bounds = evidence(&column);
         let mut values = BTreeSet::new();
-        if literals.is_empty() {
+        if let Some(allowed) = restriction.and_then(|item| item.accepted.as_ref()) {
+            for value in allowed {
+                if bounds.is_none_or(|bounds| bounds.minimum <= *value && *value <= bounds.maximum) {
+                    values.insert(Some(*value));
+                }
+            }
+        } else if literals.is_empty() {
             // A NULL test can be decided using any non-NULL witness.
             values.insert(Some(0_i128));
         } else {
-            let Some(bounds) = evidence(&column) else {
+            let Some(bounds) = bounds else {
                 return BTreeSet::new();
             };
             values.extend([Some(bounds.minimum), Some(bounds.maximum)]);
@@ -426,9 +548,10 @@ fn possible_joint_truths(
                 }
             }
         }
-        // In the absence of enforced NOT NULL evidence, NULL remains a possible
-        // SQL source value. It must remain coupled across all uses of this column.
-        values.insert(None);
+        // NULL remains possible unless enforcement explicitly excludes it.
+        if !restriction.is_some_and(|item| item.not_null) {
+            values.insert(None);
+        }
         if assignments.len().saturating_mul(values.len()) > MAX_ASSIGNMENTS {
             return BTreeSet::new();
         }
