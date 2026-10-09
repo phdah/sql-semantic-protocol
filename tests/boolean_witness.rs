@@ -5,7 +5,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs, analyze_sql,
     parse_dbt_catalog, parse_dbt_manifest, to_json, BooleanRowConstraint, BooleanTruthCase,
-    BooleanWitnessDirection, ComparisonOperator, ComposedSemantics, ConfiguredSqlInput,
+    BooleanWitnessDirection, ComparisonAssumption, ComparisonOperator, ComposedSemantics, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, GroupBoundaryKind, ProtocolStatement, RelationCatalog, RelationConstraint,
     RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
@@ -39,6 +39,112 @@ fn typed_bundle(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
         &dialect,
     )];
     analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap()
+}
+
+fn text_bundle(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
+    let schema = RelationSchema::new(
+        "t",
+        vec![
+            SchemaColumn::from_sql_type("a", "VARCHAR(8)", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("b", "VARCHAR(8)", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let input = SqlInput::inline(sql);
+    let dialect = PostgreSqlDialect {};
+    let configured = [ConfiguredSqlInput::new("typed", &input, "postgresql", &dialect)];
+    analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap()
+}
+
+#[test]
+fn binary_attested_like_prefix_preserves_null_and_correlations() {
+    let mut bundle = text_bundle("SELECT a FROM t WHERE a LIKE 'ab%' OR b LIKE 'ab%'");
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    bundle.declare_comparison_assumptions(&[ComparisonAssumption::BinaryCollation]);
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    bundle.declare_comparison_assumptions(&[ComparisonAssumption::NoCharPadding]);
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+    let BooleanRowConstraint::Any(operands) = witness.condition() else {
+        panic!("expected coupled OR");
+    };
+    assert!(operands.iter().all(|leaf| matches!(leaf, BooleanRowConstraint::StringPrefix { .. })));
+}
+
+#[test]
+fn like_prefix_rechecks_enforced_string_constraints() {
+    let mut bundle = text_bundle("SELECT a FROM t WHERE a LIKE 'ab%' OR b LIKE 'ab%'");
+    bundle.declare_comparison_assumptions(&[
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]);
+    let constraints = RelationConstraintSet::new(
+        "t",
+        ["a", "b"].iter().map(|column| {
+            RelationConstraint::accepted_values(
+                *column,
+                vec![ConstraintValue::String("zz".to_string())],
+                false,
+                enforced_evidence(),
+            )
+            .unwrap()
+        }).collect(),
+    )
+    .unwrap();
+    bundle.enrich_relation_constraints(&[constraints]);
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+}
+
+#[test]
+fn unsafe_like_patterns_are_residual_even_with_attestations() {
+    for predicate in ["a LIKE 'a_%'", "a ILIKE 'ab%'", "a LIKE 'a%b%'"] {
+        let mut bundle = text_bundle(&format!("SELECT a FROM t WHERE {predicate} OR b IS NULL"));
+        bundle.declare_comparison_assumptions(&[
+            ComparisonAssumption::BinaryCollation,
+            ComparisonAssumption::NoCharPadding,
+        ]);
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        assert!(matches!(
+            semantics.boolean_witnesses()[0].witness().qualifying(),
+            BooleanWitnessDirection::Residual { .. }
+        ), "{predicate}");
+    }
 }
 
 #[test]
@@ -626,6 +732,9 @@ fn witness_truth(
                     }
                 }
             })
+        }
+        BooleanRowConstraint::StringPrefix { .. } => {
+            panic!("integer differential fixture cannot evaluate string prefix")
         }
         BooleanRowConstraint::Residual { reason } => {
             panic!("differential fixture cannot evaluate residual: {reason}")
