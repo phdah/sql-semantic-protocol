@@ -134,9 +134,12 @@ rather than reconstructed from SQL.
 `ConstructiveWitness::logical_and` and `logical_or` combine the independent
 matching/rejection case directions. `logical_not` only swaps TRUE and NOT TRUE
 when the caller has genuinely proven a two-valued (non-UNKNOWN) expression;
-otherwise the qualifying direction stays residual. Case combinations reject
-direct conflicting output/state cardinalities and identical-row contradictory
-SQL truth, but do not pretend to be a complete SMT or cross-layer solver.
+otherwise the qualifying direction stays residual. Case combinations do not infer joint satisfiability from independently
+sufficient examples: AND returns a residual when the two directions lack an
+identical proven construction, and only certifies impossible when mutually
+contradictory exhaustive equivalence evidence is present. Direct conflicting
+output/state cardinalities and identical-row contradictory SQL truth are
+rejected, but no complete SMT or cross-layer solver is claimed.
 
 `local_pending_producers` and optional
 `composed_semantics.constructive_pending_producers` list intermediate
