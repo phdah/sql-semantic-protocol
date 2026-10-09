@@ -72,7 +72,10 @@ pub struct JoinWitnessCase {
 
 impl JoinWitnessCase {
     pub(crate) fn new(shape: JoinWitnessShape, null_extended_side: Option<JoinSide>) -> Self {
-        Self { shape, null_extended_side }
+        Self {
+            shape,
+            null_extended_side,
+        }
     }
 
     /// Matching or unmatched relation-instance obligation.
@@ -116,10 +119,17 @@ pub struct JoinWitness {
 
 impl JoinWitness {
     pub(crate) fn residual(kind: JoinKind, origin_layer_id: String, reason: &str) -> Self {
-        let residual = || JoinWitnessDirection::Residual { reason: reason.to_string() };
+        let residual = || JoinWitnessDirection::Residual {
+            reason: reason.to_string(),
+        };
         Self {
-            kind, left: None, right: None, comparison: None,
-            qualifying: residual(), rejected: residual(), origin_layer_id,
+            kind,
+            left: None,
+            right: None,
+            comparison: None,
+            qualifying: residual(),
+            rejected: residual(),
+            origin_layer_id,
         }
     }
 
@@ -133,18 +143,18 @@ impl JoinWitness {
         use JoinSide::{Left, Right};
         use JoinWitnessShape::{LeftUnmatched, Matched, RightUnmatched};
         let exact = |entries: &[(JoinWitnessShape, Option<JoinSide>)]| {
-            JoinWitnessDirection::Exact(entries.iter().map(|(shape, side)| {
-                JoinWitnessCase::new(*shape, *side)
-            }).collect())
+            JoinWitnessDirection::Exact(
+                entries
+                    .iter()
+                    .map(|(shape, side)| JoinWitnessCase::new(*shape, *side))
+                    .collect(),
+            )
         };
         let matched = (Matched, None);
         let left_unmatched = (LeftUnmatched, None);
         let right_unmatched = (RightUnmatched, None);
         let (qualifying, rejected) = match kind {
-            JoinKind::Inner => (
-                exact(&[matched]),
-                exact(&[left_unmatched, right_unmatched]),
-            ),
+            JoinKind::Inner => (exact(&[matched]), exact(&[left_unmatched, right_unmatched])),
             JoinKind::Left => (
                 exact(&[matched, (LeftUnmatched, Some(Right))]),
                 exact(&[right_unmatched]),
@@ -161,42 +171,53 @@ impl JoinWitness {
                 ]),
                 JoinWitnessDirection::Impossible,
             ),
-            JoinKind::LeftSemi => (
-                exact(&[matched]), exact(&[left_unmatched]),
-            ),
-            JoinKind::RightSemi => (
-                exact(&[matched]), exact(&[right_unmatched]),
-            ),
-            JoinKind::LeftAnti => (
-                exact(&[left_unmatched]), exact(&[matched]),
-            ),
-            JoinKind::RightAnti => (
-                exact(&[right_unmatched]), exact(&[matched]),
-            ),
+            JoinKind::LeftSemi => (exact(&[matched]), exact(&[left_unmatched])),
+            JoinKind::RightSemi => (exact(&[matched]), exact(&[right_unmatched])),
+            JoinKind::LeftAnti => (exact(&[left_unmatched]), exact(&[matched])),
+            JoinKind::RightAnti => (exact(&[right_unmatched]), exact(&[matched])),
             JoinKind::Cross | JoinKind::Unknown => {
                 return Self::residual(kind, origin_layer_id, "unsupported_join_kind");
             }
         };
         Self {
-            kind, left: Some(left), right: Some(right), comparison: Some(comparison),
-            qualifying, rejected, origin_layer_id,
+            kind,
+            left: Some(left),
+            right: Some(right),
+            comparison: Some(comparison),
+            qualifying,
+            rejected,
+            origin_layer_id,
         }
     }
 
     /// SQL join kind.
-    pub fn kind(&self) -> JoinKind { self.kind }
+    pub fn kind(&self) -> JoinKind {
+        self.kind
+    }
     /// Physical left comparison endpoint, if proven.
-    pub fn left(&self) -> Option<&ComposedJoinColumn> { self.left.as_ref() }
+    pub fn left(&self) -> Option<&ComposedJoinColumn> {
+        self.left.as_ref()
+    }
     /// Physical right comparison endpoint, if proven.
-    pub fn right(&self) -> Option<&ComposedJoinColumn> { self.right.as_ref() }
+    pub fn right(&self) -> Option<&ComposedJoinColumn> {
+        self.right.as_ref()
+    }
     /// Canonical SQL comparison, if proven.
-    pub fn comparison(&self) -> Option<ComparisonOperator> { self.comparison }
+    pub fn comparison(&self) -> Option<ComparisonOperator> {
+        self.comparison
+    }
     /// Qualifying row obligations.
-    pub fn qualifying(&self) -> &JoinWitnessDirection { &self.qualifying }
+    pub fn qualifying(&self) -> &JoinWitnessDirection {
+        &self.qualifying
+    }
     /// Rejected row obligations.
-    pub fn rejected(&self) -> &JoinWitnessDirection { &self.rejected }
+    pub fn rejected(&self) -> &JoinWitnessDirection {
+        &self.rejected
+    }
     /// Originating transformation layer.
-    pub fn origin_layer_id(&self) -> &str { &self.origin_layer_id }
+    pub fn origin_layer_id(&self) -> &str {
+        &self.origin_layer_id
+    }
 }
 
 #[cfg(test)]
@@ -204,12 +225,15 @@ mod tests {
     use super::*;
     #[test]
     fn outer_join_has_proven_null_extension_and_unbounded_matches() {
-        let endpoint = |instance: &str| ComposedJoinColumn::new(
-            "orders".to_owned(), "id".to_owned(), instance.to_owned()
-        );
+        let endpoint = |instance: &str| {
+            ComposedJoinColumn::new("orders".to_owned(), "id".to_owned(), instance.to_owned())
+        };
         let witness = JoinWitness::exact(
-            JoinKind::Left, endpoint("a"), endpoint("b"), ComparisonOperator::Eq,
-            "layer".to_owned()
+            JoinKind::Left,
+            endpoint("a"),
+            endpoint("b"),
+            ComparisonOperator::Eq,
+            "layer".to_owned(),
         );
         assert_ne!(witness.left(), witness.right());
         let JoinWitnessDirection::Exact(cases) = witness.qualifying() else {
