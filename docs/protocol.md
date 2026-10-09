@@ -192,16 +192,35 @@ bounds, are **not** certificates that a physical-source fixture exists;
 unproved count targets. A residual never means an impossible row.
 Arithmetic overflow never silently produces a false finite upper bound.
 
-The existing emitted contract already owns set multiplicity
-(`set_operations[].operation.multiplicity_rule`) and local typed
-`set_tuple` / `set_result_tuple` obligations; no competing JSON
-wire format is introduced for this foundation. The library evaluator
-requires a caller to supply **proven** closed-world source scope and
-operator applicability. It does not yet infer those facts from the
-whole bundle, compose shared-source plans, or emit additional relation-
-wide closure obligations. These are still release-blocking parts of
-TASK-69 and TASK-68, and **no** unverified coverage-manifest cell
-has been upgraded.
+The existing emitted contract owns set multiplicity
+(`set_operations[].operation.multiplicity_rule`) and typed
+`set_tuple` / `set_result_tuple` obligations. The extended optional
+`constructive_witnesses[].{qualifying,rejected}.cases[].obligations`
+now also admits a `closed_world` obligation with a physical
+`boundary` and one of two scoped `coverage` variants:
+
+- `entire_relation`: enumerate every row of the named physical
+  relation, including all potential join partners or subquery candidates.
+- `candidate_tuple`: enumerate every row equal to one candidate
+  output tuple under set NULL-equality; `branch_identity` and
+  positional `columns` identify its complete equivalence class.
+  This does **not** assert the underlying relation is empty.
+
+For unmatched joins and subquery membership the canonical local
+witnesses additionally require an entire-relation closure, and
+zero-count EXCEPT/INTERSECT/UNION cases require candidate-class
+closure. An intermediate/unresolved boundary cannot be passed off as a
+physical table. The schema closes both forms against unknown fields,
+and the same emission path is used for direct SQL, dbt and ODCS.
+
+The Rust evaluator still requires a caller to supply **proven**
+closed-world source scope and operator applicability. A typed closure
+obligation is a demand on the generator, not an assertion that the
+physical data has already been constructed. Whole-DAG physical-source
+realization, arbitrary predicates and complete generator sign-off
+remain upstream/downstream release work under TASK-68 and TASK-91.
+No unverified coverage-manifest cell is promoted solely from this
+operator-local work.
 
 ## Source schemas
 For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
