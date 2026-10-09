@@ -2009,6 +2009,23 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "before": constructive_bounds_to_value(*before),
             "after": constructive_bounds_to_value(*after)
         }),
+        crate::WitnessObligation::ClosedWorld { boundary, coverage } => json!({
+            "kind": "closed_world",
+            "boundary": constructive_boundary_to_value(boundary),
+            "coverage": match coverage {
+                crate::ClosedWorldCoverage::EntireRelation => json!({
+                    "kind": "entire_relation"
+                }),
+                crate::ClosedWorldCoverage::CandidateTuple {
+                    branch_identity,
+                    columns,
+                } => json!({
+                    "kind": "candidate_tuple",
+                    "branch_identity": branch_identity,
+                    "columns": columns
+                })
+            }
+        }),
         crate::WitnessObligation::Producer {
             boundary,
             physical_sources,
