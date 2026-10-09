@@ -2027,6 +2027,9 @@ fn collect_expression_column_refs(
         Expression::BooleanPredicate(predicate) => {
             collect_predicate_column_refs(predicate, sources, columns)
         }
+        Expression::SignedIntegerCast(cast) => {
+            collect_expression_column_refs(cast.expression(), sources, columns)
+        }
         Expression::Unary(unary) => {
             collect_expression_column_refs(unary.operand(), sources, columns)
         }
@@ -6376,6 +6379,9 @@ fn derive_output_domain(expression: &Expression) -> ValueDomain {
             );
             union_domains(&domain, &else_domain)
         }
+        Expression::SignedIntegerCast(_) => {
+            ValueDomain::unknown("signed integer cast output domain requires source datatype evidence")
+        }
         Expression::Unary(unary) => derive_unary_output_domain(unary),
         Expression::Binary(binary) => derive_binary_output_domain(binary),
         Expression::ScalarSubquery(subquery) => {
@@ -6700,6 +6706,7 @@ fn nested_projection_preserves_candidate_rows(expression: &Expression) -> bool {
         }
         Expression::AggregateFunction(_)
         | Expression::WindowFunction(_)
+        | Expression::SignedIntegerCast(_)
         | Expression::Case(_)
         | Expression::BooleanPredicate(_)
         | Expression::ScalarSubquery(_)
