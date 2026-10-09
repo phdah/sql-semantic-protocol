@@ -126,7 +126,7 @@ pub use outcome_goals::{
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
-    physical_row_count_plan, physical_source_plan, PhysicalPlanNode, PhysicalPlanRef,
+    physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan, PhysicalPlanNode, PhysicalPlanRef,
     PhysicalProofGap, PhysicalSourcePlan,
 };
 pub use protocol::{
