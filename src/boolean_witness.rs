@@ -12,7 +12,8 @@ use crate::constraints::{
 
 use crate::domain::resolve_column;
 use crate::protocol::{
-    ColumnRef, ComparisonOperator, Expression, LiteralType, LiteralValue, Predicate, SourceRelation,
+    ColumnRef, ComparisonAssumption, ComparisonOperator, Expression, LiteralType, LiteralValue,
+    Predicate, SourceRelation,
 };
 
 /// A logical operand sequence with at least two children.
@@ -47,6 +48,12 @@ pub(crate) struct SignedIntegerEvidence {
     pub(crate) maximum: i128,
 }
 
+/// Catalog-backed variable-length string evidence for a LIKE-prefix proof.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct StringEvidence {
+    pub(crate) max_chars: Option<u64>,
+}
+
 /// A generator-facing, typed source-row boolean expression.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BooleanRowConstraint {
@@ -70,6 +77,15 @@ pub enum BooleanRowConstraint {
         /// Integer literal, with source datatype verified separately.
         literal: i64,
     },
+    /// Test a string's binary prefix, or its SQL NOT LIKE complement.
+    StringPrefix {
+        /// Resolved string-typed source column.
+        column: ColumnRef,
+        /// Nonempty ASCII alphanumeric prefix, without its trailing wildcard.
+        prefix: String,
+        /// Whether this was a SQL NOT LIKE.
+        negated: bool,
+    },
     /// A subtree that cannot be proved without SQL execution or assumptions.
     Residual {
         /// Why this subtree is not an exact source-row constraint.
@@ -84,7 +100,9 @@ impl BooleanRowConstraint {
             Self::All(children) | Self::Any(children) => {
                 !children.is_empty() && children.iter().all(Self::is_exact)
             }
-            Self::NullTest { .. } | Self::IntegerComparison { .. } => true,
+            Self::NullTest { .. }
+            | Self::IntegerComparison { .. }
+            | Self::StringPrefix { .. } => true,
             Self::Residual { .. } => false,
         }
     }
@@ -116,6 +134,15 @@ impl BooleanRowConstraint {
                 operator: *operator,
                 literal: *literal,
             }),
+            Self::StringPrefix {
+                column,
+                prefix,
+                negated,
+            } => Some(Self::StringPrefix {
+                column: mapped.get(column)?.clone(),
+                prefix: prefix.clone(),
+                negated: *negated,
+            }),
             Self::Residual { reason } => Some(Self::Residual {
                 reason: reason.clone(),
             }),
@@ -129,7 +156,9 @@ impl BooleanRowConstraint {
                     child.columns(output);
                 }
             }
-            Self::NullTest { column, .. } | Self::IntegerComparison { column, .. } => {
+            Self::NullTest { column, .. }
+            | Self::IntegerComparison { column, .. }
+            | Self::StringPrefix { column, .. } => {
                 output.push(column.clone());
             }
             Self::Residual { .. } => {}
@@ -177,6 +206,9 @@ pub struct BooleanWitness {
     rejected: BooleanWitnessDirection,
     // Non-emitted source type bounds retained to recheck proofs when constraints arrive later.
     integer_bounds: BTreeMap<ColumnRef, SignedIntegerEvidence>,
+    string_bounds: BTreeMap<ColumnRef, StringEvidence>,
+    comparison_assumptions: BTreeSet<ComparisonAssumption>,
+    source_constraints: Vec<RelationConstraintSet>,
 }
 
 impl BooleanWitness {
@@ -238,12 +270,25 @@ impl BooleanWitness {
                 return None;
             }
         }
+        let mut string_bounds = BTreeMap::new();
+        for (column, evidence) in &self.string_bounds {
+            let mapped = mapping.get(column)?.clone();
+            if string_bounds
+                .insert(mapped, *evidence)
+                .is_some_and(|old| old != *evidence)
+            {
+                return None;
+            }
+        }
         Some(Self {
             source_relation: relation.to_string(),
             condition: self.condition.mapped_columns(&mapping)?,
             qualifying: self.qualifying.clone(),
             rejected: self.rejected.clone(),
             integer_bounds,
+            string_bounds,
+            comparison_assumptions: self.comparison_assumptions.clone(),
+            source_constraints: Vec::new(),
         })
     }
 
