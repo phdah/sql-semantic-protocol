@@ -8,7 +8,12 @@ use crate::boolean_witness::{BooleanRowConstraint, BooleanTruthCase, BooleanWitn
 use crate::bundle::{GroupBoundaryKind, ResolvedComposedSemantics};
 use crate::group_witness::{GroupAggregate, GroupValueTest, GroupWitnessDirection};
 use crate::join_witness::{JoinSide, JoinWitnessDirection, JoinWitnessShape};
-use crate::protocol::{ColumnRef, ComparisonOperator};
+use crate::protocol::{
+    ColumnDomain, ColumnRef, ComparisonOperator, SetWitnessDirection,
+};
+use crate::subquery_witness::{
+    SubqueryCorrelation, SubqueryMembershipCase, SubqueryMembershipDirection,
+};
 use crate::window_witness::{WindowOrderKey, WindowWitnessDirection};
 
 /// A named candidate or partner row scoped to a relation instance.
@@ -218,6 +223,45 @@ pub enum WitnessObligation {
         preceding: CountBounds,
         strict_unique: bool,
         closed_world: bool,
+    },
+    /// A membership case with explicit NULL and correlated-key laws.
+    Membership {
+        /// Candidate physical outer row.
+        outer: RowVariable,
+        /// Candidate inner row set, potentially empty.
+        inner: WitnessBoundary,
+        /// Existing typed EXISTS/IN/NOT IN witness law.
+        case: SubqueryMembershipCase,
+        /// Joint correlated equalities, not independently sampled.
+        correlations: Vec<SubqueryCorrelation>,
+        /// Optional IN membership key.
+        membership_key: Option<SubqueryCorrelation>,
+        /// Exact typed inner source-column constraints from upstream analysis.
+        inner_domains: Vec<ColumnDomain>,
+        /// All eligible inner rows must be controlled for absence and NULL evidence.
+        closed_world: bool,
+    },
+    /// Exact candidate-tuple multiplicity in one independent set operand.
+    SetTuple {
+        /// Stable identity of this leaf branch in the operation tree.
+        branch_identity: String,
+        /// Physical boundary; an intermediate requires producer proof instead.
+        boundary: WitnessBoundary,
+        /// Positional projection of the candidate tuple onto source columns.
+        tuple_columns: Vec<String>,
+        /// Exact number of equal tuples in the branch under IS NOT DISTINCT FROM.
+        matching_rows: u64,
+        /// Typed branch-domain requirements; never reparse SQL in consumers.
+        column_domains: Vec<ColumnDomain>,
+        /// Exact absence is required when matching_rows is zero.
+        closed_world: bool,
+    },
+    /// Multiplicity of the candidate tuple after a complete set-operation tree.
+    SetResultTuple {
+        /// Exact output count of this tuple, not the full output cardinality.
+        matching_rows: u64,
+        /// SQL set equality treats corresponding NULLs as equal.
+        nulls_equal: bool,
     },
     /// Final output count requirement.
     OutputRows {
@@ -667,13 +711,122 @@ pub fn local_constructive_witnesses(
         });
     }
     for item in semantics.subquery_witnesses() {
-        proofs.push(untranslated(
-            WitnessOperator::Subquery,
-            item.origin_layer_id(),
-        ));
+        let witness = item.witness();
+        let translate = |direction: &SubqueryMembershipDirection| -> WitnessDirection {
+            match direction {
+                SubqueryMembershipDirection::Residual { reason } => WitnessDirection::residual(reason),
+                SubqueryMembershipDirection::Exact(cases) if cases.is_empty() => WitnessDirection::Impossible,
+                SubqueryMembershipDirection::Exact(cases) => {
+                    if item.boundary_kind() != GroupBoundaryKind::Physical {
+                        return WitnessDirection::residual("requires_physical_source_realization");
+                    }
+                    let Some(inner_name) = witness.inner_relation() else {
+                        return WitnessDirection::residual("missing_inner_source_identity");
+                    };
+                    let mut outer_relations = semantics.dependencies().iter()
+                        .filter(|relation| relation.as_str() != inner_name);
+                    let (Some(outer_name), None) = (outer_relations.next(), outer_relations.next()) else {
+                        return WitnessDirection::residual("unresolved_outer_source_identity");
+                    };
+                    let (Some(outer), Some(inner)) = (
+                        RowVariable::new(outer_name, witness.outer_relation(), "candidate"),
+                        WitnessBoundary::new(inner_name, item.boundary_kind(), item.origin_layer_id()),
+                    ) else {
+                        return WitnessDirection::residual("invalid_subquery_identity");
+                    };
+                    let mut translated = Vec::new();
+                    for case in cases {
+                        let Some(translated_case) = WitnessCase::new(vec![
+                            WitnessObligation::Membership {
+                                outer: outer.clone(),
+                                inner: inner.clone(),
+                                case: *case,
+                                correlations: witness.correlations().to_vec(),
+                                membership_key: witness.membership_key().cloned(),
+                                inner_domains: witness.inner_column_domains().to_vec(),
+                                closed_world: true,
+                            }
+                        ], ProofStrength::Sufficient) else {
+                            return WitnessDirection::residual("invalid_membership_case");
+                        };
+                        translated.push(translated_case);
+                    }
+                    WitnessDirection::feasible(translated)
+                        .unwrap_or_else(|| WitnessDirection::residual("invalid_membership_cases"))
+                }
+            }
+        };
+        proofs.push(ConstructiveWitness {
+            operator: WitnessOperator::Subquery,
+            origin_layer_id: item.origin_layer_id().to_string(),
+            qualifying: translate(witness.qualifying()),
+            rejected: translate(witness.rejected()),
+        });
     }
     for item in semantics.set_operations() {
-        proofs.push(untranslated(WitnessOperator::Set, item.origin_layer_id()));
+        let operation = item.operation();
+        let (qualifying, rejected) = operation.witness_directions();
+        let translate = |direction: SetWitnessDirection| -> WitnessDirection {
+            match direction {
+                SetWitnessDirection::Residual { reason, .. } => WitnessDirection::residual(reason),
+                SetWitnessDirection::Exact(cases) if cases.is_empty() => WitnessDirection::Impossible,
+                SetWitnessDirection::Exact(cases) => {
+                    let mut translated = Vec::new();
+                    for case in cases {
+                        let mut obligations = Vec::new();
+                        for original in case.obligations() {
+                            let source = original.boundary();
+                            let kind = if source.is_intermediate() {
+                                GroupBoundaryKind::Intermediate
+                            } else {
+                                GroupBoundaryKind::Physical
+                            };
+                            // Producer realization is a separate task. A local tuple
+                            // count cannot be turned into a direct write at a CTE.
+                            if kind != GroupBoundaryKind::Physical {
+                                return WitnessDirection::residual("requires_physical_source_realization");
+                            }
+                            let Some(boundary) = WitnessBoundary::new(
+                                source.relation(), kind, item.origin_layer_id()
+                            ) else {
+                                return WitnessDirection::residual("invalid_set_boundary");
+                            };
+                            let Some(branch) = operation.branches().iter().find(
+                                |branch| branch.identity() == original.branch_identity()
+                            ) else {
+                                return WitnessDirection::residual("missing_set_branch_evidence");
+                            };
+                            obligations.push(WitnessObligation::SetTuple {
+                                branch_identity: original.branch_identity().to_string(),
+                                boundary,
+                                tuple_columns: source.tuple_columns().to_vec(),
+                                matching_rows: original.matching_tuple_count(),
+                                column_domains: branch.column_domains().to_vec(),
+                                closed_world: true,
+                            });
+                        }
+                        obligations.push(WitnessObligation::SetResultTuple {
+                            matching_rows: case.output_tuple_count(),
+                            nulls_equal: true,
+                        });
+                        let Some(translated_case) = WitnessCase::new(
+                            obligations, ProofStrength::Sufficient
+                        ) else {
+                            return WitnessDirection::residual("invalid_set_case");
+                        };
+                        translated.push(translated_case);
+                    }
+                    WitnessDirection::feasible(translated)
+                        .unwrap_or_else(|| WitnessDirection::residual("invalid_set_cases"))
+                }
+            }
+        };
+        proofs.push(ConstructiveWitness {
+            operator: WitnessOperator::Set,
+            origin_layer_id: item.origin_layer_id().to_string(),
+            qualifying: translate(qualifying),
+            rejected: translate(rejected),
+        });
     }
     proofs
 }
