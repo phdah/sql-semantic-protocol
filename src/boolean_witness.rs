@@ -155,26 +155,27 @@ pub(crate) fn analyze(
     let resolved_source = columns
         .iter()
         .all(|column| column.relation() == Some(source.name()));
-    let directions = if condition.is_exact() && distinct_columns >= 2 && unique_columns && resolved_source {
-        (
-            BooleanWitnessDirection::Exact(BooleanTruthCase::True),
-            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue),
-        )
-    } else {
-        let reason = if distinct_columns < 2 {
-            "source columns cannot be proven to form a supported cross-column predicate"
-        } else if !resolved_source {
-            "predicate columns do not resolve to the same source identity"
-        } else if !unique_columns {
-            "repeated column conditions require joint feasibility analysis"
+    let directions =
+        if condition.is_exact() && distinct_columns >= 2 && unique_columns && resolved_source {
+            (
+                BooleanWitnessDirection::Exact(BooleanTruthCase::True),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue),
+            )
         } else {
-            "a boolean branch lacks proven source datatype or supported semantics"
+            let reason = if distinct_columns < 2 {
+                "source columns cannot be proven to form a supported cross-column predicate"
+            } else if !resolved_source {
+                "predicate columns do not resolve to the same source identity"
+            } else if !unique_columns {
+                "repeated column conditions require joint feasibility analysis"
+            } else {
+                "a boolean branch lacks proven source datatype or supported semantics"
+            };
+            let direction = BooleanWitnessDirection::Residual {
+                reason: reason.to_string(),
+            };
+            (direction.clone(), direction)
         };
-        let direction = BooleanWitnessDirection::Residual {
-            reason: reason.to_string(),
-        };
-        (direction.clone(), direction)
-    };
     Some(BooleanWitness {
         source_relation: source.name().to_string(),
         condition,
