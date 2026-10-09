@@ -58,6 +58,44 @@ multiplicity remain residual rather than guessing feasible output goals.
 An unknown output column, duplicate target or histogram entry is a
 caller-input error rather than a semantic feasibility result.
 
+### Constructive result witnesses
+
+A feasible assessment includes a typed `witness` field; residual and unsatisfiable
+assessments have no witness. These are **whole-input** obligations, not evidence
+that a source predicate happens to match an existing dataset:
+
+- `singleton` proves an ungrouped aggregate or source-free constant query has one row.
+- `empty_sources` requires the complete named physical source relations to be empty.
+- `source_rows` fixes the count of a direct unmodified relation projection
+  and optionally maps complete typed column histograms to physical source columns.
+- `join_pairs` requires independent integer-key physical inputs, each with
+  one matching row for every key in `0..pairs-1`. It supports exact equality
+  INNER, LEFT, RIGHT and FULL joins, with no other rows, predicates or row-shaping.
+- `groups` constructs `groups` distinct physical integer keys with
+  `rows_per_group` source rows each, using exact COUNT(*) HAVING obligations
+  where present. No other source rows or grouping sets are admitted.
+- `ranked` constructs one selected row per integer-key partition (or
+  `rows` strictly ordered rows in the single global partition), using the
+  existing exact ROW_NUMBER predicate and explicit NULL ordering. Global
+  unpartitioned `ROW_NUMBER <= k` also proves the bound `max_rows = k`.
+- `set_tuples` carries the exact branch obligations for one resulting
+  tuple, repeated for `tuples` independent integer-key values. If a
+  one-column histogram is included, values are used instead of generated
+  keys. For UNION/INTERSECT/EXCEPT ALL, `scale_by_value_rows` means each
+  branch's matching tuple count is multiplied by that histogram value's
+  requested frequency. DISTINCT operators require unit multiplicities;
+  every emitted tuple remains distinct, including NULL equality.
+
+Positive proofs for integer-key classes require compatible, complete
+`source_schemas`, no active constraints on the controlled sources,
+and independent external source boundaries. The admitted construction
+deliberately excludes unsupported functions, additional filters,
+unmodeled producer-layer cardinalities, shared sources, and complex
+cross-column distributions; those requests remain `residual`.
+The existing typed row-membership witnesses remain authoritative for
+the join, set, grouped and rank operators: a positive goal never turns
+unknown comparison semantics into an exact source witness.
+
 The optional root property is additive and absent by default. The
 application and active protocol version remain aligned through Release
 Please. Consumers accepting opt-in goals must handle all three statuses,
