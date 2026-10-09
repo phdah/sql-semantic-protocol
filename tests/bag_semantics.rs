@@ -5,9 +5,10 @@ mod common;
 use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_sql, dialect_from_name, equijoin_key_histogram, BagCountProof, BagCountTarget, BagEvidence, BagHistogramProof, BagJoinKeys, BagKeyHistogram,
-    BagLaw, BagScope, BagSourceIdentity, BagTupleIdentity, CountBounds, JoinKind,
-    ProtocolStatement, SetMultiplicityRule,
+    analyze_sql, dialect_from_name, equijoin_key_histogram, BagCountProof, BagCountTarget,
+    BagEvidence, BagHistogramProof, BagJoinKeys, BagKeyHistogram, BagLaw, BagScope,
+    BagSourceIdentity, BagTupleIdentity, CountBounds, JoinKind, ProtocolStatement,
+    SetMultiplicityRule,
 };
 
 fn exact(n: u64, scope: BagScope) -> BagEvidence {
@@ -295,10 +296,12 @@ fn duckdb_join_histogram_oracle_covers_mixed_many_to_many_and_null_keys() {
     let values = |items: &[(Option<i64>, u64)]| {
         items
             .iter()
-            .map(|(value, count)| (
-                value.map_or(ConstraintValue::Null, ConstraintValue::Integer),
-                *count,
-            ))
+            .map(|(value, count)| {
+                (
+                    value.map_or(ConstraintValue::Null, ConstraintValue::Integer),
+                    *count,
+                )
+            })
             .collect::<Vec<_>>()
     };
     let left = BagKeyHistogram::new(
