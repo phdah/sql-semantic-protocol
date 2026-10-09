@@ -424,11 +424,15 @@ fn resolved_composed_semantics_to_value(semantics: &ResolvedComposedSemantics) -
             .collect::<Vec<_>>());
     }
     if !semantics.boolean_witnesses().is_empty() {
-        value["boolean_witnesses"] = json!(semantics.boolean_witnesses().iter().map(|item| json!({
-            "origin_layer_id": item.origin_layer_id(),
-            "boundary_kind": item.boundary_kind().as_str(),
-            "witness": boolean_witness_to_value(item.witness())
-        })).collect::<Vec<_>>());
+        value["boolean_witnesses"] = json!(semantics
+            .boolean_witnesses()
+            .iter()
+            .map(|item| json!({
+                "origin_layer_id": item.origin_layer_id(),
+                "boundary_kind": item.boundary_kind().as_str(),
+                "witness": boolean_witness_to_value(item.witness())
+            }))
+            .collect::<Vec<_>>());
     }
     if !semantics.subquery_witnesses().is_empty() {
         value["subquery_witnesses"] = json!(semantics
@@ -762,7 +766,11 @@ fn boolean_constraint_to_value(constraint: &crate::BooleanRowConstraint) -> Valu
         crate::BooleanRowConstraint::NullTest { column, negated } => json!({
             "kind": "null_test", "column": column_ref_to_value(column), "negated": negated
         }),
-        crate::BooleanRowConstraint::IntegerComparison { column, operator, literal } => json!({
+        crate::BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal,
+        } => json!({
             "kind": "integer_comparison", "column": column_ref_to_value(column),
             "operator": operator.as_str(), "literal": literal
         }),
