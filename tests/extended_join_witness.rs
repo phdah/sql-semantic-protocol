@@ -311,8 +311,8 @@ fn upstream_row_shaping_cannot_be_flattened_into_exact_source_obligations() {
             panic!("row-shaping upstream witness");
         };
         assert!(matches!(
-        witness.qualifying(),
-        JoinWitnessDirection::Residual { .. }
-    ));
+            witness.qualifying(),
+            JoinWitnessDirection::Residual { .. }
+        ));
     }
 }
