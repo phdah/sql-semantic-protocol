@@ -394,17 +394,29 @@ fn representative_generic_query_matches_complete_protocol_document() {
     assert_eq!(legacy_fields, expected);
 
     let graph = &actual["graph"];
-    let nodes = graph["physical_nodes"].as_array().expect("canonical physical nodes");
+    let nodes = graph["physical_nodes"]
+        .as_array()
+        .expect("canonical physical nodes");
     assert_eq!(nodes.len(), 3);
     assert_eq!(
-        nodes.iter().filter(|node| node["ref"]["kind"] == "source").count(),
+        nodes
+            .iter()
+            .filter(|node| node["ref"]["kind"] == "source")
+            .count(),
         2,
     );
-    let [plan] = graph["physical_source_plans"].as_array().expect("one target plan").as_slice() else {
+    let [plan] = graph["physical_source_plans"]
+        .as_array()
+        .expect("one target plan")
+        .as_slice()
+    else {
         panic!("expected exactly one physical plan");
     };
     assert_eq!(plan["layer_id"], "layer-0001");
-    assert_eq!(plan["physical_sources"], json!(["crm.customers", "sales.orders"]));
+    assert_eq!(
+        plan["physical_sources"],
+        json!(["crm.customers", "sales.orders"])
+    );
     assert_eq!(plan["qualifying"]["status"], "residual");
 }
 
