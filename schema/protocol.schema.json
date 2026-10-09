@@ -556,6 +556,13 @@
           "items": {
             "$ref": "#/$defs/composedBooleanWitness"
           }
+        },
+        "constructive_witnesses": {
+          "description": "Optional normalized operator-local constructive obligations. A feasible case is sufficient only at its stated boundary; intermediate and whole-DAG realization are not implied. Residual directions must fail closed.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/constructiveWitness"
+          }
         }
       }
     },
@@ -5502,6 +5509,671 @@
               "type": "null"
             }
           ]
+        }
+      }
+    },
+    "constructiveRowVariable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "instance",
+        "name"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "instance": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "constructiveBounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum",
+        "maximum"
+      ],
+      "properties": {
+        "minimum": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "constructiveBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "kind",
+        "origin_layer_id"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "kind": {
+          "enum": [
+            "physical",
+            "intermediate",
+            "unresolved"
+          ]
+        },
+        "origin_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "constructiveTerm": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "row",
+            "column"
+          ],
+          "properties": {
+            "kind": {
+              "const": "column"
+            },
+            "row": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "column": {
+              "$ref": "#/$defs/groupWitnessColumn"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "integer"
+            },
+            "value": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "null"
+            }
+          }
+        }
+      ]
+    },
+    "constructiveFormula": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operands"
+          ],
+          "properties": {
+            "kind": {
+              "const": "all"
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/constructiveFormula"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operands"
+          ],
+          "properties": {
+            "kind": {
+              "const": "any"
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/constructiveFormula"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operand"
+          ],
+          "properties": {
+            "kind": {
+              "const": "not"
+            },
+            "operand": {
+              "$ref": "#/$defs/constructiveFormula"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "row",
+            "predicate",
+            "truth"
+          ],
+          "properties": {
+            "kind": {
+              "const": "row_truth"
+            },
+            "row": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "predicate": {
+              "$ref": "#/$defs/booleanConstraint"
+            },
+            "truth": {
+              "enum": [
+                "true",
+                "not_true"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "left",
+            "operator",
+            "right"
+          ],
+          "properties": {
+            "kind": {
+              "const": "comparison"
+            },
+            "left": {
+              "$ref": "#/$defs/constructiveTerm"
+            },
+            "operator": {
+              "enum": [
+                "eq",
+                "neq",
+                "lt",
+                "lte",
+                "gt",
+                "gte",
+                "is_distinct_from",
+                "is_not_distinct_from"
+              ]
+            },
+            "right": {
+              "$ref": "#/$defs/constructiveTerm"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "term",
+            "negated"
+          ],
+          "properties": {
+            "kind": {
+              "const": "is_null"
+            },
+            "term": {
+              "$ref": "#/$defs/constructiveTerm"
+            },
+            "negated": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "left",
+            "equal",
+            "right"
+          ],
+          "properties": {
+            "kind": {
+              "const": "tuple_comparison"
+            },
+            "left": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/constructiveTerm"
+              }
+            },
+            "equal": {
+              "type": "boolean"
+            },
+            "right": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/constructiveTerm"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "term",
+            "prefix",
+            "negated"
+          ],
+          "properties": {
+            "kind": {
+              "const": "string_prefix"
+            },
+            "term": {
+              "$ref": "#/$defs/constructiveTerm"
+            },
+            "prefix": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "negated": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "constructiveObligation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "formula"
+          ],
+          "properties": {
+            "kind": {
+              "const": "predicate"
+            },
+            "formula": {
+              "$ref": "#/$defs/constructiveFormula"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "boundary",
+            "quantifier",
+            "bounds",
+            "predicate",
+            "closed_world"
+          ],
+          "properties": {
+            "kind": {
+              "const": "rows"
+            },
+            "boundary": {
+              "$ref": "#/$defs/constructiveBoundary"
+            },
+            "quantifier": {
+              "enum": [
+                "exists",
+                "for_all"
+              ]
+            },
+            "bounds": {
+              "$ref": "#/$defs/constructiveBounds"
+            },
+            "predicate": {
+              "$ref": "#/$defs/constructiveFormula"
+            },
+            "closed_world": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "candidate",
+            "partner",
+            "comparison",
+            "left",
+            "right",
+            "closed_world"
+          ],
+          "properties": {
+            "kind": {
+              "const": "no_matching_partner"
+            },
+            "candidate": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "partner": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "comparison": {
+              "enum": [
+                "eq",
+                "neq",
+                "lt",
+                "lte",
+                "gt",
+                "gte",
+                "is_distinct_from",
+                "is_not_distinct_from"
+              ]
+            },
+            "left": {
+              "$ref": "#/$defs/groupWitnessColumn"
+            },
+            "right": {
+              "$ref": "#/$defs/groupWitnessColumn"
+            },
+            "closed_world": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "left_row",
+            "right_row",
+            "left",
+            "right",
+            "comparison",
+            "null_extended"
+          ],
+          "properties": {
+            "kind": {
+              "const": "join_pair"
+            },
+            "left_row": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "right_row": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "left": {
+              "$ref": "#/$defs/groupWitnessColumn"
+            },
+            "right": {
+              "$ref": "#/$defs/groupWitnessColumn"
+            },
+            "comparison": {
+              "enum": [
+                "eq",
+                "neq",
+                "lt",
+                "lte",
+                "gt",
+                "gte",
+                "is_distinct_from",
+                "is_not_distinct_from"
+              ]
+            },
+            "null_extended": {
+              "enum": [
+                "left",
+                "right",
+                null
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "boundary",
+            "key",
+            "rows",
+            "non_null"
+          ],
+          "properties": {
+            "kind": {
+              "const": "group"
+            },
+            "boundary": {
+              "$ref": "#/$defs/constructiveBoundary"
+            },
+            "key": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/groupWitnessColumn"
+              }
+            },
+            "rows": {
+              "$ref": "#/$defs/constructiveBounds"
+            },
+            "non_null": {
+              "$ref": "#/$defs/constructiveBounds"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "layer_id",
+            "bounds"
+          ],
+          "properties": {
+            "kind": {
+              "const": "output_rows"
+            },
+            "layer_id": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "bounds": {
+              "$ref": "#/$defs/constructiveBounds"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "relation",
+            "before",
+            "after"
+          ],
+          "properties": {
+            "kind": {
+              "const": "state_rows"
+            },
+            "relation": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "before": {
+              "$ref": "#/$defs/constructiveBounds"
+            },
+            "after": {
+              "$ref": "#/$defs/constructiveBounds"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "boundary"
+          ],
+          "properties": {
+            "kind": {
+              "const": "producer"
+            },
+            "boundary": {
+              "$ref": "#/$defs/constructiveBoundary"
+            }
+          }
+        }
+      ]
+    },
+    "constructiveCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strength",
+        "obligations"
+      ],
+      "properties": {
+        "strength": {
+          "enum": [
+            "sufficient",
+            "necessary",
+            "equivalent"
+          ]
+        },
+        "obligations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/constructiveObligation"
+          }
+        }
+      }
+    },
+    "constructiveDirection": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "cases"
+          ],
+          "properties": {
+            "status": {
+              "const": "feasible"
+            },
+            "cases": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/constructiveCase"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "const": "impossible"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reason"
+          ],
+          "properties": {
+            "status": {
+              "const": "residual"
+            },
+            "reason": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        }
+      ]
+    },
+    "constructiveWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operator",
+        "origin_layer_id",
+        "qualifying",
+        "rejected"
+      ],
+      "properties": {
+        "operator": {
+          "enum": [
+            "boolean",
+            "join",
+            "group",
+            "window",
+            "subquery",
+            "set"
+          ]
+        },
+        "origin_layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "qualifying": {
+          "$ref": "#/$defs/constructiveDirection"
+        },
+        "rejected": {
+          "$ref": "#/$defs/constructiveDirection"
         }
       }
     }
