@@ -563,6 +563,14 @@
           "items": {
             "$ref": "#/$defs/constructiveWitness"
           }
+        },
+        "constructive_pending_producers": {
+          "description": "Typed obligations to realize intermediate boundaries through producer DAGs; not direct source-write permissions or completed physical plans.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/constructiveObligation"
+          }
         }
       }
     },
