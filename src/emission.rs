@@ -1892,7 +1892,14 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "null_extended": null_extended.map(|side| side.as_str())
         }),
         crate::WitnessObligation::Group {
-            boundary, key, aggregate, distinct, argument, rows, non_null, tests,
+            boundary,
+            key,
+            aggregate,
+            distinct,
+            argument,
+            rows,
+            non_null,
+            tests,
         } => json!({
             "kind": "group",
             "boundary": constructive_boundary_to_value(boundary),
@@ -1909,7 +1916,13 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             })).collect::<Vec<_>>()
         }),
         crate::WitnessObligation::Ranked {
-            boundary, candidate, partition_by, order_by, preceding, strict_unique, closed_world,
+            boundary,
+            candidate,
+            partition_by,
+            order_by,
+            preceding,
+            strict_unique,
+            closed_world,
         } => json!({
             "kind": "ranked",
             "boundary": constructive_boundary_to_value(boundary),
