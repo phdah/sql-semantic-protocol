@@ -451,7 +451,7 @@ fn assess_goal(
                     }
                 })
                 .collect::<Vec<_>>();
-            if literal_histograms.iter().any(|proof| *proof == Some(false)) {
+            if literal_histograms.contains(&Some(false)) {
                 return Ok(assessed(
                     goal,
                     OutcomeGoalStatus::Unsatisfiable,
