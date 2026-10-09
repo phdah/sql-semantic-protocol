@@ -1,12 +1,12 @@
 # SQL generator release coverage inventory
 
-**Status:** not signed off. This is the scope inventory for the planned single protocol **3.0.0** release and sql-tdg milestone **m-3**, not a statement that every feature works.
+**Status:** not signed off. [Four specific maintainer decisions](coverage-signoff.md) are recorded separately. This is the scope inventory for the planned single protocol **3.0.0** release and sql-tdg milestone **m-3**, not a statement that every feature works.
 
 The authoritative, machine-readable source is [`coverage-manifest.json`](coverage-manifest.json). [`tests/coverage_manifest.rs`](../tests/coverage_manifest.rs) checks each dialect/feature cell, parser fixtures and DuckDB SQL oracles. Adding or extending a dialect or semantic feature requires updating the manifest and corresponding tests.
 
 ## Evidence semantics
 
-- **P**: one named fixture successfully parses and analyzes using that dialect. This says nothing about exact terminal row generation.
+- **P**: one named fixture successfully parses and returns an analysis for that dialect. This does **not** independently certify that canonical semantics, value domains or exact terminal membership are correct.
 - **?**: no verified fixture for this exact dialect/feature pair. It is **not** an exclusion and **not** supported by assertion.
 - **Operator-local**: an existing typed local witness may describe an operator, but the upstream physical-source DAG proof, constructive positive/negative cases, and exact cardinality have **not** yet been certified.
 - **E**: only DuckDB fixture execution is available in this repository. Even E is one exercised SQL shape, not an engine-version or arbitrary-workload guarantee.
@@ -19,34 +19,34 @@ Dialect names here are **inventory entries only**, never a production runtime wh
 | Feature | ansi | bigquery | clickhouse | databricks | duckdb | generic | hive | mssql | mysql | postgresql | redshift | snowflake | sqlite | Scope | Protocol owner | sql-tdg owner |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `predicates.integer_ranges` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-70 | TASK-27 |
-| `predicates.boolean_logic` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-70 | TASK-27 |
+| `predicates.boolean_logic` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-70 | TASK-27 |
 | `predicates.null_truth` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-70 | TASK-26, TASK-27 |
 | `predicates.string_pattern` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-70 | TASK-27 |
-| `predicates.computed` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-70 | TASK-27 |
+| `predicates.computed` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-70 | TASK-27 |
 | `predicates.temporal` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-70, TASK-79 | TASK-27 |
 | `predicates.comparison_environment` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-70, TASK-79 | TASK-27, TASK-33 |
-| `joins.inner` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-71 | TASK-25 |
+| `joins.inner` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-71 | TASK-25 |
 | `joins.outer` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-71 | TASK-25 |
 | `joins.semi_anti` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-71 | TASK-25, TASK-26 |
 | `joins.non_equi` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-71 | TASK-25, TASK-27 |
 | `joins.repeated_source` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-71 | TASK-25 |
 | `sets.union_all` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-72, TASK-69 | TASK-24 |
-| `sets.union_distinct` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-72, TASK-69 | TASK-24 |
-| `sets.intersect` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-72, TASK-69 | TASK-24 |
-| `sets.except` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | P | ? | Block | TASK-72, TASK-69 | TASK-24 |
+| `sets.union_distinct` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-72, TASK-69 | TASK-24 |
+| `sets.intersect` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-72, TASK-69 | TASK-24 |
+| `sets.except` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-72, TASK-69 | TASK-24 |
 | `sets.alignment` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-72 | TASK-24 |
-| `grouping.basic` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-73, TASK-69 | TASK-28 |
+| `grouping.basic` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-73, TASK-69 | TASK-28 |
 | `grouping.advanced` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-73 | TASK-28 |
 | `grouping.supergroups` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-73 | TASK-28 |
-| `grouping.having` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-73, TASK-68 | TASK-28 |
-| `windows.row_number` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-74 | TASK-29 |
+| `grouping.having` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-73, TASK-68 | TASK-28 |
+| `windows.row_number` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-74 | TASK-29 |
 | `windows.ranking` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-74 | TASK-29 |
 | `windows.frames` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-74 | TASK-29 |
 | `windows.qualify` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-74, TASK-68 | TASK-29 |
-| `subqueries.exists` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-75 | TASK-26 |
+| `subqueries.exists` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-75 | TASK-26 |
 | `subqueries.in` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-75, TASK-69 | TASK-26 |
 | `subqueries.scalar_quantified` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-75 | TASK-26 |
-| `scopes.cte` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-78, TASK-68 | TASK-24, TASK-25, TASK-26, TASK-28, TASK-29 |
+| `scopes.cte` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-78, TASK-68 | TASK-24, TASK-25, TASK-26, TASK-28, TASK-29 |
 | `scopes.recursive_cte` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Approval | TASK-78 | TASK-36 |
 | `scopes.derived_lateral` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-78, TASK-77 | TASK-26 |
 | `ordering.sort` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-76 | TASK-29, TASK-30 |
@@ -72,7 +72,7 @@ Dialect names here are **inventory entries only**, never a production runtime wh
 | `execution.dbt_fixture` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-89, TASK-91 | TASK-36 |
 | `execution.unsupported_opaque` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Approval | TASK-66, TASK-88, TASK-91 | TASK-33, TASK-36 |
 
-**Every row** currently has `physical_source_positive = not_end_to_end_proven`, `physical_source_negative = not_end_to_end_proven`, and `output_cardinality = unverified`. This prevents the local witnesses for TASK-58..65 from being mistaken for complete constructive generator plans. The manifest also expands **251 named syntax/semantic variants across 13 dialects (3,263 logical variant cells)** from fail-closed defaults, with only fixture-backed sparse overrides. The matrix above shows **representative parser evidence**, not proof of every variant in its family. Each variant inherits `variant_evidence_defaults` unless an independent fixture justifies an override. The manifest contains existing local witness status, all dialect records, variant evidence and fixture IDs.
+**Coverage counts:** 18 parser fixtures (including a known residual); 10 DuckDB SQL oracle cases; 11 recorded downstream dbt models. **Every row** currently has `physical_source_positive = not_end_to_end_proven`, `physical_source_negative = not_end_to_end_proven`, and `output_cardinality = unverified`. This prevents the local witnesses for TASK-58..65 from being mistaken for complete constructive generator plans. The manifest also expands **251 named syntax/semantic variants across 13 dialects (3,263 logical variant cells)** from fail-closed defaults, with only fixture-backed sparse overrides. The matrix above shows **representative parser evidence**, not proof of every variant in its family. Each variant inherits `variant_evidence_defaults` unless an independent fixture justifies an override. The manifest contains existing local witness status, all dialect records, variant evidence and fixture IDs.
 
 ## Generator acceptance ownership
 
