@@ -1056,6 +1056,11 @@ impl AnalysisBundle {
                     .condition_exactness
                     .clone()
                     .with_declarations(&self.comparison_declarations);
+                for witness in &mut semantics.boolean_witnesses {
+                    witness
+                        .witness
+                        .declare_comparison_assumptions(&self.comparison_declarations);
+                }
             }
         }
     }
