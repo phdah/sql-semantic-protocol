@@ -1047,3 +1047,83 @@ fn eval_joint_truth(
         BooleanRowConstraint::Residual { .. } => None,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn exact_noninteger_conjuncts_preserve_integer_domain() {
+        let a = ColumnRef::new(Some("t".to_string()), "a".to_string());
+        let b = ColumnRef::new(Some("t".to_string()), "b".to_string());
+        for other in [
+            BooleanRowConstraint::NullTest {
+                column: b.clone(),
+                negated: false,
+            },
+            BooleanRowConstraint::StringPrefix {
+                column: b.clone(),
+                prefix: "ab".to_string(),
+                negated: false,
+            },
+        ] {
+            let mut witness = BooleanWitness {
+                source_relation: "t".to_string(),
+                condition: BooleanRowConstraint::All(
+                    BooleanOperands::new(vec![
+                        BooleanRowConstraint::IntegerComparison {
+                            column: a.clone(),
+                            operator: ComparisonOperator::Gt,
+                            literal: 2,
+                        },
+                        other,
+                    ])
+                    .expect("two operands"),
+                ),
+                qualifying: BooleanWitnessDirection::Residual {
+                    reason: "not yet checked".to_string(),
+                },
+                rejected: BooleanWitnessDirection::Residual {
+                    reason: "not yet checked".to_string(),
+                },
+                integer_bounds: BTreeMap::from([(
+                    a.clone(),
+                    SignedIntegerEvidence {
+                        minimum: i128::from(i32::MIN),
+                        maximum: i128::from(i32::MAX),
+                    },
+                )]),
+                string_bounds: BTreeMap::from([(
+                    b.clone(),
+                    StringEvidence { max_chars: Some(8) },
+                )]),
+                comparison_assumptions: BTreeSet::from([
+                    ComparisonAssumption::BinaryCollation,
+                    ComparisonAssumption::NoCharPadding,
+                ]),
+                source_constraints: Vec::new(),
+            };
+            witness.recheck_truth_directions();
+            assert!(matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+            ));
+
+            let domains = witness.qualifying_conjunctive_domains();
+            let [domain] = domains.as_slice() else {
+                panic!("expected one integer domain from the mixed conjunction");
+            };
+            assert_eq!(domain.column(), &a);
+            assert_eq!(
+                domain.domain(),
+                &comparison_domain(
+                    ComparisonOperator::Gt,
+                    &LiteralExpression::new(
+                        LiteralType::Integer,
+                        LiteralValue::Number("2".to_string()),
+                    ),
+                )
+            );
+        }
+    }
+}
