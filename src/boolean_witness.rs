@@ -546,25 +546,33 @@ fn normalize(
             }
         }
         Predicate::Comparison(comparison) => {
-            let (column, operator, literal) = if let Some(column) =
-                invertible_integer_column(comparison.left(), sources, integer_evidence)
-            {
-                (column, comparison.operator(), comparison.right())
-            } else if let Some(column) =
-                invertible_integer_column(comparison.right(), sources, integer_evidence)
-            {
-                (column, comparison.operator().reversed(), comparison.left())
-            } else {
-                return residual("comparison is noninvertible or correlates two source values");
-            };
+            let (column, operator, literal, offset) =
+                if let Some((column, offset)) = affine_integer_operand(
+                    comparison.left(),
+                    sources,
+                    integer_evidence,
+                ) {
+                    (column, comparison.operator(), comparison.right(), offset)
+                } else if let Some((column, offset)) = affine_integer_operand(
+                    comparison.right(),
+                    sources,
+                    integer_evidence,
+                ) {
+                    (column, comparison.operator().reversed(), comparison.left(), offset)
+                } else {
+                    return residual("comparison is noninvertible or correlates two source values");
+                };
             if matches!(
                 operator,
                 ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
             ) {
                 return residual("null-safe comparison is not part of the integer witness subset");
             }
-            let Some(value) = signed_integer_literal(literal) else {
-                return residual("comparison literal is not a supported signed integer");
+            let Some(value) = signed_integer_literal(literal)
+                .and_then(|value| i128::from(value).checked_sub(offset))
+                .and_then(|value| i64::try_from(value).ok())
+            else {
+                return residual("comparison literal cannot be inverted to a signed integer");
             };
             let column = resolve_column(column, sources);
             if integer_evidence(&column).is_none() {
@@ -619,6 +627,51 @@ fn invertible_integer_column<'a>(
         }
         other => identity_integer_column(other),
     }
+}
+
+// A nonzero shift is invertible only when an explicit ordinary signed cast
+// bounds the arithmetic and every possible source value stays in that target
+// width. The comparison threshold is shifted back to the source column.
+fn affine_integer_operand<'a>(
+    expression: &'a Expression,
+    sources: &[SourceRelation],
+    evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<(&'a crate::protocol::ColumnExpression, i128)> {
+    use crate::protocol::BinaryOperator;
+
+    if let Some(column) = invertible_integer_column(expression, sources, evidence) {
+        return Some((column, 0));
+    }
+    let Expression::Binary(binary) = expression else {
+        return None;
+    };
+    let (cast_expression, delta) = match binary.operator() {
+        BinaryOperator::Add => {
+            if let Some(value) = signed_integer_literal(binary.right()) {
+                (binary.left(), i128::from(value))
+            } else {
+                (binary.right(), i128::from(signed_integer_literal(binary.left())?))
+            }
+        }
+        BinaryOperator::Subtract => (
+            binary.left(),
+            -i128::from(signed_integer_literal(binary.right())?),
+        ),
+        _ => return None,
+    };
+    let Expression::SignedIntegerCast(cast) = cast_expression else {
+        return None;
+    };
+    let column = identity_integer_column(cast.expression())?;
+    let bounds = evidence(&resolve_column(column, sources))?;
+    let magnitude = 1_i128 << (u32::from(cast.target_bits()) - 1);
+    let minimum = bounds.minimum.checked_add(delta)?;
+    let maximum = bounds.maximum.checked_add(delta)?;
+    (bounds.minimum >= -magnitude
+        && bounds.maximum < magnitude
+        && minimum >= -magnitude
+        && maximum < magnitude)
+        .then_some((column, delta))
 }
 
 // Unary plus and arithmetic with zero are identity transformations on
