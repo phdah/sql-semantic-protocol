@@ -188,10 +188,8 @@ pub(crate) fn analyze(
     let resolved_source = columns
         .iter()
         .all(|column| column.relation() == Some(source.name()));
-    let candidate = condition.is_exact()
-        && distinct_columns >= 2
-        && unique_columns
-        && resolved_source;
+    let candidate =
+        condition.is_exact() && distinct_columns >= 2 && unique_columns && resolved_source;
     let cases = if candidate {
         possible_truths(&condition, &integer_evidence)
     } else {
@@ -262,7 +260,7 @@ fn normalize(
                 Some(operands) => BooleanRowConstraint::Any(operands),
                 None => residual("logical predicate has fewer than two operands"),
             }
-        },
+        }
         Predicate::IsNull(test) => {
             if let Expression::Column(column) = test.expression() {
                 BooleanRowConstraint::NullTest {
@@ -365,11 +363,12 @@ fn possible_truths(
 ) -> BTreeSet<SqlTruth> {
     match constraint {
         BooleanRowConstraint::All(operands) | BooleanRowConstraint::Any(operands) => {
-            let mut possible = BTreeSet::from([if matches!(constraint, BooleanRowConstraint::All(_)) {
-                SqlTruth::True
-            } else {
-                SqlTruth::False
-            }]);
+            let mut possible =
+                BTreeSet::from([if matches!(constraint, BooleanRowConstraint::All(_)) {
+                    SqlTruth::True
+                } else {
+                    SqlTruth::False
+                }]);
             for operand in operands.iter() {
                 let next = possible_truths(operand, integer_evidence);
                 possible = possible
@@ -393,17 +392,25 @@ fn possible_truths(
             let _ = (column, negated);
             BTreeSet::from([SqlTruth::True, SqlTruth::False])
         }
-        BooleanRowConstraint::IntegerComparison { column, operator, literal } => {
+        BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal,
+        } => {
             use crate::protocol::ComparisonOperator as Op;
             let Some(bounds) = integer_evidence(column) else {
                 return BTreeSet::new();
             };
             let value = i128::from(*literal);
             let (true_possible, false_possible) = match operator {
-                Op::Eq => (bounds.minimum <= value && value <= bounds.maximum,
-                           bounds.minimum < value || value < bounds.maximum),
-                Op::Neq => (bounds.minimum < value || value < bounds.maximum,
-                            bounds.minimum <= value && value <= bounds.maximum),
+                Op::Eq => (
+                    bounds.minimum <= value && value <= bounds.maximum,
+                    bounds.minimum < value || value < bounds.maximum,
+                ),
+                Op::Neq => (
+                    bounds.minimum < value || value < bounds.maximum,
+                    bounds.minimum <= value && value <= bounds.maximum,
+                ),
                 Op::Lt => (bounds.minimum < value, bounds.maximum >= value),
                 Op::Lte => (bounds.minimum <= value, bounds.maximum > value),
                 Op::Gt => (bounds.maximum > value, bounds.minimum <= value),
@@ -411,9 +418,15 @@ fn possible_truths(
                 Op::IsDistinctFrom | Op::IsNotDistinctFrom => return BTreeSet::new(),
             };
             let mut possible = BTreeSet::new();
-            if true_possible { possible.insert(SqlTruth::True); }
-            if false_possible { possible.insert(SqlTruth::False); }
-            if bounds.explicitly_nullable { possible.insert(SqlTruth::Unknown); }
+            if true_possible {
+                possible.insert(SqlTruth::True);
+            }
+            if false_possible {
+                possible.insert(SqlTruth::False);
+            }
+            if bounds.explicitly_nullable {
+                possible.insert(SqlTruth::Unknown);
+            }
             possible
         }
         BooleanRowConstraint::Residual { .. } => BTreeSet::new(),
