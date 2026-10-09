@@ -79,12 +79,14 @@ pub enum OutcomeWitness {
         rows: u64,
     },
     /// For every distinct tuple, apply these complete per-branch counts.
-    /// If provided, `values` is the complete requested one-column output
-    /// histogram; otherwise keys are 0..tuples-1.
+    /// If provided, `values` is a complete output histogram. For ALL operations,
+    /// scale each branch obligation by that value's requested row frequency.
+    /// Otherwise keys are 0..tuples-1 with one emitted row per key.
     SetTuples {
         tuples: u64,
         case: SetWitnessCase,
         values: Vec<OutputValueCount>,
+        scale_by_value_rows: bool,
     },
 }
 
@@ -582,10 +584,23 @@ fn construct_set(
     let case = cases
         .into_iter()
         .find(|case| case.output_tuple_count() == 1 && case.obligations().len() == 2)?;
+    let scale_by_value_rows = matches!(operation.multiplicity_rule()?,
+        SetMultiplicityRule::Sum | SetMultiplicityRule::Minimum | SetMultiplicityRule::SaturatingDifference);
+    let tuples = if values.is_empty() { rows } else {
+        values.iter().filter(|entry| entry.rows() > 0).count() as u64
+    };
+    if !scale_by_value_rows && values.iter().any(|entry| entry.rows() > 1) {
+        return None;
+    }
+    // Scaling the branch tuple counts must never overflow their integer contract.
+    if values.iter().any(|entry| case.obligations().iter().any(|obligation| {
+        obligation.matching_tuple_count().checked_mul(entry.rows()).is_none()
+    })) { return None; }
     Some(OutcomeWitness::SetTuples {
-        tuples: rows,
+        tuples,
         case,
         values,
+        scale_by_value_rows,
     })
 }
 
