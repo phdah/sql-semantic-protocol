@@ -965,6 +965,16 @@
         },
         "write_kind": {
           "enum": [null, "definition", "append", "conditional_mutation", "update", "delete"]
+        },
+        "operator_witnesses": {
+          "description": "Origin-local, non-conjoined typed operator proofs. Intermediate boundaries are not writable physical sources.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/constructiveWitness" }
+        },
+        "pending_producers": {
+          "description": "Typed producer obligations that are not claimed satisfiable by this node.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/constructiveObligation" }
         }
       }
     },
