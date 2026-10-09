@@ -646,8 +646,9 @@ identity and source-column name. Integer comparisons are exact only for
 catalog-confirmed bounded signed integer types and `i64` literals; without
 type evidence the branch remains `residual`. Signed unary literal notation
 (`-2` and `+3`) is normalized semantically rather than reparsed as SQL.
-Logical operand sequences always contain at least two children. Casts, computed/functional
-expressions, LIKE and collation-sensitive comparisons are not yet invertible
+Logical operand sequences always contain at least two children. Only identity arithmetic (`+a`, `a+0`, `a-0`) is
+invertible; casts, nonidentity computed/functional expressions, LIKE and
+collation-sensitive comparisons are not yet invertible
 and remain residual. Repeated-column predicates are solved jointly using bounded source-value
 partitions; ambiguous relation identity or mixed proven/unproven trees remain
 residual. Oversized search spaces also remain residual.
