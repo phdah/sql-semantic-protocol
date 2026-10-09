@@ -156,13 +156,16 @@ pub(crate) fn analyze(
         return None;
     }
     let unique_columns = columns.iter().collect::<BTreeSet<_>>().len() == columns.len();
-    let directions = if condition.is_exact() && unique_columns {
+    let resolved_source = columns.iter().all(|column| column.relation() == Some(source.name()));
+    let directions = if condition.is_exact() && unique_columns && resolved_source {
         (
             BooleanWitnessDirection::Exact(BooleanTruthCase::True),
             BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue),
         )
     } else {
-        let reason = if !unique_columns {
+        let reason = if !resolved_source {
+            "predicate columns do not resolve to the same source identity"
+        } else if !unique_columns {
             "repeated column conditions require joint feasibility analysis"
         } else {
             "a boolean branch lacks proven source datatype or supported semantics"
