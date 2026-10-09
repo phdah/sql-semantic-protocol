@@ -4731,6 +4731,30 @@
         {
           "type": "object",
           "additionalProperties": false,
+          "required": ["kind", "column", "prefix", "negated"],
+          "properties": {
+            "kind": {"const": "string_prefix"},
+            "column": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["relation", "name"],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {"type": "string", "minLength": 1},
+                    {"type": "null"}
+                  ]
+                },
+                "name": {"type": "string", "minLength": 1}
+              }
+            },
+            "prefix": {"type": "string", "pattern": "^[A-Za-z0-9]+$"},
+            "negated": {"type": "boolean"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
           "required": [
             "kind",
             "reason"
