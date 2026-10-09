@@ -730,7 +730,8 @@ fn analyze_query(
                 && select.qualify.is_none()
                 && select.top.is_none()
                 && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
-                    if !items.is_empty() && modifiers.is_empty()));
+                    if !items.is_empty() && modifiers.is_empty()
+                        && items.iter().all(|item| !matches!(item, Expr::GroupingSets(_) | Expr::Cube(_) | Expr::Rollup(_)))));
 
     QueryStatement::new(
         relation_analysis.sources,
