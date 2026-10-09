@@ -66,7 +66,7 @@ impl BagSourceIdentity {
 }
 
 /// Input evidence for a bag transfer: an inclusive count and its closed-world scope.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BagEvidence {
     bounds: CountBounds,
     scope: BagScope,
@@ -100,7 +100,7 @@ impl BagEvidence {
     }
 
     /// Stable candidate-tuple identity, if one was proven.
-    pub fn tuple_identity(self) -> Option<BagTupleIdentity> {
+    pub fn tuple_identity(&self) -> Option<BagTupleIdentity> {
         self.tuple_identity
     }
 
@@ -116,17 +116,17 @@ impl BagEvidence {
     }
 
     /// Count interval of the controlled scope.
-    pub fn bounds(self) -> CountBounds {
+    pub fn bounds(&self) -> CountBounds {
         self.bounds
     }
 
     /// Whether this is a complete relation or an entire matching tuple class.
-    pub fn scope(self) -> BagScope {
+    pub fn scope(&self) -> BagScope {
         self.scope
     }
 
     /// Whether all candidates, including absent candidates, are controlled.
-    pub fn closed_world(self) -> bool {
+    pub fn closed_world(&self) -> bool {
         self.closed_world
     }
 }
@@ -477,7 +477,7 @@ impl BagLaw {
             }
             SetTuple(rule)
                 if left.scope() == BagScope::CandidateTuple
-                    && pair.is_some_and(|r| r.scope() == BagScope::CandidateTuple) =>
+                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CandidateTuple) =>
             {
                 if let Some(right) = pair {
                     if left.tuple_identity().is_none()
@@ -513,7 +513,7 @@ impl BagLaw {
             },
             EquiJoin { kind, keys }
                 if left.scope() == BagScope::CompleteRelation
-                    && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
             {
                 if let Some(right) = pair {
                     match keys {
@@ -535,7 +535,7 @@ impl BagLaw {
             }
             AppendRows
                 if left.scope() == BagScope::CompleteRelation
-                    && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
             {
                 if let Some(right) = pair {
                     sum(left.bounds(), right.bounds())
@@ -547,7 +547,7 @@ impl BagLaw {
             }
             DeleteRows
                 if left.scope() == BagScope::CompleteRelation
-                    && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
             {
                 if let Some(right) = pair {
                     if left
@@ -582,7 +582,7 @@ impl BagLaw {
             }
             UpdateRows
                 if left.scope() == BagScope::CompleteRelation
-                    && pair.is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
+                    && pair.as_ref().is_some_and(|r| r.scope() == BagScope::CompleteRelation) =>
             {
                 if let Some(right) = pair {
                     if left
@@ -656,7 +656,7 @@ mod tests {
             (SetMultiplicityRule::ExceptDistinct, 0),
         ] {
             assert_eq!(
-                number(BagLaw::SetTuple(law).transfer(l, Some(r))).minimum(),
+                number(BagLaw::SetTuple(law).transfer(l.clone(), Some(r.clone()))).minimum(),
                 expected
             );
         }
@@ -669,10 +669,10 @@ mod tests {
     #[test]
     fn mismatched_or_unknown_tuple_keys_cannot_prove_set_membership() {
         let tuple = exact(2, BagScope::CandidateTuple);
-        let unrelated = tuple.with_tuple_identity(BagTupleIdentity::new(2));
+        let unrelated = tuple.clone().with_tuple_identity(BagTupleIdentity::new(2));
         let rule = BagLaw::SetTuple(SetMultiplicityRule::Minimum);
         assert_eq!(
-            rule.transfer(tuple, Some(unrelated)),
+            rule.transfer(tuple.clone(), Some(unrelated)),
             BagCountProof::Residual {
                 reason: "unproved_shared_tuple_identity"
             }
@@ -729,7 +729,7 @@ mod tests {
     fn empty_tuple_absence_requires_a_closed_world() {
         let tuple = exact(0, BagScope::CandidateTuple);
         assert_eq!(
-            number(BagLaw::DistinctTuple.transfer(tuple, None)).maximum(),
+            number(BagLaw::DistinctTuple.transfer(tuple.clone(), None)).maximum(),
             Some(0)
         );
         let open = BagEvidence::new(tuple.bounds(), tuple.scope(), false);
@@ -751,7 +751,7 @@ mod tests {
     fn joins_count_duplicate_pairs_and_treat_null_equalities_as_nonmatching() {
         let l = exact(3, BagScope::CompleteRelation);
         let r = exact(2, BagScope::CompleteRelation);
-        let join = |kind, keys| BagLaw::EquiJoin { kind, keys }.transfer(l, Some(r));
+        let join = |kind, keys| BagLaw::EquiJoin { kind, keys }.transfer(l.clone(), Some(r.clone()));
         assert_eq!(
             number(join(JoinKind::Inner, BagJoinKeys::EqualNonNull)).minimum(),
             6
@@ -810,16 +810,16 @@ mod tests {
         let initial = exact(2, BagScope::CompleteRelation);
         let too_many = exact(3, BagScope::CompleteRelation);
         assert_eq!(
-            BagLaw::DeleteRows.transfer(initial, Some(too_many)),
+            BagLaw::DeleteRows.transfer(initial.clone(), Some(too_many.clone())),
             BagCountProof::Impossible
         );
         assert_eq!(
-            BagLaw::UpdateRows.transfer(initial, Some(too_many)),
+            BagLaw::UpdateRows.transfer(initial.clone(), Some(too_many.clone())),
             BagCountProof::Impossible
         );
         let partial = evidence(0, Some(3), BagScope::CompleteRelation);
         assert!(matches!(
-            BagLaw::DeleteRows.transfer(initial, Some(partial)),
+            BagLaw::DeleteRows.transfer(initial.clone(), Some(partial)),
             BagCountProof::Residual { .. }
         ));
         assert_eq!(
