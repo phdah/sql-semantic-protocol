@@ -40,11 +40,12 @@ pub use analysis::AnalysisError;
 pub use bundle::{
     analyze_configured_inputs, analyze_configured_inputs_with_catalog,
     analyze_configured_inputs_with_resolver, analyze_inputs, select_targets, AnalysisBundle,
-    AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedWindowWitness, ComposedJoinColumn, ComposedJoinEquality,
-    ComposedSemantics, ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef, GraphComponent, GraphEdge,
-    GroupBoundaryKind, InputAnalysisError, RelationResolution, ResolvedComposedSemantics, SqlInput,
-    SqlInputSource, TargetSelectionError, TransformationLayer, UnresolvedComposedSemantics,
+    AnalysisGraph, AnalyzedInput, ComposedGroupWitness, ComposedJoinColumn, ComposedJoinEquality,
+    ComposedSemantics, ComposedSetOperation, ComposedWindowWitness, CompositionDiagnostic,
+    CompositionFailureReason, ConfiguredInputAnalysisError, ConfiguredSqlInput, DatasetRef,
+    GraphComponent, GraphEdge, GroupBoundaryKind, InputAnalysisError, RelationResolution,
+    ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
+    UnresolvedComposedSemantics,
 };
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
@@ -92,11 +93,11 @@ pub use protocol::{
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
     WindowSpecification, WriteKind, WriteOperation, WriteValue, PROTOCOL_VERSION,
 };
-pub use window_witness::{WindowOrderKey, WindowRankCase, WindowWitness, WindowWitnessDirection};
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
     RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TimestampZone,
 };
+pub use window_witness::{WindowOrderKey, WindowRankCase, WindowWitness, WindowWitnessDirection};
 
 /// Error returned when SQL cannot be converted into protocol domain values.
 #[derive(Debug, Clone, PartialEq, Eq)]
