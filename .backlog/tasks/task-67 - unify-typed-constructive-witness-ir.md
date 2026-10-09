@@ -47,7 +47,8 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 ## Implementation progress (2026-10-09)
 
-- Introduced a typed source-independent obligation and proof-case algebra, inclusive cardinality invariants, shared row variables, tuple predicates, NULL-aware Boolean truth and physical/intermediate producer boundaries.
-- Added source-local Boolean, Join, Group and Window normalization and an optional closed JSON emission contract; unlike producer-graph plans, this is deliberately only operator-local evidence.
-- Added contradiction checks for incompatible output/state cardinalities and conflicting truth of the same predicate on the same row.
-- Still open: fully canonical translations for set and subquery witnesses; proof-strength completeness; source-row existential/universal solver; full physical boundary realization and adapter-equivalence/differential certification. These acceptance criteria remain unchecked. TASK-68 owns graph composition, but TASK-67 must not be marked Done before its own remaining criteria and verification pass.
+- Added typed canonical case obligations for shared source rows, quantified candidate sets, joins, groups, ordered window predecessors, correlated EXISTS/IN truth, NULL-safe set tuple multiplicities, output and state targets and provenance.
+- Added SQL three-valued AND/OR/NOT directional composition, bounded case enumeration, direct contradiction checks, and explicit intermediate producer obligations. No intermediate relation is deemed a directly writable source.
+- Added optional active JSON schema fields and deterministic Rust public entry points. Original operator-local witnesses are preserved during the migration.
+- Added Rust unit cases, cross-dialect Boolean fixtures, DuckDB set/NULL differential evidence and direct-SQL/dbt adapter parity tests. CI status must be verified on the final branch commit.
+- **Still pending acceptance verification:** complete schema and structural invariants, all expected adapter equivalences, deterministic proof parity on all relevant operator fixtures and all relevant cross-dialect/differential cases. TASK-68 owns full DAG realizability; TASK-67 must not claim it is solved by local proof normalization.
