@@ -446,7 +446,8 @@ This does not alter the conservative independent `column_domains` or grant
 whole-query row-membership exactness.
 
 Signed integer comparisons require authoritative catalog datatypes and
-representable signed literals. Arithmetic, CAST, LIKE, functions, repeated
-columns and ambiguous sources still produce residual directions. Witnesses
+representable signed literals. Arithmetic, CAST, LIKE, functions and ambiguous sources still produce residual
+directions. Repeated columns are evaluated jointly using bounded integer truth
+partitions and remain residual if their search space is too large. Witnesses
 remain associated with the layer and source boundary where they originated
 rather than being silently remapped across nonidentity projections.
