@@ -10213,6 +10213,66 @@
       "expected_rows": 5,
       "feature": "sets.union_all",
       "kind": "duplicate"
+    },
+    {
+      "id": "inner_join_duplicate_multiplicity",
+      "feature": "joins.inner",
+      "kind": "duplicate",
+      "setup": "CREATE TABLE left_rows(id INTEGER); CREATE TABLE right_rows(id INTEGER); INSERT INTO left_rows VALUES (1),(1),(NULL),(2); INSERT INTO right_rows VALUES (1),(1),(NULL),(3);",
+      "sql": "SELECT l.id FROM left_rows AS l INNER JOIN right_rows AS r ON l.id = r.id",
+      "expected_rows": 4,
+      "expected_values": "1,1,1,1",
+      "snapshot_column": "id"
+    },
+    {
+      "id": "exists_positive_and_null",
+      "feature": "subqueries.exists",
+      "kind": "null",
+      "setup": "CREATE TABLE orders(id INTEGER); CREATE TABLE customers(id INTEGER); INSERT INTO orders VALUES (1),(2),(NULL); INSERT INTO customers VALUES (1),(NULL);",
+      "sql": "SELECT o.id FROM orders AS o WHERE EXISTS (SELECT 1 FROM customers AS c WHERE c.id = o.id)",
+      "expected_rows": 1,
+      "expected_values": "1",
+      "snapshot_column": "id"
+    },
+    {
+      "id": "intersect_deduplicates_null",
+      "feature": "sets.intersect",
+      "kind": "duplicate",
+      "setup": "CREATE TABLE left_rows(id INTEGER); CREATE TABLE right_rows(id INTEGER); INSERT INTO left_rows VALUES (1),(1),(NULL),(2); INSERT INTO right_rows VALUES (1),(NULL),(NULL),(3);",
+      "sql": "SELECT id FROM left_rows INTERSECT SELECT id FROM right_rows",
+      "expected_rows": 2,
+      "expected_values": "1,NULL",
+      "snapshot_column": "id"
+    },
+    {
+      "id": "except_all_preserves_multiplicity",
+      "feature": "sets.except",
+      "kind": "duplicate",
+      "setup": "CREATE TABLE left_rows(id INTEGER); CREATE TABLE right_rows(id INTEGER); INSERT INTO left_rows VALUES (1),(1),(1),(NULL),(NULL); INSERT INTO right_rows VALUES (1),(NULL);",
+      "sql": "SELECT id FROM left_rows EXCEPT ALL SELECT id FROM right_rows",
+      "expected_rows": 3,
+      "expected_values": "1,1,NULL",
+      "snapshot_column": "id"
+    },
+    {
+      "id": "having_counts_null_group",
+      "feature": "grouping.having",
+      "kind": "null",
+      "setup": "CREATE TABLE orders(region VARCHAR, amount INTEGER); INSERT INTO orders VALUES ('north',1),('north',2),('south',3),(NULL,4),(NULL,5);",
+      "sql": "SELECT region FROM orders GROUP BY region HAVING COUNT(*) >= 2",
+      "expected_rows": 2,
+      "expected_values": "NULL,north",
+      "snapshot_column": "region"
+    },
+    {
+      "id": "qualify_row_number_exact_partition",
+      "feature": "windows.qualify",
+      "kind": "feasible",
+      "setup": "CREATE TABLE events(grp VARCHAR, id INTEGER); INSERT INTO events VALUES ('x',2),('x',1),('y',3),('y',4);",
+      "sql": "SELECT id FROM events QUALIFY ROW_NUMBER() OVER (PARTITION BY grp ORDER BY id ASC NULLS LAST) = 1",
+      "expected_rows": 2,
+      "expected_values": "1,3",
+      "snapshot_column": "id"
     }
   ],
   "cross_repo_dependencies": {
