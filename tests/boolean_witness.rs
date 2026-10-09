@@ -254,14 +254,18 @@ fn witness_truth(
 ) -> Option<bool> {
     match constraint {
         BooleanRowConstraint::All(operands) => {
-            operands.iter().fold(Some(true), |previous, item| {
-                sql_and(previous, witness_truth(item, a, b))
-            })
+            let mut result = Some(true);
+            for operand in operands.iter() {
+                result = sql_and(result, witness_truth(operand, a, b));
+            }
+            result
         }
         BooleanRowConstraint::Any(operands) => {
-            operands.iter().fold(Some(false), |previous, item| {
-                sql_or(previous, witness_truth(item, a, b))
-            })
+            let mut result = Some(false);
+            for operand in operands.iter() {
+                result = sql_or(result, witness_truth(operand, a, b));
+            }
+            result
         }
         BooleanRowConstraint::NullTest { column, negated } => {
             let value = match column.name() {
