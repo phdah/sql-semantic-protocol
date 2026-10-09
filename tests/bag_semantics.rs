@@ -364,14 +364,13 @@ fn duckdb_same_table_filtered_set_branches_keep_distinct_row_populations() {
     let source = |alias| BagSourceIdentity::new("t", alias).expect("source");
     let left = exact(2, BagScope::CandidateTuple)
         .with_source(source("left_branch"))
-        .with_population_identity(BagPopulationIdentity::new("t:flag=1").expect("population"));
+        .with_population_identity(BagPopulationIdentity::new("t:k:flag=1").expect("population"));
     let right = exact(1, BagScope::CandidateTuple)
         .with_source(source("right_branch"))
-        .with_population_identity(BagPopulationIdentity::new("t:flag=2").expect("population"));
+        .with_population_identity(BagPopulationIdentity::new("t:k:flag=2").expect("population"));
     assert_eq!(
         checked_count(
-            BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference)
-                .transfer(left, Some(right))
+            BagLaw::SetTuple(SetMultiplicityRule::SaturatingDifference).transfer(left, Some(right))
         ),
         observed(
             &db,
@@ -436,18 +435,14 @@ fn duckdb_mutation_subsets_keep_their_physical_source_without_conflating_counts(
     let affected = exact(2, BagScope::AffectedRows)
         .with_source(source())
         .with_population_identity(BagPopulationIdentity::new("t:id_in_2_4").expect("population"));
-    let after_delete = checked_count(
-        BagLaw::DeleteRows.transfer(initial, Some(affected.clone()))
-    );
+    let after_delete = checked_count(BagLaw::DeleteRows.transfer(initial, Some(affected.clone())));
     db.execute_batch("DELETE FROM t WHERE id IN (2, 4)")
         .expect("delete");
     assert_eq!(after_delete, observed(&db, "SELECT COUNT(*) FROM t"));
-    let after_update = checked_count(
-        BagLaw::UpdateRows.transfer(
-            exact(3, BagScope::CompleteRelation).with_source(source()),
-            Some(exact(1, BagScope::AffectedRows).with_source(source())),
-        )
-    );
+    let after_update = checked_count(BagLaw::UpdateRows.transfer(
+        exact(3, BagScope::CompleteRelation).with_source(source()),
+        Some(exact(1, BagScope::AffectedRows).with_source(source())),
+    ));
     db.execute_batch("UPDATE t SET id = id + 10 WHERE id = 1")
         .expect("update");
     assert_eq!(after_update, observed(&db, "SELECT COUNT(*) FROM t"));
