@@ -396,8 +396,10 @@ impl<'a> Composer<'a> {
             .map(|(column, domain)| ColumnDomain::new(column, domain))
             .collect::<Vec<_>>();
         let composed = ComposedSemantics::resolved(
-            dependencies.into_iter().collect(),
-            producer_sources,
+            crate::bundle::ComposedSourceEvidence {
+                dependencies: dependencies.into_iter().collect(),
+                producer_sources,
+            },
             column_domains,
             join_equalities,
             crate::bundle::ComposedWitnessEvidence {

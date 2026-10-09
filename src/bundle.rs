@@ -378,6 +378,12 @@ impl CompositionFailureReason {
     }
 }
 
+/// Local and transitive source lineage retained independently per producer.
+pub(crate) struct ComposedSourceEvidence {
+    pub(crate) dependencies: Vec<String>,
+    pub(crate) producer_sources: BTreeMap<String, Vec<String>>,
+}
+
 /// Transitive semantics for one transformation layer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
@@ -403,8 +409,7 @@ impl ComposedSemantics {
     }
 
     pub(crate) fn resolved(
-        dependencies: Vec<String>,
-        producer_sources: BTreeMap<String, Vec<String>>,
+        sources: ComposedSourceEvidence,
         column_domains: Vec<ColumnDomain>,
         mut join_equalities: Vec<ComposedJoinEquality>,
         witnesses: ComposedWitnessEvidence,
@@ -412,6 +417,10 @@ impl ComposedSemantics {
         output: Output,
         mut diagnostics: Vec<CompositionDiagnostic>,
     ) -> Self {
+        let ComposedSourceEvidence {
+            dependencies,
+            producer_sources,
+        } = sources;
         let ComposedWitnessEvidence {
             mut set_operations,
             mut group_witnesses,
