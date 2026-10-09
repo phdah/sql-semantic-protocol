@@ -149,6 +149,16 @@ impl BooleanRowConstraint {
         }
     }
 
+    fn contains_string_prefix(&self) -> bool {
+        match self {
+            Self::All(operands) | Self::Any(operands) => {
+                operands.iter().any(Self::contains_string_prefix)
+            }
+            Self::StringPrefix { .. } => true,
+            _ => false,
+        }
+    }
+
     fn columns(&self, output: &mut Vec<ColumnRef>) {
         match self {
             Self::All(children) | Self::Any(children) => {
@@ -292,110 +302,161 @@ impl BooleanWitness {
         })
     }
 
-    /// Recheck witness directions against enforced source constraints supplied later by adapters.
-    ///
-    /// This can only downgrade proofs. It never upgrades a previously residual direction,
-    /// and unknown or unsupported constraint evidence cannot invent source rows.
+    /// Caller attestations permit exact prefix witnesses only under binary,
+    /// no-padding string comparisons. Other settings never certify LIKE.
+    pub(crate) fn declare_comparison_assumptions(&mut self, assumptions: &[ComparisonAssumption]) {
+        self.comparison_assumptions.extend(assumptions.iter().copied());
+        self.recheck_truth_directions();
+    }
+
+    /// Recheck joint feasibility against externally enriched schema constraints.
     pub(crate) fn restrict_with_schema_constraints(&mut self, sets: &[RelationConstraintSet]) {
-        let Some(set) = sets
-            .iter()
-            .find(|set| set.relation() == self.source_relation)
-        else {
-            return;
-        };
-        let mut restrictions = BTreeMap::<String, ColumnRestriction>::new();
-        let mut unsupported = !set.diagnostics().is_empty();
-        for constraint in set.constraints() {
-            if !constraint
-                .evidence()
+        self.source_constraints = sets.to_vec();
+        self.recheck_truth_directions();
+    }
+
+    fn recheck_truth_directions(&mut self) {
+        let mut columns = Vec::new();
+        self.condition.columns(&mut columns);
+        let candidate = self.condition.is_exact()
+            && !columns.is_empty()
+            && columns
                 .iter()
-                .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
-            {
-                // Unknown enforcement is not evidence that a declared restriction holds.
-                // A generated row cannot be certified without resolving that uncertainty.
-                unsupported |= constraint
+                .all(|column| column.relation() == Some(&self.source_relation));
+        let prefix_licensed = !self.condition.contains_string_prefix()
+            || (self
+                .comparison_assumptions
+                .contains(&ComparisonAssumption::BinaryCollation)
+                && self
+                    .comparison_assumptions
+                    .contains(&ComparisonAssumption::NoCharPadding));
+        let restrictions = self.enforced_restrictions();
+        let cases = if candidate && prefix_licensed {
+            match restrictions.as_ref() {
+                Some(restrictions) => possible_joint_truths(
+                    &self.condition,
+                    &|column| self.integer_bounds.get(column).copied(),
+                    &|column| self.string_bounds.get(column).copied(),
+                    Some(restrictions),
+                ),
+                None => BTreeSet::new(),
+            }
+        } else {
+            BTreeSet::new()
+        };
+        let reason = if !candidate {
+            "unresolved, noninvertible or unsupported source-row predicate"
+        } else if !prefix_licensed {
+            "LIKE prefix requires binary_collation and no_char_padding attestations"
+        } else if restrictions.is_none() {
+            "source constraint evidence is contradictory, unknown or dependent"
+        } else {
+            "no provable source-row assignment satisfies the requested truth direction"
+        };
+        self.qualifying = if cases.contains(&SqlTruth::True) {
+            BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+        } else {
+            BooleanWitnessDirection::Residual {
+                reason: reason.to_string(),
+            }
+        };
+        self.rejected = if cases.contains(&SqlTruth::False)
+            || cases.contains(&SqlTruth::Unknown)
+        {
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        } else {
+            BooleanWitnessDirection::Residual {
+                reason: reason.to_string(),
+            }
+        };
+    }
+
+    fn enforced_restrictions(&self) -> Option<BTreeMap<String, ColumnRestriction>> {
+        let mut restrictions = BTreeMap::<String, ColumnRestriction>::new();
+        for set in self
+            .source_constraints
+            .iter()
+            .filter(|set| set.relation() == self.source_relation)
+        {
+            if !set.diagnostics().is_empty() {
+                return None;
+            }
+            for constraint in set.constraints() {
+                if !constraint
                     .evidence()
                     .iter()
-                    .any(|e| e.enforcement() == ConstraintEnforcement::Unknown);
-                continue;
-            }
-            match constraint {
-                RelationConstraint::PrimaryKey(key) => {
-                    for column in key.columns() {
-                        restrictions.entry(column.clone()).or_default().not_null = true;
+                    .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
+                {
+                    if constraint
+                        .evidence()
+                        .iter()
+                        .any(|e| e.enforcement() == ConstraintEnforcement::Unknown)
+                    {
+                        return None;
                     }
+                    continue;
                 }
-                RelationConstraint::NotNull(item) => {
-                    restrictions
-                        .entry(item.column().to_string())
-                        .or_default()
-                        .not_null = true;
-                }
-                RelationConstraint::AcceptedValues(item) => {
-                    let restriction = restrictions.entry(item.column().to_string()).or_default();
-                    let mut accepted = BTreeSet::new();
-                    for value in item.values() {
-                        match value {
-                            ConstraintValue::Integer(value) => {
-                                accepted.insert(i128::from(*value));
-                            }
-                            ConstraintValue::UnsignedInteger(value) => {
-                                accepted.insert(i128::from(*value));
-                            }
-                            ConstraintValue::Null => {}
-                            _ => unsupported = true,
+                match constraint {
+                    RelationConstraint::PrimaryKey(key) => {
+                        for column in key.columns() {
+                            restrictions.entry(column.clone()).or_default().not_null = true;
                         }
                     }
-                    restriction.accepted = Some(match restriction.accepted.take() {
-                        Some(existing) => existing.intersection(&accepted).copied().collect(),
-                        None => accepted,
-                    });
-                }
-                RelationConstraint::UniqueKey(_) => {
-                    // Uniqueness imposes no additional restriction on an individual row.
-                }
-                RelationConstraint::ForeignKey(_) => {
-                    // A standalone row is not proven constructible without referenced rows.
-                    unsupported = true;
+                    RelationConstraint::NotNull(item) => {
+                        restrictions
+                            .entry(item.column().to_string())
+                            .or_default()
+                            .not_null = true;
+                    }
+                    RelationConstraint::AcceptedValues(item) => {
+                        let restriction = restrictions.entry(item.column().to_string()).or_default();
+                        let mut accepted = BTreeSet::new();
+                        for value in item.values() {
+                            match value {
+                                ConstraintValue::Integer(value) => {
+                                    accepted.insert(RowScalar::Integer(i128::from(*value)));
+                                }
+                                ConstraintValue::UnsignedInteger(value) => {
+                                    accepted.insert(RowScalar::Integer(i128::from(*value)));
+                                }
+                                ConstraintValue::String(value) => {
+                                    accepted.insert(RowScalar::String(value.clone()));
+                                }
+                                ConstraintValue::Null => {}
+                                _ => return None,
+                            }
+                        }
+                        restriction.accepted = Some(match restriction.accepted.take() {
+                            Some(existing) => existing.intersection(&accepted).cloned().collect(),
+                            None => accepted,
+                        });
+                    }
+                    RelationConstraint::UniqueKey(_) => {}
+                    RelationConstraint::ForeignKey(_) => return None,
                 }
             }
         }
-        // Even constraints on columns absent from the predicate can make the whole
-        // relation unsatisfiable.
-        unsupported |= restrictions
-            .values()
-            .any(|item| item.not_null && item.accepted.as_ref().is_some_and(BTreeSet::is_empty));
-        let cases = if unsupported {
-            BTreeSet::new()
-        } else {
-            possible_joint_truths(
-                &self.condition,
-                &|column| self.integer_bounds.get(column).copied(),
-                Some(&restrictions),
-            )
-        };
-        if matches!(self.qualifying, BooleanWitnessDirection::Exact(_))
-            && !cases.contains(&SqlTruth::True)
-        {
-            self.qualifying = BooleanWitnessDirection::Residual {
-                reason: "no provable qualifying assignment respects source constraints".to_string(),
-            };
+        // A non-null constraint and an empty accepted-value domain are
+        // contradictory even when the column is absent from the predicate.
+        if restrictions.values().any(|item| {
+            item.not_null && item.accepted.as_ref().is_some_and(BTreeSet::is_empty)
+        }) {
+            return None;
         }
-        if matches!(self.rejected, BooleanWitnessDirection::Exact(_))
-            && !cases.contains(&SqlTruth::False)
-            && !cases.contains(&SqlTruth::Unknown)
-        {
-            self.rejected = BooleanWitnessDirection::Residual {
-                reason: "no provable rejected assignment respects source constraints".to_string(),
-            };
-        }
+        Some(restrictions)
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+enum RowScalar {
+    Integer(i128),
+    String(String),
 }
 
 #[derive(Default)]
 struct ColumnRestriction {
     not_null: bool,
-    accepted: Option<BTreeSet<i128>>,
+    accepted: Option<BTreeSet<RowScalar>>,
 }
 
 /// Establish an operator-local witness without changing whole-query exactness.
@@ -407,6 +468,7 @@ pub(crate) fn analyze(
     predicate: Option<&Predicate>,
     sources: &[SourceRelation],
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
 ) -> Option<BooleanWitness> {
     let predicate = predicate?;
     if !has_logical_predicate(predicate) {
@@ -415,60 +477,33 @@ pub(crate) fn analyze(
     let [source] = sources else {
         return None;
     };
-    let condition = normalize(predicate, sources, &integer_evidence);
+    let condition = normalize(predicate, sources, &integer_evidence, &string_evidence);
     let mut columns = Vec::new();
     condition.columns(&mut columns);
-    let resolved_source = columns
-        .iter()
-        .all(|column| column.relation() == Some(source.name()));
-    let candidate = condition.is_exact() && !columns.is_empty() && resolved_source;
-    // A single truth-partition solver is used for every correlated expression.
-    // Treating even different columns independently would be wrong once source
-    // constraints or repeated appearances narrow the possible assignments.
-    let cases = if candidate {
-        possible_joint_truths(&condition, &integer_evidence, None)
-    } else {
-        BTreeSet::new()
-    };
-    let unsupported_reason = if columns.is_empty() {
-        "predicate has no resolved source columns"
-    } else if !resolved_source {
-        "predicate columns do not resolve to the same source identity"
-    } else {
-        "a boolean branch lacks proven source datatype or supported semantics"
-    };
-    let direction = |truth: BooleanTruthCase, feasible: bool| {
-        if candidate && feasible {
-            BooleanWitnessDirection::Exact(truth)
-        } else {
-            BooleanWitnessDirection::Residual {
-                reason: if candidate {
-                    "no feasible source-row assignment proves the requested truth direction"
-                        .to_string()
-                } else {
-                    unsupported_reason.to_string()
-                },
-            }
-        }
-    };
-    let directions = (
-        direction(BooleanTruthCase::True, cases.contains(&SqlTruth::True)),
-        direction(
-            BooleanTruthCase::NotTrue,
-            cases.contains(&SqlTruth::False) || cases.contains(&SqlTruth::Unknown),
-        ),
-    );
     let integer_bounds = columns
-        .into_iter()
-        .filter_map(|column| integer_evidence(&column).map(|bounds| (column, bounds)))
+        .iter()
+        .filter_map(|column| integer_evidence(column).map(|bounds| (column.clone(), bounds)))
         .collect();
-    Some(BooleanWitness {
+    let string_bounds = columns
+        .iter()
+        .filter_map(|column| string_evidence(column).map(|bounds| (column.clone(), bounds)))
+        .collect();
+    let mut witness = BooleanWitness {
         source_relation: source.name().to_string(),
         condition,
-        qualifying: directions.0,
-        rejected: directions.1,
+        qualifying: BooleanWitnessDirection::Residual {
+            reason: "witness proof not yet evaluated".to_string(),
+        },
+        rejected: BooleanWitnessDirection::Residual {
+            reason: "witness proof not yet evaluated".to_string(),
+        },
         integer_bounds,
-    })
+        string_bounds,
+        comparison_assumptions: BTreeSet::new(),
+        source_constraints: Vec::new(),
+    };
+    witness.recheck_truth_directions();
+    Some(witness)
 }
 
 fn has_logical_predicate(predicate: &Predicate) -> bool {
@@ -479,13 +514,14 @@ fn normalize(
     predicate: &Predicate,
     sources: &[SourceRelation],
     integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
 ) -> BooleanRowConstraint {
     match predicate {
         Predicate::And(logical) | Predicate::Or(logical) => {
             let operands = logical
                 .operands()
                 .iter()
-                .map(|item| normalize(item, sources, integer_evidence))
+                .map(|item| normalize(item, sources, integer_evidence, string_evidence))
                 .collect();
             match BooleanOperands::new(operands) {
                 Some(operands) if matches!(predicate, Predicate::And(_)) => {
@@ -534,6 +570,20 @@ fn normalize(
                 column,
                 operator,
                 literal: value,
+            }
+        }
+        Predicate::LikePrefix(test) => {
+            let Expression::Column(column) = test.expression() else {
+                return residual("LIKE prefix requires a direct source string column");
+            };
+            let column = resolve_column(column, sources);
+            if string_evidence(&column).is_none() {
+                return residual("LIKE prefix needs a catalog-proven variable-length string type");
+            }
+            BooleanRowConstraint::StringPrefix {
+                column,
+                prefix: test.prefix().to_string(),
+                negated: test.negated(),
             }
         }
         Predicate::Not(_) => residual("logical NOT needs explicit three-valued inversion"),
