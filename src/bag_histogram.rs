@@ -92,6 +92,22 @@ impl BagHistogramProof {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum ComparableKeyType {
+    Boolean,
+    SignedInteger,
+    UnsignedInteger,
+}
+
+fn comparable_type(key: &ConstraintValue) -> Option<ComparableKeyType> {
+    match key {
+        ConstraintValue::Boolean(_) => Some(ComparableKeyType::Boolean),
+        ConstraintValue::Integer(_) => Some(ComparableKeyType::SignedInteger),
+        ConstraintValue::UnsignedInteger(_) => Some(ComparableKeyType::UnsignedInteger),
+        _ => None,
+    }
+}
+
 fn exact_comparable(key: &ConstraintValue) -> bool {
     matches!(
         key,
@@ -160,6 +176,15 @@ pub fn equijoin_key_histogram(
     if keys.iter().any(|key| !exact_comparable(key)) {
         return BagHistogramProof::Residual {
             reason: "unproved_key_comparison_law",
+        };
+    }
+    let key_types = keys
+        .iter()
+        .filter_map(comparable_type)
+        .collect::<BTreeSet<_>>();
+    if key_types.len() > 1 {
+        return BagHistogramProof::Residual {
+            reason: "mixed_key_type_comparison_unknown",
         };
     }
 
@@ -257,6 +282,22 @@ mod tests {
             equijoin_key_histogram(JoinKind::Inner, &first, &same).total_rows(),
             Some(4)
         );
+    }
+
+    #[test]
+    fn implicit_cross_type_comparisons_must_not_be_assumed() {
+        let signed = histogram("l", "l", &[(Some(1), 2)]);
+        let unsigned = BagKeyHistogram::new(
+            source("r", "r"),
+            vec![(ConstraintValue::UnsignedInteger(1), 3)],
+        )
+        .expect("input");
+        assert!(matches!(
+            equijoin_key_histogram(JoinKind::Inner, &signed, &unsigned),
+            BagHistogramProof::Residual {
+                reason: "mixed_key_type_comparison_unknown"
+            }
+        ));
     }
 
     #[test]
