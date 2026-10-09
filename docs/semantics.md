@@ -522,3 +522,9 @@ remain explicitly residual. The existing operator-local
 `local_constructive_witnesses` API must not be interpreted as complete
 physical realization. The protocol JSON contract is unchanged by this
 library-only foundational step.
+
+The physical-source Rust API also proves exact row counts through
+schema-backed transparent producer chains and jointly consistent terminal
+projections of a shared source. It retains each node's origin-local operator
+facts and pending upstream-producer boundaries. More general rows/counts
+across joins, grouping, QUALIFY, sets and DML remain residual.
