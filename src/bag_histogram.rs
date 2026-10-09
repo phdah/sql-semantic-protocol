@@ -184,8 +184,9 @@ pub fn equijoin_key_histogram(
     right: &BagKeyHistogram,
 ) -> BagHistogramProof {
     if left.source().physical_relation() == right.source().physical_relation()
-        && left.key_expression() == right.key_expression()
-        && left.entries() != right.entries()
+        && (left.total_rows() != right.total_rows()
+            || (left.key_expression() == right.key_expression()
+                && left.entries() != right.entries()))
     {
         return BagHistogramProof::Impossible;
     }
@@ -345,6 +346,11 @@ mod tests {
         let other_managers = histogram_for_key("employees", "b", "manager_id", &[(Some(1), 3)]);
         assert_eq!(
             equijoin_key_histogram(JoinKind::Inner, &managers, &other_managers),
+            BagHistogramProof::Impossible
+        );
+        let incomplete_ids = histogram_for_key("employees", "b", "id", &[(Some(1), 2)]);
+        assert_eq!(
+            equijoin_key_histogram(JoinKind::Inner, &managers, &incomplete_ids),
             BagHistogramProof::Impossible
         );
     }
