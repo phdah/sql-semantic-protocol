@@ -774,6 +774,14 @@ fn boolean_constraint_to_value(constraint: &crate::BooleanRowConstraint) -> Valu
             "kind": "integer_comparison", "column": column_ref_to_value(column),
             "operator": operator.as_str(), "literal": literal
         }),
+        crate::BooleanRowConstraint::StringPrefix {
+            column,
+            prefix,
+            negated,
+        } => json!({
+            "kind": "string_prefix", "column": column_ref_to_value(column),
+            "prefix": prefix, "negated": negated
+        }),
         crate::BooleanRowConstraint::Residual { reason } => json!({
             "kind": "residual", "reason": reason
         }),
