@@ -641,17 +641,22 @@ fn analyze_query(
     let boolean_witness = crate::boolean_witness::analyze(
         predicates.where_predicate(),
         &relation_analysis.sources,
-        |column, value| {
-            let data_type = match metadata.column_data_type(column) {
-                Some(DataType::Nullable(inner)) => Some(inner.as_ref()),
-                other => other,
+        |column| {
+            let original_type = metadata.column_data_type(column)?;
+            let (data_type, explicitly_nullable) = match original_type {
+                DataType::Nullable(inner) => (inner.as_ref(), true),
+                other => (other, false),
             };
             match data_type {
-                Some(DataType::SignedInteger { bits: Some(bits) }) if *bits > 0 && *bits <= 64 => {
+                DataType::SignedInteger { bits: Some(bits) } if *bits > 0 && *bits <= 64 => {
                     let magnitude = 1_i128 << (u32::from(*bits) - 1);
-                    i128::from(value) >= -magnitude && i128::from(value) < magnitude
+                    Some(crate::boolean_witness::SignedIntegerEvidence {
+                        minimum: -magnitude,
+                        maximum: magnitude - 1,
+                        explicitly_nullable,
+                    })
                 }
-                _ => false,
+                _ => None,
             }
         },
     );
