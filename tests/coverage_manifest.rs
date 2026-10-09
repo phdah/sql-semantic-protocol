@@ -119,6 +119,66 @@ fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
 }
 
 #[test]
+fn variant_evidence_uses_fail_closed_defaults_without_inheriting_feature_claims() {
+    let manifest = manifest();
+    let default = &manifest["variant_evidence_defaults"];
+    assert_eq!(default["parse"], "unverified");
+    assert_eq!(default["physical_positive"], "not_end_to_end_proven");
+    assert_eq!(default["physical_negative"], "not_end_to_end_proven");
+    assert_eq!(default["cardinality"], "unverified");
+    assert_eq!(default["engine_oracle"], "unverified");
+
+    let names: BTreeSet<_> = required_array(&manifest, "dialects")
+        .iter()
+        .map(|dialect| required_string(dialect, "name"))
+        .collect();
+    let fixtures = required_array(&manifest, "fixtures");
+    let mut expanded_cells = 0;
+
+    for feature in required_array(&manifest, "features") {
+        let variants = required_array(feature, "variants");
+        let overrides = feature["variant_overrides"]
+            .as_object()
+            .expect("explicit sparse per-variant overrides");
+        for variant in overrides.keys() {
+            assert!(
+                variants.contains(&Value::from(variant.as_str())),
+                "override must belong to an inventoried variant: {variant}"
+            );
+        }
+        for variant in variants {
+            let syntax = variant.as_str().expect("variant syntax");
+            for name in &names {
+                expanded_cells += 1;
+                let explicit = &feature["variant_overrides"][syntax][name];
+                let parse = explicit["parse"].as_str().unwrap_or(
+                    default["parse"].as_str().expect("default parser status")
+                );
+                assert!(
+                    matches!(parse, "unverified" | "fixture_tested" | "representative_only"),
+                    "unexpected per-variant evidence for {syntax}/{name}"
+                );
+                if parse == "fixture_tested" {
+                    assert!(
+                        fixtures.iter().any(|fixture| {
+                            fixture["feature"] == feature["id"]
+                                && required_array(fixture, "dialects")
+                                    .contains(&Value::from(*name))
+                                && required_string(fixture, "sql").contains(syntax)
+                        }),
+                        "{syntax}/{name}: variant claims need an actual SQL fixture"
+                    );
+                }
+                if !explicit.is_null() {
+                    assert!(explicit["parse"].as_str().is_some());
+                }
+            }
+        }
+    }
+    assert!(expanded_cells >= 3_000, "variant coverage silently shrank");
+}
+
+#[test]
 fn parser_and_analysis_claims_are_exercised_by_manifest_fixtures() {
     let manifest = manifest();
     let fixtures = required_array(&manifest, "fixtures");
