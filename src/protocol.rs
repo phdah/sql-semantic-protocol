@@ -139,7 +139,7 @@ pub struct QueryStatement {
     dependencies: Vec<String>,
     joins: Vec<Join>,
     row_conditions: Box<RowConditions>,
-    output: Output,
+    output: Box<Output>,
     aggregation: Option<Box<Aggregation>>,
     group_witness: Option<Box<GroupWitness>>,
     window_witness: Option<Box<WindowWitness>>,
@@ -165,7 +165,7 @@ impl QueryStatement {
             dependencies,
             joins,
             row_conditions: Box::new(row_conditions),
-            output,
+            output: Box::new(output),
             aggregation: None,
             group_witness: None,
             window_witness: None,
@@ -196,7 +196,7 @@ impl QueryStatement {
     pub(crate) fn with_group_witness(mut self) -> Self {
         self.group_witness = crate::group_witness::analyze(&self).map(Box::new);
         if self.group_witness.is_some() {
-            self.output = crate::group_witness::refine_output(&self);
+            self.output = Box::new(crate::group_witness::refine_output(&self));
         }
         self
     }
@@ -210,7 +210,7 @@ impl QueryStatement {
         {
             self.row_conditions.exactness =
                 self.row_conditions.exactness.without_qualify_residual();
-            self.output = crate::window_witness::refine_output(&self);
+            self.output = Box::new(crate::window_witness::refine_output(&self));
         }
         self
     }
@@ -228,8 +228,11 @@ impl QueryStatement {
                     .row_conditions
                     .exactness
                     .without_projected_rank_where_residual();
-                self.output =
-                    crate::window_witness::refine_projected_output(&self.output, &alias, &witness);
+                self.output = Box::new(crate::window_witness::refine_projected_output(
+                    &self.output,
+                    &alias,
+                    &witness,
+                ));
             }
             self.window_witness = Some(Box::new(witness));
         }
@@ -703,7 +706,7 @@ impl SetBranch {
             sources: query.sources.clone(),
             predicates: (*query.row_conditions.predicates).clone(),
             column_domains: query.row_conditions.column_domains.clone(),
-            output: query.output.clone(),
+            output: query.output().clone(),
             condition_exactness: query.row_conditions.exactness.clone(),
             dependencies: query.dependencies.clone(),
             witness_boundary,
