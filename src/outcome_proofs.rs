@@ -306,15 +306,21 @@ fn construct_group(
         || query.sources().len() != 1
         || query.dependencies().len() != 1
         || query.predicates().where_predicate().is_some()
-        || query.output().columns().iter().any(|c| {
-            match c.expression() {
+        || query
+            .output()
+            .columns()
+            .iter()
+            .any(|c| match c.expression() {
                 Expression::Column(_) => false,
-                Expression::AggregateFunction(function) =>
+                Expression::AggregateFunction(function) => {
                     !function.name().eq_ignore_ascii_case("count")
-                        || !matches!(function.arguments(), [crate::protocol::AggregateArgument::Wildcard]),
+                        || !matches!(
+                            function.arguments(),
+                            [crate::protocol::AggregateArgument::Wildcard]
+                        )
+                }
                 _ => true,
-            }
-        })
+            })
         || goal.groups().is_some_and(|groups| groups != rows)
     {
         return None;
@@ -395,15 +401,18 @@ fn construct_rank(
         || query.sources().len() != 1
         || query.dependencies().len() != 1
         || !query.diagnostics().is_empty()
-        || query.output().columns().iter().any(|c| {
-            match c.expression() {
+        || query
+            .output()
+            .columns()
+            .iter()
+            .any(|c| match c.expression() {
                 Expression::Column(_) => false,
-                Expression::WindowFunction(window) =>
+                Expression::WindowFunction(window) => {
                     !window.function().name().eq_ignore_ascii_case("row_number")
-                        || !window.function().arguments().is_empty(),
+                        || !window.function().arguments().is_empty()
+                }
                 _ => true,
-            }
-        })
+            })
     {
         return None;
     }
