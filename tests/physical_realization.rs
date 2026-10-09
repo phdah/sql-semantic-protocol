@@ -363,3 +363,50 @@ fn canonical_wire_graph_deduplicates_producer_nodes_and_references() {
         "protocol must remain deterministic",
     );
 }
+
+#[test]
+fn all_empty_join_sources_prove_zero_output_through_downstream_filter() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT l.a, r.b FROM l FULL JOIN r ON l.k = r.k",
+                "SELECT a FROM stage WHERE a IS NOT NULL",
+            ],
+            dialect,
+        );
+        let plan = physical_source_plan(&b, b.layers()[1].id());
+        let WitnessDirection::Feasible(cases) = plan.zero_output() else {
+            panic!("{dialect}: both fully empty join inputs must guarantee zero rows: {plan:?}");
+        };
+        assert_eq!(plan.sources(), &["l".to_string(), "r".to_string()]);
+        assert_eq!(cases.len(), 1);
+        let obligations = cases[0].obligations();
+        assert_eq!(obligations.iter().filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. })).count(), 2);
+        assert_eq!(obligations.iter().filter(|o| matches!(o, WitnessObligation::Rows { .. })).count(), 2);
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE l(a INTEGER, k INTEGER); CREATE TABLE r(b INTEGER, k INTEGER);
+         CREATE TABLE stage AS SELECT l.a, r.b FROM l FULL JOIN r ON l.k=r.k;",
+    ).expect("empty join sources");
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM stage WHERE a IS NOT NULL", [], |row| row.get(0))
+        .expect("empty count");
+    assert_eq!(count, 0);
+}
+
+#[test]
+fn self_join_reuses_one_physical_empty_source_obligation() {
+    let b = bundle(
+        &["SELECT x.a FROM t AS x LEFT JOIN t AS y ON x.k = y.k"],
+        "postgresql",
+    );
+    let plan = physical_source_plan(&b, b.layers()[0].id());
+    assert_eq!(plan.sources(), &["t".to_string()]);
+    let WitnessDirection::Feasible(cases) = plan.zero_output() else {
+        panic!("self join of an empty controlled source must remain empty");
+    };
+    assert_eq!(cases[0].obligations().iter().filter(|o| matches!(
+        o, WitnessObligation::ClosedWorld { .. }
+    )).count(), 1);
+}
