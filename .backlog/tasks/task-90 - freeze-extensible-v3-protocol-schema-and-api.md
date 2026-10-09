@@ -55,8 +55,13 @@ Consumers need a versionable typed ABI rather than another major upgrade for eve
 - [ ] #4 Document exactness semantics and source identities as stable invariants; ensure minor releases can add representable variants without silently changing existing proofs.
 - [ ] #5 Validate pinned sql-tdg pre-release consumer against final v3 release-candidate commit and schema, plus stable byte-for-byte deterministic serialization.
 - [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [ ] #7 Preserve a typed extensibility path for future function/opaque operation contracts from structured user declarations, vendor catalog introspection, dbt-supplied macro/function metadata or schema adapters, without treating those unproven future semantics as v3-supported.
 <!-- AC:END -->
 
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Maintainer scope (2026-10-09)
+
+Approved deferred-extensibility rule in [docs/coverage-signoff.md](../../docs/coverage-signoff.md): non-modeled UDFs, randomness, recursion and vendor session assumptions fail closed **now**, but may be supported in future versions by a typed, independently validated source-independent evidence contract. TASK-92 tracks post-v3 exploration and is **not** a blocker of the consolidated 3.0.0 release.
