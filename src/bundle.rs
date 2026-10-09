@@ -1080,6 +1080,7 @@ impl AnalysisBundle {
                 }
             }
         }
+        self.refresh_outcome_goals();
     }
 
     /// Merge adapter-neutral canonical constraint evidence into this bundle.
@@ -1100,6 +1101,7 @@ impl AnalysisBundle {
             .extend(diagnostics.iter().cloned());
         self.constraint_diagnostics.sort();
         self.constraint_diagnostics.dedup();
+        self.refresh_outcome_goals();
     }
 
     pub(crate) fn replace_source_schemas(&mut self, mut schemas: Vec<RelationSchema>) {
@@ -1125,6 +1127,22 @@ impl AnalysisBundle {
                 }
             }
         }
+        self.refresh_outcome_goals();
+    }
+
+    // Goals are evaluated from mutable evidence, not immutable SQL syntax alone.
+    // Keep the caller's requests while replacing any now-invalid witness or bound.
+    fn refresh_outcome_goals(&mut self) {
+        if self.outcome_goals.is_empty() {
+            return;
+        }
+        let requested = self
+            .outcome_goals
+            .iter()
+            .map(|item| item.goal().clone())
+            .collect::<Vec<_>>();
+        self.outcome_goals = crate::outcome_goals::evaluate(self, &requested)
+            .expect("evidence updates preserve validated output layer and column identities");
     }
 
     fn validate_existing_constraints(&mut self) {
