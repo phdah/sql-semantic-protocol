@@ -186,6 +186,19 @@ Join pair multiplication is only valid when **all** candidate keys are
 proved equal and non-NULL; unknown key relationships fail closed.
 NULL join keys never compare equal under ordinary SQL equality.
 
+For mixed-key joins, `BagKeyHistogram` represents a complete
+physical key-frequency distribution keyed by canonical typed
+`ConstraintValue`. `equijoin_key_histogram` computes exact output
+frequency under INNER, LEFT, RIGHT, FULL, SEMI and ANTI equality joins.
+It distinguishes SQL NULL comparisons from set NULL-equality,
+computes duplicate-pair products per key, preserves unmatched source
+keys and counts repeated aliases using one physical histogram. It
+rejects inconsistent shared-source distributions as impossible and
+returns residual for unproved coercion/collation, unknown join kinds
+or cardinality overflow. The caller must attest that the histograms
+are complete and the keys are exactly comparable expressions; this
+is not a replacement for upstream value-domain or type evidence.
+
 Results distinguish bounded, impossible and residual. Bounds, even exact
 bounds, are **not** certificates that a physical-source fixture exists;
 `BagCountProof::assess` only establishes entailed, impossible or
