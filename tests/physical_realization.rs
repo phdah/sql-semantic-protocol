@@ -6,10 +6,9 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
-    physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
-    OutcomeGoal, OutcomeGoalStatus, PhysicalPlanRef, PhysicalProofGap, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput,
-    WitnessDirection, WitnessFormula, WitnessObligation,
+    physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput, OutcomeGoal,
+    OutcomeGoalStatus, PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema,
+    SchemaColumn, SqlInput, WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -246,13 +245,14 @@ fn partial_writes_and_missing_targets_fail_closed() {
     );
     let plan = physical_source_plan(&b, b.layers()[1].id());
     assert_eq!(plan.gap(), Some(PhysicalProofGap::PartialProducer));
-    assert!(plan.nodes().iter().any(|node| {
-        matches!(node.id(), PhysicalPlanRef::Layer(_))
-            && node.write_kind().is_some()
-    }), "partial producer kind must survive as a reference node");
-    let effect_bundle: serde_json::Value = serde_json::from_str(
-        &sql_semantic_protocol::to_bundle_json(&b),
-    ).expect("DML emitted");
+    assert!(
+        plan.nodes().iter().any(|node| {
+            matches!(node.id(), PhysicalPlanRef::Layer(_)) && node.write_kind().is_some()
+        }),
+        "partial producer kind must survive as a reference node"
+    );
+    let effect_bundle: serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).expect("DML emitted");
     assert!(effect_bundle["graph"]["physical_nodes"]
         .as_array()
         .expect("graph nodes")
@@ -709,33 +709,35 @@ fn outcome_goal_adapter_emits_derived_physical_source_count_proofs() {
         "postgresql",
     );
     let terminal_id = b.layers()[1].id().to_string();
-    b.set_outcome_goals(&[OutcomeGoal::new(&terminal_id, Some(4), None, vec![])
-        .expect("valid terminal row count")])
-        .expect("goal attachment");
+    b.set_outcome_goals(&[
+        OutcomeGoal::new(&terminal_id, Some(4), None, vec![]).expect("valid terminal row count")
+    ])
+    .expect("goal attachment");
     assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
-    let json: serde_json::Value = serde_json::from_str(
-        &sql_semantic_protocol::to_bundle_json(&b),
-    ).expect("outcomes JSON");
+    let json: serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).expect("outcomes JSON");
     assert_eq!(json["outcome_goals"][0]["assessment"]["status"], "feasible");
     assert_eq!(json["outcome_goals"][0]["witness"]["kind"], "source_rows");
     assert_eq!(json["outcome_goals"][0]["witness"]["relation"], "t");
     assert_eq!(json["outcome_goals"][0]["witness"]["rows"], 4);
 
-    let mut filtered = bundle(
-        &["SELECT a FROM t WHERE a > 2"],
-        "postgresql",
-    );
+    let mut filtered = bundle(&["SELECT a FROM t WHERE a > 2"], "postgresql");
     let filtered_id = filtered.layers()[0].id().to_string();
-    filtered.set_outcome_goals(&[OutcomeGoal::new(&filtered_id, Some(0), None, vec![])
-        .expect("zero count goal")])
+    filtered
+        .set_outcome_goals(&[
+            OutcomeGoal::new(&filtered_id, Some(0), None, vec![]).expect("zero count goal")
+        ])
         .expect("goal attachment");
     assert_eq!(
         filtered.outcome_goals()[0].status(),
         OutcomeGoalStatus::Feasible,
     );
-    let data: serde_json::Value = serde_json::from_str(
-        &sql_semantic_protocol::to_bundle_json(&filtered),
-    ).expect("filtered JSON");
+    let data: serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&filtered))
+            .expect("filtered JSON");
     assert_eq!(data["outcome_goals"][0]["witness"]["kind"], "empty_sources");
-    assert_eq!(data["outcome_goals"][0]["witness"]["relations"], serde_json::json!(["t"]));
+    assert_eq!(
+        data["outcome_goals"][0]["witness"]["relations"],
+        serde_json::json!(["t"])
+    );
 }
