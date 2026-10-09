@@ -273,7 +273,11 @@ pub enum WitnessObligation {
         after: CountBounds,
     },
     /// A computed boundary must be realized through its named upstream producer.
-    Producer { boundary: WitnessBoundary },
+    Producer {
+        boundary: WitnessBoundary,
+        /// Physical leaf relations that the producer must be realized from.
+        physical_sources: Vec<String>,
+    },
 }
 
 /// Whether a case is proved sufficient, necessary, or equivalent to classification.
@@ -363,8 +367,9 @@ fn invalid_obligation(obligation: &WitnessObligation) -> bool {
         WitnessObligation::SetResultTuple { nulls_equal, .. } => !nulls_equal,
         WitnessObligation::OutputRows { layer_id, .. } => layer_id.is_empty(),
         WitnessObligation::StateRows { relation, .. } => relation.is_empty(),
-        WitnessObligation::Producer { boundary } =>
-            boundary.kind() != GroupBoundaryKind::Intermediate,
+        WitnessObligation::Producer { boundary, physical_sources } =>
+            boundary.kind() != GroupBoundaryKind::Intermediate
+                || physical_sources.iter().any(String::is_empty),
     }
 }
 
@@ -676,7 +681,10 @@ pub fn local_pending_producers(semantics: &ResolvedComposedSemantics) -> Vec<Wit
         }
     }
     boundaries.sort_by(|a,b| (&a.origin_layer_id, &a.relation).cmp(&(&b.origin_layer_id, &b.relation)));
-    boundaries.into_iter().map(|boundary| WitnessObligation::Producer { boundary }).collect()
+    boundaries.into_iter().map(|boundary| WitnessObligation::Producer {
+        boundary,
+        physical_sources: semantics.dependencies().to_vec(),
+    }).collect()
 }
 
 /// Translate existing operator-local proofs into one deterministic typed API.
@@ -1127,7 +1135,9 @@ mod tests {
             right: ColumnRef::new(Some("raw.orders".into()), "id".into()),
             closed_world: false,
         }).is_none());
-        assert!(case(WitnessObligation::Producer { boundary }).is_none());
+        assert!(case(WitnessObligation::Producer {
+            boundary, physical_sources: vec!["raw.orders".into()],
+        }).is_none());
     }
 
     #[test]
