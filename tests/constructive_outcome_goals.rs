@@ -8,8 +8,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution,
-    OutputValueCount, ProtocolStatement, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SetWitnessDirection, SqlInput,
+    OutputValueCount, ProtocolStatement, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SetWitnessDirection, SqlInput,
 };
 
 fn typed(sql: &str, sources: &[(&str, &[&str])]) -> sql_semantic_protocol::AnalysisBundle {
