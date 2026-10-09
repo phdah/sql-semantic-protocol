@@ -279,10 +279,7 @@ fn filtered_upstream_domains_survive_without_false_physical_witnesses() {
 
 #[test]
 fn standalone_computed_predicates_emit_exact_typed_witnesses() {
-    for predicate in [
-        "CAST(a AS BIGINT) + 1 > 3",
-        "CAST(a AS BIGINT) > 3",
-    ] {
+    for predicate in ["CAST(a AS BIGINT) + 1 > 3", "CAST(a AS BIGINT) > 3"] {
         let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
         let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
             panic!("expected composition");
@@ -895,9 +892,7 @@ fn intermediate_typed_witness_does_not_assume_physical_type_parity() {
     let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
     let inputs = [
         SqlInput::inline("CREATE TABLE stage AS SELECT a, b FROM raw_t"),
-        SqlInput::inline(
-            "CREATE TABLE sink AS SELECT a FROM stage WHERE a > 2 OR b < 0",
-        ),
+        SqlInput::inline("CREATE TABLE sink AS SELECT a FROM stage WHERE a > 2 OR b < 0"),
     ];
     let dialect = PostgreSqlDialect {};
     let configured = [
