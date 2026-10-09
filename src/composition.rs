@@ -199,15 +199,22 @@ impl<'a> Composer<'a> {
                 let boundary_kind = witness
                     .inner_relation()
                     .and_then(|inner| edges.iter().find(|edge| edge.relation() == inner))
-                    .map_or(crate::bundle::GroupBoundaryKind::Unresolved, |edge| {
-                        match edge.resolution() {
-                            RelationResolution::External => crate::bundle::GroupBoundaryKind::Physical,
-                            RelationResolution::Resolved => crate::bundle::GroupBoundaryKind::Intermediate,
+                    .map_or(
+                        crate::bundle::GroupBoundaryKind::Unresolved,
+                        |edge| match edge.resolution() {
+                            RelationResolution::External => {
+                                crate::bundle::GroupBoundaryKind::Physical
+                            }
+                            RelationResolution::Resolved => {
+                                crate::bundle::GroupBoundaryKind::Intermediate
+                            }
                             _ => crate::bundle::GroupBoundaryKind::Unresolved,
-                        }
-                    });
+                        },
+                    );
                 crate::bundle::ComposedSubqueryWitness::new(
-                    layer.id().to_string(), witness, boundary_kind,
+                    layer.id().to_string(),
+                    witness,
+                    boundary_kind,
                 )
             })
             .collect::<Vec<_>>();
@@ -249,7 +256,8 @@ impl<'a> Composer<'a> {
                             set_operations.extend(upstream.set_operations().iter().cloned());
                             group_witnesses.extend(upstream.group_witnesses().iter().cloned());
                             window_witnesses.extend(upstream.window_witnesses().iter().cloned());
-                            subquery_witnesses.extend(upstream.subquery_witnesses().iter().cloned());
+                            subquery_witnesses
+                                .extend(upstream.subquery_witnesses().iter().cloned());
                             condition_exactness =
                                 condition_exactness.merged_with(upstream.condition_exactness());
                         }
