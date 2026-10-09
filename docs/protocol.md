@@ -106,6 +106,59 @@ Please. Consumers accepting opt-in goals must handle all three statuses,
 including `residual`; `sql-tdg` TASK-30 can use these typed requests
 without reparsing SQL.
 
+
+## Typed constructive witness algebra (TASK-67)
+
+The optional `layers[].composed_semantics.constructive_witnesses` collection
+normalizes existing operator-local typed semantics into one parser-independent
+proof format. Each record identifies its operator and originating layer,
+with independent `qualifying` and `rejected` directions.
+
+- `feasible`: one or more **sufficient** conjunctive cases at the named operator
+  boundary. A case consists of typed `obligations` with explicit proof
+  `strength` (`sufficient`, `necessary`, or `equivalent`).
+- `impossible`: a supported operator proves no case of that classification.
+- `residual`: proof or physical-source realization is missing. This must not
+  be interpreted as either a possible or impossible output row.
+
+The canonical obligations cover coupled Boolean SQL truth on a shared row,
+row cardinality and forall/exists bounds, NULL-sensitive tuple comparisons,
+absence of join partners with preserved NULL-extension sides, grouped counts with contributor tests, strictly
+ordered window predecessor rows, correlated EXISTS/IN membership cases,
+independent branch tuple multiplicities with SQL NULL-safe set equality,
+output cardinality, state counts, and producer realization requirements.
+The set witness count describes **one candidate tuple**, not total output rows.
+Where the legacy local case exposes typed column domains, they are retained
+rather than reconstructed from SQL.
+
+`ConstructiveWitness::logical_and` and `logical_or` combine the independent
+matching/rejection case directions. `logical_not` only swaps TRUE and NOT TRUE
+when the caller has genuinely proven a two-valued (non-UNKNOWN) expression;
+otherwise the qualifying direction stays residual. Case combinations do not infer joint satisfiability from independently
+sufficient examples: AND returns a residual when the two directions lack an
+identical proven construction, and only certifies impossible when mutually
+contradictory exhaustive equivalence evidence is present. Direct conflicting
+output/state cardinalities and identical-row contradictory SQL truth are
+rejected, but no complete SMT or cross-layer solver is claimed.
+
+`local_pending_producers` and optional
+`composed_semantics.constructive_pending_producers` list intermediate
+relations that must be realized through their producers. The `physical_sources`
+array is specific to the named producer, not the enclosing terminal layer; an
+empty array means its leaf sources could not be established. These names are
+**not writable physical source tables**. Operator-local `feasible` does not prove
+that all terminal outputs can be jointly achieved, that every raw input row
+is classified, or that a CTE can be inverted. TASK-68 owns independent
+physical-source realization and transitive DAG proof. TASK-69 onward extends
+bag, operator, and whole-workload laws. No unverified coverage-manifest cell is
+upgraded from this local proof normalization.
+
+The Rust APIs are `local_constructive_witnesses` and
+`local_pending_producers` over `ResolvedComposedSemantics`.
+`schema/protocol.schema.json` owns the optional, versioned, closed wire
+contract. Existing operator witnesses remain available for migration, but
+the canonical typed obligations are the new consumer-facing proof format.
+
 ## Source schemas
 For dbt inputs, `catalog.json` is the authoritative source of warehouse-introspected columns and
 types when a relation is present there. When a physical dependency or a physical relation referenced only by a canonical constraint

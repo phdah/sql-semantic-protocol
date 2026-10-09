@@ -100,6 +100,7 @@ pub enum SubqueryMembershipDirection {
 pub struct SubqueryMembershipWitness {
     kind: SubqueryMembershipKind,
     outer_relation: String,
+    outer_source_relation: Option<String>,
     inner_relation: Option<String>,
     correlations: Vec<SubqueryCorrelation>,
     membership_key: Option<SubqueryCorrelation>,
@@ -117,6 +118,11 @@ impl SubqueryMembershipWitness {
     /// Outer relation instance, not implicitly interchangeable with another alias.
     pub fn outer_relation(&self) -> &str {
         &self.outer_relation
+    }
+
+    /// Physical outer source from the original query, independently of downstream joins.
+    pub fn outer_source_relation(&self) -> Option<&str> {
+        self.outer_source_relation.as_deref()
     }
 
     /// Physical inner relation when its identity is unambiguous.
@@ -161,6 +167,7 @@ impl SubqueryMembershipWitness {
         Self {
             kind,
             outer_relation,
+            outer_source_relation: None,
             inner_relation,
             correlations: Vec::new(),
             membership_key: None,
@@ -364,6 +371,7 @@ fn derive(
     SubqueryMembershipWitness {
         kind,
         outer_relation: outer_instance.to_string(),
+        outer_source_relation: Some(outer_source.name().to_string()),
         inner_relation: Some(inner.to_string()),
         correlations: pairs,
         membership_key,

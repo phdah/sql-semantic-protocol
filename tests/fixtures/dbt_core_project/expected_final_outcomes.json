@@ -230,7 +230,21 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        }
+      ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.derived_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"derived_orders\""
@@ -1171,6 +1185,799 @@
               "reason": "implicit_null_ordering_or_unresolved_column",
               "status": "residual"
             }
+          }
+        }
+      ],
+      "constructive_pending_producers": [
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0013",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"enriched_orders\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\"",
+            "\"dbt-core-e2e\".\"raw\".\"orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"returns\""
+          ]
+        }
+      ],
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0003",
+          "qualifying": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "window",
+          "origin_layer_id": "layer-0013",
+          "qualifying": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "set",
+          "origin_layer_id": "layer-0014",
+          "qualifying": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 4,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          },
+          "rejected": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
           }
         }
       ]
@@ -2484,6 +3291,1173 @@
             }
           }
         }
+      ],
+      "constructive_pending_producers": [
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0013",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"enriched_orders\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\"",
+            "\"dbt-core-e2e\".\"raw\".\"orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"returns\""
+          ]
+        }
+      ],
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0003",
+          "qualifying": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "window",
+          "origin_layer_id": "layer-0013",
+          "qualifying": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "set",
+          "origin_layer_id": "layer-0014",
+          "qualifying": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 4,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          },
+          "rejected": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          }
+        },
+        {
+          "operator": "set",
+          "origin_layer_id": "layer-0017",
+          "qualifying": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          },
+          "rejected": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0017",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          }
+        }
       ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.excluded_order_ids",
@@ -2652,7 +4626,21 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        }
+      ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.final_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"final_orders\""
@@ -2837,7 +4825,21 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        }
+      ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.incremental_append_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"incremental_append_orders\""
@@ -3022,7 +5024,21 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        }
+      ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.incremental_merge_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"incremental_merge_orders\""
@@ -4398,6 +6414,1173 @@
             }
           }
         }
+      ],
+      "constructive_pending_producers": [
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0013",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"enriched_orders\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\"",
+            "\"dbt-core-e2e\".\"raw\".\"orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"returns\""
+          ]
+        }
+      ],
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0003",
+          "qualifying": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "window",
+          "origin_layer_id": "layer-0013",
+          "qualifying": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "set",
+          "origin_layer_id": "layer-0014",
+          "qualifying": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 4,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          },
+          "rejected": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          }
+        },
+        {
+          "operator": "set",
+          "origin_layer_id": "layer-0018",
+          "qualifying": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          },
+          "rejected": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0018",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          }
+        }
       ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.intersected_order_ids",
@@ -4566,7 +7749,33 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0010",
+          "qualifying": {
+            "reason": "join_condition_not_single_column_comparison",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "join_condition_not_single_column_comparison",
+            "status": "residual"
+          }
+        }
+      ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.lateral_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"lateral_orders\""
@@ -4817,7 +8026,21 @@
           }
         ]
       },
-      "status": "resolved"
+      "status": "resolved",
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        }
+      ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.named_window_orders",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"named_window_orders\""
@@ -5086,7 +8309,33 @@
           "origin_layer_id": "layer-0012"
         }
       ],
-      "status": "resolved"
+      "status": "resolved",
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "set",
+          "origin_layer_id": "layer-0012",
+          "qualifying": {
+            "reason": "set_level_membership_modifier",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "set_level_membership_modifier",
+            "status": "residual"
+          }
+        }
+      ]
     },
     "model_id": "model.sql_semantic_protocol_e2e.ordered_limited_union",
     "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ordered_limited_union\""
@@ -6060,6 +9309,799 @@
               "reason": "implicit_null_ordering_or_unresolved_column",
               "status": "residual"
             }
+          }
+        }
+      ],
+      "constructive_pending_producers": [
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0013",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"enriched_orders\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\"",
+            "\"dbt-core-e2e\".\"raw\".\"orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"returns\""
+          ]
+        }
+      ],
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0003",
+          "qualifying": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "window",
+          "origin_layer_id": "layer-0013",
+          "qualifying": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "set",
+          "origin_layer_id": "layer-0014",
+          "qualifying": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 4,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          },
+          "rejected": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
           }
         }
       ]
@@ -7485,6 +11527,1213 @@
               "reason": "implicit_null_ordering_or_unresolved_column",
               "status": "residual"
             }
+          }
+        }
+      ],
+      "constructive_pending_producers": [
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0013",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"enriched_orders\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\"",
+            "\"dbt-core-e2e\".\"raw\".\"orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"returns\""
+          ]
+        },
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0015",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\"",
+            "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"returns\""
+          ]
+        },
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0020",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"aggregated_orders\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\"",
+            "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"returns\""
+          ]
+        },
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0020",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_customers\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\""
+          ]
+        },
+        {
+          "boundary": {
+            "kind": "intermediate",
+            "origin_layer_id": "layer-0020",
+            "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+          },
+          "kind": "producer",
+          "physical_sources": [
+            "\"dbt-core-e2e\".\"raw\".\"customers\"",
+            "\"dbt-core-e2e\".\"raw\".\"legacy_orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"orders\"",
+            "\"dbt-core-e2e\".\"raw\".\"returns\""
+          ]
+        }
+      ],
+      "constructive_witnesses": [
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0003",
+          "qualifying": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0004",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "boolean",
+          "origin_layer_id": "layer-0020",
+          "qualifying": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "predicate has no resolved source columns",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "join",
+          "origin_layer_id": "layer-0006",
+          "qualifying": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "composite_join_tree",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "group",
+          "origin_layer_id": "layer-0015",
+          "qualifying": {
+            "reason": "requires_physical_source_realization",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "requires_physical_source_realization",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "window",
+          "origin_layer_id": "layer-0013",
+          "qualifying": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "implicit_null_ordering_or_unresolved_column",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "subquery",
+          "origin_layer_id": "layer-0020",
+          "qualifying": {
+            "reason": "requires_physical_source_realization",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "requires_physical_source_realization",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "subquery",
+          "origin_layer_id": "layer-0020",
+          "qualifying": {
+            "reason": "requires_physical_source_realization",
+            "status": "residual"
+          },
+          "rejected": {
+            "reason": "requires_physical_source_realization",
+            "status": "residual"
+          }
+        },
+        {
+          "operator": "subquery",
+          "origin_layer_id": "layer-0020",
+          "qualifying": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "case": "no_candidates",
+                    "closed_world": true,
+                    "correlations": [],
+                    "inner": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0020",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "inner_domains": [
+                      {
+                        "column": {
+                          "name": "refund_amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 50
+                                }
+                              },
+                              "upper": null
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "membership",
+                    "membership_key": {
+                      "inner": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                      },
+                      "outer": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                      }
+                    },
+                    "outer": {
+                      "instance": "o",
+                      "name": "candidate",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    }
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "case": "no_match_no_null",
+                    "closed_world": true,
+                    "correlations": [],
+                    "inner": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0020",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "inner_domains": [
+                      {
+                        "column": {
+                          "name": "refund_amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 50
+                                }
+                              },
+                              "upper": null
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "membership",
+                    "membership_key": {
+                      "inner": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                      },
+                      "outer": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                      }
+                    },
+                    "outer": {
+                      "instance": "o",
+                      "name": "candidate",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    }
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          },
+          "rejected": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "case": "matching_non_null_key",
+                    "closed_world": true,
+                    "correlations": [],
+                    "inner": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0020",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "inner_domains": [
+                      {
+                        "column": {
+                          "name": "refund_amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 50
+                                }
+                              },
+                              "upper": null
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "membership",
+                    "membership_key": {
+                      "inner": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                      },
+                      "outer": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                      }
+                    },
+                    "outer": {
+                      "instance": "o",
+                      "name": "candidate",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    }
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "case": "no_match_null_candidate",
+                    "closed_world": true,
+                    "correlations": [],
+                    "inner": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0020",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "inner_domains": [
+                      {
+                        "column": {
+                          "name": "refund_amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 50
+                                }
+                              },
+                              "upper": null
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "membership",
+                    "membership_key": {
+                      "inner": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                      },
+                      "outer": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                      }
+                    },
+                    "outer": {
+                      "instance": "o",
+                      "name": "candidate",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    }
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "case": "outer_null_nonempty",
+                    "closed_world": true,
+                    "correlations": [],
+                    "inner": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0020",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                    },
+                    "inner_domains": [
+                      {
+                        "column": {
+                          "name": "refund_amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 50
+                                }
+                              },
+                              "upper": null
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "membership",
+                    "membership_key": {
+                      "inner": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"returns\""
+                      },
+                      "outer": {
+                        "name": "order_id",
+                        "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                      }
+                    },
+                    "outer": {
+                      "instance": "o",
+                      "name": "candidate",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
+                    }
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          }
+        },
+        {
+          "operator": "set",
+          "origin_layer_id": "layer-0014",
+          "qualifying": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 1,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 2,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 1,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 3,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              },
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 2,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 4,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
+          },
+          "rejected": {
+            "cases": [
+              {
+                "obligations": [
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
+                    },
+                    "branch_identity": "body:left",
+                    "closed_world": true,
+                    "column_domains": [],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "order_id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "boundary": {
+                      "kind": "physical",
+                      "origin_layer_id": "layer-0014",
+                      "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                    },
+                    "branch_identity": "body:right",
+                    "closed_world": true,
+                    "column_domains": [
+                      {
+                        "column": {
+                          "name": "amount",
+                          "relation": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
+                        },
+                        "domain": {
+                          "kind": "ranges",
+                          "ranges": [
+                            {
+                              "lower": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 20
+                                }
+                              },
+                              "upper": {
+                                "inclusive": true,
+                                "value": {
+                                  "kind": "literal",
+                                  "type": "integer",
+                                  "value": 80
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "kind": "set_tuple",
+                    "matching_rows": 0,
+                    "tuple_columns": [
+                      "id",
+                      "customer_id",
+                      "amount",
+                      "status",
+                      "region"
+                    ]
+                  },
+                  {
+                    "kind": "set_result_tuple",
+                    "matching_rows": 0,
+                    "nulls_equal": true
+                  }
+                ],
+                "strength": "sufficient"
+              }
+            ],
+            "status": "feasible"
           }
         }
       ]

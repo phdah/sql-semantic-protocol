@@ -23,12 +23,15 @@
 //! - OutcomeWitness describes source-complete integer-key, group, join, window and set
 //!   cardinality constructions derived from existing operator witness contracts.
 //! - WriteStateEffect describes conservative INSERT, UPDATE, DELETE and MERGE before/after obligations.
+//! - ConstructiveWitness and local_constructive_witnesses normalize proven operator-local
+//!   source obligations without pretending to solve full physical-source DAGs.
 
 mod analysis;
 mod boolean_witness;
 mod bundle;
 mod composition;
 mod constraints;
+mod constructive;
 mod data_type;
 mod dbt;
 mod domain;
@@ -72,6 +75,11 @@ pub use constraints::{
     ConstraintEnforcement, ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance,
     ConstraintSourceKind, ConstraintValue, ForeignKeyConstraint, KeyConstraint, NotNullConstraint,
     RelationConstraint, RelationConstraintSet,
+};
+pub use constructive::{
+    local_constructive_witnesses, local_pending_producers, ConstructiveWitness, CountBounds,
+    ProofStrength, RowQuantifier, RowVariable, WitnessBoundary, WitnessCase, WitnessDirection,
+    WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 pub use data_type::{parse_data_type, DataType, DataTypeField, DataTypeParseError, EnumValue};
 pub use dbt::{

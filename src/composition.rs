@@ -132,6 +132,7 @@ impl<'a> Composer<'a> {
         }
 
         let mut dependencies = BTreeSet::<String>::new();
+        let mut producer_sources = BTreeMap::<String, Vec<String>>::new();
         let mut domain_map = BTreeMap::<ColumnRef, ValueDomain>::new();
         let mut join_equalities = Vec::<ComposedJoinEquality>::new();
         let mut join_witnesses = self.compose_query_join_witnesses(&layer, &query);
@@ -297,6 +298,16 @@ impl<'a> Composer<'a> {
 
                     match self.compose_layer(producer_id) {
                         ComposedSemantics::Resolved(upstream) => {
+                            producer_sources.extend(
+                                upstream
+                                    .producer_sources()
+                                    .iter()
+                                    .map(|(relation, sources)| (relation.clone(), sources.clone())),
+                            );
+                            producer_sources.insert(
+                                edge.relation().to_string(),
+                                upstream.dependencies().to_vec(),
+                            );
                             dependencies.extend(upstream.dependencies().iter().cloned());
                             merge_column_domains(&mut domain_map, upstream.column_domains());
                             join_equalities.extend(upstream.join_equalities().iter().cloned());
@@ -385,7 +396,10 @@ impl<'a> Composer<'a> {
             .map(|(column, domain)| ColumnDomain::new(column, domain))
             .collect::<Vec<_>>();
         let composed = ComposedSemantics::resolved(
-            dependencies.into_iter().collect(),
+            crate::bundle::ComposedSourceEvidence {
+                dependencies: dependencies.into_iter().collect(),
+                producer_sources,
+            },
             column_domains,
             join_equalities,
             crate::bundle::ComposedWitnessEvidence {

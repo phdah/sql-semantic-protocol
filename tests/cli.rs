@@ -44,12 +44,16 @@ fn run_with_stdin(arguments: &[&str], input: &str) -> Output {
         .spawn()
         .expect("CLI should start");
 
-    child
+    // An invalid option can terminate the child before it consumes stdin.
+    // BrokenPipe is therefore expected for error-path tests.
+    if let Err(error) = child
         .stdin
         .take()
         .expect("stdin should be piped")
         .write_all(input.as_bytes())
-        .expect("test SQL should be written");
+    {
+        assert_eq!(error.kind(), std::io::ErrorKind::BrokenPipe, "{error}");
+    }
 
     child.wait_with_output().expect("CLI should exit")
 }
