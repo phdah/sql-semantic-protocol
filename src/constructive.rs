@@ -965,15 +965,6 @@ pub fn local_constructive_witnesses(
     proofs
 }
 
-fn untranslated(operator: WitnessOperator, origin_layer_id: &str) -> ConstructiveWitness {
-    ConstructiveWitness {
-        operator,
-        origin_layer_id: origin_layer_id.to_string(),
-        qualifying: WitnessDirection::residual("canonical_constructive_translation_not_proven"),
-        rejected: WitnessDirection::residual("canonical_constructive_translation_not_proven"),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
