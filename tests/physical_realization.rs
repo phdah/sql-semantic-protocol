@@ -5,10 +5,10 @@ mod common;
 use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, physical_row_count_plan,
-    physical_joint_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput, PhysicalPlanRef, PhysicalProofGap,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
-    WitnessObligation,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
+    physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
+    PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -622,31 +622,33 @@ fn joint_terminal_goals_share_physical_rows_once_and_detect_conflicting_counts()
             ],
             dialect,
         );
-        let outputs = [
-            (b.layers()[2].id(), 3),
-            (b.layers()[3].id(), 3),
-        ];
+        let outputs = [(b.layers()[2].id(), 3), (b.layers()[3].id(), 3)];
         let witness = physical_joint_row_count_plan(&b, &outputs);
         let WitnessDirection::Feasible(cases) = witness else {
             panic!("{dialect}: jointly consistent physical source goals: {witness:?}");
         };
         assert_eq!(cases.len(), 1);
         assert_eq!(
-            cases[0].obligations().iter().filter(|o| matches!(
-                o, WitnessObligation::Rows { boundary, .. } if boundary.relation() == "t"
-            )).count(),
+            cases[0]
+                .obligations()
+                .iter()
+                .filter(|o| matches!(
+                    o, WitnessObligation::Rows { boundary, .. } if boundary.relation() == "t"
+                ))
+                .count(),
             1,
             "shared physical input should be constructed once",
         );
         assert_eq!(
-            cases[0].obligations().iter().filter(|o| matches!(o, WitnessObligation::OutputRows { .. })).count(),
+            cases[0]
+                .obligations()
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::OutputRows { .. }))
+                .count(),
             2,
         );
         assert!(matches!(
-            physical_joint_row_count_plan(&b, &[
-                (b.layers()[2].id(), 3),
-                (b.layers()[3].id(), 4),
-            ]),
+            physical_joint_row_count_plan(&b, &[(b.layers()[2].id(), 3), (b.layers()[3].id(), 4),]),
             WitnessDirection::Impossible,
         ));
     }
@@ -654,24 +656,19 @@ fn joint_terminal_goals_share_physical_rows_once_and_detect_conflicting_counts()
 
 #[test]
 fn independent_physical_sources_can_satisfy_joint_row_targets() {
-    let b = bundle(
-        &[
-            "SELECT a FROM t",
-            "SELECT a FROM r",
-        ],
-        "postgresql",
-    );
-    let WitnessDirection::Feasible(cases) = physical_joint_row_count_plan(
-        &b,
-        &[(b.layers()[0].id(), 2), (b.layers()[1].id(), 7)],
-    ) else {
+    let b = bundle(&["SELECT a FROM t", "SELECT a FROM r"], "postgresql");
+    let WitnessDirection::Feasible(cases) =
+        physical_joint_row_count_plan(&b, &[(b.layers()[0].id(), 2), (b.layers()[1].id(), 7)])
+    else {
         panic!("two independent, unconstrained physical source counts should be satisfiable");
     };
     assert_eq!(cases.len(), 1);
     assert_eq!(
-        cases[0].obligations().iter().filter(|obligation| matches!(
-            obligation, WitnessObligation::ClosedWorld { .. }
-        )).count(),
+        cases[0]
+            .obligations()
+            .iter()
+            .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+            .count(),
         2,
     );
 }
@@ -679,10 +676,7 @@ fn independent_physical_sources_can_satisfy_joint_row_targets() {
 #[test]
 fn joint_terminal_zero_from_filter_is_not_conflated_with_positive_source_rows() {
     let b = bundle(
-        &[
-            "SELECT a FROM t WHERE a > 1",
-            "SELECT a FROM t",
-        ],
+        &["SELECT a FROM t WHERE a > 1", "SELECT a FROM t"],
         "postgresql",
     );
     assert!(matches!(
