@@ -309,6 +309,7 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         }) {
             Some(semantics) => {
                 let proofs = local_constructive_witnesses(semantics);
+                eprintln!("TASK68 DEBUG {target_layer_id} {proofs:#?}");
                 let origin_proofs = proofs
                     .iter()
                     .filter(|p| {
