@@ -1037,3 +1037,42 @@ The original predicate retains AND/OR and SQL UNKNOWN distinctions. For
 MERGE NOT MATCHED branches, the anti-match obligation is separate from the
 branch's local WHERE domain. SQL statement order, first-applicable MERGE
 clause precedence and unsupported actions remain authoritative.
+
+
+## Physical dependency graph and source-row proof (TASK-68, partial)
+
+The active bundle graph optionally includes `graph.physical_nodes` and
+`graph.physical_source_plans`. All plans reference the **same canonical nodes**
+by typed `{ "kind": "source" | "layer", "id": "..." }` identities rather than
+duplicating the producer definitions.
+
+`physical_nodes[]` gives each node's `ref`, direct `inputs` references,
+`produced_relations`, and `write_kind` (nullable for external physical
+sources and anonymous read-only outputs). A source has no producer; a layer
+has its direct dependencies. These nodes are sorted by reference identity and
+shared by plans for multiple terminal layers.
+
+`physical_source_plans[]` has one entry per layer in layer order:
+`layer_id`, producer-first `node_refs`, distinct `physical_sources`,
+independently assessed `qualifying`, `rejected`, and `zero_output`
+constructive directions, and nullable `gap`. The directions use the same
+typed `constructiveDirection` schema as operator-local proof cases.
+`gap: null` means the **individual physical row** matching/rejection
+classification has a sufficient proof, not that all requested output counts
+or the entire DAG are jointly realizable.
+
+`zero_output` is a separate closed-world sufficient construction for **zero
+terminal output rows** when every transformation is a safe single-source
+row-preserving projection or a single-source filter. It requires complete
+control of the physical source with `0..0` rows, including explicit
+`closed_world` evidence; it is never inferred for global aggregates,
+joins, sets, or missing producer evidence. This conservative construction
+does not establish nonzero cardinality or prove that unrelated output
+goals can be satisfied simultaneously.
+
+SQL query semantics, dependencies, source row/domain constraints, and local
+witnesses retain their respective existing authoritative definitions. Physical
+plans are an additional source-independent proof level, not a replacement
+for complete operator-local contracts. Unsupported graph shapes remain
+residual; downstream tools must not invent missing transformations or
+reparse SQL to compensate.
