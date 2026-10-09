@@ -210,6 +210,19 @@ fn impossible_inner_membership_and_unknown_aliases_remain_residual() {
         assert!(matches!(item.qualifying(), SubqueryMembershipDirection::Residual { .. }), "{sql}");
         assert!(matches!(item.rejected(), SubqueryMembershipDirection::Residual { .. }), "{sql}");
     }
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE orders(id INTEGER); CREATE TABLE lines(id INTEGER);
+         INSERT INTO orders VALUES (1), (2); INSERT INTO lines VALUES (1), (2);",
+    )
+    .unwrap();
+    assert_eq!(
+        count(
+            &db,
+            "SELECT COUNT(*) FROM orders o WHERE EXISTS (SELECT 1 FROM lines l WHERE 1 = 0)"
+        ),
+        0
+    );
 }
 
 #[test]
