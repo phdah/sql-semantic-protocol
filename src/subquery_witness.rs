@@ -252,23 +252,38 @@ fn derive(
     if !subquery.joins().is_empty() || !subquery.diagnostics().is_empty() {
         return residual("nested_join_or_analysis_diagnostic");
     }
-    if !subquery.condition_exactness().required_assumptions().is_empty() {
+    if !subquery
+        .condition_exactness()
+        .required_assumptions()
+        .is_empty()
+    {
         return residual("undeclared_inner_comparison_assumptions");
     }
-    if subquery.condition_exactness().residual_conditions().iter().any(|item| {
-        !matches!(
-            item.reason(),
-            ResidualConditionReason::CorrelatedSubquery
-                | ResidualConditionReason::ColumnComparison
-        )
-    }) {
+    if subquery
+        .condition_exactness()
+        .residual_conditions()
+        .iter()
+        .any(|item| {
+            !matches!(
+                item.reason(),
+                ResidualConditionReason::CorrelatedSubquery
+                    | ResidualConditionReason::ColumnComparison
+            )
+        })
+    {
         return residual("inner_predicate_not_exact");
     }
 
     let outer_instance = outer_source.alias().unwrap_or(outer_source.name());
     let mut pairs = Vec::new();
     if let Some(predicate) = subquery.predicates().where_predicate() {
-        if !collect_correlations(predicate, outer_source, outer_instance, inner_source, &mut pairs) {
+        if !collect_correlations(
+            predicate,
+            outer_source,
+            outer_instance,
+            inner_source,
+            &mut pairs,
+        ) {
             return residual("unsupported_inner_predicate_or_correlation");
         }
     }
@@ -372,7 +387,9 @@ fn collect_correlations(
             {
                 let pair = source_column(a, outer, outer_instance)
                     .zip(inner_column(b, inner))
-                    .or_else(|| source_column(b, outer, outer_instance).zip(inner_column(a, inner)));
+                    .or_else(|| {
+                        source_column(b, outer, outer_instance).zip(inner_column(a, inner))
+                    });
                 if let Some((outer, inner)) = pair {
                     keys.push(SubqueryCorrelation { outer, inner });
                     true
@@ -380,9 +397,7 @@ fn collect_correlations(
                     false
                 }
             }
-            (Expression::Column(col), Expression::Literal(_)) => {
-                inner_column(col, inner).is_some()
-            }
+            (Expression::Column(col), Expression::Literal(_)) => inner_column(col, inner).is_some(),
             _ => false,
         },
         Predicate::IsNull(check) => {
@@ -395,7 +410,10 @@ fn collect_correlations(
         }
         Predicate::In(check) => {
             matches!(check.expression(), Expression::Column(col) if inner_column(col, inner).is_some())
-                && check.values().iter().all(|expr| matches!(expr, Expression::Literal(_)))
+                && check
+                    .values()
+                    .iter()
+                    .all(|expr| matches!(expr, Expression::Literal(_)))
         }
         _ => false,
     }
@@ -418,10 +436,7 @@ fn source_column(
 
 fn inner_column(col: &ColumnExpression, inner: &SourceRelation) -> Option<ColumnRef> {
     let qualifier = col.relation();
-    if qualifier.is_none()
-        || qualifier == inner.alias()
-        || qualifier == Some(inner.name())
-    {
+    if qualifier.is_none() || qualifier == inner.alias() || qualifier == Some(inner.name()) {
         Some(ColumnRef::new(
             Some(inner.name().to_string()),
             col.name().to_string(),
