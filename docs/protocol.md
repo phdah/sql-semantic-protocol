@@ -1130,6 +1130,28 @@ a filtered output may contain fewer rows than its physical input. Joins,
 aggregate multiplicity, sets and DML state transitions remain unsupported
 for general positive cardinality.
 
+### Canonical joint physical-source DAG count plans
+
+The `physical_joint_source_plan(bundle, targets)` Rust API accepts exact
+`(layer_id, output_rows)` goals and exposes a deterministic, topologically
+ordered physical dependency graph. `targets` and `physical_sources` are
+sorted; repeated external leaves and materialized producers retain one stable
+typed identity in `nodes`, with their write kinds, local witnesses and
+pending producer requirements preserved. The typed `outcome` is independently
+classified as `feasible`, `impossible` or `residual`; a structural
+`gap` explicitly distinguishes missing, ambiguous, cyclic and partial
+producer resolution. A graph alone never certifies source data.
+
+When a bundle contains caller-supplied **row-only** outcome goals, emission
+also includes optional `graph.physical_joint_count_plan` with sorted
+`targets`, `node_refs` into `graph.physical_nodes`,
+`physical_sources`, the typed constructive `outcome` and `gap`.
+This is not emitted for group or distribution goals because those require
+additional independent joint proofs. A feasible plan enforces one complete
+closed-world source assignment shared by its terminals; independent row
+examples, unresolved adapter evidence and operator-local cases are not
+implicitly elevated into whole-DAG proofs.
+
 ### Exact unconditional DELETE state
 
 The Rust API `physical_unconditional_delete_plan(bundle, layer_id,
