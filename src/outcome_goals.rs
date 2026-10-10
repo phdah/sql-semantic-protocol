@@ -520,6 +520,38 @@ fn assess_goal(
         }
     }
 
+    // A complete empty physical state also proves empty histograms and zero
+    // surviving groups on ordinary grouping, independently of value-domain
+    // distributions that would otherwise require a positive-row construction.
+    // A GROUP BY count is only inferred where SQL certifies one output per
+    // surviving group, never from global aggregates or grouping sets.
+    let grouped_empty = goal.groups() == Some(0)
+        && goal.rows().is_none_or(|rows| rows == 0)
+        && goal.distributions().is_empty()
+        && query.is_some_and(QueryStatement::group_rows_match_surviving_groups);
+    let empty_histograms = goal.rows() == Some(0)
+        && goal.groups().is_none_or(|groups| {
+            groups == 0
+                && query.is_some_and(QueryStatement::group_rows_match_surviving_groups)
+        });
+    if (grouped_empty || empty_histograms)
+        && matches!(
+            crate::physical_realization::physical_row_count_plan(bundle, layer.id(), 0),
+            crate::constructive::WitnessDirection::Feasible(_)
+        )
+    {
+        let physical = crate::physical_realization::physical_source_plan(bundle, layer.id());
+        return Ok(proved(
+            goal,
+            "empty physical sources prove zero output rows, complete empty histograms and ordinary group count",
+            min_rows,
+            max_rows,
+            crate::outcome_proofs::OutcomeWitness::EmptySources {
+                relations: physical.sources().to_vec(),
+            },
+        ));
+    }
+
     // A complete physical-source DAG construction can discharge a row-count
     // request even when the local operator witness was insufficient because
     // the requested output is produced through transparent materialized layers.
