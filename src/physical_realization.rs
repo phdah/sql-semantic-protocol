@@ -1817,11 +1817,11 @@ fn count_predicate_for_source(
         })
 }
 
-/// Reconcile one or more unfiltered positive terminals with one or more
-/// deliberately empty filtered terminals on a shared physical source.
-/// The source has exactly N rows, every positive path preserves all N rows,
-/// and every negative path rejects all N rows under the same proven predicate.
-/// Different negative predicates need a separate joint satisfiability proof.
+/// Reconcile positive and deliberately empty terminals over one schema-backed
+/// source. All-positive constructions use N rows selected by every positive
+/// filter; a zero terminal must reject every one of those same rows. This is
+/// one sufficient closed-world assignment, not a claim that independent
+/// sufficient witnesses can be concatenated or freely multiplied.
 fn joint_positive_and_rejected_pair(
     bundle: &AnalysisBundle,
     targets: &[(&str, u64)],
@@ -1846,28 +1846,35 @@ fn joint_positive_and_rejected_pair(
     if zero.is_empty() || positive.iter().any(|(_, count)| *count != rows) {
         return None;
     }
-    let first_plan = physical_row_count_plan(bundle, first_positive, rows);
     let first_physical = physical_source_plan(bundle, first_positive);
     let [source] = first_physical.sources() else {
         return None;
     };
-    if count_predicate_for_source(&first_plan, source, rows) != Some(count_tautology()) {
-        return None;
-    }
-    for &(layer_id, _) in positive.iter().skip(1) {
+
+    let mut qualifying = Vec::new();
+    for &(layer_id, _) in &positive {
         let physical = physical_source_plan(bundle, layer_id);
-        if physical.sources() != [source.clone()]
-            || count_predicate_for_source(
-                &physical_row_count_plan(bundle, layer_id, rows),
-                source,
-                rows,
-            ) != Some(count_tautology())
-        {
+        if physical.sources() != [source.clone()] {
             return None;
         }
+        let predicate =
+            count_predicate_for_source(&physical_row_count_plan(bundle, layer_id, rows), source, rows)?;
+        if predicate == count_tautology() {
+            continue;
+        }
+        if !matches!(
+            predicate,
+            WitnessFormula::RowTruth {
+                truth: crate::boolean_witness::BooleanTruthCase::True,
+                ..
+            }
+        ) {
+            return None;
+        }
+        qualifying.push(predicate);
     }
 
-    let mut negative_predicate = None;
+    let mut rejecting = Vec::new();
     for layer_id in zero {
         let physical = physical_source_plan(bundle, layer_id);
         if physical.sources() != [source.clone()] {
@@ -1887,29 +1894,43 @@ fn joint_positive_and_rejected_pair(
         ) {
             return None;
         }
-        negative_predicate = Some(match negative_predicate {
-            None => predicate,
-            Some(prior) if prior == predicate => prior,
-            Some(prior) => {
-                let (joint, satisfiable) =
-                    conjoin_source_row_truths(bundle, source, &prior, &predicate)?;
-                if !satisfiable {
-                    return Some(WitnessDirection::Impossible);
-                }
-                joint
-            }
-        });
+        if !rejecting.contains(&predicate) {
+            rejecting.push(predicate);
+        }
     }
 
+    let mut requirements = qualifying.clone();
+    requirements.extend(rejecting.iter().cloned());
+    let satisfiable = joint_source_truths_satisfiable(bundle, source, &requirements)?;
+    if !satisfiable {
+        // Two mutually exclusive positive filters can use disjoint source
+        // subsets when no exact whole-source count is demanded. By contrast,
+        // no positive row can survive a negative filter that every row must
+        // reject, independent of the total physical source cardinality.
+        if qualifying.is_empty()
+            || qualifying.iter().any(|predicate| {
+                let mut necessary = vec![predicate.clone()];
+                necessary.extend(rejecting.iter().cloned());
+                joint_source_truths_satisfiable(bundle, source, &necessary) == Some(false)
+            })
+        {
+            return Some(WitnessDirection::Impossible);
+        }
+        return None;
+    }
+
+    let row_predicate = match requirements.as_slice() {
+        [predicate] => predicate.clone(),
+        predicates => WitnessFormula::All(predicates.to_vec()),
+    };
     let boundary = WitnessBoundary::new(source, GroupBoundaryKind::Physical, first_positive)?;
     let rows_bounds = CountBounds::new(rows, Some(rows))?;
-    let predicate = negative_predicate?;
     let mut obligations = vec![
         WitnessObligation::Rows {
             boundary: boundary.clone(),
             quantifier: RowQuantifier::ForAll,
             bounds: rows_bounds,
-            predicate,
+            predicate: row_predicate,
             closed_world: true,
         },
         WitnessObligation::ClosedWorld {
@@ -1925,6 +1946,66 @@ fn joint_positive_and_rejected_pair(
     }
     let case = WitnessCase::new(obligations, ProofStrength::Sufficient)?;
     WitnessDirection::feasible(vec![case])
+}
+
+/// Evidence for direct physical signed integer comparisons. Kept identical
+/// across the positive-only and mixed-truth physical row solvers.
+fn physical_integer_evidence(
+    schema: &crate::relation::RelationSchema,
+    column: &crate::protocol::ColumnRef,
+) -> Option<crate::boolean_witness::SignedIntegerEvidence> {
+    let known = schema
+        .columns()
+        .iter()
+        .find(|known| known.name() == column.name())?;
+    let data_type = match known.data_type() {
+        crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
+        other => other,
+    };
+    match data_type {
+        crate::data_type::DataType::SignedInteger { bits: Some(bits) }
+            if *bits > 0 && *bits <= 64 =>
+        {
+            let magnitude = 1_i128 << (u32::from(*bits) - 1);
+            Some(crate::boolean_witness::SignedIntegerEvidence {
+                minimum: -magnitude,
+                maximum: magnitude - 1,
+            })
+        }
+        _ => None,
+    }
+}
+
+/// Validate mixed SQL TRUE and NOT TRUE conditions on one *identical* row.
+/// The witnessed RowVariable must have the same source, instance and name,
+/// rather than merely the same relation string.
+fn joint_source_truths_satisfiable(
+    bundle: &AnalysisBundle,
+    source: &str,
+    predicates: &[WitnessFormula],
+) -> Option<bool> {
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == source)?;
+    let mut row_identity = None;
+    let mut requirements = Vec::new();
+    for predicate in predicates {
+        let WitnessFormula::RowTruth { row, predicate, truth } = predicate else {
+            return None;
+        };
+        if row.relation() != source || row_identity.is_some_and(|identity| identity != row) {
+            return None;
+        }
+        row_identity = Some(row);
+        requirements.push((predicate, *truth));
+    }
+    crate::boolean_witness::jointly_satisfiable_physical_truths(
+        source,
+        &requirements,
+        |column| schema.columns().iter().any(|known| known.name() == column.name()),
+        |column| physical_integer_evidence(schema, column),
+    )
 }
 
 /// Conjoin independently proven SQL truth directions on one physical row.
@@ -1968,28 +2049,7 @@ fn conjoin_source_row_truths(
                 .iter()
                 .any(|known| known.name() == column.name())
         },
-        |column| {
-            let known = schema
-                .columns()
-                .iter()
-                .find(|known| known.name() == column.name())?;
-            let data_type = match known.data_type() {
-                crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
-                other => other,
-            };
-            match data_type {
-                crate::data_type::DataType::SignedInteger { bits: Some(bits) }
-                    if *bits > 0 && *bits <= 64 =>
-                {
-                    let magnitude = 1_i128 << (u32::from(*bits) - 1);
-                    Some(crate::boolean_witness::SignedIntegerEvidence {
-                        minimum: -magnitude,
-                        maximum: magnitude - 1,
-                    })
-                }
-                _ => None,
-            }
-        },
+        |column| physical_integer_evidence(schema, column),
     )?;
     Some((
         WitnessFormula::RowTruth {
