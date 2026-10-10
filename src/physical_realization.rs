@@ -2463,7 +2463,9 @@ fn jointly_realized_join_goals(
                     coverage: ClosedWorldCoverage::EntireRelation,
                 } if boundary.kind() == GroupBoundaryKind::Physical => {}
                 WitnessObligation::JoinPair { .. }
-                | WitnessObligation::NoMatchingPartner { closed_world: true, .. }
+                | WitnessObligation::NoMatchingPartner {
+                    closed_world: true, ..
+                }
                 | WitnessObligation::OutputRows { .. } => {}
                 _ => {
                     valid = false;
@@ -2508,7 +2510,10 @@ fn jointly_realized_join_goals(
             if matches!(
                 obligation,
                 WitnessObligation::JoinPair { .. }
-                    | WitnessObligation::NoMatchingPartner { closed_world: true, .. }
+                    | WitnessObligation::NoMatchingPartner {
+                        closed_world: true,
+                        ..
+                    }
             ) && !result.contains(obligation)
             {
                 result.push(obligation.clone());
