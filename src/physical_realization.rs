@@ -1546,6 +1546,77 @@ fn count_predicate_for_source(
         })
 }
 
+/// Reconcile an unfiltered positive terminal with a deliberately empty
+/// filtered terminal on the *same* physical source. The former requires N
+/// physical rows; the latter must reject every one of those rows. An empty
+/// source is not the only sufficient construction for a zero filtered output.
+fn joint_positive_and_rejected_pair(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> Option<WitnessDirection> {
+    let [(first, first_rows), (second, second_rows)] = targets else {
+        return None;
+    };
+    let (zero, positive, rows) = if *first_rows == 0 && *second_rows > 0 {
+        (*first, *second, *second_rows)
+    } else if *second_rows == 0 && *first_rows > 0 {
+        (*second, *first, *first_rows)
+    } else {
+        return None;
+    };
+    let positive_plan = physical_row_count_plan(bundle, positive, rows);
+    let positive_physical = physical_source_plan(bundle, positive);
+    let [source] = positive_physical.sources() else {
+        return None;
+    };
+    if count_predicate_for_source(&positive_plan, source, rows) != Some(count_tautology()) {
+        return None;
+    }
+    let negative_plan = physical_rejected_row_count_plan(bundle, zero, rows);
+    let negative_physical = physical_source_plan(bundle, zero);
+    if negative_physical.sources() != [source.clone()] {
+        return None;
+    }
+    let predicate = count_predicate_for_source(&negative_plan, source, rows)?;
+    if !matches!(
+        predicate,
+        WitnessFormula::RowTruth {
+            truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
+            ..
+        }
+    ) {
+        return None;
+    }
+    let boundary = WitnessBoundary::new(source, GroupBoundaryKind::Physical, zero)?;
+    let rows_bounds = CountBounds::new(rows, Some(rows))?;
+    let zero_bounds = CountBounds::new(0, Some(0))?;
+    let case = WitnessCase::new(
+        vec![
+            WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds: rows_bounds,
+                predicate,
+                closed_world: true,
+            },
+            WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            },
+            WitnessObligation::OutputRows {
+                layer_id: positive.to_string(),
+                bounds: rows_bounds,
+            },
+            WitnessObligation::OutputRows {
+                layer_id: zero.to_string(),
+                bounds: zero_bounds,
+            },
+        ],
+        ProofStrength::Sufficient,
+    )?;
+    WitnessDirection::feasible(vec![case])
+}
+
 /// Construct a single complete physical source assignment for several
 /// terminal row-count goals. Independent sufficient cases are composed only
 /// after reconciling their *shared physical source identities*.
@@ -1560,6 +1631,9 @@ pub fn physical_joint_row_count_plan(
 ) -> WitnessDirection {
     if targets.is_empty() {
         return residual(PhysicalProofGap::NoWitness);
+    }
+    if let Some(witness) = joint_positive_and_rejected_pair(bundle, targets) {
+        return witness;
     }
 
     let mut outputs = BTreeMap::<String, u64>::new();
