@@ -520,6 +520,29 @@ fn assess_goal(
         }
     }
 
+    // A binary equijoin whose two inputs are independent, materialized
+    // identity projections can also construct its physical keys directly.
+    // Both branches must be jointly realized before any join count is claimed.
+    if goal.groups().is_none() && goal.distributions().is_empty() {
+        if let Some(rows) = goal.rows() {
+            if let Some(witness) =
+                crate::physical_realization::physical_materialized_join_witness(
+                    bundle,
+                    layer.id(),
+                    rows,
+                )
+            {
+                return Ok(proved(
+                    goal,
+                    "matched physical key pairs are realized across both materialized join parents",
+                    min_rows,
+                    max_rows,
+                    witness,
+                ));
+            }
+        }
+    }
+
     // A complete direct-local join/group/rank/set construction can be
     // transported across downstream materialized projections only when
     // those later layers provably preserve every result row exactly once.
