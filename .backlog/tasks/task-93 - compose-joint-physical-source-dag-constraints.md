@@ -41,15 +41,17 @@ Finish the physical-source-level constraint solver for multiple dependent termin
 
 ## Implementation progress
 
-This PR adds a focused, typed joint-positive-filter proof over one shared
-physical source. Source-schema-backed integer and NULL-sensitive Boolean
-conditions are conjoined on the *same row identity*; one canonical `RowTruth`
-requires their shared truth. Provably disjoint conjunctions are impossible
+This PR adds focused typed joint-positive and joint-negative filter
+proofs over one shared physical source. Source-schema-backed integer and
+NULL-sensitive Boolean conditions are conjoined on the *same row identity*;
+one canonical `RowTruth` requires every positive filter TRUE, or every
+negative filter SQL NOT TRUE via their disjunction. Provably disjoint
+conjunctions are impossible
 only with an exact necessary source count, otherwise residual. Independent
 physical sources continue to use separate closed-world assignments.
 
-Remaining TASK-93 acceptance includes joint negative predicates, full
-multi-branch producer DAG constraints, row correlations, cardinality
+Remaining TASK-93 acceptance includes mixed positive/negative filters,
+full multi-branch producer DAG constraints, row correlations, cardinality
 interactions and comprehensive cyclic/partial cross-operator oracles.
 Do not close this task or unblock TASK-94 until those gaps are verified.
 
