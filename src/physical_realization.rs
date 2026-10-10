@@ -1904,7 +1904,7 @@ pub(crate) fn physical_materialized_group_or_rank_witness(
         if operator_id.is_some()
             || query.sources().len() != 1
             || node.inputs().len() != 1
-            || query.joins().len() != 0
+            || !query.joins().is_empty()
             || query.set_operation().is_some()
             || !query.subquery_witnesses().is_empty()
         {
@@ -1923,9 +1923,10 @@ pub(crate) fn physical_materialized_group_or_rank_witness(
 
     // The operator's sole parent must be an actual producer. Direct physical
     // operators use their own existing direct-construction path.
-    let node = walker.nodes.iter().find(|node| {
-        node.id() == &PhysicalPlanRef::Layer(operator_id.to_string())
-    })?;
+    let node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(operator_id.to_string()))?;
     if !matches!(node.inputs(), [PhysicalPlanRef::Layer(_)]) {
         return None;
     }
@@ -1935,9 +1936,10 @@ pub(crate) fn physical_materialized_group_or_rank_witness(
         if current == operator_id {
             break;
         }
-        let descendant = walker.nodes.iter().find(|node| {
-            node.id() == &PhysicalPlanRef::Layer(current.to_string())
-        })?;
+        let descendant = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(current.to_string()))?;
         let [PhysicalPlanRef::Layer(parent)] = descendant.inputs() else {
             return None;
         };
@@ -1947,28 +1949,22 @@ pub(crate) fn physical_materialized_group_or_rank_witness(
         return None;
     }
     let map = |column: &crate::protocol::ColumnRef| {
-        let mapped = resolve_filter_column_with_evidence(
-            bundle, &walker, operator_id, column, 0, true,
-        )?;
-        walker.sources.contains(mapped.relation()?).then_some(mapped)
+        let mapped =
+            resolve_filter_column_with_evidence(bundle, &walker, operator_id, column, 0, true)?;
+        walker
+            .sources
+            .contains(mapped.relation()?)
+            .then_some(mapped)
     };
-    let goal = crate::outcome_goals::OutcomeGoal::new(
-        operator_id,
-        Some(rows),
-        groups,
-        Vec::new(),
-    ).ok()?;
+    let goal =
+        crate::outcome_goals::OutcomeGoal::new(operator_id, Some(rows), groups, Vec::new()).ok()?;
     if operator.aggregation().is_some() {
-        crate::outcome_proofs::construct_mapped_group(
-            bundle, operator, &goal, rows, &map,
-        )
+        crate::outcome_proofs::construct_mapped_group(bundle, operator, &goal, rows, &map)
     } else {
         if groups.is_some() {
             return None;
         }
-        crate::outcome_proofs::construct_mapped_rank(
-            bundle, operator, &goal, rows, &map,
-        )
+        crate::outcome_proofs::construct_mapped_rank(bundle, operator, &goal, rows, &map)
     }
 }
 
@@ -2023,9 +2019,10 @@ pub(crate) fn physical_materialized_set_witness(
         if current == operator_id {
             break;
         }
-        let descendant = walker.nodes.iter().find(|node| {
-            node.id() == &PhysicalPlanRef::Layer(current.to_string())
-        })?;
+        let descendant = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(current.to_string()))?;
         let [PhysicalPlanRef::Layer(parent)] = descendant.inputs() else {
             return None;
         };
@@ -2040,11 +2037,11 @@ pub(crate) fn physical_materialized_set_witness(
             return None;
         };
         let original = crate::protocol::ColumnRef::new(
-            Some(boundary.relation().to_string()), column.to_string(),
+            Some(boundary.relation().to_string()),
+            column.to_string(),
         );
-        let mapped = resolve_filter_column_with_evidence(
-            bundle, &walker, operator_id, &original, 0, true,
-        )?;
+        let mapped =
+            resolve_filter_column_with_evidence(bundle, &walker, operator_id, &original, 0, true)?;
         let relation = mapped.relation()?;
         if !walker.sources.contains(relation) {
             return None;
