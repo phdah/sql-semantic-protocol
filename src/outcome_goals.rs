@@ -525,13 +525,11 @@ fn assess_goal(
     // those later layers provably preserve every result row exactly once.
     if goal.groups().is_none() && goal.distributions().is_empty() {
         if let Some(rows) = goal.rows() {
-            if let Some(witness) =
-                crate::physical_realization::physical_operator_count_witness(
-                    bundle,
-                    layer.id(),
-                    rows,
-                )
-            {
+            if let Some(witness) = crate::physical_realization::physical_operator_count_witness(
+                bundle,
+                layer.id(),
+                rows,
+            ) {
                 return Ok(proved(
                     goal,
                     "physical operator multiplicity survives exact materialized projections",
