@@ -102,6 +102,17 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   source column, is schema-checked, and shares a full-source cardinality.
   Non-invertible projected values or unknown producer columns remain residual.
 
+- Proven positive one-to-one equijoin count outcomes over two independent
+  materialized parents whose physical integer keys and row counts remain
+  unchanged through producer projections. Follow-on transparent materialized
+  projections may reuse the same canonical physical join-pair construction.
+- Added a separate nonempty closed-world negative filter plan: all declared
+  physical source rows must be SQL NOT TRUE for the jointly proved predicate,
+  fixing terminal cardinality to zero without pretending the source is empty.
+  A positive transparent count and this negative zero count can share the
+  same controlled source in a two-terminal proof. Unsupported combinations
+  remain residual.
+
 **Still blocking:** General multi-operator and multi-parent joint
 satisfiability, mixed-join and aggregate/window/set DAG construction,
 positive nonzero counts beyond the verified transparent-source subset,
