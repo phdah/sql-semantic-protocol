@@ -1194,6 +1194,7 @@ fn set_operation_to_value(operation: &SetOperation) -> Value {
                 "column_domains": branch.column_domains().iter().map(column_domain_to_value).collect::<Vec<_>>(),
                 "output": output_to_value(branch.output()),
                 "condition_exactness": condition_exactness_to_value(branch.condition_exactness()),
+                "empty_input_preserving": branch.empty_input_preserving(),
             })).collect::<Vec<_>>(),
             "qualifying_witness": set_witness_direction_to_value(&qualifying),
             "non_qualifying_witness": set_witness_direction_to_value(&non_qualifying)
