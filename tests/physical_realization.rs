@@ -7,7 +7,8 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
-    physical_unconditional_delete_plan, AnalysisBundle, ConfiguredSqlInput, ConstraintValue,
+    physical_unconditional_delete_plan, AnalysisBundle, BooleanRowConstraint, BooleanTruthCase,
+    ConfiguredSqlInput, ConstraintValue,
     OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution, OutputValueCount,
     PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     WitnessDirection, WitnessFormula, WitnessObligation,
@@ -1023,6 +1024,159 @@ fn joint_counts_keep_filter_truth_and_fail_closed_on_distinct_conditions() {
             WitnessDirection::Residual { .. }
         ));
     }
+}
+
+#[test]
+fn distinct_compatible_filters_require_one_shared_source_row_truth() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a > 1",
+                "SELECT a FROM t WHERE a < 5",
+                "SELECT b FROM r WHERE b IS NULL",
+            ],
+            dialect,
+        );
+        let goals = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[1].id(), 3),
+            (b.layers()[2].id(), 3),
+            (b.layers()[3].id(), 1),
+        ];
+        let witness = physical_joint_row_count_plan(&b, &goals);
+        let WitnessDirection::Feasible(cases) = witness else {
+            panic!("{dialect}: compatible shared-source truth: {witness:?}");
+        };
+        let [case] = cases.as_slice() else {
+            panic!("{dialect}: expected one joint case");
+        };
+        assert_eq!(
+            case.obligations()
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                .count(),
+            2,
+        );
+        assert!(case.obligations().iter().any(|o| matches!(
+            o,
+            WitnessObligation::Rows {
+                boundary,
+                predicate: WitnessFormula::RowTruth {
+                    predicate: BooleanRowConstraint::All(children),
+                    truth: BooleanTruthCase::True,
+                    ..
+                },
+                ..
+            } if boundary.relation() == "t" && children.len() == 2
+        )));
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         CREATE TABLE r(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (2, NULL), (3, 4), (4, NULL);
+         INSERT INTO r VALUES (0, NULL);
+        ",
+    )
+    .expect("physical assignments");
+    for (sql, expected) in [
+        ("SELECT COUNT(*) FROM t", 3),
+        ("SELECT COUNT(*) FROM t WHERE a > 1", 3),
+        ("SELECT COUNT(*) FROM t WHERE a < 5", 3),
+        ("SELECT COUNT(*) FROM r WHERE b IS NULL", 1),
+    ] {
+        let count: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("count");
+        assert_eq!(count, expected, "{sql}");
+    }
+}
+
+#[test]
+fn disjoint_shared_filters_require_necessary_source_count_to_prove_impossible() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a > 10",
+                "SELECT a FROM t WHERE a < 0",
+            ],
+            dialect,
+        );
+        assert!(matches!(
+            physical_joint_row_count_plan(
+                &b,
+                &[
+                    (b.layers()[0].id(), 2),
+                    (b.layers()[1].id(), 2),
+                    (b.layers()[2].id(), 2),
+                ]
+            ),
+            WitnessDirection::Impossible
+        ), "{dialect}: disjoint predicates cannot cover the same fixed two source rows");
+        assert!(matches!(
+            physical_joint_row_count_plan(
+                &b,
+                &[(b.layers()[1].id(), 2), (b.layers()[2].id(), 2)]
+            ),
+            WitnessDirection::Residual { .. }
+        ), "{dialect}: extra rows could satisfy each filter separately");
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (11), (12), (-1), (-2);",
+    )
+    .expect("split source rows");
+    let counts: (i64, i64, i64) = conn
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM t),
+                    (SELECT COUNT(*) FROM t WHERE a > 10),
+                    (SELECT COUNT(*) FROM t WHERE a < 0)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .expect("split counts");
+    assert_eq!(counts, (4, 2, 2));
+}
+
+#[test]
+fn sql_null_truth_is_solved_on_shared_physical_rows() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT b FROM t WHERE b IS NOT NULL",
+            ],
+            dialect,
+        );
+        assert!(matches!(
+            physical_joint_row_count_plan(
+                &b,
+                &[
+                    (b.layers()[0].id(), 2),
+                    (b.layers()[1].id(), 2),
+                    (b.layers()[2].id(), 2),
+                ],
+            ),
+            WitnessDirection::Feasible(_)
+        ), "{dialect}: both NULL-sensitive filters admit the same row assignment");
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER,b INTEGER);
+         INSERT INTO t VALUES (NULL,1),(NULL,2);",
+    )
+    .expect("nullable source");
+    let counts: (i64, i64) = conn
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM t WHERE a IS NULL),
+                    (SELECT COUNT(*) FROM t WHERE b IS NOT NULL)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .expect("NULL-sensitive counts");
+    assert_eq!(counts, (2, 2));
 }
 
 #[test]
