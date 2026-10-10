@@ -1,5 +1,44 @@
 # Changelog
 
+## [3.0.0](https://github.com/phdah/sql-semantic-protocol/compare/v2.0.3...v3.0.0) (2026-10-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **physical:** realize multi-parent and shared-source join populations (TASK-94)
+* **protocol:** compose joint physical-source DAG constraints (TASK-93)
+* **protocol:** protocol graph now includes physical_nodes and physical_source_plans.
+* **protocol:** unify typed constructive witness proofs (TASK-67) ([#89](https://github.com/phdah/sql-semantic-protocol/issues/89))
+* **protocol:** write JSON now includes typed state_effect, selection and assignments fields and new write kinds.
+* **protocol:** introduce coupled source-row boolean witnesses (TASK-63) ([#84](https://github.com/phdah/sql-semantic-protocol/issues/84))
+* **protocol:** model EXISTS and IN subquery membership witnesses (TASK-62) ([#83](https://github.com/phdah/sql-semantic-protocol/issues/83))
+* **protocol:** resolved semantics may include typed join witness contracts.
+* **protocol:** represent exact ROW_NUMBER and QUALIFY witnesses (TASK-60) ([#81](https://github.com/phdah/sql-semantic-protocol/issues/81))
+* **protocol:** add typed grouped HAVING witnesses (TASK-59) ([#80](https://github.com/phdah/sql-semantic-protocol/issues/80))
+* the protocol now requires set_operation.membership, including typed witness directions and branch evidence; strict consumers must upgrade or version-gate.
+
+### Features
+
+* **coverage:** inventory generator SQL semantics (TASK-66) ([#88](https://github.com/phdah/sql-semantic-protocol/issues/88)) ([e720942](https://github.com/phdah/sql-semantic-protocol/commit/e720942b98adad0c4418df3dc7f5f5c59fc214c2))
+* **physical:** realize multi-parent and shared-source join populations (TASK-94) ([c415b52](https://github.com/phdah/sql-semantic-protocol/commit/c415b52b196b93dfbb2ac05cfecac17b7bccd42d))
+* **protocol:** add typed grouped HAVING witnesses (TASK-59) ([#80](https://github.com/phdah/sql-semantic-protocol/issues/80)) ([169a1bf](https://github.com/phdah/sql-semantic-protocol/commit/169a1bf87635554e2e292b8cdfb3d9a341002211))
+* **protocol:** compose joint physical-source DAG constraints (TASK-93) ([1ff5f62](https://github.com/phdah/sql-semantic-protocol/commit/1ff5f6263e459af159db1095431e1f3cf6aa6b4a))
+* **protocol:** define typed exact join witness obligations (TASK-61) ([#82](https://github.com/phdah/sql-semantic-protocol/issues/82)) ([2ee263f](https://github.com/phdah/sql-semantic-protocol/commit/2ee263fff2accd09d93d6dd272e551d777cfc607))
+* **protocol:** establish canonical physical-source DAG foundation (TASK-68) ([#92](https://github.com/phdah/sql-semantic-protocol/issues/92)) ([fd5f2f4](https://github.com/phdah/sql-semantic-protocol/commit/fd5f2f470b2c61b136e3203b4bfd1f1957d8a32c))
+* **protocol:** introduce closed-world bag cardinality laws (TASK-69) ([#90](https://github.com/phdah/sql-semantic-protocol/issues/90)) ([5805465](https://github.com/phdah/sql-semantic-protocol/commit/5805465865bfd9f83b2714c8c2bba4714bc08e5a))
+* **protocol:** introduce coupled source-row boolean witnesses (TASK-63) ([#84](https://github.com/phdah/sql-semantic-protocol/issues/84)) ([18d2119](https://github.com/phdah/sql-semantic-protocol/commit/18d2119e69eda881ec99f9f645dde76774573079))
+* **protocol:** introduce optional output cardinality and distribution goals (TASK-64) ([#85](https://github.com/phdah/sql-semantic-protocol/issues/85)) ([0a8e575](https://github.com/phdah/sql-semantic-protocol/commit/0a8e575e9fb73b6cec64214ba6774dfae516cde9))
+* **protocol:** model EXISTS and IN subquery membership witnesses (TASK-62) ([#83](https://github.com/phdah/sql-semantic-protocol/issues/83)) ([d7ba9ad](https://github.com/phdah/sql-semantic-protocol/commit/d7ba9ad3d71966efa55a964a6fcd125b7c191130))
+* **protocol:** model partial DML before/after state effects (TASK-65) ([#86](https://github.com/phdah/sql-semantic-protocol/issues/86)) ([642879a](https://github.com/phdah/sql-semantic-protocol/commit/642879a17c786e5093c4a4d92ae34818f03c43fa))
+* **protocol:** represent exact ROW_NUMBER and QUALIFY witnesses (TASK-60) ([#81](https://github.com/phdah/sql-semantic-protocol/issues/81)) ([fc194fe](https://github.com/phdah/sql-semantic-protocol/commit/fc194fe7128cfae226f36c6408b60ee4bac527ef))
+* **protocol:** unify typed constructive witness proofs (TASK-67) ([#89](https://github.com/phdah/sql-semantic-protocol/issues/89)) ([77c2d78](https://github.com/phdah/sql-semantic-protocol/commit/77c2d782183b45701dd51f7013577f5ca55ca741))
+* prove exact branch-aware SQL set membership witnesses (TASK-58) ([#78](https://github.com/phdah/sql-semantic-protocol/issues/78)) ([e83d39e](https://github.com/phdah/sql-semantic-protocol/commit/e83d39ef3bf23e233a7e8b9f2baf6774db7451be))
+
+
+### Bug Fixes
+
+* **bag:** distinguish logical populations and join-key expressions after TASK-69 ([#91](https://github.com/phdah/sql-semantic-protocol/issues/91)) ([5d9e236](https://github.com/phdah/sql-semantic-protocol/commit/5d9e23694daf6cac5723161c8a95fb39ecc9ff7b))
+
 ## [2.0.3](https://github.com/phdah/sql-semantic-protocol/compare/v2.0.2...v2.0.3) (2026-10-08)
 
 
