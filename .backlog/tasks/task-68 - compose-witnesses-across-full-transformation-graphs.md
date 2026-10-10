@@ -82,6 +82,13 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   remain visible without pretending that residuals are feasible.
 - Added cross-dialect, NULL, DuckDB, metadata and schema-contract tests and
   extended the canonical emission examples and coverage inventory.
+- Added positive single-source count construction across safely reversible
+  WHERE/projection chains. All physically controlled rows must jointly satisfy
+  a proven SQL-TRUE predicate, with typed universal closed-world count
+  obligations and unconstrained schema evidence. Joint goals preserve the
+  predicate and refrain from treating filtered count differences as impossible.
+  The legacy outcome-goal SourceRows adapter remains residual when it cannot
+  carry these predicates; no consumer-facing arbitrary source-row claim.
 
 **Still blocking:** General multi-operator and multi-parent joint
 satisfiability, mixed-join and aggregate/window/set DAG construction,
