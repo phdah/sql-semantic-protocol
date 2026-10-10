@@ -7,8 +7,8 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput, OutcomeGoal,
-    OutcomeGoalStatus, PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema,
-    OutputDistribution, OutputValueCount, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
+    OutcomeGoalStatus, OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
     WitnessObligation,
 };
 
@@ -928,28 +928,25 @@ fn zero_rows_prove_complete_empty_histograms_and_group_count() {
         )],
     )
     .expect("empty frequency");
-    b.set_outcome_goals(&[
-        OutcomeGoal::new(&target, Some(0), Some(0), vec![histogram])
-            .expect("complete empty output"),
-    ])
+    b.set_outcome_goals(
+        &[OutcomeGoal::new(&target, Some(0), Some(0), vec![histogram])
+            .expect("complete empty output")],
+    )
     .expect("goal");
-    assert_eq!(
-        b.outcome_goals()[0].status(),
-        OutcomeGoalStatus::Feasible
-    );
+    assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
     let json: serde_json::Value =
         serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).expect("JSON");
     assert_eq!(json["outcome_goals"][0]["witness"]["kind"], "empty_sources");
-    assert_eq!(json["outcome_goals"][0]["witness"]["relations"], serde_json::json!(["t"]));
-
-    let mut groups_only = bundle(
-        &["SELECT a, COUNT(*) AS n FROM t GROUP BY a"],
-        "postgresql",
+    assert_eq!(
+        json["outcome_goals"][0]["witness"]["relations"],
+        serde_json::json!(["t"])
     );
+
+    let mut groups_only = bundle(&["SELECT a, COUNT(*) AS n FROM t GROUP BY a"], "postgresql");
     let id = groups_only.layers()[0].id().to_string();
     groups_only
         .set_outcome_goals(&[
-            OutcomeGoal::new(&id, None, Some(0), vec![]).expect("zero surviving groups"),
+            OutcomeGoal::new(&id, None, Some(0), vec![]).expect("zero surviving groups")
         ])
         .expect("group goal");
     assert_eq!(
