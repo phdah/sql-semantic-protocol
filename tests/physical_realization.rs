@@ -1126,6 +1126,73 @@ fn zero_rows_prove_complete_empty_histograms_and_group_count() {
 }
 
 #[test]
+fn equijoins_over_two_materialized_producer_branches_have_physical_pair_witnesses() {
+    for &dialect in DIALECTS {
+        let mut b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, k FROM l",
+                "CREATE TABLE mart AS SELECT a, k FROM r",
+                "SELECT stage.a FROM stage JOIN mart ON stage.k = mart.k",
+            ],
+            dialect,
+        );
+        let id = b.layers()[2].id().to_string();
+        b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(3), None, vec![]).expect("goal")])
+            .expect("attach");
+        let Some(OutcomeWitness::JoinPairs { left, right, pairs }) =
+            b.outcome_goals()[0].witness()
+        else {
+            panic!("{dialect}: independent materialized join: {:?}", b.outcome_goals());
+        };
+        assert_eq!(*pairs, 3);
+        assert_eq!(left.relation(), "l");
+        assert_eq!(right.relation(), "r");
+        assert_eq!((left.column(), right.column()), ("k", "k"));
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE l(a INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, k INTEGER);
+         INSERT INTO l VALUES (10,0),(11,1),(12,2);
+         INSERT INTO r VALUES (20,0),(21,1),(22,2);
+         CREATE TABLE stage AS SELECT a,k FROM l;
+         CREATE TABLE mart AS SELECT a,k FROM r;",
+    )
+    .expect("independent physical rows");
+    let count: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT stage.a FROM stage JOIN mart ON stage.k = mart.k)",
+            [],
+            |row| row.get(0),
+        )
+        .expect("join cardinality");
+    assert_eq!(count, 3);
+}
+
+#[test]
+fn materialized_join_rejects_filtered_or_shared_physical_producer_shortcuts() {
+    for queries in [
+        [
+            "CREATE TABLE stage AS SELECT a, k FROM l WHERE a > 2 OR k IS NULL",
+            "CREATE TABLE mart AS SELECT a, k FROM r",
+            "SELECT stage.a FROM stage JOIN mart ON stage.k = mart.k",
+        ],
+        [
+            "CREATE TABLE stage AS SELECT a, k FROM l",
+            "CREATE TABLE mart AS SELECT a, k FROM l",
+            "SELECT stage.a FROM stage JOIN mart ON stage.k = mart.k",
+        ],
+    ] {
+        let mut b = bundle(&queries, "postgresql");
+        let id = b.layers()[2].id().to_string();
+        b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(3), None, vec![]).expect("goal")])
+            .expect("attach");
+        assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
+    }
+}
+
+#[test]
 fn direct_join_group_and_set_counts_survive_materialized_copy_chains() {
     for &dialect in DIALECTS {
         for (producer, expected) in [
