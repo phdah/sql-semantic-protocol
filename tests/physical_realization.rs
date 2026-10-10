@@ -1068,20 +1068,20 @@ fn exact_singleton_cardinality_is_proved_without_physical_sources() {
 }
 
 #[test]
-fn row_count_constructor_does_not_guess_after_joins_or_aggregates() {
-    for query in [
-        "SELECT l.a FROM l INNER JOIN r ON l.k = r.k",
-        "SELECT COUNT(*) AS c FROM t",
-    ] {
-        let b = bundle(&[query], "postgresql");
-        assert!(
-            !matches!(
-                physical_row_count_plan(&b, b.layers()[0].id(), 4),
-                WitnessDirection::Feasible(_)
-            ),
-            "{query}"
-        );
-    }
+fn row_count_constructor_proves_attested_join_but_not_opaque_aggregate() {
+    let joined = bundle(
+        &["SELECT l.a FROM l INNER JOIN r ON l.k = r.k"],
+        "postgresql",
+    );
+    let proof = physical_row_count_plan(&joined, joined.layers()[0].id(), 4);
+    assert!(matches!(proof, WitnessDirection::Feasible(_)),
+        "explicit complete typed join inputs now admit constructive cardinality");
+
+    let grouped = bundle(&["SELECT COUNT(*) AS c FROM t"], "postgresql");
+    assert!(!matches!(
+        physical_row_count_plan(&grouped, grouped.layers()[0].id(), 4),
+        WitnessDirection::Feasible(_)
+    ), "join completion cannot turn unproven aggregate shape feasible");
 }
 
 #[test]
@@ -2620,24 +2620,31 @@ fn equijoins_over_two_materialized_producer_branches_have_physical_pair_witnesse
 }
 
 #[test]
-fn materialized_join_rejects_filtered_or_shared_physical_producer_shortcuts() {
-    for queries in [
-        [
-            "CREATE TABLE stage AS SELECT a, k FROM l WHERE a > 2 OR k IS NULL",
-            "CREATE TABLE mart AS SELECT a, k FROM r",
-            "SELECT stage.a FROM stage JOIN mart ON stage.k = mart.k",
-        ],
-        [
-            "CREATE TABLE stage AS SELECT a, k FROM l",
-            "CREATE TABLE mart AS SELECT a, k FROM l",
-            "SELECT stage.a FROM stage JOIN mart ON stage.k = mart.k",
-        ],
-    ] {
+fn materialized_join_rejects_filtered_upstream_but_proves_shared_key_population() {
+    let scenarios = [
+        (
+            [
+                "CREATE TABLE stage AS SELECT a, k FROM l WHERE a > 2 OR k IS NULL",
+                "CREATE TABLE mart AS SELECT a, k FROM r",
+                "SELECT stage.a FROM stage JOIN mart ON stage.k = mart.k",
+            ],
+            OutcomeGoalStatus::Residual,
+        ),
+        (
+            [
+                "CREATE TABLE stage AS SELECT a, k FROM l",
+                "CREATE TABLE mart AS SELECT a, k FROM l",
+                "SELECT stage.a FROM stage JOIN mart ON stage.k = mart.k",
+            ],
+            OutcomeGoalStatus::Feasible,
+        ),
+    ];
+    for (queries, expected) in scenarios {
         let mut b = bundle(&queries, "postgresql");
         let id = b.layers()[2].id().to_string();
         b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(3), None, vec![]).expect("goal")])
             .expect("attach");
-        assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
+        assert_eq!(b.outcome_goals()[0].status(), expected);
     }
 }
 
