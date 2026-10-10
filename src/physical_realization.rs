@@ -1122,6 +1122,48 @@ pub fn physical_row_count_plan(
         .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
 }
 
+/// One jointly controlled physical input with an optional qualifying
+/// restriction. Equality of physical counts is necessary only for a genuinely
+/// row-preserving (unfiltered) terminal, not for a sufficient filter plan.
+struct SourceCountRequirement {
+    rows: u64,
+    necessary: bool,
+    predicate: WitnessFormula,
+}
+
+fn count_tautology() -> WitnessFormula {
+    WitnessFormula::IsNull {
+        term: WitnessTerm::Integer(1),
+        negated: true,
+    }
+}
+
+fn count_predicate_for_source(
+    direction: &WitnessDirection,
+    source: &str,
+    rows: u64,
+) -> Option<WitnessFormula> {
+    let WitnessDirection::Feasible(cases) = direction else {
+        return None;
+    };
+    let [case] = cases.as_slice() else {
+        return None;
+    };
+    case.obligations().iter().find_map(|obligation| match obligation {
+        WitnessObligation::Rows {
+            boundary,
+            quantifier: RowQuantifier::ForAll,
+            bounds,
+            predicate,
+            closed_world: true,
+        } if boundary.kind() == GroupBoundaryKind::Physical
+            && boundary.relation() == source
+            && bounds.minimum() == rows
+            && bounds.maximum() == Some(rows) => Some(predicate.clone()),
+        _ => None,
+    })
+}
+
 /// Construct a single complete physical source assignment for several
 /// terminal row-count goals. Independent sufficient cases are composed only
 /// after reconciling their *shared physical source identities*.
@@ -1139,9 +1181,7 @@ pub fn physical_joint_row_count_plan(
     }
 
     let mut outputs = BTreeMap::<String, u64>::new();
-    // The boolean records whether exact source cardinality is *necessary*,
-    // rather than just a sufficient choice for an empty terminal.
-    let mut sources = BTreeMap::<String, (u64, bool)>::new();
+    let mut sources = BTreeMap::<String, SourceCountRequirement>::new();
     for &(layer_id, rows) in targets {
         if outputs
             .insert(layer_id.to_string(), rows)
@@ -1150,7 +1190,8 @@ pub fn physical_joint_row_count_plan(
             return WitnessDirection::Impossible;
         }
 
-        match physical_row_count_plan(bundle, layer_id, rows) {
+        let row_plan = physical_row_count_plan(bundle, layer_id, rows);
+        match &row_plan {
             WitnessDirection::Impossible => return WitnessDirection::Impossible,
             WitnessDirection::Residual { .. } => {
                 return residual(PhysicalProofGap::LocalWitnessUnproven)
@@ -1164,34 +1205,61 @@ pub fn physical_joint_row_count_plan(
             continue;
         }
 
-        let requires_exact_count = rows > 0
-            || matches!(
-                physical_row_count_plan(bundle, layer_id, 1),
-                WitnessDirection::Feasible(_)
-            );
+        // An all-TRUE filter construction uses exactly 'rows' physical rows,
+        // but that count is sufficient, not necessary: an alternative physical
+        // assignment could contain rejected rows as well.
+        let one_row_plan = physical_row_count_plan(bundle, layer_id, 1);
+        let has_filter = physical.sources().iter().any(|source| {
+            matches!(
+                count_predicate_for_source(&one_row_plan, source, 1),
+                Some(WitnessFormula::RowTruth { .. })
+            )
+        });
+        let requires_exact_count = !has_filter
+            && matches!(one_row_plan, WitnessDirection::Feasible(_));
         if requires_exact_count && physical.sources().len() != 1 {
             return residual(PhysicalProofGap::UnboundPhysicalSource);
         }
 
         for relation in physical.sources() {
+            let Some(predicate) = count_predicate_for_source(&row_plan, relation, rows) else {
+                return residual(PhysicalProofGap::LocalWitnessUnproven);
+            };
             match sources.get(relation) {
-                Some(&(existing, existing_necessary)) if existing != rows => {
-                    // Non-row-preserving filters can yield zero output despite
-                    // positive source rows. Conflicts involving their all-empty
-                    // *sufficient* cases are not proofs of impossibility.
-                    if existing_necessary && requires_exact_count {
+                Some(existing) if existing.rows != rows => {
+                    if existing.necessary && requires_exact_count {
                         return WitnessDirection::Impossible;
                     }
                     return residual(PhysicalProofGap::MultipleWitnesses);
                 }
-                Some(&(existing, existing_necessary)) => {
+                Some(existing) => {
+                    let joined_predicate = if existing.predicate == count_tautology() {
+                        predicate
+                    } else if predicate == count_tautology() || predicate == existing.predicate {
+                        existing.predicate.clone()
+                    } else {
+                        // Even two individually feasible predicates may have
+                        // an empty intersection on the *same* physical row.
+                        return residual(PhysicalProofGap::MultipleWitnesses);
+                    };
                     sources.insert(
                         relation.clone(),
-                        (existing, existing_necessary || requires_exact_count),
+                        SourceCountRequirement {
+                            rows,
+                            necessary: existing.necessary || requires_exact_count,
+                            predicate: joined_predicate,
+                        },
                     );
                 }
                 None => {
-                    sources.insert(relation.clone(), (rows, requires_exact_count));
+                    sources.insert(
+                        relation.clone(),
+                        SourceCountRequirement {
+                            rows,
+                            necessary: requires_exact_count,
+                            predicate,
+                        },
+                    );
                 }
             }
         }
@@ -1199,22 +1267,19 @@ pub fn physical_joint_row_count_plan(
 
     let origin = outputs.keys().next().map(String::as_str).unwrap_or("");
     let mut obligations = Vec::new();
-    for (relation, (rows, _)) in sources {
+    for (relation, requirement) in sources {
         let Some(boundary) = WitnessBoundary::new(&relation, GroupBoundaryKind::Physical, origin)
         else {
             return residual(PhysicalProofGap::UnboundPhysicalSource);
         };
-        let Some(bounds) = CountBounds::new(rows, Some(rows)) else {
+        let Some(bounds) = CountBounds::new(requirement.rows, Some(requirement.rows)) else {
             return residual(PhysicalProofGap::LocalWitnessUnproven);
         };
         obligations.push(WitnessObligation::Rows {
             boundary: boundary.clone(),
             quantifier: RowQuantifier::ForAll,
             bounds,
-            predicate: WitnessFormula::IsNull {
-                term: WitnessTerm::Integer(1),
-                negated: true,
-            },
+            predicate: requirement.predicate,
             closed_world: true,
         });
         obligations.push(WitnessObligation::ClosedWorld {
