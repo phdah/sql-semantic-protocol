@@ -3971,7 +3971,8 @@
         "predicates",
         "column_domains",
         "output",
-        "condition_exactness"
+        "condition_exactness",
+        "empty_input_preserving"
       ],
       "properties": {
         "identity": {
