@@ -1159,11 +1159,15 @@ closed. This is not interchangeable with a sampled rejected-row witness.
 The joint count API additionally composes any number of unfiltered,
 exactly row-preserving N-row terminals with any number of zero-row filtered
 terminals over the same source, provided every zero terminal independently
-proves the **identical** SQL NOT TRUE physical-row predicate. It reuses one
-N-row closed-world assignment, with one OutputRows obligation per distinct
-terminal. Two independently feasible but different rejection predicates
-are **not** assumed jointly satisfiable and remain residual. Mixed counts,
-joins, and other combinations still require joint satisfiability evidence.
+proves an exact physical-row SQL NOT TRUE predicate. The joint composer
+checks differing integer/NULL-sensitive rejection predicates against
+the **same** row assignment, using a single OR tree required to be NOT TRUE
+(so each branch is FALSE or UNKNOWN). An incompatible conjunction is
+impossible for the exact nonempty source count, while unsupported
+predicate semantics or insufficient evidence stay residual. It reuses
+one N-row closed-world assignment, with one OutputRows obligation per
+distinct terminal. Other mixed counts, joins, and unproven combinations
+still require joint satisfiability evidence.
 
 ### Transported operator counts and column distributions
 
