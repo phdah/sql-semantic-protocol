@@ -312,20 +312,34 @@ impl BooleanWitness {
     /// computation, ambiguous projection or lossy transformation.
     pub(crate) fn mapped_to_physical(
         &self,
-        mut resolve: impl FnMut(&ColumnRef) -> Option<ColumnRef>,
+        resolve: impl FnMut(&ColumnRef) -> Option<ColumnRef>,
     ) -> Option<Self> {
-        // A copied value preserves SQL NULL, but intermediate catalog types
-        // and collation attestations do not prove equivalent physical source
-        // types. Never transport typed comparison proof across that boundary.
-        if self.condition.requires_source_type_evidence() {
-            return None;
-        }
+        // Without authoritative type parity a copied value is only enough
+        // to transport SQL NULL tests, not typed comparisons.
+        self.mapped_to_physical_certified(resolve, |_, _| false)
+    }
+
+    /// Transport typed source conditions only when the caller independently
+    /// verifies identical physical and producer-column datatypes through
+    /// identity-only materialization. Never reuse this for a cast or opaque
+    /// source without complete metadata evidence.
+    pub(crate) fn mapped_to_physical_certified(
+        &self,
+        mut resolve: impl FnMut(&ColumnRef) -> Option<ColumnRef>,
+        mut equivalent_type: impl FnMut(&ColumnRef, &ColumnRef) -> bool,
+    ) -> Option<Self> {
         let mut columns = Vec::new();
         self.condition.columns(&mut columns);
         let mut mapping = BTreeMap::new();
         for column in columns {
             if !mapping.contains_key(&column) {
-                mapping.insert(column.clone(), resolve(&column)?);
+                let mapped = resolve(&column)?;
+                if self.condition.requires_source_type_evidence()
+                    && !equivalent_type(&column, &mapped)
+                {
+                    return None;
+                }
+                mapping.insert(column, mapped);
             }
         }
         let relations = mapping
