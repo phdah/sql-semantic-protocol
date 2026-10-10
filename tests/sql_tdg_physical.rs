@@ -248,6 +248,89 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
 }
 
 #[test]
+fn pinned_sql_tdg_advanced_pipeline_oracle_exercises_positive_and_rejected_rows() {
+    let bundle = fixture_bundle(ADVANCED);
+    let summary = layer_id(&bundle, "mart_customer_summary");
+    assert!(
+        matches!(
+            physical_row_count_plan(&bundle, summary, 1),
+            WitnessDirection::Residual { .. }
+        ),
+        "a positive joined/grouped construction is not yet supported"
+    );
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE raw_orders(order_id INTEGER, customer_id INTEGER, amount INTEGER);
+         CREATE TABLE raw_customers(customer_id INTEGER, active BOOLEAN);
+         INSERT INTO raw_customers VALUES (1, true), (2, false);
+         INSERT INTO raw_orders VALUES
+            (11, 1, 100), (12, 2, 100), (13, 1, 90), (14, 999, 100);",
+    )
+    .expect("controlled source data");
+    conn.execute_batch(ADVANCED)
+        .expect("committed sql-tdg advanced SQL");
+    let counts = [
+        ("stage_orders", 3_i64),
+        ("stage_customers", 1),
+        ("core_enriched", 1),
+        ("mart_customer_summary", 1),
+    ];
+    for (table, expected) in counts {
+        let sql = format!("SELECT COUNT(*) FROM {table}");
+        let count: i64 = conn.query_row(&sql, [], |row| row.get(0)).expect("count");
+        assert_eq!(count, expected, "{table}");
+    }
+    let (category, orders, maximum): (String, i64, i64) = conn
+        .query_row(
+            "SELECT amount_bucket, order_count, max_amount FROM mart_customer_summary",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .expect("summarized row");
+    assert_eq!((category.as_str(), orders, maximum), ("high", 1, 100));
+}
+
+#[test]
+fn pinned_sql_tdg_set_oracles_preserve_duplicate_and_distinct_multiplicity() {
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE raw_a(value INTEGER);
+         CREATE TABLE raw_b(value INTEGER);
+         CREATE TABLE raw_c(value INTEGER);
+         INSERT INTO raw_a VALUES (10), (10), (NULL);
+         INSERT INTO raw_b VALUES (20);
+         INSERT INTO raw_c VALUES (30);",
+    )
+    .expect("controlled duplicate and NULL inputs");
+    conn.execute_batch(SETS).expect("committed sql-tdg set SQL");
+    for (target, expected) in [
+        ("set_a", 2_i64),
+        ("set_b", 1),
+        ("set_c", 1),
+        ("union_all_result", 2),
+        ("union_result", 1),
+        ("intersect_result", 1),
+        ("except_result", 1),
+        ("distinct_result", 1),
+        ("limited_result", 1),
+    ] {
+        let sql = format!("SELECT COUNT(*) FROM {target}");
+        let rows: i64 = conn
+            .query_row(&sql, [], |row| row.get(0))
+            .expect("set cardinality");
+        assert_eq!(rows, expected, "{target}");
+    }
+    let count: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM union_all_result WHERE marker = 2",
+            [],
+            |row| row.get(0),
+        )
+        .expect("limited rejection");
+    assert_eq!(count, 0);
+}
+
+#[test]
 fn source_free_set_leaf_cannot_be_erased_by_emptying_the_other_source() {
     let bundle = fixture_bundle("SELECT 1 AS marker UNION ALL SELECT value AS marker FROM raw_a");
     let target = bundle.layers()[0].id();
