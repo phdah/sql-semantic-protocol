@@ -1406,15 +1406,19 @@ fn correlated_self_join_witnesses_are_retained_but_not_jointly_assumed() {
             ],
             dialect,
         );
-        let plan = physical_joint_source_plan(
-            &b,
-            &[(b.layers()[0].id(), 4), (b.layers()[1].id(), 3)],
-        );
+        let plan =
+            physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4), (b.layers()[1].id(), 3)]);
         assert_eq!(plan.sources(), &["t".to_string()]);
-        assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }),
-            "{dialect}: matching pairs need an explicit shared-row/multiplicity proof");
-        assert!(plan.nodes().iter().any(|node| !node.operator_witnesses().is_empty()),
-            "{dialect}: original local witness should not be discarded");
+        assert!(
+            matches!(plan.outcome(), WitnessDirection::Residual { .. }),
+            "{dialect}: matching pairs need an explicit shared-row/multiplicity proof"
+        );
+        assert!(
+            plan.nodes()
+                .iter()
+                .any(|node| !node.operator_witnesses().is_empty()),
+            "{dialect}: original local witness should not be discarded"
+        );
     }
 
     let conn = Connection::open_in_memory().expect("duckdb");
