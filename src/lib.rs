@@ -27,7 +27,10 @@
 //!   source obligations without pretending to solve full physical-source DAGs.
 //! - BagLaw transfers closed-world count bounds through proven bag operators without
 //!   claiming source construction or guessing unsupported NULL/key semantics.
-//! - physical_source_plan builds a reference-based physical dependency DAG and conservatively proves single-row WHERE witnesses across transparent producer chains.
+//! - physical_source_plan builds a canonical reference-based physical dependency DAG and proves supported row witnesses.
+//! - physical_row_count_plan and physical_joint_row_count_plan construct complete source-backed counts for verified DAG subsets.
+//! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
+//! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
 //!   multiplicities with NULL, duplicates and shared physical aliases.
 
