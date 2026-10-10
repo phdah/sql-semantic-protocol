@@ -6,7 +6,8 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
-    physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
+    physical_joint_source_plan, physical_rejected_row_count_plan, physical_row_count_plan,
+    physical_source_plan,
     physical_unconditional_delete_plan, AnalysisBundle, BooleanRowConstraint, BooleanTruthCase,
     ConfiguredSqlInput, ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness,
     OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap, RelationCatalog,
@@ -1257,6 +1258,82 @@ fn physical_scalar_count_rejects_opaque_or_noninvertible_filters() {
             "{query}: unsupported source count must remain residual"
         );
     }
+}
+
+#[test]
+fn joint_plan_deduplicates_physical_dag_and_is_order_invariant() {
+    for &dialect in DIALECTS {
+        let mut b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t",
+                "CREATE TABLE mart AS SELECT a, b FROM stage",
+                "SELECT a FROM mart",
+                "SELECT b FROM stage",
+            ],
+            dialect,
+        );
+        let requests = [(b.layers()[2].id(), 3), (b.layers()[3].id(), 3)];
+        let original = physical_joint_source_plan(&b, &requests);
+        let reversed = physical_joint_source_plan(&b, &[requests[1], requests[0]]);
+        assert_eq!(original, reversed, "{dialect}: input order cannot change the proof");
+        assert!(matches!(original.outcome(), WitnessDirection::Feasible(_)));
+        assert_eq!(original.sources(), &["t".to_string()]);
+        assert_eq!(original.nodes().len(), 5, "{dialect}: source and four unique layers");
+        assert_eq!(
+            original.nodes()[0].id(),
+            &PhysicalPlanRef::Source("t".to_string())
+        );
+        assert_eq!(original.gap(), None);
+
+        let goals = requests
+            .iter()
+            .map(|(layer_id, rows)| OutcomeGoal::new(*layer_id, Some(*rows), None, vec![])
+                .expect("row-only requested goal"))
+            .collect::<Vec<_>>();
+        b.set_outcome_goals(&goals).expect("valid goals");
+        let json: serde_json::Value =
+            serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b))
+                .expect("emitted protocol");
+        let joint = &json["graph"]["physical_joint_count_plan"];
+        assert_eq!(joint["outcome"]["status"], "feasible");
+        assert_eq!(joint["physical_sources"], serde_json::json!(["t"]));
+        assert_eq!(joint["node_refs"].as_array().map(Vec::len), Some(5));
+        assert_eq!(joint["targets"].as_array().map(Vec::len), Some(2));
+        assert!(joint["gap"].is_null());
+    }
+    let schema: serde_json::Value =
+        serde_json::from_str(include_str!("../schema/protocol.schema.json"))
+            .expect("active protocol schema");
+    assert_eq!(
+        schema["$defs"]["graph"]["properties"]["physical_joint_count_plan"]["$ref"],
+        "#/$defs/physicalJointCountPlan"
+    );
+}
+
+#[test]
+fn joint_plan_keeps_cycles_and_ambiguous_writers_typed_and_residual() {
+    let cyclic = bundle(
+        &[
+            "CREATE TABLE first AS SELECT a FROM second",
+            "CREATE TABLE second AS SELECT a FROM first",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(&cyclic, &[(cyclic.layers()[0].id(), 2)]);
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::Cycle));
+    assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
+
+    let ambiguous = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t",
+            "CREATE TABLE stage AS SELECT a FROM r",
+            "SELECT a FROM stage",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(&ambiguous, &[(ambiguous.layers()[2].id(), 2)]);
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::AmbiguousProducer));
+    assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
 }
 
 #[test]
