@@ -1249,8 +1249,11 @@ fn transitive_value_histograms_preserve_renamed_source_columns() {
         assert_eq!(
             b.outcome_goals()[0].status(),
             OutcomeGoalStatus::Feasible,
-            "{dialect}: {:?}",
-            b.outcome_goals()
+            "{dialect}: {:?}; row count {:?}; physical {:?}; inputs {:?}",
+            b.outcome_goals(),
+            physical_row_count_plan(&b, &id, 3),
+            physical_source_plan(&b, &id),
+            b.inputs()
         );
         let json: serde_json::Value =
             serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).expect("wire");
