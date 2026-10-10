@@ -941,6 +941,112 @@ fn repeatable_filter_predicate(
     )
 }
 
+/// Supplement a physical count with a standalone scalar WHERE predicate
+/// without modifying the emitted operator-local Boolean witness contract.
+/// Only one direct, typed physical-source filter and subsequent transparent
+/// producers are supported; competing filters require joint truth solving.
+fn scalar_physical_row_truth(
+    bundle: &AnalysisBundle,
+    physical: &PhysicalSourcePlan,
+    target_layer_id: &str,
+    required_truth: crate::boolean_witness::BooleanTruthCase,
+) -> Option<WitnessFormula> {
+    let [source] = physical.sources() else {
+        return None;
+    };
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == source)?;
+    if bundle.relation_constraints().iter().any(|set| {
+        set.relation() == source
+            && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+    }) {
+        return None;
+    }
+
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let mut filter = None;
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        let query = query_for(bundle, layer)?;
+        if query.filter_only_row_shape() {
+            // A second WHERE requires a conjunction proof; independent
+            // satisfiable predicates are not necessarily jointly feasible.
+            if filter.is_some()
+                || node.inputs() != [PhysicalPlanRef::Source(source.clone())]
+                || query.sources().len() != 1
+                || query.sources()[0].name() != source
+                || query.aggregation().is_some()
+                || query.set_operation().is_some()
+                || query.window_witness().is_some()
+                || !query.subquery_witnesses().is_empty()
+                || !query.condition_exactness().is_exact()
+                || !query.diagnostics().is_empty()
+                || query
+                    .output()
+                    .columns()
+                    .iter()
+                    .any(|column| column.plain_copy_source().is_none())
+            {
+                return None;
+            }
+            filter = Some(query);
+        } else if !transparent_projection(query) {
+            return None;
+        }
+    }
+    let filter = filter?;
+    let witness = crate::boolean_witness::analyze_physical_scalar(
+        filter.predicates().where_predicate(),
+        filter.sources(),
+        |column| {
+            if column.relation() != Some(source) {
+                return None;
+            }
+            let source_column = schema.columns().iter().find(|c| c.name() == column.name())?;
+            let data_type = match source_column.data_type() {
+                crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
+            };
+            match data_type {
+                crate::data_type::DataType::SignedInteger { bits: Some(bits) }
+                    if *bits > 0 && *bits <= 64 =>
+                {
+                    let magnitude = 1_i128 << (u32::from(*bits) - 1);
+                    Some(crate::boolean_witness::SignedIntegerEvidence {
+                        minimum: -magnitude,
+                        maximum: magnitude - 1,
+                    })
+                }
+                _ => None,
+            }
+        },
+        |_column| None,
+    )?;
+    let direction = match required_truth {
+        crate::boolean_witness::BooleanTruthCase::True => witness.qualifying(),
+        crate::boolean_witness::BooleanTruthCase::NotTrue => witness.rejected(),
+    };
+    if !matches!(
+        direction,
+        crate::boolean_witness::BooleanWitnessDirection::Exact(truth)
+            if *truth == required_truth
+    ) {
+        return None;
+    }
+    let row = crate::constructive::RowVariable::new(source, source, "candidate")?;
+    Some(WitnessFormula::RowTruth {
+        row,
+        predicate: witness.condition().clone(),
+        truth: required_truth,
+    })
+}
+
 /// Produce typed, whole-physical-source obligations for an exact terminal
 /// row-count request. This is an independent constructive plan; it never
 /// upgrades the single-candidate row classification returned by
@@ -1015,7 +1121,14 @@ pub fn physical_row_count_plan(
     // constructive only for unconstrained, typed source schemas; it does
     // not infer cardinalities from an isolated membership example.
     if rows > 0 {
-        if let Some(predicate) = repeatable_filter_predicate(bundle, &physical) {
+        if let Some(predicate) = repeatable_filter_predicate(bundle, &physical).or_else(|| {
+            scalar_physical_row_truth(
+                bundle,
+                &physical,
+                target_layer_id,
+                crate::boolean_witness::BooleanTruthCase::True,
+            )
+        }) {
             let source = &physical.sources()[0];
             let Some(boundary) =
                 WitnessBoundary::new(source, GroupBoundaryKind::Physical, target_layer_id)
@@ -1170,7 +1283,15 @@ pub fn physical_rejected_row_count_plan(
         &physical,
         physical.rejected(),
         crate::boolean_witness::BooleanTruthCase::NotTrue,
-    ) else {
+    )
+    .or_else(|| {
+        scalar_physical_row_truth(
+            bundle,
+            &physical,
+            target_layer_id,
+            crate::boolean_witness::BooleanTruthCase::NotTrue,
+        )
+    }) else {
         return residual(
             physical
                 .gap()
