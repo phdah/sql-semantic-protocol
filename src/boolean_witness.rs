@@ -328,6 +328,11 @@ impl BooleanWitness {
         mut resolve: impl FnMut(&ColumnRef) -> Option<ColumnRef>,
         mut equivalent_type: impl FnMut(&ColumnRef, &ColumnRef) -> bool,
     ) -> Option<Self> {
+        // Equal datatypes do not attest the same collation or padding laws
+        // across warehouse materialization boundaries.
+        if self.condition.contains_string_prefix() {
+            return None;
+        }
         let mut columns = Vec::new();
         self.condition.columns(&mut columns);
         let mut mapping = BTreeMap::new();
