@@ -6,7 +6,7 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
-    physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput, OutcomeGoal,
+    physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput, ConstraintValue, OutcomeGoal,
     OutcomeGoalStatus, OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
     WitnessObligation,
@@ -1115,6 +1115,106 @@ fn zero_rows_prove_complete_empty_histograms_and_group_count() {
         )
         .expect("grouped query");
     assert_eq!(rows, 0);
+}
+
+#[test]
+fn transitive_value_histograms_preserve_renamed_source_columns() {
+    for &dialect in DIALECTS {
+        let mut b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a AS v, b FROM t",
+                "CREATE TABLE mart AS SELECT v AS final_a, b FROM stage",
+                "SELECT final_a AS total FROM mart",
+            ],
+            dialect,
+        );
+        let id = b.layers()[2].id().to_string();
+        let histogram = OutputDistribution::new(
+            "total",
+            vec![
+                OutputValueCount::new(ConstraintValue::Integer(4), 2),
+                OutputValueCount::new(ConstraintValue::Null, 1),
+            ],
+        )
+        .expect("valid histogram");
+        b.set_outcome_goals(&[
+            OutcomeGoal::new(&id, Some(3), None, vec![histogram]).expect("goal")
+        ])
+        .expect("attach");
+        assert_eq!(
+            b.outcome_goals()[0].status(),
+            OutcomeGoalStatus::Feasible,
+            "{dialect}: {:?}",
+            b.outcome_goals()
+        );
+        let json: serde_json::Value =
+            serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).expect("wire");
+        assert_eq!(json["outcome_goals"][0]["witness"]["kind"], "source_rows");
+        assert_eq!(json["outcome_goals"][0]["witness"]["relation"], "t");
+        assert_eq!(json["outcome_goals"][0]["witness"]["columns"][0]["column"], "a");
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (4, 1), (NULL, 2), (4, 3);
+         CREATE TABLE stage AS SELECT a AS v, b FROM t;
+         CREATE TABLE mart AS SELECT v AS final_a, b FROM stage;",
+    )
+    .expect("physical fixture");
+    let (total, fours, nulls): (i64, i64, i64) = conn
+        .query_row(
+            "SELECT COUNT(*), COUNT(*) FILTER (WHERE total = 4),
+             COUNT(*) FILTER (WHERE total IS NULL)
+             FROM (SELECT final_a AS total FROM mart)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .expect("histogram oracle");
+    assert_eq!((total, fours, nulls), (3, 2, 1));
+}
+
+#[test]
+fn transitive_histograms_fail_closed_on_noninvertible_or_incompatible_values() {
+    for &dialect in DIALECTS {
+        let queries = [
+            "CREATE TABLE stage AS SELECT a + 1 AS v FROM t",
+            "SELECT v AS total FROM stage",
+        ];
+        let mut b = bundle(&queries, dialect);
+        let id = b.layers()[1].id().to_string();
+        let histogram = OutputDistribution::new(
+            "total",
+            vec![OutputValueCount::new(ConstraintValue::Integer(4), 3)],
+        )
+        .expect("histogram");
+        b.set_outcome_goals(&[
+            OutcomeGoal::new(&id, Some(3), None, vec![histogram]).expect("goal")
+        ])
+        .expect("attach");
+        assert_eq!(
+            b.outcome_goals()[0].status(),
+            OutcomeGoalStatus::Residual,
+            "{dialect}: computed source values cannot be inverted"
+        );
+    }
+    let mut b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a AS v FROM t",
+            "SELECT v AS total FROM stage",
+        ],
+        "postgresql",
+    );
+    let id = b.layers()[1].id().to_string();
+    let invalid_type = OutputDistribution::new(
+        "total",
+        vec![OutputValueCount::new(ConstraintValue::Integer(3_000_000_000), 1)],
+    )
+    .expect("histogram");
+    b.set_outcome_goals(&[
+        OutcomeGoal::new(&id, Some(1), None, vec![invalid_type]).expect("goal")
+    ])
+    .expect("attach");
+    assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
 }
 
 #[test]
