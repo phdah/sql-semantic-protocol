@@ -531,6 +531,14 @@ aggregates can emit one row even for empty physical inputs. Nested
 aggregates within arithmetic or functions are also excluded from
 non-grouped row-local proofs.
 
+A certified local join, GROUP BY/HAVING, ranked window, or set count can
+be transported through *downstream* single-parent, value- and
+row-preserving materializations. This reuses the independently validated
+physical construction, not merely its apparent output count. Complete
+typed scalar distributions are likewise mapped through validated
+physical-column lineage and actual source/producer catalog schemas;
+ambiguous, computed, or unknown columns remain residual.
+
 The physical-source Rust API proves exact counts through schema-backed
 transparent producer chains and identity-preserving WHERE chains with a
 jointly proven SQL-TRUE physical-row predicate. Positive filtered cases
