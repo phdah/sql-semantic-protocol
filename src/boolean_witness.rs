@@ -332,15 +332,16 @@ impl BooleanWitness {
         self.condition.columns(&mut columns);
         let mut mapping = BTreeMap::new();
         for column in columns {
-            if !mapping.contains_key(&column) {
-                let mapped = resolve(&column)?;
-                if self.condition.requires_source_type_evidence()
-                    && !equivalent_type(&column, &mapped)
-                {
-                    return None;
-                }
-                mapping.insert(column, mapped);
+            let std::collections::btree_map::Entry::Vacant(entry) = mapping.entry(column) else {
+                continue;
+            };
+            let mapped = resolve(entry.key())?;
+            if self.condition.requires_source_type_evidence()
+                && !equivalent_type(entry.key(), &mapped)
+            {
+                return None;
             }
+            entry.insert(mapped);
         }
         let relations = mapping
             .values()
