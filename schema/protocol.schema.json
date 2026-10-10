@@ -3998,6 +3998,10 @@
         },
         "condition_exactness": {
           "$ref": "#/$defs/conditionExactness"
+        },
+        "empty_input_preserving": {
+          "type": "boolean",
+          "description": "A single-source direct read or row filter whose empty input cannot create output rows."
         }
       }
     },
