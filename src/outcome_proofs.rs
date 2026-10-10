@@ -308,14 +308,20 @@ pub(crate) fn construct_mapped_source(
     }
     let mut columns = Vec::new();
     for (column, values) in mappings {
-        if columns.iter().any(|existing: &SourceColumnValues| existing.column() == column)
-            || values.iter().any(|entry| !value_fits(bundle, relation, &column, entry.value()))
+        if columns
+            .iter()
+            .any(|existing: &SourceColumnValues| existing.column() == column)
+            || values
+                .iter()
+                .any(|entry| !value_fits(bundle, relation, &column, entry.value()))
         {
             return None;
         }
         // The caller supplies complete histograms. A zero or unequal total
         // would not describe the claimed full source relation.
-        let total = values.iter().try_fold(0_u64, |sum, item| sum.checked_add(item.rows()))?;
+        let total = values
+            .iter()
+            .try_fold(0_u64, |sum, item| sum.checked_add(item.rows()))?;
         if total != rows {
             return None;
         }
