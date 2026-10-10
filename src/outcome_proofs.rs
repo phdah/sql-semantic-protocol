@@ -523,7 +523,7 @@ fn construct_rank_with_map(
                 return None;
             }
             Some(mapped)
-        },
+        }
         _ => return None,
     };
     Some(OutcomeWitness::Ranked {
@@ -649,7 +649,7 @@ fn construct_set_with_map(
     if branches.len() != 2 {
         return None;
     }
-    let mut relations = Vec::new();
+    let mut relations = Vec::<String>::new();
     let mut boundaries = Vec::new();
     for branch in branches {
         if branch.output().columns().len() != 1
@@ -666,16 +666,14 @@ fn construct_set_with_map(
             return None;
         }
         let boundary = branch.witness_boundary()?;
-        if boundary.tuple_columns().len() != 1
-            || branch.dependencies()[0] != boundary.relation()
-        {
+        if boundary.tuple_columns().len() != 1 || branch.dependencies()[0] != boundary.relation() {
             return None;
         }
         let physical = map(boundary)?;
         if physical.is_intermediate() || physical.tuple_columns().len() != 1 {
             return None;
         }
-        relations.push(physical.relation());
+        relations.push(physical.relation().to_string());
         boundaries.push(physical);
     }
     if relations[0] == relations[1] {
@@ -692,13 +690,14 @@ fn construct_set_with_map(
                         .all(|obligation| obligation.matching_tuple_count() == 0)
             }) {
                 return Some(OutcomeWitness::EmptySources {
-                    relations: relations.iter().map(|r| (*r).to_string()).collect(),
+                    relations: relations.clone(),
                 });
             }
         }
         return None;
     }
-    if !unconstrained(bundle, &relations) {
+    let source_names = relations.iter().map(String::as_str).collect::<Vec<_>>();
+    if !unconstrained(bundle, &source_names) {
         return None;
     }
     let values = match goal.distributions() {
