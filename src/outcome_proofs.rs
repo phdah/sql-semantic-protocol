@@ -526,7 +526,21 @@ fn construct_join(
             relations: vec![left.relation().to_string(), right.relation().to_string()],
         });
     }
-    if !unconstrained(bundle, &[left.relation(), right.relation()])
+    construct_mapped_join_pairs(bundle, left, right, rows)
+}
+
+/// Construct a complete one-to-one matched join on independent physical
+/// sources. Caller must separately certify the exact equality operator and
+/// row-preserving producer path for either endpoint.
+pub(crate) fn construct_mapped_join_pairs(
+    bundle: &AnalysisBundle,
+    left: &ComposedJoinColumn,
+    right: &ComposedJoinColumn,
+    rows: u64,
+) -> Option<OutcomeWitness> {
+    if rows == 0
+        || left.relation() == right.relation()
+        || !unconstrained(bundle, &[left.relation(), right.relation()])
         || !integer_key(bundle, left.relation(), left.column(), rows)
         || !integer_key(bundle, right.relation(), right.column(), rows)
     {
