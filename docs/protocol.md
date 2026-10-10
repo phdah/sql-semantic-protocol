@@ -1077,6 +1077,16 @@ emit an empty grouping set), or missing producer evidence. This conservative con
 does not establish nonzero cardinality or prove that unrelated output
 goals can be satisfied simultaneously.
 
+Set-operation branch evidence additionally carries
+`membership.branches[].empty_input_preserving`: an analyzer-proved,
+single-source ordinary read or WHERE filter whose empty input cannot
+produce output rows. This property is independent of the stronger
+tuple-multiplicity `witness_boundary` proof. It lets a set terminal use the
+canonical producer DAG to certify zero output even when nested views or
+set-level ORDER BY/LIMIT prevent a positive tuple witness. An opaque leaf,
+source-free SELECT, grouped global aggregate, or unsupported row shape
+remains residual.
+
 SQL query semantics, dependencies, source row/domain constraints, and local
 witnesses retain their respective existing authoritative definitions. Physical
 plans are an additional source-independent proof level, not a replacement
