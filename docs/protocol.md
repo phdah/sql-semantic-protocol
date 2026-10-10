@@ -1115,12 +1115,45 @@ source constraints or uniqueness.
 
 Joint count plans deduplicate canonical physical sources *without discarding*
 the qualifying predicate. A transparent terminal and filtered terminal can
-share the same positive count; two distinct filters on one source remain
-residual unless the row predicates are identical. Conflicting transparent
-source counts are impossible. Different filtered counts are residual, since
+share the same positive count. Distinct, exact integer and NULL-sensitive
+positive predicates may also share a source when a schema-backed joint truth
+check finds one common physical-row assignment. The emitted typed
+`Rows.predicate` is a single `RowTruth` over an `all` Boolean tree,
+not independently satisfiable candidate cases. When the shared conjunction
+has no satisfying row, an exact transparent source count makes the complete
+goal impossible; without that necessary source count, the result remains
+residual because disjoint subsets could satisfy the filters. The assignment
+budget, unproved source types, and detached collation assumptions also
+remain residual, never impossible. Conflicting transparent source counts
+are impossible. Different filtered counts are residual, since
 a filtered output may contain fewer rows than its physical input. Joins,
 aggregate multiplicity, sets and DML state transitions remain unsupported
 for general positive cardinality.
+
+### Canonical joint physical-source DAG count plans
+
+The `physical_joint_source_plan(bundle, targets)` Rust API accepts exact
+`(layer_id, output_rows)` goals and exposes a deterministic, topologically
+ordered physical dependency graph. `targets` and `physical_sources` are
+sorted; repeated external leaves and materialized producers retain one stable
+typed identity in `nodes`, with their write kinds, local witnesses and
+pending producer requirements preserved. The typed `outcome` is independently
+classified as `feasible`, `impossible` or `residual`; a structural
+`gap` explicitly distinguishes missing, ambiguous, cyclic and partial
+producer resolution. A graph alone never certifies source data. When correlated operator-local
+witnesses cannot be reconciled with complete shared physical-row identities,
+the joint plan reports typed `unproved_cross_row_correlation` rather than
+treating individually feasible join/group/window/set examples as one proof.
+
+When a bundle contains caller-supplied **row-only** outcome goals, emission
+also includes optional `graph.physical_joint_count_plan` with sorted
+`targets`, `node_refs` into `graph.physical_nodes`,
+`physical_sources`, the typed constructive `outcome` and `gap`.
+This is not emitted for group or distribution goals because those require
+additional independent joint proofs. A feasible plan enforces one complete
+closed-world source assignment shared by its terminals; independent row
+examples, unresolved adapter evidence and operator-local cases are not
+implicitly elevated into whole-DAG proofs.
 
 ### Exact unconditional DELETE state
 
@@ -1151,11 +1184,15 @@ closed. This is not interchangeable with a sampled rejected-row witness.
 The joint count API additionally composes any number of unfiltered,
 exactly row-preserving N-row terminals with any number of zero-row filtered
 terminals over the same source, provided every zero terminal independently
-proves the **identical** SQL NOT TRUE physical-row predicate. It reuses one
-N-row closed-world assignment, with one OutputRows obligation per distinct
-terminal. Two independently feasible but different rejection predicates
-are **not** assumed jointly satisfiable and remain residual. Mixed counts,
-joins, and other combinations still require joint satisfiability evidence.
+proves an exact physical-row SQL NOT TRUE predicate. The joint composer
+checks differing integer/NULL-sensitive rejection predicates against
+the **same** row assignment, using a single OR tree required to be NOT TRUE
+(so each branch is FALSE or UNKNOWN). An incompatible conjunction is
+impossible for the exact nonempty source count, while unsupported
+predicate semantics or insufficient evidence stay residual. It reuses
+one N-row closed-world assignment, with one OutputRows obligation per
+distinct terminal. Other mixed counts, joins, and unproven combinations
+still require joint satisfiability evidence.
 
 ### Transported operator counts and column distributions
 

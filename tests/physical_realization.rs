@@ -6,11 +6,12 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
-    physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
-    physical_unconditional_delete_plan, AnalysisBundle, ConfiguredSqlInput, ConstraintValue,
-    OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution, OutputValueCount,
-    PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    WitnessDirection, WitnessFormula, WitnessObligation,
+    physical_joint_source_plan, physical_rejected_row_count_plan, physical_row_count_plan,
+    physical_source_plan, physical_unconditional_delete_plan, AnalysisBundle, BooleanRowConstraint,
+    BooleanTruthCase, ConfiguredSqlInput, ConstraintValue, OutcomeGoal, OutcomeGoalStatus,
+    OutcomeWitness, OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
+    WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -1016,13 +1017,175 @@ fn joint_counts_keep_filter_truth_and_fail_closed_on_distinct_conditions() {
         );
         assert!(matches!(
             physical_joint_row_count_plan(&b, &[(positive, 3), (incompatible, 3)]),
-            WitnessDirection::Residual { .. }
+            WitnessDirection::Feasible(_)
         ));
         assert!(matches!(
             physical_joint_row_count_plan(&b, &[(raw, 4), (positive, 3)]),
             WitnessDirection::Residual { .. }
         ));
     }
+}
+
+#[test]
+fn distinct_compatible_filters_require_one_shared_source_row_truth() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a > 1",
+                "SELECT a FROM t WHERE a < 5",
+                "SELECT b FROM r WHERE b IS NULL",
+            ],
+            dialect,
+        );
+        let goals = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[1].id(), 3),
+            (b.layers()[2].id(), 3),
+            (b.layers()[3].id(), 1),
+        ];
+        let witness = physical_joint_row_count_plan(&b, &goals);
+        let WitnessDirection::Feasible(cases) = witness else {
+            panic!("{dialect}: compatible shared-source truth: {witness:?}");
+        };
+        let [case] = cases.as_slice() else {
+            panic!("{dialect}: expected one joint case");
+        };
+        assert_eq!(
+            case.obligations()
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                .count(),
+            2,
+        );
+        assert!(case.obligations().iter().any(|o| matches!(
+            o,
+            WitnessObligation::Rows {
+                boundary,
+                predicate: WitnessFormula::RowTruth {
+                    predicate: BooleanRowConstraint::All(children),
+                    truth: BooleanTruthCase::True,
+                    ..
+                },
+                ..
+            } if boundary.relation() == "t" && children.len() == 2
+        )));
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         CREATE TABLE r(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (2, NULL), (3, 4), (4, NULL);
+         INSERT INTO r VALUES (0, NULL);
+        ",
+    )
+    .expect("physical assignments");
+    for (sql, expected) in [
+        ("SELECT COUNT(*) FROM t", 3),
+        ("SELECT COUNT(*) FROM t WHERE a > 1", 3),
+        ("SELECT COUNT(*) FROM t WHERE a < 5", 3),
+        ("SELECT COUNT(*) FROM r WHERE b IS NULL", 1),
+    ] {
+        let count: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("count");
+        assert_eq!(count, expected, "{sql}");
+    }
+}
+
+#[test]
+fn disjoint_shared_filters_require_necessary_source_count_to_prove_impossible() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a > 10",
+                "SELECT a FROM t WHERE a < 0",
+            ],
+            dialect,
+        );
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[
+                        (b.layers()[0].id(), 2),
+                        (b.layers()[1].id(), 2),
+                        (b.layers()[2].id(), 2),
+                    ]
+                ),
+                WitnessDirection::Impossible
+            ),
+            "{dialect}: disjoint predicates cannot cover the same fixed two source rows"
+        );
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[(b.layers()[1].id(), 2), (b.layers()[2].id(), 2)]
+                ),
+                WitnessDirection::Residual { .. }
+            ),
+            "{dialect}: extra rows could satisfy each filter separately"
+        );
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (11), (12), (-1), (-2);",
+    )
+    .expect("split source rows");
+    let counts: (i64, i64, i64) = conn
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM t),
+                    (SELECT COUNT(*) FROM t WHERE a > 10),
+                    (SELECT COUNT(*) FROM t WHERE a < 0)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .expect("split counts");
+    assert_eq!(counts, (4, 2, 2));
+}
+
+#[test]
+fn sql_null_truth_is_solved_on_shared_physical_rows() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT b FROM t WHERE b IS NOT NULL",
+            ],
+            dialect,
+        );
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[
+                        (b.layers()[0].id(), 2),
+                        (b.layers()[1].id(), 2),
+                        (b.layers()[2].id(), 2),
+                    ],
+                ),
+                WitnessDirection::Feasible(_)
+            ),
+            "{dialect}: both NULL-sensitive filters admit the same row assignment"
+        );
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER,b INTEGER);
+         INSERT INTO t VALUES (NULL,1),(NULL,2);",
+    )
+    .expect("nullable source");
+    let counts: (i64, i64) = conn
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM t WHERE a IS NULL),
+                    (SELECT COUNT(*) FROM t WHERE b IS NOT NULL)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .expect("NULL-sensitive counts");
+    assert_eq!(counts, (2, 2));
 }
 
 #[test]
@@ -1095,6 +1258,217 @@ fn physical_scalar_count_rejects_opaque_or_noninvertible_filters() {
             "{query}: unsupported source count must remain residual"
         );
     }
+}
+
+#[test]
+fn joint_plan_deduplicates_physical_dag_and_is_order_invariant() {
+    for &dialect in DIALECTS {
+        let mut b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t",
+                "CREATE TABLE mart AS SELECT a, b FROM stage",
+                "SELECT a FROM mart",
+                "SELECT b FROM stage",
+            ],
+            dialect,
+        );
+        let requests = [(b.layers()[2].id(), 3), (b.layers()[3].id(), 3)];
+        let original = physical_joint_source_plan(&b, &requests);
+        let reversed = physical_joint_source_plan(&b, &[requests[1], requests[0]]);
+        assert_eq!(
+            original, reversed,
+            "{dialect}: input order cannot change the proof"
+        );
+        assert!(matches!(original.outcome(), WitnessDirection::Feasible(_)));
+        assert_eq!(original.sources(), &["t".to_string()]);
+        assert_eq!(
+            original.nodes().len(),
+            5,
+            "{dialect}: source and four unique layers"
+        );
+        assert_eq!(
+            original.nodes()[0].id(),
+            &PhysicalPlanRef::Source("t".to_string())
+        );
+        assert_eq!(original.gap(), None);
+
+        let goals = requests
+            .iter()
+            .map(|(layer_id, rows)| {
+                OutcomeGoal::new(*layer_id, Some(*rows), None, vec![])
+                    .expect("row-only requested goal")
+            })
+            .collect::<Vec<_>>();
+        b.set_outcome_goals(&goals).expect("valid goals");
+        let json: serde_json::Value =
+            serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b))
+                .expect("emitted protocol");
+        let joint = &json["graph"]["physical_joint_count_plan"];
+        assert_eq!(joint["outcome"]["status"], "feasible");
+        assert_eq!(joint["physical_sources"], serde_json::json!(["t"]));
+        assert_eq!(joint["node_refs"].as_array().map(Vec::len), Some(5));
+        assert_eq!(joint["targets"].as_array().map(Vec::len), Some(2));
+        assert!(joint["gap"].is_null());
+    }
+    let schema: serde_json::Value =
+        serde_json::from_str(include_str!("../schema/protocol.schema.json"))
+            .expect("active protocol schema");
+    assert_eq!(
+        schema["$defs"]["graph"]["properties"]["physical_joint_count_plan"]["$ref"],
+        "#/$defs/physicalJointCountPlan"
+    );
+}
+
+#[test]
+fn joint_plan_keeps_cycles_and_ambiguous_writers_typed_and_residual() {
+    let cyclic = bundle(
+        &[
+            "CREATE TABLE first AS SELECT a FROM second",
+            "CREATE TABLE second AS SELECT a FROM first",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(&cyclic, &[(cyclic.layers()[0].id(), 2)]);
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::Cycle));
+    assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
+
+    let ambiguous = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t",
+            "CREATE TABLE stage AS SELECT a FROM r",
+            "SELECT a FROM stage",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(&ambiguous, &[(ambiguous.layers()[2].id(), 2)]);
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::AmbiguousProducer));
+    assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
+}
+
+#[test]
+fn joint_plan_handles_repeated_source_aliases_and_duplicate_physical_rows() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT x.a FROM t AS x",
+                "SELECT y.a FROM t AS y",
+                "SELECT z.a FROM r AS z",
+            ],
+            dialect,
+        );
+        let requested = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[1].id(), 3),
+            (b.layers()[2].id(), 2),
+        ];
+        let plan = physical_joint_source_plan(&b, &requested);
+        assert_eq!(plan.sources(), &["r".to_string(), "t".to_string()]);
+        assert!(
+            matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: aliases preserve one shared source identity: {plan:?}"
+        );
+        let WitnessDirection::Feasible(cases) = plan.outcome() else {
+            unreachable!("asserted feasible");
+        };
+        assert_eq!(
+            cases[0]
+                .obligations()
+                .iter()
+                .filter(|item| matches!(item, WitnessObligation::ClosedWorld { .. }))
+                .count(),
+            2
+        );
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER); CREATE TABLE r(a INTEGER);
+         INSERT INTO t VALUES (1), (1), (NULL);
+         INSERT INTO r VALUES (2), (2);",
+    )
+    .expect("duplicate and NULL inputs");
+    for (sql, expected) in [
+        ("SELECT COUNT(*) FROM t AS x", 3),
+        ("SELECT COUNT(*) FROM t AS y", 3),
+        ("SELECT COUNT(*) FROM r AS z", 2),
+    ] {
+        let actual: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
+        assert_eq!(actual, expected);
+    }
+}
+
+#[test]
+fn correlated_self_join_witnesses_are_retained_but_not_jointly_assumed() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT l.a FROM t AS l JOIN t AS r ON l.k = r.k",
+                "SELECT a FROM t",
+            ],
+            dialect,
+        );
+        let plan =
+            physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4), (b.layers()[1].id(), 3)]);
+        assert_eq!(plan.sources(), &["t".to_string()]);
+        assert_eq!(
+            plan.gap(),
+            Some(PhysicalProofGap::UnprovedCrossRowCorrelation)
+        );
+        assert!(
+            matches!(
+                plan.outcome(),
+                WitnessDirection::Residual { reason } if reason == "unproved_cross_row_correlation"
+            ),
+            "{dialect}: matching pairs need an explicit shared-row/multiplicity proof"
+        );
+        assert!(
+            plan.nodes()
+                .iter()
+                .any(|node| !node.operator_witnesses().is_empty()),
+            "{dialect}: original local witness should not be discarded"
+        );
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER,k INTEGER);
+         INSERT INTO t VALUES (1,1),(1,1),(NULL,NULL);",
+    )
+    .expect("duplicate and SQL NULL key rows");
+    let (source_rows, pairs): (i64, i64) = conn
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM t),
+                    (SELECT COUNT(*) FROM t AS l JOIN t AS r ON l.k = r.k)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .expect("join cardinality");
+    assert_eq!((source_rows, pairs), (3, 4));
+}
+
+#[test]
+fn joint_plan_does_not_upgrade_missing_schema_or_partial_producers() {
+    let unknown = bundle_with_schemas(&["SELECT a FROM t", "SELECT b FROM t"], "postgresql", &[]);
+    let unknown_plan = physical_joint_source_plan(
+        &unknown,
+        &[(unknown.layers()[0].id(), 2), (unknown.layers()[1].id(), 2)],
+    );
+    assert!(matches!(
+        unknown_plan.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
+    assert_eq!(unknown_plan.sources(), &["t".to_string()]);
+
+    let partial = bundle(
+        &[
+            "INSERT INTO stage SELECT a, b FROM t",
+            "SELECT a FROM stage",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(&partial, &[(partial.layers()[1].id(), 2)]);
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::PartialProducer));
+    assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
+    assert!(plan.nodes().iter().any(|node| node.write_kind().is_some()));
 }
 
 #[test]
@@ -1277,16 +1651,29 @@ fn shared_source_many_terminal_positive_and_negative_goals_are_jointly_construct
                 ..
             } if bounds.minimum() == 3 && bounds.maximum() == Some(3)
         )));
-        // Independent rejection constraints are not assumed to be compatible.
-        let unsupported = [
+        // Different negative predicates must be jointly rejected by each
+        // physical source row, not satisfied by independent examples.
+        let shared_rejections = [
             (b.layers()[0].id(), 3),
             (b.layers()[2].id(), 0),
             (b.layers()[4].id(), 0),
         ];
-        assert!(matches!(
-            physical_joint_row_count_plan(&b, &unsupported),
-            WitnessDirection::Residual { .. }
-        ));
+        let witness = physical_joint_row_count_plan(&b, &shared_rejections);
+        let WitnessDirection::Feasible(cases) = witness else {
+            panic!("{dialect}: different predicates can reject the same rows: {witness:?}");
+        };
+        assert!(cases[0].obligations().iter().any(|obligation| matches!(
+            obligation,
+            WitnessObligation::Rows {
+                predicate: WitnessFormula::All(items),
+                ..
+            } if items.len() == 2 && items.iter().all(|item| matches!(
+                item, WitnessFormula::RowTruth {
+                    truth: BooleanTruthCase::NotTrue,
+                    ..
+                }
+            ))
+        )));
         assert!(matches!(
             physical_joint_row_count_plan(
                 &b,
@@ -1314,6 +1701,313 @@ fn shared_source_many_terminal_positive_and_negative_goals_are_jointly_construct
     ] {
         let count: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
         assert_eq!(count, if sql.contains("WHERE") { 0 } else { 3 }, "{sql}");
+    }
+}
+
+#[test]
+fn joint_negative_filters_prove_sql_not_true_without_disconnected_examples() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT b FROM t WHERE b > 5",
+            ],
+            dialect,
+        );
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[
+                        (b.layers()[0].id(), 2),
+                        (b.layers()[1].id(), 0),
+                        (b.layers()[2].id(), 0),
+                    ]
+                ),
+                WitnessDirection::Feasible(_)
+            ),
+            "{dialect}: nonnull a and UNKNOWN/FALSE b reject both filters"
+        );
+
+        let contradiction = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT a FROM t WHERE a IS NOT NULL",
+            ],
+            dialect,
+        );
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &contradiction,
+                    &[
+                        (contradiction.layers()[0].id(), 2),
+                        (contradiction.layers()[1].id(), 0),
+                        (contradiction.layers()[2].id(), 0),
+                    ]
+                ),
+                WitnessDirection::Impossible
+            ),
+            "{dialect}: every nonempty row satisfies one NULL-complement filter"
+        );
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (1,NULL),(2,3);",
+    )
+    .expect("two physical rows");
+    for (sql, expected) in [
+        ("SELECT COUNT(*) FROM t", 2),
+        ("SELECT COUNT(*) FROM t WHERE a IS NULL", 0),
+        ("SELECT COUNT(*) FROM t WHERE b > 5", 0),
+    ] {
+        let actual: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("count");
+        assert_eq!(actual, expected, "{sql}");
+    }
+}
+
+#[test]
+fn mixed_positive_and_negative_goals_share_one_complete_physical_assignment() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t",
+                "SELECT a FROM stage WHERE a > 0",
+                "SELECT b FROM t WHERE a < 10",
+                "SELECT a FROM t WHERE b IS NULL",
+            ],
+            dialect,
+        );
+        let goals = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[1].id(), 3),
+            (b.layers()[2].id(), 3),
+            (b.layers()[3].id(), 0),
+        ];
+        let proof = physical_joint_row_count_plan(&b, &goals);
+        let WitnessDirection::Feasible(cases) = proof else {
+            panic!("{dialect}: all terminals must share the same source rows: {proof:?}");
+        };
+        let [case] = cases.as_slice() else {
+            panic!("{dialect}: exactly one joint construction required");
+        };
+        assert_eq!(
+            case.obligations()
+                .iter()
+                .filter(|item| matches!(item, WitnessObligation::ClosedWorld { .. }))
+                .count(),
+            1
+        );
+        assert!(case.obligations().iter().any(|item| matches!(
+            item,
+            WitnessObligation::Rows {
+                predicate: WitnessFormula::All(items),
+                ..
+            } if items.len() == 3
+        )));
+        assert_eq!(
+            case.obligations()
+                .iter()
+                .filter(|item| matches!(item, WitnessObligation::OutputRows { .. }))
+                .count(),
+            4
+        );
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (1,0), (2,2), (3,3);
+         CREATE TABLE stage AS SELECT a, b FROM t;",
+    )
+    .expect("shared physical rows and materialization");
+    for (sql, expected) in [
+        ("SELECT COUNT(*) FROM stage", 3),
+        ("SELECT COUNT(*) FROM stage WHERE a > 0", 3),
+        ("SELECT COUNT(*) FROM t WHERE a < 10", 3),
+        ("SELECT COUNT(*) FROM t WHERE b IS NULL", 0),
+    ] {
+        let actual: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
+        assert_eq!(actual, expected, "{sql}");
+    }
+}
+
+#[test]
+fn typed_materialization_preserves_source_truth_only_with_matching_schema() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t",
+                "SELECT a FROM stage WHERE a > 2",
+                "SELECT a FROM t",
+            ],
+            dialect,
+        );
+        let plan = physical_joint_source_plan(
+            &b,
+            &[
+                (b.layers()[0].id(), 2),
+                (b.layers()[1].id(), 2),
+                (b.layers()[2].id(), 2),
+            ],
+        );
+        assert!(
+            matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: typed source copy should preserve filter truth: {plan:?}"
+        );
+    }
+
+    // A physically narrowed stage type could truncate/coerce values during
+    // materialization; the producer-to-physical column proof must not guess.
+    let source = RelationSchema::new(
+        "t",
+        vec![
+            SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").expect("source a"),
+            SchemaColumn::from_sql_type("b", "INTEGER", "postgresql").expect("source b"),
+        ],
+    )
+    .expect("source schema");
+    let narrowed = RelationSchema::new(
+        "stage",
+        vec![
+            SchemaColumn::from_sql_type("a", "SMALLINT", "postgresql").expect("stage a"),
+            SchemaColumn::from_sql_type("b", "INTEGER", "postgresql").expect("stage b"),
+        ],
+    )
+    .expect("stage schema");
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t",
+            "SELECT a FROM stage WHERE a > 2",
+        ],
+        "postgresql",
+        &[source, narrowed],
+    );
+    let proof = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
+    assert!(matches!(proof.outcome(), WitnessDirection::Residual { .. }));
+}
+
+#[test]
+fn typed_multistage_renamed_projections_resolve_each_physical_column_edge() {
+    let schema = |relation: &str, columns: &[&str], narrowed: bool| {
+        RelationSchema::new(
+            relation,
+            columns
+                .iter()
+                .map(|name| {
+                    let sql_type = if narrowed && *name == "a" {
+                        "SMALLINT"
+                    } else {
+                        "INTEGER"
+                    };
+                    SchemaColumn::from_sql_type(*name, sql_type, "postgresql")
+                        .expect("typed column")
+                })
+                .collect(),
+        )
+        .expect("relation schema")
+    };
+    let sql = [
+        "CREATE TABLE stage AS SELECT a, b FROM t",
+        "CREATE TABLE mart AS SELECT a AS x, b FROM stage",
+        "SELECT x FROM mart WHERE x > 2",
+        "SELECT a FROM t",
+    ];
+
+    for &dialect in DIALECTS {
+        let schemas = [
+            schema("t", &["a", "b"], false),
+            schema("stage", &["a", "b"], false),
+            schema("mart", &["x", "b"], false),
+        ];
+        let b = bundle_with_schemas(&sql, dialect, &schemas);
+        let witness =
+            physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3), (b.layers()[3].id(), 3)]);
+        assert!(
+            matches!(witness.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: every producer copy has a certified type and identity: {witness:?}"
+        );
+        assert_eq!(witness.sources(), &["t".to_string()]);
+        assert_eq!(witness.nodes().len(), 5);
+    }
+
+    let schemas = [
+        schema("t", &["a", "b"], false),
+        schema("stage", &["a", "b"], true),
+        schema("mart", &["x", "b"], false),
+    ];
+    let b = bundle_with_schemas(&sql, "postgresql", &schemas);
+    let result = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3)]);
+    assert!(
+        matches!(result.outcome(), WitnessDirection::Residual { .. }),
+        "an intermediate width mismatch must not be silently inverted"
+    );
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (3,1), (4,1), (5,2);
+         CREATE TABLE stage AS SELECT a, b FROM t;
+         CREATE TABLE mart AS SELECT a AS x, b FROM stage;",
+    )
+    .expect("two copied producer tables");
+    for sql in [
+        "SELECT COUNT(*) FROM mart WHERE x > 2",
+        "SELECT COUNT(*) FROM t",
+    ] {
+        let count: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
+        assert_eq!(count, 3);
+    }
+}
+
+#[test]
+fn mixed_truth_goals_reject_incompatible_row_membership_without_overclaiming() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT a FROM t",
+            ],
+            dialect,
+        );
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[(b.layers()[0].id(), 2), (b.layers()[1].id(), 0)],
+                ),
+                WitnessDirection::Impossible
+            ),
+            "{dialect}: one positive candidate cannot be universally rejected"
+        );
+
+        let disjoint_positive = bundle(
+            &[
+                "SELECT a FROM t WHERE a < 0",
+                "SELECT a FROM t WHERE a > 10",
+                "SELECT a FROM t WHERE b IS NULL",
+            ],
+            dialect,
+        );
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &disjoint_positive,
+                    &[
+                        (disjoint_positive.layers()[0].id(), 2),
+                        (disjoint_positive.layers()[1].id(), 2),
+                        (disjoint_positive.layers()[2].id(), 0),
+                    ],
+                ),
+                WitnessDirection::Residual { .. }
+            ),
+            "{dialect}: two disjoint positive groups could use extra distinct rows"
+        );
     }
 }
 

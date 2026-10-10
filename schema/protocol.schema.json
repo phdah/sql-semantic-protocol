@@ -915,13 +915,21 @@
           "description": "Optional, canonical source and producer nodes. All producer plans reference these identities, never duplicate their contents.",
           "type": "array",
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/physicalPlanNode" }
+          "items": {
+            "$ref": "#/$defs/physicalPlanNode"
+          }
         },
         "physical_source_plans": {
           "description": "Optional per-layer physical realizability assessments. Residual directions cannot be upgraded to feasible by downstream consumers.",
           "type": "array",
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/physicalSourcePlan" }
+          "items": {
+            "$ref": "#/$defs/physicalSourcePlan"
+          }
+        },
+        "physical_joint_count_plan": {
+          "description": "Optional deterministic joint physical-source count proof for caller-provided row-only outcome goals. One canonical shared-source graph, with a typed feasible/impossible/residual classification. Absent for other goals.",
+          "$ref": "#/$defs/physicalJointCountPlan"
         }
       }
     },
@@ -930,19 +938,33 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "id"],
+          "required": [
+            "kind",
+            "id"
+          ],
           "properties": {
-            "kind": { "const": "source" },
-            "id": { "$ref": "#/$defs/nonEmptyString" }
+            "kind": {
+              "const": "source"
+            },
+            "id": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "id"],
+          "required": [
+            "kind",
+            "id"
+          ],
           "properties": {
-            "kind": { "const": "layer" },
-            "id": { "$ref": "#/$defs/nonEmptyString" }
+            "kind": {
+              "const": "layer"
+            },
+            "id": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
           }
         }
       ]
@@ -950,59 +972,194 @@
     "physicalPlanNode": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ref", "inputs", "produced_relations", "write_kind"],
+      "required": [
+        "ref",
+        "inputs",
+        "produced_relations",
+        "write_kind"
+      ],
       "properties": {
-        "ref": { "$ref": "#/$defs/physicalPlanRef" },
+        "ref": {
+          "$ref": "#/$defs/physicalPlanRef"
+        },
         "inputs": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/physicalPlanRef" }
+          "items": {
+            "$ref": "#/$defs/physicalPlanRef"
+          }
         },
         "produced_relations": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/relationName" }
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
         },
         "write_kind": {
-          "enum": [null, "definition", "append", "conditional_mutation", "update", "delete"]
+          "enum": [
+            null,
+            "definition",
+            "append",
+            "conditional_mutation",
+            "update",
+            "delete"
+          ]
         },
         "operator_witnesses": {
           "description": "Origin-local, non-conjoined typed operator proofs. Intermediate boundaries are not writable physical sources.",
           "type": "array",
-          "items": { "$ref": "#/$defs/constructiveWitness" }
+          "items": {
+            "$ref": "#/$defs/constructiveWitness"
+          }
         },
         "pending_producers": {
           "description": "Typed producer obligations that are not claimed satisfiable by this node.",
           "type": "array",
-          "items": { "$ref": "#/$defs/constructiveObligation" }
+          "items": {
+            "$ref": "#/$defs/constructiveObligation"
+          }
         }
       }
     },
     "physicalSourcePlan": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["layer_id", "node_refs", "physical_sources", "qualifying", "rejected", "zero_output", "gap"],
+      "required": [
+        "layer_id",
+        "node_refs",
+        "physical_sources",
+        "qualifying",
+        "rejected",
+        "zero_output",
+        "gap"
+      ],
       "properties": {
-        "layer_id": { "$ref": "#/$defs/nonEmptyString" },
+        "layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
         "node_refs": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/physicalPlanRef" }
+          "items": {
+            "$ref": "#/$defs/physicalPlanRef"
+          }
         },
         "physical_sources": {
           "type": "array",
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/relationName" }
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
         },
-        "qualifying": { "$ref": "#/$defs/constructiveDirection" },
-        "rejected": { "$ref": "#/$defs/constructiveDirection" },
+        "qualifying": {
+          "$ref": "#/$defs/constructiveDirection"
+        },
+        "rejected": {
+          "$ref": "#/$defs/constructiveDirection"
+        },
         "zero_output": {
           "description": "Sufficient entire-physical-source empty-row obligations for zero terminal output; does not imply positive output cardinality.",
           "$ref": "#/$defs/constructiveDirection"
         },
         "gap": {
           "description": "Proof limitation. null means supported single-row classifications only, not a proof of full target cardinality.",
-          "enum": [null, "unknown_target", "missing_producer", "ambiguous_producer", "cycle", "partial_producer", "unsupported_dependency", "unresolved_semantics", "no_witness", "conflicting_domains", "local_witness_unproven", "multiple_witnesses", "non_invertible_transformation", "unsupported_operator", "intermediate_boundary", "unbound_physical_source"]
+          "enum": [
+            null,
+            "unknown_target",
+            "missing_producer",
+            "ambiguous_producer",
+            "cycle",
+            "partial_producer",
+            "unsupported_dependency",
+            "unresolved_semantics",
+            "no_witness",
+            "conflicting_domains",
+            "local_witness_unproven",
+            "multiple_witnesses",
+            "unproved_cross_row_correlation",
+            "non_invertible_transformation",
+            "unsupported_operator",
+            "intermediate_boundary",
+            "unbound_physical_source"
+          ]
+        }
+      }
+    },
+    "physicalRowTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "rows"
+      ],
+      "properties": {
+        "layer_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "physicalJointCountPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targets",
+        "node_refs",
+        "physical_sources",
+        "outcome",
+        "gap"
+      ],
+      "properties": {
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/physicalRowTarget"
+          }
+        },
+        "node_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/physicalPlanRef"
+          }
+        },
+        "physical_sources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationName"
+          }
+        },
+        "outcome": {
+          "$ref": "#/$defs/constructiveDirection"
+        },
+        "gap": {
+          "description": "Typed structural or cross-row proof limitation. null does not imply a feasible count; other semantic residuals remain in outcome.reason.",
+          "enum": [
+            null,
+            "unknown_target",
+            "missing_producer",
+            "ambiguous_producer",
+            "cycle",
+            "partial_producer",
+            "unsupported_dependency",
+            "unresolved_semantics",
+            "no_witness",
+            "conflicting_domains",
+            "local_witness_unproven",
+            "multiple_witnesses",
+            "unproved_cross_row_correlation",
+            "non_invertible_transformation",
+            "unsupported_operator",
+            "intermediate_boundary",
+            "unbound_physical_source"
+          ]
         }
       }
     },
@@ -6414,11 +6571,21 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "boundary", "coverage"],
+          "required": [
+            "kind",
+            "boundary",
+            "coverage"
+          ],
           "properties": {
-            "kind": {"const": "closed_world"},
-            "boundary": {"$ref": "#/$defs/constructiveBoundary"},
-            "coverage": {"$ref": "#/$defs/closedWorldCoverage"}
+            "kind": {
+              "const": "closed_world"
+            },
+            "boundary": {
+              "$ref": "#/$defs/constructiveBoundary"
+            },
+            "coverage": {
+              "$ref": "#/$defs/closedWorldCoverage"
+            }
           }
         },
         {
@@ -6452,22 +6619,36 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind"],
+          "required": [
+            "kind"
+          ],
           "properties": {
-            "kind": {"const": "entire_relation"}
+            "kind": {
+              "const": "entire_relation"
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "branch_identity", "columns"],
+          "required": [
+            "kind",
+            "branch_identity",
+            "columns"
+          ],
           "properties": {
-            "kind": {"const": "candidate_tuple"},
-            "branch_identity": {"$ref": "#/$defs/nonEmptyString"},
+            "kind": {
+              "const": "candidate_tuple"
+            },
+            "branch_identity": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
             "columns": {
               "type": "array",
               "minItems": 1,
-              "items": {"$ref": "#/$defs/nonEmptyString"}
+              "items": {
+                "$ref": "#/$defs/nonEmptyString"
+              }
             }
           }
         }

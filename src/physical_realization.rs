@@ -99,6 +99,8 @@ pub enum PhysicalProofGap {
     LocalWitnessUnproven,
     /// Local witnesses for different operators cannot be assumed jointly satisfiable.
     MultipleWitnesses,
+    /// Correlated physical row identities or multiplicities lack a common complete assignment.
+    UnprovedCrossRowCorrelation,
     /// Only one-source row-preserving projection chains are currently invertible.
     NonInvertibleTransformation,
     /// One local operator's witness cannot yet be lifted through the graph.
@@ -124,6 +126,7 @@ impl PhysicalProofGap {
             Self::NoWitness => "no_witness",
             Self::LocalWitnessUnproven => "local_witness_unproven",
             Self::MultipleWitnesses => "multiple_witnesses",
+            Self::UnprovedCrossRowCorrelation => "unproved_cross_row_correlation",
             Self::NonInvertibleTransformation => "non_invertible_transformation",
             Self::UnsupportedOperator => "unsupported_operator",
             Self::IntermediateBoundary => "intermediate_boundary",
@@ -184,6 +187,129 @@ impl PhysicalSourcePlan {
     /// assertion that arbitrary terminal row-count goals can be realized.
     pub fn gap(&self) -> Option<PhysicalProofGap> {
         self.gap
+    }
+}
+
+/// One exact terminal output-cardinality target in a joint proof.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct PhysicalRowTarget {
+    layer_id: String,
+    rows: u64,
+}
+
+impl PhysicalRowTarget {
+    /// Unique producer/query layer whose complete row count is requested.
+    pub fn layer_id(&self) -> &str {
+        &self.layer_id
+    }
+
+    /// Exact requested number of terminal output rows.
+    pub fn rows(&self) -> u64 {
+        self.rows
+    }
+}
+
+/// One canonical multi-terminal physical graph and its *joint* proof status.
+///
+/// Producer-first nodes have stable typed identities and are defined once
+/// even when multiple terminals reuse an upstream layer. A residual retains
+/// the available graph, but never licenses a partial producer as writable.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalJointSourcePlan {
+    targets: Vec<PhysicalRowTarget>,
+    nodes: Vec<PhysicalPlanNode>,
+    sources: Vec<String>,
+    outcome: WitnessDirection,
+    gap: Option<PhysicalProofGap>,
+}
+
+impl PhysicalJointSourcePlan {
+    /// Sorted terminal goals, deduplicated by layer identity.
+    pub fn targets(&self) -> &[PhysicalRowTarget] {
+        &self.targets
+    }
+
+    /// Producer-first canonical graph with each shared node defined once.
+    pub fn nodes(&self) -> &[PhysicalPlanNode] {
+        &self.nodes
+    }
+
+    /// Independent, uniquely identified controllable physical sources.
+    pub fn sources(&self) -> &[String] {
+        &self.sources
+    }
+
+    /// Constructive typed obligations for the entire set of terminal goals.
+    pub fn outcome(&self) -> &WitnessDirection {
+        &self.outcome
+    }
+
+    /// A structural or cross-row proof gap, if detected.
+    /// Other semantic limitations are retained in the residual outcome.
+    pub fn gap(&self) -> Option<PhysicalProofGap> {
+        self.gap
+    }
+}
+
+/// Collect a single topologically ordered physical graph and verify several
+/// terminal count goals against the same shared physical assignments.
+/// Request order never changes node order or constructive proof identity.
+pub fn physical_joint_source_plan(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> PhysicalJointSourcePlan {
+    let mut requested = targets
+        .iter()
+        .map(|&(layer_id, rows)| PhysicalRowTarget {
+            layer_id: layer_id.to_string(),
+            rows,
+        })
+        .collect::<Vec<_>>();
+    requested.sort();
+    requested.dedup();
+    let mut walker = Walker::new(bundle);
+    let mut gap = None;
+    for target in &requested {
+        if gap.is_some() {
+            break;
+        }
+        let result = if walker.layers.contains_key(target.layer_id()) {
+            walker.visit(target.layer_id())
+        } else {
+            Err(PhysicalProofGap::UnknownTarget)
+        };
+        if let Err(reason) = result {
+            gap = Some(reason);
+        }
+    }
+    let mut outcome = if let Some(reason) = gap {
+        residual(reason)
+    } else {
+        let pairs = requested
+            .iter()
+            .map(|target| (target.layer_id(), target.rows()))
+            .collect::<Vec<_>>();
+        physical_joint_row_count_plan(bundle, &pairs)
+    };
+    if gap.is_none()
+        && matches!(outcome, WitnessDirection::Residual { .. })
+        && walker.nodes.iter().any(|node| {
+            node.operator_witnesses()
+                .iter()
+                .any(|witness| witness.operator() != WitnessOperator::Boolean)
+        })
+    {
+        // Operator-local join, group, set, window and subquery examples are
+        // never promoted to a shared-row, cross-operator physical proof.
+        gap = Some(PhysicalProofGap::UnprovedCrossRowCorrelation);
+        outcome = residual(PhysicalProofGap::UnprovedCrossRowCorrelation);
+    }
+    PhysicalJointSourcePlan {
+        targets: requested,
+        nodes: walker.nodes,
+        sources: walker.sources.into_iter().collect(),
+        outcome,
+        gap,
     }
 }
 
@@ -648,6 +774,20 @@ fn resolve_filter_column(
     column: &crate::protocol::ColumnRef,
     depth: usize,
 ) -> Option<crate::protocol::ColumnRef> {
+    resolve_filter_column_with_evidence(bundle, walker, consumer_id, column, depth, false)
+}
+
+/// Trace the same identity-only reference, optionally proving equal declared
+/// datatypes across *every* materialization along the producer path. A
+/// matching endpoint alone cannot justify unseen intermediate coercions.
+fn resolve_filter_column_with_evidence(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    consumer_id: &str,
+    column: &crate::protocol::ColumnRef,
+    depth: usize,
+    certified_types: bool,
+) -> Option<crate::protocol::ColumnRef> {
     if depth > walker.layers.len() {
         return None;
     }
@@ -691,7 +831,36 @@ fn resolve_filter_column(
                 Some(actual.relation().to_string()),
                 actual.column().to_string(),
             );
-            resolve_filter_column(bundle, walker, producer.id(), &upstream, depth + 1)
+            if certified_types {
+                let consumed_type = bundle
+                    .source_schemas()
+                    .iter()
+                    .find(|schema| schema.relation() == canonical)?
+                    .columns()
+                    .iter()
+                    .find(|item| item.name() == column.name())?
+                    .data_type();
+                let upstream_relation = upstream.relation()?;
+                let upstream_type = bundle
+                    .source_schemas()
+                    .iter()
+                    .find(|schema| schema.relation() == upstream_relation)?
+                    .columns()
+                    .iter()
+                    .find(|item| item.name() == upstream.name())?
+                    .data_type();
+                if consumed_type != upstream_type {
+                    return None;
+                }
+            }
+            resolve_filter_column_with_evidence(
+                bundle,
+                walker,
+                producer.id(),
+                &upstream,
+                depth + 1,
+                certified_types,
+            )
         }
         _ => None,
     }
@@ -1005,6 +1174,47 @@ fn repeatable_filter_predicate(
 /// without modifying the emitted operator-local Boolean witness contract.
 /// Only one direct, typed physical-source filter and subsequent transparent
 /// producers are supported; competing filters require joint truth solving.
+/// Only completely row-preserving, single-parent materialization chains
+/// can transport physical predicates. Each node retains its producer kind,
+/// and typed columns are separately checked at every reference boundary.
+fn transparent_materialized_source(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    node: &PhysicalPlanNode,
+    source: &str,
+) -> bool {
+    let [PhysicalPlanRef::Layer(initial_id)] = node.inputs() else {
+        return false;
+    };
+    let mut next_id = initial_id.as_str();
+    for _ in 0..walker.layers.len() {
+        let Some(producer) = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(next_id.to_string()))
+        else {
+            return false;
+        };
+        let valid = walker
+            .layers
+            .get(next_id)
+            .and_then(|layer| query_for(bundle, layer))
+            .is_some_and(transparent_projection);
+        if !valid || !matches!(producer.write_kind(), None | Some(WriteKind::Definition)) {
+            return false;
+        }
+        match producer.inputs() {
+            [PhysicalPlanRef::Source(actual)] => return actual == source,
+            [PhysicalPlanRef::Layer(upstream)] => next_id = upstream,
+            _ => return false,
+        }
+    }
+    false
+}
+
+/// Type-verified scalar WHERE witness through either a direct source or one
+/// complete materialization. Every row still refers to the canonical
+/// physical source; the intermediate producer is never treated as writable.
 fn scalar_physical_row_truth(
     bundle: &AnalysisBundle,
     physical: &PhysicalSourcePlan,
@@ -1034,12 +1244,15 @@ fn scalar_physical_row_truth(
         let layer = walker.layers.get(id.as_str()).copied()?;
         let query = query_for(bundle, layer)?;
         if query.filter_only_row_shape() {
-            // A second WHERE requires a conjunction proof; independent
-            // satisfiable predicates are not necessarily jointly feasible.
+            let [input_source] = query.sources() else {
+                return None;
+            };
+            let direct = node.inputs() == [PhysicalPlanRef::Source(source.clone())]
+                && input_source.name() == source;
+            let through_producer = transparent_materialized_source(bundle, &walker, node, source)
+                && input_source.name() != source;
             if filter.is_some()
-                || node.inputs() != [PhysicalPlanRef::Source(source.clone())]
-                || query.sources().len() != 1
-                || query.sources()[0].name() != source
+                || (!direct && !through_producer)
                 || query.aggregation().is_some()
                 || query.set_operation().is_some()
                 || query.window_witness().is_some()
@@ -1054,42 +1267,54 @@ fn scalar_physical_row_truth(
             {
                 return None;
             }
-            filter = Some(query);
+            filter = Some((query, layer.id(), input_source.name()));
         } else if !transparent_projection(query) {
             return None;
         }
     }
-    let filter = filter?;
+    let (filter, origin_layer, filter_source) = filter?;
+    let input_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|candidate| candidate.relation() == filter_source)?;
+    if bundle.relation_constraints().iter().any(|set| {
+        set.relation() == filter_source
+            && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+    }) {
+        return None;
+    }
     let witness = crate::boolean_witness::analyze_physical_scalar(
         filter.predicates().where_predicate(),
         filter.sources(),
         |column| {
-            if column.relation() != Some(source) {
-                return None;
-            }
-            let source_column = schema
-                .columns()
-                .iter()
-                .find(|c| c.name() == column.name())?;
-            let data_type = match source_column.data_type() {
-                crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
-                other => other,
-            };
-            match data_type {
-                crate::data_type::DataType::SignedInteger { bits: Some(bits) }
-                    if *bits > 0 && *bits <= 64 =>
-                {
-                    let magnitude = 1_i128 << (u32::from(*bits) - 1);
-                    Some(crate::boolean_witness::SignedIntegerEvidence {
-                        minimum: -magnitude,
-                        maximum: magnitude - 1,
-                    })
-                }
-                _ => None,
-            }
+            (column.relation() == Some(filter_source))
+                .then(|| physical_integer_evidence(input_schema, column))
+                .flatten()
         },
         |_column| None,
     )?;
+    let witness = if filter_source == source {
+        witness
+    } else {
+        witness.mapped_to_physical_certified(
+            |column| {
+                resolve_filter_column_with_evidence(bundle, &walker, origin_layer, column, 0, true)
+            },
+            |original, mapped| {
+                let original_type = input_schema
+                    .columns()
+                    .iter()
+                    .find(|known| known.name() == original.name())
+                    .map(|known| known.data_type());
+                let mapped_type = schema
+                    .columns()
+                    .iter()
+                    .find(|known| known.name() == mapped.name())
+                    .map(|known| known.data_type());
+                original_type.is_some() && original_type == mapped_type
+            },
+        )?
+    };
     let direction = match required_truth {
         crate::boolean_witness::BooleanTruthCase::True => witness.qualifying(),
         crate::boolean_witness::BooleanTruthCase::NotTrue => witness.rejected(),
@@ -1817,11 +2042,11 @@ fn count_predicate_for_source(
         })
 }
 
-/// Reconcile one or more unfiltered positive terminals with one or more
-/// deliberately empty filtered terminals on a shared physical source.
-/// The source has exactly N rows, every positive path preserves all N rows,
-/// and every negative path rejects all N rows under the same proven predicate.
-/// Different negative predicates need a separate joint satisfiability proof.
+/// Reconcile positive and deliberately empty terminals over one schema-backed
+/// source. All-positive constructions use N rows selected by every positive
+/// filter; a zero terminal must reject every one of those same rows. This is
+/// one sufficient closed-world assignment, not a claim that independent
+/// sufficient witnesses can be concatenated or freely multiplied.
 fn joint_positive_and_rejected_pair(
     bundle: &AnalysisBundle,
     targets: &[(&str, u64)],
@@ -1842,32 +2067,44 @@ fn joint_positive_and_rejected_pair(
             positive.push((layer_id, rows));
         }
     }
+    positive.sort_by_key(|(layer_id, _)| *layer_id);
+    zero.sort();
     let &(first_positive, rows) = positive.first()?;
     if zero.is_empty() || positive.iter().any(|(_, count)| *count != rows) {
         return None;
     }
-    let first_plan = physical_row_count_plan(bundle, first_positive, rows);
     let first_physical = physical_source_plan(bundle, first_positive);
     let [source] = first_physical.sources() else {
         return None;
     };
-    if count_predicate_for_source(&first_plan, source, rows) != Some(count_tautology()) {
-        return None;
-    }
-    for &(layer_id, _) in positive.iter().skip(1) {
+
+    let mut qualifying = Vec::new();
+    for &(layer_id, _) in &positive {
         let physical = physical_source_plan(bundle, layer_id);
-        if physical.sources() != [source.clone()]
-            || count_predicate_for_source(
-                &physical_row_count_plan(bundle, layer_id, rows),
-                source,
-                rows,
-            ) != Some(count_tautology())
-        {
+        if physical.sources() != [source.clone()] {
             return None;
         }
+        let predicate = count_predicate_for_source(
+            &physical_row_count_plan(bundle, layer_id, rows),
+            source,
+            rows,
+        )?;
+        if predicate == count_tautology() {
+            continue;
+        }
+        if !matches!(
+            predicate,
+            WitnessFormula::RowTruth {
+                truth: crate::boolean_witness::BooleanTruthCase::True,
+                ..
+            }
+        ) {
+            return None;
+        }
+        qualifying.push(predicate);
     }
 
-    let mut negative_predicate = None;
+    let mut rejecting = Vec::new();
     for layer_id in zero {
         let physical = physical_source_plan(bundle, layer_id);
         if physical.sources() != [source.clone()] {
@@ -1887,24 +2124,43 @@ fn joint_positive_and_rejected_pair(
         ) {
             return None;
         }
-        if negative_predicate
-            .as_ref()
-            .is_some_and(|prior| prior != &predicate)
-        {
-            return None;
+        if !rejecting.contains(&predicate) {
+            rejecting.push(predicate);
         }
-        negative_predicate = Some(predicate);
     }
 
+    let mut requirements = qualifying.clone();
+    requirements.extend(rejecting.iter().cloned());
+    let satisfiable = joint_source_truths_satisfiable(bundle, source, &requirements)?;
+    if !satisfiable {
+        // Two mutually exclusive positive filters can use disjoint source
+        // subsets when no exact whole-source count is demanded. By contrast,
+        // no positive row can survive a negative filter that every row must
+        // reject, independent of the total physical source cardinality.
+        if qualifying.is_empty()
+            || qualifying.iter().any(|predicate| {
+                let mut necessary = vec![predicate.clone()];
+                necessary.extend(rejecting.iter().cloned());
+                joint_source_truths_satisfiable(bundle, source, &necessary) == Some(false)
+            })
+        {
+            return Some(WitnessDirection::Impossible);
+        }
+        return None;
+    }
+
+    let row_predicate = match requirements.as_slice() {
+        [predicate] => predicate.clone(),
+        predicates => WitnessFormula::All(predicates.to_vec()),
+    };
     let boundary = WitnessBoundary::new(source, GroupBoundaryKind::Physical, first_positive)?;
     let rows_bounds = CountBounds::new(rows, Some(rows))?;
-    let predicate = negative_predicate?;
     let mut obligations = vec![
         WitnessObligation::Rows {
             boundary: boundary.clone(),
             quantifier: RowQuantifier::ForAll,
             bounds: rows_bounds,
-            predicate,
+            predicate: row_predicate,
             closed_world: true,
         },
         WitnessObligation::ClosedWorld {
@@ -1922,6 +2178,129 @@ fn joint_positive_and_rejected_pair(
     WitnessDirection::feasible(vec![case])
 }
 
+/// Evidence for direct physical signed integer comparisons. Kept identical
+/// across the positive-only and mixed-truth physical row solvers.
+fn physical_integer_evidence(
+    schema: &crate::relation::RelationSchema,
+    column: &crate::protocol::ColumnRef,
+) -> Option<crate::boolean_witness::SignedIntegerEvidence> {
+    let known = schema
+        .columns()
+        .iter()
+        .find(|known| known.name() == column.name())?;
+    let data_type = match known.data_type() {
+        crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
+        other => other,
+    };
+    match data_type {
+        crate::data_type::DataType::SignedInteger { bits: Some(bits) }
+            if *bits > 0 && *bits <= 64 =>
+        {
+            let magnitude = 1_i128 << (u32::from(*bits) - 1);
+            Some(crate::boolean_witness::SignedIntegerEvidence {
+                minimum: -magnitude,
+                maximum: magnitude - 1,
+            })
+        }
+        _ => None,
+    }
+}
+
+/// Validate mixed SQL TRUE and NOT TRUE conditions on one *identical* row.
+/// The witnessed RowVariable must have the same source, instance and name,
+/// rather than merely the same relation string.
+fn joint_source_truths_satisfiable(
+    bundle: &AnalysisBundle,
+    source: &str,
+    predicates: &[WitnessFormula],
+) -> Option<bool> {
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == source)?;
+    let mut row_identity = None;
+    let mut requirements = Vec::new();
+    for predicate in predicates {
+        let WitnessFormula::RowTruth {
+            row,
+            predicate,
+            truth,
+        } = predicate
+        else {
+            return None;
+        };
+        if row.relation() != source || row_identity.is_some_and(|identity| identity != row) {
+            return None;
+        }
+        row_identity = Some(row);
+        requirements.push((predicate, *truth));
+    }
+    crate::boolean_witness::jointly_satisfiable_physical_truths(
+        source,
+        &requirements,
+        |column| {
+            schema
+                .columns()
+                .iter()
+                .any(|known| known.name() == column.name())
+        },
+        |column| physical_integer_evidence(schema, column),
+    )
+}
+
+/// Conjoin independently proven SQL truth directions on one physical row.
+/// Independent terminal examples cannot prove a common source assignment.
+fn conjoin_source_row_truths(
+    bundle: &AnalysisBundle,
+    source: &str,
+    left: &WitnessFormula,
+    right: &WitnessFormula,
+) -> Option<(WitnessFormula, bool)> {
+    let WitnessFormula::RowTruth {
+        row: left_row,
+        predicate: left_condition,
+        truth: left_truth,
+    } = left
+    else {
+        return None;
+    };
+    let WitnessFormula::RowTruth {
+        row: right_row,
+        predicate: right_condition,
+        truth: right_truth,
+    } = right
+    else {
+        return None;
+    };
+    if left_row != right_row || left_row.relation() != source || left_truth != right_truth {
+        return None;
+    }
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == source)?;
+    let (predicate, satisfiable) = crate::boolean_witness::conjoin_physical_row_truths(
+        source,
+        *left_truth,
+        &[left_condition, right_condition],
+        |column| {
+            schema
+                .columns()
+                .iter()
+                .any(|known| known.name() == column.name())
+        },
+        |column| physical_integer_evidence(schema, column),
+    )?;
+    Some((
+        WitnessFormula::RowTruth {
+            row: left_row.clone(),
+            predicate,
+            truth: *left_truth,
+        },
+        satisfiable,
+    ))
+}
+
 /// Construct a single complete physical source assignment for several
 /// terminal row-count goals. Independent sufficient cases are composed only
 /// after reconciling their *shared physical source identities*.
@@ -1937,13 +2316,15 @@ pub fn physical_joint_row_count_plan(
     if targets.is_empty() {
         return residual(PhysicalProofGap::NoWitness);
     }
-    if let Some(witness) = joint_positive_and_rejected_pair(bundle, targets) {
+    let mut ordered = targets.to_vec();
+    ordered.sort();
+    if let Some(witness) = joint_positive_and_rejected_pair(bundle, &ordered) {
         return witness;
     }
 
     let mut outputs = BTreeMap::<String, u64>::new();
     let mut sources = BTreeMap::<String, SourceCountRequirement>::new();
-    for &(layer_id, rows) in targets {
+    for &(layer_id, rows) in &ordered {
         if outputs
             .insert(layer_id.to_string(), rows)
             .is_some_and(|existing| existing != rows)
@@ -1999,9 +2380,24 @@ pub fn physical_joint_row_count_plan(
                     } else if predicate == count_tautology() || predicate == existing.predicate {
                         existing.predicate.clone()
                     } else {
-                        // Even two individually feasible predicates may have
-                        // an empty intersection on the *same* physical row.
-                        return residual(PhysicalProofGap::MultipleWitnesses);
+                        let Some((joint, satisfiable)) = conjoin_source_row_truths(
+                            bundle,
+                            relation,
+                            &existing.predicate,
+                            &predicate,
+                        ) else {
+                            return residual(PhysicalProofGap::MultipleWitnesses);
+                        };
+                        if !satisfiable {
+                            // Only a necessary exact source count makes a
+                            // disjoint pair impossible. Otherwise extra
+                            // physical rows could satisfy each output separately.
+                            if existing.necessary || requires_exact_count {
+                                return WitnessDirection::Impossible;
+                            }
+                            return residual(PhysicalProofGap::MultipleWitnesses);
+                        }
+                        joint
                     };
                     sources.insert(
                         relation.clone(),

@@ -6,7 +6,9 @@
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
-use crate::physical_realization::{physical_source_plan, PhysicalPlanNode, PhysicalPlanRef};
+use crate::physical_realization::{
+    physical_joint_source_plan, physical_source_plan, PhysicalPlanNode, PhysicalPlanRef,
+};
 
 use crate::bundle::{
     AnalysisBundle, AnalysisGraph, ComposedSemantics, CompositionDiagnostic, DatasetRef,
@@ -114,6 +116,35 @@ fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
         "zero_output": constructive_direction_to_value(plan.zero_output()),
         "gap": plan.gap().map(|gap| gap.as_str())
     })).collect::<Vec<_>>());
+
+    // Optional cross-terminal count proof. Only row-only requests are
+    // covered: emitting this for groups or histograms would incorrectly
+    // suggest that their independent semantics were jointly certified.
+    let row_only_goals = bundle.outcome_goals();
+    if !row_only_goals.is_empty()
+        && row_only_goals.iter().all(|evaluated| {
+            let goal = evaluated.goal();
+            goal.rows().is_some() && goal.groups().is_none() && goal.distributions().is_empty()
+        })
+    {
+        let targets = row_only_goals
+            .iter()
+            .filter_map(|evaluated| {
+                let goal = evaluated.goal();
+                Some((goal.layer_id(), goal.rows()?))
+            })
+            .collect::<Vec<_>>();
+        let joint = physical_joint_source_plan(bundle, &targets);
+        value["graph"]["physical_joint_count_plan"] = json!({
+            "targets": joint.targets().iter().map(|target| json!({
+                "layer_id": target.layer_id(), "rows": target.rows()
+            })).collect::<Vec<_>>(),
+            "node_refs": joint.nodes().iter().map(|node| physical_plan_ref_to_value(node.id())).collect::<Vec<_>>(),
+            "physical_sources": joint.sources(),
+            "outcome": constructive_direction_to_value(joint.outcome()),
+            "gap": joint.gap().map(|gap| gap.as_str())
+        });
+    }
 
     if !bundle.comparison_declarations().is_empty() {
         value["declared_comparison_assumptions"] = json!(bundle

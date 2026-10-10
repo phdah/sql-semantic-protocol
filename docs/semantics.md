@@ -497,6 +497,31 @@ predicates and noninvertible assignments keep conservative domains; their
 presence never licenses a generator to claim complete exactness.
 
 
+## Joint physical-source realizability (TASK-93, partial)
+
+`physical_joint_source_plan` merges the dependency paths for multiple
+terminal output counts into a canonical producer-first graph, retaining
+shared leaves, write kinds, typed operator-local witnesses and unresolved
+producer boundaries. The `physical_joint_row_count_plan` result is a
+separate complete-source construction, not the union of feasible local
+examples. Request permutation cannot change its canonical representation.
+
+For jointly controlled positive filter goals with the same source count,
+all rows can satisfy a single coupled typed conjunction. Jointly rejected
+zero-output filters require SQL NOT TRUE of each predicate; mixed positive
+and negative goals must use one identical physical row assignment with
+full closed-world coverage. An impossible case is reported only for a
+proven contradiction; individually feasible but jointly unresolved source
+populations remain residual. Typed integer/NULL facts are supported;
+string collation, extra source cardinalities and complex operator
+correlations remain conservative. Typed scalar predicates can cross identity-preserving materialization chains
+when each producer reference has matching source and output datatypes and
+plain-copy lineage at every edge. Missing schemas,
+changed types, opaque producer projections and partial writes remain residual.
+Cross-row join-pair, ranking and other correlated local witnesses are retained
+on graph nodes, but count proofs remain residual until all their physical
+row identities and multiplicities are solved; local examples never suffice.
+
 ## Physical-source row realization (TASK-68, partial)
 
 The Rust library's `physical_source_plan(bundle, target_layer_id)` returns a
@@ -565,8 +590,19 @@ The physical-source Rust API proves exact counts through schema-backed
 transparent producer chains and identity-preserving WHERE chains with a
 jointly proven SQL-TRUE physical-row predicate. Positive filtered cases
 close the entire physical source at the requested count and require every
-row to qualify. Shared-source count plans retain that predicate and do not
-conjoin different filters without proof. The legacy outcome-goal adapter
+row to qualify. Shared-source count plans retain that predicate. Distinct positive
+integer/NULL-sensitive filters on the same physical source can now be
+conjoined when exact source schema evidence proves a *single* common row
+assignment; the canonical `RowTruth` tree records the combined condition.
+Unsatisfiable conjunctions are impossible only when a necessary unfiltered
+source count fixes the entire population. Without that count, extra source
+rows could independently satisfy each filter, so the result is residual.
+Multiple independently rejected zero-output filters can likewise be
+jointly certified against a nonempty shared source by requiring their
+Boolean OR to be SQL NOT TRUE, retaining FALSE and UNKNOWN behavior.
+When those rejections cannot simultaneously hold, the closed-world
+nonempty construction is impossible. Other unproved combinations, including
+detached string-collation predicates, remain residual. The legacy outcome-goal adapter
 remains residual for positive filtered counts because its `source_rows`
 witness cannot encode required predicate obligations. General join,
 group, QUALIFY, set and DML counts remain residual.
