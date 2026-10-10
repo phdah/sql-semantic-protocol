@@ -956,13 +956,14 @@ fn collect_comparison_literals(
     }
 }
 
-/// Reprove the *same* physical row's TRUE requirement across independent
-/// terminal filters. An empty search is unknown (e.g. assignment budget),
-/// not proof of an unsatisfiable conjunction. Only typed integer and NULL
-/// conditions are admitted; string collation evidence cannot be recovered
-/// from detached local witness trees.
-pub(crate) fn conjoin_physical_true_conditions(
+/// Reprove the *same* physical row's joint TRUE or NOT TRUE requirements.
+/// TRUE of every filter is the truth of their AND; NOT TRUE of every
+/// filter is NOT TRUE of their OR, including SQL UNKNOWN. An empty assignment
+/// search is unknown (e.g. a budget limit), not evidence of impossibility.
+/// Detached string predicates have lost the required collation attestation.
+pub(crate) fn conjoin_physical_row_truths(
     source: &str,
+    truth: BooleanTruthCase,
     conditions: &[&BooleanRowConstraint],
     column_known: impl Fn(&ColumnRef) -> bool,
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
@@ -974,12 +975,16 @@ pub(crate) fn conjoin_physical_true_conditions(
     {
         return None;
     }
-    let joint = BooleanRowConstraint::All(BooleanOperands::new(
+    let operands = BooleanOperands::new(
         conditions
             .iter()
             .map(|condition| (*condition).clone())
             .collect(),
-    )?);
+    )?;
+    let joint = match truth {
+        BooleanTruthCase::True => BooleanRowConstraint::All(operands),
+        BooleanTruthCase::NotTrue => BooleanRowConstraint::Any(operands),
+    };
     let mut columns = Vec::new();
     joint.columns(&mut columns);
     if columns.is_empty()
@@ -990,7 +995,16 @@ pub(crate) fn conjoin_physical_true_conditions(
         return None;
     }
     let possible = possible_joint_truths(&joint, &integer_evidence, &|_| None, None);
-    (!possible.is_empty()).then_some((joint, possible.contains(&SqlTruth::True)))
+    if possible.is_empty() {
+        return None;
+    }
+    let satisfiable = match truth {
+        BooleanTruthCase::True => possible.contains(&SqlTruth::True),
+        BooleanTruthCase::NotTrue => {
+            possible.contains(&SqlTruth::False) || possible.contains(&SqlTruth::Unknown)
+        }
+    };
+    Some((joint, satisfiable))
 }
 
 fn possible_joint_truths(
