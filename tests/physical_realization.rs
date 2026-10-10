@@ -3178,10 +3178,12 @@ fn set_tuple_cases_prove_bag_counts_through_two_materialized_producers() {
     let schema = |relation: &str, names: &[&str]| {
         RelationSchema::new(
             relation,
-            names.iter()
+            names
+                .iter()
                 .map(|name| SchemaColumn::from_sql_type(*name, "INTEGER", "postgresql").unwrap())
                 .collect(),
-        ).unwrap()
+        )
+        .unwrap()
     };
     let schemas = [
         schema("l", &["a"]),
@@ -3201,7 +3203,9 @@ fn set_tuple_cases_prove_bag_counts_through_two_materialized_producers() {
         b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(2), None, vec![]).unwrap()])
             .unwrap();
         let case = match b.outcome_goals()[0].witness() {
-            Some(OutcomeWitness::SetTuples { tuples: 2, case, .. }) => case,
+            Some(OutcomeWitness::SetTuples {
+                tuples: 2, case, ..
+            }) => case,
             other => panic!("{operator}: expected mapped physical case, got {other:?}"),
         };
         assert!(
@@ -3213,21 +3217,24 @@ fn set_tuple_cases_prove_bag_counts_through_two_materialized_producers() {
             "{operator}: {case:?}"
         );
         let db = Connection::open_in_memory().unwrap();
-        db.execute_batch("CREATE TABLE l(a INTEGER); CREATE TABLE r(a INTEGER);").unwrap();
+        db.execute_batch("CREATE TABLE l(a INTEGER); CREATE TABLE r(a INTEGER);")
+            .unwrap();
         for obligation in case.obligations() {
             for key in 0..2 {
                 for _ in 0..obligation.matching_tuple_count() {
                     db.execute_batch(&format!(
                         "INSERT INTO {} VALUES ({key});",
                         obligation.boundary().relation()
-                    )).unwrap();
+                    ))
+                    .unwrap();
                 }
             }
         }
         db.execute_batch(
             "CREATE TABLE left_stage AS SELECT a AS id FROM l;
-             CREATE TABLE right_stage AS SELECT a AS id FROM r;"
-        ).unwrap();
+             CREATE TABLE right_stage AS SELECT a AS id FROM r;",
+        )
+        .unwrap();
         let result: i64 = db.query_row(
             &format!("SELECT COUNT(*) FROM (SELECT id FROM left_stage {operator} SELECT id FROM right_stage)"),
             [],
@@ -3243,11 +3250,14 @@ fn set_tuple_mapping_preserves_null_frequencies_and_rejects_shared_sources() {
         RelationSchema::new(
             relation,
             vec![SchemaColumn::from_sql_type(name, "INTEGER", "postgresql").unwrap()],
-        ).unwrap()
+        )
+        .unwrap()
     };
     let schemas = [
-        schema("l", "a"), schema("r", "a"),
-        schema("left_stage", "id"), schema("right_stage", "id"),
+        schema("l", "a"),
+        schema("r", "a"),
+        schema("left_stage", "id"),
+        schema("right_stage", "id"),
     ];
     let statements = [
         "CREATE TABLE left_stage AS SELECT a AS id FROM l",
@@ -3256,30 +3266,37 @@ fn set_tuple_mapping_preserves_null_frequencies_and_rejects_shared_sources() {
     ];
     let mut b = bundle_with_schemas(&statements, "duckdb", &schemas);
     let id = b.layers()[2].id().to_string();
-    let distribution = OutputDistribution::new(
-        "id", vec![OutputValueCount::new(ConstraintValue::Null, 3)],
-    ).unwrap();
+    let distribution =
+        OutputDistribution::new("id", vec![OutputValueCount::new(ConstraintValue::Null, 3)])
+            .unwrap();
     b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(3), None, vec![distribution]).unwrap()])
         .unwrap();
     let case = match b.outcome_goals()[0].witness() {
         Some(OutcomeWitness::SetTuples {
-            tuples: 1, case, scale_by_value_rows: true, ..
+            tuples: 1,
+            case,
+            scale_by_value_rows: true,
+            ..
         }) => case,
         other => panic!("NULL bag witness missing: {other:?}"),
     };
     let conn = Connection::open_in_memory().unwrap();
-    conn.execute_batch("CREATE TABLE l(a INTEGER); CREATE TABLE r(a INTEGER);").unwrap();
+    conn.execute_batch("CREATE TABLE l(a INTEGER); CREATE TABLE r(a INTEGER);")
+        .unwrap();
     for obligation in case.obligations() {
         for _ in 0..(obligation.matching_tuple_count() * 3) {
             conn.execute_batch(&format!(
-                "INSERT INTO {} VALUES (NULL);", obligation.boundary().relation()
-            )).unwrap();
+                "INSERT INTO {} VALUES (NULL);",
+                obligation.boundary().relation()
+            ))
+            .unwrap();
         }
     }
     conn.execute_batch(
         "CREATE TABLE left_stage AS SELECT a AS id FROM l;
-         CREATE TABLE right_stage AS SELECT a AS id FROM r;"
-    ).unwrap();
+         CREATE TABLE right_stage AS SELECT a AS id FROM r;",
+    )
+    .unwrap();
     let count: i64 = conn.query_row(
         "SELECT COUNT(*) FROM (SELECT id FROM left_stage UNION ALL SELECT id FROM right_stage) WHERE id IS NULL",
         [],
