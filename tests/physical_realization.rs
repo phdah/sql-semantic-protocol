@@ -823,9 +823,7 @@ fn simultaneous_empty_filtered_and_joined_terminals_reuse_sources_once() {
             dialect,
         );
         let targets = [(b.layers()[2].id(), 0), (b.layers()[3].id(), 0)];
-        let WitnessDirection::Feasible(cases) =
-            physical_joint_row_count_plan(&b, &targets)
-        else {
+        let WitnessDirection::Feasible(cases) = physical_joint_row_count_plan(&b, &targets) else {
             panic!("{dialect}: all-empty physical leaves jointly prove both zero outputs");
         };
         assert_eq!(cases.len(), 1);
@@ -873,10 +871,8 @@ fn conflicting_filtered_zero_and_positive_transparent_path_is_residual_not_impos
         ],
         "postgresql",
     );
-    let actual = physical_joint_row_count_plan(
-        &b,
-        &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 2)],
-    );
+    let actual =
+        physical_joint_row_count_plan(&b, &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 2)]);
     assert!(
         matches!(actual, WitnessDirection::Residual { .. }),
         "two rows at t can both fail a > 10 while satisfying other: {actual:?}"
@@ -908,10 +904,7 @@ fn shared_transparent_zero_and_positive_targets_are_impossible() {
         "postgresql",
     );
     assert!(matches!(
-        physical_joint_row_count_plan(
-            &b,
-            &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 1)]
-        ),
+        physical_joint_row_count_plan(&b, &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 1)]),
         WitnessDirection::Impossible
     ));
 }
