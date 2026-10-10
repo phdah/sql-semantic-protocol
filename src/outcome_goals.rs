@@ -557,10 +557,36 @@ fn assess_goal(
     // Histogram and group goals need additional typed value/group evidence.
     if goal.groups().is_none() && goal.distributions().is_empty() {
         if let Some(rows) = goal.rows() {
-            if matches!(
-                crate::physical_realization::physical_row_count_plan(bundle, layer.id(), rows,),
-                crate::constructive::WitnessDirection::Feasible(_)
-            ) {
+            let plan = crate::physical_realization::physical_row_count_plan(
+                bundle,
+                layer.id(),
+                rows,
+            );
+            if let crate::constructive::WitnessDirection::Feasible(cases) = &plan {
+                // SourceRows with an empty column list means unrestricted row
+                // values. A positive filtered count instead requires every
+                // physical row to satisfy its typed RowTruth formula; do not
+                // erase that obligation when lowering to the older outcome
+                // witness representation.
+                if cases.iter().any(|case| {
+                    case.obligations().iter().any(|obligation| {
+                        matches!(
+                            obligation,
+                            crate::constructive::WitnessObligation::Rows {
+                                predicate: crate::constructive::WitnessFormula::RowTruth { .. },
+                                ..
+                            }
+                        )
+                    })
+                }) {
+                    return Ok(assessed(
+                        goal,
+                        OutcomeGoalStatus::Residual,
+                        "physical filter row-count proof requires typed predicates not represented by SourceRows",
+                        min_rows,
+                        max_rows,
+                    ));
+                }
                 let physical =
                     crate::physical_realization::physical_source_plan(bundle, layer.id());
                 let witness = if rows == 0 {
