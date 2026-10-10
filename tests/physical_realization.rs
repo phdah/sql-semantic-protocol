@@ -127,6 +127,61 @@ fn complete_equi_join_populations_certify_shared_and_independent_sources() {
 }
 
 #[test]
+fn join_population_reconciles_joint_terminal_counts_without_duplicate_source_rows() {
+    for &dialect in DIALECTS {
+        let b = bundle(&[
+            "CREATE TABLE stage AS SELECT a,k FROM l",
+            "CREATE TABLE mart AS SELECT a,k FROM r",
+            "SELECT s.a FROM stage s JOIN mart m ON s.k=m.k",
+            "SELECT a FROM l",
+            "SELECT a FROM r",
+        ], dialect);
+        let targets = [
+            (b.layers()[2].id(), 3),
+            (b.layers()[3].id(), 3),
+            (b.layers()[4].id(), 3),
+        ];
+        let proof = physical_joint_source_plan(&b, &targets);
+        let WitnessDirection::Feasible(cases) = proof.outcome() else {
+            panic!("{dialect}: one consistent physical join and terminal population: {proof:?}");
+        };
+        assert!(cases.iter().all(|case| case.obligations().iter()
+            .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. })).count() == 2));
+        assert!(cases.iter().all(|case| case.obligations().iter()
+            .filter(|o| matches!(o, WitnessObligation::OutputRows { .. })).count() == 3));
+        assert!(cases.iter().any(|case| case.obligations().iter().any(|o| matches!(
+            o, WitnessObligation::JoinPopulation {
+                pattern: JoinPopulationPattern::DistinctMatched,
+                left_rows: 3, right_rows: 3, ..
+            }
+        ))));
+
+        let conflicting = physical_joint_source_plan(&b, &[
+            (b.layers()[2].id(), 3),
+            (b.layers()[3].id(), 2),
+            (b.layers()[4].id(), 2),
+        ]);
+        assert!(matches!(conflicting.outcome(), WitnessDirection::Residual { .. }),
+            "{dialect}: different keys and match multiplicity may remain feasible");
+
+        let shared = bundle(&[
+            "CREATE TABLE stage AS SELECT a,k FROM t",
+            "CREATE TABLE mart AS SELECT a,k FROM t",
+            "SELECT x.a FROM stage x JOIN mart y ON x.k=y.k",
+            "SELECT a FROM t",
+        ], dialect);
+        let proof = physical_joint_source_plan(&shared, &[
+            (shared.layers()[2].id(), 4), (shared.layers()[3].id(), 2)
+        ]);
+        let WitnessDirection::Feasible(cases) = proof.outcome() else {
+            panic!("{dialect}: same two physical rows yield four self-join pairs: {proof:?}");
+        };
+        assert!(cases.iter().all(|case| case.obligations().iter()
+            .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. })).count() == 1));
+    }
+}
+
+#[test]
 fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
     let cases = [
         ("SELECT l.a FROM l LEFT JOIN r ON l.k=r.k", 3, JoinPopulationPattern::EmptyRight),
