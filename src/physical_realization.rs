@@ -1384,8 +1384,21 @@ pub(crate) fn physical_materialized_join_witness(
     if walker.sources.len() != 2 {
         return None;
     }
-    let target = walker.layers.get(target_layer_id).copied()?;
-    let query = query_for(bundle, target)?;
+    let candidates = walker
+        .nodes
+        .iter()
+        .filter_map(|node| match node.id() {
+            PhysicalPlanRef::Layer(id) => {
+                let layer = walker.layers.get(id.as_str()).copied()?;
+                (query_for(bundle, layer)?.joins().len() == 1).then_some(layer)
+            }
+            PhysicalPlanRef::Source(_) => None,
+        })
+        .collect::<Vec<_>>();
+    let [join_layer] = candidates.as_slice() else {
+        return None;
+    };
+    let query = query_for(bundle, join_layer)?;
     if !query.plain_goal_output_shape()
         || query.joins().len() != 1
         || query.sources().len() != 2
@@ -1402,13 +1415,13 @@ pub(crate) fn physical_materialized_join_witness(
     {
         return None;
     }
-    let ComposedSemantics::Resolved(semantics) = target.composed_semantics() else {
+    let ComposedSemantics::Resolved(semantics) = join_layer.composed_semantics() else {
         return None;
     };
     let [join] = semantics.join_witnesses() else {
         return None;
     };
-    if join.origin_layer_id() != target_layer_id
+    if join.origin_layer_id() != join_layer.id()
         || !matches!(
             join.kind(),
             crate::protocol::JoinKind::Inner
@@ -1427,20 +1440,36 @@ pub(crate) fn physical_materialized_join_witness(
         return None;
     }
 
-    // The only other transformations are transparent, unfiltered reads
-    // of exactly one input. This excludes earlier operations that could
-    // introduce duplicates, drop join keys, or change their values.
+    // Before the join, only independent value- and row-preserving source
+    // copies are permitted. After it, every producer must consume exactly
+    // the preceding join result, with no additional row shaping.
+    let mut after_join = false;
+    let mut previous = None::<String>;
     for node in &walker.nodes {
         let PhysicalPlanRef::Layer(id) = node.id() else {
             continue;
         };
-        if id == target_layer_id {
+        if id == join_layer.id() {
+            after_join = true;
+            previous = Some(id.clone());
             continue;
         }
         let layer = walker.layers.get(id.as_str()).copied()?;
         if !transparent_projection(query_for(bundle, layer)?) {
             return None;
         }
+        if after_join {
+            let [PhysicalPlanRef::Layer(input_id)] = node.inputs() else {
+                return None;
+            };
+            if previous.as_deref() != Some(input_id.as_str()) {
+                return None;
+            }
+            previous = Some(id.clone());
+        }
+    }
+    if previous.as_deref() != Some(target_layer_id) {
+        return None;
     }
 
     let map = |endpoint: &crate::bundle::ComposedJoinColumn| {
@@ -1451,7 +1480,7 @@ pub(crate) fn physical_materialized_join_witness(
         let mapped = if walker.sources.contains(endpoint.relation()) {
             column
         } else {
-            resolve_filter_column(bundle, &walker, target_layer_id, &column, 0)?
+            resolve_filter_column(bundle, &walker, join_layer.id(), &column, 0)?
         };
         let relation = mapped.relation()?;
         walker.sources.contains(relation).then(|| {
