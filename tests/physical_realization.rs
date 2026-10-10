@@ -1346,6 +1346,76 @@ fn joint_plan_keeps_cycles_and_ambiguous_writers_typed_and_residual() {
 }
 
 #[test]
+fn joint_plan_handles_repeated_source_aliases_and_duplicate_physical_rows() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT x.a FROM t AS x",
+                "SELECT y.a FROM t AS y",
+                "SELECT z.a FROM r AS z",
+            ],
+            dialect,
+        );
+        let requested = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[1].id(), 3),
+            (b.layers()[2].id(), 2),
+        ];
+        let plan = physical_joint_source_plan(&b, &requested);
+        assert_eq!(plan.sources(), &["r".to_string(), "t".to_string()]);
+        assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: aliases preserve one shared source identity: {plan:?}");
+        let WitnessDirection::Feasible(cases) = plan.outcome() else {
+            unreachable!("asserted feasible");
+        };
+        assert_eq!(cases[0].obligations().iter().filter(|item|
+            matches!(item, WitnessObligation::ClosedWorld { .. })).count(), 2);
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER); CREATE TABLE r(a INTEGER);
+         INSERT INTO t VALUES (1), (1), (NULL);
+         INSERT INTO r VALUES (2), (2);",
+    )
+    .expect("duplicate and NULL inputs");
+    for (sql, expected) in [
+        ("SELECT COUNT(*) FROM t AS x", 3),
+        ("SELECT COUNT(*) FROM t AS y", 3),
+        ("SELECT COUNT(*) FROM r AS z", 2),
+    ] {
+        let actual: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
+        assert_eq!(actual, expected);
+    }
+}
+
+#[test]
+fn joint_plan_does_not_upgrade_missing_schema_or_partial_producers() {
+    let unknown = bundle_with_schemas(
+        &["SELECT a FROM t", "SELECT b FROM t"],
+        "postgresql",
+        &[],
+    );
+    let unknown_plan = physical_joint_source_plan(
+        &unknown,
+        &[(unknown.layers()[0].id(), 2), (unknown.layers()[1].id(), 2)],
+    );
+    assert!(matches!(unknown_plan.outcome(), WitnessDirection::Residual { .. }));
+    assert_eq!(unknown_plan.sources(), &["t".to_string()]);
+
+    let partial = bundle(
+        &[
+            "INSERT INTO stage SELECT a, b FROM t",
+            "SELECT a FROM stage",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(&partial, &[(partial.layers()[1].id(), 2)]);
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::PartialProducer));
+    assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
+    assert!(plan.nodes().iter().any(|node| node.write_kind().is_some()));
+}
+
+#[test]
 fn joint_terminal_goals_share_physical_rows_once_and_detect_conflicting_counts() {
     for &dialect in DIALECTS {
         let b = bundle(
