@@ -869,6 +869,24 @@ fn joint_counts_keep_filter_truth_and_fail_closed_on_distinct_conditions() {
 }
 
 #[test]
+fn positive_count_without_supported_boolean_witness_stays_residual() {
+    for query in [
+        "SELECT a FROM t WHERE a > 2",
+        "SELECT a FROM t WHERE a IS NULL",
+        "SELECT a FROM t WHERE a + 1 > 2 LIMIT 1",
+    ] {
+        let b = bundle(&[query], "postgresql");
+        assert!(
+            !matches!(
+                physical_row_count_plan(&b, b.layers()[0].id(), 3),
+                WitnessDirection::Feasible(_)
+            ),
+            "{query}: standalone scalar evidence is not yet an executable row witness"
+        );
+    }
+}
+
+#[test]
 fn joint_terminal_goals_share_physical_rows_once_and_detect_conflicting_counts() {
     for &dialect in DIALECTS {
         let b = bundle(
@@ -1139,5 +1157,27 @@ fn outcome_goal_adapter_emits_derived_physical_source_count_proofs() {
     assert_eq!(
         data["outcome_goals"][0]["witness"]["relations"],
         serde_json::json!(["t"])
+    );
+
+    // The legacy SourceRows witness cannot express positive RowTruth
+    // obligations. A typed physical count must not become unfiltered data.
+    let mut positive = bundle(
+        &["SELECT a, b FROM t WHERE a > 2 OR b < 0"],
+        "postgresql",
+    );
+    let positive_id = positive.layers()[0].id().to_string();
+    assert!(matches!(
+        physical_row_count_plan(&positive, &positive_id, 3),
+        WitnessDirection::Feasible(_)
+    ));
+    positive
+        .set_outcome_goals(&[
+            OutcomeGoal::new(&positive_id, Some(3), None, vec![])
+                .expect("positive filter goal"),
+        ])
+        .expect("goal attachment");
+    assert_eq!(
+        positive.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Residual
     );
 }
