@@ -8,10 +8,9 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
     physical_unconditional_delete_plan, AnalysisBundle, ConfiguredSqlInput, ConstraintValue,
-    OutcomeGoal, OutcomeGoalStatus,
-    OutcomeWitness, OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
-    WitnessObligation,
+    OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution, OutputValueCount,
+    PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
