@@ -1869,6 +1869,109 @@ pub(crate) fn physical_operator_count_witness(
     (previous == target_layer_id).then_some(witness)
 }
 
+/// Lift a locally exact GROUP BY/HAVING or ROW_NUMBER/QUALIFY population
+/// through transparent, type-certified producer chains. Other operators,
+/// computed projections, filtered parents, and additional physical sources
+/// retain residual classification rather than pretending producer outputs
+/// are directly writable.
+pub(crate) fn physical_materialized_group_or_rank_witness(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    rows: u64,
+    groups: Option<u64>,
+) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    if rows == 0 || groups.is_some_and(|count| count != rows) {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    if walker.sources.len() != 1 {
+        return None;
+    }
+    let mut operator_id = None;
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        let query = query_for(bundle, layer)?;
+        if transparent_projection(query) {
+            continue;
+        }
+        if operator_id.is_some()
+            || query.sources().len() != 1
+            || node.inputs().len() != 1
+            || query.joins().len() != 0
+            || query.set_operation().is_some()
+            || !query.subquery_witnesses().is_empty()
+        {
+            return None;
+        }
+        let group = query.group_rows_match_surviving_groups() && query.aggregation().is_some();
+        let rank = query.window_witness().is_some() && query.aggregation().is_none();
+        if !group && !rank {
+            return None;
+        }
+        operator_id = Some(id.as_str());
+    }
+    let operator_id = operator_id?;
+    let operator_layer = walker.layers.get(operator_id).copied()?;
+    let operator = query_for(bundle, operator_layer)?;
+
+    // The operator's sole parent must be an actual producer. Direct physical
+    // operators use their own existing direct-construction path.
+    let node = walker.nodes.iter().find(|node| {
+        node.id() == &PhysicalPlanRef::Layer(operator_id.to_string())
+    })?;
+    if !matches!(node.inputs(), [PhysicalPlanRef::Layer(_)]) {
+        return None;
+    }
+    // Its output must be followed by one linear, lossless producer path.
+    let mut current = target_layer_id;
+    for _ in 0..walker.layers.len() {
+        if current == operator_id {
+            break;
+        }
+        let descendant = walker.nodes.iter().find(|node| {
+            node.id() == &PhysicalPlanRef::Layer(current.to_string())
+        })?;
+        let [PhysicalPlanRef::Layer(parent)] = descendant.inputs() else {
+            return None;
+        };
+        current = parent;
+    }
+    if current != operator_id {
+        return None;
+    }
+    let map = |column: &crate::protocol::ColumnRef| {
+        let mapped = resolve_filter_column_with_evidence(
+            bundle, &walker, operator_id, column, 0, true,
+        )?;
+        walker.sources.contains(mapped.relation()?).then_some(mapped)
+    };
+    let goal = crate::outcome_goals::OutcomeGoal::new(
+        operator_id,
+        Some(rows),
+        groups,
+        Vec::new(),
+    ).ok()?;
+    if operator.aggregation().is_some() {
+        crate::outcome_proofs::construct_mapped_group(
+            bundle, operator, &goal, rows, &map,
+        )
+    } else {
+        if groups.is_some() {
+            return None;
+        }
+        crate::outcome_proofs::construct_mapped_rank(
+            bundle, operator, &goal, rows, &map,
+        )
+    }
+}
+
 /// Construct an exact positive equijoin cardinality through two
 /// independently materialized, identity-only producer branches. Local join
 /// evidence proves matching-pair semantics; tracing both join keys through
