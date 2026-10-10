@@ -420,8 +420,10 @@ fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
     ] {
         let b = bundle(&[sql], "postgresql");
         let proof = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
-        assert!(!matches!(proof.outcome(), WitnessDirection::Feasible(_)),
-            "{sql}: unproved row-shaping predicates may not be discarded");
+        assert!(
+            !matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+            "{sql}: unproved row-shaping predicates may not be discarded"
+        );
     }
 
     let b = bundle(&["SELECT l.a FROM l CROSS JOIN r"], "postgresql");
