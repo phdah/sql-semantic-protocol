@@ -3,9 +3,9 @@
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, local_constructive_witnesses,
-    physical_joint_source_plan,
-    parse_dbt_catalog, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessOperator,
+    parse_dbt_catalog, parse_dbt_manifest, physical_joint_source_plan, ComposedSemantics,
+    ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection,
+    WitnessOperator,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -116,7 +116,6 @@ fn schema_evidence_source_kinds_share_one_canonical_witness_model() {
         }
     }
 }
-
 #[test]
 fn canonical_joint_source_proofs_are_independent_of_schema_adapter_provenance() {
     use sql_semantic_protocol::SchemaSourceKind;
@@ -155,17 +154,17 @@ fn canonical_joint_source_proofs_are_independent_of_schema_adapter_provenance() 
         let catalog = RelationCatalog::from_schemas(&[schema]).expect("catalog");
         let bundle =
             analyze_configured_inputs_with_catalog(&configured, &catalog).expect("SQL analysis");
-        let goals = [
-            (bundle.layers()[0].id(), 3),
-            (bundle.layers()[1].id(), 3),
-        ];
+        let goals = [(bundle.layers()[0].id(), 3), (bundle.layers()[1].id(), 3)];
         let plan = physical_joint_source_plan(&bundle, &goals);
         assert!(
             matches!(plan.outcome(), WitnessDirection::Feasible(_)),
             "{kind:?}: {plan:?}"
         );
         if let Some(expected) = &baseline {
-            assert_eq!(&plan, expected, "schema provenance must not change canonical proof");
+            assert_eq!(
+                &plan, expected,
+                "schema provenance must not change canonical proof"
+            );
         } else {
             baseline = Some(plan);
         }
