@@ -523,6 +523,14 @@ remain explicitly residual. The existing operator-local
 physical realization. The protocol JSON contract is unchanged by this
 library-only foundational step.
 
+The closed-world zero-output direction additionally proves zero groups
+for explicitly non-empty ordinary GROUP BY keys, including multi-source
+joins followed by HAVING and downstream filters. Empty grouping sets,
+ROLLUP/CUBE and global aggregate projections are not certified: global
+aggregates can emit one row even for empty physical inputs. Nested
+aggregates within arithmetic or functions are also excluded from
+non-grouped row-local proofs.
+
 The physical-source Rust API also proves exact row counts through
 schema-backed transparent producer chains and jointly consistent terminal
 projections of a shared source. It retains each node's origin-local operator
