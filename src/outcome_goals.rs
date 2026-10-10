@@ -531,8 +531,7 @@ fn assess_goal(
         && query.is_some_and(QueryStatement::group_rows_match_surviving_groups);
     let empty_histograms = goal.rows() == Some(0)
         && goal.groups().is_none_or(|groups| {
-            groups == 0
-                && query.is_some_and(QueryStatement::group_rows_match_surviving_groups)
+            groups == 0 && query.is_some_and(QueryStatement::group_rows_match_surviving_groups)
         });
     if (grouped_empty || empty_histograms)
         && matches!(
