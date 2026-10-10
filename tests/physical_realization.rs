@@ -1088,7 +1088,10 @@ fn physical_scalar_count_rejects_opaque_or_noninvertible_filters() {
         let b = bundle(&[query], "postgresql");
         let id = b.layers()[0].id();
         assert!(
-            !matches!(physical_row_count_plan(&b, id, 3), WitnessDirection::Feasible(_)),
+            !matches!(
+                physical_row_count_plan(&b, id, 3),
+                WitnessDirection::Feasible(_)
+            ),
             "{query}: unsupported source count must remain residual"
         );
     }
@@ -1218,15 +1221,119 @@ fn positive_unfiltered_and_zero_filtered_targets_share_nonempty_rejected_source(
 }
 
 #[test]
-fn joint_terminal_zero_from_filter_is_not_conflated_with_positive_source_rows() {
+fn shared_source_many_terminal_positive_and_negative_goals_are_jointly_constructed() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT b FROM t",
+                "SELECT a FROM t WHERE a > 10",
+                "SELECT b FROM t WHERE a > 10",
+                "SELECT a FROM t WHERE b < 0",
+            ],
+            dialect,
+        );
+        let outputs = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[1].id(), 3),
+            (b.layers()[2].id(), 0),
+            (b.layers()[3].id(), 0),
+        ];
+        let proof = physical_joint_row_count_plan(&b, &outputs);
+        let WitnessDirection::Feasible(cases) = proof else {
+            panic!("{dialect}: shared positive and rejected row goals: {proof:?}");
+        };
+        assert_eq!(cases.len(), 1);
+        let obligations = cases[0].obligations();
+        assert_eq!(
+            obligations.iter().filter(|o| matches!(o, WitnessObligation::Rows { .. })).count(),
+            1,
+        );
+        assert_eq!(
+            obligations.iter().filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. })).count(),
+            1,
+        );
+        assert_eq!(
+            obligations.iter().filter(|o| matches!(o, WitnessObligation::OutputRows { .. })).count(),
+            4,
+        );
+        assert!(obligations.iter().any(|o| matches!(
+            o,
+            WitnessObligation::Rows {
+                predicate: WitnessFormula::RowTruth {
+                    truth: sql_semantic_protocol::BooleanTruthCase::NotTrue,
+                    ..
+                },
+                bounds,
+                ..
+            } if bounds.minimum() == 3 && bounds.maximum() == Some(3)
+        )));
+        // Independent rejection constraints are not assumed to be compatible.
+        let unsupported = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[2].id(), 0),
+            (b.layers()[4].id(), 0),
+        ];
+        assert!(matches!(
+            physical_joint_row_count_plan(&b, &unsupported),
+            WitnessDirection::Residual { .. }
+        ));
+        assert!(matches!(
+            physical_joint_row_count_plan(
+                &b,
+                &[
+                    (b.layers()[0].id(), 3),
+                    (b.layers()[1].id(), 4),
+                    (b.layers()[2].id(), 0),
+                ],
+            ),
+            WitnessDirection::Impossible
+        ));
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER,b INTEGER,k INTEGER);
+         INSERT INTO t VALUES (0,1,NULL),(NULL,2,NULL),(5,3,NULL);",
+    )
+    .expect("three controlled source rows");
+    for sql in [
+        "SELECT COUNT(*) FROM t",
+        "SELECT COUNT(b) FROM t",
+        "SELECT COUNT(*) FROM t WHERE a > 10",
+        "SELECT COUNT(*) FROM t WHERE a > 10 AND b IS NOT NULL",
+    ] {
+        let count: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
+        assert_eq!(
+            count,
+            if sql.contains("WHERE") { 0 } else { 3 },
+            "{sql}"
+        );
+    }
+}
+
+#[test]
+fn joint_terminal_zero_from_filter_is_proved_by_nonempty_rejected_source_rows() {
     let b = bundle(
         &["SELECT a FROM t WHERE a > 1", "SELECT a FROM t"],
         "postgresql",
     );
-    assert!(matches!(
-        physical_joint_row_count_plan(&b, &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 2)]),
-        WitnessDirection::Residual { .. },
-    ));
+    let witness =
+        physical_joint_row_count_plan(&b, &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 2)]);
+    let WitnessDirection::Feasible(cases) = witness else {
+        panic!("two fully rejected physical rows prove filtered output zero: {witness:?}");
+    };
+    assert!(cases[0].obligations().iter().any(|obligation| matches!(
+        obligation,
+        WitnessObligation::Rows {
+            predicate: WitnessFormula::RowTruth {
+                truth: sql_semantic_protocol::BooleanTruthCase::NotTrue,
+                ..
+            },
+            bounds,
+            ..
+        } if bounds.minimum() == 2 && bounds.maximum() == Some(2)
+    )));
 }
 
 #[test]
@@ -1282,7 +1389,7 @@ fn simultaneous_empty_filtered_and_joined_terminals_reuse_sources_once() {
 }
 
 #[test]
-fn conflicting_filtered_zero_and_positive_transparent_path_is_residual_not_impossible() {
+fn compatible_filtered_zero_and_positive_transparent_path_is_constructive() {
     let b = bundle(
         &[
             "CREATE TABLE filtered AS SELECT a FROM t WHERE a > 10",
@@ -1293,7 +1400,7 @@ fn conflicting_filtered_zero_and_positive_transparent_path_is_residual_not_impos
     let actual =
         physical_joint_row_count_plan(&b, &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 2)]);
     assert!(
-        matches!(actual, WitnessDirection::Residual { .. }),
+        matches!(actual, WitnessDirection::Feasible(_)),
         "two rows at t can both fail a > 10 while satisfying other: {actual:?}"
     );
     let conn = Connection::open_in_memory().expect("duckdb");
