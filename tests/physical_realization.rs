@@ -1439,16 +1439,28 @@ fn shared_source_many_terminal_positive_and_negative_goals_are_jointly_construct
                 ..
             } if bounds.minimum() == 3 && bounds.maximum() == Some(3)
         )));
-        // Independent rejection constraints are not assumed to be compatible.
-        let unsupported = [
+        // Different negative predicates must be jointly rejected by each
+        // physical source row, not satisfied by independent examples.
+        let shared_rejections = [
             (b.layers()[0].id(), 3),
             (b.layers()[2].id(), 0),
             (b.layers()[4].id(), 0),
         ];
-        assert!(matches!(
-            physical_joint_row_count_plan(&b, &unsupported),
-            WitnessDirection::Residual { .. }
-        ));
+        let witness = physical_joint_row_count_plan(&b, &shared_rejections);
+        let WitnessDirection::Feasible(cases) = witness else {
+            panic!("{dialect}: different predicates can reject the same rows: {witness:?}");
+        };
+        assert!(cases[0].obligations().iter().any(|obligation| matches!(
+            obligation,
+            WitnessObligation::Rows {
+                predicate: WitnessFormula::RowTruth {
+                    predicate: BooleanRowConstraint::Any(children),
+                    truth: BooleanTruthCase::NotTrue,
+                    ..
+                },
+                ..
+            } if children.len() == 2
+        )));
         assert!(matches!(
             physical_joint_row_count_plan(
                 &b,
@@ -1476,6 +1488,66 @@ fn shared_source_many_terminal_positive_and_negative_goals_are_jointly_construct
     ] {
         let count: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
         assert_eq!(count, if sql.contains("WHERE") { 0 } else { 3 }, "{sql}");
+    }
+}
+
+#[test]
+fn joint_negative_filters_prove_sql_not_true_without_disconnected_examples() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT b FROM t WHERE b > 5",
+            ],
+            dialect,
+        );
+        assert!(matches!(
+            physical_joint_row_count_plan(
+                &b,
+                &[
+                    (b.layers()[0].id(), 2),
+                    (b.layers()[1].id(), 0),
+                    (b.layers()[2].id(), 0),
+                ]
+            ),
+            WitnessDirection::Feasible(_)
+        ), "{dialect}: nonnull a and UNKNOWN/FALSE b reject both filters");
+
+        let contradiction = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT a FROM t WHERE a IS NOT NULL",
+            ],
+            dialect,
+        );
+        assert!(matches!(
+            physical_joint_row_count_plan(
+                &contradiction,
+                &[
+                    (contradiction.layers()[0].id(), 2),
+                    (contradiction.layers()[1].id(), 0),
+                    (contradiction.layers()[2].id(), 0),
+                ]
+            ),
+            WitnessDirection::Impossible
+        ), "{dialect}: every nonempty row satisfies one NULL-complement filter");
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (1,NULL),(2,3);",
+    )
+    .expect("two physical rows");
+    for (sql, expected) in [
+        ("SELECT COUNT(*) FROM t", 2),
+        ("SELECT COUNT(*) FROM t WHERE a IS NULL", 0),
+        ("SELECT COUNT(*) FROM t WHERE b > 5", 0),
+    ] {
+        let actual: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("count");
+        assert_eq!(actual, expected, "{sql}");
     }
 }
 
