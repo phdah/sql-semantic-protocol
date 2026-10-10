@@ -1558,6 +1558,113 @@ fn joint_negative_filters_prove_sql_not_true_without_disconnected_examples() {
 }
 
 #[test]
+fn mixed_positive_and_negative_goals_share_one_complete_physical_assignment() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t",
+                "SELECT a FROM stage WHERE a > 0",
+                "SELECT b FROM t WHERE a < 10",
+                "SELECT a FROM t WHERE b IS NULL",
+            ],
+            dialect,
+        );
+        let goals = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[1].id(), 3),
+            (b.layers()[2].id(), 3),
+            (b.layers()[3].id(), 0),
+        ];
+        let proof = physical_joint_row_count_plan(&b, &goals);
+        let WitnessDirection::Feasible(cases) = proof else {
+            panic!("{dialect}: all terminals must share the same source rows: {proof:?}");
+        };
+        let [case] = cases.as_slice() else {
+            panic!("{dialect}: exactly one joint construction required");
+        };
+        assert_eq!(
+            case.obligations()
+                .iter()
+                .filter(|item| matches!(item, WitnessObligation::ClosedWorld { .. }))
+                .count(),
+            1
+        );
+        assert!(case.obligations().iter().any(|item| matches!(
+            item,
+            WitnessObligation::Rows {
+                predicate: WitnessFormula::All(items),
+                ..
+            } if items.len() == 3
+        )));
+        assert_eq!(
+            case.obligations()
+                .iter()
+                .filter(|item| matches!(item, WitnessObligation::OutputRows { .. }))
+                .count(),
+            4
+        );
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (1,0), (2,2), (3,3);
+         CREATE TABLE stage AS SELECT a, b FROM t;",
+    )
+    .expect("shared physical rows and materialization");
+    for (sql, expected) in [
+        ("SELECT COUNT(*) FROM stage", 3),
+        ("SELECT COUNT(*) FROM stage WHERE a > 0", 3),
+        ("SELECT COUNT(*) FROM t WHERE a < 10", 3),
+        ("SELECT COUNT(*) FROM t WHERE b IS NULL", 0),
+    ] {
+        let actual: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
+        assert_eq!(actual, expected, "{sql}");
+    }
+}
+
+#[test]
+fn mixed_truth_goals_reject_incompatible_row_membership_without_overclaiming() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT a FROM t",
+            ],
+            dialect,
+        );
+        assert!(matches!(
+            physical_joint_row_count_plan(
+                &b,
+                &[(b.layers()[0].id(), 2), (b.layers()[1].id(), 0)],
+            ),
+            WitnessDirection::Impossible
+        ), "{dialect}: one positive candidate cannot be universally rejected");
+
+        let disjoint_positive = bundle(
+            &[
+                "SELECT a FROM t WHERE a < 0",
+                "SELECT a FROM t WHERE a > 10",
+                "SELECT a FROM t WHERE b IS NULL",
+            ],
+            dialect,
+        );
+        assert!(matches!(
+            physical_joint_row_count_plan(
+                &disjoint_positive,
+                &[
+                    (disjoint_positive.layers()[0].id(), 2),
+                    (disjoint_positive.layers()[1].id(), 2),
+                    (disjoint_positive.layers()[2].id(), 0),
+                ],
+            ),
+            WitnessDirection::Residual { .. }
+        ), "{dialect}: two disjoint positive groups could use extra distinct rows");
+    }
+}
+
+#[test]
 fn joint_terminal_zero_from_filter_is_proved_by_nonempty_rejected_source_rows() {
     let b = bundle(
         &["SELECT a FROM t WHERE a > 1", "SELECT a FROM t"],
