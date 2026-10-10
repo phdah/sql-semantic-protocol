@@ -877,8 +877,8 @@ fn negative_closed_world_proof_requires_joint_filters_and_no_unproved_shaping() 
         WitnessDirection::Feasible(_)
     ));
     for query in [
-        "SELECT a FROM t WHERE a > 2",
         "SELECT a FROM t WHERE a > 2 OR b < 0 LIMIT 1",
+        "SELECT a FROM t WHERE a * 2 > 5",
         "SELECT l.a FROM l JOIN r ON l.k = r.k",
     ] {
         let b = bundle(&[query], "postgresql");
@@ -1026,19 +1026,70 @@ fn joint_counts_keep_filter_truth_and_fail_closed_on_distinct_conditions() {
 }
 
 #[test]
-fn positive_count_without_supported_boolean_witness_stays_residual() {
+fn physical_single_comparison_and_null_filters_construct_closed_world_counts() {
+    for &dialect in DIALECTS {
+        for query in [
+            "SELECT a FROM t WHERE a > 2",
+            "SELECT a FROM t WHERE a IS NULL",
+            "SELECT a FROM t WHERE a IS NOT NULL",
+        ] {
+            let b = bundle(&[query], dialect);
+            for requested in [1, 3] {
+                let id = b.layers()[0].id();
+                let positive = physical_row_count_plan(&b, id, requested);
+                assert!(
+                    matches!(positive, WitnessDirection::Feasible(_)),
+                    "{dialect}: {query}: positive {requested}: {positive:?}"
+                );
+                let negative = physical_rejected_row_count_plan(&b, id, requested);
+                assert!(
+                    matches!(negative, WitnessDirection::Feasible(_)),
+                    "{dialect}: {query}: negative {requested}: {negative:?}"
+                );
+            }
+        }
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a FROM t WHERE a > 2",
+                "SELECT a FROM stage",
+            ],
+            dialect,
+        );
+        assert!(matches!(
+            physical_row_count_plan(&b, b.layers()[1].id(), 3),
+            WitnessDirection::Feasible(_)
+        ));
+    }
+    let db = Connection::open_in_memory().expect("duckdb");
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER,b INTEGER,k INTEGER);
+         INSERT INTO t VALUES (3,NULL,NULL),(4,2,NULL),(5,2,NULL);",
+    )
+    .expect("source rows");
+    let positive: i64 = db
+        .query_row("SELECT COUNT(*) FROM t WHERE a > 2", [], |row| row.get(0))
+        .expect("positive");
+    db.execute_batch("DELETE FROM t; INSERT INTO t VALUES (0,0,0),(NULL,0,0),(2,0,0);")
+        .expect("rejected rows");
+    let negative: i64 = db
+        .query_row("SELECT COUNT(*) FROM t WHERE a > 2", [], |row| row.get(0))
+        .expect("negative");
+    assert_eq!((positive, negative), (3, 0));
+}
+
+#[test]
+fn physical_scalar_count_rejects_opaque_or_noninvertible_filters() {
     for query in [
-        "SELECT a FROM t WHERE a > 2",
-        "SELECT a FROM t WHERE a IS NULL",
         "SELECT a FROM t WHERE a + 1 > 2 LIMIT 1",
+        "SELECT a FROM t WHERE a IS NOT NULL LIMIT 1",
+        "SELECT a FROM t WHERE a * 2 > 5",
+        "SELECT a FROM t WHERE a > 2147483647",
     ] {
         let b = bundle(&[query], "postgresql");
+        let id = b.layers()[0].id();
         assert!(
-            !matches!(
-                physical_row_count_plan(&b, b.layers()[0].id(), 3),
-                WitnessDirection::Feasible(_)
-            ),
-            "{query}: standalone scalar evidence is not yet an executable row witness"
+            !matches!(physical_row_count_plan(&b, id, 3), WitnessDirection::Feasible(_)),
+            "{query}: unsupported source count must remain residual"
         );
     }
 }
