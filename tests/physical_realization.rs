@@ -1197,6 +1197,39 @@ fn direct_join_group_and_set_counts_survive_materialized_copy_chains() {
 }
 
 #[test]
+fn ranked_operator_count_survives_transparent_materialization() {
+    let mut b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a, ROW_NUMBER() OVER (PARTITION BY k ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn = 1",
+            "SELECT a FROM stage",
+        ],
+        "duckdb",
+    );
+    let id = b.layers()[1].id().to_string();
+    b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(2), None, vec![]).expect("goal")])
+        .expect("attach");
+    assert!(matches!(
+        b.outcome_goals()[0].witness(),
+        Some(OutcomeWitness::Ranked { rows: 2, .. })
+    ));
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER, k INTEGER);
+         INSERT INTO t VALUES (10,1,1),(11,2,1),(20,1,2);
+         CREATE TABLE stage AS SELECT a,
+           ROW_NUMBER() OVER (PARTITION BY k ORDER BY b ASC NULLS LAST) AS rn
+           FROM t QUALIFY rn = 1;",
+    )
+    .expect("ranked rows");
+    let rows: i64 = conn
+        .query_row("SELECT COUNT(*) FROM (SELECT a FROM stage)", [], |row| {
+            row.get(0)
+        })
+        .expect("ranked cardinality");
+    assert_eq!(rows, 2);
+}
+
+#[test]
 fn downstream_filters_do_not_inherit_unqualified_join_constructions() {
     let b = bundle(
         &[
