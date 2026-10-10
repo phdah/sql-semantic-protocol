@@ -219,6 +219,13 @@ fn join_population_reconciles_joint_terminal_counts_without_duplicate_source_row
         assert!(matches!(conflicting.outcome(), WitnessDirection::Residual { .. }),
             "{dialect}: different keys and match multiplicity may remain feasible");
 
+        let necessarily_impossible = physical_joint_source_plan(&b, &[
+            (b.layers()[2].id(), 3),
+            (b.layers()[4].id(), 0),
+        ]);
+        assert!(matches!(necessarily_impossible.outcome(), WitnessDirection::Impossible),
+            "{dialect}: positive inner join cannot read a fully empty right source");
+
         let shared = bundle(&[
             "CREATE TABLE stage AS SELECT a,k FROM t",
             "CREATE TABLE mart AS SELECT a,k FROM t",
