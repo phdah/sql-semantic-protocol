@@ -14,7 +14,7 @@ use crate::join_witness::{JoinWitnessDirection, JoinWitnessShape};
 use crate::outcome_goals::{OutcomeGoal, OutputValueCount};
 use crate::protocol::{
     ColumnRef, ComparisonOperator, Expression, JoinKind, QueryStatement, SetMultiplicityRule,
-    SetWitnessCase, SetWitnessDirection,
+    SetWitnessBoundary, SetWitnessCase, SetWitnessDirection,
 };
 use crate::relation::RelationSchema;
 use crate::window_witness::{WindowOrderKey, WindowWitnessDirection};
@@ -614,6 +614,30 @@ fn construct_set(
     goal: &OutcomeGoal,
     rows: u64,
 ) -> Option<OutcomeWitness> {
+    construct_set_with_map(bundle, query, goal, rows, &|boundary| {
+        (!boundary.is_intermediate()).then(|| boundary.clone())
+    })
+}
+
+/// Preserve the local set operation's exact bag and NULL-aware tuple law,
+/// replacing only source-relation boundaries proved equivalent by producers.
+pub(crate) fn construct_mapped_set(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&SetWitnessBoundary) -> Option<SetWitnessBoundary>,
+) -> Option<OutcomeWitness> {
+    construct_set_with_map(bundle, query, goal, rows, map)
+}
+
+fn construct_set_with_map(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&SetWitnessBoundary) -> Option<SetWitnessBoundary>,
+) -> Option<OutcomeWitness> {
     if goal.groups().is_some()
         || !query.diagnostics().is_empty()
         || query.output().columns().len() != 1
@@ -626,6 +650,7 @@ fn construct_set(
         return None;
     }
     let mut relations = Vec::new();
+    let mut boundaries = Vec::new();
     for branch in branches {
         if branch.output().columns().len() != 1
             || !matches!(
@@ -641,13 +666,17 @@ fn construct_set(
             return None;
         }
         let boundary = branch.witness_boundary()?;
-        if boundary.is_intermediate()
-            || boundary.tuple_columns().len() != 1
+        if boundary.tuple_columns().len() != 1
             || branch.dependencies()[0] != boundary.relation()
         {
             return None;
         }
-        relations.push(boundary.relation());
+        let physical = map(boundary)?;
+        if physical.is_intermediate() || physical.tuple_columns().len() != 1 {
+            return None;
+        }
+        relations.push(physical.relation());
+        boundaries.push(physical);
     }
     if relations[0] == relations[1] {
         return None;
@@ -690,8 +719,7 @@ fn construct_set(
         }
         _ => return None,
     };
-    for branch in branches {
-        let boundary = branch.witness_boundary()?;
+    for boundary in &boundaries {
         let column = &boundary.tuple_columns()[0];
         if !integer_key(bundle, boundary.relation(), column, rows) {
             return None;
@@ -708,7 +736,8 @@ fn construct_set(
     };
     let case = cases
         .into_iter()
-        .find(|case| case.output_tuple_count() == 1 && case.obligations().len() == 2)?;
+        .find(|case| case.output_tuple_count() == 1 && case.obligations().len() == 2)?
+        .with_physical_boundaries(map)?;
     let scale_by_value_rows = matches!(
         operation.multiplicity_rule()?,
         SetMultiplicityRule::Sum
