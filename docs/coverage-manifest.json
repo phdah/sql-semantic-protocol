@@ -5,7 +5,7 @@
   "task_68_physical_source_evidence": {
     "status": "partial_reference_dag_and_zero_row_proof_release_blocked",
     "owner": "TASK-68",
-    "canonical_contract": "shared physical_nodes and per-layer physical_source_plans plus optional row-only physical_joint_count_plan with a canonical source DAG and one typed feasible/impossible/residual outcome",
+    "canonical_contract": "reference DAG, typed full physical source row populations, closed-world join-key patterns, and jointly coupled terminal row-count plans",
     "rust_api": [
       "physical_source_plan",
       "physical_row_count_plan",
@@ -15,7 +15,8 @@
       "PhysicalPlanRef",
       "physical_joint_source_plan",
       "PhysicalJointSourcePlan",
-      "PhysicalRowTarget"
+      "PhysicalRowTarget",
+      "JoinPopulationPattern"
     ],
     "verified_scope": [
       "physical_source_reference_deduplication",
@@ -50,14 +51,21 @@
       "typed_multistage_materialization_lineage",
       "typed_cross_row_correlation_residuals",
       "joint_physical_row_count_json_contract",
-      "mixed_sql_three_valued_positive_negative_proofs"
+      "mixed_sql_three_valued_positive_negative_proofs",
+      "typed_complete_equi_join_key_populations",
+      "independent_multilayer_parent_join_counts",
+      "shared_materialized_producer_self_join_key_identity",
+      "duplicate_bag_many_to_many_join_cardinality",
+      "outer_join_empty_partner_null_extensions",
+      "semi_anti_matching_and_absence_cases",
+      "joint_multi_terminal_join_key_reconciliation",
+      "necessary_join_positive_versus_transparent_zero_impossibility"
     ],
     "evidence": [
       "tests/physical_realization.rs",
       "docs/protocol.md"
     ],
     "unproved_scope": [
-      "multi_parent_and_join_planning",
       "full_nonzero_cardinality",
       "general_negative_absence",
       "DML_and_transaction_state_realization",
@@ -65,7 +73,10 @@
       "unproved_joint_mixed_operator_relational_dags",
       "cross_row_shared_source_correlations_beyond_scalar_truth",
       "filtered_or_noninvertible_multilayer_producer_semantics",
-      "shared_source_join_group_window_set_cross_row_realizability"
+      "shared_source_join_group_window_set_cross_row_realizability",
+      "unproved_cross_join_without_local_exact_witness",
+      "unproved_general_multi_join_operator_chain",
+      "unproved_key_distribution_for_filtering_join_inputs"
     ],
     "release_limit": "This records foundational partial evidence only. All TASK-68 acceptance criteria remain open and the 3.0.0 release gate is held.",
     "child_tasks": [

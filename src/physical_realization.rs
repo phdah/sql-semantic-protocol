@@ -12,8 +12,9 @@ use crate::bundle::{
 };
 use crate::constructive::{
     local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
-    ConstructiveWitness, CountBounds, ProofStrength, RowQuantifier, WitnessBoundary, WitnessCase,
-    WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
+    ConstructiveWitness, CountBounds, JoinPopulationPattern, ProofStrength, RowQuantifier,
+    RowVariable, WitnessBoundary, WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation,
+    WitnessOperator, WitnessTerm,
 };
 use crate::protocol::{
     Expression, GroupBy, GroupingExpression, Predicate, ProtocolStatement, QueryStatement,
@@ -1399,6 +1400,12 @@ pub fn physical_row_count_plan(
             .and_then(|case| WitnessDirection::feasible(vec![case]))
             .unwrap_or_else(|| residual(PhysicalProofGap::NoWitness));
     }
+    // The complete join population is already a physical closed-world
+    // construction. Do not let the earlier one-source filter specialization
+    // hide multi-parent or repeated-source join proofs.
+    if let Some(join_plan) = physical_join_population_count_plan(bundle, target_layer_id, rows) {
+        return join_plan;
+    }
     if physical.sources().len() != 1 {
         return residual(PhysicalProofGap::UnboundPhysicalSource);
     }
@@ -1995,6 +2002,553 @@ pub(crate) fn physical_materialized_join_witness(
     crate::outcome_proofs::construct_mapped_join_pairs(bundle, &left, &right, rows)
 }
 
+/// Realize one local equijoin through a complete physical source population
+/// shared by all its named producers and aliases. No intermediate relation is
+/// treated as writable. Each source receives one cardinality and one assigned
+/// integer key sequence, with SQL bag/outer/semi/anti laws checked symbolically.
+fn physical_join_population_count_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+) -> Option<WitnessDirection> {
+    use crate::join_witness::JoinWitnessDirection;
+    use crate::protocol::JoinKind;
+
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let join_layers = walker
+        .nodes
+        .iter()
+        .filter_map(|node| {
+            let PhysicalPlanRef::Layer(id) = node.id() else {
+                return None;
+            };
+            let layer = walker.layers.get(id.as_str()).copied()?;
+            (query_for(bundle, layer)?.joins().len() == 1).then_some(layer)
+        })
+        .collect::<Vec<_>>();
+    let [join_layer] = join_layers.as_slice() else {
+        return None;
+    };
+    let join_query = query_for(bundle, join_layer)?;
+    if !join_query.plain_goal_output_shape()
+        || join_query.joins().len() != 1
+        || !matches!(
+            join_query.joins()[0].condition(),
+            Some(Predicate::Comparison(_))
+        )
+        || join_query.sources().len() != 2
+        || join_query.aggregation().is_some()
+        || join_query.set_operation().is_some()
+        || join_query.window_witness().is_some()
+        || !join_query.subquery_witnesses().is_empty()
+        || join_query.predicates().where_predicate().is_some()
+        || join_query.predicates().having_predicate().is_some()
+        || join_query.predicates().qualify_predicate().is_some()
+        || !join_query.diagnostics().is_empty()
+        || join_query.output().columns().iter().any(|column| {
+            !matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
+        })
+    {
+        return None;
+    }
+
+    let ComposedSemantics::Resolved(semantics) = join_layer.composed_semantics() else {
+        return None;
+    };
+    let [join] = semantics.join_witnesses() else {
+        return None;
+    };
+    if join.origin_layer_id() != join_layer.id()
+        || join.comparison() != Some(crate::protocol::ComparisonOperator::Eq)
+        || !matches!(join.qualifying(), JoinWitnessDirection::Exact(_))
+        || matches!(join.kind(), JoinKind::Cross | JoinKind::Unknown)
+    {
+        return None;
+    }
+
+    // Every node other than this one join must be an identity-only,
+    // unfiltered, complete, materialized or inline projection. This also
+    // handles arbitrarily long left and right producer chains.
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        if id == join_layer.id() {
+            continue;
+        }
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        if !transparent_projection(query_for(bundle, layer)?)
+            || !matches!(node.write_kind(), None | Some(WriteKind::Definition))
+        {
+            return None;
+        }
+    }
+
+    // The target may follow the join through a linear sequence of copies,
+    // never through unrelated branches or a second join.
+    let mut descendant = target_layer_id;
+    for _ in 0..walker.layers.len() {
+        if descendant == join_layer.id() {
+            break;
+        }
+        let node = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(descendant.to_string()))?;
+        let [PhysicalPlanRef::Layer(parent)] = node.inputs() else {
+            return None;
+        };
+        descendant = parent;
+    }
+    if descendant != join_layer.id() {
+        return None;
+    }
+
+    let map = |endpoint: &crate::bundle::ComposedJoinColumn| {
+        let column = crate::protocol::ColumnRef::new(
+            Some(endpoint.relation().to_string()),
+            endpoint.column().to_string(),
+        );
+        let mapped = if walker.sources.contains(endpoint.relation()) {
+            column
+        } else {
+            // All intermediate key projections have proven identical
+            // datatypes at every producer edge. An endpoint-only match
+            // cannot attest to implicit warehouse coercions.
+            resolve_filter_column_with_evidence(bundle, &walker, join_layer.id(), &column, 0, true)?
+        };
+        walker
+            .sources
+            .contains(mapped.relation()?)
+            .then_some((mapped, endpoint.relation_instance().to_string()))
+    };
+    let (left_key, left_instance) = map(join.left()?)?;
+    let (right_key, right_instance) = map(join.right()?)?;
+    if left_instance == right_instance {
+        return None;
+    }
+    let left_source = left_key.relation()?;
+    let right_source = right_key.relation()?;
+    // Require actual attested physical signed integer key types. An opaque
+    // type, uniqueness contract or range restriction cannot be guessed.
+    let left_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == left_source)?;
+    let right_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == right_source)?;
+    let left_bounds = physical_integer_evidence(left_schema, &left_key)?;
+    let right_bounds = physical_integer_evidence(right_schema, &right_key)?;
+    if left_bounds.minimum > 0
+        || right_bounds.minimum > 0
+        || left_bounds.maximum < 0
+        || right_bounds.maximum < 0
+        || [left_source, right_source].iter().any(|relation| {
+            bundle.relation_constraints().iter().any(|set| {
+                set.relation() == *relation
+                    && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+            })
+        })
+    {
+        return None;
+    }
+
+    let left_row = RowVariable::new(left_source, &left_instance, "join_left")?;
+    let right_row = RowVariable::new(right_source, &right_instance, "join_right")?;
+    let mut candidates = vec![
+        (JoinPopulationPattern::DistinctMatched, wanted, wanted),
+        (JoinPopulationPattern::CommonMatched, wanted, 1),
+        (JoinPopulationPattern::CommonMatched, 1, wanted),
+        (JoinPopulationPattern::EmptyRight, wanted, 0),
+        (JoinPopulationPattern::EmptyLeft, 0, wanted),
+    ];
+    if wanted == 0 {
+        candidates.push((JoinPopulationPattern::EmptyLeft, 0, 0));
+    }
+    // Enumerate bounded factorizations without floating-point roundoff.
+    // These are constructive examples only, never an exhaustive proof that
+    // other key histograms cannot realize the requested bag count.
+    for divisor in 2..=wanted.isqrt().min(64) {
+        if wanted.is_multiple_of(divisor) {
+            let other = wanted / divisor;
+            candidates.push((JoinPopulationPattern::CommonMatched, divisor, other));
+            candidates.push((JoinPopulationPattern::CommonMatched, other, divisor));
+        }
+    }
+    let mut cases = Vec::new();
+    for (pattern, left_rows, right_rows) in candidates {
+        if pattern.output_rows(join.kind(), left_rows, right_rows) != Some(wanted)
+            || (left_source == right_source && left_rows != right_rows)
+        {
+            continue;
+        }
+        let max_value = if pattern == JoinPopulationPattern::DistinctMatched {
+            i128::from(left_rows.saturating_sub(1))
+        } else {
+            0
+        };
+        if (left_rows > 0 && max_value > left_bounds.maximum)
+            || (right_rows > 0 && max_value > right_bounds.maximum)
+        {
+            continue;
+        }
+        let mut physical_counts = BTreeMap::new();
+        physical_counts.insert(left_source.to_string(), left_rows);
+        physical_counts.insert(right_source.to_string(), right_rows);
+        let mut obligations = Vec::new();
+        for (relation, count) in &physical_counts {
+            let boundary =
+                WitnessBoundary::new(relation, GroupBoundaryKind::Physical, target_layer_id)?;
+            let bounds = CountBounds::new(*count, Some(*count))?;
+            obligations.push(WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds,
+                predicate: count_tautology(),
+                closed_world: true,
+            });
+            obligations.push(WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            });
+        }
+        obligations.push(WitnessObligation::JoinPopulation {
+            left_row: left_row.clone(),
+            right_row: right_row.clone(),
+            left_key: left_key.clone(),
+            right_key: right_key.clone(),
+            join_kind: join.kind(),
+            pattern,
+            left_rows,
+            right_rows,
+            output_rows: wanted,
+            closed_world: true,
+        });
+        match pattern {
+            JoinPopulationPattern::DistinctMatched | JoinPopulationPattern::CommonMatched => {
+                // The complete key-population law establishes all pairs.
+                // Retain an existing typed local matched-pair obligation
+                // as one representative without substituting it for that law.
+                obligations.push(WitnessObligation::JoinPair {
+                    left_row: left_row.clone(),
+                    right_row: right_row.clone(),
+                    left: left_key.clone(),
+                    right: right_key.clone(),
+                    comparison: crate::protocol::ComparisonOperator::Eq,
+                    null_extended: None,
+                });
+            }
+            JoinPopulationPattern::EmptyRight if left_rows > 0 => {
+                obligations.push(WitnessObligation::NoMatchingPartner {
+                    candidate: left_row.clone(),
+                    partner: right_row.clone(),
+                    comparison: crate::protocol::ComparisonOperator::Eq,
+                    left: left_key.clone(),
+                    right: right_key.clone(),
+                    null_extended: matches!(join.kind(), JoinKind::Left | JoinKind::Full)
+                        .then_some(crate::join_witness::JoinSide::Right),
+                    closed_world: true,
+                });
+            }
+            JoinPopulationPattern::EmptyLeft if right_rows > 0 => {
+                obligations.push(WitnessObligation::NoMatchingPartner {
+                    candidate: right_row.clone(),
+                    partner: left_row.clone(),
+                    comparison: crate::protocol::ComparisonOperator::Eq,
+                    left: right_key.clone(),
+                    right: left_key.clone(),
+                    null_extended: matches!(join.kind(), JoinKind::Right | JoinKind::Full)
+                        .then_some(crate::join_witness::JoinSide::Left),
+                    closed_world: true,
+                });
+            }
+            JoinPopulationPattern::EmptyLeft | JoinPopulationPattern::EmptyRight => {}
+        }
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id: target_layer_id.to_string(),
+            bounds: CountBounds::new(wanted, Some(wanted))?,
+        });
+        if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+            if !cases.contains(&case) {
+                cases.push(case);
+            }
+        }
+    }
+    WitnessDirection::feasible(cases)
+}
+
+/// A transparent terminal's row count is its one physical source's count,
+/// including zero; a filtered terminal count is only sufficient evidence.
+fn exact_transparent_source(bundle: &AnalysisBundle, target: &str) -> Option<String> {
+    let physical = physical_source_plan(bundle, target);
+    let [source] = physical.sources() else {
+        return None;
+    };
+    for node in physical.nodes() {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        let layer = bundle.layers().iter().find(|layer| layer.id() == id)?;
+        if !transparent_projection(query_for(bundle, layer)?)
+            || !matches!(node.write_kind(), None | Some(WriteKind::Definition))
+        {
+            return None;
+        }
+    }
+    Some(source.clone())
+}
+
+/// Positive INNER and SEMI joins necessarily read at least one row from
+/// each side. A *necessary* transparent zero source count therefore rules
+/// out the output; this is not inferred from missing sufficient examples.
+fn necessarily_missing_positive_join_input(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> bool {
+    use crate::protocol::JoinKind;
+    let empty = targets
+        .iter()
+        .filter(|(_, rows)| *rows == 0)
+        .filter_map(|(layer, _)| exact_transparent_source(bundle, layer))
+        .collect::<BTreeSet<_>>();
+    if empty.is_empty() {
+        return false;
+    }
+    targets
+        .iter()
+        .filter(|(_, rows)| *rows > 0)
+        .any(|&(layer, rows)| {
+            let Some(WitnessDirection::Feasible(cases)) =
+                physical_join_population_count_plan(bundle, layer, rows)
+            else {
+                return false;
+            };
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    let WitnessObligation::JoinPopulation {
+                        left_row,
+                        right_row,
+                        join_kind,
+                        ..
+                    } = obligation
+                    else {
+                        return false;
+                    };
+                    matches!(
+                        join_kind,
+                        JoinKind::Inner | JoinKind::LeftSemi | JoinKind::RightSemi
+                    ) && (empty.contains(left_row.relation())
+                        || empty.contains(right_row.relation()))
+                })
+            })
+        })
+}
+
+/// Compose closed physical key populations across multiple terminal goals.
+/// Never cross-product independently feasible examples unless every selected
+/// case can share identical source-row counts and compatible key assignments.
+/// The finite candidate list is a sufficient construction only: exhaustion
+/// or a conflict among examples is residual, not an impossibility proof.
+fn jointly_realized_join_goals(
+    bundle: &AnalysisBundle,
+    goals: &[(&str, u64)],
+) -> Option<WitnessDirection> {
+    if goals.len() < 2 {
+        return None;
+    }
+    let mut alternatives = Vec::new();
+    let mut includes_join = false;
+    for &(layer_id, rows) in goals {
+        let join_proof = physical_join_population_count_plan(bundle, layer_id, rows);
+        includes_join |= join_proof.is_some();
+        let direction =
+            join_proof.unwrap_or_else(|| physical_row_count_plan(bundle, layer_id, rows));
+        let WitnessDirection::Feasible(cases) = direction else {
+            return None;
+        };
+        if cases.is_empty() || cases.len() > 16 {
+            return Some(residual(PhysicalProofGap::MultipleWitnesses));
+        }
+        alternatives.push(cases);
+    }
+    if !includes_join {
+        return None;
+    }
+    let mut conjunctions = vec![Vec::<WitnessObligation>::new()];
+    for choices in alternatives {
+        if conjunctions.len().saturating_mul(choices.len()) > 256 {
+            return Some(residual(PhysicalProofGap::MultipleWitnesses));
+        }
+        let mut next = Vec::new();
+        for prior in conjunctions {
+            for choice in &choices {
+                let mut obligations = prior.clone();
+                obligations.extend_from_slice(choice.obligations());
+                next.push(obligations);
+            }
+        }
+        conjunctions = next;
+    }
+    let mut cases = Vec::new();
+    for obligations in conjunctions {
+        let mut counts = BTreeMap::<String, u64>::new();
+        let mut assignments = BTreeMap::<(String, String), (JoinPopulationPattern, u64)>::new();
+        let mut populations = Vec::new();
+        let mut valid = true;
+        for obligation in &obligations {
+            match obligation {
+                WitnessObligation::Rows {
+                    boundary,
+                    bounds,
+                    predicate,
+                    quantifier: RowQuantifier::ForAll,
+                    closed_world: true,
+                } if boundary.kind() == GroupBoundaryKind::Physical
+                    && bounds.maximum() == Some(bounds.minimum())
+                    && *predicate == count_tautology() =>
+                {
+                    let count = bounds.minimum();
+                    if counts
+                        .insert(boundary.relation().to_string(), count)
+                        .is_some_and(|prior| prior != count)
+                    {
+                        valid = false;
+                        break;
+                    }
+                }
+                WitnessObligation::JoinPopulation {
+                    left_row,
+                    right_row,
+                    left_key,
+                    right_key,
+                    pattern,
+                    left_rows,
+                    right_rows,
+                    ..
+                } => {
+                    // Two different joins can constrain the *same physical
+                    // key*. Reconcile their complete value assignment, not
+                    // just matching scalar types and row counts.
+                    if matches!(
+                        pattern,
+                        JoinPopulationPattern::DistinctMatched
+                            | JoinPopulationPattern::CommonMatched
+                    ) {
+                        for (row, key, count) in [
+                            (left_row, left_key, left_rows),
+                            (right_row, right_key, right_rows),
+                        ] {
+                            let assignment = (*pattern, *count);
+                            let identity = (row.relation().to_string(), key.name().to_string());
+                            if assignments
+                                .insert(identity, assignment)
+                                .is_some_and(|prior| {
+                                    prior != assignment &&
+                                    // A one-row source has identical keys
+                                    // under both zero-based patterns.
+                                    !(prior.1 == 1 && assignment.1 == 1)
+                                })
+                            {
+                                valid = false;
+                                break;
+                            }
+                        }
+                    }
+                    populations.push(obligation.clone());
+                }
+                WitnessObligation::ClosedWorld {
+                    boundary,
+                    coverage: ClosedWorldCoverage::EntireRelation,
+                } if boundary.kind() == GroupBoundaryKind::Physical => {}
+                WitnessObligation::JoinPair { .. }
+                | WitnessObligation::NoMatchingPartner {
+                    closed_world: true, ..
+                }
+                | WitnessObligation::OutputRows { .. } => {}
+                _ => {
+                    valid = false;
+                    break;
+                }
+            }
+        }
+        if !valid {
+            continue;
+        }
+        let mut result = Vec::new();
+        let origin = goals[0].0;
+        for (source, rows) in &counts {
+            let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, origin)
+            else {
+                valid = false;
+                break;
+            };
+            let Some(bounds) = CountBounds::new(*rows, Some(*rows)) else {
+                valid = false;
+                break;
+            };
+            result.push(WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds,
+                predicate: count_tautology(),
+                closed_world: true,
+            });
+            result.push(WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            });
+        }
+        if !valid {
+            continue;
+        }
+        result.extend(populations);
+        // The original join-local existence and absence facts remain
+        // grounded in the certified population, not independent examples.
+        for obligation in &obligations {
+            if matches!(
+                obligation,
+                WitnessObligation::JoinPair { .. }
+                    | WitnessObligation::NoMatchingPartner {
+                        closed_world: true,
+                        ..
+                    }
+            ) && !result.contains(obligation)
+            {
+                result.push(obligation.clone());
+            }
+        }
+        for &(layer_id, rows) in goals {
+            let Some(bounds) = CountBounds::new(rows, Some(rows)) else {
+                valid = false;
+                break;
+            };
+            result.push(WitnessObligation::OutputRows {
+                layer_id: layer_id.to_string(),
+                bounds,
+            });
+        }
+        if !valid {
+            continue;
+        }
+        if let Some(case) = WitnessCase::new(result, ProofStrength::Sufficient) {
+            if !cases.contains(&case) {
+                cases.push(case);
+            }
+        }
+    }
+    if cases.is_empty() {
+        Some(residual(PhysicalProofGap::MultipleWitnesses))
+    } else {
+        WitnessDirection::feasible(cases)
+    }
+}
+
 /// One jointly controlled physical input with an optional qualifying
 /// restriction. Equality of physical counts is necessary only for a genuinely
 /// row-preserving (unfiltered) terminal, not for a sufficient filter plan.
@@ -2316,8 +2870,28 @@ pub fn physical_joint_row_count_plan(
     if targets.is_empty() {
         return residual(PhysicalProofGap::NoWitness);
     }
+    if let [(layer_id, rows)] = targets {
+        if let Some(proof) = physical_join_population_count_plan(bundle, layer_id, *rows) {
+            return proof;
+        }
+    }
     let mut ordered = targets.to_vec();
     ordered.sort();
+    if ordered
+        .windows(2)
+        .any(|pair| pair[0].0 == pair[1].0 && pair[0].1 != pair[1].1)
+    {
+        // A layer cannot simultaneously emit two distinct exact row counts,
+        // irrespective of which sufficient join cases happen to be sampled.
+        return WitnessDirection::Impossible;
+    }
+    ordered.dedup();
+    if necessarily_missing_positive_join_input(bundle, &ordered) {
+        return WitnessDirection::Impossible;
+    }
+    if let Some(witness) = jointly_realized_join_goals(bundle, &ordered) {
+        return witness;
+    }
     if let Some(witness) = joint_positive_and_rejected_pair(bundle, &ordered) {
         return witness;
     }

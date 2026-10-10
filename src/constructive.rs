@@ -187,6 +187,68 @@ pub enum ClosedWorldCoverage {
     },
 }
 
+/// Complete physical-row key assignment for one join. The same relation
+/// appears just once in the source population, even when both aliases refer
+/// to it. Values are assigned before either producer is materialized.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JoinPopulationPattern {
+    /// Each row has the unique non-NULL integer key i in [0, n), with both
+    /// inputs using the same sequence. An equijoin has exactly n matches.
+    DistinctMatched,
+    /// Every row on both sides has the same non-NULL integer key zero.
+    /// A matching equijoin has left_rows * right_rows pairs, preserving bags.
+    CommonMatched,
+    /// The left population has no rows. The right may be nonempty.
+    EmptyLeft,
+    /// The right population has no rows. The left may be nonempty.
+    EmptyRight,
+}
+
+impl JoinPopulationPattern {
+    /// Stable canonical protocol identifier.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::DistinctMatched => "distinct_matched",
+            Self::CommonMatched => "common_matched",
+            Self::EmptyLeft => "empty_left",
+            Self::EmptyRight => "empty_right",
+        }
+    }
+
+    /// Exact output rows under the SQL bag and outer/semijoin laws.
+    /// A calculation returning None is unsupported, not evidence of zero.
+    pub fn output_rows(
+        self,
+        kind: crate::protocol::JoinKind,
+        left: u64,
+        right: u64,
+    ) -> Option<u64> {
+        use crate::protocol::JoinKind;
+        let pairs = match self {
+            Self::DistinctMatched if left > 0 && left == right => left,
+            Self::CommonMatched if left > 0 && right > 0 => left.checked_mul(right)?,
+            Self::EmptyLeft if left == 0 => 0,
+            Self::EmptyRight if right == 0 => 0,
+            _ => return None,
+        };
+        let left_unmatched = if pairs == 0 { left } else { 0 };
+        let right_unmatched = if pairs == 0 { right } else { 0 };
+        match kind {
+            JoinKind::Inner => Some(pairs),
+            JoinKind::Left => pairs.checked_add(left_unmatched),
+            JoinKind::Right => pairs.checked_add(right_unmatched),
+            JoinKind::Full => pairs
+                .checked_add(left_unmatched)?
+                .checked_add(right_unmatched),
+            JoinKind::LeftSemi => Some(if pairs > 0 { left } else { 0 }),
+            JoinKind::RightSemi => Some(if pairs > 0 { right } else { 0 }),
+            JoinKind::LeftAnti => Some(left_unmatched),
+            JoinKind::RightAnti => Some(right_unmatched),
+            JoinKind::Cross | JoinKind::Unknown => None,
+        }
+    }
+}
+
 /// One required fact. None of these grant physical-source realizability on their own.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WitnessObligation {
@@ -219,6 +281,21 @@ pub enum WitnessObligation {
         right: ColumnRef,
         comparison: ComparisonOperator,
         null_extended: Option<JoinSide>,
+    },
+    /// Fully specified equality-key and join-bag population through
+    /// physical source leaves, including SQL NULL-extension and no-partner
+    /// consequences. Every involved physical relation must also be closed.
+    JoinPopulation {
+        left_row: RowVariable,
+        right_row: RowVariable,
+        left_key: ColumnRef,
+        right_key: ColumnRef,
+        join_kind: crate::protocol::JoinKind,
+        pattern: JoinPopulationPattern,
+        left_rows: u64,
+        right_rows: u64,
+        output_rows: u64,
+        closed_world: bool,
     },
     /// Complete group construction at the named boundary, including contributor tests.
     Group {
@@ -390,6 +467,25 @@ fn invalid_obligation(obligation: &WitnessObligation) -> bool {
         }
         WitnessObligation::NoMatchingPartner { closed_world, .. } => !closed_world,
         WitnessObligation::JoinPair { null_extended, .. } => null_extended.is_some(),
+        WitnessObligation::JoinPopulation {
+            left_row,
+            right_row,
+            left_key,
+            right_key,
+            join_kind,
+            pattern,
+            left_rows,
+            right_rows,
+            output_rows,
+            closed_world,
+        } => {
+            !closed_world
+                || left_row.instance() == right_row.instance()
+                || left_row.relation() != left_key.relation().unwrap_or("")
+                || right_row.relation() != right_key.relation().unwrap_or("")
+                || pattern.output_rows(*join_kind, *left_rows, *right_rows) != Some(*output_rows)
+                || (left_row.relation() == right_row.relation() && left_rows != right_rows)
+        }
         WitnessObligation::Group { rows, non_null, .. } => {
             non_null.minimum() > rows.maximum().unwrap_or(u64::MAX)
         }

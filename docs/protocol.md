@@ -1130,6 +1130,28 @@ a filtered output may contain fewer rows than its physical input. Joins,
 aggregate multiplicity, sets and DML state transitions remain unsupported
 for general positive cardinality.
 
+### Complete physical join populations (TASK-94)
+
+The canonical `JoinPopulation` obligation couples source-level join-key
+columns, distinct relation instances, join kind, exact left/right source
+row counts, exact output count, a typed key-assignment pattern, and
+`closed_world: true`. It is sufficient only with exact source-level
+`Rows` counts and `ClosedWorld(EntireRelation)` for every distinct leaf.
+Named producers remain graph nodes, never independently writable sources.
+
+`distinct_matched` assigns synchronized non-NULL integer keys `0..n-1`.
+`common_matched` assigns key zero to every row, realizing SQL bag
+multiplication even for two aliases of one physical relation.
+`empty_left`/`empty_right` enumerate a complete absent partner population,
+proving unmatched and NULL-extended rows as well as semi/anti absence laws.
+One physical population is shared by repeated source references, with
+conflicting cardinalities rejected from the construction.
+
+Only type-attested integer equality columns, exact local join witnesses,
+identity-only complete producer chains, and explicit source populations are
+certified. Unsupported CROSS or multi-join local semantics, implicit
+coercion, unknown schema evidence and partial writes stay typed residual.
+
 ### Canonical joint physical-source DAG count plans
 
 The `physical_joint_source_plan(bundle, targets)` Rust API accepts exact
