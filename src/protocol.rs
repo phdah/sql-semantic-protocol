@@ -1295,7 +1295,10 @@ impl SetBranch {
                 && query.window_witness().is_none()
                 && query.subquery_witnesses().is_empty()
                 && query.output().columns().iter().all(|column| {
-                    matches!(column.expression(), Expression::Column(_) | Expression::Literal(_))
+                    matches!(
+                        column.expression(),
+                        Expression::Column(_) | Expression::Literal(_)
+                    )
                 }),
         }
     }
