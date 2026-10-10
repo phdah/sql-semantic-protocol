@@ -1397,6 +1397,44 @@ fn joint_plan_handles_repeated_source_aliases_and_duplicate_physical_rows() {
 }
 
 #[test]
+fn correlated_self_join_witnesses_are_retained_but_not_jointly_assumed() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT l.a FROM t AS l JOIN t AS r ON l.k = r.k",
+                "SELECT a FROM t",
+            ],
+            dialect,
+        );
+        let plan = physical_joint_source_plan(
+            &b,
+            &[(b.layers()[0].id(), 4), (b.layers()[1].id(), 3)],
+        );
+        assert_eq!(plan.sources(), &["t".to_string()]);
+        assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }),
+            "{dialect}: matching pairs need an explicit shared-row/multiplicity proof");
+        assert!(plan.nodes().iter().any(|node| !node.operator_witnesses().is_empty()),
+            "{dialect}: original local witness should not be discarded");
+    }
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER,k INTEGER);
+         INSERT INTO t VALUES (1,1),(1,1),(NULL,NULL);",
+    )
+    .expect("duplicate and SQL NULL key rows");
+    let (source_rows, pairs): (i64, i64) = conn
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM t),
+                    (SELECT COUNT(*) FROM t AS l JOIN t AS r ON l.k = r.k)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .expect("join cardinality");
+    assert_eq!((source_rows, pairs), (3, 4));
+}
+
+#[test]
 fn joint_plan_does_not_upgrade_missing_schema_or_partial_producers() {
     let unknown = bundle_with_schemas(&["SELECT a FROM t", "SELECT b FROM t"], "postgresql", &[]);
     let unknown_plan = physical_joint_source_plan(
