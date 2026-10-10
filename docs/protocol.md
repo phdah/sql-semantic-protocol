@@ -1104,16 +1104,23 @@ The Rust APIs `physical_row_count_plan(bundle, layer_id, rows)` and
 not sample existence. A source-free, guaranteed singleton proves exactly
 one output row and rejects incompatible counts.
 
-For a positive number of terminal rows, a proof is returned only when every
-producer is an unfiltered, exactly row-preserving single-source chain and
-the first physical-source stage passes the existing canonical
-`outcome_proofs` schema and constraint checks. Those same physical rows
-are passed through each producer. The joint API coordinates the physical
-source by canonical identity, requiring identical counts for two terminal
-projections of the same source. Contradictory requests are proved impossible
-only after verifying that exact source-count correspondence. Independent
-sources can be planned separately, while joins, filters, aggregations,
-partial writes, ambiguous dependencies and unknown constraints stay residual.
+For positive terminal counts, a fully row-preserving, unfiltered
+single-source chain can inherit a complete schema-backed physical-source
+construction. A further proven subset permits identity-preserving WHERE
+filter chains: the complete physical source has exactly the requested number
+of rows, **every** physical row satisfies the jointly verified SQL-TRUE
+`RowTruth` predicate, and `ClosedWorld` excludes unmodeled qualifying
+rows. This construction requires schema evidence and no unproved declared
+source constraints or uniqueness.
+
+Joint count plans deduplicate canonical physical sources *without discarding*
+the qualifying predicate. A transparent terminal and filtered terminal can
+share the same positive count; two distinct filters on one source remain
+residual unless the row predicates are identical. Conflicting transparent
+source counts are impossible. Different filtered counts are residual, since
+a filtered output may contain fewer rows than its physical input. Joins,
+aggregate multiplicity, sets and DML state transitions remain unsupported
+for general positive cardinality.
 
 Each `physical_nodes[]` entry may additionally expose
 `operator_witnesses` and `pending_producers`. These are the normalized,
@@ -1121,11 +1128,10 @@ origin-local typed obligations, not separately executable source scripts.
 They preserve per-layer join, group, window, set and subquery facts even when
 the complete DAG cannot yet be proved feasible.
 
-Existing opt-in `outcome_goals` now consumes these physical row-count
-proofs for count-only requests when an otherwise residual direct-local
-plan was made constructive by safe producer composition. A proven transitive
-count emits the pre-existing canonical `source_rows` witness targeting the
-real physical input, not a fabricated `stage`/intermediate table. A proven
-zero-result under filtering can emit `empty_sources` with all controlled
-physical leaves. Requests with output distributions or group counts retain
-their stricter independent evidence requirements.
+The opt-in `outcome_goals` adapter emits existing `source_rows`
+witnesses for transitive unfiltered counts and `empty_sources` for proved
+zero output. For **positive filtered counts**, the typed Rust proof is
+available from `physical_row_count_plan`, but the older `source_rows`
+witness cannot encode required `RowTruth` obligations. The adapter
+therefore remains residual rather than emitting unrestricted arbitrary
+source rows. Output distributions and group counts need separate proofs.
