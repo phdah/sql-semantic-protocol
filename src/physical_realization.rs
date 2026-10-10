@@ -396,8 +396,13 @@ fn total_scalar_projection(expression: &Expression) -> bool {
 fn total_scalar_predicate(predicate: &Predicate) -> bool {
     match predicate {
         Predicate::Comparison(comparison) => {
-            matches!(comparison.left(), Expression::Column(_) | Expression::Literal(_))
-                && matches!(comparison.right(), Expression::Column(_) | Expression::Literal(_))
+            matches!(
+                comparison.left(),
+                Expression::Column(_) | Expression::Literal(_)
+            ) && matches!(
+                comparison.right(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
         }
         Predicate::IsNull(test) => total_scalar_projection(test.expression()),
         Predicate::And(logical) | Predicate::Or(logical) => {
@@ -1014,8 +1019,7 @@ fn scalar_physical_row_truth(
         .iter()
         .find(|schema| schema.relation() == source)?;
     if bundle.relation_constraints().iter().any(|set| {
-        set.relation() == source
-            && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+        set.relation() == source && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
     }) {
         return None;
     }
@@ -1063,7 +1067,10 @@ fn scalar_physical_row_truth(
             if column.relation() != Some(source) {
                 return None;
             }
-            let source_column = schema.columns().iter().find(|c| c.name() == column.name())?;
+            let source_column = schema
+                .columns()
+                .iter()
+                .find(|c| c.name() == column.name())?;
             let data_type = match source_column.data_type() {
                 crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
                 other => other,
@@ -1810,74 +1817,105 @@ fn count_predicate_for_source(
         })
 }
 
-/// Reconcile an unfiltered positive terminal with a deliberately empty
-/// filtered terminal on the *same* physical source. The former requires N
-/// physical rows; the latter must reject every one of those rows. An empty
-/// source is not the only sufficient construction for a zero filtered output.
+/// Reconcile one or more unfiltered positive terminals with one or more
+/// deliberately empty filtered terminals on a shared physical source.
+/// The source has exactly N rows, every positive path preserves all N rows,
+/// and every negative path rejects all N rows under the same proven predicate.
+/// Different negative predicates need a separate joint satisfiability proof.
 fn joint_positive_and_rejected_pair(
     bundle: &AnalysisBundle,
     targets: &[(&str, u64)],
 ) -> Option<WitnessDirection> {
-    let [(first, first_rows), (second, second_rows)] = targets else {
-        return None;
-    };
-    let (zero, positive, rows) = if *first_rows == 0 && *second_rows > 0 {
-        (*first, *second, *second_rows)
-    } else if *second_rows == 0 && *first_rows > 0 {
-        (*second, *first, *first_rows)
-    } else {
-        return None;
-    };
-    let positive_plan = physical_row_count_plan(bundle, positive, rows);
-    let positive_physical = physical_source_plan(bundle, positive);
-    let [source] = positive_physical.sources() else {
-        return None;
-    };
-    if count_predicate_for_source(&positive_plan, source, rows) != Some(count_tautology()) {
-        return None;
-    }
-    let negative_plan = physical_rejected_row_count_plan(bundle, zero, rows);
-    let negative_physical = physical_source_plan(bundle, zero);
-    if negative_physical.sources() != [source.clone()] {
-        return None;
-    }
-    let predicate = count_predicate_for_source(&negative_plan, source, rows)?;
-    if !matches!(
-        predicate,
-        WitnessFormula::RowTruth {
-            truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
-            ..
+    let mut outputs = BTreeMap::<String, u64>::new();
+    let mut positive = Vec::new();
+    let mut zero = Vec::new();
+    for &(layer_id, rows) in targets {
+        if outputs
+            .insert(layer_id.to_string(), rows)
+            .is_some_and(|existing| existing != rows)
+        {
+            return Some(WitnessDirection::Impossible);
         }
-    ) {
+        if rows == 0 {
+            zero.push(layer_id);
+        } else {
+            positive.push((layer_id, rows));
+        }
+    }
+    let &(first_positive, rows) = positive.first()?;
+    if zero.is_empty() || positive.iter().any(|(_, count)| *count != rows) {
         return None;
     }
-    let boundary = WitnessBoundary::new(source, GroupBoundaryKind::Physical, zero)?;
+    let first_plan = physical_row_count_plan(bundle, first_positive, rows);
+    let first_physical = physical_source_plan(bundle, first_positive);
+    let [source] = first_physical.sources() else {
+        return None;
+    };
+    if count_predicate_for_source(&first_plan, source, rows) != Some(count_tautology()) {
+        return None;
+    }
+    for &(layer_id, _) in positive.iter().skip(1) {
+        let physical = physical_source_plan(bundle, layer_id);
+        if physical.sources() != [source.clone()]
+            || count_predicate_for_source(
+                &physical_row_count_plan(bundle, layer_id, rows),
+                source,
+                rows,
+            ) != Some(count_tautology())
+        {
+            return None;
+        }
+    }
+
+    let mut negative_predicate = None;
+    for layer_id in zero {
+        let physical = physical_source_plan(bundle, layer_id);
+        if physical.sources() != [source.clone()] {
+            return None;
+        }
+        let predicate = count_predicate_for_source(
+            &physical_rejected_row_count_plan(bundle, layer_id, rows),
+            source,
+            rows,
+        )?;
+        if !matches!(
+            predicate,
+            WitnessFormula::RowTruth {
+                truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
+                ..
+            }
+        ) {
+            return None;
+        }
+        if negative_predicate.as_ref().is_some_and(|prior| prior != &predicate) {
+            return None;
+        }
+        negative_predicate = Some(predicate);
+    }
+
+    let boundary = WitnessBoundary::new(source, GroupBoundaryKind::Physical, first_positive)?;
     let rows_bounds = CountBounds::new(rows, Some(rows))?;
-    let zero_bounds = CountBounds::new(0, Some(0))?;
-    let case = WitnessCase::new(
-        vec![
-            WitnessObligation::Rows {
-                boundary: boundary.clone(),
-                quantifier: RowQuantifier::ForAll,
-                bounds: rows_bounds,
-                predicate,
-                closed_world: true,
-            },
-            WitnessObligation::ClosedWorld {
-                boundary,
-                coverage: ClosedWorldCoverage::EntireRelation,
-            },
-            WitnessObligation::OutputRows {
-                layer_id: positive.to_string(),
-                bounds: rows_bounds,
-            },
-            WitnessObligation::OutputRows {
-                layer_id: zero.to_string(),
-                bounds: zero_bounds,
-            },
-        ],
-        ProofStrength::Sufficient,
-    )?;
+    let predicate = negative_predicate?;
+    let mut obligations = vec![
+        WitnessObligation::Rows {
+            boundary: boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds: rows_bounds,
+            predicate,
+            closed_world: true,
+        },
+        WitnessObligation::ClosedWorld {
+            boundary,
+            coverage: ClosedWorldCoverage::EntireRelation,
+        },
+    ];
+    for (layer_id, count) in outputs {
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id,
+            bounds: CountBounds::new(count, Some(count))?,
+        });
+    }
+    let case = WitnessCase::new(obligations, ProofStrength::Sufficient)?;
     WitnessDirection::feasible(vec![case])
 }
 
