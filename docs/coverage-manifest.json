@@ -7,7 +7,7 @@
     "owner": "TASK-68",
     "canonical_contract": "shared physical_nodes and per-layer physical_source_plans, each with independent row classification and closed-world zero_output directions",
     "rust_api": ["physical_source_plan", "physical_row_count_plan", "physical_joint_row_count_plan", "PhysicalSourcePlan", "PhysicalPlanNode", "PhysicalPlanRef"],
-    "verified_scope": ["physical_source_reference_deduplication", "single_source_boolean_row_classification", "transparent_projection_chains", "closed_world_empty_source_zero_output", "closed_world_all_empty_named_join_sources", "joint_null_aware_boolean_filters", "exact_schema_backed_transparent_source_row_counts", "joint_shared_source_row_count_obligations", "origin_scoped_operator_and_producer_dag_facts"],
+    "verified_scope": ["physical_source_reference_deduplication", "single_source_boolean_row_classification", "transparent_projection_chains", "closed_world_empty_source_zero_output", "closed_world_all_empty_named_join_sources", "closed_world_ordinary_grouping_and_having", "nested_global_aggregate_zero_row_exclusion", "joint_null_aware_boolean_filters", "exact_schema_backed_transparent_source_row_counts", "joint_shared_source_row_count_obligations", "origin_scoped_operator_and_producer_dag_facts"],
     "evidence": ["tests/physical_realization.rs", "docs/protocol.md"],
     "unproved_scope": ["joint_multilayer_filter_satisfiability", "multi_parent_and_join_planning", "full_nonzero_cardinality", "general_negative_absence", "DML_and_transaction_state_realization", "cross_feature_generator_signoff"],
     "release_limit": "This records foundational partial evidence only. All TASK-68 acceptance criteria remain open and the 3.0.0 release gate is held."
