@@ -16,7 +16,8 @@ use crate::constructive::{
     WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 use crate::protocol::{
-    Expression, GroupBy, GroupingExpression, Predicate, ProtocolStatement, QueryStatement, WriteKind,
+    Expression, GroupBy, GroupingExpression, Predicate, ProtocolStatement, QueryStatement, SetOperand,
+    SetOperation, WriteKind,
 };
 
 /// Stable reference to a physical source or an in-bundle producer layer.
@@ -425,6 +426,40 @@ fn row_local_expression(expression: &Expression) -> bool {
     }
 }
 
+/// Every query-shaped leaf must be a single-row-boundary read, without
+/// GROUPING SETS, global aggregates or opaque producers. Set operators,
+/// including DISTINCT and nested bag operations, cannot create a tuple from
+/// entirely empty leaf inputs.
+fn empty_input_eliminates_set(
+    operation: &SetOperation,
+    layer: &TransformationLayer,
+) -> bool {
+    fn leaf_count(operation: &SetOperation) -> usize {
+        let count = |operand: &SetOperand| match operand {
+            SetOperand::Query => 1,
+            SetOperand::Operation(nested) => leaf_count(nested),
+        };
+        count(operation.left()) + count(operation.right())
+    }
+    if operation.branches().len() != leaf_count(operation) {
+        return false;
+    }
+    operation.branches().iter().all(|branch| {
+        branch.sources().len() == 1
+            && branch.witness_boundary().is_some()
+            && branch.predicates().having_predicate().is_none()
+            && branch.condition_exactness().is_exact()
+            && branch
+                .output()
+                .columns()
+                .iter()
+                .all(|column| row_local_expression(column.expression()))
+            && branch.sources().iter().all(|source| {
+                layer.consumes().contains(&layer.canonical_relation(source.name()))
+            })
+    })
+}
+
 /// A completely empty controllable source ensures zero output only through
 /// transformations whose row-shape cannot invent rows.
 ///
@@ -445,13 +480,21 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
             return residual(PhysicalProofGap::UnresolvedSemantics);
         };
         let regular_grouping = empty_input_eliminates_groups(query);
+        let duplicate_elimination = query
+            .aggregation()
+            .is_some_and(|aggregation| aggregation.distinct() && aggregation.group_by().is_none());
+        let ranked_window = query.ranked_goal_output_shape() && query.window_witness().is_some();
+        let set_empty = query
+            .set_operation()
+            .is_some_and(|operation| empty_input_eliminates_set(operation, layer));
         if query.sources().is_empty()
-            || (query.aggregation().is_some() && !regular_grouping)
-            || query.set_operation().is_some()
+            || (query.aggregation().is_some() && !regular_grouping && !duplicate_elimination)
+            || (query.set_operation().is_some() && !set_empty)
             || query.proven_single_row_output()
             || (query.predicates().having_predicate().is_some() && !regular_grouping)
             || !query.diagnostics().is_empty()
             || (!regular_grouping
+                && !ranked_window
                 && !query
                     .output()
                     .columns()
@@ -460,6 +503,11 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
         {
             return residual(PhysicalProofGap::NonInvertibleTransformation);
         }
+        if set_empty {
+            // Individual leaves already establish a row-preserving, named
+            // boundary. Any bag or set operator on zero leaves returns zero.
+            continue;
+        }
         if query.joins().is_empty() {
             // Single-source transparent copies and filter-only queries are
             // zero-preserving. No assumption about predicate satisfiability is
@@ -467,7 +515,9 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
             if query.sources().len() != 1
                 || !(query.row_preserving_projection()
                     || query.filter_only_row_shape()
-                    || regular_grouping)
+                    || regular_grouping
+                    || duplicate_elimination
+                    || ranked_window)
             {
                 return residual(PhysicalProofGap::NonInvertibleTransformation);
             }
