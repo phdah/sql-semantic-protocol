@@ -2250,7 +2250,8 @@ fn jointly_realized_join_goals(
     for &(layer_id, rows) in goals {
         let join_proof = physical_join_population_count_plan(bundle, layer_id, rows);
         includes_join |= join_proof.is_some();
-        let direction = join_proof.unwrap_or_else(|| physical_row_count_plan(bundle, layer_id, rows));
+        let direction =
+            join_proof.unwrap_or_else(|| physical_row_count_plan(bundle, layer_id, rows));
         let WitnessDirection::Feasible(cases) = direction else {
             return None;
         };
@@ -2286,14 +2287,18 @@ fn jointly_realized_join_goals(
         for obligation in &obligations {
             match obligation {
                 WitnessObligation::Rows {
-                    boundary, bounds, predicate, quantifier: RowQuantifier::ForAll,
+                    boundary,
+                    bounds,
+                    predicate,
+                    quantifier: RowQuantifier::ForAll,
                     closed_world: true,
                 } if boundary.kind() == GroupBoundaryKind::Physical
                     && bounds.maximum() == Some(bounds.minimum())
                     && *predicate == count_tautology() =>
                 {
                     let count = bounds.minimum();
-                    if counts.insert(boundary.relation().to_string(), count)
+                    if counts
+                        .insert(boundary.relation().to_string(), count)
                         .is_some_and(|prior| prior != count)
                     {
                         valid = false;
@@ -2301,27 +2306,37 @@ fn jointly_realized_join_goals(
                     }
                 }
                 WitnessObligation::JoinPopulation {
-                    left_row, right_row, left_key, right_key,
-                    pattern, left_rows, right_rows, ..
+                    left_row,
+                    right_row,
+                    left_key,
+                    right_key,
+                    pattern,
+                    left_rows,
+                    right_rows,
+                    ..
                 } => {
                     // Two different joins can constrain the *same physical
                     // key*. Reconcile their complete value assignment, not
                     // just matching scalar types and row counts.
-                    if matches!(pattern,
-                        JoinPopulationPattern::DistinctMatched | JoinPopulationPattern::CommonMatched)
-                    {
+                    if matches!(
+                        pattern,
+                        JoinPopulationPattern::DistinctMatched
+                            | JoinPopulationPattern::CommonMatched
+                    ) {
                         for (row, key, count) in [
                             (left_row, left_key, left_rows),
                             (right_row, right_key, right_rows),
                         ] {
                             let assignment = (*pattern, *count);
                             let identity = (row.relation().to_string(), key.name().to_string());
-                            if assignments.insert(identity, assignment)
-                                .is_some_and(|prior|
+                            if assignments
+                                .insert(identity, assignment)
+                                .is_some_and(|prior| {
                                     prior != assignment &&
                                     // A one-row source has identical keys
                                     // under both zero-based patterns.
-                                    !(prior.1 == 1 && assignment.1 == 1))
+                                    !(prior.1 == 1 && assignment.1 == 1)
+                                })
                             {
                                 valid = false;
                                 break;
@@ -2331,7 +2346,8 @@ fn jointly_realized_join_goals(
                     populations.push(obligation.clone());
                 }
                 WitnessObligation::ClosedWorld {
-                    boundary, coverage: ClosedWorldCoverage::EntireRelation,
+                    boundary,
+                    coverage: ClosedWorldCoverage::EntireRelation,
                 } if boundary.kind() == GroupBoundaryKind::Physical => {}
                 WitnessObligation::OutputRows { .. } => {}
                 _ => {
@@ -2346,9 +2362,8 @@ fn jointly_realized_join_goals(
         let mut result = Vec::new();
         let origin = goals[0].0;
         for (source, rows) in &counts {
-            let Some(boundary) = WitnessBoundary::new(
-                source, GroupBoundaryKind::Physical, origin,
-            ) else {
+            let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, origin)
+            else {
                 valid = false;
                 break;
             };
