@@ -758,6 +758,20 @@ fn resolve_filter_column(
     column: &crate::protocol::ColumnRef,
     depth: usize,
 ) -> Option<crate::protocol::ColumnRef> {
+    resolve_filter_column_with_evidence(bundle, walker, consumer_id, column, depth, false)
+}
+
+/// Trace the same identity-only reference, optionally proving equal declared
+/// datatypes across *every* materialization along the producer path. A
+/// matching endpoint alone cannot justify unseen intermediate coercions.
+fn resolve_filter_column_with_evidence(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    consumer_id: &str,
+    column: &crate::protocol::ColumnRef,
+    depth: usize,
+    certified_types: bool,
+) -> Option<crate::protocol::ColumnRef> {
     if depth > walker.layers.len() {
         return None;
     }
@@ -801,7 +815,35 @@ fn resolve_filter_column(
                 Some(actual.relation().to_string()),
                 actual.column().to_string(),
             );
-            resolve_filter_column(bundle, walker, producer.id(), &upstream, depth + 1)
+            if certified_types {
+                let consumed_type = bundle
+                    .source_schemas()
+                    .iter()
+                    .find(|schema| schema.relation() == canonical)?
+                    .columns()
+                    .iter()
+                    .find(|item| item.name() == column.name())?
+                    .data_type();
+                let upstream_type = bundle
+                    .source_schemas()
+                    .iter()
+                    .find(|schema| schema.relation() == upstream.relation()?)?
+                    .columns()
+                    .iter()
+                    .find(|item| item.name() == upstream.name())?
+                    .data_type();
+                if consumed_type != upstream_type {
+                    return None;
+                }
+            }
+            resolve_filter_column_with_evidence(
+                bundle,
+                walker,
+                producer.id(),
+                &upstream,
+                depth + 1,
+                certified_types,
+            )
         }
         _ => None,
     }
@@ -1115,33 +1157,42 @@ fn repeatable_filter_predicate(
 /// without modifying the emitted operator-local Boolean witness contract.
 /// Only one direct, typed physical-source filter and subsequent transparent
 /// producers are supported; competing filters require joint truth solving.
-/// A one-hop named materialization of a physical source is safe for
-/// transporting typed scalar evidence only if it is a complete direct copy.
-/// Deeper or filtered producers require a separate transitive type proof.
-fn direct_materialized_source(
+/// Only completely row-preserving, single-parent materialization chains
+/// can transport physical predicates. Each node retains its producer kind,
+/// and typed columns are separately checked at every reference boundary.
+fn transparent_materialized_source(
     bundle: &AnalysisBundle,
     walker: &Walker<'_>,
     node: &PhysicalPlanNode,
     source: &str,
 ) -> bool {
-    let [PhysicalPlanRef::Layer(producer_id)] = node.inputs() else {
+    let [PhysicalPlanRef::Layer(initial_id)] = node.inputs() else {
         return false;
     };
-    let Some(producer_node) = walker
-        .nodes
-        .iter()
-        .find(|node| node.id() == &PhysicalPlanRef::Layer(producer_id.clone()))
-    else {
-        return false;
-    };
-    if producer_node.inputs() != [PhysicalPlanRef::Source(source.to_string())] {
-        return false;
+    let mut next_id = initial_id.as_str();
+    for _ in 0..walker.layers.len() {
+        let Some(producer) = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(next_id.to_string()))
+        else {
+            return false;
+        };
+        let valid = walker
+            .layers
+            .get(next_id)
+            .and_then(|layer| query_for(bundle, layer))
+            .is_some_and(transparent_projection);
+        if !valid || !matches!(producer.write_kind(), None | Some(WriteKind::Definition)) {
+            return false;
+        }
+        match producer.inputs() {
+            [PhysicalPlanRef::Source(actual)] => return actual == source,
+            [PhysicalPlanRef::Layer(upstream)] => next_id = upstream,
+            _ => return false,
+        }
     }
-    walker
-        .layers
-        .get(producer_id.as_str())
-        .and_then(|layer| query_for(bundle, layer))
-        .is_some_and(transparent_projection)
+    false
 }
 
 /// Type-verified scalar WHERE witness through either a direct source or one
@@ -1181,7 +1232,7 @@ fn scalar_physical_row_truth(
             };
             let direct = node.inputs() == [PhysicalPlanRef::Source(source.clone())]
                 && input_source.name() == source;
-            let through_producer = direct_materialized_source(bundle, &walker, node, source)
+            let through_producer = transparent_materialized_source(bundle, &walker, node, source)
                 && input_source.name() != source;
             if filter.is_some()
                 || (!direct && !through_producer)
@@ -1229,7 +1280,16 @@ fn scalar_physical_row_truth(
         witness
     } else {
         witness.mapped_to_physical_certified(
-            |column| resolve_filter_column(bundle, &walker, origin_layer, column, 0),
+            |column| {
+                resolve_filter_column_with_evidence(
+                    bundle,
+                    &walker,
+                    origin_layer,
+                    column,
+                    0,
+                    true,
+                )
+            },
             |original, mapped| {
                 let original_type = input_schema
                     .columns()
