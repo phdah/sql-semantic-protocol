@@ -1007,7 +1007,6 @@ pub(crate) fn conjoin_physical_row_truths(
     Some((joint, satisfiable))
 }
 
-
 /// Recheck independently proven source-row conditions against one physical
 /// assignment. Exact FALSE/UNKNOWN are both SQL NOT TRUE, not Rust negation.
 /// Returning None means type, collation, source binding or search evidence is
@@ -1019,9 +1018,9 @@ pub(crate) fn jointly_satisfiable_physical_truths(
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
 ) -> Option<bool> {
     if requirements.is_empty()
-        || requirements.iter().any(|(condition, _)| {
-            !condition.is_exact() || condition.contains_string_prefix()
-        })
+        || requirements
+            .iter()
+            .any(|(condition, _)| !condition.is_exact() || condition.contains_string_prefix())
     {
         return None;
     }
@@ -1045,12 +1044,13 @@ pub(crate) fn jointly_satisfiable_physical_truths(
         return None;
     }
     Some(truths.iter().any(|row_truths| {
-        row_truths.iter().zip(requirements).all(|(actual, (_, required))| {
-            match required {
+        row_truths
+            .iter()
+            .zip(requirements)
+            .all(|(actual, (_, required))| match required {
                 BooleanTruthCase::True => *actual == SqlTruth::True,
                 BooleanTruthCase::NotTrue => *actual != SqlTruth::True,
-            }
-        })
+            })
     }))
 }
 
@@ -1060,10 +1060,15 @@ fn possible_joint_truths(
     string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
     restrictions: Option<&BTreeMap<String, ColumnRestriction>>,
 ) -> BTreeSet<SqlTruth> {
-    possible_joint_truth_vectors(&[constraint], integer_evidence, string_evidence, restrictions)
-        .into_iter()
-        .filter_map(|truths| truths.into_iter().next())
-        .collect()
+    possible_joint_truth_vectors(
+        &[constraint],
+        integer_evidence,
+        string_evidence,
+        restrictions,
+    )
+    .into_iter()
+    .filter_map(|truths| truths.into_iter().next())
+    .collect()
 }
 
 /// Enumerate coupled truth regions for the *same row* across several source
