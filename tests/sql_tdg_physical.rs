@@ -224,9 +224,20 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
             .and_then(|statement| match statement {
                 ProtocolStatement::Query(query) => Some((
                     query.sources().len(),
-                    query.aggregation().map(|aggregation| (aggregation.distinct(), aggregation.group_by().is_some())),
-                    query.diagnostics().iter().map(|diagnostic| diagnostic.code()).collect::<Vec<_>>(),
-                    query.output().columns().iter().map(|column| format!("{:?}", column.expression())).collect::<Vec<_>>(),
+                    query.aggregation().map(|aggregation| {
+                        (aggregation.distinct(), aggregation.group_by().is_some())
+                    }),
+                    query
+                        .diagnostics()
+                        .iter()
+                        .map(|diagnostic| diagnostic.code())
+                        .collect::<Vec<_>>(),
+                    query
+                        .output()
+                        .columns()
+                        .iter()
+                        .map(|column| format!("{:?}", column.expression()))
+                        .collect::<Vec<_>>(),
                 )),
                 _ => None,
             });
