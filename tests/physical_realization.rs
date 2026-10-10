@@ -6,10 +6,10 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
-    physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput, ConstraintValue, OutcomeGoal,
-    OutcomeGoalStatus, OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
-    WitnessObligation,
+    physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
+    ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutputDistribution, OutputValueCount,
+    PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -1137,9 +1137,9 @@ fn transitive_value_histograms_preserve_renamed_source_columns() {
             ],
         )
         .expect("valid histogram");
-        b.set_outcome_goals(&[
-            OutcomeGoal::new(&id, Some(3), None, vec![histogram]).expect("goal")
-        ])
+        b.set_outcome_goals(
+            &[OutcomeGoal::new(&id, Some(3), None, vec![histogram]).expect("goal")],
+        )
         .expect("attach");
         assert_eq!(
             b.outcome_goals()[0].status(),
@@ -1151,7 +1151,10 @@ fn transitive_value_histograms_preserve_renamed_source_columns() {
             serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).expect("wire");
         assert_eq!(json["outcome_goals"][0]["witness"]["kind"], "source_rows");
         assert_eq!(json["outcome_goals"][0]["witness"]["relation"], "t");
-        assert_eq!(json["outcome_goals"][0]["witness"]["columns"][0]["column"], "a");
+        assert_eq!(
+            json["outcome_goals"][0]["witness"]["columns"][0]["column"],
+            "a"
+        );
     }
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
@@ -1187,9 +1190,9 @@ fn transitive_histograms_fail_closed_on_noninvertible_or_incompatible_values() {
             vec![OutputValueCount::new(ConstraintValue::Integer(4), 3)],
         )
         .expect("histogram");
-        b.set_outcome_goals(&[
-            OutcomeGoal::new(&id, Some(3), None, vec![histogram]).expect("goal")
-        ])
+        b.set_outcome_goals(
+            &[OutcomeGoal::new(&id, Some(3), None, vec![histogram]).expect("goal")],
+        )
         .expect("attach");
         assert_eq!(
             b.outcome_goals()[0].status(),
@@ -1207,13 +1210,14 @@ fn transitive_histograms_fail_closed_on_noninvertible_or_incompatible_values() {
     let id = b.layers()[1].id().to_string();
     let invalid_type = OutputDistribution::new(
         "total",
-        vec![OutputValueCount::new(ConstraintValue::Integer(3_000_000_000), 1)],
+        vec![OutputValueCount::new(
+            ConstraintValue::Integer(3_000_000_000),
+            1,
+        )],
     )
     .expect("histogram");
-    b.set_outcome_goals(&[
-        OutcomeGoal::new(&id, Some(1), None, vec![invalid_type]).expect("goal")
-    ])
-    .expect("attach");
+    b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(1), None, vec![invalid_type]).expect("goal")])
+        .expect("attach");
     assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
 }
 
