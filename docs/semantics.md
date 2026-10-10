@@ -531,6 +531,21 @@ aggregates can emit one row even for empty physical inputs. Nested
 aggregates within arithmetic or functions are also excluded from
 non-grouped row-local proofs.
 
+A nonempty, fully controlled physical source can deliberately produce
+**zero** terminal rows when an exact one-source filter chain proves a SQL
+NOT TRUE assignment for every physical row. The
+`physical_rejected_row_count_plan` Rust API carries both source count
+and complete closed-world negative truth; the joint API can reuse that
+assignment alongside a transparent positive terminal of the same
+physical source count.
+
+A two-parent materialized equijoin also has a narrow positive-count
+construction: each parent must preserve its independent physical
+source rows and integer join key exactly, with no earlier filtering
+or row shaping. The joined output may then pass through further
+single-parent transparent producer layers. Shared physical sources,
+mixed operators and incomplete key evidence remain residual.
+
 A certified local join, GROUP BY/HAVING, ranked window, or set count can
 be transported through *downstream* single-parent, value- and
 row-preserving materializations. This reuses the independently validated
