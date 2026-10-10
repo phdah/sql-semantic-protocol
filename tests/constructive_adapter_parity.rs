@@ -170,3 +170,48 @@ fn canonical_joint_source_proofs_are_independent_of_schema_adapter_provenance() 
         }
     }
 }
+
+#[test]
+fn joined_physical_populations_do_not_depend_on_schema_adapter_provenance() {
+    use sql_semantic_protocol::SchemaSourceKind;
+    let dialect = PostgreSqlDialect {};
+    let inputs = [
+        SqlInput::inline("CREATE TABLE stage AS SELECT a,k FROM l"),
+        SqlInput::inline("CREATE TABLE mart AS SELECT a,k FROM r"),
+        SqlInput::inline("SELECT s.a FROM stage s JOIN mart m ON s.k=m.k"),
+    ];
+    let configured = inputs.iter().enumerate().map(|(index, input)| {
+        let label = match index {
+            0 => "stage",
+            1 => "mart",
+            _ => "joined",
+        };
+        ConfiguredSqlInput::new(label, input, "postgresql", &dialect)
+    }).collect::<Vec<_>>();
+    let mut baseline = None;
+    for kind in [
+        SchemaSourceKind::DbtCatalog,
+        SchemaSourceKind::DbtManifest,
+        SchemaSourceKind::ExternalMetadata,
+    ] {
+        let schemas = ["l", "r", "stage", "mart"].into_iter().map(|relation| {
+            RelationSchema::new(
+                relation,
+                ["a", "k"].into_iter().map(|column| {
+                    SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").expect("integer")
+                }).collect(),
+            ).expect("schema").with_source_kind(kind)
+        }).collect::<Vec<_>>();
+        let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+            .expect("analyze");
+        let proof = physical_joint_source_plan(&bundle, &[(bundle.layers()[2].id(), 4)]);
+        assert!(matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+            "{kind:?}: {proof:?}");
+        if let Some(expected) = &baseline {
+            assert_eq!(&proof, expected, "{kind:?}: source kind must not alter join law");
+        } else {
+            baseline = Some(proof);
+        }
+    }
+}
