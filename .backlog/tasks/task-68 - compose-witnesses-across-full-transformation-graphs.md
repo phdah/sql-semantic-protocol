@@ -50,8 +50,10 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   of NULL-sensitive, identity-mapped WHERE filters, preserving intermediate
   local witness boundaries until the complete path is proved.
 - Proved the independent zero-output construction for controlled, empty
-  source inputs passed through row-preserving, filtering, or safely identified
-  join producer chains, including shared/self-join physical sources. This proof requires both explicit exact zero-row bounds and
+  source inputs passed through row-preserving, filtering, safely identified
+  joins and ordinary GROUP BY/HAVING chains, including shared/self-join
+  physical sources. Guarded row-local expressions against global aggregates
+  nested inside arithmetic/functions; ROLLUP/CUBE remain residual. This proof requires both explicit exact zero-row bounds and
   entire-relation closed-world coverage.
 - Added exact schema-backed source count construction through fully
   row-preserving producer DAGs, including jointly compatible terminal
