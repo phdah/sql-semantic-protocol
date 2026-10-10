@@ -497,6 +497,25 @@ predicates and noninvertible assignments keep conservative domains; their
 presence never licenses a generator to claim complete exactness.
 
 
+## Multi-parent and repeated-source join realizability (TASK-94)
+
+The join population composer lifts authoritative local equijoin witnesses
+through independent or shared row-preserving materialized parents. Each
+key's physical lineage is type-checked across every producer edge. One
+closed physical population per distinct leaf is enough even for aliased
+self-joins. Synchronized distinct non-NULL keys generate exact one-to-one
+matches, while one shared key repeated on both sides generates exact
+bag-duplicate matches. An explicitly empty whole-side population certifies
+outer-join unmatched rows and NULL extension; semi/anti membership follows
+the original local join kind.
+
+For joint terminal requests, only combinations with compatible full source
+counts and matching assignments to each reused key are composed. A conflict
+between independently *sufficient* join examples remains residual because
+other source arrangements could be feasible. Unsupported CROSS/multi-join
+local evidence, non-invertible parents and incomplete source schemas remain
+residual, never invented physical key-generation instructions.
+
 ## Joint physical-source realizability (TASK-93, partial)
 
 `physical_joint_source_plan` merges the dependency paths for multiple
