@@ -132,8 +132,8 @@ pub use parser::ParseError;
 pub use physical_realization::{
     physical_joint_row_count_plan, physical_joint_source_plan, physical_rejected_row_count_plan,
     physical_row_count_plan, physical_source_plan, physical_unconditional_delete_plan,
-    PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalRowTarget,
-    PhysicalSourcePlan,
+    PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap,
+    PhysicalRowTarget, PhysicalSourcePlan,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
