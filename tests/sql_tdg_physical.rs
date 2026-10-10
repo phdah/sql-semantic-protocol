@@ -160,9 +160,9 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
         .as_array()
         .expect("typed canonical set branches");
     assert_eq!(branches.len(), 2);
-    assert!(branches.iter().all(|branch| {
-        branch["empty_input_preserving"] == serde_json::Value::Bool(true)
-    }));
+    assert!(branches
+        .iter()
+        .all(|branch| { branch["empty_input_preserving"] == serde_json::Value::Bool(true) }));
     for target in [
         "union_all_result",
         "union_result",
