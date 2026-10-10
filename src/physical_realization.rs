@@ -1115,6 +1115,38 @@ fn repeatable_filter_predicate(
 /// without modifying the emitted operator-local Boolean witness contract.
 /// Only one direct, typed physical-source filter and subsequent transparent
 /// producers are supported; competing filters require joint truth solving.
+/// A one-hop named materialization of a physical source is safe for
+/// transporting typed scalar evidence only if it is a complete direct copy.
+/// Deeper or filtered producers require a separate transitive type proof.
+fn direct_materialized_source(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    node: &PhysicalPlanNode,
+    source: &str,
+) -> bool {
+    let [PhysicalPlanRef::Layer(producer_id)] = node.inputs() else {
+        return false;
+    };
+    let Some(producer_node) = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(producer_id.clone()))
+    else {
+        return false;
+    };
+    if producer_node.inputs() != [PhysicalPlanRef::Source(source.to_string())] {
+        return false;
+    }
+    walker
+        .layers
+        .get(producer_id.as_str())
+        .and_then(|layer| query_for(bundle, layer))
+        .is_some_and(transparent_projection)
+}
+
+/// Type-verified scalar WHERE witness through either a direct source or one
+/// complete materialization. Every row still refers to the canonical
+/// physical source; the intermediate producer is never treated as writable.
 fn scalar_physical_row_truth(
     bundle: &AnalysisBundle,
     physical: &PhysicalSourcePlan,
@@ -1144,12 +1176,15 @@ fn scalar_physical_row_truth(
         let layer = walker.layers.get(id.as_str()).copied()?;
         let query = query_for(bundle, layer)?;
         if query.filter_only_row_shape() {
-            // A second WHERE requires a conjunction proof; independent
-            // satisfiable predicates are not necessarily jointly feasible.
+            let [input_source] = query.sources() else {
+                return None;
+            };
+            let direct = node.inputs() == [PhysicalPlanRef::Source(source.clone())]
+                && input_source.name() == source;
+            let through_producer = direct_materialized_source(bundle, &walker, node, source)
+                && input_source.name() != source;
             if filter.is_some()
-                || node.inputs() != [PhysicalPlanRef::Source(source.clone())]
-                || query.sources().len() != 1
-                || query.sources()[0].name() != source
+                || (!direct && !through_producer)
                 || query.aggregation().is_some()
                 || query.set_operation().is_some()
                 || query.window_witness().is_some()
@@ -1164,42 +1199,52 @@ fn scalar_physical_row_truth(
             {
                 return None;
             }
-            filter = Some(query);
+            filter = Some((query, layer.id(), input_source.name()));
         } else if !transparent_projection(query) {
             return None;
         }
     }
-    let filter = filter?;
+    let (filter, origin_layer, filter_source) = filter?;
+    let input_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|candidate| candidate.relation() == filter_source)?;
+    if bundle.relation_constraints().iter().any(|set| {
+        set.relation() == filter_source
+            && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+    }) {
+        return None;
+    }
     let witness = crate::boolean_witness::analyze_physical_scalar(
         filter.predicates().where_predicate(),
         filter.sources(),
         |column| {
-            if column.relation() != Some(source) {
-                return None;
-            }
-            let source_column = schema
-                .columns()
-                .iter()
-                .find(|c| c.name() == column.name())?;
-            let data_type = match source_column.data_type() {
-                crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
-                other => other,
-            };
-            match data_type {
-                crate::data_type::DataType::SignedInteger { bits: Some(bits) }
-                    if *bits > 0 && *bits <= 64 =>
-                {
-                    let magnitude = 1_i128 << (u32::from(*bits) - 1);
-                    Some(crate::boolean_witness::SignedIntegerEvidence {
-                        minimum: -magnitude,
-                        maximum: magnitude - 1,
-                    })
-                }
-                _ => None,
-            }
+            (column.relation() == Some(filter_source))
+                .then(|| physical_integer_evidence(input_schema, column))
+                .flatten()
         },
         |_column| None,
     )?;
+    let witness = if filter_source == source {
+        witness
+    } else {
+        witness.mapped_to_physical_certified(
+            |column| resolve_filter_column(bundle, &walker, origin_layer, column, 0),
+            |original, mapped| {
+                let original_type = input_schema
+                    .columns()
+                    .iter()
+                    .find(|known| known.name() == original.name())
+                    .map(|known| known.data_type());
+                let mapped_type = schema
+                    .columns()
+                    .iter()
+                    .find(|known| known.name() == mapped.name())
+                    .map(|known| known.data_type());
+                original_type.is_some() && original_type == mapped_type
+            },
+        )?
+    };
     let direction = match required_truth {
         crate::boolean_witness::BooleanTruthCase::True => witness.qualifying(),
         crate::boolean_witness::BooleanTruthCase::NotTrue => witness.rejected(),
