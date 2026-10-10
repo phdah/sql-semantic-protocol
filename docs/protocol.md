@@ -1065,7 +1065,9 @@ or the entire DAG are jointly realizable.
 terminal output rows** when every transformation is a safe single-source
 row-preserving projection or filter, a fully identified join, or an
 ordinary non-empty GROUP BY key list over controlled sources (including
-joins feeding GROUP BY/HAVING). Non-grouped expressions must be row-local:
+joins feeding GROUP BY/HAVING). Safe DISTINCT, single-source ranked QUALIFY,
+and fully identified set branches (including UNION, INTERSECT and EXCEPT)
+may also preserve empty input. Non-grouped expressions must be row-local:
 a nested global aggregate such as `COUNT(*) + 1` cannot be certified
 zero-producing on empty input. All participating physical leaves must be empty. It requires complete
 control of the physical source with `0..0` rows, including explicit
