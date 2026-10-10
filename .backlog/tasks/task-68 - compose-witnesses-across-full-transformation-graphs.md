@@ -113,6 +113,12 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   same controlled source in a two-terminal proof. Unsupported combinations
   remain residual.
 
+- Expanded joint shared-source count construction from a two-terminal
+  positive/rejected pair to multiple transparent N-row outputs and multiple
+  filtered zero-row outputs. Each rejected terminal must independently prove
+  the identical exact physical-row SQL NOT TRUE predicate. One closed-world
+  physical assignment satisfies all verified goals; different rejection
+  predicates remain residual. Added cross-dialect and DuckDB oracle tests.
 - Added exact typed before/after state realization for unconditional DELETE
   of one schema-backed, unconstrained physical target with no competing
   in-bundle writer. The closed-world initial target of N rows is fully
