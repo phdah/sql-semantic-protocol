@@ -8,8 +8,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
     ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution,
-    OutputValueCount, PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    WitnessDirection, WitnessFormula, WitnessObligation,
+    OutputValueCount, PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema,
+    SchemaColumn, SqlInput, WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -1181,7 +1181,9 @@ fn direct_join_group_and_set_counts_survive_materialized_copy_chains() {
     )
     .expect("joined stage");
     let count: i64 = conn
-        .query_row("SELECT COUNT(*) FROM (SELECT a FROM mart)", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM (SELECT a FROM mart)", [], |row| {
+            row.get(0)
+        })
         .expect("joined output");
     assert_eq!(count, 2);
 }
@@ -1197,10 +1199,8 @@ fn downstream_filters_do_not_inherit_unqualified_join_constructions() {
     );
     let mut b = b;
     let id = b.layers()[1].id().to_string();
-    b.set_outcome_goals(&[
-        OutcomeGoal::new(&id, Some(2), None, vec![]).expect("goal")
-    ])
-    .expect("attach");
+    b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(2), None, vec![]).expect("goal")])
+        .expect("attach");
     assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
 }
 
