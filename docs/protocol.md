@@ -1115,9 +1115,17 @@ source constraints or uniqueness.
 
 Joint count plans deduplicate canonical physical sources *without discarding*
 the qualifying predicate. A transparent terminal and filtered terminal can
-share the same positive count; two distinct filters on one source remain
-residual unless the row predicates are identical. Conflicting transparent
-source counts are impossible. Different filtered counts are residual, since
+share the same positive count. Distinct, exact integer and NULL-sensitive
+positive predicates may also share a source when a schema-backed joint truth
+check finds one common physical-row assignment. The emitted typed
+`Rows.predicate` is a single `RowTruth` over an `all` Boolean tree,
+not independently satisfiable candidate cases. When the shared conjunction
+has no satisfying row, an exact transparent source count makes the complete
+goal impossible; without that necessary source count, the result remains
+residual because disjoint subsets could satisfy the filters. The assignment
+budget, unproved source types, and detached collation assumptions also
+remain residual, never impossible. Conflicting transparent source counts
+are impossible. Different filtered counts are residual, since
 a filtered output may contain fewer rows than its physical input. Joins,
 aggregate multiplicity, sets and DML state transitions remain unsupported
 for general positive cardinality.
