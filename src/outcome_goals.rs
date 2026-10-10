@@ -525,13 +525,11 @@ fn assess_goal(
     // Both branches must be jointly realized before any join count is claimed.
     if goal.groups().is_none() && goal.distributions().is_empty() {
         if let Some(rows) = goal.rows() {
-            if let Some(witness) =
-                crate::physical_realization::physical_materialized_join_witness(
-                    bundle,
-                    layer.id(),
-                    rows,
-                )
-            {
+            if let Some(witness) = crate::physical_realization::physical_materialized_join_witness(
+                bundle,
+                layer.id(),
+                rows,
+            ) {
                 return Ok(proved(
                     goal,
                     "matched physical key pairs are realized across both materialized join parents",
