@@ -2059,9 +2059,7 @@ pub(crate) fn physical_materialized_set_witness(
     if mapped_relations[0].relation() == mapped_relations[1].relation() {
         return None;
     }
-    crate::outcome_proofs::construct_mapped_set(
-        bundle, query, goal, rows, &map,
-    )
+    crate::outcome_proofs::construct_mapped_set(bundle, query, goal, rows, &map)
 }
 
 /// Construct an exact positive equijoin cardinality through two
