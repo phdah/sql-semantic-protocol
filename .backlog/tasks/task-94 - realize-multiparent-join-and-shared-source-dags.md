@@ -1,7 +1,7 @@
 ---
 id: TASK-94
 title: Realize multi-parent joins and repeated-source DAGs
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-10'
 updated_date: '2026-10-10'
