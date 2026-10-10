@@ -99,6 +99,8 @@ pub enum PhysicalProofGap {
     LocalWitnessUnproven,
     /// Local witnesses for different operators cannot be assumed jointly satisfiable.
     MultipleWitnesses,
+    /// Correlated physical row identities or multiplicities lack a common complete assignment.
+    UnprovedCrossRowCorrelation,
     /// Only one-source row-preserving projection chains are currently invertible.
     NonInvertibleTransformation,
     /// One local operator's witness cannot yet be lifted through the graph.
@@ -124,6 +126,7 @@ impl PhysicalProofGap {
             Self::NoWitness => "no_witness",
             Self::LocalWitnessUnproven => "local_witness_unproven",
             Self::MultipleWitnesses => "multiple_witnesses",
+            Self::UnprovedCrossRowCorrelation => "unproved_cross_row_correlation",
             Self::NonInvertibleTransformation => "non_invertible_transformation",
             Self::UnsupportedOperator => "unsupported_operator",
             Self::IntermediateBoundary => "intermediate_boundary",
@@ -241,7 +244,7 @@ impl PhysicalJointSourcePlan {
         &self.outcome
     }
 
-    /// Structural gap, if the dependency graph cannot be fully resolved.
+    /// A structural or cross-row proof gap, if detected.
     /// Other semantic limitations are retained in the residual outcome.
     pub fn gap(&self) -> Option<PhysicalProofGap> {
         self.gap
@@ -279,7 +282,7 @@ pub fn physical_joint_source_plan(
             gap = Some(reason);
         }
     }
-    let outcome = if let Some(reason) = gap {
+    let mut outcome = if let Some(reason) = gap {
         residual(reason)
     } else {
         let pairs = requested
@@ -288,6 +291,19 @@ pub fn physical_joint_source_plan(
             .collect::<Vec<_>>();
         physical_joint_row_count_plan(bundle, &pairs)
     };
+    if gap.is_none()
+        && matches!(outcome, WitnessDirection::Residual { .. })
+        && walker.nodes.iter().any(|node| {
+            node.operator_witnesses()
+                .iter()
+                .any(|witness| witness.operator() != WitnessOperator::Boolean)
+        })
+    {
+        // Operator-local join, group, set, window and subquery examples are
+        // never promoted to a shared-row, cross-operator physical proof.
+        gap = Some(PhysicalProofGap::UnprovedCrossRowCorrelation);
+        outcome = residual(PhysicalProofGap::UnprovedCrossRowCorrelation);
+    }
     PhysicalJointSourcePlan {
         targets: requested,
         nodes: walker.nodes,
