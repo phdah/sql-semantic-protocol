@@ -8,7 +8,8 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessObligation,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection,
+    WitnessObligation,
 };
 
 const ADVANCED: &str = include_str!("fixtures/sql_tdg/advanced_pipeline.sql");
@@ -163,9 +164,27 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
     ] {
         let id = layer_id(&bundle, target);
         let proof = physical_row_count_plan(&bundle, id, 0);
+        let layer = bundle.layers().iter().find(|layer| layer.id() == id).expect("layer");
+        let branch_details = bundle
+            .inputs()
+            .iter()
+            .find(|input| input.id() == layer.input_id())
+            .and_then(|input| input.statements().get(layer.statement_index()))
+            .and_then(|statement| match statement {
+                ProtocolStatement::Query(query) => query.set_operation(),
+                ProtocolStatement::Unsupported(_) => None,
+            })
+            .map(|operation| operation.branches().iter().map(|branch| (
+                branch.identity().to_string(),
+                branch.sources().iter().map(|source| source.name().to_string()).collect::<Vec<_>>(),
+                branch.witness_boundary().is_some(),
+                branch.predicates().having_predicate().is_some(),
+                branch.condition_exactness().is_exact(),
+                branch.output().columns().iter().map(|column| format!("{:?}", column.expression())).collect::<Vec<_>>(),
+            )).collect::<Vec<_>>());
         assert!(
             matches!(proof, WitnessDirection::Feasible(_)),
-            "pinned sql-tdg set fixture {target} must preserve empty inputs: {proof:?}; source plan: {:?}",
+            "pinned sql-tdg set fixture {target} must preserve empty inputs: {proof:?}; source plan: {:?}; branch details: {branch_details:?}",
             physical_source_plan(&bundle, id)
         );
     }
