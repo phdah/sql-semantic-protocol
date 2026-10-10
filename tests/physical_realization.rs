@@ -8,7 +8,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput, OutcomeGoal,
     OutcomeGoalStatus, PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema,
-    SchemaColumn, SqlInput, WitnessDirection, WitnessFormula, WitnessObligation,
+    OutputDistribution, OutputValueCount, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
+    WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -907,6 +908,66 @@ fn shared_transparent_zero_and_positive_targets_are_impossible() {
         physical_joint_row_count_plan(&b, &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 1)]),
         WitnessDirection::Impossible
     ));
+}
+
+#[test]
+fn zero_rows_prove_complete_empty_histograms_and_group_count() {
+    let mut b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a IS NOT NULL",
+            "SELECT a, COUNT(*) AS n FROM stage GROUP BY a HAVING COUNT(*) > 0",
+        ],
+        "postgresql",
+    );
+    let target = b.layers()[1].id().to_string();
+    let histogram = OutputDistribution::new(
+        "a",
+        vec![OutputValueCount::new(
+            sql_semantic_protocol::ConstraintValue::Integer(5),
+            0,
+        )],
+    )
+    .expect("empty frequency");
+    b.set_outcome_goals(&[
+        OutcomeGoal::new(&target, Some(0), Some(0), vec![histogram])
+            .expect("complete empty output"),
+    ])
+    .expect("goal");
+    assert_eq!(
+        b.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Feasible
+    );
+    let json: serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&b)).expect("JSON");
+    assert_eq!(json["outcome_goals"][0]["witness"]["kind"], "empty_sources");
+    assert_eq!(json["outcome_goals"][0]["witness"]["relations"], serde_json::json!(["t"]));
+
+    let mut groups_only = bundle(
+        &["SELECT a, COUNT(*) AS n FROM t GROUP BY a"],
+        "postgresql",
+    );
+    let id = groups_only.layers()[0].id().to_string();
+    groups_only
+        .set_outcome_goals(&[
+            OutcomeGoal::new(&id, None, Some(0), vec![]).expect("zero surviving groups"),
+        ])
+        .expect("group goal");
+    assert_eq!(
+        groups_only.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Feasible
+    );
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch("CREATE TABLE t(a INTEGER)")
+        .expect("empty source");
+    let rows: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, COUNT(*) FROM t GROUP BY a)",
+            [],
+            |row| row.get(0),
+        )
+        .expect("grouped query");
+    assert_eq!(rows, 0);
 }
 
 #[test]
