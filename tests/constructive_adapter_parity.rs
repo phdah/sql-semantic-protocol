@@ -3,6 +3,7 @@
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, local_constructive_witnesses,
+    physical_joint_source_plan,
     parse_dbt_catalog, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, RelationCatalog,
     RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessOperator,
 };
@@ -115,3 +116,59 @@ fn schema_evidence_source_kinds_share_one_canonical_witness_model() {
         }
     }
 }
+
+#[test]
+fn canonical_joint_source_proofs_are_independent_of_schema_adapter_provenance() {
+    use sql_semantic_protocol::SchemaSourceKind;
+    let dialect = PostgreSqlDialect {};
+    let inputs = [
+        SqlInput::inline("SELECT amount FROM warehouse.raw.orders WHERE amount > 10"),
+        SqlInput::inline("SELECT amount FROM warehouse.raw.orders WHERE amount < 100"),
+    ];
+    let configured = inputs
+        .iter()
+        .enumerate()
+        .map(|(index, source)| {
+            ConfiguredSqlInput::new(
+                if index == 0 { "positive" } else { "bounded" },
+                source,
+                "postgresql",
+                &dialect,
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut baseline = None;
+    for kind in [
+        SchemaSourceKind::DbtCatalog,
+        SchemaSourceKind::DbtManifest,
+        SchemaSourceKind::ExternalMetadata,
+    ] {
+        let schema = RelationSchema::new(
+            "warehouse.raw.orders",
+            vec![
+                SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").expect("id"),
+                SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").expect("amount"),
+            ],
+        )
+        .expect("schema")
+        .with_source_kind(kind);
+        let catalog = RelationCatalog::from_schemas(&[schema]).expect("catalog");
+        let bundle =
+            analyze_configured_inputs_with_catalog(&configured, &catalog).expect("SQL analysis");
+        let goals = [
+            (bundle.layers()[0].id(), 3),
+            (bundle.layers()[1].id(), 3),
+        ];
+        let plan = physical_joint_source_plan(&bundle, &goals);
+        assert!(
+            matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+            "{kind:?}: {plan:?}"
+        );
+        if let Some(expected) = &baseline {
+            assert_eq!(&plan, expected, "schema provenance must not change canonical proof");
+        } else {
+            baseline = Some(plan);
+        }
+    }
+}
+
