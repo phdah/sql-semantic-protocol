@@ -1139,10 +1139,12 @@ fn equijoins_over_two_materialized_producer_branches_have_physical_pair_witnesse
         let id = b.layers()[2].id().to_string();
         b.set_outcome_goals(&[OutcomeGoal::new(&id, Some(3), None, vec![]).expect("goal")])
             .expect("attach");
-        let Some(OutcomeWitness::JoinPairs { left, right, pairs }) =
-            b.outcome_goals()[0].witness()
+        let Some(OutcomeWitness::JoinPairs { left, right, pairs }) = b.outcome_goals()[0].witness()
         else {
-            panic!("{dialect}: independent materialized join: {:?}", b.outcome_goals());
+            panic!(
+                "{dialect}: independent materialized join: {:?}",
+                b.outcome_goals()
+            );
         };
         assert_eq!(*pairs, 3);
         assert_eq!(left.relation(), "l");
