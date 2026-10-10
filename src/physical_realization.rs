@@ -16,7 +16,7 @@ use crate::constructive::{
     WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 use crate::protocol::{
-    Expression, GroupBy, GroupingExpression, ProtocolStatement, QueryStatement, WriteKind,
+    Expression, GroupBy, GroupingExpression, Predicate, ProtocolStatement, QueryStatement, WriteKind,
 };
 
 /// Stable reference to a physical source or an in-bundle producer layer.
@@ -368,6 +368,34 @@ fn empty_input_eliminates_groups(query: &QueryStatement) -> bool {
     )
 }
 
+fn row_local_predicate(predicate: &Predicate) -> bool {
+    match predicate {
+        Predicate::Comparison(comparison) => {
+            row_local_expression(comparison.left()) && row_local_expression(comparison.right())
+        }
+        Predicate::LikePrefix(like) => row_local_expression(like.expression()),
+        Predicate::And(logical) | Predicate::Or(logical) => {
+            logical.operands().iter().all(row_local_predicate)
+        }
+        Predicate::Not(not) => row_local_predicate(not.operand()),
+        Predicate::IsNull(null) => row_local_expression(null.expression()),
+        Predicate::In(values) => {
+            row_local_expression(values.expression())
+                && values.values().iter().all(row_local_expression)
+        }
+        Predicate::Between(between) => {
+            row_local_expression(between.expression())
+                && row_local_expression(between.lower())
+                && row_local_expression(between.upper())
+        }
+        Predicate::BooleanExpression(expression) => row_local_expression(expression),
+        Predicate::Exists(_)
+        | Predicate::InSubquery(_)
+        | Predicate::Unknown(_)
+        | Predicate::Unsupported(_) => false,
+    }
+}
+
 /// In the absence of grouping, expressions must be scalar on each input row.
 /// An aggregate nested inside COALESCE, arithmetic or a cast can synthesize a
 /// single result on an empty input, even if the query's projection/WHERE shape
@@ -381,10 +409,16 @@ fn row_local_expression(expression: &Expression) -> bool {
         Expression::Binary(binary) => {
             row_local_expression(binary.left()) && row_local_expression(binary.right())
         }
+        Expression::Case(case) => {
+            case.operand().is_none_or(row_local_expression)
+                && case.branches().iter().all(|branch| {
+                    row_local_expression(branch.condition()) && row_local_expression(branch.result())
+                })
+                && case.else_result().is_none_or(row_local_expression)
+        }
+        Expression::BooleanPredicate(predicate) => row_local_predicate(predicate),
         Expression::AggregateFunction(_)
         | Expression::WindowFunction(_)
-        | Expression::Case(_)
-        | Expression::BooleanPredicate(_)
         | Expression::ScalarSubquery(_)
         | Expression::Unknown(_)
         | Expression::Unsupported(_) => false,
@@ -415,6 +449,7 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
             || (query.aggregation().is_some() && !regular_grouping)
             || query.set_operation().is_some()
             || query.proven_single_row_output()
+            || (query.predicates().having_predicate().is_some() && !regular_grouping)
             || !query.diagnostics().is_empty()
             || (!regular_grouping
                 && !query
