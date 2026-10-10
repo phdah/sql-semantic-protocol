@@ -2239,6 +2239,64 @@ fn physical_join_population_count_plan(
     WitnessDirection::feasible(cases)
 }
 
+/// A transparent terminal's row count is its one physical source's count,
+/// including zero; a filtered terminal count is only sufficient evidence.
+fn exact_transparent_source(
+    bundle: &AnalysisBundle,
+    target: &str,
+) -> Option<String> {
+    let physical = physical_source_plan(bundle, target);
+    let [source] = physical.sources() else {
+        return None;
+    };
+    for node in physical.nodes() {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        let layer = bundle.layers().iter().find(|layer| layer.id() == id)?;
+        if !transparent_projection(query_for(bundle, layer)?)
+            || !matches!(node.write_kind(), None | Some(WriteKind::Definition))
+        {
+            return None;
+        }
+    }
+    Some(source.clone())
+}
+
+/// Positive INNER and SEMI joins necessarily read at least one row from
+/// each side. A *necessary* transparent zero source count therefore rules
+/// out the output; this is not inferred from missing sufficient examples.
+fn necessarily_missing_positive_join_input(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> bool {
+    use crate::protocol::JoinKind;
+    let empty = targets.iter().filter(|(_, rows)| *rows == 0)
+        .filter_map(|(layer, _)| exact_transparent_source(bundle, layer))
+        .collect::<BTreeSet<_>>();
+    if empty.is_empty() {
+        return false;
+    }
+    targets.iter().filter(|(_, rows)| *rows > 0).any(|&(layer, rows)| {
+        let Some(WitnessDirection::Feasible(cases)) =
+            physical_join_population_count_plan(bundle, layer, rows)
+        else {
+            return false;
+        };
+        cases.iter().any(|case| case.obligations().iter().any(|obligation| {
+            let WitnessObligation::JoinPopulation {
+                left_row, right_row, join_kind, ..
+            } = obligation else {
+                return false;
+            };
+            matches!(
+                join_kind,
+                JoinKind::Inner | JoinKind::LeftSemi | JoinKind::RightSemi
+            ) && (empty.contains(left_row.relation()) || empty.contains(right_row.relation()))
+        }))
+    })
+}
+
 /// Compose closed physical key populations across multiple terminal goals.
 /// Never cross-product independently feasible examples unless every selected
 /// case can share identical source-row counts and compatible key assignments.
@@ -2747,6 +2805,9 @@ pub fn physical_joint_row_count_plan(
     }
     let mut ordered = targets.to_vec();
     ordered.sort();
+    if necessarily_missing_positive_join_input(bundle, &ordered) {
+        return WitnessDirection::Impossible;
+    }
     if let Some(witness) = jointly_realized_join_goals(bundle, &ordered) {
         return witness;
     }
