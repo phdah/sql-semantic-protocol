@@ -885,15 +885,54 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
     }
 }
 
+/// Promote a proven physical-row TRUE classification to a repeatable,
+/// schema-backed predicate only when the complete source is controllable.
+/// A sufficient row witness alone does not license arbitrary duplicates in
+/// the presence of primary keys, uniqueness, or unknown source constraints.
+fn repeatable_filter_predicate(
+    bundle: &AnalysisBundle,
+    physical: &PhysicalSourcePlan,
+) -> Option<WitnessFormula> {
+    let [source] = physical.sources() else {
+        return None;
+    };
+    if !bundle
+        .source_schemas()
+        .iter()
+        .any(|schema| schema.relation() == source)
+        || bundle.relation_constraints().iter().any(|set| {
+            set.relation() == source
+                && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+        })
+    {
+        return None;
+    }
+    let WitnessDirection::Feasible(cases) = physical.qualifying() else {
+        return None;
+    };
+    let [case] = cases.as_slice() else {
+        return None;
+    };
+    let [WitnessObligation::Predicate(formula @ WitnessFormula::RowTruth {
+        row,
+        predicate,
+        truth: crate::boolean_witness::BooleanTruthCase::True,
+    })] = case.obligations() else {
+        return None;
+    };
+    (row.relation() == source && predicate.is_exact()).then(|| formula.clone())
+}
+
 /// Produce typed, whole-physical-source obligations for an exact terminal
 /// row-count request. This is an independent constructive plan; it never
 /// upgrades the single-candidate row classification returned by
 /// [`physical_source_plan`].
 ///
-/// Nonzero cardinality is currently constructive for source-free singleton
-/// outputs and verified single-source, unfiltered row-preserving producer
-/// chains. The first physical producer must pass the same schema and source
-/// constraint checks as the existing direct outcome witness evaluator.
+/// Nonzero cardinality is constructive for source-free singletons,
+/// single-source unfiltered row-preserving producer chains, and transparent
+/// filter chains with a jointly proven, repeatable TRUE source-row predicate.
+/// Physical leaves must have a compatible schema without unproved uniqueness
+/// or source constraints.
 /// A filter, join, aggregate, set, partial write or ambiguous source remains
 /// residual rather than silently assuming independently sampled rows.
 pub fn physical_row_count_plan(
@@ -951,6 +990,48 @@ pub fn physical_row_count_plan(
     }
     if physical.sources().len() != 1 {
         return residual(PhysicalProofGap::UnboundPhysicalSource);
+    }
+    // A complete physical input containing exactly 'rows' identical
+    // qualifying rows produces exactly 'rows' terminal rows through the
+    // already-proved identity-preserving filter/projection chain. This is
+    // constructive only for unconstrained, typed source schemas; it does
+    // not infer cardinalities from an isolated membership example.
+    if rows > 0 {
+        if let Some(predicate) = repeatable_filter_predicate(bundle, &physical) {
+            let source = &physical.sources()[0];
+            let Some(boundary) =
+                WitnessBoundary::new(source, GroupBoundaryKind::Physical, target_layer_id)
+            else {
+                return residual(PhysicalProofGap::UnboundPhysicalSource);
+            };
+            let Some(bounds) = CountBounds::new(rows, Some(rows)) else {
+                return residual(PhysicalProofGap::LocalWitnessUnproven);
+            };
+            let Some(case) = WitnessCase::new(
+                vec![
+                    WitnessObligation::Rows {
+                        boundary: boundary.clone(),
+                        quantifier: RowQuantifier::ForAll,
+                        bounds,
+                        predicate,
+                        closed_world: true,
+                    },
+                    WitnessObligation::ClosedWorld {
+                        boundary,
+                        coverage: ClosedWorldCoverage::EntireRelation,
+                    },
+                    WitnessObligation::OutputRows {
+                        layer_id: target_layer_id.to_string(),
+                        bounds,
+                    },
+                ],
+                ProofStrength::Sufficient,
+            ) else {
+                return residual(PhysicalProofGap::LocalWitnessUnproven);
+            };
+            return WitnessDirection::feasible(vec![case])
+                .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven));
+        }
     }
     if physical.nodes().iter().any(|node| {
         let PhysicalPlanRef::Layer(id) = node.id() else {
