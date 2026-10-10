@@ -1040,6 +1040,72 @@ fn independent_physical_sources_can_satisfy_joint_row_targets() {
 }
 
 #[test]
+fn positive_unfiltered_and_zero_filtered_targets_share_nonempty_rejected_source() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t WHERE a > 2 OR b < 0",
+                "SELECT a FROM t",
+            ],
+            dialect,
+        );
+        let zero = b.layers()[0].id();
+        let positive = b.layers()[1].id();
+        for targets in [
+            [(zero, 0), (positive, 3)],
+            [(positive, 3), (zero, 0)],
+        ] {
+            let proof = physical_joint_row_count_plan(&b, &targets);
+            let WitnessDirection::Feasible(cases) = proof else {
+                panic!("{dialect}: expected shared physical rejection: {proof:?}");
+            };
+            assert_eq!(cases.len(), 1);
+            assert_eq!(
+                cases[0]
+                    .obligations()
+                    .iter()
+                    .filter(|o| matches!(
+                        o,
+                        WitnessObligation::Rows {
+                            predicate: WitnessFormula::RowTruth {
+                                truth: sql_semantic_protocol::BooleanTruthCase::NotTrue,
+                                ..
+                            },
+                            bounds,
+                            ..
+                        } if bounds.minimum() == 3 && bounds.maximum() == Some(3)
+                    ))
+                    .count(),
+                1
+            );
+            assert_eq!(
+                cases[0]
+                    .obligations()
+                    .iter()
+                    .filter(|o| matches!(o, WitnessObligation::OutputRows { .. }))
+                    .count(),
+                2
+            );
+        }
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER,b INTEGER);
+         INSERT INTO t VALUES (0,0),(NULL,NULL),(1,1);",
+    )
+    .expect("three rejected rows");
+    let (zero, positive): (i64, i64) = conn
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM t WHERE a > 2 OR b < 0),
+                    (SELECT COUNT(*) FROM t)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .expect("joint physical oracle");
+    assert_eq!((zero, positive), (0, 3));
+}
+
+#[test]
 fn joint_terminal_zero_from_filter_is_not_conflated_with_positive_source_rows() {
     let b = bundle(
         &["SELECT a FROM t WHERE a > 1", "SELECT a FROM t"],
