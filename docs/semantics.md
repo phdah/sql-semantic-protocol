@@ -531,6 +531,13 @@ aggregates can emit one row even for empty physical inputs. Nested
 aggregates within arithmetic or functions are also excluded from
 non-grouped row-local proofs.
 
+A full before/after state can be realized for unconditional DELETE of a
+schema-backed, independently controlled physical target. The Rust API
+`physical_unconditional_delete_plan` enforces complete initial row
+cardinality, entire-relation coverage, and `StateRows(before=N, after=0)`.
+Other mutations and any in-bundle conflicting producer ownership remain
+unproved.
+
 A nonempty, fully controlled physical source can deliberately produce
 **zero** terminal rows when an exact one-source filter chain proves a SQL
 NOT TRUE assignment for every physical row. The
