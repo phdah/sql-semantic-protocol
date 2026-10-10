@@ -1188,12 +1188,14 @@ pub(crate) fn physical_distribution_plan(
             Some(copied.relation().to_string()),
             copied.column().to_string(),
         );
-        let physical_column =
-            resolve_filter_column(bundle, &walker, target_layer_id, &column, 0)?;
+        let physical_column = resolve_filter_column(bundle, &walker, target_layer_id, &column, 0)?;
         if physical_column.relation() != Some(source.as_str()) {
             return None;
         }
-        mappings.push((physical_column.name().to_string(), distribution.values().to_vec()));
+        mappings.push((
+            physical_column.name().to_string(),
+            distribution.values().to_vec(),
+        ));
     }
     crate::outcome_proofs::construct_mapped_source(bundle, source, rows, mappings)
 }
