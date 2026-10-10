@@ -1161,10 +1161,7 @@ fn outcome_goal_adapter_emits_derived_physical_source_count_proofs() {
 
     // The legacy SourceRows witness cannot express positive RowTruth
     // obligations. A typed physical count must not become unfiltered data.
-    let mut positive = bundle(
-        &["SELECT a, b FROM t WHERE a > 2 OR b < 0"],
-        "postgresql",
-    );
+    let mut positive = bundle(&["SELECT a, b FROM t WHERE a > 2 OR b < 0"], "postgresql");
     let positive_id = positive.layers()[0].id().to_string();
     assert!(matches!(
         physical_row_count_plan(&positive, &positive_id, 3),
@@ -1172,8 +1169,7 @@ fn outcome_goal_adapter_emits_derived_physical_source_count_proofs() {
     ));
     positive
         .set_outcome_goals(&[
-            OutcomeGoal::new(&positive_id, Some(3), None, vec![])
-                .expect("positive filter goal"),
+            OutcomeGoal::new(&positive_id, Some(3), None, vec![]).expect("positive filter goal")
         ])
         .expect("goal attachment");
     assert_eq!(
