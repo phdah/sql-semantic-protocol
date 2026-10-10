@@ -879,7 +879,10 @@ fn simple_integer_comparison_and_null_predicates_support_complete_positive_count
             let b = bundle(&[query], dialect);
             let id = b.layers()[0].id();
             assert!(
-                matches!(physical_row_count_plan(&b, id, 3), WitnessDirection::Feasible(_)),
+                matches!(
+                    physical_row_count_plan(&b, id, 3),
+                    WitnessDirection::Feasible(_)
+                ),
                 "{dialect}: {query}"
             );
         }
