@@ -596,8 +596,46 @@ pub(crate) fn analyze(
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
 ) -> Option<BooleanWitness> {
+    analyze_candidate(
+        predicate,
+        sources,
+        integer_evidence,
+        string_evidence,
+        false,
+    )
+}
+
+/// Build a supplementary source-level scalar row witness without altering
+/// the already-serialized operator-local Boolean contract. The physical
+/// composer invokes this only for an exactly row-filtering direct source
+/// whose datatype comes from authoritative physical schema metadata.
+pub(crate) fn analyze_physical_scalar(
+    predicate: Option<&Predicate>,
+    sources: &[SourceRelation],
+    integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
+) -> Option<BooleanWitness> {
+    analyze_candidate(
+        predicate,
+        sources,
+        integer_evidence,
+        string_evidence,
+        true,
+    )
+}
+
+fn analyze_candidate(
+    predicate: Option<&Predicate>,
+    sources: &[SourceRelation],
+    integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    physical_scalar: bool,
+) -> Option<BooleanWitness> {
     let predicate = predicate?;
-    if !is_witness_candidate(predicate) {
+    if !is_witness_candidate(predicate)
+        && !(physical_scalar
+            && matches!(predicate, Predicate::Comparison(_) | Predicate::IsNull(_)))
+    {
         return None;
     }
     let [source] = sources else {
