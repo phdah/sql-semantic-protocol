@@ -1007,15 +1007,79 @@ pub(crate) fn conjoin_physical_row_truths(
     Some((joint, satisfiable))
 }
 
+
+/// Recheck independently proven source-row conditions against one physical
+/// assignment. Exact FALSE/UNKNOWN are both SQL NOT TRUE, not Rust negation.
+/// Returning None means type, collation, source binding or search evidence is
+/// insufficient; only Some(false) justifies an unsatisfiable classification.
+pub(crate) fn jointly_satisfiable_physical_truths(
+    source: &str,
+    requirements: &[(&BooleanRowConstraint, BooleanTruthCase)],
+    column_known: impl Fn(&ColumnRef) -> bool,
+    integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<bool> {
+    if requirements.is_empty()
+        || requirements.iter().any(|(condition, _)| {
+            !condition.is_exact() || condition.contains_string_prefix()
+        })
+    {
+        return None;
+    }
+    let conditions = requirements
+        .iter()
+        .map(|(condition, _)| *condition)
+        .collect::<Vec<_>>();
+    let mut columns = Vec::new();
+    for condition in &conditions {
+        condition.columns(&mut columns);
+    }
+    if columns.is_empty()
+        || columns
+            .iter()
+            .any(|column| column.relation() != Some(source) || !column_known(column))
+    {
+        return None;
+    }
+    let truths = possible_joint_truth_vectors(&conditions, &integer_evidence, &|_| None, None);
+    if truths.is_empty() {
+        return None;
+    }
+    Some(truths.iter().any(|row_truths| {
+        row_truths.iter().zip(requirements).all(|(actual, (_, required))| {
+            match required {
+                BooleanTruthCase::True => *actual == SqlTruth::True,
+                BooleanTruthCase::NotTrue => *actual != SqlTruth::True,
+            }
+        })
+    }))
+}
+
 fn possible_joint_truths(
     constraint: &BooleanRowConstraint,
     integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
     restrictions: Option<&BTreeMap<String, ColumnRestriction>>,
 ) -> BTreeSet<SqlTruth> {
+    possible_joint_truth_vectors(&[constraint], integer_evidence, string_evidence, restrictions)
+        .into_iter()
+        .filter_map(|truths| truths.into_iter().next())
+        .collect()
+}
+
+/// Enumerate coupled truth regions for the *same row* across several source
+/// predicates. The bounded domain representatives preserve SQL three-valued
+/// truth; missing type evidence and assignment explosion remain unknown.
+fn possible_joint_truth_vectors(
+    conditions: &[&BooleanRowConstraint],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    restrictions: Option<&BTreeMap<String, ColumnRestriction>>,
+) -> BTreeSet<Vec<SqlTruth>> {
     const MAX_ASSIGNMENTS: usize = 4096;
     let mut thresholds = BTreeMap::new();
-    collect_comparison_literals(constraint, &mut thresholds);
+    for condition in conditions {
+        collect_comparison_literals(condition, &mut thresholds);
+    }
     let mut assignments = vec![BTreeMap::new()];
     for (column, literals) in thresholds {
         let restriction = restrictions.and_then(|items| items.get(column.name()));
@@ -1098,7 +1162,12 @@ fn possible_joint_truths(
     }
     assignments
         .iter()
-        .filter_map(|assignment| eval_joint_truth(constraint, assignment))
+        .filter_map(|assignment| {
+            conditions
+                .iter()
+                .map(|condition| eval_joint_truth(condition, assignment))
+                .collect::<Option<Vec<_>>>()
+        })
         .collect()
 }
 
