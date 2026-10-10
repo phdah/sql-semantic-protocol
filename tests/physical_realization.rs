@@ -7,8 +7,8 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
-    ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutputDistribution, OutputValueCount,
-    PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution,
+    OutputValueCount, PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
@@ -1115,6 +1115,93 @@ fn zero_rows_prove_complete_empty_histograms_and_group_count() {
         )
         .expect("grouped query");
     assert_eq!(rows, 0);
+}
+
+#[test]
+fn direct_join_group_and_set_counts_survive_materialized_copy_chains() {
+    for &dialect in DIALECTS {
+        for (producer, expected) in [
+            (
+                "CREATE TABLE stage AS SELECT l.a AS a FROM l INNER JOIN r ON l.k = r.k",
+                "join_pairs",
+            ),
+            (
+                "CREATE TABLE stage AS SELECT k, COUNT(*) AS n FROM t GROUP BY k HAVING COUNT(*) >= 2",
+                "groups",
+            ),
+            (
+                "CREATE TABLE stage AS SELECT a FROM l UNION ALL SELECT a FROM r",
+                "set_tuples",
+            ),
+        ] {
+            let mut b = bundle(
+                &[producer, "CREATE TABLE mart AS SELECT a FROM stage", "SELECT a FROM mart"],
+                dialect,
+            );
+            // A group produces k/n rather than a, so use its actual
+            // preserved grouping key in the downstream projections.
+            if expected == "groups" {
+                b = bundle(
+                    &[
+                        producer,
+                        "CREATE TABLE mart AS SELECT k FROM stage",
+                        "SELECT k FROM mart",
+                    ],
+                    dialect,
+                );
+            }
+            let id = b.layers()[2].id().to_string();
+            b.set_outcome_goals(&[
+                OutcomeGoal::new(&id, Some(2), None, vec![]).expect("goal")
+            ])
+            .expect("attach");
+            assert_eq!(
+                b.outcome_goals()[0].status(),
+                OutcomeGoalStatus::Feasible,
+                "{dialect}: {producer}: {:?}",
+                b.outcome_goals()
+            );
+            let kind = match b.outcome_goals()[0].witness() {
+                Some(OutcomeWitness::JoinPairs { .. }) => "join_pairs",
+                Some(OutcomeWitness::Groups { .. }) => "groups",
+                Some(OutcomeWitness::SetTuples { .. }) => "set_tuples",
+                other => panic!("{dialect}: unexpected witness {other:?}"),
+            };
+            assert_eq!(kind, expected);
+        }
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE l(a INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, k INTEGER);
+         INSERT INTO l VALUES (10,1),(20,2);
+         INSERT INTO r VALUES (30,1),(40,2);
+         CREATE TABLE stage AS SELECT l.a AS a FROM l INNER JOIN r ON l.k = r.k;
+         CREATE TABLE mart AS SELECT a FROM stage;",
+    )
+    .expect("joined stage");
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM (SELECT a FROM mart)", [], |row| row.get(0))
+        .expect("joined output");
+    assert_eq!(count, 2);
+}
+
+#[test]
+fn downstream_filters_do_not_inherit_unqualified_join_constructions() {
+    let b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT l.a AS a FROM l INNER JOIN r ON l.k = r.k",
+            "SELECT a FROM stage WHERE a > 100 OR a IS NULL",
+        ],
+        "postgresql",
+    );
+    let mut b = b;
+    let id = b.layers()[1].id().to_string();
+    b.set_outcome_goals(&[
+        OutcomeGoal::new(&id, Some(2), None, vec![]).expect("goal")
+    ])
+    .expect("attach");
+    assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
 }
 
 #[test]
