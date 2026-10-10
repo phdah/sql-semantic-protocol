@@ -1257,7 +1257,10 @@ pub(crate) fn physical_operator_count_witness(
             .iter()
             .find(|node| node.id() == &PhysicalPlanRef::Layer(id.to_string()))?
             .inputs();
-        if inputs != [PhysicalPlanRef::Layer(previous.to_string())] {
+        let [PhysicalPlanRef::Layer(input_id)] = inputs else {
+            return None;
+        };
+        if input_id != previous {
             return None;
         }
         previous = id;
