@@ -318,6 +318,28 @@ fn construct_group(
     goal: &OutcomeGoal,
     rows: u64,
 ) -> Option<OutcomeWitness> {
+    construct_group_with_map(bundle, query, goal, rows, &|column| Some(column.clone()))
+}
+
+/// Lift an already proved local grouped count through attested physical column mappings.
+/// The mapper must certify each complete identity-preserving producer boundary.
+pub(crate) fn construct_mapped_group(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&ColumnRef) -> Option<ColumnRef>,
+) -> Option<OutcomeWitness> {
+    construct_group_with_map(bundle, query, goal, rows, map)
+}
+
+fn construct_group_with_map(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&ColumnRef) -> Option<ColumnRef>,
+) -> Option<OutcomeWitness> {
     if !query.group_rows_match_surviving_groups()
         || !goal.distributions().is_empty()
         || !query.diagnostics().is_empty()
@@ -350,9 +372,6 @@ fn construct_group(
             relations: vec![relation.to_string()],
         });
     }
-    if !unconstrained(bundle, &[relation]) {
-        return None;
-    }
     let group_key = match query.aggregation()?.group_by()? {
         crate::protocol::GroupBy::Expressions(grouping) if grouping.len() == 1 => {
             match &grouping[0] {
@@ -370,7 +389,14 @@ fn construct_group(
         .iter()
         .filter_map(|output| output.plain_copy_source())
         .find(|source| source.column() == group_key.name() && source.relation() == relation)?;
-    if !integer_key(bundle, relation, key.column(), rows) {
+    let mapped = map(&ColumnRef::new(
+        Some(relation.to_string()),
+        key.column().to_string(),
+    ))?;
+    let physical_relation = mapped.relation()?.to_string();
+    if !unconstrained(bundle, &[&physical_relation])
+        || !integer_key(bundle, &physical_relation, mapped.name(), rows)
+    {
         return None;
     }
 
@@ -401,8 +427,8 @@ fn construct_group(
     }
     rows.checked_mul(rows_per_group)?;
     Some(OutcomeWitness::Groups {
-        relation: relation.to_string(),
-        key: ColumnRef::new(Some(relation.to_string()), key.column().to_string()),
+        relation: physical_relation,
+        key: mapped,
         groups: rows,
         rows_per_group,
     })
@@ -413,6 +439,28 @@ fn construct_rank(
     query: &QueryStatement,
     goal: &OutcomeGoal,
     rows: u64,
+) -> Option<OutcomeWitness> {
+    construct_rank_with_map(bundle, query, goal, rows, &|column| Some(column.clone()))
+}
+
+/// Retain the exact local rank law while resolving the partition and order
+/// keys to the same controlled physical source.
+pub(crate) fn construct_mapped_rank(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&ColumnRef) -> Option<ColumnRef>,
+) -> Option<OutcomeWitness> {
+    construct_rank_with_map(bundle, query, goal, rows, map)
+}
+
+fn construct_rank_with_map(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&ColumnRef) -> Option<ColumnRef>,
 ) -> Option<OutcomeWitness> {
     if !query.ranked_goal_output_shape()
         || !goal.distributions().is_empty()
@@ -445,14 +493,13 @@ fn construct_rank(
             relations: vec![relation.to_string()],
         });
     }
-    if !unconstrained(bundle, &[relation])
-        || witness.order_by().len() != 1
-        || !integer_key(
-            bundle,
-            relation,
-            witness.order_by()[0].column().name(),
-            rows,
-        )
+    let [order] = witness.order_by() else {
+        return None;
+    };
+    let mapped_order = map(order.column())?;
+    let physical_relation = mapped_order.relation()?.to_string();
+    if !unconstrained(bundle, &[&physical_relation])
+        || !integer_key(bundle, &physical_relation, mapped_order.name(), rows)
     {
         return None;
     }
@@ -468,13 +515,21 @@ fn construct_rank(
     }
     let partition_key = match witness.partition_by() {
         [] if rows <= limit => None,
-        [key] if integer_key(bundle, relation, key.name(), rows) => Some(key.clone()),
+        [key] => {
+            let mapped = map(key)?;
+            if mapped.relation() != Some(physical_relation.as_str())
+                || !integer_key(bundle, &physical_relation, mapped.name(), rows)
+            {
+                return None;
+            }
+            Some(mapped)
+        },
         _ => return None,
     };
     Some(OutcomeWitness::Ranked {
-        relation: relation.to_string(),
+        relation: physical_relation,
         partition_key,
-        order_by: witness.order_by().to_vec(),
+        order_by: vec![order.with_column(mapped_order)],
         rows,
     })
 }
