@@ -3316,5 +3316,8 @@ fn set_tuple_mapping_preserves_null_frequencies_and_rejects_shared_sources() {
     let id = same.layers()[2].id().to_string();
     same.set_outcome_goals(&[OutcomeGoal::new(&id, Some(3), None, vec![]).unwrap()])
         .unwrap();
-    assert_eq!(same.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
+    assert_eq!(
+        same.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Residual
+    );
 }
