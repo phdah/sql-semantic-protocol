@@ -869,11 +869,29 @@ fn joint_counts_keep_filter_truth_and_fail_closed_on_distinct_conditions() {
 }
 
 #[test]
-fn positive_count_without_supported_boolean_witness_stays_residual() {
+fn simple_integer_comparison_and_null_predicates_support_complete_positive_counts() {
+    for &dialect in DIALECTS {
+        for query in [
+            "SELECT a FROM t WHERE a > 2",
+            "SELECT a FROM t WHERE a IS NULL",
+            "SELECT a FROM t WHERE a IS NOT NULL",
+        ] {
+            let b = bundle(&[query], dialect);
+            let id = b.layers()[0].id();
+            assert!(
+                matches!(physical_row_count_plan(&b, id, 3), WitnessDirection::Feasible(_)),
+                "{dialect}: {query}"
+            );
+        }
+    }
+}
+
+#[test]
+fn positive_counts_do_not_assume_arithmetic_or_row_limits_preserve_counts() {
     for query in [
-        "SELECT a FROM t WHERE a > 2",
-        "SELECT a FROM t WHERE a IS NULL",
         "SELECT a FROM t WHERE a + 1 > 2 LIMIT 1",
+        "SELECT a FROM t WHERE a IS NOT NULL LIMIT 1",
+        "SELECT a FROM t WHERE a * 2 > 5",
     ] {
         let b = bundle(&[query], "postgresql");
         assert!(
@@ -881,7 +899,7 @@ fn positive_count_without_supported_boolean_witness_stays_residual() {
                 physical_row_count_plan(&b, b.layers()[0].id(), 3),
                 WitnessDirection::Feasible(_)
             ),
-            "{query}: standalone scalar evidence is not yet an executable row witness"
+            "{query}: a noninvertible/limited predicate cannot prove arbitrary physical counts"
         );
     }
 }
