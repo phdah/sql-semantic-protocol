@@ -46,7 +46,11 @@
       "joint_shared_source_distinct_negative_integer_null_filters",
       "joint_mixed_positive_negative_filter_counts",
       "deterministic_joint_physical_graph_and_optional_protocol_json",
-      "shared_alias_duplicate_and_unknown_schema_fail_closed_oracles"
+      "shared_alias_duplicate_and_unknown_schema_fail_closed_oracles",
+      "typed_multistage_materialization_lineage",
+      "typed_cross_row_correlation_residuals",
+      "joint_physical_row_count_json_contract",
+      "mixed_sql_three_valued_positive_negative_proofs"
     ],
     "evidence": [
       "tests/physical_realization.rs",
@@ -60,7 +64,8 @@
       "cross_feature_generator_signoff",
       "unproved_joint_mixed_operator_relational_dags",
       "cross_row_shared_source_correlations_beyond_scalar_truth",
-      "general_multilayer_filtered_materialization"
+      "filtered_or_noninvertible_multilayer_producer_semantics",
+      "shared_source_join_group_window_set_cross_row_realizability"
     ],
     "release_limit": "This records foundational partial evidence only. All TASK-68 acceptance criteria remain open and the 3.0.0 release gate is held.",
     "child_tasks": [
