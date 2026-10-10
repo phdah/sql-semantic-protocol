@@ -1453,13 +1453,14 @@ fn shared_source_many_terminal_positive_and_negative_goals_are_jointly_construct
         assert!(cases[0].obligations().iter().any(|obligation| matches!(
             obligation,
             WitnessObligation::Rows {
-                predicate: WitnessFormula::RowTruth {
-                    predicate: BooleanRowConstraint::Any(children),
+                predicate: WitnessFormula::All(items),
+                ..
+            } if items.len() == 2 && items.iter().all(|item| matches!(
+                item, WitnessFormula::RowTruth {
                     truth: BooleanTruthCase::NotTrue,
                     ..
-                },
-                ..
-            } if children.len() == 2
+                }
+            ))
         )));
         assert!(matches!(
             physical_joint_row_count_plan(
@@ -1563,7 +1564,7 @@ fn mixed_positive_and_negative_goals_share_one_complete_physical_assignment() {
         let b = bundle(
             &[
                 "CREATE TABLE stage AS SELECT a, b FROM t",
-                "SELECT a FROM stage WHERE a > 0",
+                "SELECT a FROM t WHERE a > 0",
                 "SELECT b FROM t WHERE a < 10",
                 "SELECT a FROM t WHERE b IS NULL",
             ],
