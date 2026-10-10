@@ -58,6 +58,13 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
 - Composed multiple zero-output goals over the same canonical physical leaves,
   deduplicating closed-world row assignments across filtered and joined
   terminals and rejecting only necessary count conflicts as impossible.
+- Proved zero surviving ordinary GROUP BY groups and complete empty output
+  histograms from a single physical all-empty assignment, without treating
+  these as evidence for positive group/distribution cardinality.
+- Added source-independent, schema-defined per-set-branch
+  `empty_input_preserving` evidence to separate row absence from local
+  tuple-count membership proof. This includes set-level ORDER BY/LIMIT over
+  named derived tables while rejecting source-free arms.
 - Extended conservative zero-output proofs to safe DISTINCT, ranked QUALIFY,
   and set branches with verified single-relation row boundaries. Checked
   source-free set arms and global HAVING as explicit residual cases.
