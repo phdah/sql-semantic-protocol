@@ -1200,6 +1200,71 @@ pub(crate) fn physical_distribution_plan(
     crate::outcome_proofs::construct_mapped_source(bundle, source, rows, mappings)
 }
 
+/// Reuse an independently proved source-level operator construction when
+/// all later materialized producers are exact row-preserving projections.
+/// The first transformation must consume only physical leaves: a join,
+/// grouped aggregate, window rank or set across already-transformed inputs
+/// needs a separate multi-operator proof and remains residual.
+pub(crate) fn physical_operator_count_witness(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    rows: u64,
+) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    if rows == 0 {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let layer_ids = walker.nodes.iter().filter_map(|node| match node.id() {
+        PhysicalPlanRef::Layer(id) => Some(id.as_str()),
+        PhysicalPlanRef::Source(_) => None,
+    });
+    let mut layer_ids = layer_ids.peekable();
+    let first_id = layer_ids.next()?;
+    if first_id == target_layer_id {
+        return None;
+    }
+    let first = walker.layers.get(first_id).copied()?;
+    let first_query = query_for(bundle, first)?;
+    let goal =
+        crate::outcome_goals::OutcomeGoal::new(first_id, Some(rows), None, Vec::new()).ok()?;
+    let witness = crate::outcome_proofs::construct(bundle, first, first_query, &goal)?;
+    if !matches!(
+        witness,
+        crate::outcome_proofs::OutcomeWitness::JoinPairs { .. }
+            | crate::outcome_proofs::OutcomeWitness::Groups { .. }
+            | crate::outcome_proofs::OutcomeWitness::Ranked { .. }
+            | crate::outcome_proofs::OutcomeWitness::SetTuples { .. }
+    ) {
+        return None;
+    }
+    let mut previous = first_id;
+    for id in layer_ids {
+        let layer = walker.layers.get(id).copied()?;
+        let query = query_for(bundle, layer)?;
+        if !transparent_projection(query)
+            || query.aggregation().is_some()
+            || query.set_operation().is_some()
+            || query.window_witness().is_some()
+            || !query.subquery_witnesses().is_empty()
+        {
+            return None;
+        }
+        // Every downstream layer must consume exactly its immediate
+        // predecessor, not silently fork or duplicate the operator output.
+        let inputs = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(id.to_string()))?
+            .inputs();
+        if inputs != [PhysicalPlanRef::Layer(previous.to_string())] {
+            return None;
+        }
+        previous = id;
+    }
+    (previous == target_layer_id).then_some(witness)
+}
+
 /// One jointly controlled physical input with an optional qualifying
 /// restriction. Equality of physical counts is necessary only for a genuinely
 /// row-preserving (unfiltered) terminal, not for a sufficient filter plan.
