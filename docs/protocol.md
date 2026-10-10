@@ -1148,11 +1148,14 @@ coverage ensure no additional qualifying rows can survive. The corresponding
 types, constraints, grouping, joining and noninvertible producer paths fail
 closed. This is not interchangeable with a sampled rejected-row witness.
 
-The joint count API additionally proves the two-terminal subset consisting
-of an unfiltered, exactly row-preserving N-row output and a filtered zero
-output on the same source. It reuses one N-row closed-world physical
-assignment where every row fails the filtered predicate. Other combinations
-still require joint satisfiability evidence.
+The joint count API additionally composes any number of unfiltered,
+exactly row-preserving N-row terminals with any number of zero-row filtered
+terminals over the same source, provided every zero terminal independently
+proves the **identical** SQL NOT TRUE physical-row predicate. It reuses one
+N-row closed-world assignment, with one OutputRows obligation per distinct
+terminal. Two independently feasible but different rejection predicates
+are **not** assumed jointly satisfiable and remain residual. Mixed counts,
+joins, and other combinations still require joint satisfiability evidence.
 
 ### Transported operator counts and column distributions
 
