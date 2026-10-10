@@ -1885,6 +1885,81 @@ fn typed_materialization_preserves_source_truth_only_with_matching_schema() {
 }
 
 #[test]
+fn typed_multistage_renamed_projections_resolve_each_physical_column_edge() {
+    let schema = |relation: &str, columns: &[&str], narrowed: bool| {
+        RelationSchema::new(
+            relation,
+            columns
+                .iter()
+                .map(|name| {
+                    let sql_type = if narrowed && *name == "a" {
+                        "SMALLINT"
+                    } else {
+                        "INTEGER"
+                    };
+                    SchemaColumn::from_sql_type(name, sql_type, "postgresql")
+                        .expect("typed column")
+                })
+                .collect(),
+        )
+        .expect("relation schema")
+    };
+    let sql = [
+        "CREATE TABLE stage AS SELECT a, b FROM t",
+        "CREATE TABLE mart AS SELECT a AS x, b FROM stage",
+        "SELECT x FROM mart WHERE x > 2",
+        "SELECT a FROM t",
+    ];
+
+    for &dialect in DIALECTS {
+        let schemas = [
+            schema("t", &["a", "b"], false),
+            schema("stage", &["a", "b"], false),
+            schema("mart", &["x", "b"], false),
+        ];
+        let b = bundle_with_schemas(&sql, dialect, &schemas);
+        let witness = physical_joint_source_plan(
+            &b,
+            &[(b.layers()[2].id(), 3), (b.layers()[3].id(), 3)],
+        );
+        assert!(
+            matches!(witness.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: every producer copy has a certified type and identity: {witness:?}"
+        );
+        assert_eq!(witness.sources(), &["t".to_string()]);
+        assert_eq!(witness.nodes().len(), 5);
+    }
+
+    let schemas = [
+        schema("t", &["a", "b"], false),
+        schema("stage", &["a", "b"], true),
+        schema("mart", &["x", "b"], false),
+    ];
+    let b = bundle_with_schemas(&sql, "postgresql", &schemas);
+    let result = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3)]);
+    assert!(
+        matches!(result.outcome(), WitnessDirection::Residual { .. }),
+        "an intermediate width mismatch must not be silently inverted"
+    );
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (3,1), (4,1), (5,2);
+         CREATE TABLE stage AS SELECT a, b FROM t;
+         CREATE TABLE mart AS SELECT a AS x, b FROM stage;",
+    )
+    .expect("two copied producer tables");
+    for sql in [
+        "SELECT COUNT(*) FROM mart WHERE x > 2",
+        "SELECT COUNT(*) FROM t",
+    ] {
+        let count: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
+        assert_eq!(count, 3);
+    }
+}
+
+#[test]
 fn mixed_truth_goals_reject_incompatible_row_membership_without_overclaiming() {
     for &dialect in DIALECTS {
         let b = bundle(
