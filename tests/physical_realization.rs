@@ -1897,8 +1897,7 @@ fn typed_multistage_renamed_projections_resolve_each_physical_column_edge() {
                     } else {
                         "INTEGER"
                     };
-                    SchemaColumn::from_sql_type(name, sql_type, "postgresql")
-                        .expect("typed column")
+                    SchemaColumn::from_sql_type(*name, sql_type, "postgresql").expect("typed column")
                 })
                 .collect(),
         )
@@ -1918,10 +1917,8 @@ fn typed_multistage_renamed_projections_resolve_each_physical_column_edge() {
             schema("mart", &["x", "b"], false),
         ];
         let b = bundle_with_schemas(&sql, dialect, &schemas);
-        let witness = physical_joint_source_plan(
-            &b,
-            &[(b.layers()[2].id(), 3), (b.layers()[3].id(), 3)],
-        );
+        let witness =
+            physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3), (b.layers()[3].id(), 3)]);
         assert!(
             matches!(witness.outcome(), WitnessDirection::Feasible(_)),
             "{dialect}: every producer copy has a certified type and identity: {witness:?}"
