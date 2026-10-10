@@ -885,13 +885,15 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
     }
 }
 
-/// Promote a proven physical-row TRUE classification to a repeatable,
-/// schema-backed predicate only when the complete source is controllable.
-/// A sufficient row witness alone does not license arbitrary duplicates in
-/// the presence of primary keys, uniqueness, or unknown source constraints.
-fn repeatable_filter_predicate(
+/// Promote a physical-row TRUE or NOT TRUE classification to a
+/// repeatable, schema-backed predicate only when the complete source is
+/// controllable. An individually feasible candidate cannot be duplicated
+/// arbitrarily when uniqueness or other source constraints are unknown.
+fn repeatable_row_truth(
     bundle: &AnalysisBundle,
     physical: &PhysicalSourcePlan,
+    direction: &WitnessDirection,
+    required_truth: crate::boolean_witness::BooleanTruthCase,
 ) -> Option<WitnessFormula> {
     let [source] = physical.sources() else {
         return None;
@@ -907,7 +909,7 @@ fn repeatable_filter_predicate(
     {
         return None;
     }
-    let WitnessDirection::Feasible(cases) = physical.qualifying() else {
+    let WitnessDirection::Feasible(cases) = direction else {
         return None;
     };
     let [case] = cases.as_slice() else {
@@ -917,13 +919,26 @@ fn repeatable_filter_predicate(
         formula @ WitnessFormula::RowTruth {
             row,
             predicate,
-            truth: crate::boolean_witness::BooleanTruthCase::True,
+            truth,
         },
     )] = case.obligations()
     else {
         return None;
     };
-    (row.relation() == source && predicate.is_exact()).then(|| formula.clone())
+    (row.relation() == source && predicate.is_exact() && *truth == required_truth)
+        .then(|| formula.clone())
+}
+
+fn repeatable_filter_predicate(
+    bundle: &AnalysisBundle,
+    physical: &PhysicalSourcePlan,
+) -> Option<WitnessFormula> {
+    repeatable_row_truth(
+        bundle,
+        physical,
+        physical.qualifying(),
+        crate::boolean_witness::BooleanTruthCase::True,
+    )
 }
 
 /// Produce typed, whole-physical-source obligations for an exact terminal
@@ -1115,6 +1130,75 @@ pub fn physical_row_count_plan(
             WitnessObligation::OutputRows {
                 layer_id: target_layer_id.to_string(),
                 bounds,
+            },
+        ],
+        ProofStrength::Sufficient,
+    ) else {
+        return residual(PhysicalProofGap::LocalWitnessUnproven);
+    };
+    WitnessDirection::feasible(vec![case])
+        .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
+}
+
+/// Construct a deliberately rejected, nonempty physical source for a
+/// terminal with exactly zero output rows. Every physical row must fail the
+/// entire jointly proved filter path with SQL FALSE or UNKNOWN, and the
+/// physical relation is closed to exclude otherwise qualifying rows.
+///
+/// This is stronger than a single rejected candidate witness: the caller
+/// requests a complete physical input of `source_rows` rejected rows.
+/// It is deliberately limited to unconstrained one-source Boolean filter
+/// chains and never assumes row absence from an open-world sample.
+pub fn physical_rejected_row_count_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    source_rows: u64,
+) -> WitnessDirection {
+    if source_rows == 0 {
+        return physical_row_count_plan(bundle, target_layer_id, 0);
+    }
+    let physical = physical_source_plan(bundle, target_layer_id);
+    if !matches!(physical.zero_output(), WitnessDirection::Feasible(_)) {
+        return residual(physical.gap().unwrap_or(PhysicalProofGap::NonInvertibleTransformation));
+    }
+    let Some(predicate) = repeatable_row_truth(
+        bundle,
+        &physical,
+        physical.rejected(),
+        crate::boolean_witness::BooleanTruthCase::NotTrue,
+    ) else {
+        return residual(physical.gap().unwrap_or(PhysicalProofGap::LocalWitnessUnproven));
+    };
+    let [source] = physical.sources() else {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    };
+    let Some(boundary) =
+        WitnessBoundary::new(source, GroupBoundaryKind::Physical, target_layer_id)
+    else {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    };
+    let (Some(source_bounds), Some(output_bounds)) = (
+        CountBounds::new(source_rows, Some(source_rows)),
+        CountBounds::new(0, Some(0)),
+    ) else {
+        return residual(PhysicalProofGap::LocalWitnessUnproven);
+    };
+    let Some(case) = WitnessCase::new(
+        vec![
+            WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds: source_bounds,
+                predicate,
+                closed_world: true,
+            },
+            WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            },
+            WitnessObligation::OutputRows {
+                layer_id: target_layer_id.to_string(),
+                bounds: output_bounds,
             },
         ],
         ProofStrength::Sufficient,
