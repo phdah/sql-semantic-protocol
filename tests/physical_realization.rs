@@ -1246,15 +1246,24 @@ fn shared_source_many_terminal_positive_and_negative_goals_are_jointly_construct
         assert_eq!(cases.len(), 1);
         let obligations = cases[0].obligations();
         assert_eq!(
-            obligations.iter().filter(|o| matches!(o, WitnessObligation::Rows { .. })).count(),
+            obligations
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::Rows { .. }))
+                .count(),
             1,
         );
         assert_eq!(
-            obligations.iter().filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. })).count(),
+            obligations
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                .count(),
             1,
         );
         assert_eq!(
-            obligations.iter().filter(|o| matches!(o, WitnessObligation::OutputRows { .. })).count(),
+            obligations
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::OutputRows { .. }))
+                .count(),
             4,
         );
         assert!(obligations.iter().any(|o| matches!(
@@ -1304,11 +1313,7 @@ fn shared_source_many_terminal_positive_and_negative_goals_are_jointly_construct
         "SELECT COUNT(*) FROM t WHERE a > 10 AND b IS NOT NULL",
     ] {
         let count: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
-        assert_eq!(
-            count,
-            if sql.contains("WHERE") { 0 } else { 3 },
-            "{sql}"
-        );
+        assert_eq!(count, if sql.contains("WHERE") { 0 } else { 3 }, "{sql}");
     }
 }
 
