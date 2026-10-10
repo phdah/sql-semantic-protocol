@@ -15,7 +15,7 @@ use crate::constructive::{
     ConstructiveWitness, CountBounds, ProofStrength, RowQuantifier, WitnessBoundary, WitnessCase,
     WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
-use crate::protocol::{ProtocolStatement, QueryStatement, WriteKind};
+use crate::protocol::{Expression, GroupBy, GroupingExpression, ProtocolStatement, QueryStatement, WriteKind};
 
 /// Stable reference to a physical source or an in-bundle producer layer.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -354,6 +354,43 @@ fn transparent_projection(query: &QueryStatement) -> bool {
             .all(|column| column.plain_copy_source().is_some())
 }
 
+/// A regular, non-empty grouping key list cannot form a group from no input
+/// rows. ROLLUP, CUBE and GROUPING SETS may contain the empty grouping set,
+/// which emits a global group even when every input table is empty.
+fn empty_input_eliminates_groups(query: &QueryStatement) -> bool {
+    matches!(
+        query.aggregation().and_then(|aggregation| aggregation.group_by()),
+        Some(GroupBy::Expressions(groups))
+            if !groups.is_empty()
+                && groups.iter().all(|group| matches!(group, GroupingExpression::Expression(_)))
+    )
+}
+
+/// In the absence of grouping, expressions must be scalar on each input row.
+/// An aggregate nested inside COALESCE, arithmetic or a cast can synthesize a
+/// single result on an empty input, even if the query's projection/WHERE shape
+/// otherwise looks row-preserving.
+fn row_local_expression(expression: &Expression) -> bool {
+    match expression {
+        Expression::Column(_) | Expression::Literal(_) => true,
+        Expression::Function(function) => {
+            function.arguments().iter().all(row_local_expression)
+        }
+        Expression::SignedIntegerCast(cast) => row_local_expression(cast.expression()),
+        Expression::Unary(unary) => row_local_expression(unary.operand()),
+        Expression::Binary(binary) => {
+            row_local_expression(binary.left()) && row_local_expression(binary.right())
+        }
+        Expression::AggregateFunction(_)
+        | Expression::WindowFunction(_)
+        | Expression::Case(_)
+        | Expression::BooleanPredicate(_)
+        | Expression::ScalarSubquery(_)
+        | Expression::Unknown(_)
+        | Expression::Unsupported(_) => false,
+    }
+}
+
 /// A completely empty controllable source ensures zero output only through
 /// transformations whose row-shape cannot invent rows.
 ///
@@ -373,11 +410,18 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
         let Some(query) = query_for(bundle, layer) else {
             return residual(PhysicalProofGap::UnresolvedSemantics);
         };
+        let regular_grouping = empty_input_eliminates_groups(query);
         if query.sources().is_empty()
-            || query.aggregation().is_some()
+            || (query.aggregation().is_some() && !regular_grouping)
             || query.set_operation().is_some()
             || query.proven_single_row_output()
             || !query.diagnostics().is_empty()
+            || (!regular_grouping
+                && !query
+                    .output()
+                    .columns()
+                    .iter()
+                    .all(|column| row_local_expression(column.expression())))
         {
             return residual(PhysicalProofGap::NonInvertibleTransformation);
         }
@@ -386,7 +430,9 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
             // zero-preserving. No assumption about predicate satisfiability is
             // needed when the entire physical source is controlled as empty.
             if query.sources().len() != 1
-                || !(query.row_preserving_projection() || query.filter_only_row_shape())
+                || !(query.row_preserving_projection()
+                    || query.filter_only_row_shape()
+                    || regular_grouping)
             {
                 return residual(PhysicalProofGap::NonInvertibleTransformation);
             }
