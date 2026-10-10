@@ -1421,6 +1421,36 @@ impl SetWitnessCase {
     pub fn obligations(&self) -> &[SetWitnessObligation] {
         &self.obligations
     }
+
+    /// Rebind an exact local tuple-count law to certified physical leaves.
+    /// The mapper must prove complete, identity-preserving source branches;
+    /// an intermediate boundary never becomes writable by assumption.
+    pub(crate) fn with_physical_boundaries(
+        &self,
+        map: &dyn Fn(&SetWitnessBoundary) -> Option<SetWitnessBoundary>,
+    ) -> Option<Self> {
+        let obligations = self
+            .obligations
+            .iter()
+            .map(|obligation| {
+                let boundary = map(&obligation.boundary)?;
+                if boundary.is_intermediate()
+                    || boundary.tuple_columns().len() != obligation.boundary.tuple_columns().len()
+                {
+                    return None;
+                }
+                Some(SetWitnessObligation {
+                    branch_identity: obligation.branch_identity.clone(),
+                    boundary,
+                    matching_tuple_count: obligation.matching_tuple_count,
+                })
+            })
+            .collect::<Option<Vec<_>>>()?;
+        Some(Self {
+            output_tuple_count: self.output_tuple_count,
+            obligations,
+        })
+    }
 }
 
 /// Proof outcome for a qualifying or non-qualifying tuple witness.
