@@ -216,9 +216,23 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
                     })
                     .collect::<Vec<_>>()
             });
+        let shape = bundle
+            .inputs()
+            .iter()
+            .find(|input| input.id() == layer.input_id())
+            .and_then(|input| input.statements().get(layer.statement_index()))
+            .and_then(|statement| match statement {
+                ProtocolStatement::Query(query) => Some((
+                    query.sources().len(),
+                    query.aggregation().map(|aggregation| (aggregation.distinct(), aggregation.group_by().is_some())),
+                    query.diagnostics().iter().map(|diagnostic| diagnostic.code()).collect::<Vec<_>>(),
+                    query.output().columns().iter().map(|column| format!("{:?}", column.expression())).collect::<Vec<_>>(),
+                )),
+                _ => None,
+            });
         assert!(
             matches!(proof, WitnessDirection::Feasible(_)),
-            "pinned sql-tdg set fixture {target} must preserve empty inputs: {proof:?}; source plan: {:?}; branch details: {branch_details:?}",
+            "pinned sql-tdg set fixture {target} must preserve empty inputs: {proof:?}; source plan: {:?}; branch details: {branch_details:?}; shape: {shape:?}",
             physical_source_plan(&bundle, id)
         );
     }
