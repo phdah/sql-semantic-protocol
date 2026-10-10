@@ -1282,14 +1282,7 @@ fn scalar_physical_row_truth(
     } else {
         witness.mapped_to_physical_certified(
             |column| {
-                resolve_filter_column_with_evidence(
-                    bundle,
-                    &walker,
-                    origin_layer,
-                    column,
-                    0,
-                    true,
-                )
+                resolve_filter_column_with_evidence(bundle, &walker, origin_layer, column, 0, true)
             },
             |original, mapped| {
                 let original_type = input_schema
