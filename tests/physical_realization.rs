@@ -435,7 +435,10 @@ fn empty_grouped_join_dag_is_a_closed_world_zero_count_proof() {
         };
         let obligations = cases[0].obligations();
         assert_eq!(
-            obligations.iter().filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. })).count(),
+            obligations
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+                .count(),
             2
         );
         assert!(obligations.iter().any(|obligation| matches!(
@@ -453,17 +456,16 @@ fn empty_grouped_join_dag_is_a_closed_world_zero_count_proof() {
     )
     .expect("empty grouped join");
     let count: i64 = conn
-        .query_row("SELECT COUNT(*) FROM stage WHERE a > 0", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM stage WHERE a > 0", [], |row| {
+            row.get(0)
+        })
         .expect("grouped join count");
     assert_eq!(count, 0);
 }
 
 #[test]
 fn empty_single_source_regular_grouping_is_zero_but_rollup_is_not() {
-    let ordinary = bundle(
-        &["SELECT a, COUNT(*) AS n FROM t GROUP BY a"],
-        "postgresql",
-    );
+    let ordinary = bundle(&["SELECT a, COUNT(*) AS n FROM t GROUP BY a"], "postgresql");
     assert!(matches!(
         physical_source_plan(&ordinary, ordinary.layers()[0].id()).zero_output(),
         WitnessDirection::Feasible(_)
@@ -479,7 +481,8 @@ fn empty_single_source_regular_grouping_is_zero_but_rollup_is_not() {
     ));
 
     let conn = Connection::open_in_memory().expect("duckdb");
-    conn.execute_batch("CREATE TABLE t(a INTEGER)").expect("empty table");
+    conn.execute_batch("CREATE TABLE t(a INTEGER)")
+        .expect("empty table");
     let ordinary_rows: i64 = conn
         .query_row(
             "SELECT COUNT(*) FROM (SELECT a, COUNT(*) FROM t GROUP BY a)",
@@ -513,7 +516,8 @@ fn nested_aggregate_projections_cannot_claim_zero_from_empty_sources() {
         );
     }
     let conn = Connection::open_in_memory().expect("duckdb");
-    conn.execute_batch("CREATE TABLE t(a INTEGER)").expect("empty table");
+    conn.execute_batch("CREATE TABLE t(a INTEGER)")
+        .expect("empty table");
     let value: i64 = conn
         .query_row("SELECT COUNT(*) + 1 FROM t", [], |row| row.get(0))
         .expect("global aggregate");
