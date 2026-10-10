@@ -444,13 +444,8 @@ fn empty_input_eliminates_set(operation: &SetOperation, layer: &TransformationLa
     }
     operation.branches().iter().all(|branch| {
         branch.sources().len() == 1
-            && branch.witness_boundary().is_some()
+            && branch.empty_input_preserving()
             && branch.predicates().having_predicate().is_none()
-            && branch
-                .output()
-                .columns()
-                .iter()
-                .all(|column| row_local_expression(column.expression()))
             && branch.sources().iter().all(|source| {
                 layer
                     .consumes()
