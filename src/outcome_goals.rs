@@ -520,6 +520,29 @@ fn assess_goal(
         }
     }
 
+    // A complete direct-local join/group/rank/set construction can be
+    // transported across downstream materialized projections only when
+    // those later layers provably preserve every result row exactly once.
+    if goal.groups().is_none() && goal.distributions().is_empty() {
+        if let Some(rows) = goal.rows() {
+            if let Some(witness) =
+                crate::physical_realization::physical_operator_count_witness(
+                    bundle,
+                    layer.id(),
+                    rows,
+                )
+            {
+                return Ok(proved(
+                    goal,
+                    "physical operator multiplicity survives exact materialized projections",
+                    min_rows,
+                    max_rows,
+                    witness,
+                ));
+            }
+        }
+    }
+
     // Identity-only materialized producers preserve complete physical
     // distributions when every projected value is traceable to the same
     // source column. This is separate from count-only feasibility: a positive
