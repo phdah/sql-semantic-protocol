@@ -370,12 +370,13 @@ fn total_scalar_projection(expression: &Expression) -> bool {
         Expression::Case(case) => {
             case.operand().is_none_or(total_scalar_projection)
                 && case.branches().iter().all(|branch| {
-                    match branch.condition() {
+                    let condition_is_total = match branch.condition() {
                         Expression::BooleanPredicate(predicate) => {
                             total_scalar_predicate(predicate)
                         }
                         condition => total_scalar_projection(condition),
-                    } && total_scalar_projection(branch.result())
+                    };
+                    condition_is_total && total_scalar_projection(branch.result())
                 })
                 && case.else_result().is_none_or(total_scalar_projection)
         }
