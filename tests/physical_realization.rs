@@ -811,6 +811,112 @@ fn joint_terminal_zero_from_filter_is_not_conflated_with_positive_source_rows() 
 }
 
 #[test]
+fn simultaneous_empty_filtered_and_joined_terminals_reuse_sources_once() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE filtered AS SELECT a FROM t WHERE a > 10",
+                "CREATE TABLE joined AS SELECT l.a FROM l JOIN r ON l.k = r.k",
+                "SELECT a FROM filtered WHERE a < 0",
+                "SELECT a FROM joined WHERE a > 0",
+            ],
+            dialect,
+        );
+        let targets = [(b.layers()[2].id(), 0), (b.layers()[3].id(), 0)];
+        let WitnessDirection::Feasible(cases) =
+            physical_joint_row_count_plan(&b, &targets)
+        else {
+            panic!("{dialect}: all-empty physical leaves jointly prove both zero outputs");
+        };
+        assert_eq!(cases.len(), 1);
+        let obligations = cases[0].obligations();
+        assert_eq!(
+            obligations
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+                .count(),
+            3
+        );
+        assert_eq!(
+            obligations
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::OutputRows { .. }))
+                .count(),
+            2
+        );
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER); CREATE TABLE l(a INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, k INTEGER);
+         CREATE TABLE filtered AS SELECT a FROM t WHERE a > 10;
+         CREATE TABLE joined AS SELECT l.a FROM l JOIN r ON l.k = r.k;",
+    )
+    .expect("empty source materialization");
+    for sql in [
+        "SELECT COUNT(*) FROM filtered WHERE a < 0",
+        "SELECT COUNT(*) FROM joined WHERE a > 0",
+    ] {
+        let count: i64 = conn
+            .query_row(sql, [], |row| row.get(0))
+            .expect("terminal row count");
+        assert_eq!(count, 0);
+    }
+}
+
+#[test]
+fn conflicting_filtered_zero_and_positive_transparent_path_is_residual_not_impossible() {
+    let b = bundle(
+        &[
+            "CREATE TABLE filtered AS SELECT a FROM t WHERE a > 10",
+            "CREATE TABLE other AS SELECT a FROM t",
+        ],
+        "postgresql",
+    );
+    let actual = physical_joint_row_count_plan(
+        &b,
+        &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 2)],
+    );
+    assert!(
+        matches!(actual, WitnessDirection::Residual { .. }),
+        "two rows at t can both fail a > 10 while satisfying other: {actual:?}"
+    );
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (NULL), (2);
+         CREATE TABLE filtered AS SELECT a FROM t WHERE a > 10;
+         CREATE TABLE other AS SELECT a FROM t;",
+    )
+    .expect("nullable filtered source");
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM filtered", [], |row| row.get(0))
+        .expect("filtered");
+    let other: i64 = conn
+        .query_row("SELECT COUNT(*) FROM other", [], |row| row.get(0))
+        .expect("other");
+    assert_eq!((count, other), (0, 2));
+}
+
+#[test]
+fn shared_transparent_zero_and_positive_targets_are_impossible() {
+    let b = bundle(
+        &[
+            "CREATE TABLE first AS SELECT a FROM t",
+            "CREATE TABLE second AS SELECT a FROM t",
+        ],
+        "postgresql",
+    );
+    assert!(matches!(
+        physical_joint_row_count_plan(
+            &b,
+            &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 1)]
+        ),
+        WitnessDirection::Impossible
+    ));
+}
+
+#[test]
 fn outcome_goal_adapter_emits_derived_physical_source_count_proofs() {
     let mut b = bundle(
         &[
