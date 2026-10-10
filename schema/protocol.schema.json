@@ -1077,6 +1077,7 @@
             "conflicting_domains",
             "local_witness_unproven",
             "multiple_witnesses",
+            "unproved_cross_row_correlation",
             "non_invertible_transformation",
             "unsupported_operator",
             "intermediate_boundary",
@@ -1139,7 +1140,7 @@
           "$ref": "#/$defs/constructiveDirection"
         },
         "gap": {
-          "description": "Structural graph resolution failure; other proof gaps are reported in outcome.reason. null does not imply a feasible count.",
+          "description": "Typed structural or cross-row proof limitation. null does not imply a feasible count; other semantic residuals remain in outcome.reason.",
           "enum": [
             null,
             "unknown_target",
@@ -1153,6 +1154,7 @@
             "conflicting_domains",
             "local_witness_unproven",
             "multiple_witnesses",
+            "unproved_cross_row_correlation",
             "non_invertible_transformation",
             "unsupported_operator",
             "intermediate_boundary",
