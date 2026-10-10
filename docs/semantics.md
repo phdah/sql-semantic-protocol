@@ -572,8 +572,12 @@ assignment; the canonical `RowTruth` tree records the combined condition.
 Unsatisfiable conjunctions are impossible only when a necessary unfiltered
 source count fixes the entire population. Without that count, extra source
 rows could independently satisfy each filter, so the result is residual.
-Other unproved combinations, including detached string-collation predicates,
-remain residual. The legacy outcome-goal adapter
+Multiple independently rejected zero-output filters can likewise be
+jointly certified against a nonempty shared source by requiring their
+Boolean OR to be SQL NOT TRUE, retaining FALSE and UNKNOWN behavior.
+When those rejections cannot simultaneously hold, the closed-world
+nonempty construction is impossible. Other unproved combinations, including
+detached string-collation predicates, remain residual. The legacy outcome-goal adapter
 remains residual for positive filtered counts because its `source_rows`
 witness cannot encode required predicate obligations. General join,
 group, QUALIFY, set and DML counts remain residual.
