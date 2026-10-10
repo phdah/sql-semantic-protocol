@@ -1275,6 +1275,110 @@ pub(crate) fn physical_operator_count_witness(
     (previous == target_layer_id).then_some(witness)
 }
 
+/// Construct an exact positive equijoin cardinality through two
+/// independently materialized, identity-only producer branches. Local join
+/// evidence proves matching-pair semantics; tracing both join keys through
+/// their producers proves that the *physical* rows can realize those pairs.
+/// This deliberately does not admit filtered, grouped or computed branches.
+pub(crate) fn physical_materialized_join_witness(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    rows: u64,
+) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    if rows == 0 {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    if walker.sources.len() != 2 {
+        return None;
+    }
+    let target = walker.layers.get(target_layer_id).copied()?;
+    let query = query_for(bundle, target)?;
+    if !query.plain_goal_output_shape()
+        || query.joins().len() != 1
+        || query.sources().len() != 2
+        || query.dependencies().len() != 2
+        || query.aggregation().is_some()
+        || query.set_operation().is_some()
+        || !query.diagnostics().is_empty()
+        || query.output().columns().iter().any(|column| {
+            !matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
+        })
+    {
+        return None;
+    }
+    let ComposedSemantics::Resolved(semantics) = target.composed_semantics() else {
+        return None;
+    };
+    let [join] = semantics.join_witnesses() else {
+        return None;
+    };
+    if join.origin_layer_id() != target_layer_id
+        || !matches!(
+            join.kind(),
+            crate::protocol::JoinKind::Inner
+                | crate::protocol::JoinKind::Left
+                | crate::protocol::JoinKind::Right
+                | crate::protocol::JoinKind::Full
+        )
+        || join.comparison() != Some(crate::protocol::ComparisonOperator::Eq)
+        || !matches!(
+            join.qualifying(),
+            crate::join_witness::JoinWitnessDirection::Exact(cases)
+                if cases.iter().any(|case|
+                    case.shape() == crate::join_witness::JoinWitnessShape::Matched)
+        )
+    {
+        return None;
+    }
+
+    // The only other transformations are transparent, unfiltered reads
+    // of exactly one input. This excludes earlier operations that could
+    // introduce duplicates, drop join keys, or change their values.
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        if id == target_layer_id {
+            continue;
+        }
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        if !transparent_projection(query_for(bundle, layer)?) {
+            return None;
+        }
+    }
+
+    let map = |endpoint: &crate::bundle::ComposedJoinColumn| {
+        let column = crate::protocol::ColumnRef::new(
+            Some(endpoint.relation().to_string()),
+            endpoint.column().to_string(),
+        );
+        let mapped = if walker.sources.contains(endpoint.relation()) {
+            column
+        } else {
+            resolve_filter_column(bundle, &walker, target_layer_id, &column, 0)?
+        };
+        let relation = mapped.relation()?;
+        walker.sources.contains(relation).then(|| {
+            crate::bundle::ComposedJoinColumn::new(
+                relation.to_string(),
+                mapped.name().to_string(),
+                endpoint.relation_instance().to_string(),
+            )
+        })
+    };
+    let left = map(join.left()?)?;
+    let right = map(join.right()?)?;
+    if left.relation() == right.relation() {
+        return None;
+    }
+    crate::outcome_proofs::construct_mapped_join_pairs(bundle, &left, &right, rows)
+}
+
 /// One jointly controlled physical input with an optional qualifying
 /// restriction. Equality of physical counts is necessary only for a genuinely
 /// row-preserving (unfiltered) terminal, not for a sufficient filter plan.
