@@ -1043,18 +1043,12 @@ fn independent_physical_sources_can_satisfy_joint_row_targets() {
 fn positive_unfiltered_and_zero_filtered_targets_share_nonempty_rejected_source() {
     for &dialect in DIALECTS {
         let b = bundle(
-            &[
-                "SELECT a FROM t WHERE a > 2 OR b < 0",
-                "SELECT a FROM t",
-            ],
+            &["SELECT a FROM t WHERE a > 2 OR b < 0", "SELECT a FROM t"],
             dialect,
         );
         let zero = b.layers()[0].id();
         let positive = b.layers()[1].id();
-        for targets in [
-            [(zero, 0), (positive, 3)],
-            [(positive, 3), (zero, 0)],
-        ] {
+        for targets in [[(zero, 0), (positive, 3)], [(positive, 3), (zero, 0)]] {
             let proof = physical_joint_row_count_plan(&b, &targets);
             let WitnessDirection::Feasible(cases) = proof else {
                 panic!("{dialect}: expected shared physical rejection: {proof:?}");
