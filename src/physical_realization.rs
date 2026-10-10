@@ -1159,7 +1159,11 @@ pub fn physical_rejected_row_count_plan(
     }
     let physical = physical_source_plan(bundle, target_layer_id);
     if !matches!(physical.zero_output(), WitnessDirection::Feasible(_)) {
-        return residual(physical.gap().unwrap_or(PhysicalProofGap::NonInvertibleTransformation));
+        return residual(
+            physical
+                .gap()
+                .unwrap_or(PhysicalProofGap::NonInvertibleTransformation),
+        );
     }
     let Some(predicate) = repeatable_row_truth(
         bundle,
@@ -1167,13 +1171,16 @@ pub fn physical_rejected_row_count_plan(
         physical.rejected(),
         crate::boolean_witness::BooleanTruthCase::NotTrue,
     ) else {
-        return residual(physical.gap().unwrap_or(PhysicalProofGap::LocalWitnessUnproven));
+        return residual(
+            physical
+                .gap()
+                .unwrap_or(PhysicalProofGap::LocalWitnessUnproven),
+        );
     };
     let [source] = physical.sources() else {
         return residual(PhysicalProofGap::UnboundPhysicalSource);
     };
-    let Some(boundary) =
-        WitnessBoundary::new(source, GroupBoundaryKind::Physical, target_layer_id)
+    let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, target_layer_id)
     else {
         return residual(PhysicalProofGap::UnboundPhysicalSource);
     };
