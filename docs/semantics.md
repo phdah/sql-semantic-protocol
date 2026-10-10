@@ -531,8 +531,12 @@ aggregates can emit one row even for empty physical inputs. Nested
 aggregates within arithmetic or functions are also excluded from
 non-grouped row-local proofs.
 
-The physical-source Rust API also proves exact row counts through
-schema-backed transparent producer chains and jointly consistent terminal
-projections of a shared source. It retains each node's origin-local operator
-facts and pending upstream-producer boundaries. More general rows/counts
-across joins, grouping, QUALIFY, sets and DML remain residual.
+The physical-source Rust API proves exact counts through schema-backed
+transparent producer chains and identity-preserving WHERE chains with a
+jointly proven SQL-TRUE physical-row predicate. Positive filtered cases
+close the entire physical source at the requested count and require every
+row to qualify. Shared-source count plans retain that predicate and do not
+conjoin different filters without proof. The legacy outcome-goal adapter
+remains residual for positive filtered counts because its `source_rows`
+witness cannot encode required predicate obligations. General join,
+group, QUALIFY, set and DML counts remain residual.
