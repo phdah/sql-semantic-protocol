@@ -719,9 +719,8 @@ fn exact_singleton_cardinality_is_proved_without_physical_sources() {
 }
 
 #[test]
-fn row_count_constructor_does_not_guess_after_filters_or_join_multiplicities() {
+fn row_count_constructor_does_not_guess_after_joins_or_aggregates() {
     for query in [
-        "SELECT a FROM t WHERE a IS NOT NULL",
         "SELECT l.a FROM l INNER JOIN r ON l.k = r.k",
         "SELECT COUNT(*) AS c FROM t",
     ] {
@@ -733,6 +732,135 @@ fn row_count_constructor_does_not_guess_after_filters_or_join_multiplicities() {
             ),
             "{query}"
         );
+    }
+}
+
+#[test]
+fn positive_filter_counts_require_closed_world_physical_qualifying_rows() {
+    for &dialect in DIALECTS {
+        let b = bundle(&["SELECT a, b FROM t WHERE a > 2"], dialect);
+        for rows in [1, 3, 8] {
+            let target = b.layers()[0].id();
+            let proof = physical_row_count_plan(&b, target, rows);
+            let WitnessDirection::Feasible(cases) = proof else {
+                panic!("{dialect}: expected filtered {rows}-row plan: {proof:?}");
+            };
+            assert_eq!(cases.len(), 1);
+            assert!(cases[0].obligations().iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::Rows {
+                    boundary,
+                    bounds,
+                    predicate: WitnessFormula::RowTruth { .. },
+                    closed_world: true,
+                    ..
+                } if boundary.relation() == "t"
+                    && bounds.minimum() == rows
+                    && bounds.maximum() == Some(rows)
+            )));
+            assert!(cases[0].obligations().iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::ClosedWorld { boundary, .. }
+                    if boundary.relation() == "t"
+            )));
+        }
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (3, NULL), (3, 3), (4, 4);
+         CREATE TABLE stage AS SELECT a, b FROM t WHERE a > 2;",
+    )
+    .expect("populate only qualifying rows");
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM stage", [], |row| row.get(0))
+        .expect("filtered count");
+    assert_eq!(count, 3);
+    conn.execute_batch("INSERT INTO t VALUES (1, 9), (NULL, 2);")
+        .expect("add deliberately rejected rows");
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM (SELECT a FROM t WHERE a > 2)", [], |row| {
+            row.get(0)
+        })
+        .expect("rejected rows do not survive");
+    assert_eq!(count, 3);
+}
+
+#[test]
+fn nested_null_filters_prove_positive_counts_on_shared_source_rows() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t WHERE a IS NULL",
+                "SELECT a FROM stage WHERE b IS NOT NULL",
+            ],
+            dialect,
+        );
+        let proof = physical_row_count_plan(&b, b.layers()[1].id(), 3);
+        assert!(
+            matches!(proof, WitnessDirection::Feasible(_)),
+            "{dialect}: {proof:?}"
+        );
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (NULL, 1), (NULL, 2), (NULL, 3);
+         CREATE TABLE stage AS SELECT a, b FROM t WHERE a IS NULL;",
+    )
+    .expect("populate matching physical rows");
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM (SELECT a FROM stage WHERE b IS NOT NULL)", [], |row| {
+            row.get(0)
+        })
+        .expect("nested filter count");
+    assert_eq!(count, 3);
+}
+
+#[test]
+fn joint_counts_keep_filter_truth_and_fail_closed_on_distinct_conditions() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "SELECT a FROM t",
+                "SELECT a FROM t WHERE a IS NOT NULL",
+                "SELECT b FROM r WHERE b IS NULL",
+                "SELECT a FROM t WHERE a IS NULL",
+            ],
+            dialect,
+        );
+        let raw = b.layers()[0].id();
+        let positive = b.layers()[1].id();
+        let independent = b.layers()[2].id();
+        let incompatible = b.layers()[3].id();
+        let proof = physical_joint_row_count_plan(&b, &[(raw, 3), (positive, 3), (independent, 2)]);
+        let WitnessDirection::Feasible(cases) = proof else {
+            panic!("{dialect}: independently constructible filters: {proof:?}");
+        };
+        assert_eq!(cases.len(), 1);
+        assert_eq!(
+            cases[0]
+                .obligations()
+                .iter()
+                .filter(|obligation| matches!(
+                    obligation,
+                    WitnessObligation::Rows {
+                        predicate: WitnessFormula::RowTruth { .. },
+                        ..
+                    }
+                ))
+                .count(),
+            2,
+            "{dialect}: do not discard physical row truth while merging sources"
+        );
+        assert!(matches!(
+            physical_joint_row_count_plan(&b, &[(positive, 3), (incompatible, 3)]),
+            WitnessDirection::Residual { .. }
+        ));
+        assert!(matches!(
+            physical_joint_row_count_plan(&b, &[(raw, 4), (positive, 3)]),
+            WitnessDirection::Residual { .. }
+        ));
     }
 }
 
