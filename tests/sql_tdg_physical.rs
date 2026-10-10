@@ -169,6 +169,19 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
             .iter()
             .find(|layer| layer.id() == id)
             .expect("layer");
+        let wire: serde_json::Value =
+            serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&bundle))
+                .expect("canonical JSON");
+        if target == "union_all_result" {
+            let branches = wire["inputs"][0]["statements"][3]["set_operation"]["membership"]
+                ["branches"]
+                .as_array()
+                .expect("typed canonical set branches");
+            assert_eq!(branches.len(), 2);
+            assert!(branches.iter().all(|branch| {
+                branch["empty_input_preserving"] == serde_json::Value::Bool(true)
+            }));
+        }
         let branch_details = bundle
             .inputs()
             .iter()
