@@ -562,6 +562,27 @@ fn assess_goal(
         }
     }
 
+    // A locally exact grouped or ranked population may be realized through
+    // independently typed, identity-preserving producer materializations.
+    // The final witness names only controllable physical tables and columns.
+    if goal.distributions().is_empty() {
+        if let Some(rows) = goal.rows().or(goal.groups()) {
+            if let Some(witness) =
+                crate::physical_realization::physical_materialized_group_or_rank_witness(
+                    bundle, layer.id(), rows, goal.groups(),
+                )
+            {
+                return Ok(proved(
+                    goal,
+                    "group or rank obligations are realized at attested physical leaves",
+                    min_rows,
+                    max_rows,
+                    witness,
+                ));
+            }
+        }
+    }
+
     // Identity-only materialized producers preserve complete physical
     // distributions when every projected value is traceable to the same
     // source column. This is separate from count-only feasibility: a positive
