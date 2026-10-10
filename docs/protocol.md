@@ -1063,11 +1063,15 @@ or the entire DAG are jointly realizable.
 
 `zero_output` is a separate closed-world sufficient construction for **zero
 terminal output rows** when every transformation is a safe single-source
-row-preserving projection or filter, or a fully identified, non-aggregating
-join over controlled sources. All participating physical leaves must be empty. It requires complete
+row-preserving projection or filter, a fully identified join, or an
+ordinary non-empty GROUP BY key list over controlled sources (including
+joins feeding GROUP BY/HAVING). Non-grouped expressions must be row-local:
+a nested global aggregate such as `COUNT(*) + 1` cannot be certified
+zero-producing on empty input. All participating physical leaves must be empty. It requires complete
 control of the physical source with `0..0` rows, including explicit
 `closed_world` evidence; it is never inferred for global aggregates,
-opaque joined relations, sets, or missing producer evidence. This conservative construction
+opaque joined relations, sets, ROLLUP/CUBE/GROUPING SETS (which may
+emit an empty grouping set), or missing producer evidence. This conservative construction
 does not establish nonzero cardinality or prove that unrelated output
 goals can be satisfied simultaneously.
 
