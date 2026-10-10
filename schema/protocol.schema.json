@@ -6252,6 +6252,75 @@
           "additionalProperties": false,
           "required": [
             "kind",
+            "left_row",
+            "right_row",
+            "left_key",
+            "right_key",
+            "join_kind",
+            "pattern",
+            "left_rows",
+            "right_rows",
+            "output_rows",
+            "closed_world"
+          ],
+          "properties": {
+            "kind": {
+              "const": "join_population"
+            },
+            "left_row": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "right_row": {
+              "$ref": "#/$defs/constructiveRowVariable"
+            },
+            "left_key": {
+              "$ref": "#/$defs/groupWitnessColumn"
+            },
+            "right_key": {
+              "$ref": "#/$defs/groupWitnessColumn"
+            },
+            "join_kind": {
+              "enum": [
+                "inner",
+                "left",
+                "right",
+                "full",
+                "left_semi",
+                "right_semi",
+                "left_anti",
+                "right_anti"
+              ]
+            },
+            "pattern": {
+              "enum": [
+                "distinct_matched",
+                "common_matched",
+                "empty_left",
+                "empty_right"
+              ]
+            },
+            "left_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "right_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "output_rows": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "closed_world": {
+              "const": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
             "boundary",
             "key",
             "aggregate",
