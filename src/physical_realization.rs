@@ -446,7 +446,6 @@ fn empty_input_eliminates_set(operation: &SetOperation, layer: &TransformationLa
         branch.sources().len() == 1
             && branch.witness_boundary().is_some()
             && branch.predicates().having_predicate().is_none()
-            && branch.condition_exactness().is_exact()
             && branch
                 .output()
                 .columns()
@@ -492,7 +491,7 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
             || (query.set_operation().is_some() && !set_empty)
             || query.proven_single_row_output()
             || (query.predicates().having_predicate().is_some() && !regular_grouping)
-            || !query.diagnostics().is_empty()
+            || (!regular_grouping && !set_empty && !query.diagnostics().is_empty())
             || (!regular_grouping
                 && !ranked_window
                 && !query
