@@ -1897,7 +1897,8 @@ fn typed_multistage_renamed_projections_resolve_each_physical_column_edge() {
                     } else {
                         "INTEGER"
                     };
-                    SchemaColumn::from_sql_type(*name, sql_type, "postgresql").expect("typed column")
+                    SchemaColumn::from_sql_type(*name, sql_type, "postgresql")
+                        .expect("typed column")
                 })
                 .collect(),
         )
