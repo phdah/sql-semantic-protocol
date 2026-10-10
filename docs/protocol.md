@@ -1140,7 +1140,10 @@ typed identity in `nodes`, with their write kinds, local witnesses and
 pending producer requirements preserved. The typed `outcome` is independently
 classified as `feasible`, `impossible` or `residual`; a structural
 `gap` explicitly distinguishes missing, ambiguous, cyclic and partial
-producer resolution. A graph alone never certifies source data.
+producer resolution. A graph alone never certifies source data. When correlated operator-local
+witnesses cannot be reconciled with complete shared physical-row identities,
+the joint plan reports typed `unproved_cross_row_correlation` rather than
+treating individually feasible join/group/window/set examples as one proof.
 
 When a bundle contains caller-supplied **row-only** outcome goals, emission
 also includes optional `graph.physical_joint_count_plan` with sorted
