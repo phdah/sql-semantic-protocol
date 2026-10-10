@@ -1122,6 +1122,20 @@ a filtered output may contain fewer rows than its physical input. Joins,
 aggregate multiplicity, sets and DML state transitions remain unsupported
 for general positive cardinality.
 
+### Exact unconditional DELETE state
+
+The Rust API `physical_unconditional_delete_plan(bundle, layer_id,
+initial_rows)` produces a complete `Rows` and `ClosedWorld` assignment
+for a physical initial target and a typed `StateRows` obligation with
+`before = initial_rows` and `after = 0`. It uses the canonical
+`WriteStateEffect` to certify an unconditional DELETE with all preexisting
+rows removed. A real target schema without undeclared key constraints is
+required, and no other in-bundle producer or mutation may own the same
+target. This avoids mislabeling the DML action as a complete upstream
+relation producer. UPDATE, conditional DELETE, MERGE, and INSERT do not
+inherit this proof and remain residual until their full action and
+constraint obligations are discharged.
+
 ### Deliberately rejected physical rows
 
 `physical_rejected_row_count_plan(bundle, layer_id, source_rows)` is a
