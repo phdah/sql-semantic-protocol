@@ -414,6 +414,113 @@ fn zero_output_does_not_mistake_global_aggregate_for_empty_result() {
 }
 
 #[test]
+fn empty_grouped_join_dag_is_a_closed_world_zero_count_proof() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT l.a AS a, COUNT(*) AS n FROM l INNER JOIN r ON l.k = r.k GROUP BY l.a HAVING COUNT(*) > 1",
+                "SELECT a FROM stage WHERE a > 0",
+            ],
+            dialect,
+        );
+        let target = b.layers()[1].id();
+        let plan = physical_source_plan(&b, target);
+        assert!(
+            matches!(plan.zero_output(), WitnessDirection::Feasible(_)),
+            "{dialect}: an ordinary GROUP BY cannot synthesize rows from empty joins: {plan:?}"
+        );
+        assert_eq!(plan.sources(), &["l".to_string(), "r".to_string()]);
+        let WitnessDirection::Feasible(cases) = physical_row_count_plan(&b, target, 0) else {
+            panic!("{dialect}: zero terminal rows must be constructible");
+        };
+        let obligations = cases[0].obligations();
+        assert_eq!(
+            obligations.iter().filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. })).count(),
+            2
+        );
+        assert!(obligations.iter().any(|obligation| matches!(
+            obligation, WitnessObligation::OutputRows { layer_id, bounds }
+                if layer_id == target && bounds.minimum() == 0 && bounds.maximum() == Some(0)
+        )));
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE l(a INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, k INTEGER);
+         CREATE TABLE stage AS SELECT l.a AS a, COUNT(*) AS n
+             FROM l INNER JOIN r ON l.k = r.k
+             GROUP BY l.a HAVING COUNT(*) > 1;",
+    )
+    .expect("empty grouped join");
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM stage WHERE a > 0", [], |row| row.get(0))
+        .expect("grouped join count");
+    assert_eq!(count, 0);
+}
+
+#[test]
+fn empty_single_source_regular_grouping_is_zero_but_rollup_is_not() {
+    let ordinary = bundle(
+        &["SELECT a, COUNT(*) AS n FROM t GROUP BY a"],
+        "postgresql",
+    );
+    assert!(matches!(
+        physical_source_plan(&ordinary, ordinary.layers()[0].id()).zero_output(),
+        WitnessDirection::Feasible(_)
+    ));
+
+    let rollup = bundle(
+        &["SELECT COUNT(*) AS n FROM t GROUP BY ROLLUP(a)"],
+        "postgresql",
+    );
+    assert!(matches!(
+        physical_source_plan(&rollup, rollup.layers()[0].id()).zero_output(),
+        WitnessDirection::Residual { .. }
+    ));
+
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch("CREATE TABLE t(a INTEGER)").expect("empty table");
+    let ordinary_rows: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, COUNT(*) FROM t GROUP BY a)",
+            [],
+            |row| row.get(0),
+        )
+        .expect("empty ordinary grouping");
+    let rollup_rows: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT COUNT(*) FROM t GROUP BY ROLLUP(a))",
+            [],
+            |row| row.get(0),
+        )
+        .expect("empty rollup");
+    assert_eq!((ordinary_rows, rollup_rows), (0, 1));
+}
+
+#[test]
+fn nested_aggregate_projections_cannot_claim_zero_from_empty_sources() {
+    for query in [
+        "SELECT COUNT(*) + 1 FROM t",
+        "SELECT COALESCE(COUNT(*), 0) FROM t",
+        "SELECT COUNT(*) + 1 FROM t WHERE a > 0",
+        "SELECT COUNT(*) + 1 FROM l JOIN r ON l.k = r.k",
+    ] {
+        let b = bundle(&[query], "postgresql");
+        let plan = physical_source_plan(&b, b.layers()[0].id());
+        assert!(
+            matches!(plan.zero_output(), WitnessDirection::Residual { .. }),
+            "a global aggregate emits one row on empty input: {query}: {plan:?}"
+        );
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch("CREATE TABLE t(a INTEGER)").expect("empty table");
+    let value: i64 = conn
+        .query_row("SELECT COUNT(*) + 1 FROM t", [], |row| row.get(0))
+        .expect("global aggregate");
+    assert_eq!(value, 1);
+}
+
+#[test]
 fn canonical_wire_graph_deduplicates_producer_nodes_and_references() {
     let b = bundle(
         &[
