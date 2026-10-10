@@ -2873,7 +2873,10 @@ pub fn physical_joint_row_count_plan(
     }
     let mut ordered = targets.to_vec();
     ordered.sort();
-    if ordered.windows(2).any(|pair| pair[0].0 == pair[1].0 && pair[0].1 != pair[1].1) {
+    if ordered
+        .windows(2)
+        .any(|pair| pair[0].0 == pair[1].0 && pair[0].1 != pair[1].1)
+    {
         // A layer cannot simultaneously emit two distinct exact row counts,
         // irrespective of which sufficient join cases happen to be sampled.
         return WitnessDirection::Impossible;
