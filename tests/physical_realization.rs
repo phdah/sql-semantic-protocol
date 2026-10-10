@@ -1363,13 +1363,21 @@ fn joint_plan_handles_repeated_source_aliases_and_duplicate_physical_rows() {
         ];
         let plan = physical_joint_source_plan(&b, &requested);
         assert_eq!(plan.sources(), &["r".to_string(), "t".to_string()]);
-        assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)),
-            "{dialect}: aliases preserve one shared source identity: {plan:?}");
+        assert!(
+            matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: aliases preserve one shared source identity: {plan:?}"
+        );
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             unreachable!("asserted feasible");
         };
-        assert_eq!(cases[0].obligations().iter().filter(|item|
-            matches!(item, WitnessObligation::ClosedWorld { .. })).count(), 2);
+        assert_eq!(
+            cases[0]
+                .obligations()
+                .iter()
+                .filter(|item| matches!(item, WitnessObligation::ClosedWorld { .. }))
+                .count(),
+            2
+        );
     }
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
@@ -1390,16 +1398,15 @@ fn joint_plan_handles_repeated_source_aliases_and_duplicate_physical_rows() {
 
 #[test]
 fn joint_plan_does_not_upgrade_missing_schema_or_partial_producers() {
-    let unknown = bundle_with_schemas(
-        &["SELECT a FROM t", "SELECT b FROM t"],
-        "postgresql",
-        &[],
-    );
+    let unknown = bundle_with_schemas(&["SELECT a FROM t", "SELECT b FROM t"], "postgresql", &[]);
     let unknown_plan = physical_joint_source_plan(
         &unknown,
         &[(unknown.layers()[0].id(), 2), (unknown.layers()[1].id(), 2)],
     );
-    assert!(matches!(unknown_plan.outcome(), WitnessDirection::Residual { .. }));
+    assert!(matches!(
+        unknown_plan.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
     assert_eq!(unknown_plan.sources(), &["t".to_string()]);
 
     let partial = bundle(
