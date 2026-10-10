@@ -596,13 +596,7 @@ pub(crate) fn analyze(
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
 ) -> Option<BooleanWitness> {
-    analyze_candidate(
-        predicate,
-        sources,
-        integer_evidence,
-        string_evidence,
-        false,
-    )
+    analyze_candidate(predicate, sources, integer_evidence, string_evidence, false)
 }
 
 /// Build a supplementary source-level scalar row witness without altering
@@ -615,13 +609,7 @@ pub(crate) fn analyze_physical_scalar(
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
 ) -> Option<BooleanWitness> {
-    analyze_candidate(
-        predicate,
-        sources,
-        integer_evidence,
-        string_evidence,
-        true,
-    )
+    analyze_candidate(predicate, sources, integer_evidence, string_evidence, true)
 }
 
 fn analyze_candidate(
