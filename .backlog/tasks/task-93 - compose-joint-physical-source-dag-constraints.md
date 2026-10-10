@@ -1,7 +1,7 @@
 ---
 id: TASK-93
 title: Compose jointly satisfiable physical-source DAG constraints
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-10'
 updated_date: '2026-10-10'
@@ -38,6 +38,20 @@ Finish the physical-source-level constraint solver for multiple dependent termin
 - [ ] #4 Provide deterministic canonical Rust and protocol JSON proof/diagnostic representation usable by consumers without SQL parsing; preserve source-level lineage and proof strength.
 - [ ] #5 Test compatible and incompatible filters, shared/disjoint sources, unknown counts, aliases, NULL, duplicates, multi-terminal branches and reference cycles across exposed dialects with DuckDB differential oracles.
 <!-- AC:END -->
+
+## Implementation progress
+
+This PR adds a focused, typed joint-positive-filter proof over one shared
+physical source. Source-schema-backed integer and NULL-sensitive Boolean
+conditions are conjoined on the *same row identity*; one canonical `RowTruth`
+requires their shared truth. Provably disjoint conjunctions are impossible
+only with an exact necessary source count, otherwise residual. Independent
+physical sources continue to use separate closed-world assignments.
+
+Remaining TASK-93 acceptance includes joint negative predicates, full
+multi-branch producer DAG constraints, row correlations, cardinality
+interactions and comprehensive cyclic/partial cross-operator oracles.
+Do not close this task or unblock TASK-94 until those gaps are verified.
 
 ## Implementation and verification
 
