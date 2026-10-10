@@ -1122,6 +1122,25 @@ a filtered output may contain fewer rows than its physical input. Joins,
 aggregate multiplicity, sets and DML state transitions remain unsupported
 for general positive cardinality.
 
+### Transported operator counts and column distributions
+
+An otherwise complete source-local `join_pairs`, `groups`, `ranked`
+or `set_tuples` construction can be reused for a downstream output only
+when every subsequent named producer is an exact, single-parent,
+row-preserving, identity-only projection. The original source-backed
+operator proof is retained unchanged; this does **not** certify joins,
+grouping or sets over intermediate relations, nor two independently
+proved operators in the same DAG.
+
+Complete source-row value histograms can also traverse these transparent
+producer chains. The canonical column lineage must resolve each requested
+output frequency to exactly one typed physical source column, and the
+catalog must contain the actual materialized output columns, including
+renames. The existing `source_rows` wire witness then records complete
+typed frequencies for the physical column, not intermediate aliases.
+Computed or ambiguous projections, unsupported row shaping, and unknown
+catalog columns remain residual.
+
 Each `physical_nodes[]` entry may additionally expose
 `operator_witnesses` and `pending_producers`. These are the normalized,
 origin-local typed obligations, not separately executable source scripts.
