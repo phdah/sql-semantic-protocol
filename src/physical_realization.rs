@@ -13,8 +13,8 @@ use crate::bundle::{
 use crate::constructive::{
     local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
     ConstructiveWitness, CountBounds, JoinPopulationPattern, ProofStrength, RowQuantifier,
-    RowVariable, WitnessBoundary, WitnessCase,
-    WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
+    RowVariable, WitnessBoundary, WitnessCase, WitnessDirection, WitnessFormula, WitnessObligation,
+    WitnessOperator, WitnessTerm,
 };
 use crate::protocol::{
     Expression, GroupBy, GroupingExpression, Predicate, ProtocolStatement, QueryStatement,
@@ -2010,13 +2010,17 @@ fn physical_join_population_count_plan(
 
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
-    let join_layers = walker.nodes.iter().filter_map(|node| {
-        let PhysicalPlanRef::Layer(id) = node.id() else {
-            return None;
-        };
-        let layer = walker.layers.get(id.as_str()).copied()?;
-        (query_for(bundle, layer)?.joins().len() == 1).then_some(layer)
-    }).collect::<Vec<_>>();
+    let join_layers = walker
+        .nodes
+        .iter()
+        .filter_map(|node| {
+            let PhysicalPlanRef::Layer(id) = node.id() else {
+                return None;
+            };
+            let layer = walker.layers.get(id.as_str()).copied()?;
+            (query_for(bundle, layer)?.joins().len() == 1).then_some(layer)
+        })
+        .collect::<Vec<_>>();
     let [join_layer] = join_layers.as_slice() else {
         return None;
     };
@@ -2033,7 +2037,10 @@ fn physical_join_population_count_plan(
         || join_query.predicates().qualify_predicate().is_some()
         || !join_query.diagnostics().is_empty()
         || join_query.output().columns().iter().any(|column| {
-            !matches!(column.expression(), Expression::Column(_) | Expression::Literal(_))
+            !matches!(
+                column.expression(),
+                Expression::Column(_) | Expression::Literal(_)
+            )
         })
     {
         return None;
@@ -2078,8 +2085,10 @@ fn physical_join_population_count_plan(
         if descendant == join_layer.id() {
             break;
         }
-        let node = walker.nodes.iter().find(|node|
-            node.id() == &PhysicalPlanRef::Layer(descendant.to_string()))?;
+        let node = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(descendant.to_string()))?;
         let [PhysicalPlanRef::Layer(parent)] = node.inputs() else {
             return None;
         };
@@ -2100,14 +2109,12 @@ fn physical_join_population_count_plan(
             // All intermediate key projections have proven identical
             // datatypes at every producer edge. An endpoint-only match
             // cannot attest to implicit warehouse coercions.
-            resolve_filter_column_with_evidence(
-                bundle, &walker, join_layer.id(), &column, 0, true,
-            )?
+            resolve_filter_column_with_evidence(bundle, &walker, join_layer.id(), &column, 0, true)?
         };
-        walker.sources.contains(mapped.relation()?).then_some((
-            mapped,
-            endpoint.relation_instance().to_string(),
-        ))
+        walker
+            .sources
+            .contains(mapped.relation()?)
+            .then_some((mapped, endpoint.relation_instance().to_string()))
     };
     let (left_key, left_instance) = map(join.left()?)?;
     let (right_key, right_instance) = map(join.right()?)?;
@@ -2118,16 +2125,25 @@ fn physical_join_population_count_plan(
     let right_source = right_key.relation()?;
     // Require actual attested physical signed integer key types. An opaque
     // type, uniqueness contract or range restriction cannot be guessed.
-    let left_schema = bundle.source_schemas().iter().find(|s| s.relation() == left_source)?;
-    let right_schema = bundle.source_schemas().iter().find(|s| s.relation() == right_source)?;
+    let left_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == left_source)?;
+    let right_schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == right_source)?;
     let left_bounds = physical_integer_evidence(left_schema, &left_key)?;
     let right_bounds = physical_integer_evidence(right_schema, &right_key)?;
-    if left_bounds.minimum > 0 || right_bounds.minimum > 0
-        || left_bounds.maximum < 0 || right_bounds.maximum < 0
+    if left_bounds.minimum > 0
+        || right_bounds.minimum > 0
+        || left_bounds.maximum < 0
+        || right_bounds.maximum < 0
         || [left_source, right_source].iter().any(|relation| {
-            bundle.relation_constraints().iter().any(|set|
-                set.relation() == *relation &&
-                (!set.constraints().is_empty() || !set.diagnostics().is_empty()))
+            bundle.relation_constraints().iter().any(|set| {
+                set.relation() == *relation
+                    && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+            })
         })
     {
         return None;
@@ -2177,9 +2193,8 @@ fn physical_join_population_count_plan(
         physical_counts.insert(right_source.to_string(), right_rows);
         let mut obligations = Vec::new();
         for (relation, count) in &physical_counts {
-            let boundary = WitnessBoundary::new(
-                relation, GroupBoundaryKind::Physical, target_layer_id,
-            )?;
+            let boundary =
+                WitnessBoundary::new(relation, GroupBoundaryKind::Physical, target_layer_id)?;
             let bounds = CountBounds::new(*count, Some(*count))?;
             obligations.push(WitnessObligation::Rows {
                 boundary: boundary.clone(),
