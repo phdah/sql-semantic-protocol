@@ -634,23 +634,22 @@ pub(crate) fn analyze(
 
 fn is_witness_candidate(predicate: &Predicate) -> bool {
     match predicate {
-        Predicate::And(_)
-        | Predicate::Or(_)
-        | Predicate::LikePrefix(_)
-        | Predicate::IsNull(_)
-        | Predicate::Comparison(_) => true,
-        // Even when only one scalar comparison appears, a source-row
-        // witness is necessary for complete physical cardinality: scalar
-        // value domains alone do not specify which rows are rejected.
-        // Unsupported comparisons still normalize to typed residuals.
-        Predicate::Not(_)
-        | Predicate::Between(_)
-        | Predicate::In(_)
-        | Predicate::BooleanExpression(_)
-        | Predicate::Exists(_)
-        | Predicate::InSubquery(_)
-        | Predicate::Unknown(_)
-        | Predicate::Unsupported(_) => false,
+        Predicate::And(_) | Predicate::Or(_) | Predicate::LikePrefix(_) => true,
+        Predicate::Comparison(comparison) => {
+            // A lone direct column comparison already has a scalar domain;
+            // computed operands need a typed inversion witness.
+            [comparison.left(), comparison.right()]
+                .iter()
+                .any(|expression| {
+                    matches!(
+                        expression,
+                        Expression::SignedIntegerCast(_)
+                            | Expression::Binary(_)
+                            | Expression::Unary(_)
+                    )
+                })
+        }
+        _ => false,
     }
 }
 
