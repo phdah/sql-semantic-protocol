@@ -55,6 +55,16 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   physical sources. Guarded row-local expressions against global aggregates
   nested inside arithmetic/functions; ROLLUP/CUBE remain residual. This proof requires both explicit exact zero-row bounds and
   entire-relation closed-world coverage.
+- Composed multiple zero-output goals over the same canonical physical leaves,
+  deduplicating closed-world row assignments across filtered and joined
+  terminals and rejecting only necessary count conflicts as impossible.
+- Extended conservative zero-output proofs to safe DISTINCT, ranked QUALIFY,
+  and set branches with verified single-relation row boundaries. Checked
+  source-free set arms and global HAVING as explicit residual cases.
+- Pinned sql-tdg raw-SQL multi-stage, boundary and set fixtures by upstream
+  commit (90ec0e12a2d5), with DuckDB empty-input oracle assertions. These
+  certify zero-state shapes only; they do not discharge positive membership,
+  distribution or stateful DML fixture acceptance.
 - Added exact schema-backed source count construction through fully
   row-preserving producer DAGs, including jointly compatible terminal
   outputs that share one physical source and explicit conflicts when
