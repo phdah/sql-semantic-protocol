@@ -1,7 +1,7 @@
 ---
 id: TASK-95
 title: Compose grouping, ranking and set operators across producer DAGs
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-10'
 updated_date: '2026-10-10'
@@ -46,3 +46,22 @@ Realize cross-layer compositions of already-proven local group, window, set and 
 - **Next:** After this task is Done, proceed to TASK-96; do not skip ahead.
 - **Scope boundary:** Other TASK-70..91 work still owns individual missing operator variants, exhaustive conformance, the downstream generator, and protocol 3.0.0 release sign-off.
 
+
+## Implementation progress (draft PR)
+
+- Lifted exact grouped COUNT(*) / HAVING and ROW_NUMBER() / QUALIFY source-population
+  witnesses through several row-preserving producer layers, proving typed
+  source-column lineage at every intermediate schema boundary.
+- Remapped group, partition and ordering keys to the actual writable physical
+  source, preserving the pre-existing local operator law and full input count.
+  Noninvertible projections, filters, unrelated operators, incomplete schemas
+  and shared-source mixed plans continue to return residual.
+- Composed exact two-branch UNION/UNION ALL/INTERSECT/EXCEPT tuple multiplicity
+  through independently materialized identity-only branch producers, mapping
+  full candidate-tuple laws to schema-certified physical source columns.
+- Added DuckDB complete-output and NULL-duplicate differential checks,
+  cross-dialect grouping tests and fail-closed negative producer cases.
+
+**Still open:** JOIN-to-group, mixed grouping/window/set DAGs, joint multi-terminal populations and shared-source set cases,
+aggregate-derived filters, additional NULL/duplicate counterexamples,
+and full physical joint-plan integration. The unchecked criteria remain open.

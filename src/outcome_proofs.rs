@@ -14,7 +14,7 @@ use crate::join_witness::{JoinWitnessDirection, JoinWitnessShape};
 use crate::outcome_goals::{OutcomeGoal, OutputValueCount};
 use crate::protocol::{
     ColumnRef, ComparisonOperator, Expression, JoinKind, QueryStatement, SetMultiplicityRule,
-    SetWitnessCase, SetWitnessDirection,
+    SetWitnessBoundary, SetWitnessCase, SetWitnessDirection,
 };
 use crate::relation::RelationSchema;
 use crate::window_witness::{WindowOrderKey, WindowWitnessDirection};
@@ -318,6 +318,28 @@ fn construct_group(
     goal: &OutcomeGoal,
     rows: u64,
 ) -> Option<OutcomeWitness> {
+    construct_group_with_map(bundle, query, goal, rows, &|column| Some(column.clone()))
+}
+
+/// Lift an already proved local grouped count through attested physical column mappings.
+/// The mapper must certify each complete identity-preserving producer boundary.
+pub(crate) fn construct_mapped_group(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&ColumnRef) -> Option<ColumnRef>,
+) -> Option<OutcomeWitness> {
+    construct_group_with_map(bundle, query, goal, rows, map)
+}
+
+fn construct_group_with_map(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&ColumnRef) -> Option<ColumnRef>,
+) -> Option<OutcomeWitness> {
     if !query.group_rows_match_surviving_groups()
         || !goal.distributions().is_empty()
         || !query.diagnostics().is_empty()
@@ -350,9 +372,6 @@ fn construct_group(
             relations: vec![relation.to_string()],
         });
     }
-    if !unconstrained(bundle, &[relation]) {
-        return None;
-    }
     let group_key = match query.aggregation()?.group_by()? {
         crate::protocol::GroupBy::Expressions(grouping) if grouping.len() == 1 => {
             match &grouping[0] {
@@ -370,7 +389,14 @@ fn construct_group(
         .iter()
         .filter_map(|output| output.plain_copy_source())
         .find(|source| source.column() == group_key.name() && source.relation() == relation)?;
-    if !integer_key(bundle, relation, key.column(), rows) {
+    let mapped = map(&ColumnRef::new(
+        Some(relation.to_string()),
+        key.column().to_string(),
+    ))?;
+    let physical_relation = mapped.relation()?.to_string();
+    if !unconstrained(bundle, &[&physical_relation])
+        || !integer_key(bundle, &physical_relation, mapped.name(), rows)
+    {
         return None;
     }
 
@@ -401,8 +427,8 @@ fn construct_group(
     }
     rows.checked_mul(rows_per_group)?;
     Some(OutcomeWitness::Groups {
-        relation: relation.to_string(),
-        key: ColumnRef::new(Some(relation.to_string()), key.column().to_string()),
+        relation: physical_relation,
+        key: mapped,
         groups: rows,
         rows_per_group,
     })
@@ -413,6 +439,28 @@ fn construct_rank(
     query: &QueryStatement,
     goal: &OutcomeGoal,
     rows: u64,
+) -> Option<OutcomeWitness> {
+    construct_rank_with_map(bundle, query, goal, rows, &|column| Some(column.clone()))
+}
+
+/// Retain the exact local rank law while resolving the partition and order
+/// keys to the same controlled physical source.
+pub(crate) fn construct_mapped_rank(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&ColumnRef) -> Option<ColumnRef>,
+) -> Option<OutcomeWitness> {
+    construct_rank_with_map(bundle, query, goal, rows, map)
+}
+
+fn construct_rank_with_map(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&ColumnRef) -> Option<ColumnRef>,
 ) -> Option<OutcomeWitness> {
     if !query.ranked_goal_output_shape()
         || !goal.distributions().is_empty()
@@ -445,14 +493,13 @@ fn construct_rank(
             relations: vec![relation.to_string()],
         });
     }
-    if !unconstrained(bundle, &[relation])
-        || witness.order_by().len() != 1
-        || !integer_key(
-            bundle,
-            relation,
-            witness.order_by()[0].column().name(),
-            rows,
-        )
+    let [order] = witness.order_by() else {
+        return None;
+    };
+    let mapped_order = map(order.column())?;
+    let physical_relation = mapped_order.relation()?.to_string();
+    if !unconstrained(bundle, &[&physical_relation])
+        || !integer_key(bundle, &physical_relation, mapped_order.name(), rows)
     {
         return None;
     }
@@ -468,13 +515,21 @@ fn construct_rank(
     }
     let partition_key = match witness.partition_by() {
         [] if rows <= limit => None,
-        [key] if integer_key(bundle, relation, key.name(), rows) => Some(key.clone()),
+        [key] => {
+            let mapped = map(key)?;
+            if mapped.relation() != Some(physical_relation.as_str())
+                || !integer_key(bundle, &physical_relation, mapped.name(), rows)
+            {
+                return None;
+            }
+            Some(mapped)
+        }
         _ => return None,
     };
     Some(OutcomeWitness::Ranked {
-        relation: relation.to_string(),
+        relation: physical_relation,
         partition_key,
-        order_by: witness.order_by().to_vec(),
+        order_by: vec![order.with_column(mapped_order)],
         rows,
     })
 }
@@ -559,6 +614,30 @@ fn construct_set(
     goal: &OutcomeGoal,
     rows: u64,
 ) -> Option<OutcomeWitness> {
+    construct_set_with_map(bundle, query, goal, rows, &|boundary| {
+        (!boundary.is_intermediate()).then(|| boundary.clone())
+    })
+}
+
+/// Preserve the local set operation's exact bag and NULL-aware tuple law,
+/// replacing only source-relation boundaries proved equivalent by producers.
+pub(crate) fn construct_mapped_set(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&SetWitnessBoundary) -> Option<SetWitnessBoundary>,
+) -> Option<OutcomeWitness> {
+    construct_set_with_map(bundle, query, goal, rows, map)
+}
+
+fn construct_set_with_map(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    goal: &OutcomeGoal,
+    rows: u64,
+    map: &dyn Fn(&SetWitnessBoundary) -> Option<SetWitnessBoundary>,
+) -> Option<OutcomeWitness> {
     if goal.groups().is_some()
         || !query.diagnostics().is_empty()
         || query.output().columns().len() != 1
@@ -570,7 +649,8 @@ fn construct_set(
     if branches.len() != 2 {
         return None;
     }
-    let mut relations = Vec::new();
+    let mut relations = Vec::<String>::new();
+    let mut boundaries = Vec::new();
     for branch in branches {
         if branch.output().columns().len() != 1
             || !matches!(
@@ -586,13 +666,15 @@ fn construct_set(
             return None;
         }
         let boundary = branch.witness_boundary()?;
-        if boundary.is_intermediate()
-            || boundary.tuple_columns().len() != 1
-            || branch.dependencies()[0] != boundary.relation()
-        {
+        if boundary.tuple_columns().len() != 1 || branch.dependencies()[0] != boundary.relation() {
             return None;
         }
-        relations.push(boundary.relation());
+        let physical = map(boundary)?;
+        if physical.is_intermediate() || physical.tuple_columns().len() != 1 {
+            return None;
+        }
+        relations.push(physical.relation().to_string());
+        boundaries.push(physical);
     }
     if relations[0] == relations[1] {
         return None;
@@ -608,13 +690,14 @@ fn construct_set(
                         .all(|obligation| obligation.matching_tuple_count() == 0)
             }) {
                 return Some(OutcomeWitness::EmptySources {
-                    relations: relations.iter().map(|r| (*r).to_string()).collect(),
+                    relations: relations.clone(),
                 });
             }
         }
         return None;
     }
-    if !unconstrained(bundle, &relations) {
+    let source_names = relations.iter().map(String::as_str).collect::<Vec<_>>();
+    if !unconstrained(bundle, &source_names) {
         return None;
     }
     let values = match goal.distributions() {
@@ -635,8 +718,7 @@ fn construct_set(
         }
         _ => return None,
     };
-    for branch in branches {
-        let boundary = branch.witness_boundary()?;
+    for boundary in &boundaries {
         let column = &boundary.tuple_columns()[0];
         if !integer_key(bundle, boundary.relation(), column, rows) {
             return None;
@@ -653,7 +735,8 @@ fn construct_set(
     };
     let case = cases
         .into_iter()
-        .find(|case| case.output_tuple_count() == 1 && case.obligations().len() == 2)?;
+        .find(|case| case.output_tuple_count() == 1 && case.obligations().len() == 2)?
+        .with_physical_boundaries(map)?;
     let scale_by_value_rows = matches!(
         operation.multiplicity_rule()?,
         SetMultiplicityRule::Sum

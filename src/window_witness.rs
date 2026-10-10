@@ -22,6 +22,15 @@ impl WindowOrderKey {
     pub fn column(&self) -> &ColumnRef {
         &self.column
     }
+    /// Preserve the attested SQL ordering when remapping the column through
+    /// exact materialized source projections.
+    pub(crate) fn with_column(&self, column: ColumnRef) -> Self {
+        Self {
+            column,
+            ascending: self.ascending,
+            nulls_first: self.nulls_first,
+        }
+    }
     /// True for ascending ORDER BY.
     pub fn ascending(&self) -> bool {
         self.ascending

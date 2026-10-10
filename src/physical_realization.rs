@@ -1869,6 +1869,199 @@ pub(crate) fn physical_operator_count_witness(
     (previous == target_layer_id).then_some(witness)
 }
 
+/// Lift a locally exact GROUP BY/HAVING or ROW_NUMBER/QUALIFY population
+/// through transparent, type-certified producer chains. Other operators,
+/// computed projections, filtered parents, and additional physical sources
+/// retain residual classification rather than pretending producer outputs
+/// are directly writable.
+pub(crate) fn physical_materialized_group_or_rank_witness(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    rows: u64,
+    groups: Option<u64>,
+) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    if rows == 0 || groups.is_some_and(|count| count != rows) {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    if walker.sources.len() != 1 {
+        return None;
+    }
+    let mut operator_id = None;
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        let query = query_for(bundle, layer)?;
+        if transparent_projection(query) {
+            continue;
+        }
+        if operator_id.is_some()
+            || query.sources().len() != 1
+            || node.inputs().len() != 1
+            || !query.joins().is_empty()
+            || query.set_operation().is_some()
+            || !query.subquery_witnesses().is_empty()
+        {
+            return None;
+        }
+        let group = query.group_rows_match_surviving_groups() && query.aggregation().is_some();
+        let rank = query.window_witness().is_some() && query.aggregation().is_none();
+        if !group && !rank {
+            return None;
+        }
+        operator_id = Some(id.as_str());
+    }
+    let operator_id = operator_id?;
+    let operator_layer = walker.layers.get(operator_id).copied()?;
+    let operator = query_for(bundle, operator_layer)?;
+
+    // The operator's sole parent must be an actual producer. Direct physical
+    // operators use their own existing direct-construction path.
+    let node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(operator_id.to_string()))?;
+    if !matches!(node.inputs(), [PhysicalPlanRef::Layer(_)]) {
+        return None;
+    }
+    // Its output must be followed by one linear, lossless producer path.
+    let mut current = target_layer_id;
+    for _ in 0..walker.layers.len() {
+        if current == operator_id {
+            break;
+        }
+        let descendant = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(current.to_string()))?;
+        let [PhysicalPlanRef::Layer(parent)] = descendant.inputs() else {
+            return None;
+        };
+        current = parent;
+    }
+    if current != operator_id {
+        return None;
+    }
+    let map = |column: &crate::protocol::ColumnRef| {
+        let mapped =
+            resolve_filter_column_with_evidence(bundle, &walker, operator_id, column, 0, true)?;
+        walker
+            .sources
+            .contains(mapped.relation()?)
+            .then_some(mapped)
+    };
+    let goal =
+        crate::outcome_goals::OutcomeGoal::new(operator_id, Some(rows), groups, Vec::new()).ok()?;
+    if operator.aggregation().is_some() {
+        crate::outcome_proofs::construct_mapped_group(bundle, operator, &goal, rows, &map)
+    } else {
+        if groups.is_some() {
+            return None;
+        }
+        crate::outcome_proofs::construct_mapped_rank(bundle, operator, &goal, rows, &map)
+    }
+}
+
+/// Transport an exact two-branch set law to complete, type-certified
+/// physical source populations. Each branch's entire producer path must be
+/// row and value preserving; distinct physical sources are required so
+/// local branch examples are not mistaken for independent shared rows.
+pub(crate) fn physical_materialized_set_witness(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    goal: &crate::outcome_goals::OutcomeGoal,
+) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    let rows = goal.rows()?;
+    if rows == 0 || goal.groups().is_some() {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    if walker.sources.len() != 2 {
+        return None;
+    }
+    let mut operator_id = None::<&str>;
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        let query = query_for(bundle, layer)?;
+        if query.set_operation().is_some() {
+            if operator_id.is_some() {
+                return None;
+            }
+            operator_id = Some(id);
+        } else if !transparent_projection(query) {
+            return None;
+        }
+    }
+    let operator_id = operator_id?;
+    let operator_layer = walker.layers.get(operator_id).copied()?;
+    let query = query_for(bundle, operator_layer)?;
+    let branches = query.set_operation()?.branches();
+    if branches.len() != 2 {
+        return None;
+    }
+    // Require a linear path after the set. Upstream each arm can have its
+    // own transparent chain, but unrelated operator DAGs are not admitted.
+    let mut current = target_layer_id;
+    for _ in 0..walker.layers.len() {
+        if current == operator_id {
+            break;
+        }
+        let descendant = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(current.to_string()))?;
+        let [PhysicalPlanRef::Layer(parent)] = descendant.inputs() else {
+            return None;
+        };
+        current = parent;
+    }
+    if current != operator_id {
+        return None;
+    }
+
+    let map = |boundary: &crate::protocol::SetWitnessBoundary| {
+        let [column] = boundary.tuple_columns() else {
+            return None;
+        };
+        let original = crate::protocol::ColumnRef::new(
+            Some(boundary.relation().to_string()),
+            column.to_string(),
+        );
+        let mapped =
+            resolve_filter_column_with_evidence(bundle, &walker, operator_id, &original, 0, true)?;
+        let relation = mapped.relation()?;
+        if !walker.sources.contains(relation) {
+            return None;
+        }
+        Some(crate::protocol::SetWitnessBoundary::new(
+            relation.to_string(),
+            vec![mapped.name().to_string()],
+            false,
+        ))
+    };
+    let mapped_relations = branches
+        .iter()
+        .map(|branch| map(branch.witness_boundary()?))
+        .collect::<Option<Vec<_>>>()?;
+    if mapped_relations[0].relation() == mapped_relations[1].relation() {
+        return None;
+    }
+    crate::outcome_proofs::construct_mapped_set(bundle, query, goal, rows, &map)
+}
+
 /// Construct an exact positive equijoin cardinality through two
 /// independently materialized, identity-only producer branches. Local join
 /// evidence proves matching-pair semantics; tracing both join keys through

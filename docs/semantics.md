@@ -605,6 +605,25 @@ typed scalar distributions are likewise mapped through validated
 physical-column lineage and actual source/producer catalog schemas;
 ambiguous, computed, or unknown columns remain residual.
 
+A narrow positive group or rank population may now be constructed even
+when its source is a materialized, identity-preserving producer rather than a
+direct physical table. The outcome-goal `groups` or `ranked` witness
+references only the actual physical relation and schema-certified keys,
+including renamed GROUP BY, partition and ordering columns. A group witness
+must still have a locally exact COUNT(*) / HAVING law; a rank witness must
+have a locally exact ROW_NUMBER / QUALIFY law. Group keys use distinct
+physical integer values, and ranked partitions use complete physical rows.
+The producer chain cannot filter, compute, duplicate or coerce mapped
+columns. Two-branch `UNION`, `UNION ALL`, `INTERSECT`, and `EXCEPT` local
+tuple laws can also be transported across independently materialized
+row-preserving single-column branches when every branch column maps
+through type-certified producer scopes to a **different** physical source.
+The resulting `set_tuples` obligations name the physical source columns
+and retain the local duplicate and NULL-equality multiplicity law, rather
+than claiming that derived relations can be written to directly.
+Mixed join/group/window/set plans and shared-source set populations remain
+residual until complete correlated operator-level laws can be composed.
+
 The physical-source Rust API proves exact counts through schema-backed
 transparent producer chains and identity-preserving WHERE chains with a
 jointly proven SQL-TRUE physical-row predicate. Positive filtered cases
