@@ -489,6 +489,7 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
             || (!regular_grouping && !set_empty && !query.diagnostics().is_empty())
             || (!regular_grouping
                 && !ranked_window
+                && !set_empty
                 && !query
                     .output()
                     .columns()
