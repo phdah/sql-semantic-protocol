@@ -358,6 +358,30 @@ fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
         );
     }
 
+    // A matched key assignment must also retain a local pair witness;
+    // complete absence has explicit closed-world no-partner evidence.
+    let matched = bundle(&["SELECT l.a FROM l JOIN r ON l.k=r.k"], "postgresql");
+    let proof = physical_joint_source_plan(&matched, &[(matched.layers()[0].id(), 3)]);
+    let WitnessDirection::Feasible(matched_cases) = proof.outcome() else {
+        panic!("matched joined sources must be realizable");
+    };
+    assert!(matched_cases.iter().all(|case| case.obligations().iter().any(|o|
+        matches!(o, WitnessObligation::JoinPair { .. })
+    )));
+
+    let unmatched = bundle(&["SELECT l.a FROM l LEFT JOIN r ON l.k=r.k"], "postgresql");
+    let proof = physical_joint_source_plan(&unmatched, &[(unmatched.layers()[0].id(), 3)]);
+    let WitnessDirection::Feasible(unmatched_cases) = proof.outcome() else {
+        panic!("left-outer unmatched source rows must be realizable");
+    };
+    assert!(unmatched_cases.iter().any(|case| case.obligations().iter().any(|o|
+        matches!(o, WitnessObligation::NoMatchingPartner {
+            null_extended: Some(sql_semantic_protocol::JoinSide::Right),
+            closed_world: true,
+            ..
+        })
+    )));
+
     let many = bundle(&["SELECT l.a FROM l JOIN r ON l.k=r.k"], "postgresql");
     let plan = physical_joint_source_plan(&many, &[(many.layers()[0].id(), 12)]);
     let WitnessDirection::Feasible(cases) = plan.outcome() else {
