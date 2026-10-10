@@ -953,14 +953,14 @@ pub fn physical_row_count_plan(
         .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
 }
 
-/// Construct one jointly sufficient closed-world source assignment for a set
-/// of terminal row-count goals, preserving shared physical row identity.
+/// Construct a single complete physical source assignment for several
+/// terminal row-count goals. Independent sufficient cases are composed only
+/// after reconciling their *shared physical source identities*.
 ///
-/// This solver is intentionally restricted to exactly row-preserving,
-/// schema-checked source chains: two terminal projections of the same physical
-/// table require the *same* complete source-row count. Conflicts are impossible
-/// in this subset, not independently satisfiable examples. Filters, joins,
-/// writes, grouping and unknown external constraints stay residual.
+/// Transparent paths require exactly the terminal count at their one source.
+/// Empty-input proofs for filters, joins and ordinary grouping are sufficient
+/// but not necessary, so conflicts with nonzero source requirements are
+/// residual rather than (incorrectly) proved impossible.
 pub fn physical_joint_row_count_plan(
     bundle: &AnalysisBundle,
     targets: &[(&str, u64)],
@@ -968,8 +968,11 @@ pub fn physical_joint_row_count_plan(
     if targets.is_empty() {
         return residual(PhysicalProofGap::NoWitness);
     }
+
     let mut outputs = BTreeMap::<String, u64>::new();
-    let mut sources = BTreeMap::<String, u64>::new();
+    // The boolean records whether exact source cardinality is *necessary*,
+    // rather than just a sufficient choice for an empty terminal.
+    let mut sources = BTreeMap::<String, (u64, bool)>::new();
     for &(layer_id, rows) in targets {
         if outputs
             .insert(layer_id.to_string(), rows)
@@ -977,43 +980,57 @@ pub fn physical_joint_row_count_plan(
         {
             return WitnessDirection::Impossible;
         }
-        let individual = physical_row_count_plan(bundle, layer_id, rows);
-        match individual {
+
+        match physical_row_count_plan(bundle, layer_id, rows) {
             WitnessDirection::Impossible => return WitnessDirection::Impossible,
             WitnessDirection::Residual { .. } => {
-                return residual(PhysicalProofGap::LocalWitnessUnproven);
+                return residual(PhysicalProofGap::LocalWitnessUnproven)
             }
             WitnessDirection::Feasible(_) => {}
         }
-        // Establish a constructive positive count on every non-source-free
-        // path even for a requested zero. This rejects a filtered zero proof
-        // that only works by emptying the whole source and cannot be combined
-        // with an unrelated positive goal for that same physical source.
-        let positive = physical_row_count_plan(bundle, layer_id, 1);
-        if !matches!(positive, WitnessDirection::Feasible(_)) {
-            return residual(PhysicalProofGap::NonInvertibleTransformation);
-        }
+
         let physical = physical_source_plan(bundle, layer_id);
-        match physical.sources() {
-            [] => {
-                if rows != 1 {
-                    return WitnessDirection::Impossible;
+        if physical.sources().is_empty() {
+            // Source-free singletons are handled by the individual proof.
+            continue;
+        }
+
+        let requires_exact_count = rows > 0
+            || matches!(
+                physical_row_count_plan(bundle, layer_id, 1),
+                WitnessDirection::Feasible(_)
+            );
+        if requires_exact_count && physical.sources().len() != 1 {
+            return residual(PhysicalProofGap::UnboundPhysicalSource);
+        }
+
+        for relation in physical.sources() {
+            match sources.get(relation) {
+                Some(&(existing, existing_necessary)) if existing != rows => {
+                    // Non-row-preserving filters can yield zero output despite
+                    // positive source rows. Conflicts involving their all-empty
+                    // *sufficient* cases are not proofs of impossibility.
+                    if existing_necessary && requires_exact_count {
+                        return WitnessDirection::Impossible;
+                    }
+                    return residual(PhysicalProofGap::MultipleWitnesses);
+                }
+                Some(&(existing, existing_necessary)) => {
+                    sources.insert(
+                        relation.clone(),
+                        (existing, existing_necessary || requires_exact_count),
+                    );
+                }
+                None => {
+                    sources.insert(relation.clone(), (rows, requires_exact_count));
                 }
             }
-            [relation] => {
-                if sources
-                    .insert(relation.clone(), rows)
-                    .is_some_and(|existing| existing != rows)
-                {
-                    return WitnessDirection::Impossible;
-                }
-            }
-            _ => return residual(PhysicalProofGap::UnboundPhysicalSource),
         }
     }
+
     let origin = outputs.keys().next().map(String::as_str).unwrap_or("");
     let mut obligations = Vec::new();
-    for (relation, rows) in sources {
+    for (relation, (rows, _)) in sources {
         let Some(boundary) = WitnessBoundary::new(&relation, GroupBoundaryKind::Physical, origin)
         else {
             return residual(PhysicalProofGap::UnboundPhysicalSource);
