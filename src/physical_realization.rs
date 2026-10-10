@@ -1125,6 +1125,79 @@ pub fn physical_row_count_plan(
         .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
 }
 
+/// Lift complete scalar distributions across exact identity-only producer
+/// chains without reparsing the SQL or fabricating writable intermediate
+/// tables. Source histograms are safe only when every named producer preserves
+/// row count and every requested column resolves to an unchanged physical
+/// source column. Filters, calculations, joins and other row shaping are not
+/// silently treated as transparent.
+pub(crate) fn physical_distribution_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    goal: &crate::outcome_goals::OutcomeGoal,
+) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    let rows = goal.rows()?;
+    if rows == 0 || goal.groups().is_some() || goal.distributions().is_empty() {
+        return None;
+    }
+    let physical = physical_source_plan(bundle, target_layer_id);
+    let [source] = physical.sources() else {
+        return None;
+    };
+    if !matches!(
+        physical_row_count_plan(bundle, target_layer_id, rows),
+        WitnessDirection::Feasible(_)
+    ) {
+        return None;
+    }
+
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    // Source-column histograms require value identity *and* row identity.
+    // A computed projection, even one with a row-preserving count, cannot be
+    // inverted to source values by a consumer.
+    for node in &walker.nodes {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            continue;
+        };
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        let query = query_for(bundle, layer)?;
+        if !transparent_projection(query)
+            || query.aggregation().is_some()
+            || query.set_operation().is_some()
+            || query.window_witness().is_some()
+            || !query.subquery_witnesses().is_empty()
+        {
+            return None;
+        }
+    }
+    let target = walker.layers.get(target_layer_id).copied()?;
+    let query = query_for(bundle, target)?;
+    let mut mappings = Vec::new();
+    for distribution in goal.distributions() {
+        let mut matches = query
+            .output()
+            .columns()
+            .iter()
+            .filter(|column| column.name() == distribution.column());
+        let copied = matches.next()?.plain_copy_source()?;
+        if matches.next().is_some() {
+            return None;
+        }
+        let column = crate::protocol::ColumnRef::new(
+            Some(copied.relation().to_string()),
+            copied.column().to_string(),
+        );
+        let physical_column =
+            resolve_filter_column(bundle, &walker, target_layer_id, &column, 0)?;
+        if physical_column.relation() != Some(source.as_str()) {
+            return None;
+        }
+        mappings.push((physical_column.name().to_string(), distribution.values().to_vec()));
+    }
+    crate::outcome_proofs::construct_mapped_source(bundle, source, rows, mappings)
+}
+
 /// One jointly controlled physical input with an optional qualifying
 /// restriction. Equality of physical counts is necessary only for a genuinely
 /// row-preserving (unfiltered) terminal, not for a sufficient filter plan.
