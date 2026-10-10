@@ -565,8 +565,15 @@ The physical-source Rust API proves exact counts through schema-backed
 transparent producer chains and identity-preserving WHERE chains with a
 jointly proven SQL-TRUE physical-row predicate. Positive filtered cases
 close the entire physical source at the requested count and require every
-row to qualify. Shared-source count plans retain that predicate and do not
-conjoin different filters without proof. The legacy outcome-goal adapter
+row to qualify. Shared-source count plans retain that predicate. Distinct positive
+integer/NULL-sensitive filters on the same physical source can now be
+conjoined when exact source schema evidence proves a *single* common row
+assignment; the canonical `RowTruth` tree records the combined condition.
+Unsatisfiable conjunctions are impossible only when a necessary unfiltered
+source count fixes the entire population. Without that count, extra source
+rows could independently satisfy each filter, so the result is residual.
+Other unproved combinations, including detached string-collation predicates,
+remain residual. The legacy outcome-goal adapter
 remains residual for positive filtered counts because its `source_rows`
 witness cannot encode required predicate obligations. General join,
 group, QUALIFY, set and DML counts remain residual.
