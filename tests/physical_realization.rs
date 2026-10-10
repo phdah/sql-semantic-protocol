@@ -387,12 +387,18 @@ fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
     let WitnessDirection::Feasible(cases) = plan.outcome() else {
         panic!("bounded factors should prove all 3x4 join matches: {plan:?}");
     };
-    assert!(cases.iter().any(|case| case.obligations().iter().any(|o|
-        matches!(o, WitnessObligation::JoinPopulation {
-            pattern: JoinPopulationPattern::CommonMatched,
-            left_rows: 3, right_rows: 4, output_rows: 12, ..
-        })
-    )));
+    assert!(cases
+        .iter()
+        .any(|case| case.obligations().iter().any(|o| matches!(
+            o,
+            WitnessObligation::JoinPopulation {
+                pattern: JoinPopulationPattern::CommonMatched,
+                left_rows: 3,
+                right_rows: 4,
+                output_rows: 12,
+                ..
+            }
+        ))));
 
     let b = bundle(&["SELECT l.a FROM l CROSS JOIN r"], "postgresql");
     let p = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
