@@ -2032,7 +2032,12 @@ fn physical_join_population_count_plan(
     };
     let join_query = query_for(bundle, join_layer)?;
     if !join_query.plain_goal_output_shape()
+        || !join_query.condition_exactness().is_exact()
         || join_query.joins().len() != 1
+        || !matches!(
+            join_query.joins()[0].condition(),
+            Some(Predicate::Comparison(_))
+        )
         || join_query.sources().len() != 2
         || join_query.aggregation().is_some()
         || join_query.set_operation().is_some()
