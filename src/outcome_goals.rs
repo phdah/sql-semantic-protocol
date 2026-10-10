@@ -557,11 +557,8 @@ fn assess_goal(
     // Histogram and group goals need additional typed value/group evidence.
     if goal.groups().is_none() && goal.distributions().is_empty() {
         if let Some(rows) = goal.rows() {
-            let plan = crate::physical_realization::physical_row_count_plan(
-                bundle,
-                layer.id(),
-                rows,
-            );
+            let plan =
+                crate::physical_realization::physical_row_count_plan(bundle, layer.id(), rows);
             if let crate::constructive::WitnessDirection::Feasible(cases) = &plan {
                 // SourceRows with an empty column list means unrestricted row
                 // values. A positive filtered count instead requires every
