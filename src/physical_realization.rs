@@ -1887,7 +1887,10 @@ fn joint_positive_and_rejected_pair(
         ) {
             return None;
         }
-        if negative_predicate.as_ref().is_some_and(|prior| prior != &predicate) {
+        if negative_predicate
+            .as_ref()
+            .is_some_and(|prior| prior != &predicate)
+        {
             return None;
         }
         negative_predicate = Some(predicate);
