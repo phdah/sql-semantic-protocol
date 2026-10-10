@@ -520,6 +520,22 @@ fn assess_goal(
         }
     }
 
+    // Identity-only materialized producers preserve complete physical
+    // distributions when every projected value is traceable to the same
+    // source column. This is separate from count-only feasibility: a positive
+    // filtered count must retain its RowTruth obligations instead.
+    if let Some(witness) =
+        crate::physical_realization::physical_distribution_plan(bundle, layer.id(), &goal)
+    {
+        return Ok(proved(
+            goal,
+            "complete output frequencies are traced through value-preserving physical producers",
+            min_rows,
+            max_rows,
+            witness,
+        ));
+    }
+
     // A complete empty physical state also proves empty histograms and zero
     // surviving groups on ordinary grouping, independently of value-domain
     // distributions that would otherwise require a positive-row construction.
