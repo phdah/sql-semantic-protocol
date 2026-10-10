@@ -2145,7 +2145,7 @@ fn physical_join_population_count_plan(
     if wanted == 0 {
         candidates.push((JoinPopulationPattern::EmptyLeft, 0, 0));
     }
-    if wanted > 1 && wanted % 2 == 0 {
+    if wanted > 1 && wanted.is_multiple_of(2) {
         candidates.push((JoinPopulationPattern::CommonMatched, 2, wanted / 2));
     }
     // A self join with all equal keys has n*n pairs over ONE physical source.
