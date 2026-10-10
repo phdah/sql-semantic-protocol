@@ -1259,12 +1259,10 @@ pub fn physical_unconditional_delete_plan(
             set.relation() == write.target()
                 && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
         })
-        || effect
-            .resulting_rows(
-                initial_rows,
-                crate::protocol::WriteRowCounts::new(0, 0, initial_rows),
-            )
-            != Ok(0)
+        || effect.resulting_rows(
+            initial_rows,
+            crate::protocol::WriteRowCounts::new(0, 0, initial_rows),
+        ) != Ok(0)
     {
         return residual(PhysicalProofGap::PartialProducer);
     }
