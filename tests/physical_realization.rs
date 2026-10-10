@@ -8,10 +8,9 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
     physical_unconditional_delete_plan, AnalysisBundle, BooleanRowConstraint, BooleanTruthCase,
-    ConfiguredSqlInput, ConstraintValue,
-    OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution, OutputValueCount,
-    PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    WitnessDirection, WitnessFormula, WitnessObligation,
+    ConfiguredSqlInput, ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness,
+    OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -1102,24 +1101,30 @@ fn disjoint_shared_filters_require_necessary_source_count_to_prove_impossible() 
             ],
             dialect,
         );
-        assert!(matches!(
-            physical_joint_row_count_plan(
-                &b,
-                &[
-                    (b.layers()[0].id(), 2),
-                    (b.layers()[1].id(), 2),
-                    (b.layers()[2].id(), 2),
-                ]
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[
+                        (b.layers()[0].id(), 2),
+                        (b.layers()[1].id(), 2),
+                        (b.layers()[2].id(), 2),
+                    ]
+                ),
+                WitnessDirection::Impossible
             ),
-            WitnessDirection::Impossible
-        ), "{dialect}: disjoint predicates cannot cover the same fixed two source rows");
-        assert!(matches!(
-            physical_joint_row_count_plan(
-                &b,
-                &[(b.layers()[1].id(), 2), (b.layers()[2].id(), 2)]
+            "{dialect}: disjoint predicates cannot cover the same fixed two source rows"
+        );
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[(b.layers()[1].id(), 2), (b.layers()[2].id(), 2)]
+                ),
+                WitnessDirection::Residual { .. }
             ),
-            WitnessDirection::Residual { .. }
-        ), "{dialect}: extra rows could satisfy each filter separately");
+            "{dialect}: extra rows could satisfy each filter separately"
+        );
     }
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
@@ -1150,17 +1155,20 @@ fn sql_null_truth_is_solved_on_shared_physical_rows() {
             ],
             dialect,
         );
-        assert!(matches!(
-            physical_joint_row_count_plan(
-                &b,
-                &[
-                    (b.layers()[0].id(), 2),
-                    (b.layers()[1].id(), 2),
-                    (b.layers()[2].id(), 2),
-                ],
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[
+                        (b.layers()[0].id(), 2),
+                        (b.layers()[1].id(), 2),
+                        (b.layers()[2].id(), 2),
+                    ],
+                ),
+                WitnessDirection::Feasible(_)
             ),
-            WitnessDirection::Feasible(_)
-        ), "{dialect}: both NULL-sensitive filters admit the same row assignment");
+            "{dialect}: both NULL-sensitive filters admit the same row assignment"
+        );
     }
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
