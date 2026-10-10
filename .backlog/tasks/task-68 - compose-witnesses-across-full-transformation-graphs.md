@@ -90,6 +90,18 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   The legacy outcome-goal SourceRows adapter remains residual when it cannot
   carry these predicates; no consumer-facing arbitrary source-row claim.
 
+- Reused direct physically certified join-pair, grouped/HAVING, ranked
+  window and set-tuple count constructions through single-parent,
+  identity-only materialized projection chains. The producer must itself
+  consume physical sources, and every later relation must preserve both
+  cardinality and source-row identity; joined/filtered upstream branches
+  remain residual rather than assuming a complete proof.
+- Proven complete typed scalar histograms across renamed, row-preserving
+  materialized producer chains with actual catalog evidence for each named
+  producer output. Every distributed value resolves to the same physical
+  source column, is schema-checked, and shares a full-source cardinality.
+  Non-invertible projected values or unknown producer columns remain residual.
+
 **Still blocking:** General multi-operator and multi-parent joint
 satisfiability, mixed-join and aggregate/window/set DAG construction,
 positive nonzero counts beyond the verified transparent-source subset,
