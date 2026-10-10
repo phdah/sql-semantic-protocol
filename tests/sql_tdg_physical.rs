@@ -83,7 +83,8 @@ fn sql_tdg_advanced_pipeline_constructs_joint_terminal_zero_from_raw_sources() {
     );
     assert!(
         matches!(plan.zero_output(), WitnessDirection::Feasible(_)),
-        "pinned multi-stage CASE, JOIN, GROUP BY, HAVING pipeline must be empty-preserving: {plan:?}"
+        "pinned pipeline must be empty-preserving: {plan:?}; each layer: {:?}",
+        bundle.layers().iter().map(|layer| (layer.id(), physical_source_plan(&bundle, layer.id()).zero_output().clone())).collect::<Vec<_>>()
     );
     let joint = physical_joint_row_count_plan(&bundle, &[(stage, 0), (summary, 0)]);
     let WitnessDirection::Feasible(cases) = joint else {
@@ -155,7 +156,8 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
         let proof = physical_row_count_plan(&bundle, id, 0);
         assert!(
             matches!(proof, WitnessDirection::Feasible(_)),
-            "pinned sql-tdg set fixture {target} must preserve empty inputs: {proof:?}"
+            "pinned sql-tdg set fixture {target} must preserve empty inputs: {proof:?}; source plan: {:?}",
+            physical_source_plan(&bundle, id)
         );
     }
     let conn = Connection::open_in_memory().expect("duckdb");
