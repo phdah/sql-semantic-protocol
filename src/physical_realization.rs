@@ -913,11 +913,14 @@ fn repeatable_filter_predicate(
     let [case] = cases.as_slice() else {
         return None;
     };
-    let [WitnessObligation::Predicate(formula @ WitnessFormula::RowTruth {
-        row,
-        predicate,
-        truth: crate::boolean_witness::BooleanTruthCase::True,
-    })] = case.obligations() else {
+    let [WitnessObligation::Predicate(
+        formula @ WitnessFormula::RowTruth {
+            row,
+            predicate,
+            truth: crate::boolean_witness::BooleanTruthCase::True,
+        },
+    )] = case.obligations()
+    else {
         return None;
     };
     (row.relation() == source && predicate.is_exact()).then(|| formula.clone())
@@ -1149,19 +1152,24 @@ fn count_predicate_for_source(
     let [case] = cases.as_slice() else {
         return None;
     };
-    case.obligations().iter().find_map(|obligation| match obligation {
-        WitnessObligation::Rows {
-            boundary,
-            quantifier: RowQuantifier::ForAll,
-            bounds,
-            predicate,
-            closed_world: true,
-        } if boundary.kind() == GroupBoundaryKind::Physical
-            && boundary.relation() == source
-            && bounds.minimum() == rows
-            && bounds.maximum() == Some(rows) => Some(predicate.clone()),
-        _ => None,
-    })
+    case.obligations()
+        .iter()
+        .find_map(|obligation| match obligation {
+            WitnessObligation::Rows {
+                boundary,
+                quantifier: RowQuantifier::ForAll,
+                bounds,
+                predicate,
+                closed_world: true,
+            } if boundary.kind() == GroupBoundaryKind::Physical
+                && boundary.relation() == source
+                && bounds.minimum() == rows
+                && bounds.maximum() == Some(rows) =>
+            {
+                Some(predicate.clone())
+            }
+            _ => None,
+        })
 }
 
 /// Construct a single complete physical source assignment for several
@@ -1215,8 +1223,8 @@ pub fn physical_joint_row_count_plan(
                 Some(WitnessFormula::RowTruth { .. })
             )
         });
-        let requires_exact_count = !has_filter
-            && matches!(one_row_plan, WitnessDirection::Feasible(_));
+        let requires_exact_count =
+            !has_filter && matches!(one_row_plan, WitnessDirection::Feasible(_));
         if requires_exact_count && physical.sources().len() != 1 {
             return residual(PhysicalProofGap::UnboundPhysicalSource);
         }
