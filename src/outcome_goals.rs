@@ -565,11 +565,11 @@ fn assess_goal(
     // The set case retains positional tuple multiplicities, replacing each
     // materialized operand with its independently certified physical leaf.
     if goal.groups().is_none() {
-        if let Some(witness) =
-            crate::physical_realization::physical_materialized_set_witness(
-                bundle, layer.id(), &goal,
-            )
-        {
+        if let Some(witness) = crate::physical_realization::physical_materialized_set_witness(
+            bundle,
+            layer.id(),
+            &goal,
+        ) {
             return Ok(proved(
                 goal,
                 "set tuple multiplicity is realized through physical producer branches",
@@ -587,7 +587,10 @@ fn assess_goal(
         if let Some(rows) = goal.rows().or(goal.groups()) {
             if let Some(witness) =
                 crate::physical_realization::physical_materialized_group_or_rank_witness(
-                    bundle, layer.id(), rows, goal.groups(),
+                    bundle,
+                    layer.id(),
+                    rows,
+                    goal.groups(),
                 )
             {
                 return Ok(proved(
