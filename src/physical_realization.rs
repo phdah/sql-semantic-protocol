@@ -1857,8 +1857,11 @@ fn joint_positive_and_rejected_pair(
         if physical.sources() != [source.clone()] {
             return None;
         }
-        let predicate =
-            count_predicate_for_source(&physical_row_count_plan(bundle, layer_id, rows), source, rows)?;
+        let predicate = count_predicate_for_source(
+            &physical_row_count_plan(bundle, layer_id, rows),
+            source,
+            rows,
+        )?;
         if predicate == count_tautology() {
             continue;
         }
@@ -1991,7 +1994,12 @@ fn joint_source_truths_satisfiable(
     let mut row_identity = None;
     let mut requirements = Vec::new();
     for predicate in predicates {
-        let WitnessFormula::RowTruth { row, predicate, truth } = predicate else {
+        let WitnessFormula::RowTruth {
+            row,
+            predicate,
+            truth,
+        } = predicate
+        else {
             return None;
         };
         if row.relation() != source || row_identity.is_some_and(|identity| identity != row) {
@@ -2003,7 +2011,12 @@ fn joint_source_truths_satisfiable(
     crate::boolean_witness::jointly_satisfiable_physical_truths(
         source,
         &requirements,
-        |column| schema.columns().iter().any(|known| known.name() == column.name()),
+        |column| {
+            schema
+                .columns()
+                .iter()
+                .any(|known| known.name() == column.name())
+        },
         |column| physical_integer_evidence(schema, column),
     )
 }
