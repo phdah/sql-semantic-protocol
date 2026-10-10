@@ -113,6 +113,13 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
   same controlled source in a two-terminal proof. Unsupported combinations
   remain residual.
 
+- Added exact typed before/after state realization for unconditional DELETE
+  of one schema-backed, unconstrained physical target with no competing
+  in-bundle writer. The closed-world initial target of N rows is fully
+  enumerated, and the canonical DML law proves post-state zero. Other
+  UPDATE, conditional DELETE, INSERT and MERGE action constructions remain
+  release-blocking and residual.
+
 **Still blocking:** General multi-operator and multi-parent joint
 satisfiability, mixed-join and aggregate/window/set DAG construction,
 positive nonzero counts beyond the verified transparent-source subset,
