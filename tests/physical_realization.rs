@@ -13,7 +13,6 @@ use sql_semantic_protocol::{
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
-    let dialect_impl = dialect_from_name(dialect).expect("recognized dialect");
     let schemas = ["t", "l", "r", "stage", "mart"]
         .into_iter()
         .map(|relation| {
@@ -30,7 +29,16 @@ fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
             .expect("source schema")
         })
         .collect::<Vec<_>>();
-    let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
+    bundle_with_schemas(queries, dialect, &schemas)
+}
+
+fn bundle_with_schemas(
+    queries: &[&str],
+    dialect: &str,
+    schemas: &[RelationSchema],
+) -> AnalysisBundle {
+    let dialect_impl = dialect_from_name(dialect).expect("recognized dialect");
+    let catalog = RelationCatalog::from_schemas(schemas).expect("catalog");
     let sources = queries
         .iter()
         .map(|q| SqlInput::inline(*q))
@@ -1207,13 +1215,27 @@ fn downstream_filters_do_not_inherit_unqualified_join_constructions() {
 #[test]
 fn transitive_value_histograms_preserve_renamed_source_columns() {
     for &dialect in DIALECTS {
-        let mut b = bundle(
+        let source = RelationSchema::new(
+            "t",
+            ["a", "b", "k"]
+                .into_iter()
+                .map(|column| {
+                    SchemaColumn::from_sql_type(column, "INTEGER", "postgresql")
+                        .expect("physical column")
+                })
+                .collect(),
+        )
+        .expect("physical source");
+        // Stage and mart are produced here, not independently asserted
+        // warehouse schemas with inconsistent preexisting column names.
+        let mut b = bundle_with_schemas(
             &[
                 "CREATE TABLE stage AS SELECT a AS v, b FROM t",
                 "CREATE TABLE mart AS SELECT v AS final_a, b FROM stage",
                 "SELECT final_a AS total FROM mart",
             ],
             dialect,
+            &[source],
         );
         let id = b.layers()[2].id().to_string();
         let histogram = OutputDistribution::new(
