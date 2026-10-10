@@ -1998,6 +1998,30 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "comparison": comparison.as_str(),
             "null_extended": null_extended.map(|side| side.as_str())
         }),
+        crate::WitnessObligation::JoinPopulation {
+            left_row,
+            right_row,
+            left_key,
+            right_key,
+            join_kind,
+            pattern,
+            left_rows,
+            right_rows,
+            output_rows,
+            closed_world,
+        } => json!({
+            "kind": "join_population",
+            "left_row": constructive_row_to_value(left_row),
+            "right_row": constructive_row_to_value(right_row),
+            "left_key": column_ref_to_value(left_key),
+            "right_key": column_ref_to_value(right_key),
+            "join_kind": join_kind.as_str(),
+            "pattern": pattern.as_str(),
+            "left_rows": left_rows,
+            "right_rows": right_rows,
+            "output_rows": output_rows,
+            "closed_world": closed_world
+        }),
         crate::WitnessObligation::Group {
             boundary,
             key,
