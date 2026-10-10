@@ -237,6 +237,33 @@ fn join_population_reconciles_joint_terminal_counts_without_duplicate_source_row
 }
 
 #[test]
+fn physical_semijoin_and_antijoin_use_complete_nonempty_or_absent_partners() {
+    for sql in [
+        "SELECT l.a FROM l LEFT SEMI JOIN r ON l.k = r.k",
+        "SELECT l.a FROM l LEFT ANTI JOIN r ON l.k = r.k",
+        "SELECT r.a FROM l RIGHT SEMI JOIN r ON l.k = r.k",
+        "SELECT r.a FROM l RIGHT ANTI JOIN r ON l.k = r.k",
+    ] {
+        let dialect = "duckdb";
+        let b = bundle(&[sql], dialect);
+        let proof = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 3)]);
+        let WitnessDirection::Feasible(cases) = proof.outcome() else {
+            panic!("expected complete source law for {sql}: {proof:?}");
+        };
+        assert!(cases.iter().any(|case| case.obligations().iter().any(|o|
+            matches!(o, WitnessObligation::JoinPopulation {
+                output_rows: 3, closed_world: true, ..
+            })
+        )), "{sql}");
+    }
+
+    let b = bundle(&["SELECT l.a FROM l JOIN r ON l.k=r.k"], "duckdb");
+    let proof = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 0)]);
+    assert!(matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+        "a completely empty source population guarantees an empty join");
+}
+
+#[test]
 fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
     let cases = [
         (
