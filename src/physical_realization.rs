@@ -1887,13 +1887,18 @@ fn joint_positive_and_rejected_pair(
         ) {
             return None;
         }
-        if negative_predicate
-            .as_ref()
-            .is_some_and(|prior| prior != &predicate)
-        {
-            return None;
-        }
-        negative_predicate = Some(predicate);
+        negative_predicate = Some(match negative_predicate {
+            None => predicate,
+            Some(prior) if prior == predicate => prior,
+            Some(prior) => {
+                let (joint, satisfiable) =
+                    conjoin_source_row_truths(bundle, source, &prior, &predicate)?;
+                if !satisfiable {
+                    return Some(WitnessDirection::Impossible);
+                }
+                joint
+            }
+        });
     }
 
     let boundary = WitnessBoundary::new(source, GroupBoundaryKind::Physical, first_positive)?;
@@ -1922,21 +1927,18 @@ fn joint_positive_and_rejected_pair(
     WitnessDirection::feasible(vec![case])
 }
 
-/// Conjoin independently proven positive row predicates against one physical
-/// schema and one row identity. Per-terminal feasibility alone cannot prove
-/// a shared assignment: two filters may each admit rows but have no overlap.
+/// Conjoin independently proven SQL truth directions on one physical row.
+/// Independent terminal examples cannot prove a common source assignment.
 fn conjoin_source_row_truths(
     bundle: &AnalysisBundle,
     source: &str,
     left: &WitnessFormula,
     right: &WitnessFormula,
 ) -> Option<(WitnessFormula, bool)> {
-    use crate::boolean_witness::BooleanTruthCase;
-
     let WitnessFormula::RowTruth {
         row: left_row,
         predicate: left_condition,
-        truth: BooleanTruthCase::True,
+        truth: left_truth,
     } = left
     else {
         return None;
@@ -1944,20 +1946,21 @@ fn conjoin_source_row_truths(
     let WitnessFormula::RowTruth {
         row: right_row,
         predicate: right_condition,
-        truth: BooleanTruthCase::True,
+        truth: right_truth,
     } = right
     else {
         return None;
     };
-    if left_row != right_row || left_row.relation() != source {
+    if left_row != right_row || left_row.relation() != source || left_truth != right_truth {
         return None;
     }
     let schema = bundle
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == source)?;
-    let (predicate, satisfiable) = crate::boolean_witness::conjoin_physical_true_conditions(
+    let (predicate, satisfiable) = crate::boolean_witness::conjoin_physical_row_truths(
         source,
+        *left_truth,
         &[left_condition, right_condition],
         |column| {
             schema
@@ -1992,7 +1995,7 @@ fn conjoin_source_row_truths(
         WitnessFormula::RowTruth {
             row: left_row.clone(),
             predicate,
-            truth: BooleanTruthCase::True,
+            truth: *left_truth,
         },
         satisfiable,
     ))
