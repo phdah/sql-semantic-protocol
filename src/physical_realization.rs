@@ -187,6 +187,116 @@ impl PhysicalSourcePlan {
     }
 }
 
+/// One exact terminal output-cardinality target in a joint proof.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct PhysicalRowTarget {
+    layer_id: String,
+    rows: u64,
+}
+
+impl PhysicalRowTarget {
+    /// Unique producer/query layer whose complete row count is requested.
+    pub fn layer_id(&self) -> &str {
+        &self.layer_id
+    }
+
+    /// Exact requested number of terminal output rows.
+    pub fn rows(&self) -> u64 {
+        self.rows
+    }
+}
+
+/// One canonical multi-terminal physical graph and its *joint* proof status.
+///
+/// Producer-first nodes have stable typed identities and are defined once
+/// even when multiple terminals reuse an upstream layer. A residual retains
+/// the available graph, but never licenses a partial producer as writable.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalJointSourcePlan {
+    targets: Vec<PhysicalRowTarget>,
+    nodes: Vec<PhysicalPlanNode>,
+    sources: Vec<String>,
+    outcome: WitnessDirection,
+    gap: Option<PhysicalProofGap>,
+}
+
+impl PhysicalJointSourcePlan {
+    /// Sorted terminal goals, deduplicated by layer identity.
+    pub fn targets(&self) -> &[PhysicalRowTarget] {
+        &self.targets
+    }
+
+    /// Producer-first canonical graph with each shared node defined once.
+    pub fn nodes(&self) -> &[PhysicalPlanNode] {
+        &self.nodes
+    }
+
+    /// Independent, uniquely identified controllable physical sources.
+    pub fn sources(&self) -> &[String] {
+        &self.sources
+    }
+
+    /// Constructive typed obligations for the entire set of terminal goals.
+    pub fn outcome(&self) -> &WitnessDirection {
+        &self.outcome
+    }
+
+    /// Structural gap, if the dependency graph cannot be fully resolved.
+    /// Other semantic limitations are retained in the residual outcome.
+    pub fn gap(&self) -> Option<PhysicalProofGap> {
+        self.gap
+    }
+}
+
+/// Collect a single topologically ordered physical graph and verify several
+/// terminal count goals against the same shared physical assignments.
+/// Request order never changes node order or constructive proof identity.
+pub fn physical_joint_source_plan(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> PhysicalJointSourcePlan {
+    let mut requested = targets
+        .iter()
+        .map(|&(layer_id, rows)| PhysicalRowTarget {
+            layer_id: layer_id.to_string(),
+            rows,
+        })
+        .collect::<Vec<_>>();
+    requested.sort();
+    requested.dedup();
+    let mut walker = Walker::new(bundle);
+    let mut gap = None;
+    for target in &requested {
+        if gap.is_some() {
+            break;
+        }
+        let result = if walker.layers.contains_key(target.layer_id()) {
+            walker.visit(target.layer_id())
+        } else {
+            Err(PhysicalProofGap::UnknownTarget)
+        };
+        if let Err(reason) = result {
+            gap = Some(reason);
+        }
+    }
+    let outcome = if let Some(reason) = gap {
+        residual(reason)
+    } else {
+        let pairs = requested
+            .iter()
+            .map(|target| (target.layer_id(), target.rows()))
+            .collect::<Vec<_>>();
+        physical_joint_row_count_plan(bundle, &pairs)
+    };
+    PhysicalJointSourcePlan {
+        targets: requested,
+        nodes: walker.nodes,
+        sources: walker.sources.into_iter().collect(),
+        outcome,
+        gap,
+    }
+}
+
 fn residual(gap: PhysicalProofGap) -> WitnessDirection {
     WitnessDirection::Residual {
         reason: gap.as_str().to_string(),
@@ -1842,6 +1952,8 @@ fn joint_positive_and_rejected_pair(
             positive.push((layer_id, rows));
         }
     }
+    positive.sort_by_key(|(layer_id, _)| *layer_id);
+    zero.sort();
     let &(first_positive, rows) = positive.first()?;
     if zero.is_empty() || positive.iter().any(|(_, count)| *count != rows) {
         return None;
@@ -2089,13 +2201,15 @@ pub fn physical_joint_row_count_plan(
     if targets.is_empty() {
         return residual(PhysicalProofGap::NoWitness);
     }
-    if let Some(witness) = joint_positive_and_rejected_pair(bundle, targets) {
+    let mut ordered = targets.to_vec();
+    ordered.sort();
+    if let Some(witness) = joint_positive_and_rejected_pair(bundle, &ordered) {
         return witness;
     }
 
     let mut outputs = BTreeMap::<String, u64>::new();
     let mut sources = BTreeMap::<String, SourceCountRequirement>::new();
-    for &(layer_id, rows) in targets {
+    for &(layer_id, rows) in &ordered {
         if outputs
             .insert(layer_id.to_string(), rows)
             .is_some_and(|existing| existing != rows)
