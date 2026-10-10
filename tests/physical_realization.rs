@@ -1800,10 +1800,16 @@ fn typed_materialization_preserves_source_truth_only_with_matching_schema() {
         );
         let plan = physical_joint_source_plan(
             &b,
-            &[(b.layers()[0].id(), 2), (b.layers()[1].id(), 2), (b.layers()[2].id(), 2)],
+            &[
+                (b.layers()[0].id(), 2),
+                (b.layers()[1].id(), 2),
+                (b.layers()[2].id(), 2),
+            ],
         );
-        assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)),
-            "{dialect}: typed source copy should preserve filter truth: {plan:?}");
+        assert!(
+            matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: typed source copy should preserve filter truth: {plan:?}"
+        );
     }
 
     // A physically narrowed stage type could truncate/coerce values during
