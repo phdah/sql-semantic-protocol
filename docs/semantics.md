@@ -497,6 +497,25 @@ predicates and noninvertible assignments keep conservative domains; their
 presence never licenses a generator to claim complete exactness.
 
 
+## Joint physical-source realizability (TASK-93, partial)
+
+`physical_joint_source_plan` merges the dependency paths for multiple
+terminal output counts into a canonical producer-first graph, retaining
+shared leaves, write kinds, typed operator-local witnesses and unresolved
+producer boundaries. The `physical_joint_row_count_plan` result is a
+separate complete-source construction, not the union of feasible local
+examples. Request permutation cannot change its canonical representation.
+
+For jointly controlled positive filter goals with the same source count,
+all rows can satisfy a single coupled typed conjunction. Jointly rejected
+zero-output filters require SQL NOT TRUE of each predicate; mixed positive
+and negative goals must use one identical physical row assignment with
+full closed-world coverage. An impossible case is reported only for a
+proven contradiction; individually feasible but jointly unresolved source
+populations remain residual. Typed integer/NULL facts are supported;
+string collation, extra source cardinalities and complex operator
+correlations remain conservative.
+
 ## Physical-source row realization (TASK-68, partial)
 
 The Rust library's `physical_source_plan(bundle, target_layer_id)` returns a
