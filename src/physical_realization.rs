@@ -1922,6 +1922,81 @@ fn joint_positive_and_rejected_pair(
     WitnessDirection::feasible(vec![case])
 }
 
+/// Conjoin independently proven positive row predicates against one physical
+/// schema and one row identity. Per-terminal feasibility alone cannot prove
+/// a shared assignment: two filters may each admit rows but have no overlap.
+fn conjoin_source_row_truths(
+    bundle: &AnalysisBundle,
+    source: &str,
+    left: &WitnessFormula,
+    right: &WitnessFormula,
+) -> Option<(WitnessFormula, bool)> {
+    use crate::boolean_witness::BooleanTruthCase;
+
+    let WitnessFormula::RowTruth {
+        row: left_row,
+        predicate: left_condition,
+        truth: BooleanTruthCase::True,
+    } = left else {
+        return None;
+    };
+    let WitnessFormula::RowTruth {
+        row: right_row,
+        predicate: right_condition,
+        truth: BooleanTruthCase::True,
+    } = right else {
+        return None;
+    };
+    if left_row != right_row || left_row.relation() != source {
+        return None;
+    }
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == source)?;
+    let (predicate, satisfiable) =
+        crate::boolean_witness::conjoin_physical_true_conditions(
+            source,
+            &[left_condition, right_condition],
+            |column| {
+                schema
+                    .columns()
+                    .iter()
+                    .any(|known| known.name() == column.name())
+            },
+            |column| {
+                let known = schema
+                    .columns()
+                    .iter()
+                    .find(|known| known.name() == column.name())?;
+                let data_type = match known.data_type() {
+                    crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
+                    other => other,
+                };
+                match data_type {
+                    crate::data_type::DataType::SignedInteger { bits: Some(bits) }
+                        if *bits > 0 && *bits <= 64 =>
+                    {
+                        let magnitude = 1_i128 << (u32::from(*bits) - 1);
+                        Some(crate::boolean_witness::SignedIntegerEvidence {
+                            minimum: -magnitude,
+                            maximum: magnitude - 1,
+                        })
+                    }
+                    _ => None,
+                }
+            },
+        )?;
+    Some((
+        WitnessFormula::RowTruth {
+            row: left_row.clone(),
+            predicate,
+            truth: BooleanTruthCase::True,
+        },
+        satisfiable,
+    ))
+}
+
 /// Construct a single complete physical source assignment for several
 /// terminal row-count goals. Independent sufficient cases are composed only
 /// after reconciling their *shared physical source identities*.
@@ -1999,9 +2074,24 @@ pub fn physical_joint_row_count_plan(
                     } else if predicate == count_tautology() || predicate == existing.predicate {
                         existing.predicate.clone()
                     } else {
-                        // Even two individually feasible predicates may have
-                        // an empty intersection on the *same* physical row.
-                        return residual(PhysicalProofGap::MultipleWitnesses);
+                        let Some((joint, satisfiable)) = conjoin_source_row_truths(
+                            bundle,
+                            relation,
+                            &existing.predicate,
+                            &predicate,
+                        ) else {
+                            return residual(PhysicalProofGap::MultipleWitnesses);
+                        };
+                        if !satisfiable {
+                            // Only a necessary exact source count makes a
+                            // disjoint pair impossible. Otherwise extra
+                            // physical rows could satisfy each output separately.
+                            if existing.necessary || requires_exact_count {
+                                return WitnessDirection::Impossible;
+                            }
+                            return residual(PhysicalProofGap::MultipleWitnesses);
+                        }
+                        joint
                     };
                     sources.insert(
                         relation.clone(),
