@@ -7,7 +7,8 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
-    AnalysisBundle, ConfiguredSqlInput, ConstraintValue, OutcomeGoal, OutcomeGoalStatus,
+    physical_unconditional_delete_plan, AnalysisBundle, ConfiguredSqlInput, ConstraintValue,
+    OutcomeGoal, OutcomeGoalStatus,
     OutcomeWitness, OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
     WitnessObligation,
@@ -742,6 +743,73 @@ fn row_count_constructor_does_not_guess_after_joins_or_aggregates() {
             "{query}"
         );
     }
+}
+
+#[test]
+fn unconditional_delete_realizes_complete_before_after_physical_state() {
+    for dialect in ["generic", "postgresql", "snowflake", "duckdb"] {
+        let b = bundle(&["DELETE FROM t"], dialect);
+        let id = b.layers()[0].id();
+        for before in [0, 1, 3, 10] {
+            let proof = physical_unconditional_delete_plan(&b, id, before);
+            let WitnessDirection::Feasible(cases) = proof else {
+                panic!("{dialect}: before {before} should be deletable: {proof:?}");
+            };
+            assert_eq!(cases.len(), 1);
+            assert!(cases[0].obligations().iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::StateRows { relation, before: initial, after }
+                    if relation == "t"
+                        && initial.minimum() == before
+                        && initial.maximum() == Some(before)
+                        && after.minimum() == 0
+                        && after.maximum() == Some(0)
+            )));
+            assert!(cases[0].obligations().iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::ClosedWorld { boundary, .. }
+                    if boundary.relation() == "t"
+            )));
+        }
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER,b INTEGER,k INTEGER);
+         INSERT INTO t VALUES (1,1,1),(NULL,NULL,NULL),(1,1,1);",
+    )
+    .expect("controlled initial target");
+    let before: i64 = conn
+        .query_row("SELECT COUNT(*) FROM t", [], |row| row.get(0))
+        .expect("before");
+    conn.execute_batch("DELETE FROM t").expect("delete");
+    let after: i64 = conn
+        .query_row("SELECT COUNT(*) FROM t", [], |row| row.get(0))
+        .expect("after");
+    assert_eq!((before, after), (3, 0));
+}
+
+#[test]
+fn state_realization_does_not_assume_filtered_mutations_or_prior_target_producers() {
+    for sql in [
+        "DELETE FROM t WHERE a IS NULL",
+        "UPDATE t SET a = 3 WHERE b > 1",
+        "INSERT INTO t (a,b,k) SELECT a,b,k FROM l",
+    ] {
+        let b = bundle(&[sql], "postgresql");
+        let proof = physical_unconditional_delete_plan(&b, b.layers()[0].id(), 2);
+        assert!(
+            matches!(proof, WitnessDirection::Residual { .. }),
+            "{sql}: partial mutation needs exact predicate and initial-state proof"
+        );
+    }
+    let b = bundle(
+        &["CREATE TABLE t AS SELECT a,b,k FROM l", "DELETE FROM t"],
+        "postgresql",
+    );
+    assert!(matches!(
+        physical_unconditional_delete_plan(&b, b.layers()[1].id(), 2),
+        WitnessDirection::Residual { .. }
+    ));
 }
 
 #[test]
