@@ -1215,19 +1215,27 @@ fn downstream_filters_do_not_inherit_unqualified_join_constructions() {
 #[test]
 fn transitive_value_histograms_preserve_renamed_source_columns() {
     for &dialect in DIALECTS {
-        let source = RelationSchema::new(
-            "t",
-            ["a", "b", "k"]
-                .into_iter()
-                .map(|column| {
-                    SchemaColumn::from_sql_type(column, "INTEGER", "postgresql")
-                        .expect("physical column")
-                })
-                .collect(),
-        )
-        .expect("physical source");
-        // Stage and mart are produced here, not independently asserted
-        // warehouse schemas with inconsistent preexisting column names.
+        let schema = |relation: &str, columns: &[&str]| {
+            RelationSchema::new(
+                relation,
+                columns
+                    .iter()
+                    .map(|column| {
+                        SchemaColumn::from_sql_type(*column, "INTEGER", "postgresql")
+                            .expect("typed column")
+                    })
+                    .collect(),
+            )
+            .expect("typed schema")
+        };
+        // Each materialized producer has its *actual* named output schema.
+        // Inventing an unrelated catalog would correctly make lineage
+        // unresolved, not allow a physical histogram proof.
+        let schemas = [
+            schema("t", &["a", "b", "k"]),
+            schema("stage", &["v", "b"]),
+            schema("mart", &["final_a", "b"]),
+        ];
         let mut b = bundle_with_schemas(
             &[
                 "CREATE TABLE stage AS SELECT a AS v, b FROM t",
@@ -1235,7 +1243,7 @@ fn transitive_value_histograms_preserve_renamed_source_columns() {
                 "SELECT final_a AS total FROM mart",
             ],
             dialect,
-            &[source],
+            &schemas,
         );
         let id = b.layers()[2].id().to_string();
         let histogram = OutputDistribution::new(
