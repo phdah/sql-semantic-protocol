@@ -514,9 +514,9 @@ full closed-world coverage. An impossible case is reported only for a
 proven contradiction; individually feasible but jointly unresolved source
 populations remain residual. Typed integer/NULL facts are supported;
 string collation, extra source cardinalities and complex operator
-correlations remain conservative. Typed scalar predicates can cross exactly
-one named, row-preserving materialization when source and producer schemas
-attest identical column types and plain-copy lineage. Missing schemas,
+correlations remain conservative. Typed scalar predicates can cross identity-preserving materialization chains
+when each producer reference has matching source and output datatypes and
+plain-copy lineage at every edge. Missing schemas,
 changed types, opaque producer projections and partial writes remain residual.
 Cross-row join-pair, ranking and other correlated local witnesses are retained
 on graph nodes, but count proofs remain residual until all their physical
