@@ -779,9 +779,11 @@ fn positive_filter_counts_require_closed_world_physical_qualifying_rows() {
     conn.execute_batch("INSERT INTO t VALUES (1, 9), (NULL, 2);")
         .expect("add deliberately rejected rows");
     let count: i64 = conn
-        .query_row("SELECT COUNT(*) FROM (SELECT a FROM t WHERE a > 2)", [], |row| {
-            row.get(0)
-        })
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a FROM t WHERE a > 2)",
+            [],
+            |row| row.get(0),
+        )
         .expect("rejected rows do not survive");
     assert_eq!(count, 3);
 }
@@ -810,9 +812,11 @@ fn nested_null_filters_prove_positive_counts_on_shared_source_rows() {
     )
     .expect("populate matching physical rows");
     let count: i64 = conn
-        .query_row("SELECT COUNT(*) FROM (SELECT a FROM stage WHERE b IS NOT NULL)", [], |row| {
-            row.get(0)
-        })
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a FROM stage WHERE b IS NOT NULL)",
+            [],
+            |row| row.get(0),
+        )
         .expect("nested filter count");
     assert_eq!(count, 3);
 }
