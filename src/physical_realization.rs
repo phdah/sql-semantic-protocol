@@ -2167,14 +2167,14 @@ fn physical_join_population_count_plan(
     if wanted == 0 {
         candidates.push((JoinPopulationPattern::EmptyLeft, 0, 0));
     }
-    if wanted > 1 && wanted.is_multiple_of(2) {
-        candidates.push((JoinPopulationPattern::CommonMatched, 2, wanted / 2));
-    }
-    // A self join with all equal keys has n*n pairs over ONE physical source.
-    if left_source == right_source {
-        let root = (wanted as f64).sqrt() as u64;
-        if root > 0 && root.checked_mul(root) == Some(wanted) {
-            candidates.push((JoinPopulationPattern::CommonMatched, root, root));
+    // Enumerate bounded factorizations without floating-point roundoff.
+    // These are constructive examples only, never an exhaustive proof that
+    // other key histograms cannot realize the requested bag count.
+    for divisor in 2..=wanted.isqrt().min(64) {
+        if wanted.is_multiple_of(divisor) {
+            let other = wanted / divisor;
+            candidates.push((JoinPopulationPattern::CommonMatched, divisor, other));
+            candidates.push((JoinPopulationPattern::CommonMatched, other, divisor));
         }
     }
     let mut cases = Vec::new();
