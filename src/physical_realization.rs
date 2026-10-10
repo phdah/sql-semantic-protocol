@@ -486,7 +486,15 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
             || (query.set_operation().is_some() && !set_empty)
             || query.proven_single_row_output()
             || (query.predicates().having_predicate().is_some() && !regular_grouping)
-            || (!regular_grouping && !set_empty && !query.diagnostics().is_empty())
+            // Unsupported ORDER BY value/order expressions may affect which
+            // nonempty rows survive LIMIT, but cannot synthesize rows from
+            // an empty input. All other diagnostics remain blocking.
+            || (!regular_grouping
+                && !set_empty
+                && query
+                    .diagnostics()
+                    .iter()
+                    .any(|diagnostic| diagnostic.code() != "unsupported_order_by"))
             || (!regular_grouping
                 && !ranked_window
                 && !set_empty
