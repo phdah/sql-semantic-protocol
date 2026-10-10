@@ -1727,7 +1727,7 @@ fn mixed_positive_and_negative_goals_share_one_complete_physical_assignment() {
         let b = bundle(
             &[
                 "CREATE TABLE stage AS SELECT a, b FROM t",
-                "SELECT a FROM t WHERE a > 0",
+                "SELECT a FROM stage WHERE a > 0",
                 "SELECT b FROM t WHERE a < 10",
                 "SELECT a FROM t WHERE b IS NULL",
             ],
@@ -1785,6 +1785,55 @@ fn mixed_positive_and_negative_goals_share_one_complete_physical_assignment() {
         let actual: i64 = conn.query_row(sql, [], |row| row.get(0)).expect("oracle");
         assert_eq!(actual, expected, "{sql}");
     }
+}
+
+#[test]
+fn typed_materialization_preserves_source_truth_only_with_matching_schema() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, b FROM t",
+                "SELECT a FROM stage WHERE a > 2",
+                "SELECT a FROM t",
+            ],
+            dialect,
+        );
+        let plan = physical_joint_source_plan(
+            &b,
+            &[(b.layers()[0].id(), 2), (b.layers()[1].id(), 2), (b.layers()[2].id(), 2)],
+        );
+        assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: typed source copy should preserve filter truth: {plan:?}");
+    }
+
+    // A physically narrowed stage type could truncate/coerce values during
+    // materialization; the producer-to-physical column proof must not guess.
+    let source = RelationSchema::new(
+        "t",
+        vec![
+            SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").expect("source a"),
+            SchemaColumn::from_sql_type("b", "INTEGER", "postgresql").expect("source b"),
+        ],
+    )
+    .expect("source schema");
+    let narrowed = RelationSchema::new(
+        "stage",
+        vec![
+            SchemaColumn::from_sql_type("a", "SMALLINT", "postgresql").expect("stage a"),
+            SchemaColumn::from_sql_type("b", "INTEGER", "postgresql").expect("stage b"),
+        ],
+    )
+    .expect("stage schema");
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t",
+            "SELECT a FROM stage WHERE a > 2",
+        ],
+        "postgresql",
+        &[source, narrowed],
+    );
+    let proof = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
+    assert!(matches!(proof.outcome(), WitnessDirection::Residual { .. }));
 }
 
 #[test]
