@@ -16,8 +16,8 @@ use crate::constructive::{
     WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
 use crate::protocol::{
-    Expression, GroupBy, GroupingExpression, Predicate, ProtocolStatement, QueryStatement, SetOperand,
-    SetOperation, WriteKind,
+    Expression, GroupBy, GroupingExpression, Predicate, ProtocolStatement, QueryStatement,
+    SetOperand, SetOperation, WriteKind,
 };
 
 /// Stable reference to a physical source or an in-bundle producer layer.
@@ -413,7 +413,8 @@ fn row_local_expression(expression: &Expression) -> bool {
         Expression::Case(case) => {
             case.operand().is_none_or(row_local_expression)
                 && case.branches().iter().all(|branch| {
-                    row_local_expression(branch.condition()) && row_local_expression(branch.result())
+                    row_local_expression(branch.condition())
+                        && row_local_expression(branch.result())
                 })
                 && case.else_result().is_none_or(row_local_expression)
         }
@@ -430,10 +431,7 @@ fn row_local_expression(expression: &Expression) -> bool {
 /// GROUPING SETS, global aggregates or opaque producers. Set operators,
 /// including DISTINCT and nested bag operations, cannot create a tuple from
 /// entirely empty leaf inputs.
-fn empty_input_eliminates_set(
-    operation: &SetOperation,
-    layer: &TransformationLayer,
-) -> bool {
+fn empty_input_eliminates_set(operation: &SetOperation, layer: &TransformationLayer) -> bool {
     fn leaf_count(operation: &SetOperation) -> usize {
         let count = |operand: &SetOperand| match operand {
             SetOperand::Query => 1,
@@ -455,7 +453,9 @@ fn empty_input_eliminates_set(
                 .iter()
                 .all(|column| row_local_expression(column.expression()))
             && branch.sources().iter().all(|source| {
-                layer.consumes().contains(&layer.canonical_relation(source.name()))
+                layer
+                    .consumes()
+                    .contains(&layer.canonical_relation(source.name()))
             })
     })
 }
