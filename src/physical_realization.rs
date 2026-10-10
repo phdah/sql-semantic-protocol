@@ -360,6 +360,60 @@ fn transparent_projection(query: &QueryStatement) -> bool {
 /// A regular, non-empty grouping key list cannot form a group from no input
 /// rows. ROLLUP, CUBE and GROUPING SETS may contain the empty grouping set,
 /// which emits a global group even when every input table is empty.
+/// Conservative expressions that evaluate once per input row without
+/// arithmetic overflow, casts, opaque functions or row-generating behavior.
+/// A CASE of simple source comparisons and literal/copy results is safe for
+/// cardinality, even though its produced value is not invertible lineage.
+fn total_scalar_projection(expression: &Expression) -> bool {
+    match expression {
+        Expression::Column(_) | Expression::Literal(_) => true,
+        Expression::Case(case) => {
+            case.operand().is_none_or(total_scalar_projection)
+                && case.branches().iter().all(|branch| {
+                    match branch.condition() {
+                        Expression::BooleanPredicate(predicate) => {
+                            total_scalar_predicate(predicate)
+                        }
+                        condition => total_scalar_projection(condition),
+                    } && total_scalar_projection(branch.result())
+                })
+                && case.else_result().is_none_or(total_scalar_projection)
+        }
+        Expression::BooleanPredicate(predicate) => total_scalar_predicate(predicate),
+        Expression::AggregateFunction(_)
+        | Expression::WindowFunction(_)
+        | Expression::Function(_)
+        | Expression::ScalarSubquery(_)
+        | Expression::SignedIntegerCast(_)
+        | Expression::Unary(_)
+        | Expression::Binary(_)
+        | Expression::Unknown(_)
+        | Expression::Unsupported(_) => false,
+    }
+}
+
+fn total_scalar_predicate(predicate: &Predicate) -> bool {
+    match predicate {
+        Predicate::Comparison(comparison) => {
+            matches!(comparison.left(), Expression::Column(_) | Expression::Literal(_))
+                && matches!(comparison.right(), Expression::Column(_) | Expression::Literal(_))
+        }
+        Predicate::IsNull(test) => total_scalar_projection(test.expression()),
+        Predicate::And(logical) | Predicate::Or(logical) => {
+            logical.operands().iter().all(total_scalar_predicate)
+        }
+        Predicate::Not(negated) => total_scalar_predicate(negated.operand()),
+        Predicate::LikePrefix(like) => total_scalar_projection(like.expression()),
+        Predicate::Between(_)
+        | Predicate::In(_)
+        | Predicate::BooleanExpression(_)
+        | Predicate::Exists(_)
+        | Predicate::InSubquery(_)
+        | Predicate::Unknown(_)
+        | Predicate::Unsupported(_) => false,
+    }
+}
+
 fn empty_input_eliminates_groups(query: &QueryStatement) -> bool {
     matches!(
         query.aggregation().and_then(|aggregation| aggregation.group_by()),
@@ -991,7 +1045,7 @@ fn scalar_physical_row_truth(
                     .output()
                     .columns()
                     .iter()
-                    .any(|column| column.plain_copy_source().is_none())
+                    .any(|column| !total_scalar_projection(column.expression()))
             {
                 return None;
             }
