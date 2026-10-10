@@ -956,6 +956,40 @@ fn collect_comparison_literals(
     }
 }
 
+/// Reprove the *same* physical row's TRUE requirement across independent
+/// terminal filters. An empty search is unknown (e.g. assignment budget),
+/// not proof of an unsatisfiable conjunction. Only typed integer and NULL
+/// conditions are admitted; string collation evidence cannot be recovered
+/// from detached local witness trees.
+pub(crate) fn conjoin_physical_true_conditions(
+    source: &str,
+    conditions: &[&BooleanRowConstraint],
+    column_known: impl Fn(&ColumnRef) -> bool,
+    integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<(BooleanRowConstraint, bool)> {
+    if conditions.len() < 2
+        || conditions
+            .iter()
+            .any(|condition| !condition.is_exact() || condition.contains_string_prefix())
+    {
+        return None;
+    }
+    let joint = BooleanRowConstraint::All(BooleanOperands::new(
+        conditions.iter().map(|condition| (*condition).clone()).collect(),
+    )?);
+    let mut columns = Vec::new();
+    joint.columns(&mut columns);
+    if columns.is_empty()
+        || columns
+            .iter()
+            .any(|column| column.relation() != Some(source) || !column_known(column))
+    {
+        return None;
+    }
+    let possible = possible_joint_truths(&joint, &integer_evidence, &|_| None, None);
+    (!possible.is_empty()).then_some((joint, possible.contains(&SqlTruth::True)))
+}
+
 fn possible_joint_truths(
     constraint: &BooleanRowConstraint,
     integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
