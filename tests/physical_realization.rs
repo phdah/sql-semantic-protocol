@@ -1074,14 +1074,19 @@ fn row_count_constructor_proves_attested_join_but_not_opaque_aggregate() {
         "postgresql",
     );
     let proof = physical_row_count_plan(&joined, joined.layers()[0].id(), 4);
-    assert!(matches!(proof, WitnessDirection::Feasible(_)),
-        "explicit complete typed join inputs now admit constructive cardinality");
+    assert!(
+        matches!(proof, WitnessDirection::Feasible(_)),
+        "explicit complete typed join inputs now admit constructive cardinality"
+    );
 
     let grouped = bundle(&["SELECT COUNT(*) AS c FROM t"], "postgresql");
-    assert!(!matches!(
-        physical_row_count_plan(&grouped, grouped.layers()[0].id(), 4),
-        WitnessDirection::Feasible(_)
-    ), "join completion cannot turn unproven aggregate shape feasible");
+    assert!(
+        !matches!(
+            physical_row_count_plan(&grouped, grouped.layers()[0].id(), 4),
+            WitnessDirection::Feasible(_)
+        ),
+        "join completion cannot turn unproven aggregate shape feasible"
+    );
 }
 
 #[test]
