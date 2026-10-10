@@ -7,11 +7,11 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_joint_source_plan, physical_rejected_row_count_plan, physical_row_count_plan,
-    physical_source_plan,
-    physical_unconditional_delete_plan, AnalysisBundle, BooleanRowConstraint, BooleanTruthCase,
-    ConfiguredSqlInput, ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness,
-    OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula, WitnessObligation,
+    physical_source_plan, physical_unconditional_delete_plan, AnalysisBundle, BooleanRowConstraint,
+    BooleanTruthCase, ConfiguredSqlInput, ConstraintValue, OutcomeGoal, OutcomeGoalStatus,
+    OutcomeWitness, OutputDistribution, OutputValueCount, PhysicalPlanRef, PhysicalProofGap,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessFormula,
+    WitnessObligation,
 };
 
 fn bundle(queries: &[&str], dialect: &str) -> AnalysisBundle {
@@ -1275,10 +1275,17 @@ fn joint_plan_deduplicates_physical_dag_and_is_order_invariant() {
         let requests = [(b.layers()[2].id(), 3), (b.layers()[3].id(), 3)];
         let original = physical_joint_source_plan(&b, &requests);
         let reversed = physical_joint_source_plan(&b, &[requests[1], requests[0]]);
-        assert_eq!(original, reversed, "{dialect}: input order cannot change the proof");
+        assert_eq!(
+            original, reversed,
+            "{dialect}: input order cannot change the proof"
+        );
         assert!(matches!(original.outcome(), WitnessDirection::Feasible(_)));
         assert_eq!(original.sources(), &["t".to_string()]);
-        assert_eq!(original.nodes().len(), 5, "{dialect}: source and four unique layers");
+        assert_eq!(
+            original.nodes().len(),
+            5,
+            "{dialect}: source and four unique layers"
+        );
         assert_eq!(
             original.nodes()[0].id(),
             &PhysicalPlanRef::Source("t".to_string())
@@ -1287,8 +1294,10 @@ fn joint_plan_deduplicates_physical_dag_and_is_order_invariant() {
 
         let goals = requests
             .iter()
-            .map(|(layer_id, rows)| OutcomeGoal::new(*layer_id, Some(*rows), None, vec![])
-                .expect("row-only requested goal"))
+            .map(|(layer_id, rows)| {
+                OutcomeGoal::new(*layer_id, Some(*rows), None, vec![])
+                    .expect("row-only requested goal")
+            })
             .collect::<Vec<_>>();
         b.set_outcome_goals(&goals).expect("valid goals");
         let json: serde_json::Value =
