@@ -255,10 +255,7 @@ fn construct_source(
             relations: vec![relation.to_string()],
         });
     }
-    if !unconstrained(bundle, &[relation]) || schema(bundle, relation).is_none() {
-        return None;
-    }
-    let mut columns = Vec::new();
+    let mut mappings = Vec::new();
     for distribution in goal.distributions() {
         let projected = query
             .output()
@@ -269,29 +266,9 @@ fn construct_source(
         if source.relation() != relation {
             return None;
         }
-        if distribution
-            .values()
-            .iter()
-            .any(|entry| !value_fits(bundle, relation, source.column(), entry.value()))
-        {
-            return None;
-        }
-        if columns
-            .iter()
-            .any(|item: &SourceColumnValues| item.column == source.column())
-        {
-            return None;
-        }
-        columns.push(SourceColumnValues {
-            column: source.column().to_string(),
-            values: distribution.values().to_vec(),
-        });
+        mappings.push((source.column().to_string(), distribution.values().to_vec()));
     }
-    Some(OutcomeWitness::SourceRows {
-        relation: relation.to_string(),
-        rows,
-        columns,
-    })
+    construct_mapped_source(bundle, relation, rows, mappings)
 }
 
 /// Construct typed physical-source column histograms once alias and producer
