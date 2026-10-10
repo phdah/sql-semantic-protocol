@@ -738,17 +738,12 @@ fn row_count_constructor_does_not_guess_after_joins_or_aggregates() {
 #[test]
 fn positive_filter_counts_require_closed_world_physical_qualifying_rows() {
     for &dialect in DIALECTS {
-        let b = bundle(&["SELECT a, b FROM t WHERE a > 2"], dialect);
+        let b = bundle(&["SELECT a, b FROM t WHERE a > 2 OR b < 0"], dialect);
         for rows in [1, 3, 8] {
             let target = b.layers()[0].id();
             let proof = physical_row_count_plan(&b, target, rows);
             let WitnessDirection::Feasible(cases) = proof else {
-                panic!(
-                    "{dialect}: filtered {rows}-row plan {proof:?}; source plan {:?}; schemas {:?}; constraints {:?}",
-                    physical_source_plan(&b, target),
-                    b.source_schemas(),
-                    b.relation_constraints()
-                );
+                panic!("{dialect}: expected proven filtered {rows}-row plan: {proof:?}");
             };
             assert_eq!(cases.len(), 1);
             assert!(cases[0].obligations().iter().any(|obligation| matches!(
@@ -774,7 +769,7 @@ fn positive_filter_counts_require_closed_world_physical_qualifying_rows() {
     conn.execute_batch(
         "CREATE TABLE t(a INTEGER, b INTEGER);
          INSERT INTO t VALUES (3, NULL), (3, 3), (4, 4);
-         CREATE TABLE stage AS SELECT a, b FROM t WHERE a > 2;",
+         CREATE TABLE stage AS SELECT a, b FROM t WHERE a > 2 OR b < 0;",
     )
     .expect("populate only qualifying rows");
     let count: i64 = conn
@@ -785,7 +780,7 @@ fn positive_filter_counts_require_closed_world_physical_qualifying_rows() {
         .expect("add deliberately rejected rows");
     let count: i64 = conn
         .query_row(
-            "SELECT COUNT(*) FROM (SELECT a FROM t WHERE a > 2)",
+            "SELECT COUNT(*) FROM (SELECT a FROM t WHERE a > 2 OR b < 0)",
             [],
             |row| row.get(0),
         )
@@ -798,8 +793,8 @@ fn nested_null_filters_prove_positive_counts_on_shared_source_rows() {
     for &dialect in DIALECTS {
         let b = bundle(
             &[
-                "CREATE TABLE stage AS SELECT a, b FROM t WHERE a IS NULL",
-                "SELECT a FROM stage WHERE b IS NOT NULL",
+                "CREATE TABLE stage AS SELECT a, b FROM t WHERE a IS NOT NULL OR b IS NOT NULL",
+                "SELECT a FROM stage WHERE a IS NULL OR b IS NOT NULL",
             ],
             dialect,
         );
@@ -812,13 +807,13 @@ fn nested_null_filters_prove_positive_counts_on_shared_source_rows() {
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
         "CREATE TABLE t(a INTEGER, b INTEGER);
-         INSERT INTO t VALUES (NULL, 1), (NULL, 2), (NULL, 3);
-         CREATE TABLE stage AS SELECT a, b FROM t WHERE a IS NULL;",
+         INSERT INTO t VALUES (NULL, 1), (2, 2), (NULL, 3);
+         CREATE TABLE stage AS SELECT a, b FROM t WHERE a IS NOT NULL OR b IS NOT NULL;",
     )
     .expect("populate matching physical rows");
     let count: i64 = conn
         .query_row(
-            "SELECT COUNT(*) FROM (SELECT a FROM stage WHERE b IS NOT NULL)",
+            "SELECT COUNT(*) FROM (SELECT a FROM stage WHERE a IS NULL OR b IS NOT NULL)",
             [],
             |row| row.get(0),
         )
@@ -832,9 +827,9 @@ fn joint_counts_keep_filter_truth_and_fail_closed_on_distinct_conditions() {
         let b = bundle(
             &[
                 "SELECT a FROM t",
-                "SELECT a FROM t WHERE a IS NOT NULL",
-                "SELECT b FROM r WHERE b IS NULL",
-                "SELECT a FROM t WHERE a IS NULL",
+                "SELECT a FROM t WHERE a IS NOT NULL OR b IS NOT NULL",
+                "SELECT b FROM r WHERE a IS NULL OR b IS NULL",
+                "SELECT a FROM t WHERE a IS NULL OR b IS NULL",
             ],
             dialect,
         );
