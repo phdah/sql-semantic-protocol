@@ -910,6 +910,99 @@
           "items": {
             "$ref": "#/$defs/compositionDiagnostic"
           }
+        },
+        "physical_nodes": {
+          "description": "Optional, canonical source and producer nodes. All producer plans reference these identities, never duplicate their contents.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/physicalPlanNode" }
+        },
+        "physical_source_plans": {
+          "description": "Optional per-layer physical realizability assessments. Residual directions cannot be upgraded to feasible by downstream consumers.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/physicalSourcePlan" }
+        }
+      }
+    },
+    "physicalPlanRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "const": "source" },
+            "id": { "$ref": "#/$defs/nonEmptyString" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "const": "layer" },
+            "id": { "$ref": "#/$defs/nonEmptyString" }
+          }
+        }
+      ]
+    },
+    "physicalPlanNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "inputs", "produced_relations", "write_kind"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/physicalPlanRef" },
+        "inputs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/physicalPlanRef" }
+        },
+        "produced_relations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relationName" }
+        },
+        "write_kind": {
+          "enum": [null, "definition", "append", "conditional_mutation", "update", "delete"]
+        },
+        "operator_witnesses": {
+          "description": "Origin-local, non-conjoined typed operator proofs. Intermediate boundaries are not writable physical sources.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/constructiveWitness" }
+        },
+        "pending_producers": {
+          "description": "Typed producer obligations that are not claimed satisfiable by this node.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/constructiveObligation" }
+        }
+      }
+    },
+    "physicalSourcePlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer_id", "node_refs", "physical_sources", "qualifying", "rejected", "zero_output", "gap"],
+      "properties": {
+        "layer_id": { "$ref": "#/$defs/nonEmptyString" },
+        "node_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/physicalPlanRef" }
+        },
+        "physical_sources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relationName" }
+        },
+        "qualifying": { "$ref": "#/$defs/constructiveDirection" },
+        "rejected": { "$ref": "#/$defs/constructiveDirection" },
+        "zero_output": {
+          "description": "Sufficient entire-physical-source empty-row obligations for zero terminal output; does not imply positive output cardinality.",
+          "$ref": "#/$defs/constructiveDirection"
+        },
+        "gap": {
+          "description": "Proof limitation. null means supported single-row classifications only, not a proof of full target cardinality.",
+          "enum": [null, "unknown_target", "missing_producer", "ambiguous_producer", "cycle", "partial_producer", "unsupported_dependency", "unresolved_semantics", "no_witness", "conflicting_domains", "local_witness_unproven", "multiple_witnesses", "non_invertible_transformation", "unsupported_operator", "intermediate_boundary", "unbound_physical_source"]
         }
       }
     },
@@ -3878,7 +3971,8 @@
         "predicates",
         "column_domains",
         "output",
-        "condition_exactness"
+        "condition_exactness",
+        "empty_input_preserving"
       ],
       "properties": {
         "identity": {
@@ -3904,6 +3998,10 @@
         },
         "condition_exactness": {
           "$ref": "#/$defs/conditionExactness"
+        },
+        "empty_input_preserving": {
+          "type": "boolean",
+          "description": "A single-source direct read or row filter whose empty input cannot create output rows."
         }
       }
     },

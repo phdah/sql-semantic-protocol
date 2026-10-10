@@ -1037,3 +1037,164 @@ The original predicate retains AND/OR and SQL UNKNOWN distinctions. For
 MERGE NOT MATCHED branches, the anti-match obligation is separate from the
 branch's local WHERE domain. SQL statement order, first-applicable MERGE
 clause precedence and unsupported actions remain authoritative.
+
+
+## Physical dependency graph and source-row proof (TASK-68, partial)
+
+The active bundle graph optionally includes `graph.physical_nodes` and
+`graph.physical_source_plans`. All plans reference the **same canonical nodes**
+by typed `{ "kind": "source" | "layer", "id": "..." }` identities rather than
+duplicating the producer definitions.
+
+`physical_nodes[]` gives each node's `ref`, direct `inputs` references,
+`produced_relations`, and `write_kind` (nullable for external physical
+sources and anonymous read-only outputs). A source has no producer; a layer
+has its direct dependencies. These nodes are sorted by reference identity and
+shared by plans for multiple terminal layers.
+
+`physical_source_plans[]` has one entry per layer in layer order:
+`layer_id`, producer-first `node_refs`, distinct `physical_sources`,
+independently assessed `qualifying`, `rejected`, and `zero_output`
+constructive directions, and nullable `gap`. The directions use the same
+typed `constructiveDirection` schema as operator-local proof cases.
+`gap: null` means the **individual physical row** matching/rejection
+classification has a sufficient proof, not that all requested output counts
+or the entire DAG are jointly realizable.
+
+`zero_output` is a separate closed-world sufficient construction for **zero
+terminal output rows** when every transformation is a safe single-source
+row-preserving projection or filter, a fully identified join, or an
+ordinary non-empty GROUP BY key list over controlled sources (including
+joins feeding GROUP BY/HAVING). Safe DISTINCT, single-source ranked QUALIFY,
+and fully identified set branches (including UNION, INTERSECT and EXCEPT)
+may also preserve empty input. Non-grouped expressions must be row-local:
+a nested global aggregate such as `COUNT(*) + 1` cannot be certified
+zero-producing on empty input. All participating physical leaves must be empty. It requires complete
+control of the physical source with `0..0` rows, including explicit
+`closed_world` evidence; it is never inferred for global aggregates,
+opaque joined relations, sets, ROLLUP/CUBE/GROUPING SETS (which may
+emit an empty grouping set), or missing producer evidence. This conservative construction
+does not establish nonzero cardinality or prove that unrelated output
+goals can be satisfied simultaneously.
+
+Set-operation branch evidence additionally carries
+`membership.branches[].empty_input_preserving`: an analyzer-proved,
+single-source ordinary read or WHERE filter whose empty input cannot
+produce output rows. This property is independent of the stronger
+tuple-multiplicity `witness_boundary` proof. It lets a set terminal use the
+canonical producer DAG to certify zero output even when nested views or
+set-level ORDER BY/LIMIT prevent a positive tuple witness. An opaque leaf,
+source-free SELECT, grouped global aggregate, or unsupported row shape
+remains residual.
+
+SQL query semantics, dependencies, source row/domain constraints, and local
+witnesses retain their respective existing authoritative definitions. Physical
+plans are an additional source-independent proof level, not a replacement
+for complete operator-local contracts. Unsupported graph shapes remain
+residual; downstream tools must not invent missing transformations or
+reparse SQL to compensate.
+
+
+### Independent and jointly requested whole-output row counts
+
+The Rust APIs `physical_row_count_plan(bundle, layer_id, rows)` and
+`physical_joint_row_count_plan(bundle, &[(layer_id, rows), ...])` return
+`WitnessDirection` cases over typed `Rows`, `ClosedWorld` and
+`OutputRows` obligations. These prove *complete physical input contents*,
+not sample existence. A source-free, guaranteed singleton proves exactly
+one output row and rejects incompatible counts.
+
+For positive terminal counts, a fully row-preserving, unfiltered
+single-source chain can inherit a complete schema-backed physical-source
+construction. A further proven subset permits identity-preserving WHERE
+filter chains: the complete physical source has exactly the requested number
+of rows, **every** physical row satisfies the jointly verified SQL-TRUE
+`RowTruth` predicate, and `ClosedWorld` excludes unmodeled qualifying
+rows. This construction requires schema evidence and no unproved declared
+source constraints or uniqueness.
+
+Joint count plans deduplicate canonical physical sources *without discarding*
+the qualifying predicate. A transparent terminal and filtered terminal can
+share the same positive count; two distinct filters on one source remain
+residual unless the row predicates are identical. Conflicting transparent
+source counts are impossible. Different filtered counts are residual, since
+a filtered output may contain fewer rows than its physical input. Joins,
+aggregate multiplicity, sets and DML state transitions remain unsupported
+for general positive cardinality.
+
+### Exact unconditional DELETE state
+
+The Rust API `physical_unconditional_delete_plan(bundle, layer_id,
+initial_rows)` produces a complete `Rows` and `ClosedWorld` assignment
+for a physical initial target and a typed `StateRows` obligation with
+`before = initial_rows` and `after = 0`. It uses the canonical
+`WriteStateEffect` to certify an unconditional DELETE with all preexisting
+rows removed. A real target schema without undeclared key constraints is
+required, and no other in-bundle producer or mutation may own the same
+target. This avoids mislabeling the DML action as a complete upstream
+relation producer. UPDATE, conditional DELETE, MERGE, and INSERT do not
+inherit this proof and remain residual until their full action and
+constraint obligations are discharged.
+
+### Deliberately rejected physical rows
+
+`physical_rejected_row_count_plan(bundle, layer_id, source_rows)` is a
+separate Rust API for a **nonempty** physical input whose entire row set is
+deliberately rejected by a proven one-source Boolean filter path. Its
+`Rows` obligation requires SQL `NOT TRUE` (FALSE or UNKNOWN) for *every*
+source row; exact nonzero physical bounds and `ClosedWorld` entire-relation
+coverage ensure no additional qualifying rows can survive. The corresponding
+`OutputRows` obligation fixes the terminal result at zero. Unknown source
+types, constraints, grouping, joining and noninvertible producer paths fail
+closed. This is not interchangeable with a sampled rejected-row witness.
+
+The joint count API additionally composes any number of unfiltered,
+exactly row-preserving N-row terminals with any number of zero-row filtered
+terminals over the same source, provided every zero terminal independently
+proves the **identical** SQL NOT TRUE physical-row predicate. It reuses one
+N-row closed-world assignment, with one OutputRows obligation per distinct
+terminal. Two independently feasible but different rejection predicates
+are **not** assumed jointly satisfiable and remain residual. Mixed counts,
+joins, and other combinations still require joint satisfiability evidence.
+
+### Transported operator counts and column distributions
+
+A positive one-to-one integer equijoin can additionally be constructed
+when **both** operands are materialized, single-source transparent copies
+of distinct physical tables. Both join keys are resolved to actual physical
+columns, type and source constraints are revalidated, and the canonical
+`join_pairs` witness describes a complete distinct matched-key assignment.
+Subsequent single-parent identity-only projections preserve this proof.
+Filtered, computed, shared-source, or additional operator branches remain
+residual rather than treated as independent source tables.
+
+An otherwise complete source-local `join_pairs`, `groups`, `ranked`
+or `set_tuples` construction can be reused for a downstream output only
+when every subsequent named producer is an exact, single-parent,
+row-preserving, identity-only projection. The original source-backed
+operator proof is retained unchanged; this does **not** certify joins,
+grouping or sets over intermediate relations, nor two independently
+proved operators in the same DAG.
+
+Complete source-row value histograms can also traverse these transparent
+producer chains. The canonical column lineage must resolve each requested
+output frequency to exactly one typed physical source column, and the
+catalog must contain the actual materialized output columns, including
+renames. The existing `source_rows` wire witness then records complete
+typed frequencies for the physical column, not intermediate aliases.
+Computed or ambiguous projections, unsupported row shaping, and unknown
+catalog columns remain residual.
+
+Each `physical_nodes[]` entry may additionally expose
+`operator_witnesses` and `pending_producers`. These are the normalized,
+origin-local typed obligations, not separately executable source scripts.
+They preserve per-layer join, group, window, set and subquery facts even when
+the complete DAG cannot yet be proved feasible.
+
+The opt-in `outcome_goals` adapter emits existing `source_rows`
+witnesses for transitive unfiltered counts and `empty_sources` for proved
+zero output. For **positive filtered counts**, the typed Rust proof is
+available from `physical_row_count_plan`, but the older `source_rows`
+witness cannot encode required `RowTruth` obligations. The adapter
+therefore remains residual rather than emitting unrestricted arbitrary
+source rows. Output distributions and group counts need separate proofs.

@@ -255,10 +255,7 @@ fn construct_source(
             relations: vec![relation.to_string()],
         });
     }
-    if !unconstrained(bundle, &[relation]) || schema(bundle, relation).is_none() {
-        return None;
-    }
-    let mut columns = Vec::new();
+    let mut mappings = Vec::new();
     for distribution in goal.distributions() {
         let projected = query
             .output()
@@ -269,24 +266,45 @@ fn construct_source(
         if source.relation() != relation {
             return None;
         }
-        if distribution
-            .values()
-            .iter()
-            .any(|entry| !value_fits(bundle, relation, source.column(), entry.value()))
-        {
-            return None;
-        }
+        mappings.push((source.column().to_string(), distribution.values().to_vec()));
+    }
+    construct_mapped_source(bundle, relation, rows, mappings)
+}
+
+/// Construct typed physical-source column histograms once alias and producer
+/// traversal has proved that the projected columns are unchanged source values.
+/// The same schema and constraint checks apply to direct and transitive reads.
+pub(crate) fn construct_mapped_source(
+    bundle: &AnalysisBundle,
+    relation: &str,
+    rows: u64,
+    mappings: Vec<(String, Vec<OutputValueCount>)>,
+) -> Option<OutcomeWitness> {
+    if !unconstrained(bundle, &[relation]) || schema(bundle, relation).is_none() {
+        return None;
+    }
+    let mut columns = Vec::new();
+    for (column, values) in mappings {
         if columns
             .iter()
-            .any(|item: &SourceColumnValues| item.column == source.column())
+            .any(|existing: &SourceColumnValues| existing.column() == column)
+            || values
+                .iter()
+                .any(|entry| !value_fits(bundle, relation, &column, entry.value()))
         {
             return None;
         }
-        columns.push(SourceColumnValues {
-            column: source.column().to_string(),
-            values: distribution.values().to_vec(),
-        });
+        // The caller supplies complete histograms. A zero or unequal total
+        // would not describe the claimed full source relation.
+        let total = values
+            .iter()
+            .try_fold(0_u64, |sum, item| sum.checked_add(item.rows()))?;
+        if total != rows {
+            return None;
+        }
+        columns.push(SourceColumnValues { column, values });
     }
+    columns.sort_by(|a, b| a.column.cmp(&b.column));
     Some(OutcomeWitness::SourceRows {
         relation: relation.to_string(),
         rows,
@@ -508,7 +526,21 @@ fn construct_join(
             relations: vec![left.relation().to_string(), right.relation().to_string()],
         });
     }
-    if !unconstrained(bundle, &[left.relation(), right.relation()])
+    construct_mapped_join_pairs(bundle, left, right, rows)
+}
+
+/// Construct a complete one-to-one matched join on independent physical
+/// sources. Caller must separately certify the exact equality operator and
+/// row-preserving producer path for either endpoint.
+pub(crate) fn construct_mapped_join_pairs(
+    bundle: &AnalysisBundle,
+    left: &ComposedJoinColumn,
+    right: &ComposedJoinColumn,
+    rows: u64,
+) -> Option<OutcomeWitness> {
+    if rows == 0
+        || left.relation() == right.relation()
+        || !unconstrained(bundle, &[left.relation(), right.relation()])
         || !integer_key(bundle, left.relation(), left.column(), rows)
         || !integer_key(bundle, right.relation(), right.column(), rows)
     {

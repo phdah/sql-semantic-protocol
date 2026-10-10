@@ -520,6 +520,158 @@ fn assess_goal(
         }
     }
 
+    // A binary equijoin whose two inputs are independent, materialized
+    // identity projections can also construct its physical keys directly.
+    // Both branches must be jointly realized before any join count is claimed.
+    if goal.groups().is_none() && goal.distributions().is_empty() {
+        if let Some(rows) = goal.rows() {
+            if let Some(witness) = crate::physical_realization::physical_materialized_join_witness(
+                bundle,
+                layer.id(),
+                rows,
+            ) {
+                return Ok(proved(
+                    goal,
+                    "matched physical key pairs are realized across both materialized join parents",
+                    min_rows,
+                    max_rows,
+                    witness,
+                ));
+            }
+        }
+    }
+
+    // A complete direct-local join/group/rank/set construction can be
+    // transported across downstream materialized projections only when
+    // those later layers provably preserve every result row exactly once.
+    if goal.groups().is_none() && goal.distributions().is_empty() {
+        if let Some(rows) = goal.rows() {
+            if let Some(witness) = crate::physical_realization::physical_operator_count_witness(
+                bundle,
+                layer.id(),
+                rows,
+            ) {
+                return Ok(proved(
+                    goal,
+                    "physical operator multiplicity survives exact materialized projections",
+                    min_rows,
+                    max_rows,
+                    witness,
+                ));
+            }
+        }
+    }
+
+    // Identity-only materialized producers preserve complete physical
+    // distributions when every projected value is traceable to the same
+    // source column. This is separate from count-only feasibility: a positive
+    // filtered count must retain its RowTruth obligations instead.
+    if let Some(witness) =
+        crate::physical_realization::physical_distribution_plan(bundle, layer.id(), &goal)
+    {
+        return Ok(proved(
+            goal,
+            "complete output frequencies are traced through value-preserving physical producers",
+            min_rows,
+            max_rows,
+            witness,
+        ));
+    }
+
+    // A complete empty physical state also proves empty histograms and zero
+    // surviving groups on ordinary grouping, independently of value-domain
+    // distributions that would otherwise require a positive-row construction.
+    // A GROUP BY count is only inferred where SQL certifies one output per
+    // surviving group, never from global aggregates or grouping sets.
+    let grouped_empty = goal.groups() == Some(0)
+        && goal.rows().is_none_or(|rows| rows == 0)
+        && goal.distributions().is_empty()
+        && query.is_some_and(QueryStatement::group_rows_match_surviving_groups);
+    let empty_histograms = goal.rows() == Some(0)
+        && goal.groups().is_none_or(|groups| {
+            groups == 0 && query.is_some_and(QueryStatement::group_rows_match_surviving_groups)
+        });
+    if (grouped_empty || empty_histograms)
+        && matches!(
+            crate::physical_realization::physical_row_count_plan(bundle, layer.id(), 0),
+            crate::constructive::WitnessDirection::Feasible(_)
+        )
+    {
+        let physical = crate::physical_realization::physical_source_plan(bundle, layer.id());
+        return Ok(proved(
+            goal,
+            "empty physical sources prove zero output rows, complete empty histograms and ordinary group count",
+            min_rows,
+            max_rows,
+            crate::outcome_proofs::OutcomeWitness::EmptySources {
+                relations: physical.sources().to_vec(),
+            },
+        ));
+    }
+
+    // A complete physical-source DAG construction can discharge a row-count
+    // request even when the local operator witness was insufficient because
+    // the requested output is produced through transparent materialized layers.
+    // Histogram and group goals need additional typed value/group evidence.
+    if goal.groups().is_none() && goal.distributions().is_empty() {
+        if let Some(rows) = goal.rows() {
+            let plan =
+                crate::physical_realization::physical_row_count_plan(bundle, layer.id(), rows);
+            if let crate::constructive::WitnessDirection::Feasible(cases) = &plan {
+                // SourceRows with an empty column list means unrestricted row
+                // values. A positive filtered count instead requires every
+                // physical row to satisfy its typed RowTruth formula; do not
+                // erase that obligation when lowering to the older outcome
+                // witness representation.
+                if cases.iter().any(|case| {
+                    case.obligations().iter().any(|obligation| {
+                        matches!(
+                            obligation,
+                            crate::constructive::WitnessObligation::Rows {
+                                predicate: crate::constructive::WitnessFormula::RowTruth { .. },
+                                ..
+                            }
+                        )
+                    })
+                }) {
+                    return Ok(assessed(
+                        goal,
+                        OutcomeGoalStatus::Residual,
+                        "physical filter row-count proof requires typed predicates not represented by SourceRows",
+                        min_rows,
+                        max_rows,
+                    ));
+                }
+                let physical =
+                    crate::physical_realization::physical_source_plan(bundle, layer.id());
+                let witness = if rows == 0 {
+                    Some(crate::outcome_proofs::OutcomeWitness::EmptySources {
+                        relations: physical.sources().to_vec(),
+                    })
+                } else if let [relation] = physical.sources() {
+                    Some(crate::outcome_proofs::OutcomeWitness::SourceRows {
+                        relation: relation.clone(),
+                        rows,
+                        columns: Vec::new(),
+                    })
+                } else if physical.sources().is_empty() && rows == 1 {
+                    Some(crate::outcome_proofs::OutcomeWitness::Singleton)
+                } else {
+                    None
+                };
+                if let Some(witness) = witness {
+                    return Ok(proved(
+                        goal,
+                        "complete physical-source DAG row-count obligations are constructively satisfied",
+                        min_rows,
+                        max_rows,
+                        witness,
+                    ));
+                }
+            }
+        }
+    }
+
     Ok(assessed(goal, OutcomeGoalStatus::Residual, "SQL cardinality, grouping, join multiplicity, window and distribution witnesses are not sufficient to prove this request", min_rows, max_rows))
 }
 

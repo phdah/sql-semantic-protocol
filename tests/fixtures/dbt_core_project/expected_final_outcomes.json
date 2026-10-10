@@ -1534,7 +1534,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 },
                 {
                   "column_domains": [
@@ -1726,7 +1727,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 }
               ],
               "multiplicity_rule": "sum",
@@ -3860,7 +3862,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 },
                 {
                   "column_domains": [
@@ -4052,7 +4055,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 }
               ],
               "multiplicity_rule": "sum",
@@ -4438,7 +4442,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 },
                 {
                   "column_domains": [],
@@ -4480,7 +4485,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"returns\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 }
               ],
               "multiplicity_rule": "except_distinct",
@@ -7187,7 +7193,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 },
                 {
                   "column_domains": [
@@ -7379,7 +7386,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 }
               ],
               "multiplicity_rule": "sum",
@@ -7765,7 +7773,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 },
                 {
                   "column_domains": [],
@@ -7807,7 +7816,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 }
               ],
               "multiplicity_rule": "intersect_distinct",
@@ -8790,7 +8800,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 },
                 {
                   "column_domains": [],
@@ -8832,7 +8843,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 }
               ],
               "multiplicity_rule": "sum",
@@ -10180,7 +10192,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 },
                 {
                   "column_domains": [
@@ -10372,7 +10385,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 }
               ],
               "multiplicity_rule": "sum",
@@ -12828,7 +12842,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 },
                 {
                   "column_domains": [
@@ -13020,7 +13035,8 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ]
+                  ],
+                  "empty_input_preserving": true
                 }
               ],
               "multiplicity_rule": "sum",

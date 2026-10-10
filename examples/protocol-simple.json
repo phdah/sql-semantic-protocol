@@ -195,6 +195,103 @@
         "diagnostics": []
       }
     ],
-    "diagnostics": []
+    "diagnostics": [],
+    "physical_nodes": [
+      {
+        "ref": {
+          "kind": "source",
+          "id": "t"
+        },
+        "inputs": [],
+        "produced_relations": [
+          "t"
+        ],
+        "write_kind": null
+      },
+      {
+        "ref": {
+          "kind": "layer",
+          "id": "layer-0001"
+        },
+        "inputs": [
+          {
+            "kind": "source",
+            "id": "t"
+          }
+        ],
+        "produced_relations": [],
+        "write_kind": null
+      }
+    ],
+    "physical_source_plans": [
+      {
+        "layer_id": "layer-0001",
+        "node_refs": [
+          {
+            "kind": "source",
+            "id": "t"
+          },
+          {
+            "kind": "layer",
+            "id": "layer-0001"
+          }
+        ],
+        "physical_sources": [
+          "t"
+        ],
+        "qualifying": {
+          "status": "residual",
+          "reason": "no_witness"
+        },
+        "rejected": {
+          "status": "residual",
+          "reason": "no_witness"
+        },
+        "zero_output": {
+          "status": "feasible",
+          "cases": [
+            {
+              "strength": "sufficient",
+              "obligations": [
+                {
+                  "kind": "rows",
+                  "boundary": {
+                    "relation": "t",
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0001"
+                  },
+                  "quantifier": "for_all",
+                  "bounds": {
+                    "minimum": 0,
+                    "maximum": 0
+                  },
+                  "predicate": {
+                    "kind": "is_null",
+                    "term": {
+                      "kind": "integer",
+                      "value": 1
+                    },
+                    "negated": true
+                  },
+                  "closed_world": true
+                },
+                {
+                  "kind": "closed_world",
+                  "boundary": {
+                    "relation": "t",
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0001"
+                  },
+                  "coverage": {
+                    "kind": "entire_relation"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gap": "no_witness"
+      }
+    ]
   }
 }

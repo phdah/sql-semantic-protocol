@@ -894,7 +894,13 @@ fn filtered_or_limited_identity_projections_keep_intermediate_witnesses() {
         let ComposedSemantics::Resolved(composed) = sink.composed_semantics() else {
             panic!("expected composition");
         };
-        let witness = &composed.boolean_witnesses()[0];
+        // An upstream WHERE now has its own proven physical witness.
+        // Select the downstream witness by its stable origin, not by index.
+        let witness = composed
+            .boolean_witnesses()
+            .iter()
+            .find(|witness| witness.origin_layer_id() == sink.id())
+            .expect("sink Boolean witness");
         assert_eq!(
             witness.boundary_kind(),
             GroupBoundaryKind::Intermediate,

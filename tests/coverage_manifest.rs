@@ -25,6 +25,27 @@ fn required_array<'a>(value: &'a Value, key: &str) -> &'a [Value] {
 }
 
 #[test]
+fn task_68_reports_only_proven_physical_source_scope() {
+    let manifest = manifest();
+    let evidence = &manifest["task_68_physical_source_evidence"];
+    assert_eq!(evidence["owner"], "TASK-68");
+    assert_eq!(
+        evidence["status"],
+        "partial_reference_dag_and_zero_row_proof_release_blocked"
+    );
+    assert!(evidence["unproved_scope"]
+        .as_array()
+        .expect("unproved task 68 scope")
+        .iter()
+        .any(|item| item == "full_nonzero_cardinality"));
+    assert!(evidence["evidence"]
+        .as_array()
+        .expect("task 68 evidence")
+        .iter()
+        .any(|item| item == "tests/physical_realization.rs"));
+}
+
+#[test]
 fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
     let manifest = manifest();
     assert_eq!(manifest["schema_version"], 1);

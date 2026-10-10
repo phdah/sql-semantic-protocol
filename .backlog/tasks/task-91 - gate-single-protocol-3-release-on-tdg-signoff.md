@@ -51,7 +51,7 @@ One consolidated 3.0.0 release is requested. The existing Release Please PR #79 
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 All protocol TASK-66..90 and release-blocking coverage-manifest entries are Done; no unchecked acceptance criteria or undocumented exclusions remain.
+- [ ] #1 All protocol TASK-66..90, TASK-68 children TASK-93..100, and release-blocking coverage-manifest entries are Done; no unchecked acceptance criteria or undocumented exclusions remain.
 - [ ] #2 Candidate Rust fmt/clippy/test/doc, dbt Core E2E, no-default-features, schema snapshots, dialect and cross-feature differential tests are green.
 - [ ] #3 sql-tdg integration branch consumes pinned *protocol release-candidate Git SHA*, with no dependency on an already published 3.0.0 crate, and passes generator TASK-24..31, TASK-35 and TASK-36 acceptance where upstream-dependent.
 - [ ] #4 Decide and document final scope for arbitrary UDFs, stochastic operators, nonterminating recursion and unavailable vendor engines with explicit fail-closed behavior. No universal-support claims.
@@ -64,6 +64,16 @@ One consolidated 3.0.0 release is requested. The existing Release Please PR #79 
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## TASK-68 parent decomposition (2026-10-10)
+
+TASK-68 remains In Progress after foundational PR #92 is merged. Its child
+execution queue is TASK-93 → TASK-94 → TASK-95 → TASK-96 → TASK-97 → TASK-98
+→ TASK-99 → TASK-100, with sequential dependencies and all eight included
+in parent closure requirements. TASK-100 verifies the original six TASK-68
+criteria, rather than treating the narrower PR #92 as task completion. This
+queue does not waive existing TASK-70..90 local-operator, dialect or adapter
+work, nor sql-tdg TASK-24..36 or this TASK-91 release gate.
 
 ## Coverage manifest and cross-repo gate (2026-10-09)
 

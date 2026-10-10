@@ -649,6 +649,286 @@
         "diagnostics": []
       }
     ],
-    "diagnostics": []
+    "diagnostics": [],
+    "physical_nodes": [
+      {
+        "ref": {
+          "kind": "source",
+          "id": "raw.customers"
+        },
+        "inputs": [],
+        "produced_relations": [
+          "raw.customers"
+        ],
+        "write_kind": null
+      },
+      {
+        "ref": {
+          "kind": "source",
+          "id": "raw.orders"
+        },
+        "inputs": [],
+        "produced_relations": [
+          "raw.orders"
+        ],
+        "write_kind": null
+      },
+      {
+        "ref": {
+          "kind": "layer",
+          "id": "layer-0001"
+        },
+        "inputs": [
+          {
+            "kind": "source",
+            "id": "raw.orders"
+          }
+        ],
+        "produced_relations": [
+          "stage.orders"
+        ],
+        "write_kind": "definition"
+      },
+      {
+        "ref": {
+          "kind": "layer",
+          "id": "layer-0002"
+        },
+        "inputs": [
+          {
+            "kind": "layer",
+            "id": "layer-0001"
+          }
+        ],
+        "produced_relations": [
+          "mart.orders"
+        ],
+        "write_kind": "definition"
+      },
+      {
+        "ref": {
+          "kind": "layer",
+          "id": "layer-0003"
+        },
+        "inputs": [
+          {
+            "kind": "source",
+            "id": "raw.customers"
+          }
+        ],
+        "produced_relations": [],
+        "write_kind": null
+      }
+    ],
+    "physical_source_plans": [
+      {
+        "layer_id": "layer-0001",
+        "node_refs": [
+          {
+            "kind": "source",
+            "id": "raw.orders"
+          },
+          {
+            "kind": "layer",
+            "id": "layer-0001"
+          }
+        ],
+        "physical_sources": [
+          "raw.orders"
+        ],
+        "qualifying": {
+          "status": "residual",
+          "reason": "no_witness"
+        },
+        "rejected": {
+          "status": "residual",
+          "reason": "no_witness"
+        },
+        "zero_output": {
+          "status": "feasible",
+          "cases": [
+            {
+              "strength": "sufficient",
+              "obligations": [
+                {
+                  "kind": "rows",
+                  "boundary": {
+                    "relation": "raw.orders",
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0001"
+                  },
+                  "quantifier": "for_all",
+                  "bounds": {
+                    "minimum": 0,
+                    "maximum": 0
+                  },
+                  "predicate": {
+                    "kind": "is_null",
+                    "term": {
+                      "kind": "integer",
+                      "value": 1
+                    },
+                    "negated": true
+                  },
+                  "closed_world": true
+                },
+                {
+                  "kind": "closed_world",
+                  "boundary": {
+                    "relation": "raw.orders",
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0001"
+                  },
+                  "coverage": {
+                    "kind": "entire_relation"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gap": "no_witness"
+      },
+      {
+        "layer_id": "layer-0002",
+        "node_refs": [
+          {
+            "kind": "source",
+            "id": "raw.orders"
+          },
+          {
+            "kind": "layer",
+            "id": "layer-0001"
+          },
+          {
+            "kind": "layer",
+            "id": "layer-0002"
+          }
+        ],
+        "physical_sources": [
+          "raw.orders"
+        ],
+        "qualifying": {
+          "status": "residual",
+          "reason": "no_witness"
+        },
+        "rejected": {
+          "status": "residual",
+          "reason": "no_witness"
+        },
+        "zero_output": {
+          "status": "feasible",
+          "cases": [
+            {
+              "strength": "sufficient",
+              "obligations": [
+                {
+                  "kind": "rows",
+                  "boundary": {
+                    "relation": "raw.orders",
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0002"
+                  },
+                  "quantifier": "for_all",
+                  "bounds": {
+                    "minimum": 0,
+                    "maximum": 0
+                  },
+                  "predicate": {
+                    "kind": "is_null",
+                    "term": {
+                      "kind": "integer",
+                      "value": 1
+                    },
+                    "negated": true
+                  },
+                  "closed_world": true
+                },
+                {
+                  "kind": "closed_world",
+                  "boundary": {
+                    "relation": "raw.orders",
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0002"
+                  },
+                  "coverage": {
+                    "kind": "entire_relation"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gap": "no_witness"
+      },
+      {
+        "layer_id": "layer-0003",
+        "node_refs": [
+          {
+            "kind": "source",
+            "id": "raw.customers"
+          },
+          {
+            "kind": "layer",
+            "id": "layer-0003"
+          }
+        ],
+        "physical_sources": [
+          "raw.customers"
+        ],
+        "qualifying": {
+          "status": "residual",
+          "reason": "no_witness"
+        },
+        "rejected": {
+          "status": "residual",
+          "reason": "no_witness"
+        },
+        "zero_output": {
+          "status": "feasible",
+          "cases": [
+            {
+              "strength": "sufficient",
+              "obligations": [
+                {
+                  "kind": "rows",
+                  "boundary": {
+                    "relation": "raw.customers",
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0003"
+                  },
+                  "quantifier": "for_all",
+                  "bounds": {
+                    "minimum": 0,
+                    "maximum": 0
+                  },
+                  "predicate": {
+                    "kind": "is_null",
+                    "term": {
+                      "kind": "integer",
+                      "value": 1
+                    },
+                    "negated": true
+                  },
+                  "closed_world": true
+                },
+                {
+                  "kind": "closed_world",
+                  "boundary": {
+                    "relation": "raw.customers",
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0003"
+                  },
+                  "coverage": {
+                    "kind": "entire_relation"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gap": "no_witness"
+      }
+    ]
   }
 }

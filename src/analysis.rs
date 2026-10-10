@@ -898,6 +898,25 @@ fn analyze_query(
                 && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
                     if items.is_empty() && modifiers.is_empty()));
 
+    // A plain single-source WHERE filters source rows without other row shaping.
+    let filter_only_row_shape = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. })
+                && select.from[0].joins.is_empty()
+                && select.distinct.is_none()
+                && select.top.is_none()
+                && select.selection.is_some()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.lateral_views.is_empty()
+                && select.connect_by.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty()));
+
     // Prove singleton output only for source-free literal SELECTs and global
     // aggregates without grouping or any row-limiting, HAVING, or QUALIFY clause.
     // This is a result-row fact, not a source-row cardinality assumption.
@@ -975,6 +994,7 @@ fn analyze_query(
     .with_subquery_witnesses()
     .with_boolean_witness(boolean_witness)
     .with_row_preserving_projection(row_preserving_projection)
+    .with_filter_only_row_shape(filter_only_row_shape)
     .with_proven_single_row_output(proven_single_row_output)
     .with_group_row_correspondence(group_rows_match_surviving_groups)
     .with_goal_shapes(plain_goal_output_shape, ranked_goal_output_shape)

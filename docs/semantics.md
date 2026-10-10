@@ -495,3 +495,78 @@ silently being interpreted as no keys. Key uniqueness must be checked across
 inserted, updated, and untouched rows of the actual target. Unknown computed
 predicates and noninvertible assignments keep conservative domains; their
 presence never licenses a generator to claim complete exactness.
+
+
+## Physical-source row realization (TASK-68, partial)
+
+The Rust library's `physical_source_plan(bundle, target_layer_id)` returns a
+deterministic, reference-based physical dependency graph. Each source and
+producer is represented once, and producer nodes retain their write kind.
+A named derived relation is **not** a directly writable physical source.
+Missing, cyclic, ambiguous and partial producers fail closed with typed
+`PhysicalProofGap` reasons. Nodes are ordered producer-first.
+
+For now, the library lifts both TRUE and NOT TRUE **single-row** boolean
+witnesses to physical sources only when exactly one operator witness is
+present and all other producer layers are single-source, one-to-one direct
+column projections. The filtering layer must have a direct single table,
+no CTE, limit, DISTINCT, join, grouping or other row-shaping, and proven
+physical row identity. Projection computed columns cannot be inverted by
+this proof. The two directions remain independent and can be residual.
+
+The optional JSON contract and closed-world zero-output direction are documented in [the protocol contract](protocol.md). This is not a whole-DAG constructive solver. It does not yet prove
+joint satisfiability of multiple operator witnesses, multiple physical
+sources, full output cardinality, or materialized final states. In these
+cases the physical graph remains available and both row classifications
+remain explicitly residual. The existing operator-local
+`local_constructive_witnesses` API must not be interpreted as complete
+physical realization. The protocol JSON contract is unchanged by this
+library-only foundational step.
+
+The closed-world zero-output direction additionally proves zero groups
+for explicitly non-empty ordinary GROUP BY keys, including multi-source
+joins followed by HAVING and downstream filters. Empty grouping sets,
+ROLLUP/CUBE and global aggregate projections are not certified: global
+aggregates can emit one row even for empty physical inputs. Nested
+aggregates within arithmetic or functions are also excluded from
+non-grouped row-local proofs.
+
+A full before/after state can be realized for unconditional DELETE of a
+schema-backed, independently controlled physical target. The Rust API
+`physical_unconditional_delete_plan` enforces complete initial row
+cardinality, entire-relation coverage, and `StateRows(before=N, after=0)`.
+Other mutations and any in-bundle conflicting producer ownership remain
+unproved.
+
+A nonempty, fully controlled physical source can deliberately produce
+**zero** terminal rows when an exact one-source filter chain proves a SQL
+NOT TRUE assignment for every physical row. The
+`physical_rejected_row_count_plan` Rust API carries both source count
+and complete closed-world negative truth; the joint API can reuse that
+assignment alongside a transparent positive terminal of the same
+physical source count.
+
+A two-parent materialized equijoin also has a narrow positive-count
+construction: each parent must preserve its independent physical
+source rows and integer join key exactly, with no earlier filtering
+or row shaping. The joined output may then pass through further
+single-parent transparent producer layers. Shared physical sources,
+mixed operators and incomplete key evidence remain residual.
+
+A certified local join, GROUP BY/HAVING, ranked window, or set count can
+be transported through *downstream* single-parent, value- and
+row-preserving materializations. This reuses the independently validated
+physical construction, not merely its apparent output count. Complete
+typed scalar distributions are likewise mapped through validated
+physical-column lineage and actual source/producer catalog schemas;
+ambiguous, computed, or unknown columns remain residual.
+
+The physical-source Rust API proves exact counts through schema-backed
+transparent producer chains and identity-preserving WHERE chains with a
+jointly proven SQL-TRUE physical-row predicate. Positive filtered cases
+close the entire physical source at the requested count and require every
+row to qualify. Shared-source count plans retain that predicate and do not
+conjoin different filters without proof. The legacy outcome-goal adapter
+remains residual for positive filtered counts because its `source_rows`
+witness cannot encode required predicate obligations. General join,
+group, QUALIFY, set and DML counts remain residual.

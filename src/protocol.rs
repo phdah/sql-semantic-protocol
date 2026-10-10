@@ -151,6 +151,7 @@ pub struct QueryStatement {
     subquery_witnesses: Box<[crate::subquery_witness::SubqueryMembershipWitness]>,
     boolean_witness: Option<Box<BooleanWitness>>,
     row_preserving_projection: bool,
+    filter_only_row_shape: bool,
     proven_single_row_output: bool,
     group_rows_match_surviving_groups: bool,
     plain_goal_output_shape: bool,
@@ -182,6 +183,7 @@ impl QueryStatement {
             subquery_witnesses: Vec::new().into_boxed_slice(),
             boolean_witness: None,
             row_preserving_projection: false,
+            filter_only_row_shape: false,
             proven_single_row_output: false,
             group_rows_match_surviving_groups: false,
             plain_goal_output_shape: false,
@@ -215,6 +217,19 @@ impl QueryStatement {
 
     pub(crate) fn row_preserving_projection(&self) -> bool {
         self.row_preserving_projection
+    }
+
+    pub(crate) fn with_filter_only_row_shape(mut self, proven: bool) -> Self {
+        self.filter_only_row_shape = proven;
+        self
+    }
+
+    /// Whether this query filters one direct table without further row shaping.
+    ///
+    /// The projection may drop or rename columns but never changes row count.
+    /// This excludes limits, joins, set operators, grouping, DISTINCT and CTEs.
+    pub fn filter_only_row_shape(&self) -> bool {
+        self.filter_only_row_shape
     }
 
     pub(crate) fn with_proven_single_row_output(mut self, proven: bool) -> Self {
@@ -1255,6 +1270,7 @@ pub struct SetBranch {
     condition_exactness: ConditionExactness,
     dependencies: Vec<String>,
     witness_boundary: Option<SetWitnessBoundary>,
+    empty_input_preserving: bool,
 }
 
 impl SetBranch {
@@ -1272,7 +1288,26 @@ impl SetBranch {
             condition_exactness: query.row_conditions.exactness.clone(),
             dependencies: query.dependencies.clone(),
             witness_boundary,
+            empty_input_preserving: query.sources().len() == 1
+                && (query.row_preserving_projection() || query.filter_only_row_shape())
+                && query.aggregation().is_none()
+                && query.set_operation().is_none()
+                && query.window_witness().is_none()
+                && query.subquery_witnesses().is_empty()
+                && query.output().columns().iter().all(|column| {
+                    matches!(
+                        column.expression(),
+                        Expression::Column(_) | Expression::Literal(_)
+                    )
+                }),
         }
+    }
+
+    /// Whether the parsed branch is a direct one-to-one read or filter of one
+    /// named relation with no row-creating aggregate, subquery, or window.
+    /// This is a zero-input proof, not a count or tuple-membership witness.
+    pub fn empty_input_preserving(&self) -> bool {
+        self.empty_input_preserving
     }
 
     /// Deterministic location of this leaf, such as body:left or body:right.
