@@ -2226,6 +2226,46 @@ fn physical_join_population_count_plan(
             output_rows: wanted,
             closed_world: true,
         });
+        match pattern {
+            JoinPopulationPattern::DistinctMatched | JoinPopulationPattern::CommonMatched => {
+                // The complete key-population law establishes all pairs.
+                // Retain an existing typed local matched-pair obligation
+                // as one representative without substituting it for that law.
+                obligations.push(WitnessObligation::JoinPair {
+                    left_row: left_row.clone(),
+                    right_row: right_row.clone(),
+                    left: left_key.clone(),
+                    right: right_key.clone(),
+                    comparison: crate::protocol::ComparisonOperator::Eq,
+                    null_extended: None,
+                });
+            }
+            JoinPopulationPattern::EmptyRight if left_rows > 0 => {
+                obligations.push(WitnessObligation::NoMatchingPartner {
+                    candidate: left_row.clone(),
+                    partner: right_row.clone(),
+                    comparison: crate::protocol::ComparisonOperator::Eq,
+                    left: left_key.clone(),
+                    right: right_key.clone(),
+                    null_extended: matches!(join.kind(), JoinKind::Left | JoinKind::Full)
+                        .then_some(crate::join_witness::JoinSide::Right),
+                    closed_world: true,
+                });
+            }
+            JoinPopulationPattern::EmptyLeft if right_rows > 0 => {
+                obligations.push(WitnessObligation::NoMatchingPartner {
+                    candidate: right_row.clone(),
+                    partner: left_row.clone(),
+                    comparison: crate::protocol::ComparisonOperator::Eq,
+                    left: right_key.clone(),
+                    right: left_key.clone(),
+                    null_extended: matches!(join.kind(), JoinKind::Right | JoinKind::Full)
+                        .then_some(crate::join_witness::JoinSide::Left),
+                    closed_world: true,
+                });
+            }
+            JoinPopulationPattern::EmptyLeft | JoinPopulationPattern::EmptyRight => {}
+        }
         obligations.push(WitnessObligation::OutputRows {
             layer_id: target_layer_id.to_string(),
             bounds: CountBounds::new(wanted, Some(wanted))?,
@@ -2422,7 +2462,9 @@ fn jointly_realized_join_goals(
                     boundary,
                     coverage: ClosedWorldCoverage::EntireRelation,
                 } if boundary.kind() == GroupBoundaryKind::Physical => {}
-                WitnessObligation::OutputRows { .. } => {}
+                WitnessObligation::JoinPair { .. }
+                | WitnessObligation::NoMatchingPartner { closed_world: true, .. }
+                | WitnessObligation::OutputRows { .. } => {}
                 _ => {
                     valid = false;
                     break;
@@ -2460,6 +2502,18 @@ fn jointly_realized_join_goals(
             continue;
         }
         result.extend(populations);
+        // The original join-local existence and absence facts remain
+        // grounded in the certified population, not independent examples.
+        for obligation in &obligations {
+            if matches!(
+                obligation,
+                WitnessObligation::JoinPair { .. }
+                    | WitnessObligation::NoMatchingPartner { closed_world: true, .. }
+            ) && !result.contains(obligation)
+            {
+                result.push(obligation.clone());
+            }
+        }
         for &(layer_id, rows) in goals {
             let Some(bounds) = CountBounds::new(rows, Some(rows)) else {
                 valid = false;
