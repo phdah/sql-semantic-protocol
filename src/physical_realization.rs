@@ -1400,6 +1400,12 @@ pub fn physical_row_count_plan(
             .and_then(|case| WitnessDirection::feasible(vec![case]))
             .unwrap_or_else(|| residual(PhysicalProofGap::NoWitness));
     }
+    // The complete join population is already a physical closed-world
+    // construction. Do not let the earlier one-source filter specialization
+    // hide multi-parent or repeated-source join proofs.
+    if let Some(join_plan) = physical_join_population_count_plan(bundle, target_layer_id, rows) {
+        return join_plan;
+    }
     if physical.sources().len() != 1 {
         return residual(PhysicalProofGap::UnboundPhysicalSource);
     }
