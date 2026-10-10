@@ -217,7 +217,12 @@ impl JoinPopulationPattern {
 
     /// Exact output rows under the SQL bag and outer/semijoin laws.
     /// A calculation returning None is unsupported, not evidence of zero.
-    pub fn output_rows(self, kind: crate::protocol::JoinKind, left: u64, right: u64) -> Option<u64> {
+    pub fn output_rows(
+        self,
+        kind: crate::protocol::JoinKind,
+        left: u64,
+        right: u64,
+    ) -> Option<u64> {
         use crate::protocol::JoinKind;
         let pairs = match self {
             Self::DistinctMatched if left > 0 && left == right => left,
@@ -232,7 +237,9 @@ impl JoinPopulationPattern {
             JoinKind::Inner => Some(pairs),
             JoinKind::Left => pairs.checked_add(left_unmatched),
             JoinKind::Right => pairs.checked_add(right_unmatched),
-            JoinKind::Full => pairs.checked_add(left_unmatched)?.checked_add(right_unmatched),
+            JoinKind::Full => pairs
+                .checked_add(left_unmatched)?
+                .checked_add(right_unmatched),
             JoinKind::LeftSemi => Some(if pairs > 0 { left } else { 0 }),
             JoinKind::RightSemi => Some(if pairs > 0 { right } else { 0 }),
             JoinKind::LeftAnti => Some(left_unmatched),
@@ -471,12 +478,14 @@ fn invalid_obligation(obligation: &WitnessObligation) -> bool {
             right_rows,
             output_rows,
             closed_world,
-        } => !closed_world
-            || left_row.instance() == right_row.instance()
-            || left_row.relation() != left_key.relation().unwrap_or("")
-            || right_row.relation() != right_key.relation().unwrap_or("")
-            || pattern.output_rows(*join_kind, *left_rows, *right_rows) != Some(*output_rows)
-            || (left_row.relation() == right_row.relation() && left_rows != right_rows),
+        } => {
+            !closed_world
+                || left_row.instance() == right_row.instance()
+                || left_row.relation() != left_key.relation().unwrap_or("")
+                || right_row.relation() != right_key.relation().unwrap_or("")
+                || pattern.output_rows(*join_kind, *left_rows, *right_rows) != Some(*output_rows)
+                || (left_row.relation() == right_row.relation() && left_rows != right_rows)
+        }
         WitnessObligation::Group { rows, non_null, .. } => {
             non_null.minimum() > rows.maximum().unwrap_or(u64::MAX)
         }
