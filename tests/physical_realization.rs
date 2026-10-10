@@ -102,30 +102,37 @@ fn complete_equi_join_populations_certify_shared_and_independent_sources() {
             "{dialect}: only physical source rows can be assigned"
         );
 
-        let goal = OutcomeGoal::new(
-            independent.layers()[2].id(), Some(3), None, vec![],
-        ).expect("join row goal");
-        independent.set_outcome_goals(&[goal]).expect("evaluate goal");
-        let wire: serde_json::Value = serde_json::from_str(
-            &sql_semantic_protocol::to_bundle_json(&independent)
-        ).expect("canonical JSON");
+        let goal = OutcomeGoal::new(independent.layers()[2].id(), Some(3), None, vec![])
+            .expect("join row goal");
+        independent
+            .set_outcome_goals(&[goal])
+            .expect("evaluate goal");
+        let wire: serde_json::Value =
+            serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&independent))
+                .expect("canonical JSON");
         let emitted = &wire["graph"]["physical_joint_count_plan"];
         assert_eq!(emitted["outcome"]["status"], "feasible", "{dialect}");
-        assert!(emitted["outcome"]["cases"].as_array().expect("cases").iter().any(|case|
-            case["obligations"].as_array().expect("obligations").iter().any(|obligation|
-                obligation["kind"] == "join_population"
-                && obligation["join_kind"] == "inner"
-                && obligation["pattern"] == "distinct_matched"
-                && obligation["output_rows"] == 3
-                && obligation["closed_world"] == true
-            )
-        ));
-        let schema: serde_json::Value = serde_json::from_str(
-            include_str!("../schema/protocol.schema.json")
-        ).expect("schema JSON");
-        assert!(schema["$defs"]["constructiveObligation"]["oneOf"].as_array()
-            .expect("variants").iter().any(|variant|
-                variant["properties"]["kind"]["const"] == "join_population"));
+        assert!(emitted["outcome"]["cases"]
+            .as_array()
+            .expect("cases")
+            .iter()
+            .any(|case| case["obligations"]
+                .as_array()
+                .expect("obligations")
+                .iter()
+                .any(|obligation| obligation["kind"] == "join_population"
+                    && obligation["join_kind"] == "inner"
+                    && obligation["pattern"] == "distinct_matched"
+                    && obligation["output_rows"] == 3
+                    && obligation["closed_world"] == true)));
+        let schema: serde_json::Value =
+            serde_json::from_str(include_str!("../schema/protocol.schema.json"))
+                .expect("schema JSON");
+        assert!(schema["$defs"]["constructiveObligation"]["oneOf"]
+            .as_array()
+            .expect("variants")
+            .iter()
+            .any(|variant| variant["properties"]["kind"]["const"] == "join_population"));
 
         let self_join = bundle(
             &[
@@ -184,13 +191,16 @@ fn complete_equi_join_populations_certify_shared_and_independent_sources() {
 #[test]
 fn join_population_reconciles_joint_terminal_counts_without_duplicate_source_rows() {
     for &dialect in DIALECTS {
-        let b = bundle(&[
-            "CREATE TABLE stage AS SELECT a,k FROM l",
-            "CREATE TABLE mart AS SELECT a,k FROM r",
-            "SELECT s.a FROM stage s JOIN mart m ON s.k=m.k",
-            "SELECT a FROM l",
-            "SELECT a FROM r",
-        ], dialect);
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a,k FROM l",
+                "CREATE TABLE mart AS SELECT a,k FROM r",
+                "SELECT s.a FROM stage s JOIN mart m ON s.k=m.k",
+                "SELECT a FROM l",
+                "SELECT a FROM r",
+            ],
+            dialect,
+        );
         let targets = [
             (b.layers()[2].id(), 3),
             (b.layers()[3].id(), 3),
@@ -200,46 +210,75 @@ fn join_population_reconciles_joint_terminal_counts_without_duplicate_source_row
         let WitnessDirection::Feasible(cases) = proof.outcome() else {
             panic!("{dialect}: one consistent physical join and terminal population: {proof:?}");
         };
-        assert!(cases.iter().all(|case| case.obligations().iter()
-            .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. })).count() == 2));
-        assert!(cases.iter().all(|case| case.obligations().iter()
-            .filter(|o| matches!(o, WitnessObligation::OutputRows { .. })).count() == 3));
-        assert!(cases.iter().any(|case| case.obligations().iter().any(|o| matches!(
-            o, WitnessObligation::JoinPopulation {
-                pattern: JoinPopulationPattern::DistinctMatched,
-                left_rows: 3, right_rows: 3, ..
-            }
-        ))));
+        assert!(cases.iter().all(|case| case
+            .obligations()
+            .iter()
+            .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+            .count()
+            == 2));
+        assert!(cases.iter().all(|case| case
+            .obligations()
+            .iter()
+            .filter(|o| matches!(o, WitnessObligation::OutputRows { .. }))
+            .count()
+            == 3));
+        assert!(cases
+            .iter()
+            .any(|case| case.obligations().iter().any(|o| matches!(
+                o,
+                WitnessObligation::JoinPopulation {
+                    pattern: JoinPopulationPattern::DistinctMatched,
+                    left_rows: 3,
+                    right_rows: 3,
+                    ..
+                }
+            ))));
 
-        let conflicting = physical_joint_source_plan(&b, &[
-            (b.layers()[2].id(), 3),
-            (b.layers()[3].id(), 2),
-            (b.layers()[4].id(), 2),
-        ]);
-        assert!(matches!(conflicting.outcome(), WitnessDirection::Residual { .. }),
-            "{dialect}: different keys and match multiplicity may remain feasible");
+        let conflicting = physical_joint_source_plan(
+            &b,
+            &[
+                (b.layers()[2].id(), 3),
+                (b.layers()[3].id(), 2),
+                (b.layers()[4].id(), 2),
+            ],
+        );
+        assert!(
+            matches!(conflicting.outcome(), WitnessDirection::Residual { .. }),
+            "{dialect}: different keys and match multiplicity may remain feasible"
+        );
 
-        let necessarily_impossible = physical_joint_source_plan(&b, &[
-            (b.layers()[2].id(), 3),
-            (b.layers()[4].id(), 0),
-        ]);
-        assert!(matches!(necessarily_impossible.outcome(), WitnessDirection::Impossible),
-            "{dialect}: positive inner join cannot read a fully empty right source");
+        let necessarily_impossible =
+            physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3), (b.layers()[4].id(), 0)]);
+        assert!(
+            matches!(
+                necessarily_impossible.outcome(),
+                WitnessDirection::Impossible
+            ),
+            "{dialect}: positive inner join cannot read a fully empty right source"
+        );
 
-        let shared = bundle(&[
-            "CREATE TABLE stage AS SELECT a,k FROM t",
-            "CREATE TABLE mart AS SELECT a,k FROM t",
-            "SELECT x.a FROM stage x JOIN mart y ON x.k=y.k",
-            "SELECT a FROM t",
-        ], dialect);
-        let proof = physical_joint_source_plan(&shared, &[
-            (shared.layers()[2].id(), 4), (shared.layers()[3].id(), 2)
-        ]);
+        let shared = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a,k FROM t",
+                "CREATE TABLE mart AS SELECT a,k FROM t",
+                "SELECT x.a FROM stage x JOIN mart y ON x.k=y.k",
+                "SELECT a FROM t",
+            ],
+            dialect,
+        );
+        let proof = physical_joint_source_plan(
+            &shared,
+            &[(shared.layers()[2].id(), 4), (shared.layers()[3].id(), 2)],
+        );
         let WitnessDirection::Feasible(cases) = proof.outcome() else {
             panic!("{dialect}: same two physical rows yield four self-join pairs: {proof:?}");
         };
-        assert!(cases.iter().all(|case| case.obligations().iter()
-            .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. })).count() == 1));
+        assert!(cases.iter().all(|case| case
+            .obligations()
+            .iter()
+            .filter(|o| matches!(o, WitnessObligation::ClosedWorld { .. }))
+            .count()
+            == 1));
     }
 }
 
@@ -257,17 +296,27 @@ fn physical_semijoin_and_antijoin_use_complete_nonempty_or_absent_partners() {
         let WitnessDirection::Feasible(cases) = proof.outcome() else {
             panic!("expected complete source law for {sql}: {proof:?}");
         };
-        assert!(cases.iter().any(|case| case.obligations().iter().any(|o|
-            matches!(o, WitnessObligation::JoinPopulation {
-                output_rows: 3, closed_world: true, ..
-            })
-        )), "{sql}");
+        assert!(
+            cases
+                .iter()
+                .any(|case| case.obligations().iter().any(|o| matches!(
+                    o,
+                    WitnessObligation::JoinPopulation {
+                        output_rows: 3,
+                        closed_world: true,
+                        ..
+                    }
+                ))),
+            "{sql}"
+        );
     }
 
     let b = bundle(&["SELECT l.a FROM l JOIN r ON l.k=r.k"], "duckdb");
     let proof = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 0)]);
-    assert!(matches!(proof.outcome(), WitnessDirection::Feasible(_)),
-        "a completely empty source population guarantees an empty join");
+    assert!(
+        matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+        "a completely empty source population guarantees an empty join"
+    );
 }
 
 #[test]
