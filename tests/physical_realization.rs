@@ -3192,7 +3192,7 @@ fn set_tuple_cases_prove_bag_counts_through_two_materialized_producers() {
         schema("right_stage", &["id"]),
     ];
     for operator in ["UNION ALL", "UNION", "INTERSECT", "EXCEPT"] {
-        let statements = vec![
+        let statements = [
             "CREATE TABLE left_stage AS SELECT a AS id FROM l".to_string(),
             "CREATE TABLE right_stage AS SELECT a AS id FROM r".to_string(),
             format!("SELECT id FROM left_stage {operator} SELECT id FROM right_stage"),
