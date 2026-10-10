@@ -170,4 +170,3 @@ fn canonical_joint_source_proofs_are_independent_of_schema_adapter_provenance() 
         }
     }
 }
-
