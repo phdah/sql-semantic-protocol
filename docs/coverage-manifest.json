@@ -6,19 +6,84 @@
     "status": "partial_reference_dag_and_zero_row_proof_release_blocked",
     "owner": "TASK-68",
     "canonical_contract": "shared physical_nodes and per-layer physical_source_plans, each with independent row classification and closed-world zero_output directions",
-    "rust_api": ["physical_source_plan", "physical_row_count_plan", "physical_joint_row_count_plan", "PhysicalSourcePlan", "PhysicalPlanNode", "PhysicalPlanRef"],
-    "verified_scope": ["physical_source_reference_deduplication", "single_source_boolean_row_classification", "transparent_projection_chains", "closed_world_empty_source_zero_output", "closed_world_all_empty_named_join_sources", "closed_world_ordinary_grouping_and_having", "empty_named_source_set_operations", "distinct_and_ranked_empty_input", "joint_shared_empty_source_output_goals", "pinned_sql_tdg_raw_fixture_zero_oracles", "nested_global_aggregate_zero_row_exclusion", "joint_null_aware_boolean_filters", "exact_schema_backed_transparent_source_row_counts", "positive_schema_backed_physical_filter_row_counts", "joint_preserved_filter_truth_counts", "transitive_materialized_value_distributions", "transitive_direct_operator_count_witnesses", "independent_two_parent_materialized_equijoin_pairs", "nonempty_closed_world_rejected_source_rows", "joint_positive_and_rejected_same_source_counts", "joint_many_shared_source_positive_and_rejected_counts", "unconditional_delete_closed_world_initial_and_empty_final_state", "joint_shared_source_row_count_obligations", "origin_scoped_operator_and_producer_dag_facts"],
-    "evidence": ["tests/physical_realization.rs", "docs/protocol.md"],
-    "unproved_scope": ["joint_multilayer_filter_satisfiability", "multi_parent_and_join_planning", "full_nonzero_cardinality", "general_negative_absence", "DML_and_transaction_state_realization", "cross_feature_generator_signoff"],
-    "release_limit": "This records foundational partial evidence only. All TASK-68 acceptance criteria remain open and the 3.0.0 release gate is held."
+    "rust_api": [
+      "physical_source_plan",
+      "physical_row_count_plan",
+      "physical_joint_row_count_plan",
+      "PhysicalSourcePlan",
+      "PhysicalPlanNode",
+      "PhysicalPlanRef"
+    ],
+    "verified_scope": [
+      "physical_source_reference_deduplication",
+      "single_source_boolean_row_classification",
+      "transparent_projection_chains",
+      "closed_world_empty_source_zero_output",
+      "closed_world_all_empty_named_join_sources",
+      "closed_world_ordinary_grouping_and_having",
+      "empty_named_source_set_operations",
+      "distinct_and_ranked_empty_input",
+      "joint_shared_empty_source_output_goals",
+      "pinned_sql_tdg_raw_fixture_zero_oracles",
+      "nested_global_aggregate_zero_row_exclusion",
+      "joint_null_aware_boolean_filters",
+      "exact_schema_backed_transparent_source_row_counts",
+      "positive_schema_backed_physical_filter_row_counts",
+      "joint_preserved_filter_truth_counts",
+      "transitive_materialized_value_distributions",
+      "transitive_direct_operator_count_witnesses",
+      "independent_two_parent_materialized_equijoin_pairs",
+      "nonempty_closed_world_rejected_source_rows",
+      "joint_positive_and_rejected_same_source_counts",
+      "joint_many_shared_source_positive_and_rejected_counts",
+      "unconditional_delete_closed_world_initial_and_empty_final_state",
+      "joint_shared_source_row_count_obligations",
+      "origin_scoped_operator_and_producer_dag_facts"
+    ],
+    "evidence": [
+      "tests/physical_realization.rs",
+      "docs/protocol.md"
+    ],
+    "unproved_scope": [
+      "joint_multilayer_filter_satisfiability",
+      "multi_parent_and_join_planning",
+      "full_nonzero_cardinality",
+      "general_negative_absence",
+      "DML_and_transaction_state_realization",
+      "cross_feature_generator_signoff"
+    ],
+    "release_limit": "This records foundational partial evidence only. All TASK-68 acceptance criteria remain open and the 3.0.0 release gate is held.",
+    "child_tasks": [
+      "TASK-93",
+      "TASK-94",
+      "TASK-95",
+      "TASK-96",
+      "TASK-97",
+      "TASK-98",
+      "TASK-99",
+      "TASK-100"
+    ],
+    "next_task_after_foundation": "TASK-93",
+    "closure_rule": "TASK-68 remains In Progress until TASK-93..100 are Done and all six parent acceptance criteria are verified; release TASK-91 remains blocked independently."
   },
   "task_69_operator_local_evidence": {
     "status": "operator_local_evidence_only_release_blocked",
     "owner": "TASK-69",
     "canonical_contract": "typed constructive closed_world obligations and preexisting operator-local witness counts",
-    "rust_api": ["BagLaw", "BagKeyHistogram", "equijoin_key_histogram"],
-    "physical_scope": ["entire_relation", "candidate_tuple"],
-    "evidence": ["tests/bag_semantics.rs", "tests/constructive_membership.rs", "tests/constructive_witness.rs"],
+    "rust_api": [
+      "BagLaw",
+      "BagKeyHistogram",
+      "equijoin_key_histogram"
+    ],
+    "physical_scope": [
+      "entire_relation",
+      "candidate_tuple"
+    ],
+    "evidence": [
+      "tests/bag_semantics.rs",
+      "tests/constructive_membership.rs",
+      "tests/constructive_witness.rs"
+    ],
     "release_limit": "No complete physical-source DAG realization or generator sign-off; cross-feature and variant/dialect cells remain release-blocking."
   },
   "scope_rule": "Maintainer approved the four engineering-scope decisions only. All current supported claims require exhaustive cross-dialect canonical equality and DuckDB end-to-end proof. Conditionally deferred opaque/unbounded behavior fails closed until typed evidence is supplied, while safely bounded subsets remain release-blocking. No release approval is implied.",

@@ -220,3 +220,10 @@ Todos, planned work, and decisions for this project are tracked in a local
 `backlog_*` MCP tools or the `backlog` CLI when available; otherwise edit the Markdown
 files under `.backlog/` directly, following the format of existing files. The board is
 versioned with the repo, so commit task changes alongside the work they describe.
+
+When a still-open parent task defines a dependency-ordered child execution
+queue, select the **first unfinished child with satisfied dependencies**
+before unrelated backlog work when asked for the "next task". Do not select the
+parent itself for new implementation work or mark it Done until the child
+closure checks and original acceptance criteria are verified. The parent
+task file owns the concrete queue; keep general routing guidance here.

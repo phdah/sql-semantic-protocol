@@ -7,9 +7,17 @@ created_date: '2026-10-09'
 updated_date: '2026-10-09'
 labels: []
 milestone: m-3
-dependencies: 
+dependencies:
   - TASK-67
   - TASK-69
+  - TASK-93
+  - TASK-94
+  - TASK-95
+  - TASK-96
+  - TASK-97
+  - TASK-98
+  - TASK-99
+  - TASK-100
 references: 
   - 'TASK-44'
   - 'TASK-58'
@@ -36,6 +44,54 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
 - [ ] #5 Use deterministic constructive plans and DuckDB end-to-end oracle tests for the exact committed sql-tdg fixture shapes, including jointly satisfied terminals and deliberate rejections.
 - [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
+
+## Parent task and ordered implementation queue
+
+**TASK-68 is the parent, not the next standalone implementation task.** PR #92
+delivers the canonical physical-source DAG and currently proven foundational
+constructive subset only; after it passes CI and is merged, TASK-68 stays **In
+Progress**. Its original six acceptance criteria remain unchecked until the
+children establish the full proof obligations.
+
+**Next task after PR #92 merges: TASK-93.** When asked to work on the "next
+task", take the first unfinished, dependency-ready child in this queue **before
+unrelated backlog TASK-70..92**. Child PRs target `main` independently and are
+merged only after each child's own acceptance criteria and CI pass. The
+parent's dependencies on the children are for closure, **not** prerequisites
+of the children. Child tasks must never depend on TASK-68, which would create a
+cycle.
+
+- **[TASK-93](task-93%20-%20compose-joint-physical-source-dag-constraints.md)**: Compose jointly satisfiable physical-source DAG constraints
+- **[TASK-94](task-94%20-%20realize-multiparent-join-and-shared-source-dags.md)**: Realize multi-parent joins and repeated-source DAGs
+- **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs
+- **[TASK-96](task-96%20-%20resolve-projection-inversion-and-output-distributions.md)**: Prove safe projection inversion and complete output distributions
+- **[TASK-97](task-97%20-%20prove-complete-cardinality-and-negative-closed-world-outcomes.md)**: Prove complete cardinality and negative closed-world outcomes
+- **[TASK-98](task-98%20-%20realize-ordered-dml-before-after-source-states.md)**: Realize ordered DML and DDL before/after physical states
+- **[TASK-99](task-99%20-%20certify-sql-tdg-physical-fixture-integration.md)**: Certify physical-source proofs against committed sql-tdg fixture shapes
+- **[TASK-100](task-100%20-%20signoff-task68-end-to-end-physical-realizability.md)**: Sign off TASK-68 end-to-end physical-source realizability
+
+Execution order is enforced through the sequential child dependencies:
+TASK-93 is unlocked by completed TASK-67/69; TASK-94 requires TASK-93;
+and each next child requires its immediate predecessor. A failed or blocked
+child remains incomplete and must not be skipped or declared Done. The
+existing TASK-70..91 continue to own their local semantic variants, dialect
+law checks, generator work and release gates; this queue owns **transitive
+physical-source composition** and does not waive the other tasks' acceptance.
+
+### Original acceptance-to-child mapping
+
+| Original TASK-68 criterion | Child proof owners |
+| --- | --- |
+| #1 Source identity, truth, lineage, multiplicity and witnesses | TASK-93, TASK-94, TASK-95, TASK-96, TASK-97 |
+| #2 Multi-parent, joins, group/HAVING/QUALIFY/sets, projections | TASK-94, TASK-95, TASK-96 |
+| #3 Materialization, writes, exact negative/zero exclusion | TASK-93, TASK-97, TASK-98 |
+| #4 Cycles, conflicting domains, unknown cardinality and partial producers | TASK-93, TASK-96, TASK-97, TASK-98 |
+| #5 Pinned sql-tdg exact shape / joint terminal DuckDB oracles | TASK-99, TASK-100 |
+| #6 Cross-dialect, unit, differential, API/schema/docs and adapter parity | Each child, verified at TASK-100 |
+
+All eight children must be Done, and TASK-100 must explicitly verify **all
+six original criteria**, before TASK-68 changes to Done. TASK-91 and the
+protocol 3.0.0 release remain separate, still-blocked gates.
 
 ## Implementation progress (PR #92)
 
