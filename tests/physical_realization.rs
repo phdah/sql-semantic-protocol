@@ -59,7 +59,7 @@ fn bundle_with_schemas(
 #[test]
 fn complete_equi_join_populations_certify_shared_and_independent_sources() {
     for &dialect in DIALECTS {
-        let independent = bundle(
+        let mut independent = bundle(
             &[
                 "CREATE TABLE stage AS SELECT a, k FROM l",
                 "CREATE TABLE mart AS SELECT a, k FROM r",
@@ -101,6 +101,31 @@ fn complete_equi_join_populations_certify_shared_and_independent_sources() {
                 .any(|o| matches!(o, WitnessObligation::Producer { .. }))),
             "{dialect}: only physical source rows can be assigned"
         );
+
+        let goal = OutcomeGoal::new(
+            independent.layers()[2].id(), Some(3), None, vec![],
+        ).expect("join row goal");
+        independent.set_outcome_goals(&[goal]).expect("evaluate goal");
+        let wire: serde_json::Value = serde_json::from_str(
+            &sql_semantic_protocol::to_bundle_json(&independent)
+        ).expect("canonical JSON");
+        let emitted = &wire["graph"]["physical_joint_count_plan"];
+        assert_eq!(emitted["outcome"]["status"], "feasible", "{dialect}");
+        assert!(emitted["outcome"]["cases"].as_array().expect("cases").iter().any(|case|
+            case["obligations"].as_array().expect("obligations").iter().any(|obligation|
+                obligation["kind"] == "join_population"
+                && obligation["join_kind"] == "inner"
+                && obligation["pattern"] == "distinct_matched"
+                && obligation["output_rows"] == 3
+                && obligation["closed_world"] == true
+            )
+        ));
+        let schema: serde_json::Value = serde_json::from_str(
+            include_str!("../schema/protocol.schema.json")
+        ).expect("schema JSON");
+        assert!(schema["$defs"]["constructiveObligation"]["oneOf"].as_array()
+            .expect("variants").iter().any(|variant|
+                variant["properties"]["kind"]["const"] == "join_population"));
 
         let self_join = bundle(
             &[
