@@ -743,7 +743,12 @@ fn positive_filter_counts_require_closed_world_physical_qualifying_rows() {
             let target = b.layers()[0].id();
             let proof = physical_row_count_plan(&b, target, rows);
             let WitnessDirection::Feasible(cases) = proof else {
-                panic!("{dialect}: expected filtered {rows}-row plan: {proof:?}");
+                panic!(
+                    "{dialect}: filtered {rows}-row plan {proof:?}; source plan {:?}; schemas {:?}; constraints {:?}",
+                    physical_source_plan(&b, target),
+                    b.source_schemas(),
+                    b.relation_constraints()
+                );
             };
             assert_eq!(cases.len(), 1);
             assert!(cases[0].obligations().iter().any(|obligation| matches!(
