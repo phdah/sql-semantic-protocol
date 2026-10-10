@@ -414,6 +414,16 @@ fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
             }
         ))));
 
+    for sql in [
+        "SELECT l.a FROM l JOIN r ON l.k=r.k AND l.a > 0",
+        "SELECT DISTINCT l.a FROM l JOIN r ON l.k=r.k",
+    ] {
+        let b = bundle(&[sql], "postgresql");
+        let proof = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
+        assert!(!matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+            "{sql}: unproved row-shaping predicates may not be discarded");
+    }
+
     let b = bundle(&["SELECT l.a FROM l CROSS JOIN r"], "postgresql");
     let p = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
     assert!(
