@@ -1234,6 +1234,48 @@ fn equijoins_over_two_materialized_producer_branches_have_physical_pair_witnesse
         assert_eq!((left.column(), right.column()), ("k", "k"));
     }
 
+    let schema = |relation: &str, columns: &[&str]| {
+        RelationSchema::new(
+            relation,
+            columns
+                .iter()
+                .map(|column| {
+                    SchemaColumn::from_sql_type(*column, "INTEGER", "postgresql")
+                        .expect("typed column")
+                })
+                .collect(),
+        )
+        .expect("schema")
+    };
+    let schemas = [
+        schema("l", &["a", "k"]),
+        schema("r", &["a", "k"]),
+        schema("stage", &["a", "k"]),
+        schema("mart", &["a", "k"]),
+        schema("joined", &["a"]),
+    ];
+    let mut b = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage AS SELECT a, k FROM l",
+            "CREATE TABLE mart AS SELECT a, k FROM r",
+            "CREATE TABLE joined AS SELECT stage.a AS a FROM stage JOIN mart ON stage.k = mart.k",
+            "SELECT a FROM joined",
+        ],
+        "postgresql",
+        &schemas,
+    );
+    let downstream = b.layers()[3].id().to_string();
+    b.set_outcome_goals(&[OutcomeGoal::new(&downstream, Some(3), None, vec![]).expect("goal")])
+        .expect("attach");
+    assert!(
+        matches!(
+            b.outcome_goals()[0].witness(),
+            Some(OutcomeWitness::JoinPairs { pairs: 3, .. })
+        ),
+        "joined materialization must not discard complete physical key proof: {:?}",
+        b.outcome_goals()
+    );
+
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
         "CREATE TABLE l(a INTEGER, k INTEGER);
