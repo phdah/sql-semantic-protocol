@@ -1216,6 +1216,96 @@ pub fn physical_rejected_row_count_plan(
         .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
 }
 
+/// Construct an exact before/after physical state for an unconditional
+/// DELETE with a caller-controlled initial target. This is a *complete*
+/// relation-state construction, not the affected-row cardinality estimate
+/// from the standalone write-effect contract.
+///
+/// Other mutations require source/target collision, predicate and branch
+/// proofs and deliberately remain residual. An in-bundle earlier producer
+/// of the target invalidates an independent physical initial assignment.
+pub fn physical_unconditional_delete_plan(
+    bundle: &AnalysisBundle,
+    layer_id: &str,
+    initial_rows: u64,
+) -> WitnessDirection {
+    let Some(write) = bundle
+        .write_state_effects()
+        .into_iter()
+        .find(|write| write.layer_id() == layer_id)
+    else {
+        return residual(PhysicalProofGap::UnknownTarget);
+    };
+    let effect = write.effect();
+    if effect.post_state() != crate::protocol::WritePostState::Empty
+        || effect.cardinality_rule() != crate::protocol::WriteCardinalityRule::SubtractDeletes
+        || !write.sources().is_empty()
+        || bundle
+            .write_state_effects()
+            .iter()
+            .any(|other| other.layer_id() != layer_id && other.target() == write.target())
+        || bundle.layers().iter().any(|layer| {
+            layer.id() != layer_id
+                && layer
+                    .produces()
+                    .iter()
+                    .any(|relation| relation.relation_name() == Some(write.target()))
+        })
+        || !bundle
+            .source_schemas()
+            .iter()
+            .any(|schema| schema.relation() == write.target())
+        || bundle.relation_constraints().iter().any(|set| {
+            set.relation() == write.target()
+                && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+        })
+        || effect
+            .resulting_rows(
+                initial_rows,
+                crate::protocol::WriteRowCounts::new(0, 0, initial_rows),
+            )
+            != Ok(0)
+    {
+        return residual(PhysicalProofGap::PartialProducer);
+    }
+    let Some(boundary) =
+        WitnessBoundary::new(write.target(), GroupBoundaryKind::Physical, layer_id)
+    else {
+        return residual(PhysicalProofGap::UnboundPhysicalSource);
+    };
+    let (Some(initial), Some(empty)) = (
+        CountBounds::new(initial_rows, Some(initial_rows)),
+        CountBounds::new(0, Some(0)),
+    ) else {
+        return residual(PhysicalProofGap::LocalWitnessUnproven);
+    };
+    let Some(case) = WitnessCase::new(
+        vec![
+            WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds: initial,
+                predicate: count_tautology(),
+                closed_world: true,
+            },
+            WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            },
+            WitnessObligation::StateRows {
+                relation: write.target().to_string(),
+                before: initial,
+                after: empty,
+            },
+        ],
+        ProofStrength::Sufficient,
+    ) else {
+        return residual(PhysicalProofGap::LocalWitnessUnproven);
+    };
+    WitnessDirection::feasible(vec![case])
+        .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
+}
+
 /// Lift complete scalar distributions across exact identity-only producer
 /// chains without reparsing the SQL or fabricating writable intermediate
 /// tables. Source histograms are safe only when every named producer preserves
