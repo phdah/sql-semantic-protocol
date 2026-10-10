@@ -2233,6 +2233,171 @@ fn physical_join_population_count_plan(
     WitnessDirection::feasible(cases)
 }
 
+/// Compose closed physical key populations across multiple terminal goals.
+/// Never cross-product independently feasible examples unless every selected
+/// case can share identical source-row counts and compatible key assignments.
+/// The finite candidate list is a sufficient construction only: exhaustion
+/// or a conflict among examples is residual, not an impossibility proof.
+fn jointly_realized_join_goals(
+    bundle: &AnalysisBundle,
+    goals: &[(&str, u64)],
+) -> Option<WitnessDirection> {
+    if goals.len() < 2 {
+        return None;
+    }
+    let mut alternatives = Vec::new();
+    let mut includes_join = false;
+    for &(layer_id, rows) in goals {
+        let join_proof = physical_join_population_count_plan(bundle, layer_id, rows);
+        includes_join |= join_proof.is_some();
+        let direction = join_proof.unwrap_or_else(|| physical_row_count_plan(bundle, layer_id, rows));
+        let WitnessDirection::Feasible(cases) = direction else {
+            return None;
+        };
+        if cases.is_empty() || cases.len() > 16 {
+            return Some(residual(PhysicalProofGap::MultipleWitnesses));
+        }
+        alternatives.push(cases);
+    }
+    if !includes_join {
+        return None;
+    }
+    let mut conjunctions = vec![Vec::<WitnessObligation>::new()];
+    for choices in alternatives {
+        if conjunctions.len().saturating_mul(choices.len()) > 256 {
+            return Some(residual(PhysicalProofGap::MultipleWitnesses));
+        }
+        let mut next = Vec::new();
+        for prior in conjunctions {
+            for choice in &choices {
+                let mut obligations = prior.clone();
+                obligations.extend_from_slice(choice.obligations());
+                next.push(obligations);
+            }
+        }
+        conjunctions = next;
+    }
+    let mut cases = Vec::new();
+    for obligations in conjunctions {
+        let mut counts = BTreeMap::<String, u64>::new();
+        let mut assignments = BTreeMap::<(String, String), (JoinPopulationPattern, u64)>::new();
+        let mut populations = Vec::new();
+        let mut valid = true;
+        for obligation in &obligations {
+            match obligation {
+                WitnessObligation::Rows {
+                    boundary, bounds, predicate, quantifier: RowQuantifier::ForAll,
+                    closed_world: true,
+                } if boundary.kind() == GroupBoundaryKind::Physical
+                    && bounds.maximum() == Some(bounds.minimum())
+                    && *predicate == count_tautology() =>
+                {
+                    let count = bounds.minimum();
+                    if counts.insert(boundary.relation().to_string(), count)
+                        .is_some_and(|prior| prior != count)
+                    {
+                        valid = false;
+                        break;
+                    }
+                }
+                WitnessObligation::JoinPopulation {
+                    left_row, right_row, left_key, right_key,
+                    pattern, left_rows, right_rows, ..
+                } => {
+                    // Two different joins can constrain the *same physical
+                    // key*. Reconcile their complete value assignment, not
+                    // just matching scalar types and row counts.
+                    if matches!(pattern,
+                        JoinPopulationPattern::DistinctMatched | JoinPopulationPattern::CommonMatched)
+                    {
+                        for (row, key, count) in [
+                            (left_row, left_key, left_rows),
+                            (right_row, right_key, right_rows),
+                        ] {
+                            let assignment = (*pattern, *count);
+                            let identity = (row.relation().to_string(), key.name().to_string());
+                            if assignments.insert(identity, assignment)
+                                .is_some_and(|prior|
+                                    prior != assignment &&
+                                    // A one-row source has identical keys
+                                    // under both zero-based patterns.
+                                    !(prior.1 == 1 && assignment.1 == 1))
+                            {
+                                valid = false;
+                                break;
+                            }
+                        }
+                    }
+                    populations.push(obligation.clone());
+                }
+                WitnessObligation::ClosedWorld {
+                    boundary, coverage: ClosedWorldCoverage::EntireRelation,
+                } if boundary.kind() == GroupBoundaryKind::Physical => {}
+                WitnessObligation::OutputRows { .. } => {}
+                _ => {
+                    valid = false;
+                    break;
+                }
+            }
+        }
+        if !valid {
+            continue;
+        }
+        let mut result = Vec::new();
+        let origin = goals[0].0;
+        for (source, rows) in &counts {
+            let Some(boundary) = WitnessBoundary::new(
+                source, GroupBoundaryKind::Physical, origin,
+            ) else {
+                valid = false;
+                break;
+            };
+            let Some(bounds) = CountBounds::new(*rows, Some(*rows)) else {
+                valid = false;
+                break;
+            };
+            result.push(WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds,
+                predicate: count_tautology(),
+                closed_world: true,
+            });
+            result.push(WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            });
+        }
+        if !valid {
+            continue;
+        }
+        result.extend(populations);
+        for &(layer_id, rows) in goals {
+            let Some(bounds) = CountBounds::new(rows, Some(rows)) else {
+                valid = false;
+                break;
+            };
+            result.push(WitnessObligation::OutputRows {
+                layer_id: layer_id.to_string(),
+                bounds,
+            });
+        }
+        if !valid {
+            continue;
+        }
+        if let Some(case) = WitnessCase::new(result, ProofStrength::Sufficient) {
+            if !cases.contains(&case) {
+                cases.push(case);
+            }
+        }
+    }
+    if cases.is_empty() {
+        Some(residual(PhysicalProofGap::MultipleWitnesses))
+    } else {
+        WitnessDirection::feasible(cases)
+    }
+}
+
 /// One jointly controlled physical input with an optional qualifying
 /// restriction. Equality of physical counts is necessary only for a genuinely
 /// row-preserving (unfiltered) terminal, not for a sufficient filter plan.
@@ -2561,6 +2726,9 @@ pub fn physical_joint_row_count_plan(
     }
     let mut ordered = targets.to_vec();
     ordered.sort();
+    if let Some(witness) = jointly_realized_join_goals(bundle, &ordered) {
+        return witness;
+    }
     if let Some(witness) = joint_positive_and_rejected_pair(bundle, &ordered) {
         return witness;
     }
