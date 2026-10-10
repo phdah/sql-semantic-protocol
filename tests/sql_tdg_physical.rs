@@ -8,8 +8,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection,
-    WitnessObligation,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessObligation,
 };
 
 const ADVANCED: &str = include_str!("fixtures/sql_tdg/advanced_pipeline.sql");
@@ -20,8 +19,18 @@ fn fixture_bundle(sql: &str) -> AnalysisBundle {
     let dialect = "postgresql";
     let parser = dialect_from_name(dialect).expect("dialect");
     let columns = [
-        ("raw_orders", &[("order_id", "INTEGER"), ("customer_id", "INTEGER"), ("amount", "INTEGER")][..]),
-        ("raw_customers", &[("customer_id", "INTEGER"), ("active", "BOOLEAN")][..]),
+        (
+            "raw_orders",
+            &[
+                ("order_id", "INTEGER"),
+                ("customer_id", "INTEGER"),
+                ("amount", "INTEGER"),
+            ][..],
+        ),
+        (
+            "raw_customers",
+            &[("customer_id", "INTEGER"), ("active", "BOOLEAN")][..],
+        ),
         ("raw_a", &[("value", "INTEGER")][..]),
         ("raw_b", &[("value", "INTEGER")][..]),
         ("raw_c", &[("value", "INTEGER")][..]),
@@ -94,7 +103,8 @@ fn sql_tdg_advanced_pipeline_constructs_joint_terminal_zero_from_raw_sources() {
          CREATE TABLE raw_customers(customer_id INTEGER, active BOOLEAN);",
     )
     .expect("source schemas");
-    conn.execute_batch(ADVANCED).expect("committed sql-tdg pipeline");
+    conn.execute_batch(ADVANCED)
+        .expect("committed sql-tdg pipeline");
     for sql in [
         "SELECT COUNT(*) FROM stage_orders",
         "SELECT COUNT(*) FROM stage_customers",
@@ -122,7 +132,8 @@ fn sql_tdg_boundary_fixture_retains_join_provenance_and_zero_rejection() {
          CREATE TABLE raw_customers(customer_id INTEGER, active BOOLEAN);",
     )
     .expect("source schemas");
-    conn.execute_batch(BOUNDARY).expect("committed sql-tdg boundary");
+    conn.execute_batch(BOUNDARY)
+        .expect("committed sql-tdg boundary");
     let rows: i64 = conn
         .query_row("SELECT COUNT(*) FROM core_enriched", [], |row| row.get(0))
         .expect("enriched count");
@@ -154,7 +165,8 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
          CREATE TABLE raw_c(value INTEGER);",
     )
     .expect("source schemas");
-    conn.execute_batch(SETS).expect("committed sql-tdg set pipeline");
+    conn.execute_batch(SETS)
+        .expect("committed sql-tdg set pipeline");
     for target in [
         "union_all_result",
         "union_result",
