@@ -56,9 +56,12 @@ Realize cross-layer compositions of already-proven local group, window, set and 
   source, preserving the pre-existing local operator law and full input count.
   Noninvertible projections, filters, unrelated operators, incomplete schemas
   and shared-source mixed plans continue to return residual.
-- Added DuckDB full-output checks and cross-dialect grouping tests.
+- Composed exact two-branch UNION/UNION ALL/INTERSECT/EXCEPT tuple multiplicity
+  through independently materialized identity-only branch producers, mapping
+  full candidate-tuple laws to schema-certified physical source columns.
+- Added DuckDB complete-output and NULL-duplicate differential checks,
+  cross-dialect grouping tests and fail-closed negative producer cases.
 
-**Still open:** JOIN-to-group, mixed grouping/window/set DAGs, source-level
-SetTuple cases through producer branches, joint multi-terminal populations,
+**Still open:** JOIN-to-group, mixed grouping/window/set DAGs, joint multi-terminal populations and shared-source set cases,
 aggregate-derived filters, additional NULL/duplicate counterexamples,
 and full physical joint-plan integration. The unchecked criteria remain open.
