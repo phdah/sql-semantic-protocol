@@ -1122,7 +1122,34 @@ a filtered output may contain fewer rows than its physical input. Joins,
 aggregate multiplicity, sets and DML state transitions remain unsupported
 for general positive cardinality.
 
+### Deliberately rejected physical rows
+
+`physical_rejected_row_count_plan(bundle, layer_id, source_rows)` is a
+separate Rust API for a **nonempty** physical input whose entire row set is
+deliberately rejected by a proven one-source Boolean filter path. Its
+`Rows` obligation requires SQL `NOT TRUE` (FALSE or UNKNOWN) for *every*
+source row; exact nonzero physical bounds and `ClosedWorld` entire-relation
+coverage ensure no additional qualifying rows can survive. The corresponding
+`OutputRows` obligation fixes the terminal result at zero. Unknown source
+types, constraints, grouping, joining and noninvertible producer paths fail
+closed. This is not interchangeable with a sampled rejected-row witness.
+
+The joint count API additionally proves the two-terminal subset consisting
+of an unfiltered, exactly row-preserving N-row output and a filtered zero
+output on the same source. It reuses one N-row closed-world physical
+assignment where every row fails the filtered predicate. Other combinations
+still require joint satisfiability evidence.
+
 ### Transported operator counts and column distributions
+
+A positive one-to-one integer equijoin can additionally be constructed
+when **both** operands are materialized, single-source transparent copies
+of distinct physical tables. Both join keys are resolved to actual physical
+columns, type and source constraints are revalidated, and the canonical
+`join_pairs` witness describes a complete distinct matched-key assignment.
+Subsequent single-parent identity-only projections preserve this proof.
+Filtered, computed, shared-source, or additional operator branches remain
+residual rather than treated as independent source tables.
 
 An otherwise complete source-local `join_pairs`, `groups`, `ranked`
 or `set_tuples` construction can be reused for a downstream output only
