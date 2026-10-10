@@ -1409,11 +1409,17 @@ fn correlated_self_join_witnesses_are_retained_but_not_jointly_assumed() {
         let plan =
             physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4), (b.layers()[1].id(), 3)]);
         assert_eq!(plan.sources(), &["t".to_string()]);
-        assert_eq!(plan.gap(), Some(PhysicalProofGap::UnprovedCrossRowCorrelation));
-        assert!(matches!(
-            plan.outcome(),
-            WitnessDirection::Residual { reason } if reason == "unproved_cross_row_correlation"
-        ), "{dialect}: matching pairs need an explicit shared-row/multiplicity proof");
+        assert_eq!(
+            plan.gap(),
+            Some(PhysicalProofGap::UnprovedCrossRowCorrelation)
+        );
+        assert!(
+            matches!(
+                plan.outcome(),
+                WitnessDirection::Residual { reason } if reason == "unproved_cross_row_correlation"
+            ),
+            "{dialect}: matching pairs need an explicit shared-row/multiplicity proof"
+        );
         assert!(
             plan.nodes()
                 .iter()
