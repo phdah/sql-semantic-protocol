@@ -481,7 +481,7 @@ fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -
         let set_empty = query
             .set_operation()
             .is_some_and(|operation| empty_input_eliminates_set(operation, layer));
-        if query.sources().is_empty()
+        if (query.sources().is_empty() && !set_empty)
             || (query.aggregation().is_some() && !regular_grouping && !duplicate_elimination)
             || (query.set_operation().is_some() && !set_empty)
             || query.proven_single_row_output()
