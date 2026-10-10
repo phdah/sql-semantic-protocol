@@ -6,7 +6,8 @@ use common::DIALECTS;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
-    physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
+    physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
+    AnalysisBundle, ConfiguredSqlInput,
     ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution,
     OutputValueCount, PhysicalPlanRef, PhysicalProofGap, RelationCatalog, RelationSchema,
     SchemaColumn, SqlInput, WitnessDirection, WitnessFormula, WitnessObligation,
@@ -739,6 +740,87 @@ fn row_count_constructor_does_not_guess_after_joins_or_aggregates() {
                 WitnessDirection::Feasible(_)
             ),
             "{query}"
+        );
+    }
+}
+
+#[test]
+fn complete_rejected_source_rows_prove_zero_terminal_output_across_dialects() {
+    for &dialect in DIALECTS {
+        let b = bundle(&["SELECT a, b FROM t WHERE a > 2 OR b < 0"], dialect);
+        let id = b.layers()[0].id();
+        let proof = physical_rejected_row_count_plan(&b, id, 3);
+        let WitnessDirection::Feasible(cases) = proof else {
+            panic!("{dialect}: rejected physical rows must be constructive: {proof:?}");
+        };
+        assert_eq!(cases.len(), 1);
+        assert!(cases[0].obligations().iter().any(|obligation| matches!(
+            obligation,
+            WitnessObligation::Rows {
+                boundary,
+                bounds,
+                predicate: WitnessFormula::RowTruth {
+                    truth: sql_semantic_protocol::BooleanTruthCase::NotTrue,
+                    ..
+                },
+                closed_world: true,
+                ..
+            } if boundary.relation() == "t"
+                && bounds.minimum() == 3
+                && bounds.maximum() == Some(3)
+        )));
+        assert!(cases[0].obligations().iter().any(|obligation| matches!(
+            obligation,
+            WitnessObligation::OutputRows { layer_id, bounds }
+                if layer_id == id && bounds.minimum() == 0 && bounds.maximum() == Some(0)
+        )));
+        assert!(cases[0].obligations().iter().any(|obligation| matches!(
+            obligation,
+            WitnessObligation::ClosedWorld { boundary, .. } if boundary.relation() == "t"
+        )));
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (0,0), (NULL,NULL), (1,NULL);",
+    )
+    .expect("deliberate rejected source rows");
+    let (input, output): (i64, i64) = conn
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM t),
+                    (SELECT COUNT(*) FROM t WHERE a > 2 OR b < 0)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .expect("whole-source oracle");
+    assert_eq!((input, output), (3, 0));
+}
+
+#[test]
+fn negative_closed_world_proof_requires_joint_filters_and_no_unproved_shaping() {
+    let b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t WHERE a > 2 OR b < 0",
+            "SELECT a FROM stage WHERE a IS NULL OR b IS NOT NULL",
+        ],
+        "postgresql",
+    );
+    assert!(matches!(
+        physical_rejected_row_count_plan(&b, b.layers()[1].id(), 4),
+        WitnessDirection::Feasible(_)
+    ));
+    for query in [
+        "SELECT a FROM t WHERE a > 2",
+        "SELECT a FROM t WHERE a > 2 OR b < 0 LIMIT 1",
+        "SELECT l.a FROM l JOIN r ON l.k = r.k",
+    ] {
+        let b = bundle(&[query], "postgresql");
+        assert!(
+            !matches!(
+                physical_rejected_row_count_plan(&b, b.layers()[0].id(), 2),
+                WitnessDirection::Feasible(_)
+            ),
+            "{query}: no unsupported closed-world absence claim"
         );
     }
 }
