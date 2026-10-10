@@ -1634,13 +1634,16 @@ fn mixed_truth_goals_reject_incompatible_row_membership_without_overclaiming() {
             ],
             dialect,
         );
-        assert!(matches!(
-            physical_joint_row_count_plan(
-                &b,
-                &[(b.layers()[0].id(), 2), (b.layers()[1].id(), 0)],
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &b,
+                    &[(b.layers()[0].id(), 2), (b.layers()[1].id(), 0)],
+                ),
+                WitnessDirection::Impossible
             ),
-            WitnessDirection::Impossible
-        ), "{dialect}: one positive candidate cannot be universally rejected");
+            "{dialect}: one positive candidate cannot be universally rejected"
+        );
 
         let disjoint_positive = bundle(
             &[
@@ -1650,17 +1653,20 @@ fn mixed_truth_goals_reject_incompatible_row_membership_without_overclaiming() {
             ],
             dialect,
         );
-        assert!(matches!(
-            physical_joint_row_count_plan(
-                &disjoint_positive,
-                &[
-                    (disjoint_positive.layers()[0].id(), 2),
-                    (disjoint_positive.layers()[1].id(), 2),
-                    (disjoint_positive.layers()[2].id(), 0),
-                ],
+        assert!(
+            matches!(
+                physical_joint_row_count_plan(
+                    &disjoint_positive,
+                    &[
+                        (disjoint_positive.layers()[0].id(), 2),
+                        (disjoint_positive.layers()[1].id(), 2),
+                        (disjoint_positive.layers()[2].id(), 0),
+                    ],
+                ),
+                WitnessDirection::Residual { .. }
             ),
-            WitnessDirection::Residual { .. }
-        ), "{dialect}: two disjoint positive groups could use extra distinct rows");
+            "{dialect}: two disjoint positive groups could use extra distinct rows"
+        );
     }
 }
 
