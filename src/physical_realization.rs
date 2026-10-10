@@ -824,10 +824,11 @@ fn resolve_filter_column_with_evidence(
                     .iter()
                     .find(|item| item.name() == column.name())?
                     .data_type();
+                let upstream_relation = upstream.relation()?;
                 let upstream_type = bundle
                     .source_schemas()
                     .iter()
-                    .find(|schema| schema.relation() == upstream.relation()?)?
+                    .find(|schema| schema.relation() == upstream_relation)?
                     .columns()
                     .iter()
                     .find(|item| item.name() == upstream.name())?
