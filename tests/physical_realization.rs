@@ -201,6 +201,12 @@ fn join_population_reconciles_joint_terminal_counts_without_duplicate_source_row
             ],
             dialect,
         );
+        let conflicting_duplicate = physical_joint_source_plan(&b, &[
+            (b.layers()[2].id(), 2), (b.layers()[2].id(), 3)
+        ]);
+        assert!(matches!(conflicting_duplicate.outcome(), WitnessDirection::Impossible),
+            "{dialect}: a single output cannot have two exact cardinalities");
+
         let targets = [
             (b.layers()[2].id(), 3),
             (b.layers()[3].id(), 3),
