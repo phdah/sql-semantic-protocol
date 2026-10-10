@@ -1937,14 +1937,16 @@ fn conjoin_source_row_truths(
         row: left_row,
         predicate: left_condition,
         truth: BooleanTruthCase::True,
-    } = left else {
+    } = left
+    else {
         return None;
     };
     let WitnessFormula::RowTruth {
         row: right_row,
         predicate: right_condition,
         truth: BooleanTruthCase::True,
-    } = right else {
+    } = right
+    else {
         return None;
     };
     if left_row != right_row || left_row.relation() != source {
@@ -1954,39 +1956,38 @@ fn conjoin_source_row_truths(
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == source)?;
-    let (predicate, satisfiable) =
-        crate::boolean_witness::conjoin_physical_true_conditions(
-            source,
-            &[left_condition, right_condition],
-            |column| {
-                schema
-                    .columns()
-                    .iter()
-                    .any(|known| known.name() == column.name())
-            },
-            |column| {
-                let known = schema
-                    .columns()
-                    .iter()
-                    .find(|known| known.name() == column.name())?;
-                let data_type = match known.data_type() {
-                    crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
-                    other => other,
-                };
-                match data_type {
-                    crate::data_type::DataType::SignedInteger { bits: Some(bits) }
-                        if *bits > 0 && *bits <= 64 =>
-                    {
-                        let magnitude = 1_i128 << (u32::from(*bits) - 1);
-                        Some(crate::boolean_witness::SignedIntegerEvidence {
-                            minimum: -magnitude,
-                            maximum: magnitude - 1,
-                        })
-                    }
-                    _ => None,
+    let (predicate, satisfiable) = crate::boolean_witness::conjoin_physical_true_conditions(
+        source,
+        &[left_condition, right_condition],
+        |column| {
+            schema
+                .columns()
+                .iter()
+                .any(|known| known.name() == column.name())
+        },
+        |column| {
+            let known = schema
+                .columns()
+                .iter()
+                .find(|known| known.name() == column.name())?;
+            let data_type = match known.data_type() {
+                crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
+            };
+            match data_type {
+                crate::data_type::DataType::SignedInteger { bits: Some(bits) }
+                    if *bits > 0 && *bits <= 64 =>
+                {
+                    let magnitude = 1_i128 << (u32::from(*bits) - 1);
+                    Some(crate::boolean_witness::SignedIntegerEvidence {
+                        minimum: -magnitude,
+                        maximum: magnitude - 1,
+                    })
                 }
-            },
-        )?;
+                _ => None,
+            }
+        },
+    )?;
     Some((
         WitnessFormula::RowTruth {
             row: left_row.clone(),
