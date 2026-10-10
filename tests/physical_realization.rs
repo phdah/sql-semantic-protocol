@@ -1016,7 +1016,7 @@ fn joint_counts_keep_filter_truth_and_fail_closed_on_distinct_conditions() {
         );
         assert!(matches!(
             physical_joint_row_count_plan(&b, &[(positive, 3), (incompatible, 3)]),
-            WitnessDirection::Residual { .. }
+            WitnessDirection::Feasible(_)
         ));
         assert!(matches!(
             physical_joint_row_count_plan(&b, &[(raw, 4), (positive, 3)]),
