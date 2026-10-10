@@ -15,7 +15,9 @@ use crate::constructive::{
     ConstructiveWitness, CountBounds, ProofStrength, RowQuantifier, WitnessBoundary, WitnessCase,
     WitnessDirection, WitnessFormula, WitnessObligation, WitnessOperator, WitnessTerm,
 };
-use crate::protocol::{Expression, GroupBy, GroupingExpression, ProtocolStatement, QueryStatement, WriteKind};
+use crate::protocol::{
+    Expression, GroupBy, GroupingExpression, ProtocolStatement, QueryStatement, WriteKind,
+};
 
 /// Stable reference to a physical source or an in-bundle producer layer.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -373,9 +375,7 @@ fn empty_input_eliminates_groups(query: &QueryStatement) -> bool {
 fn row_local_expression(expression: &Expression) -> bool {
     match expression {
         Expression::Column(_) | Expression::Literal(_) => true,
-        Expression::Function(function) => {
-            function.arguments().iter().all(row_local_expression)
-        }
+        Expression::Function(function) => function.arguments().iter().all(row_local_expression),
         Expression::SignedIntegerCast(cast) => row_local_expression(cast.expression()),
         Expression::Unary(unary) => row_local_expression(unary.operand()),
         Expression::Binary(binary) => {
