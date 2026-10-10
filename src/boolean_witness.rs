@@ -975,7 +975,10 @@ pub(crate) fn conjoin_physical_true_conditions(
         return None;
     }
     let joint = BooleanRowConstraint::All(BooleanOperands::new(
-        conditions.iter().map(|condition| (*condition).clone()).collect(),
+        conditions
+            .iter()
+            .map(|condition| (*condition).clone())
+            .collect(),
     )?);
     let mut columns = Vec::new();
     joint.columns(&mut columns);
