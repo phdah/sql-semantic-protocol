@@ -1335,6 +1335,145 @@ fn scalar_physical_row_truth(
     })
 }
 
+/// One group is emitted per distinct key, so ROW_NUMBER() partitioned by
+/// that key has exactly one row in every partition. This is a complete
+/// source-level group assignment, not an independent sample of ranked rows.
+fn physical_group_rank_count_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    rows: u64,
+) -> Option<WitnessDirection> {
+    use crate::outcome_proofs::OutcomeWitness;
+    use crate::window_witness::WindowWitnessDirection;
+    if rows == 0 {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let target_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string()))?;
+    let [PhysicalPlanRef::Layer(group_id)] = target_node.inputs() else {
+        return None;
+    };
+    let rank_layer = walker.layers.get(target_layer_id).copied()?;
+    let rank_query = query_for(bundle, rank_layer)?;
+    let group_layer = walker.layers.get(group_id.as_str()).copied()?;
+    let group_query = query_for(bundle, group_layer)?;
+    if !matches!(target_node.write_kind(), None | Some(WriteKind::Definition))
+        || !rank_query.ranked_goal_output_shape()
+        || !rank_query.joins().is_empty()
+        || rank_query.aggregation().is_some()
+        || rank_query.set_operation().is_some()
+        || !rank_query.subquery_witnesses().is_empty()
+        || rank_query.sources().len() != 1
+        || !group_query.group_rows_match_surviving_groups()
+        || group_query.aggregation().is_none()
+    {
+        return None;
+    }
+    let group_relation = rank_query.sources()[0].name();
+    let group_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(group_id.clone()))?;
+    if !matches!(group_node.write_kind(), Some(WriteKind::Definition))
+        || !group_node.produced_relations().contains(&group_relation.to_string())
+    {
+        return None;
+    }
+    let local = rank_query.window_witness()?;
+    let [partition] = local.partition_by() else {
+        return None;
+    };
+    let [order] = local.order_by() else {
+        return None;
+    };
+    if local.boundary() != Some(group_relation)
+        || partition.relation() != Some(group_relation)
+        || order.column().relation() != Some(group_relation)
+        || partition.name() != order.column().name()
+        || local.limit().is_none_or(|limit| limit == 0)
+        || !matches!(local.qualifying(), WindowWitnessDirection::Exact(case)
+            if case.min_preceding() == 0)
+    {
+        return None;
+    }
+
+    let (population, counts, group_case) =
+        physical_operator_population_case(bundle, group_id, rows)?;
+    let OutcomeWitness::Groups {
+        relation,
+        key,
+        groups,
+        ..
+    } = &population else {
+        return None;
+    };
+    if *groups != rows || !counts.contains_key(relation) {
+        return None;
+    }
+    let source_key = group_query
+        .output()
+        .columns()
+        .iter()
+        .filter(|col| col.name() == partition.name())
+        .collect::<Vec<_>>();
+    let [source_key] = source_key.as_slice() else {
+        return None;
+    };
+    let copied = source_key.plain_copy_source()?;
+    if copied.relation() != relation || copied.column() != key.name() {
+        return None;
+    }
+    let grouped_type = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == group_relation)?
+        .columns()
+        .iter()
+        .find(|column| column.name() == partition.name())?
+        .data_type();
+    let source_type = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == relation)?
+        .columns()
+        .iter()
+        .find(|column| column.name() == key.name())?
+        .data_type();
+    if grouped_type != source_type {
+        return None;
+    }
+    let boundary = WitnessBoundary::new(
+        group_relation,
+        GroupBoundaryKind::Intermediate,
+        target_layer_id,
+    )?;
+    let candidate = RowVariable::new(group_relation, group_relation, "group_rank")?;
+    let mut obligations = group_case.obligations().to_vec();
+    obligations.push(WitnessObligation::Producer {
+        boundary: boundary.clone(),
+        physical_sources: vec![relation.clone()],
+    });
+    obligations.push(WitnessObligation::Ranked {
+        boundary,
+        candidate,
+        partition_by: vec![partition.clone()],
+        order_by: vec![order.clone()],
+        preceding: CountBounds::new(0, Some(0))?,
+        strict_unique: true,
+        closed_world: true,
+    });
+    obligations.push(WitnessObligation::OutputRows {
+        layer_id: target_layer_id.to_string(),
+        bounds: CountBounds::new(rows, Some(rows))?,
+    });
+    WitnessCase::new(obligations, ProofStrength::Sufficient)
+        .and_then(|case| WitnessDirection::feasible(vec![case]))
+}
+
 /// Lift a fully matched, one-to-one physical equijoin into an ordinary
 /// grouped output. Every joined key is distinct, so grouping on that exact
 /// physical key produces one contributor per group. HAVING may accept this
@@ -1777,6 +1916,9 @@ pub fn physical_row_count_plan(
         return join_plan;
     }
     if let Some(plan) = physical_join_group_count_plan(bundle, target_layer_id, rows) {
+        return plan;
+    }
+    if let Some(plan) = physical_group_rank_count_plan(bundle, target_layer_id, rows) {
         return plan;
     }
     if let Some((_, _, case)) = physical_operator_population_case(bundle, target_layer_id, rows) {
@@ -3461,6 +3603,11 @@ pub fn physical_joint_row_count_plan(
     }
     if let Some(witness) = joint_operator_population_goals(bundle, &ordered) {
         return witness;
+    }
+    if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(witness) = physical_group_rank_count_plan(bundle, layer_id, *rows) {
+            return witness;
+        }
     }
     if let [(layer_id, rows)] = ordered.as_slice() {
         if let Some(witness) = physical_join_group_count_plan(bundle, layer_id, *rows) {
