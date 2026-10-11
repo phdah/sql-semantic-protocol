@@ -1347,7 +1347,9 @@ fn physical_transparent_producer_leaf(
         return Some(relation.to_string());
     }
     let mut current = walker.nodes.iter().find(|node| {
-        node.produced_relations().iter().any(|name| name == relation)
+        node.produced_relations()
+            .iter()
+            .any(|name| name == relation)
     })?;
     for _ in 0..walker.layers.len() {
         let PhysicalPlanRef::Layer(id) = current.id() else {
@@ -1364,9 +1366,10 @@ fn physical_transparent_producer_leaf(
                 return Some(name.clone());
             }
             [PhysicalPlanRef::Layer(parent)] => {
-                current = walker.nodes.iter().find(|node| {
-                    node.id() == &PhysicalPlanRef::Layer(parent.clone())
-                })?;
+                current = walker
+                    .nodes
+                    .iter()
+                    .find(|node| node.id() == &PhysicalPlanRef::Layer(parent.clone()))?;
             }
             _ => return None,
         }
@@ -1398,15 +1401,20 @@ fn physical_empty_subquery_membership_plan(
     let [local] = query.subquery_witnesses() else {
         return None;
     };
-    if !matches!(query.predicates().where_predicate()?,
-        Predicate::Exists(_) | Predicate::InSubquery(_))
-        || !matches!(layer.write_kind(), None | Some(WriteKind::Definition))
+    if !matches!(
+        query.predicates().where_predicate()?,
+        Predicate::Exists(_) | Predicate::InSubquery(_)
+    ) || !matches!(layer.write_kind(), None | Some(WriteKind::Definition))
         || !query.joins().is_empty()
         || query.aggregation().is_some()
         || query.set_operation().is_some()
         || query.window_witness().is_some()
         || !query.diagnostics().is_empty()
-        || !query.output().columns().iter().all(|column| column.plain_copy_source().is_some())
+        || !query
+            .output()
+            .columns()
+            .iter()
+            .all(|column| column.plain_copy_source().is_some())
     {
         return None;
     }
@@ -1441,7 +1449,10 @@ fn physical_empty_subquery_membership_plan(
     // Only independently controllable, actually attested relations can be
     // assigned source rows; constraints cannot be assumed away.
     for relation in [&outer_physical, &inner_physical] {
-        bundle.source_schemas().iter().find(|s| s.relation() == relation)?;
+        bundle
+            .source_schemas()
+            .iter()
+            .find(|s| s.relation() == relation)?;
         if bundle.relation_constraints().iter().any(|set| {
             set.relation() == relation
                 && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
@@ -1451,25 +1462,27 @@ fn physical_empty_subquery_membership_plan(
     }
     let outer_rows = wanted.max(1);
     let outer_boundary = WitnessBoundary::new(
-        &outer_physical, GroupBoundaryKind::Physical, target_layer_id,
+        &outer_physical,
+        GroupBoundaryKind::Physical,
+        target_layer_id,
     )?;
     let inner_boundary = WitnessBoundary::new(
-        &inner_physical, GroupBoundaryKind::Physical, target_layer_id,
+        &inner_physical,
+        GroupBoundaryKind::Physical,
+        target_layer_id,
     )?;
     let outer_row = RowVariable::new(&outer_physical, outer_relation.name(), "membership_outer")?;
-    let mut obligations = vec![
-        WitnessObligation::Membership {
-            outer: outer_row,
-            inner: inner_boundary.clone(),
-            case: SubqueryMembershipCase::NoCandidates,
-            // Inner is physically empty, so no correlated key/value can
-            // be evaluated; all local domain tests are vacuous.
-            correlations: Vec::new(),
-            membership_key: None,
-            inner_domains: Vec::new(),
-            closed_world: true,
-        },
-    ];
+    let mut obligations = vec![WitnessObligation::Membership {
+        outer: outer_row,
+        inner: inner_boundary.clone(),
+        case: SubqueryMembershipCase::NoCandidates,
+        // Inner is physically empty, so no correlated key/value can
+        // be evaluated; all local domain tests are vacuous.
+        correlations: Vec::new(),
+        membership_key: None,
+        inner_domains: Vec::new(),
+        closed_world: true,
+    }];
     for (boundary, count) in [(outer_boundary, outer_rows), (inner_boundary, 0)] {
         obligations.push(WitnessObligation::Rows {
             boundary: boundary.clone(),
