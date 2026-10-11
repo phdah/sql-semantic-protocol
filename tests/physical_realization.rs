@@ -3324,13 +3324,28 @@ fn set_tuple_mapping_preserves_null_frequencies_and_rejects_shared_sources() {
 
 #[test]
 fn joint_grouped_and_transparent_outputs_share_one_complete_physical_population() {
-    let b = bundle(
+    let schema = |relation: &str, columns: &[&str]| {
+        RelationSchema::new(
+            relation,
+            columns
+                .iter()
+                .map(|name| SchemaColumn::from_sql_type(*name, "INTEGER", "postgresql").unwrap())
+                .collect(),
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("t", &["a", "b"]),
+        schema("stage", &["category", "b"]),
+    ];
+    let b = bundle_with_schemas(
         &[
             "CREATE TABLE stage AS SELECT a AS category, b FROM t",
             "SELECT category, COUNT(*) AS n FROM stage GROUP BY category HAVING COUNT(*) >= 2",
             "SELECT a FROM t",
         ],
         "postgresql",
+        &schemas,
     );
     let grouped = b.layers()[1].id().to_string();
     let source = b.layers()[2].id().to_string();
