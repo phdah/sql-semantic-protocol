@@ -1657,7 +1657,10 @@ fn physical_join_group_count_plan(
         });
         obligations.push(WitnessObligation::Group {
             boundary: group_boundary,
-            key: vec![group_key.clone()],
+            key: vec![crate::protocol::ColumnRef::new(
+                Some(source.name().to_string()),
+                group_key.name().to_string(),
+            )],
             aggregate: crate::group_witness::GroupAggregate::CountRows,
             distinct: false,
             argument: None,
