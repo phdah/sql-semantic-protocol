@@ -112,3 +112,9 @@ cross-dialect sign-off. TASK-95's five criteria remain unchecked.
 - Shared-source constructive coverage remains a strict subset of acceptance
   criterion #3. Nonempty correlated subquery joins, arbitrary mixed DAG
   populations and full independent acceptance verification are still open.
+
+### Disjoint mixed operator joint composition
+
+- Conjoin independently closed, physical mixed-operator populations over disjoint physical source sets into a single joint plan, preserving every local operator obligation, full-source closure and transparent terminal count.
+- Add DuckDB full-output tests for two independent JOIN-to-GROUP/HAVING DAGs and explicit residual for shared-source collisions.
+- Arbitrary shared physical populations and interacting mixed branch laws remain unresolved; TASK-95 is not complete.
