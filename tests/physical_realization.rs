@@ -3575,3 +3575,70 @@ fn matched_join_population_proves_materialized_distinct_key_grouping() {
         WitnessDirection::Residual { .. }
     ));
 }
+
+#[test]
+fn grouped_materialization_feeds_one_rank_per_complete_partition() {
+    let schema = |relation: &str, names: &[&str]| {
+        RelationSchema::new(
+            relation,
+            names
+                .iter()
+                .map(|name| SchemaColumn::from_sql_type(*name, "INTEGER", "postgresql").unwrap())
+                .collect(),
+        )
+        .unwrap()
+    };
+    let schemas = [schema("t", &["a"]), schema("grouped", &["a", "n"])];
+    let input = [
+        "CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
+        "SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY a ASC NULLS LAST) AS rn FROM grouped QUALIFY rn = 1",
+    ];
+    let b = bundle_with_schemas(&input, "duckdb", &schemas);
+    let plan = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
+    let WitnessDirection::Feasible(cases) = plan.outcome() else {
+        panic!("rank must compose from complete grouped physical population: {plan:?}");
+    };
+    assert!(cases.iter().any(|case| case
+        .obligations()
+        .iter()
+        .any(|o| matches!(o, WitnessObligation::OperatorPopulation {
+            witness: OutcomeWitness::Groups {
+                relation,
+                groups: 2,
+                rows_per_group: 2,
+                ..
+            }
+        } if relation == "t"))));
+    assert!(cases.iter().any(|case| case
+        .obligations()
+        .iter()
+        .any(|o| matches!(o, WitnessObligation::Producer { .. }))));
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (0),(0),(1),(1);
+         CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2;",
+    )
+    .unwrap();
+    let actual: i64 = db.query_row(
+        "SELECT COUNT(*) FROM (
+           SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY a ASC NULLS LAST) AS rn
+           FROM grouped QUALIFY rn = 1
+         )",
+        [],
+        |row| row.get(0),
+    ).unwrap();
+    assert_eq!(actual, 2);
+
+    // Switching to a rank requiring a predecessor invalidates the proof.
+    let b = bundle_with_schemas(
+        &[
+            input[0],
+            "SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY a ASC NULLS LAST) AS rn FROM grouped QUALIFY rn > 1",
+        ],
+        "duckdb",
+        &schemas,
+    );
+    let residual = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
+    assert!(matches!(residual.outcome(), WitnessDirection::Residual { .. }));
+}
