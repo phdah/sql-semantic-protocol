@@ -98,3 +98,17 @@ mixed grouping/window/set DAGs, computed aggregate inversions, shared
 source set cases, mutually constraining different operator populations,
 complete impossible-versus-residual law proofs and acceptance-wide
 cross-dialect sign-off. TASK-95's five criteria remain unchecked.
+
+
+### Shared-source set producer progress
+
+- Reconciled the same typed physical tuple column read by two independent,
+  identity-preserving materialized set branches. Reuse a local exact positive
+  tuple law only when both branches require the same multiplicity, then
+  assign the closed physical relation once rather than duplicating source rows.
+- Added cross-dialect and DuckDB complete-output tests for shared-source
+  `UNION DISTINCT`, `INTERSECT` and `INTERSECT ALL`; differing source
+  columns and unsupported `UNION ALL` multiplicities remain residual.
+- Shared-source constructive coverage remains a strict subset of acceptance
+  criterion #3. Nonempty correlated subquery joins, arbitrary mixed DAG
+  populations and full independent acceptance verification are still open.
