@@ -2067,7 +2067,10 @@ fn joint_mixed_operator_and_source_goals(
         return None;
     }
 
-    let mut combinations = vec![(Vec::<WitnessObligation>::new(), BTreeMap::<String, u64>::new())];
+    let mut combinations = vec![(
+        Vec::<WitnessObligation>::new(),
+        BTreeMap::<String, u64>::new(),
+    )];
     for plan_cases in mixed_plans {
         let mut next = Vec::new();
         for case in &plan_cases {
@@ -2110,7 +2113,10 @@ fn joint_mixed_operator_and_source_goals(
                 return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
             }
             for (obligations, existing) in &combinations {
-                if counts.keys().any(|relation| existing.contains_key(relation)) {
+                if counts
+                    .keys()
+                    .any(|relation| existing.contains_key(relation))
+                {
                     continue;
                 }
                 let mut joined = obligations.clone();
