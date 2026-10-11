@@ -62,6 +62,16 @@ Realize cross-layer compositions of already-proven local group, window, set and 
 - Added DuckDB complete-output and NULL-duplicate differential checks,
   cross-dialect grouping tests and fail-closed negative producer cases.
 
-**Still open:** JOIN-to-group, mixed grouping/window/set DAGs, joint multi-terminal populations and shared-source set cases,
-aggregate-derived filters, additional NULL/duplicate counterexamples,
-and full physical joint-plan integration. The unchecked criteria remain open.
+**Additional physical DAG progress:** a canonical schema-backed `OperatorPopulation`
+obligation captures complete grouped, ranked and set source fixtures. The
+joint solver composes disjoint operator populations, identical shared-source
+populations and exact transparent source counts, with explicit residuals for
+unproved shared assignment collisions. Two mixed chains have narrow
+constructive proofs: distinct one-to-one equijoin -> group with one
+contributor per key, and a grouped producer -> one-row-per-partition QUALIFY.
+
+**Still open:** general join-to-group with nontrivial contributors,
+join/group/window/set mixed branches, different-predicate and correlated
+shared-source plans, aggregate-derived filters, grouped sets, correlated
+subqueries, negative/rejected mixed outcomes, further NULL/duplicate
+counterexamples and full cross-dialect sign-off. Acceptance remains open.
