@@ -3492,10 +3492,14 @@ fn matched_join_population_proves_materialized_distinct_key_grouping() {
     let schema = |name: &str, columns: &[&str]| {
         RelationSchema::new(
             name,
-            columns.iter().map(|column| {
-                SchemaColumn::from_sql_type(*column, "INTEGER", "postgresql").unwrap()
-            }).collect(),
-        ).unwrap()
+            columns
+                .iter()
+                .map(|column| {
+                    SchemaColumn::from_sql_type(*column, "INTEGER", "postgresql").unwrap()
+                })
+                .collect(),
+        )
+        .unwrap()
     };
     let schemas = [
         schema("l", &["k"]),
@@ -3515,33 +3519,41 @@ fn matched_join_population_proves_materialized_distinct_key_grouping() {
         let WitnessDirection::Feasible(cases) = result.outcome() else {
             panic!("{dialect}: composed join grouping unresolved: {result:?}");
         };
-        assert!(cases.iter().any(|case| {
-            case.obligations().iter().any(|obligation| matches!(
-                obligation,
-                WitnessObligation::JoinPopulation {
-                    pattern: JoinPopulationPattern::DistinctMatched,
-                    output_rows: 2,
-                    ..
-                }
-            )) && case.obligations().iter().any(|obligation| matches!(
-                obligation,
-                WitnessObligation::OperatorPopulation {
-                    witness: OutcomeWitness::Groups {
-                        groups: 2,
-                        rows_per_group: 1,
-                        ..
-                    }
-                }
-            ))
-        }), "{dialect}: expected jointly proven join and groups");
+        assert!(
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::JoinPopulation {
+                            pattern: JoinPopulationPattern::DistinctMatched,
+                            output_rows: 2,
+                            ..
+                        }
+                    )
+                }) && case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::OperatorPopulation {
+                            witness: OutcomeWitness::Groups {
+                                groups: 2,
+                                rows_per_group: 1,
+                                ..
+                            }
+                        }
+                    )
+                })
+            }),
+            "{dialect}: expected jointly proven join and groups"
+        );
     }
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE l(k INTEGER); CREATE TABLE r(k INTEGER);
          INSERT INTO l VALUES (0),(1);
          INSERT INTO r VALUES (0),(1);
-         CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k = r.k;"
-    ).unwrap();
+         CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k = r.k;",
+    )
+    .unwrap();
     let actual: i64 = db.query_row(
         "SELECT COUNT(*) FROM (SELECT k, COUNT(*) AS n FROM joined GROUP BY k HAVING COUNT(*) >= 1)",
         [],
@@ -3554,8 +3566,12 @@ fn matched_join_population_proves_materialized_distinct_key_grouping() {
             "CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k = r.k",
             "SELECT k, COUNT(*) AS n FROM joined GROUP BY k HAVING COUNT(*) >= 2",
         ],
-        "postgresql", &schemas,
+        "postgresql",
+        &schemas,
     );
     let unproven = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
-    assert!(matches!(unproven.outcome(), WitnessDirection::Residual { .. }));
+    assert!(matches!(
+        unproven.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
 }
