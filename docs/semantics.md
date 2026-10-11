@@ -644,3 +644,36 @@ detached string-collation predicates, remain residual. The legacy outcome-goal a
 remains residual for positive filtered counts because its `source_rows`
 witness cannot encode required predicate obligations. General join,
 group, QUALIFY, set and DML counts remain residual.
+
+
+### Joint physical operator populations (TASK-95, partial)
+
+An exact `group`, `ranked`, or `set_tuples` outcome witness can be promoted
+to a `operator_population` obligation only after the complete physical
+source DAG is certified: every materialization is resolved, each involved
+column has compatible type evidence, and every independent leaf relation
+is assigned a **complete** source-row count with an entire-relation closed
+world. Set branch counts preserve per-tuple ALL/DISTINCT and NULL equality
+semantics. A source table is assigned only once.
+
+A multi-terminal `physical_joint_source_plan` may conjoin such operator
+populations with independent sources or with matching transparent
+source-count goals. Repeated source assignments are accepted only when the
+same typed operator population and exact physical count agree. Incompatible
+*sufficient* examples remain residual rather than being mislabeled
+impossible; they do not rule out other satisfying populations.
+
+Two narrowly certified multi-operator chains also have constructive
+physical plans: a distinct matched equijoin followed by GROUP BY/HAVING
+with **exactly one matched row per grouping key**, and an ordinary
+GROUP BY/HAVING producer followed by ROW_NUMBER/QUALIFY that selects
+the only row of each key partition. The latter retains an intermediate
+rank obligation linked by `Producer` to the complete physical group
+population, without authorizing an independent write to the group result.
+
+Mixed joins with duplicated keys, join-to-HAVING requiring multiple
+contributors, aggregate-derived arbitrary filters, grouped sets,
+shared-source set operands, and general subquery/branch correlations
+are not yet constructively certified. They remain typed residuals,
+not false feasible results. The end-to-end TASK-95 acceptance gate is
+not satisfied by this subset.
