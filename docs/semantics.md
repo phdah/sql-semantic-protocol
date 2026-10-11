@@ -677,3 +677,31 @@ shared-source set operands, and general subquery/branch correlations
 are not yet constructively certified. They remain typed residuals,
 not false feasible results. The end-to-end TASK-95 acceptance gate is
 not satisfied by this subset.
+
+### Extended mixed-operator count and deliberate-rejection proofs
+
+For an identity-only materialized INNER equijoin, the group composer now
+supports both distinct matched keys (one contributor per group) and a
+complete common-key bag (one group with multiple contributors). HAVING
+`COUNT(*)` uses the existing exact group-count interval; it is never
+assumed true merely because a group is present. The mixed join/group
+construction can share the same exact physical counts with transparent
+source-reading terminals, reconciling each source identity once.
+
+A materialized ordinary GROUP BY/HAVING producer can also feed a single
+outer WHERE comparison of its copied `COUNT(*)` result. The producer
+supplies a complete group population, so the outer predicate is checked
+against every exact per-group count. SQL-FALSE outcomes are constructive
+nonempty-source rejections: they are not inferred from an open-world
+single-row candidate. Ambiguous, non-count, computed and unsupported
+predicates fail closed.
+
+For correlated EXISTS/NOT EXISTS or IN/NOT IN, a locally exact
+`no_candidates` case can be lifted through complete row-preserving
+materializations of independent outer and inner sources when the whole
+inner physical relation is proven empty. The outer source is explicitly
+nonempty and fully closed, preserving SQL NULL behavior for IN/NOT IN.
+The generated `Membership` obligation is source-backed; correlation
+and membership keys are vacuous because no inner row can qualify.
+Nonempty correlated matches, mixed predicates and repeated physical
+sources are still residual.
