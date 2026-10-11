@@ -3486,3 +3486,76 @@ fn shared_operator_source_requires_joint_key_and_row_proof() {
         .iter()
         .all(|goal| goal.status() == OutcomeGoalStatus::Feasible));
 }
+
+#[test]
+fn matched_join_population_proves_materialized_distinct_key_grouping() {
+    let schema = |name: &str, columns: &[&str]| {
+        RelationSchema::new(
+            name,
+            columns.iter().map(|column| {
+                SchemaColumn::from_sql_type(*column, "INTEGER", "postgresql").unwrap()
+            }).collect(),
+        ).unwrap()
+    };
+    let schemas = [
+        schema("l", &["k"]),
+        schema("r", &["k"]),
+        schema("joined", &["k"]),
+    ];
+    for &dialect in DIALECTS {
+        let b = bundle_with_schemas(
+            &[
+                "CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k = r.k",
+                "SELECT k, COUNT(*) AS n FROM joined GROUP BY k HAVING COUNT(*) >= 1",
+            ],
+            dialect,
+            &schemas,
+        );
+        let result = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
+        let WitnessDirection::Feasible(cases) = result.outcome() else {
+            panic!("{dialect}: composed join grouping unresolved: {result:?}");
+        };
+        assert!(cases.iter().any(|case| {
+            case.obligations().iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::JoinPopulation {
+                    pattern: JoinPopulationPattern::DistinctMatched,
+                    output_rows: 2,
+                    ..
+                }
+            )) && case.obligations().iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::OperatorPopulation {
+                    witness: OutcomeWitness::Groups {
+                        groups: 2,
+                        rows_per_group: 1,
+                        ..
+                    }
+                }
+            ))
+        }), "{dialect}: expected jointly proven join and groups");
+    }
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(k INTEGER); CREATE TABLE r(k INTEGER);
+         INSERT INTO l VALUES (0),(1);
+         INSERT INTO r VALUES (0),(1);
+         CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k = r.k;"
+    ).unwrap();
+    let actual: i64 = db.query_row(
+        "SELECT COUNT(*) FROM (SELECT k, COUNT(*) AS n FROM joined GROUP BY k HAVING COUNT(*) >= 1)",
+        [],
+        |row| row.get(0),
+    ).unwrap();
+    assert_eq!(actual, 2);
+
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k = r.k",
+            "SELECT k, COUNT(*) AS n FROM joined GROUP BY k HAVING COUNT(*) >= 2",
+        ],
+        "postgresql", &schemas,
+    );
+    let unproven = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
+    assert!(matches!(unproven.outcome(), WitnessDirection::Residual { .. }));
+}
