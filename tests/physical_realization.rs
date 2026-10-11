@@ -3768,7 +3768,8 @@ fn grouped_count_output_filter_proves_complete_positive_and_rejected_sources() {
     let schema = |name: &str, columns: &[(&str, &str)]| {
         RelationSchema::new(
             name,
-            columns.iter()
+            columns
+                .iter()
                 .map(|(column, ty)| SchemaColumn::from_sql_type(*column, ty, "postgresql").unwrap())
                 .collect(),
         )
@@ -3788,13 +3789,16 @@ fn grouped_count_output_filter_proves_complete_positive_and_rejected_sources() {
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{dialect}: physical aggregate count filter not proven: {plan:?}");
         };
-        assert!(cases.iter().any(|case| case.obligations().iter().any(|o| {
-            matches!(o, WitnessObligation::OperatorPopulation {
-                witness: OutcomeWitness::Groups {
-                    relation, groups: 2, rows_per_group: 2, ..
-                }
-            } if relation == "t")
-        })), "{dialect}: closed-world group values must originate at t");
+        assert!(
+            cases.iter().any(|case| case.obligations().iter().any(|o| {
+                matches!(o, WitnessObligation::OperatorPopulation {
+                    witness: OutcomeWitness::Groups {
+                        relation, groups: 2, rows_per_group: 2, ..
+                    }
+                } if relation == "t")
+            })),
+            "{dialect}: closed-world group values must originate at t"
+        );
     }
     let b = bundle_with_schemas(
         &[producer, "SELECT a FROM grouped WHERE n < 2"],
@@ -3820,10 +3824,14 @@ fn grouped_count_output_filter_proves_complete_positive_and_rejected_sources() {
     )
     .unwrap();
     let pos: i64 = db
-        .query_row("SELECT COUNT(*) FROM grouped WHERE n >= 2", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM grouped WHERE n >= 2", [], |row| {
+            row.get(0)
+        })
         .unwrap();
     let neg: i64 = db
-        .query_row("SELECT COUNT(*) FROM grouped WHERE n < 2", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM grouped WHERE n < 2", [], |row| {
+            row.get(0)
+        })
         .unwrap();
     assert_eq!((pos, neg), (2, 0));
     let b = bundle_with_schemas(
