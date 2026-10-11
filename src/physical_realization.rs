@@ -1620,8 +1620,10 @@ fn physical_join_group_count_plan(
     };
     let mut cases = Vec::new();
     for join_case in join_cases {
-        let population = join_case.obligations().iter().find_map(|obligation| {
-            match obligation {
+        let population = join_case
+            .obligations()
+            .iter()
+            .find_map(|obligation| match obligation {
                 WitnessObligation::JoinPopulation {
                     pattern,
                     left_key,
@@ -1632,8 +1634,7 @@ fn physical_join_group_count_plan(
                     Some(*pattern)
                 }
                 _ => None,
-            }
-        });
+            });
         let proven = matches!(
             population,
             Some(JoinPopulationPattern::DistinctMatched) if rows_per_group == 1
