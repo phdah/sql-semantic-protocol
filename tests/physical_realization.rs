@@ -3892,13 +3892,16 @@ fn empty_physical_subquery_producers_prove_correlated_positive_and_negative_memb
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{keyword} physical emptiness was not proved: {plan:?}");
         };
-        assert!(cases.iter().any(|case| case.obligations().iter().any(|o| matches!(
-            o, WitnessObligation::Membership {
-                case: sql_semantic_protocol::SubqueryMembershipCase::NoCandidates,
-                closed_world: true,
-                ..
-            }
-        ))));
+        assert!(cases
+            .iter()
+            .any(|case| case.obligations().iter().any(|o| matches!(
+                o,
+                WitnessObligation::Membership {
+                    case: sql_semantic_protocol::SubqueryMembershipCase::NoCandidates,
+                    closed_world: true,
+                    ..
+                }
+            ))));
         let db = Connection::open_in_memory().unwrap();
         db.execute_batch(
             "CREATE TABLE orders(id INTEGER);
@@ -3908,11 +3911,11 @@ fn empty_physical_subquery_producers_prove_correlated_positive_and_negative_memb
              CREATE TABLE stage_lines AS SELECT order_id FROM lines;",
         )
         .unwrap();
-        let found: i64 = db.query_row(
-            &format!("SELECT COUNT(*) FROM ({query})"),
-            [],
-            |row| row.get(0),
-        ).unwrap();
+        let found: i64 = db
+            .query_row(&format!("SELECT COUNT(*) FROM ({query})"), [], |row| {
+                row.get(0)
+            })
+            .unwrap();
         assert_eq!(found as u64, count, "{keyword}");
     }
 
