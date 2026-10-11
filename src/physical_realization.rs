@@ -2086,15 +2086,13 @@ fn joint_mixed_operator_and_source_goals(
                 {
                     if boundary.kind() == GroupBoundaryKind::Physical
                         && bounds.maximum() == Some(bounds.minimum())
-                    {
-                        if counts
+                        && counts
                             .insert(boundary.relation().to_string(), bounds.minimum())
                             .is_some()
-                        {
-                            // Repeated row obligations must be reconciled by
-                            // the operator-local proof, not counted twice.
-                            return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
-                        }
+                    {
+                        // Repeated row obligations must be reconciled by
+                        // the operator-local proof, not counted twice.
+                        return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
                     }
                 }
             }
