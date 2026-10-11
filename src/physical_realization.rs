@@ -1335,6 +1335,145 @@ fn scalar_physical_row_truth(
     })
 }
 
+/// Compose a proven complete GROUP BY COUNT(*) population with a later
+/// materialized aggregate-output filter. Every constructed group has exactly
+/// the same contributor count, so a scalar comparison of that COUNT(*) output
+/// is decidable for *all* groups, including deliberate zero-output rejection.
+/// No intermediate grouped relation is independently writable.
+fn physical_group_aggregate_filter_count_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+) -> Option<WitnessDirection> {
+    use crate::outcome_proofs::OutcomeWitness;
+    use crate::protocol::{AggregateArgument, ComparisonOperator, LiteralType, LiteralValue};
+
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let target_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string()))?;
+    let [PhysicalPlanRef::Layer(group_id)] = target_node.inputs() else {
+        return None;
+    };
+    let target_layer = walker.layers.get(target_layer_id).copied()?;
+    let query = query_for(bundle, target_layer)?;
+    let group_layer = walker.layers.get(group_id.as_str()).copied()?;
+    let grouped = query_for(bundle, group_layer)?;
+    if !query.filter_only_row_shape()
+        || !query.joins().is_empty()
+        || query.sources().len() != 1
+        || !query.output().columns().iter().all(|col| col.plain_copy_source().is_some())
+        || !matches!(target_node.write_kind(), None | Some(WriteKind::Definition))
+        || !grouped.group_rows_match_surviving_groups()
+        || grouped.aggregation().is_none()
+    {
+        return None;
+    }
+    let relation = query.sources()[0].name();
+    let producer_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(group_id.clone()))?;
+    if !matches!(producer_node.write_kind(), Some(WriteKind::Definition))
+        || !producer_node.produced_relations().contains(&relation.to_string())
+    {
+        return None;
+    }
+
+    let Predicate::Comparison(comparison) = query.predicates().where_predicate()? else {
+        return None;
+    };
+    let Expression::Column(column) = comparison.left() else {
+        return None;
+    };
+    let Expression::Literal(bound) = comparison.right() else {
+        return None;
+    };
+    let LiteralValue::Number(number) = bound.value() else {
+        return None;
+    };
+    if column.relation() != Some(relation) || bound.literal_type() != LiteralType::Integer {
+        return None;
+    }
+    let threshold = number.parse::<u64>().ok()?;
+    let projected = grouped
+        .output()
+        .columns()
+        .iter()
+        .filter(|item| item.name() == column.name())
+        .collect::<Vec<_>>();
+    let [projected] = projected.as_slice() else {
+        return None;
+    };
+    let Expression::AggregateFunction(aggregate) = projected.expression() else {
+        return None;
+    };
+    if !aggregate.name().eq_ignore_ascii_case("count")
+        || !matches!(aggregate.arguments(), [AggregateArgument::Wildcard])
+    {
+        return None;
+    }
+    let groups = wanted.max(1);
+    let (population, counts, group_case) =
+        physical_operator_population_case(bundle, group_id, groups)?;
+    let OutcomeWitness::Groups {
+        rows_per_group,
+        groups: witnessed_groups,
+        ..
+    } = population else {
+        return None;
+    };
+    if witnessed_groups != groups {
+        return None;
+    }
+    let passes = match comparison.operator() {
+        ComparisonOperator::Eq => rows_per_group == threshold,
+        ComparisonOperator::Neq => rows_per_group != threshold,
+        ComparisonOperator::Lt => rows_per_group < threshold,
+        ComparisonOperator::Lte => rows_per_group <= threshold,
+        ComparisonOperator::Gt => rows_per_group > threshold,
+        ComparisonOperator::Gte => rows_per_group >= threshold,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => return None,
+    };
+    if passes != (wanted > 0) {
+        return None;
+    }
+    let grouped_column = crate::protocol::ColumnRef::new(
+        Some(relation.to_string()),
+        column.name().to_string(),
+    );
+    let typed = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == relation)?;
+    let bounds = physical_integer_evidence(typed, &grouped_column)?;
+    if bounds.minimum > i128::from(rows_per_group)
+        || bounds.maximum < i128::from(rows_per_group)
+        || counts.is_empty()
+    {
+        return None;
+    }
+
+    let boundary = WitnessBoundary::new(
+        relation,
+        GroupBoundaryKind::Intermediate,
+        target_layer_id,
+    )?;
+    let mut obligations = group_case.obligations().to_vec();
+    obligations.push(WitnessObligation::Producer {
+        boundary,
+        physical_sources: counts.keys().cloned().collect(),
+    });
+    obligations.push(WitnessObligation::OutputRows {
+        layer_id: target_layer_id.to_string(),
+        bounds: CountBounds::new(wanted, Some(wanted))?,
+    });
+    let case = WitnessCase::new(obligations, ProofStrength::Sufficient)?;
+    WitnessDirection::feasible(vec![case])
+}
+
 /// One group is emitted per distinct key, so ROW_NUMBER() partitioned by
 /// that key has exactly one row in every partition. This is a complete
 /// source-level group assignment, not an independent sample of ranked rows.
@@ -1990,6 +2129,9 @@ pub fn physical_row_count_plan(
     rows: u64,
 ) -> WitnessDirection {
     let physical = physical_source_plan(bundle, target_layer_id);
+    if let Some(plan) = physical_group_aggregate_filter_count_plan(bundle, target_layer_id, rows) {
+        return plan;
+    }
     if rows == 0 {
         if let WitnessDirection::Feasible(cases) = physical.zero_output() {
             let Some(bounds) = CountBounds::new(0, Some(0)) else {
@@ -3734,6 +3876,11 @@ pub fn physical_joint_row_count_plan(
     }
     if let Some(witness) = joint_operator_population_goals(bundle, &ordered) {
         return witness;
+    }
+    if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(witness) = physical_group_aggregate_filter_count_plan(bundle, layer_id, *rows) {
+            return witness;
+        }
     }
     if let [(layer_id, rows)] = ordered.as_slice() {
         if let Some(witness) = physical_group_rank_count_plan(bundle, layer_id, *rows) {
