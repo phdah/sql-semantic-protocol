@@ -1364,7 +1364,11 @@ fn physical_group_aggregate_filter_count_plan(
     if !query.filter_only_row_shape()
         || !query.joins().is_empty()
         || query.sources().len() != 1
-        || !query.output().columns().iter().all(|col| col.plain_copy_source().is_some())
+        || !query
+            .output()
+            .columns()
+            .iter()
+            .all(|col| col.plain_copy_source().is_some())
         || !matches!(target_node.write_kind(), None | Some(WriteKind::Definition))
         || !grouped.group_rows_match_surviving_groups()
         || grouped.aggregation().is_none()
@@ -1377,7 +1381,9 @@ fn physical_group_aggregate_filter_count_plan(
         .iter()
         .find(|node| node.id() == &PhysicalPlanRef::Layer(group_id.clone()))?;
     if !matches!(producer_node.write_kind(), Some(WriteKind::Definition))
-        || !producer_node.produced_relations().contains(&relation.to_string())
+        || !producer_node
+            .produced_relations()
+            .contains(&relation.to_string())
     {
         return None;
     }
@@ -1422,7 +1428,8 @@ fn physical_group_aggregate_filter_count_plan(
         rows_per_group,
         groups: witnessed_groups,
         ..
-    } = population else {
+    } = population
+    else {
         return None;
     };
     if witnessed_groups != groups {
@@ -1440,10 +1447,8 @@ fn physical_group_aggregate_filter_count_plan(
     if passes != (wanted > 0) {
         return None;
     }
-    let grouped_column = crate::protocol::ColumnRef::new(
-        Some(relation.to_string()),
-        column.name().to_string(),
-    );
+    let grouped_column =
+        crate::protocol::ColumnRef::new(Some(relation.to_string()), column.name().to_string());
     let typed = bundle
         .source_schemas()
         .iter()
@@ -1456,11 +1461,8 @@ fn physical_group_aggregate_filter_count_plan(
         return None;
     }
 
-    let boundary = WitnessBoundary::new(
-        relation,
-        GroupBoundaryKind::Intermediate,
-        target_layer_id,
-    )?;
+    let boundary =
+        WitnessBoundary::new(relation, GroupBoundaryKind::Intermediate, target_layer_id)?;
     let mut obligations = group_case.obligations().to_vec();
     obligations.push(WitnessObligation::Producer {
         boundary,
