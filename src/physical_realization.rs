@@ -1688,6 +1688,74 @@ fn physical_join_group_count_plan(
     WitnessDirection::feasible(cases)
 }
 
+/// Reconcile one certified mixed-operator population with independent
+/// transparent terminal goals that read its *same* physical source rows.
+/// Each mixed case already contains complete closed-world physical counts
+/// and operator requirements. We select only compatible cases; a missing
+/// sufficient example is residual, not a necessary cardinality contradiction.
+fn joint_mixed_operator_and_source_goals(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> Option<WitnessDirection> {
+    if targets.len() < 2 {
+        return None;
+    }
+    let mut mixed = None;
+    let mut other_goals = Vec::new();
+    for &(id, rows) in targets {
+        if let Some(plan) = physical_join_group_count_plan(bundle, id, rows)
+            .or_else(|| physical_group_rank_count_plan(bundle, id, rows))
+        {
+            if mixed.is_some() {
+                return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
+            }
+            mixed = Some(plan);
+        } else {
+            let relation = exact_transparent_source(bundle, id)?;
+            other_goals.push((id, relation, rows));
+        }
+    }
+    let WitnessDirection::Feasible(mixed_cases) = mixed? else {
+        return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
+    };
+    let mut cases = Vec::new();
+    for mixed_case in mixed_cases {
+        let source_counts = mixed_case.obligations().iter().filter_map(|obligation| {
+            match obligation {
+                WitnessObligation::Rows {
+                    boundary,
+                    quantifier: RowQuantifier::ForAll,
+                    bounds,
+                    closed_world: true,
+                    ..
+                } if boundary.kind() == GroupBoundaryKind::Physical
+                    && bounds.maximum() == Some(bounds.minimum()) =>
+                {
+                    Some((boundary.relation().to_string(), bounds.minimum()))
+                }
+                _ => None,
+            }
+        }).collect::<BTreeMap<_, _>>();
+        if other_goals.iter().any(|(_, source, rows)| {
+            source_counts.get(source) != Some(rows)
+        }) {
+            continue;
+        }
+        let mut obligations = mixed_case.obligations().to_vec();
+        for &(id, _, rows) in &other_goals {
+            obligations.push(WitnessObligation::OutputRows {
+                layer_id: id.to_string(),
+                bounds: CountBounds::new(rows, Some(rows))?,
+            });
+        }
+        if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+            cases.push(case);
+        }
+    }
+    Some(WitnessDirection::feasible(cases)
+        .unwrap_or_else(|| residual(PhysicalProofGap::MultipleWitnesses)))
+}
+
 /// A certified operator population controls the *complete* physical leaf
 /// relation, not an arbitrary matching row. The local typed witness owns SQL
 /// grouping, ranking, bag multiplicity and NULL equality; only the graph
@@ -3651,6 +3719,9 @@ pub fn physical_joint_row_count_plan(
     ordered.dedup();
     if necessarily_missing_positive_join_input(bundle, &ordered) {
         return WitnessDirection::Impossible;
+    }
+    if let Some(witness) = joint_mixed_operator_and_source_goals(bundle, &ordered) {
+        return witness;
     }
     if let Some(witness) = joint_operator_population_goals(bundle, &ordered) {
         return witness;
