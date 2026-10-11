@@ -4183,7 +4183,11 @@ fn independent_join_group_dags_compose_with_transparent_terminal_counts() {
         "SELECT k FROM l1",
     ];
     let b = bundle_with_schemas(&statements, "duckdb", &schemas);
-    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let ids = b
+        .layers()
+        .iter()
+        .map(|layer| layer.id())
+        .collect::<Vec<_>>();
     let plan = physical_joint_source_plan(&b, &[(ids[1], 1), (ids[3], 1), (ids[4], 2)]);
     let WitnessDirection::Feasible(cases) = plan.outcome() else {
         panic!("disjoint mixed operator DAGs should compose: {plan:?}");
@@ -4238,7 +4242,11 @@ fn independent_join_group_dags_compose_with_transparent_terminal_counts() {
         statements[4],
     ];
     let shared = bundle_with_schemas(&overlapping, "duckdb", &schemas);
-    let ids = shared.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let ids = shared
+        .layers()
+        .iter()
+        .map(|layer| layer.id())
+        .collect::<Vec<_>>();
     let unresolved = physical_joint_source_plan(&shared, &[(ids[1], 1), (ids[3], 1)]);
     assert!(matches!(
         unresolved.outcome(),
