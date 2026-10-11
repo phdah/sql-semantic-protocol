@@ -75,3 +75,26 @@ join/group/window/set mixed branches, different-predicate and correlated
 shared-source plans, aggregate-derived filters, grouped sets, correlated
 subqueries, negative/rejected mixed outcomes, further NULL/duplicate
 counterexamples and full cross-dialect sign-off. Acceptance remains open.
+
+### Additional implementation and CI verification
+- A common matched equijoin bag now realizes one GROUP BY/HAVING group
+  with multiple physical contributors, retaining typed join and local group
+  obligations on the exact producer boundary.
+- Joint mixed plans reuse independently closed physical source populations
+  for transparent terminal counts when all physical counts agree, otherwise
+  emit typed residual.
+- A grouped producer's exact COUNT(*) output supports simple downstream
+  row predicates, with nonempty closed-world negative/rejected outcomes
+  and DuckDB positive/negative differential oracles.
+- Exact correlated/uncorrelated `EXISTS`, `NOT EXISTS`, `IN` and
+  `NOT IN` NoCandidates cases can be physically realized through
+  row-preserving producer chains with an empty inner source. NULL-sensitive
+  behavior is exercised with actual DuckDB inputs.
+- The full CI matrix passed at commit `a195e29ce83ea007c847c01dd732f848beaa79a4`
+  (format, lint, tests, docs, no-default-features, and dbt Core E2E).
+
+**Outstanding:** General correlated nonempty membership, arbitrary
+mixed grouping/window/set DAGs, computed aggregate inversions, shared
+source set cases, mutually constraining different operator populations,
+complete impossible-versus-residual law proofs and acceptance-wide
+cross-dialect sign-off. TASK-95's five criteria remain unchecked.
