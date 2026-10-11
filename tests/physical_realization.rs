@@ -3324,7 +3324,7 @@ fn set_tuple_mapping_preserves_null_frequencies_and_rejects_shared_sources() {
 
 #[test]
 fn joint_grouped_and_transparent_outputs_share_one_complete_physical_population() {
-    let mut b = bundle(
+    let b = bundle(
         &[
             "CREATE TABLE stage AS SELECT a AS category, b FROM t",
             "SELECT category, COUNT(*) AS n FROM stage GROUP BY category HAVING COUNT(*) >= 2",
