@@ -3958,23 +3958,23 @@ fn joint_empty_subquery_and_outer_source_reads_share_single_closed_population() 
         "postgresql",
         &schemas,
     );
-    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
-    let complete = physical_joint_source_plan(
-        &b,
-        &[(ids[2], 3), (ids[3], 3), (ids[4], 0)],
-    );
+    let ids = b
+        .layers()
+        .iter()
+        .map(|layer| layer.id())
+        .collect::<Vec<_>>();
+    let complete = physical_joint_source_plan(&b, &[(ids[2], 3), (ids[3], 3), (ids[4], 0)]);
     let WitnessDirection::Feasible(cases) = complete.outcome() else {
         panic!("joint closed-world membership should reuse outer rows: {complete:?}");
     };
     assert!(cases.iter().any(|case| {
-        case.obligations().iter().filter(|o| matches!(
-            o, WitnessObligation::OutputRows { .. }
-        )).count() >= 3
+        case.obligations()
+            .iter()
+            .filter(|o| matches!(o, WitnessObligation::OutputRows { .. }))
+            .count()
+            >= 3
     }));
-    let incompatible = physical_joint_source_plan(
-        &b,
-        &[(ids[2], 3), (ids[3], 4), (ids[4], 0)],
-    );
+    let incompatible = physical_joint_source_plan(&b, &[(ids[2], 3), (ids[3], 4), (ids[4], 0)]);
     assert!(matches!(
         incompatible.outcome(),
         WitnessDirection::Residual { .. }
@@ -3986,7 +3986,8 @@ fn grouped_count_rejection_and_transparent_source_are_jointly_closed() {
     let schema = |relation: &str, columns: &[(&str, &str)]| {
         RelationSchema::new(
             relation,
-            columns.iter()
+            columns
+                .iter()
                 .map(|(name, ty)| SchemaColumn::from_sql_type(*name, ty, "postgresql").unwrap())
                 .collect(),
         )
@@ -4005,11 +4006,21 @@ fn grouped_count_rejection_and_transparent_source_are_jointly_closed() {
         "postgresql",
         &schemas,
     );
-    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let ids = b
+        .layers()
+        .iter()
+        .map(|layer| layer.id())
+        .collect::<Vec<_>>();
     let plan = physical_joint_source_plan(&b, &[(ids[1], 0), (ids[2], 2)]);
-    assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)), "{plan:?}");
+    assert!(
+        matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+        "{plan:?}"
+    );
     let mismatch = physical_joint_source_plan(&b, &[(ids[1], 0), (ids[2], 3)]);
-    assert!(matches!(mismatch.outcome(), WitnessDirection::Residual { .. }));
+    assert!(matches!(
+        mismatch.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
 }
 
 #[test]
@@ -4041,10 +4052,8 @@ fn identical_set_producer_branches_share_one_complete_physical_population() {
             let queries = statements.iter().map(String::as_str).collect::<Vec<_>>();
             let mut b = bundle_with_schemas(&queries, dialect, &schemas);
             let target = b.layers()[2].id().to_string();
-            b.set_outcome_goals(&[
-                OutcomeGoal::new(&target, Some(2), None, vec![]).unwrap(),
-            ])
-            .unwrap();
+            b.set_outcome_goals(&[OutcomeGoal::new(&target, Some(2), None, vec![]).unwrap()])
+                .unwrap();
             let local = b.outcome_goals()[0].witness();
             let Some(OutcomeWitness::SetTuples { case, .. }) = local else {
                 panic!("{dialect} {operator}: missing shared-source set proof: {local:?}");
@@ -4061,17 +4070,24 @@ fn identical_set_producer_branches_share_one_complete_physical_population() {
                 panic!("{dialect} {operator}: expected physical case: {plan:?}");
             };
             assert!(cases.iter().any(|case| {
-                case.obligations().iter().filter(|o| matches!(
-                    o,
-                    WitnessObligation::Rows { boundary, closed_world: true, .. }
-                        if boundary.relation() == "t"
-                )).count() == 1
+                case.obligations()
+                    .iter()
+                    .filter(|o| {
+                        matches!(
+                            o,
+                            WitnessObligation::Rows { boundary, closed_world: true, .. }
+                                if boundary.relation() == "t"
+                        )
+                    })
+                    .count()
+                    == 1
             }));
             // One source is populated once, and both materializations read
             // those same rows. Emitting independent branch populations here
             // would silently double the real input.
             let db = Connection::open_in_memory().unwrap();
-            db.execute_batch("CREATE TABLE t(a INTEGER, b INTEGER);").unwrap();
+            db.execute_batch("CREATE TABLE t(a INTEGER, b INTEGER);")
+                .unwrap();
             for key in 0..2 {
                 for _ in 0..obligations[0].matching_tuple_count() {
                     db.execute_batch(&format!("INSERT INTO t VALUES ({key}, 99);"))
@@ -4116,11 +4132,7 @@ fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
         schema("left_stage", &["id"]),
         schema("right_stage", &["id"]),
     ];
-    for (right_projection, operator) in [
-        ("b", "INTERSECT"),
-        ("a", "UNION ALL"),
-        ("b", "UNION"),
-    ] {
+    for (right_projection, operator) in [("b", "INTERSECT"), ("a", "UNION ALL"), ("b", "UNION")] {
         let statements = [
             "CREATE TABLE left_stage AS SELECT a AS id FROM t".to_string(),
             format!("CREATE TABLE right_stage AS SELECT {right_projection} AS id FROM t"),
@@ -4129,10 +4141,8 @@ fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
         let queries = statements.iter().map(String::as_str).collect::<Vec<_>>();
         let mut b = bundle_with_schemas(&queries, "duckdb", &schemas);
         let target = b.layers()[2].id().to_string();
-        b.set_outcome_goals(&[
-            OutcomeGoal::new(&target, Some(2), None, vec![]).unwrap(),
-        ])
-        .unwrap();
+        b.set_outcome_goals(&[OutcomeGoal::new(&target, Some(2), None, vec![]).unwrap()])
+            .unwrap();
         assert_eq!(
             b.outcome_goals()[0].status(),
             OutcomeGoalStatus::Residual,
