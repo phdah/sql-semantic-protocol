@@ -3613,17 +3613,16 @@ fn grouped_materialization_feeds_one_rank_per_complete_partition() {
     let WitnessDirection::Feasible(cases) = plan.outcome() else {
         panic!("rank must compose from complete grouped physical population: {plan:?}");
     };
-    assert!(cases.iter().any(|case| case
-        .obligations()
-        .iter()
-        .any(|o| matches!(o, WitnessObligation::OperatorPopulation {
+    assert!(cases.iter().any(|case| case.obligations().iter().any(
+        |o| matches!(o, WitnessObligation::OperatorPopulation {
             witness: OutcomeWitness::Groups {
                 relation,
                 groups: 2,
                 rows_per_group: 2,
                 ..
             }
-        } if relation == "t"))));
+        } if relation == "t")
+    )));
     assert!(cases.iter().any(|case| case
         .obligations()
         .iter()
@@ -3635,14 +3634,16 @@ fn grouped_materialization_feeds_one_rank_per_complete_partition() {
          CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2;",
     )
     .unwrap();
-    let actual: i64 = db.query_row(
-        "SELECT COUNT(*) FROM (
+    let actual: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (
            SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY a ASC NULLS LAST) AS rn
            FROM grouped QUALIFY rn = 1
          )",
-        [],
-        |row| row.get(0),
-    ).unwrap();
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
     assert_eq!(actual, 2);
 
     // Switching to a rank requiring a predecessor invalidates the proof.
@@ -3655,5 +3656,8 @@ fn grouped_materialization_feeds_one_rank_per_complete_partition() {
         &schemas,
     );
     let residual = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
-    assert!(matches!(residual.outcome(), WitnessDirection::Residual { .. }));
+    assert!(matches!(
+        residual.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
 }
