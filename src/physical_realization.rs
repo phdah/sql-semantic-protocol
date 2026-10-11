@@ -1587,7 +1587,7 @@ fn physical_join_group_count_plan(
         relation,
         key,
         groups,
-        rows_per_group: 1,
+        rows_per_group,
     } = crate::outcome_proofs::construct_mapped_group(
         bundle,
         group_query,
@@ -1598,37 +1598,86 @@ fn physical_join_group_count_plan(
     else {
         return None;
     };
+    // Every distinct matched key creates exactly one contributor. A
+    // common matched key creates one group with the complete join bag.
+    let join_rows = rows.checked_mul(rows_per_group)?;
     let WitnessDirection::Feasible(join_cases) =
-        physical_join_population_count_plan(bundle, join_id, rows)?
+        physical_join_population_count_plan(bundle, join_id, join_rows)?
     else {
         return None;
     };
+    let local = group_query.group_witness()?;
+    let group_tests = match local.qualifying() {
+        crate::group_witness::GroupWitnessDirection::Exact(cases) => cases
+            .iter()
+            .find(|case| {
+                case.min_rows() <= rows_per_group
+                    && case.max_rows().is_none_or(|max| rows_per_group <= max)
+            })?
+            .tests()
+            .to_vec(),
+        crate::group_witness::GroupWitnessDirection::Impossible
+        | crate::group_witness::GroupWitnessDirection::Residual { .. } => return None,
+    };
     let mut cases = Vec::new();
     for join_case in join_cases {
-        let matching = join_case.obligations().iter().any(|obligation| {
-            matches!(
-                obligation,
+        let population = join_case.obligations().iter().find_map(|obligation| {
+            match obligation {
                 WitnessObligation::JoinPopulation {
-                    pattern: JoinPopulationPattern::DistinctMatched,
+                    pattern,
                     left_key,
                     right_key,
                     output_rows,
                     ..
-                } if *output_rows == rows && (&key == left_key || &key == right_key)
-            )
+                } if *output_rows == join_rows && (&key == left_key || &key == right_key) => {
+                    Some(*pattern)
+                }
+                _ => None,
+            }
         });
-        if !matching {
+        let proven = matches!(
+            population,
+            Some(JoinPopulationPattern::DistinctMatched) if rows_per_group == 1
+        ) || matches!(
+            population,
+            Some(JoinPopulationPattern::CommonMatched) if groups == 1
+        );
+        if !proven {
             continue;
         }
+        let group_boundary = WitnessBoundary::new(
+            source.name(),
+            GroupBoundaryKind::Intermediate,
+            target_layer_id,
+        )?;
+        let bounds = CountBounds::new(rows_per_group, Some(rows_per_group))?;
         let mut obligations = join_case.obligations().to_vec();
-        obligations.push(WitnessObligation::OperatorPopulation {
-            witness: OutcomeWitness::Groups {
-                relation: relation.clone(),
-                key: key.clone(),
-                groups,
-                rows_per_group: 1,
-            },
+        obligations.push(WitnessObligation::Producer {
+            boundary: group_boundary.clone(),
+            physical_sources: walker.sources.iter().cloned().collect(),
         });
+        obligations.push(WitnessObligation::Group {
+            boundary: group_boundary,
+            key: vec![group_key.clone()],
+            aggregate: crate::group_witness::GroupAggregate::CountRows,
+            distinct: false,
+            argument: None,
+            rows: bounds,
+            non_null: bounds,
+            tests: group_tests.clone(),
+        });
+        if rows_per_group == 1 {
+            // For a distinct bijection, the grouping key's controlled leaf
+            // really does have one physical row per output group.
+            obligations.push(WitnessObligation::OperatorPopulation {
+                witness: OutcomeWitness::Groups {
+                    relation: relation.clone(),
+                    key: key.clone(),
+                    groups,
+                    rows_per_group,
+                },
+            });
+        }
         obligations.push(WitnessObligation::OutputRows {
             layer_id: target_layer_id.to_string(),
             bounds: CountBounds::new(rows, Some(rows))?,
