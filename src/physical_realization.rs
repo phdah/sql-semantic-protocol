@@ -1724,8 +1724,10 @@ fn joint_mixed_operator_and_source_goals(
     };
     let mut cases = Vec::new();
     for mixed_case in mixed_cases {
-        let source_counts = mixed_case.obligations().iter().filter_map(|obligation| {
-            match obligation {
+        let source_counts = mixed_case
+            .obligations()
+            .iter()
+            .filter_map(|obligation| match obligation {
                 WitnessObligation::Rows {
                     boundary,
                     quantifier: RowQuantifier::ForAll,
@@ -1738,11 +1740,12 @@ fn joint_mixed_operator_and_source_goals(
                     Some((boundary.relation().to_string(), bounds.minimum()))
                 }
                 _ => None,
-            }
-        }).collect::<BTreeMap<_, _>>();
-        if other_goals.iter().any(|(_, source, rows)| {
-            source_counts.get(source) != Some(rows)
-        }) {
+            })
+            .collect::<BTreeMap<_, _>>();
+        if other_goals
+            .iter()
+            .any(|(_, source, rows)| source_counts.get(source) != Some(rows))
+        {
             continue;
         }
         let mut obligations = mixed_case.obligations().to_vec();
@@ -1756,8 +1759,10 @@ fn joint_mixed_operator_and_source_goals(
             cases.push(case);
         }
     }
-    Some(WitnessDirection::feasible(cases)
-        .unwrap_or_else(|| residual(PhysicalProofGap::MultipleWitnesses)))
+    Some(
+        WitnessDirection::feasible(cases)
+            .unwrap_or_else(|| residual(PhysicalProofGap::MultipleWitnesses)),
+    )
 }
 
 /// A certified operator population controls the *complete* physical leaf
