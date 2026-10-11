@@ -1764,10 +1764,9 @@ fn physical_group_rank_count_plan(
         physical_operator_population_case(bundle, group_id, rows)
     {
         let OutcomeWitness::Groups {
-            relation,
-            groups,
-            ..
-        } = population else {
+            relation, groups, ..
+        } = population
+        else {
             return None;
         };
         if groups != rows || !counts.contains_key(&relation) {
