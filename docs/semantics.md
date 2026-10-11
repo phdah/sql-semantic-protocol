@@ -717,3 +717,7 @@ count and entire-relation closure. A differing mapped column or an
 incompatible bag-frequency law such as the currently unsupported shared-source
 `UNION ALL` positive case remains residual. No independent rows may be
 fabricated for copied branches.
+
+### Independent mixed physical operator DAGs
+
+Complete mixed join/group, group/rank, grouped COUNT filter and empty-inner membership populations can be composed across separate terminal targets when their sets of physical source relations are disjoint. Each local case must prove an exact entire-relation closed source count; the joint case carries both operator laws and any transparent source terminal counts. A repeated physical source across different mixed cases still requires a correlated proof and remains residual, even if the sampled row counts happen to agree.
