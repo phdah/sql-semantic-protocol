@@ -3787,8 +3787,14 @@ fn grouped_count_output_filter_proves_complete_positive_and_rejected_sources() {
         let id = b.layers()[1].id();
         let plan = physical_joint_source_plan(&b, &[(id, 2)]);
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
-            let query = b.inputs().iter().flat_map(|input| input.statements()).nth(1);
-            panic!("{dialect}: physical aggregate count filter not proven: {plan:?}; query: {query:?}");
+            let query = b
+                .inputs()
+                .iter()
+                .flat_map(|input| input.statements())
+                .nth(1);
+            panic!(
+                "{dialect}: physical aggregate count filter not proven: {plan:?}; query: {query:?}"
+            );
         };
         assert!(
             cases.iter().any(|case| case.obligations().iter().any(|o| {
