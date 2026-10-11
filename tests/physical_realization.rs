@@ -3342,17 +3342,19 @@ fn joint_grouped_and_transparent_outputs_share_one_complete_physical_population(
     };
     assert_eq!(plan.sources(), &["t".to_string()]);
     assert!(cases.iter().any(|case| {
-        case.obligations().iter().any(|o| matches!(
-            o,
-            WitnessObligation::OperatorPopulation {
-                witness: OutcomeWitness::Groups {
-                    relation,
-                    groups: 2,
-                    rows_per_group: 2,
-                    ..
-                }
-            } if relation == "t"
-        ))
+        case.obligations().iter().any(|o| {
+            matches!(
+                o,
+                WitnessObligation::OperatorPopulation {
+                    witness: OutcomeWitness::Groups {
+                        relation,
+                        groups: 2,
+                        rows_per_group: 2,
+                        ..
+                    }
+                } if relation == "t"
+            )
+        })
     }));
     assert_eq!(
         physical_joint_source_plan(&b, &[(&source, 4), (&grouped, 2)]).outcome(),
@@ -3383,7 +3385,10 @@ fn joint_grouped_and_transparent_outputs_share_one_complete_physical_population(
     // A sufficient example with a different count cannot be declared
     // contradictory: a larger source may have additional rejected groups.
     let conflicting = physical_joint_source_plan(&b, &[(&grouped, 2), (&source, 5)]);
-    assert!(matches!(conflicting.outcome(), WitnessDirection::Residual { .. }));
+    assert!(matches!(
+        conflicting.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
 }
 
 #[test]
@@ -3417,12 +3422,16 @@ fn independent_group_rank_and_set_goals_compose_without_reusing_sources() {
     let WitnessDirection::Feasible(cases) = plan.outcome() else {
         panic!("disjoint operator sources should compose: {plan:?}");
     };
-    assert!(cases.iter().any(|case|
-        case.obligations().iter().filter(|o| matches!(
-            o, WitnessObligation::OperatorPopulation { .. }
-        )).count() == 2
-    ));
-    assert_eq!(plan.sources(), &["l".to_string(), "r".to_string(), "t".to_string()]);
+    assert!(cases.iter().any(|case| case
+        .obligations()
+        .iter()
+        .filter(|o| matches!(o, WitnessObligation::OperatorPopulation { .. }))
+        .count()
+        == 2));
+    assert_eq!(
+        plan.sources(),
+        &["l".to_string(), "r".to_string(), "t".to_string()]
+    );
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -3436,11 +3445,13 @@ fn independent_group_rank_and_set_goals_compose_without_reusing_sources() {
          CREATE TABLE stage_t AS SELECT a FROM t;",
     )
     .unwrap();
-    let set_count: i64 = db.query_row(
-        "SELECT COUNT(*) FROM (SELECT id FROM stage_l UNION ALL SELECT id FROM stage_r)",
-        [],
-        |row| row.get(0),
-    ).unwrap();
+    let set_count: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT id FROM stage_l UNION ALL SELECT id FROM stage_r)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
     let group_count: i64 = db.query_row(
         "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM stage_t GROUP BY a HAVING COUNT(*) >= 2)",
         [],
@@ -3462,17 +3473,16 @@ fn shared_operator_source_requires_joint_key_and_row_proof() {
     let grouped = b.layers()[1].id();
     let ranked = b.layers()[2].id();
     let plan = physical_joint_source_plan(&b, &[(grouped, 2), (ranked, 2)]);
-    assert!(matches!(
-        plan.outcome(),
-        WitnessDirection::Residual { .. }
-    ));
+    assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
     b.set_outcome_goals(&[
         OutcomeGoal::new(grouped, Some(2), None, vec![]).unwrap(),
         OutcomeGoal::new(ranked, Some(2), None, vec![]).unwrap(),
-    ]).unwrap();
+    ])
+    .unwrap();
     // Each terminal is independently realizable, but that does not license
     // combining their distinct physical row assignments without a proof.
-    assert!(b.outcome_goals().iter().all(|goal|
-        goal.status() == OutcomeGoalStatus::Feasible
-    ));
+    assert!(b
+        .outcome_goals()
+        .iter()
+        .all(|goal| goal.status() == OutcomeGoalStatus::Feasible));
 }
