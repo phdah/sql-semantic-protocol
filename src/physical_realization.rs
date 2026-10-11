@@ -1379,7 +1379,9 @@ fn physical_group_rank_count_plan(
         .iter()
         .find(|node| node.id() == &PhysicalPlanRef::Layer(group_id.clone()))?;
     if !matches!(group_node.write_kind(), Some(WriteKind::Definition))
-        || !group_node.produced_relations().contains(&group_relation.to_string())
+        || !group_node
+            .produced_relations()
+            .contains(&group_relation.to_string())
     {
         return None;
     }
@@ -1408,7 +1410,8 @@ fn physical_group_rank_count_plan(
         key,
         groups,
         ..
-    } = &population else {
+    } = &population
+    else {
         return None;
     };
     if *groups != rows || !counts.contains_key(relation) {
