@@ -3661,3 +3661,54 @@ fn grouped_materialization_feeds_one_rank_per_complete_partition() {
         WitnessDirection::Residual { .. }
     ));
 }
+
+#[test]
+fn common_matched_join_rows_make_one_multi_contributor_having_group() {
+    let schema = |name: &str| {
+        RelationSchema::new(
+            name,
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [schema("l"), schema("r"), schema("joined")];
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE joined AS SELECT l.k AS k FROM l INNER JOIN r ON l.k = r.k",
+            "SELECT k, COUNT(*) AS n FROM joined GROUP BY k HAVING COUNT(*) >= 2",
+        ],
+        "postgresql",
+        &schemas,
+    );
+    let plan = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 1)]);
+    let WitnessDirection::Feasible(cases) = plan.outcome() else {
+        panic!("nontrivial join contribution should be constructible: {plan:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().any(|o| matches!(
+            o,
+            WitnessObligation::JoinPopulation {
+                pattern: JoinPopulationPattern::CommonMatched,
+                output_rows: 2,
+                ..
+            }
+        )) && case.obligations().iter().any(|o| matches!(
+            o, WitnessObligation::Group { .. }
+        ))
+    }));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(k INTEGER); CREATE TABLE r(k INTEGER);
+         INSERT INTO l VALUES (0),(0);
+         INSERT INTO r VALUES (0);
+         CREATE TABLE joined AS SELECT l.k AS k FROM l INNER JOIN r ON l.k = r.k;",
+    )
+    .unwrap();
+    let count: i64 = db.query_row(
+        "SELECT COUNT(*) FROM (SELECT k, COUNT(*) AS n FROM joined GROUP BY k HAVING COUNT(*) >= 2)",
+        [],
+        |row| row.get(0),
+    ).unwrap();
+    assert_eq!(count, 1);
+}
