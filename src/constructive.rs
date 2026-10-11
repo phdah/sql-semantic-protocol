@@ -495,8 +495,11 @@ fn invalid_obligation(obligation: &WitnessObligation) -> bool {
         }
         WitnessObligation::OperatorPopulation { witness } => !matches!(
             witness,
-            crate::outcome_proofs::OutcomeWitness::Groups { groups: 1.., rows_per_group: 1.., .. }
-                | crate::outcome_proofs::OutcomeWitness::Ranked { rows: 1.., .. }
+            crate::outcome_proofs::OutcomeWitness::Groups {
+                groups: 1..,
+                rows_per_group: 1..,
+                ..
+            } | crate::outcome_proofs::OutcomeWitness::Ranked { rows: 1.., .. }
                 | crate::outcome_proofs::OutcomeWitness::SetTuples { tuples: 1.., .. }
         ),
         WitnessObligation::Group { rows, non_null, .. } => {
