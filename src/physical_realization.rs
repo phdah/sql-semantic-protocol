@@ -1335,6 +1335,151 @@ fn scalar_physical_row_truth(
     })
 }
 
+/// Lift a fully matched, one-to-one physical equijoin into an ordinary
+/// grouped output. Every joined key is distinct, so grouping on that exact
+/// physical key produces one contributor per group. HAVING may accept this
+/// shape only when its local exact group witness admits a single contributor.
+/// No other join population or grouping expression is silently generalized.
+fn physical_join_group_count_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    rows: u64,
+) -> Option<WitnessDirection> {
+    use crate::outcome_proofs::OutcomeWitness;
+    if rows == 0 {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let group_node = walker.nodes.iter().find(|node| {
+        node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string())
+    })?;
+    let [PhysicalPlanRef::Layer(join_id)] = group_node.inputs() else {
+        return None;
+    };
+    let group_layer = walker.layers.get(target_layer_id).copied()?;
+    let join_layer = walker.layers.get(join_id.as_str()).copied()?;
+    let group_query = query_for(bundle, group_layer)?;
+    let join_query = query_for(bundle, join_layer)?;
+    if !matches!(group_node.write_kind(), None | Some(WriteKind::Definition))
+        || !group_query.group_rows_match_surviving_groups()
+        || group_query.sources().len() != 1
+        || !group_query.joins().is_empty()
+        || group_query.set_operation().is_some()
+        || group_query.window_witness().is_some()
+        || group_query.predicates().where_predicate().is_some()
+        || !group_query.subquery_witnesses().is_empty()
+        || join_query.joins().len() != 1
+    {
+        return None;
+    }
+    let [source] = group_query.sources() else {
+        return None;
+    };
+    // A grouped consumer must read the join's actual named materialization,
+    // not a detached query output or another alias with the same column.
+    if !walker.nodes.iter().find(|node| {
+        node.id() == &PhysicalPlanRef::Layer(join_id.clone())
+    })?.produced_relations().contains(&source.name().to_string()) {
+        return None;
+    }
+    let group_key = match group_query.aggregation()?.group_by()? {
+        GroupBy::Expressions(keys) if keys.len() == 1 => match &keys[0] {
+            GroupingExpression::Expression(Expression::Column(key)) => key,
+            _ => return None,
+        },
+        _ => return None,
+    };
+    // Named join output is a plain identity copy of one join input. Source
+    // datatypes must match across the join output and the physical endpoint.
+    let projected = join_query.output().columns().iter().filter(|col| {
+        col.name() == group_key.name()
+    }).collect::<Vec<_>>();
+    let [projected] = projected.as_slice() else {
+        return None;
+    };
+    let origin = projected.plain_copy_source()?;
+    let original = crate::protocol::ColumnRef::new(
+        Some(origin.relation().to_string()),
+        origin.column().to_string(),
+    );
+    let physical_key = resolve_filter_column_with_evidence(
+        bundle, &walker, join_id, &original, 0, true,
+    )?;
+    let grouped_type = bundle.source_schemas().iter()
+        .find(|schema| schema.relation() == source.name())?
+        .columns().iter().find(|column| column.name() == group_key.name())?
+        .data_type();
+    let physical_type = bundle.source_schemas().iter()
+        .find(|schema| schema.relation() == physical_key.relation()?)?
+        .columns().iter().find(|column| column.name() == physical_key.name())?
+        .data_type();
+    if grouped_type != physical_type {
+        return None;
+    }
+
+    let group_goal = crate::outcome_goals::OutcomeGoal::new(
+        target_layer_id,
+        Some(rows),
+        Some(rows),
+        Vec::new(),
+    ).ok()?;
+    let mapper = |key: &crate::protocol::ColumnRef| {
+        (key.relation() == Some(source.name()) && key.name() == group_key.name())
+            .then(|| physical_key.clone())
+    };
+    let OutcomeWitness::Groups {
+        relation,
+        key,
+        groups,
+        rows_per_group: 1,
+    } = crate::outcome_proofs::construct_mapped_group(
+        bundle, group_query, &group_goal, rows, &mapper,
+    )? else {
+        return None;
+    };
+    let WitnessDirection::Feasible(join_cases) =
+        physical_join_population_count_plan(bundle, join_id, rows)?
+    else {
+        return None;
+    };
+    let mut cases = Vec::new();
+    for join_case in join_cases {
+        let matching = join_case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::JoinPopulation {
+                    pattern: JoinPopulationPattern::DistinctMatched,
+                    left_key,
+                    right_key,
+                    output_rows,
+                    ..
+                } if *output_rows == rows && (&key == left_key || &key == right_key)
+            )
+        });
+        if !matching {
+            continue;
+        }
+        let mut obligations = join_case.obligations().to_vec();
+        obligations.push(WitnessObligation::OperatorPopulation {
+            witness: OutcomeWitness::Groups {
+                relation: relation.clone(),
+                key: key.clone(),
+                groups,
+                rows_per_group: 1,
+            },
+        });
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id: target_layer_id.to_string(),
+            bounds: CountBounds::new(rows, Some(rows))?,
+        });
+        if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+            cases.push(case);
+        }
+    }
+    WitnessDirection::feasible(cases)
+}
+
 /// A certified operator population controls the *complete* physical leaf
 /// relation, not an arbitrary matching row. The local typed witness owns SQL
 /// grouping, ranking, bag multiplicity and NULL equality; only the graph
@@ -1612,6 +1757,9 @@ pub fn physical_row_count_plan(
     // hide multi-parent or repeated-source join proofs.
     if let Some(join_plan) = physical_join_population_count_plan(bundle, target_layer_id, rows) {
         return join_plan;
+    }
+    if let Some(plan) = physical_join_group_count_plan(bundle, target_layer_id, rows) {
+        return plan;
     }
     if let Some((_, _, case)) = physical_operator_population_case(bundle, target_layer_id, rows) {
         return WitnessDirection::feasible(vec![case])
@@ -3295,6 +3443,11 @@ pub fn physical_joint_row_count_plan(
     }
     if let Some(witness) = joint_operator_population_goals(bundle, &ordered) {
         return witness;
+    }
+    if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(witness) = physical_join_group_count_plan(bundle, layer_id, *rows) {
+            return witness;
+        }
     }
     if let Some(witness) = jointly_realized_join_goals(bundle, &ordered) {
         return witness;
