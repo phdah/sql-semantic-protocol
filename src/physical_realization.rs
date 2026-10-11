@@ -1348,10 +1348,14 @@ fn operator_population_witness(
     if rows == 0 {
         return None;
     }
-    let target = bundle.layers().iter().find(|layer| layer.id() == target_layer_id)?;
+    let target = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.id() == target_layer_id)?;
     let query = query_for(bundle, target)?;
     let goal =
-        crate::outcome_goals::OutcomeGoal::new(target_layer_id, Some(rows), None, Vec::new()).ok()?;
+        crate::outcome_goals::OutcomeGoal::new(target_layer_id, Some(rows), None, Vec::new())
+            .ok()?;
     let result = crate::outcome_proofs::construct(bundle, target, query, &goal)
         .or_else(|| physical_operator_count_witness(bundle, target_layer_id, rows))
         .or_else(|| {
@@ -1398,9 +1402,9 @@ fn operator_population_counts(
             let copies = if values.is_empty() {
                 *tuples
             } else if *scale_by_value_rows {
-                values.iter().try_fold(0_u64, |total, entry| {
-                    total.checked_add(entry.rows())
-                })?
+                values
+                    .iter()
+                    .try_fold(0_u64, |total, entry| total.checked_add(entry.rows()))?
             } else {
                 u64::try_from(values.iter().filter(|entry| entry.rows() > 0).count()).ok()?
             };
@@ -1435,7 +1439,11 @@ fn physical_operator_population_case(
     bundle: &AnalysisBundle,
     layer_id: &str,
     rows: u64,
-) -> Option<(crate::outcome_proofs::OutcomeWitness, BTreeMap<String, u64>, WitnessCase)> {
+) -> Option<(
+    crate::outcome_proofs::OutcomeWitness,
+    BTreeMap<String, u64>,
+    WitnessCase,
+)> {
     let witness = operator_population_witness(bundle, layer_id, rows)?;
     let counts = operator_population_counts(&witness, rows)?;
     let mut walker = Walker::new(bundle);
@@ -1447,11 +1455,7 @@ fn physical_operator_population_case(
         witness: witness.clone(),
     }];
     for (relation, count) in &counts {
-        let boundary = WitnessBoundary::new(
-            relation,
-            GroupBoundaryKind::Physical,
-            layer_id,
-        )?;
+        let boundary = WitnessBoundary::new(relation, GroupBoundaryKind::Physical, layer_id)?;
         obligations.push(WitnessObligation::Rows {
             boundary: boundary.clone(),
             quantifier: RowQuantifier::ForAll,
@@ -1481,9 +1485,10 @@ fn joint_operator_population_goals(
     bundle: &AnalysisBundle,
     targets: &[(&str, u64)],
 ) -> Option<WitnessDirection> {
-    if !targets.iter().any(|(id, rows)| {
-        operator_population_witness(bundle, id, *rows).is_some()
-    }) {
+    if !targets
+        .iter()
+        .any(|(id, rows)| operator_population_witness(bundle, id, *rows).is_some())
+    {
         return None;
     }
     let mut populations = BTreeMap::<String, crate::outcome_proofs::OutcomeWitness>::new();
@@ -1608,9 +1613,7 @@ pub fn physical_row_count_plan(
     if let Some(join_plan) = physical_join_population_count_plan(bundle, target_layer_id, rows) {
         return join_plan;
     }
-    if let Some((_, _, case)) =
-        physical_operator_population_case(bundle, target_layer_id, rows)
-    {
+    if let Some((_, _, case)) = physical_operator_population_case(bundle, target_layer_id, rows) {
         return WitnessDirection::feasible(vec![case])
             .unwrap_or_else(|| residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
     }
