@@ -676,7 +676,11 @@ fn construct_set_with_map(
         relations.push(physical.relation().to_string());
         boundaries.push(physical);
     }
-    if relations[0] == relations[1] {
+    // Two distinct producer branches may refer to the same physical rows.
+    // They can share a source only if they select precisely the same column;
+    // a local set case must additionally require identical multiplicities.
+    let shared_source = relations[0] == relations[1];
+    if shared_source && boundaries[0].tuple_columns() != boundaries[1].tuple_columns() {
         return None;
     }
     let (positive, negative) = operation.witness_directions();
@@ -735,7 +739,17 @@ fn construct_set_with_map(
     };
     let case = cases
         .into_iter()
-        .find(|case| case.output_tuple_count() == 1 && case.obligations().len() == 2)?
+        .find(|case| {
+            if case.output_tuple_count() != 1 {
+                return false;
+            }
+            let [left, right] = case.obligations() else {
+                return false;
+            };
+            // A pair of copies of the *same* physical relation cannot
+            // independently contain differing frequencies for one tuple.
+            !shared_source || left.matching_tuple_count() == right.matching_tuple_count()
+        })?
         .with_physical_boundaries(map)?;
     let scale_by_value_rows = matches!(
         operation.multiplicity_rule()?,
