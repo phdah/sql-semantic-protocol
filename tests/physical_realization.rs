@@ -4011,3 +4011,139 @@ fn grouped_count_rejection_and_transparent_source_are_jointly_closed() {
     let mismatch = physical_joint_source_plan(&b, &[(ids[1], 0), (ids[2], 3)]);
     assert!(matches!(mismatch.outcome(), WitnessDirection::Residual { .. }));
 }
+
+#[test]
+fn identical_set_producer_branches_share_one_complete_physical_population() {
+    let schema = |relation: &str, columns: &[&str]| {
+        RelationSchema::new(
+            relation,
+            columns
+                .iter()
+                .map(|column| {
+                    SchemaColumn::from_sql_type(*column, "INTEGER", "postgresql").unwrap()
+                })
+                .collect(),
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("t", &["a", "b"]),
+        schema("left_stage", &["id"]),
+        schema("right_stage", &["id"]),
+    ];
+    for dialect in ["duckdb", "postgresql", "generic"] {
+        for operator in ["UNION", "INTERSECT", "INTERSECT ALL"] {
+            let statements = [
+                "CREATE TABLE left_stage AS SELECT a AS id FROM t".to_string(),
+                "CREATE TABLE right_stage AS SELECT a AS id FROM t".to_string(),
+                format!("SELECT id FROM left_stage {operator} SELECT id FROM right_stage"),
+            ];
+            let queries = statements.iter().map(String::as_str).collect::<Vec<_>>();
+            let mut b = bundle_with_schemas(&queries, dialect, &schemas);
+            let target = b.layers()[2].id().to_string();
+            b.set_outcome_goals(&[
+                OutcomeGoal::new(&target, Some(2), None, vec![]).unwrap(),
+            ])
+            .unwrap();
+            let local = b.outcome_goals()[0].witness();
+            let Some(OutcomeWitness::SetTuples { case, .. }) = local else {
+                panic!("{dialect} {operator}: missing shared-source set proof: {local:?}");
+            };
+            let obligations = case.obligations();
+            assert_eq!(obligations.len(), 2);
+            assert!(obligations.iter().all(|o| {
+                o.boundary().relation() == "t"
+                    && o.boundary().tuple_columns() == ["a"]
+                    && o.matching_tuple_count() == obligations[0].matching_tuple_count()
+            }));
+            let plan = physical_row_count_plan(&b, &target, 2);
+            let WitnessDirection::Feasible(cases) = &plan else {
+                panic!("{dialect} {operator}: expected physical case: {plan:?}");
+            };
+            assert!(cases.iter().any(|case| {
+                case.obligations().iter().filter(|o| matches!(
+                    o,
+                    WitnessObligation::Rows { boundary, closed_world: true, .. }
+                        if boundary.relation() == "t"
+                )).count() == 1
+            }));
+            // One source is populated once, and both materializations read
+            // those same rows. Emitting independent branch populations here
+            // would silently double the real input.
+            let db = Connection::open_in_memory().unwrap();
+            db.execute_batch("CREATE TABLE t(a INTEGER, b INTEGER);").unwrap();
+            for key in 0..2 {
+                for _ in 0..obligations[0].matching_tuple_count() {
+                    db.execute_batch(&format!("INSERT INTO t VALUES ({key}, 99);"))
+                        .unwrap();
+                }
+            }
+            db.execute_batch(
+                "CREATE TABLE left_stage AS SELECT a AS id FROM t;
+                 CREATE TABLE right_stage AS SELECT a AS id FROM t;",
+            )
+            .unwrap();
+            let count: i64 = db
+                .query_row(
+                    &format!(
+                        "SELECT COUNT(*) FROM (SELECT id FROM left_stage {operator} SELECT id FROM right_stage)"
+                    ),
+                    [],
+                    |row| row.get(0),
+                )
+                .unwrap();
+            assert_eq!(count, 2, "{dialect} {operator}");
+        }
+    }
+}
+
+#[test]
+fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
+    let schema = |relation: &str, columns: &[&str]| {
+        RelationSchema::new(
+            relation,
+            columns
+                .iter()
+                .map(|column| {
+                    SchemaColumn::from_sql_type(*column, "INTEGER", "postgresql").unwrap()
+                })
+                .collect(),
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("t", &["a", "b"]),
+        schema("left_stage", &["id"]),
+        schema("right_stage", &["id"]),
+    ];
+    for (right_projection, operator) in [
+        ("b", "INTERSECT"),
+        ("a", "UNION ALL"),
+        ("b", "UNION"),
+    ] {
+        let statements = [
+            "CREATE TABLE left_stage AS SELECT a AS id FROM t".to_string(),
+            format!("CREATE TABLE right_stage AS SELECT {right_projection} AS id FROM t"),
+            format!("SELECT id FROM left_stage {operator} SELECT id FROM right_stage"),
+        ];
+        let queries = statements.iter().map(String::as_str).collect::<Vec<_>>();
+        let mut b = bundle_with_schemas(&queries, "duckdb", &schemas);
+        let target = b.layers()[2].id().to_string();
+        b.set_outcome_goals(&[
+            OutcomeGoal::new(&target, Some(2), None, vec![]).unwrap(),
+        ])
+        .unwrap();
+        assert_eq!(
+            b.outcome_goals()[0].status(),
+            OutcomeGoalStatus::Residual,
+            "{right_projection} {operator}"
+        );
+        assert!(
+            matches!(
+                physical_row_count_plan(&b, &target, 2),
+                WitnessDirection::Residual { .. }
+            ),
+            "{right_projection} {operator}"
+        );
+    }
+}
