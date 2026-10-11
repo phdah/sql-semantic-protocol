@@ -4157,3 +4157,91 @@ fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
         );
     }
 }
+
+#[test]
+fn independent_join_group_dags_compose_with_transparent_terminal_counts() {
+    let schema = |name: &str| {
+        RelationSchema::new(
+            name,
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("l1"),
+        schema("r1"),
+        schema("l2"),
+        schema("r2"),
+        schema("joined1"),
+        schema("joined2"),
+    ];
+    let statements = [
+        "CREATE TABLE joined1 AS SELECT l1.k AS k FROM l1 JOIN r1 ON l1.k = r1.k",
+        "SELECT k, COUNT(*) AS n FROM joined1 GROUP BY k HAVING COUNT(*) >= 2",
+        "CREATE TABLE joined2 AS SELECT l2.k AS k FROM l2 JOIN r2 ON l2.k = r2.k",
+        "SELECT k, COUNT(*) AS n FROM joined2 GROUP BY k HAVING COUNT(*) >= 2",
+        "SELECT k FROM l1",
+    ];
+    let b = bundle_with_schemas(&statements, "duckdb", &schemas);
+    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let plan = physical_joint_source_plan(&b, &[(ids[1], 1), (ids[3], 1), (ids[4], 2)]);
+    let WitnessDirection::Feasible(cases) = plan.outcome() else {
+        panic!("disjoint mixed operator DAGs should compose: {plan:?}");
+    };
+    assert_eq!(plan.sources().len(), 4);
+    assert!(cases.iter().any(|case| {
+        case.obligations()
+            .iter()
+            .filter(|o| matches!(o, WitnessObligation::JoinPopulation { .. }))
+            .count()
+            == 2
+            && case
+                .obligations()
+                .iter()
+                .filter(|o| matches!(o, WitnessObligation::OutputRows { .. }))
+                .count()
+                >= 3
+    }));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l1(k INTEGER); CREATE TABLE r1(k INTEGER);
+         CREATE TABLE l2(k INTEGER); CREATE TABLE r2(k INTEGER);
+         INSERT INTO l1 VALUES (0), (0); INSERT INTO r1 VALUES (0);
+         INSERT INTO l2 VALUES (2), (2); INSERT INTO r2 VALUES (2);
+         CREATE TABLE joined1 AS SELECT l1.k AS k FROM l1 JOIN r1 ON l1.k = r1.k;
+         CREATE TABLE joined2 AS SELECT l2.k AS k FROM l2 JOIN r2 ON l2.k = r2.k;",
+    )
+    .unwrap();
+    for table in ["joined1", "joined2"] {
+        let count: i64 = db
+            .query_row(
+                &format!(
+                    "SELECT COUNT(*) FROM (SELECT k, COUNT(*) AS n FROM {table} GROUP BY k HAVING COUNT(*) >= 2)"
+                ),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 1, "{table}");
+    }
+    let source_rows: i64 = db
+        .query_row("SELECT COUNT(*) FROM l1", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(source_rows, 2);
+
+    let overlapping = [
+        statements[0],
+        statements[1],
+        "CREATE TABLE joined2 AS SELECT l1.k AS k FROM l1 JOIN r2 ON l1.k = r2.k",
+        statements[3],
+        statements[4],
+    ];
+    let shared = bundle_with_schemas(&overlapping, "duckdb", &schemas);
+    let ids = shared.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let unresolved = physical_joint_source_plan(&shared, &[(ids[1], 1), (ids[3], 1)]);
+    assert!(matches!(
+        unresolved.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
+}
