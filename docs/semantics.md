@@ -705,3 +705,15 @@ The generated `Membership` obligation is source-backed; correlation
 and membership keys are vacuous because no inner row can qualify.
 Nonempty correlated matches, mixed predicates and repeated physical
 sources are still residual.
+
+
+Two separately materialized, lossless set operands may also resolve to the
+**same** typed physical source and column. This is constructive only when the
+existing operator-local positive tuple case requires identical multiplicities
+on both operands (for example, `UNION DISTINCT` and `INTERSECT` with
+identical source projections). The joint population binds the repeated
+operand obligations to **one** physical relation, with one exact source-row
+count and entire-relation closure. A differing mapped column or an
+incompatible bag-frequency law such as the currently unsupported shared-source
+`UNION ALL` positive case remains residual. No independent rows may be
+fabricated for copied branches.
