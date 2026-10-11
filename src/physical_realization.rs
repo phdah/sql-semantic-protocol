@@ -1616,8 +1616,7 @@ fn physical_join_group_count_plan(
             })?
             .tests()
             .to_vec(),
-        crate::group_witness::GroupWitnessDirection::Impossible
-        | crate::group_witness::GroupWitnessDirection::Residual { .. } => return None,
+        crate::group_witness::GroupWitnessDirection::Residual { .. } => return None,
     };
     let mut cases = Vec::new();
     for join_case in join_cases {
