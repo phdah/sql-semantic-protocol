@@ -1717,20 +1717,16 @@ fn physical_group_rank_count_plan(
         return None;
     }
 
-    let (population, counts, group_case) =
-        physical_operator_population_case(bundle, group_id, rows)?;
-    let OutcomeWitness::Groups {
-        relation,
-        key,
-        groups,
-        ..
-    } = &population
-    else {
+    let [group_input] = group_query.sources() else {
         return None;
     };
-    if *groups != rows || !counts.contains_key(relation) {
-        return None;
-    }
+    let group_key = match group_query.aggregation()?.group_by()? {
+        GroupBy::Expressions(keys) if keys.len() == 1 => match &keys[0] {
+            GroupingExpression::Expression(Expression::Column(key)) => key,
+            _ => return None,
+        },
+        _ => return None,
+    };
     let source_key = group_query
         .output()
         .columns()
@@ -1741,7 +1737,7 @@ fn physical_group_rank_count_plan(
         return None;
     };
     let copied = source_key.plain_copy_source()?;
-    if copied.relation() != relation || copied.column() != key.name() {
+    if copied.relation() != group_input.name() || copied.column() != group_key.name() {
         return None;
     }
     let grouped_type = bundle
@@ -1752,43 +1748,71 @@ fn physical_group_rank_count_plan(
         .iter()
         .find(|column| column.name() == partition.name())?
         .data_type();
-    let source_type = bundle
+    let input_type = bundle
         .source_schemas()
         .iter()
-        .find(|schema| schema.relation() == relation)?
+        .find(|schema| schema.relation() == group_input.name())?
         .columns()
         .iter()
-        .find(|column| column.name() == key.name())?
+        .find(|column| column.name() == group_key.name())?
         .data_type();
-    if grouped_type != source_type {
+    if grouped_type != input_type {
         return None;
     }
-    let boundary = WitnessBoundary::new(
-        group_relation,
-        GroupBoundaryKind::Intermediate,
-        target_layer_id,
-    )?;
-    let candidate = RowVariable::new(group_relation, group_relation, "group_rank")?;
-    let mut obligations = group_case.obligations().to_vec();
-    obligations.push(WitnessObligation::Producer {
-        boundary: boundary.clone(),
-        physical_sources: vec![relation.clone()],
-    });
-    obligations.push(WitnessObligation::Ranked {
-        boundary,
-        candidate,
-        partition_by: vec![partition.clone()],
-        order_by: vec![order.clone()],
-        preceding: CountBounds::new(0, Some(0))?,
-        strict_unique: true,
-        closed_world: true,
-    });
-    obligations.push(WitnessObligation::OutputRows {
-        layer_id: target_layer_id.to_string(),
-        bounds: CountBounds::new(rows, Some(rows))?,
-    });
-    WitnessCase::new(obligations, ProofStrength::Sufficient)
-        .and_then(|case| WitnessDirection::feasible(vec![case]))
+
+    let cases = if let Some((population, counts, case)) =
+        physical_operator_population_case(bundle, group_id, rows)
+    {
+        let OutcomeWitness::Groups {
+            relation,
+            groups,
+            ..
+        } = population else {
+            return None;
+        };
+        if groups != rows || !counts.contains_key(&relation) {
+            return None;
+        }
+        vec![case]
+    } else {
+        let WitnessDirection::Feasible(cases) =
+            physical_join_group_count_plan(bundle, group_id, rows)?
+        else {
+            return None;
+        };
+        cases
+    };
+    let mut composed = Vec::new();
+    for group_case in cases {
+        let boundary = WitnessBoundary::new(
+            group_relation,
+            GroupBoundaryKind::Intermediate,
+            target_layer_id,
+        )?;
+        let candidate = RowVariable::new(group_relation, group_relation, "group_rank")?;
+        let mut obligations = group_case.obligations().to_vec();
+        obligations.push(WitnessObligation::Producer {
+            boundary: boundary.clone(),
+            physical_sources: walker.sources.iter().cloned().collect(),
+        });
+        obligations.push(WitnessObligation::Ranked {
+            boundary,
+            candidate,
+            partition_by: vec![partition.clone()],
+            order_by: vec![order.clone()],
+            preceding: CountBounds::new(0, Some(0))?,
+            strict_unique: true,
+            closed_world: true,
+        });
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id: target_layer_id.to_string(),
+            bounds: CountBounds::new(rows, Some(rows))?,
+        });
+        if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+            composed.push(case);
+        }
+    }
+    WitnessDirection::feasible(composed)
 }
 
 /// Lift a fully matched, one-to-one physical equijoin into an ordinary
