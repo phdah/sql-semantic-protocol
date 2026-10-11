@@ -3931,3 +3931,83 @@ fn empty_physical_subquery_producers_prove_correlated_positive_and_negative_memb
     let same = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3)]);
     assert!(matches!(same.outcome(), WitnessDirection::Residual { .. }));
 }
+
+#[test]
+fn joint_empty_subquery_and_outer_source_reads_share_single_closed_population() {
+    let schema = |relation: &str, column: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("orders", "id"),
+        schema("lines", "order_id"),
+        schema("stage_orders", "id"),
+        schema("stage_lines", "order_id"),
+    ];
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage_orders AS SELECT id FROM orders",
+            "CREATE TABLE stage_lines AS SELECT order_id FROM lines",
+            "SELECT o.id FROM stage_orders o WHERE NOT EXISTS (SELECT 1 FROM stage_lines l WHERE l.order_id = o.id)",
+            "SELECT id FROM orders",
+            "SELECT order_id FROM lines",
+        ],
+        "postgresql",
+        &schemas,
+    );
+    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let complete = physical_joint_source_plan(
+        &b,
+        &[(ids[2], 3), (ids[3], 3), (ids[4], 0)],
+    );
+    let WitnessDirection::Feasible(cases) = complete.outcome() else {
+        panic!("joint closed-world membership should reuse outer rows: {complete:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().filter(|o| matches!(
+            o, WitnessObligation::OutputRows { .. }
+        )).count() >= 3
+    }));
+    let incompatible = physical_joint_source_plan(
+        &b,
+        &[(ids[2], 3), (ids[3], 4), (ids[4], 0)],
+    );
+    assert!(matches!(
+        incompatible.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
+}
+
+#[test]
+fn grouped_count_rejection_and_transparent_source_are_jointly_closed() {
+    let schema = |relation: &str, columns: &[(&str, &str)]| {
+        RelationSchema::new(
+            relation,
+            columns.iter()
+                .map(|(name, ty)| SchemaColumn::from_sql_type(*name, ty, "postgresql").unwrap())
+                .collect(),
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("t", &[("a", "INTEGER")]),
+        schema("grouped", &[("a", "INTEGER"), ("n", "BIGINT")]),
+    ];
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
+            "SELECT a FROM grouped WHERE n < 2",
+            "SELECT a FROM t",
+        ],
+        "postgresql",
+        &schemas,
+    );
+    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let plan = physical_joint_source_plan(&b, &[(ids[1], 0), (ids[2], 2)]);
+    assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)), "{plan:?}");
+    let mismatch = physical_joint_source_plan(&b, &[(ids[1], 0), (ids[2], 3)]);
+    assert!(matches!(mismatch.outcome(), WitnessDirection::Residual { .. }));
+}
