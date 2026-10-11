@@ -1351,9 +1351,10 @@ fn physical_join_group_count_plan(
     }
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
-    let group_node = walker.nodes.iter().find(|node| {
-        node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string())
-    })?;
+    let group_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string()))?;
     let [PhysicalPlanRef::Layer(join_id)] = group_node.inputs() else {
         return None;
     };
@@ -1378,9 +1379,13 @@ fn physical_join_group_count_plan(
     };
     // A grouped consumer must read the join's actual named materialization,
     // not a detached query output or another alias with the same column.
-    if !walker.nodes.iter().find(|node| {
-        node.id() == &PhysicalPlanRef::Layer(join_id.clone())
-    })?.produced_relations().contains(&source.name().to_string()) {
+    if !walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(join_id.clone()))?
+        .produced_relations()
+        .contains(&source.name().to_string())
+    {
         return None;
     }
     let group_key = match group_query.aggregation()?.group_by()? {
@@ -1392,9 +1397,12 @@ fn physical_join_group_count_plan(
     };
     // Named join output is a plain identity copy of one join input. Source
     // datatypes must match across the join output and the physical endpoint.
-    let projected = join_query.output().columns().iter().filter(|col| {
-        col.name() == group_key.name()
-    }).collect::<Vec<_>>();
+    let projected = join_query
+        .output()
+        .columns()
+        .iter()
+        .filter(|col| col.name() == group_key.name())
+        .collect::<Vec<_>>();
     let [projected] = projected.as_slice() else {
         return None;
     };
@@ -1403,27 +1411,32 @@ fn physical_join_group_count_plan(
         Some(origin.relation().to_string()),
         origin.column().to_string(),
     );
-    let physical_key = resolve_filter_column_with_evidence(
-        bundle, &walker, join_id, &original, 0, true,
-    )?;
-    let grouped_type = bundle.source_schemas().iter()
+    let physical_key =
+        resolve_filter_column_with_evidence(bundle, &walker, join_id, &original, 0, true)?;
+    let grouped_type = bundle
+        .source_schemas()
+        .iter()
         .find(|schema| schema.relation() == source.name())?
-        .columns().iter().find(|column| column.name() == group_key.name())?
+        .columns()
+        .iter()
+        .find(|column| column.name() == group_key.name())?
         .data_type();
-    let physical_type = bundle.source_schemas().iter()
-        .find(|schema| schema.relation() == physical_key.relation()?)?
-        .columns().iter().find(|column| column.name() == physical_key.name())?
+    let physical_relation = physical_key.relation()?;
+    let physical_type = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == physical_relation)?
+        .columns()
+        .iter()
+        .find(|column| column.name() == physical_key.name())?
         .data_type();
     if grouped_type != physical_type {
         return None;
     }
 
-    let group_goal = crate::outcome_goals::OutcomeGoal::new(
-        target_layer_id,
-        Some(rows),
-        Some(rows),
-        Vec::new(),
-    ).ok()?;
+    let group_goal =
+        crate::outcome_goals::OutcomeGoal::new(target_layer_id, Some(rows), Some(rows), Vec::new())
+            .ok()?;
     let mapper = |key: &crate::protocol::ColumnRef| {
         (key.relation() == Some(source.name()) && key.name() == group_key.name())
             .then(|| physical_key.clone())
@@ -1434,8 +1447,13 @@ fn physical_join_group_count_plan(
         groups,
         rows_per_group: 1,
     } = crate::outcome_proofs::construct_mapped_group(
-        bundle, group_query, &group_goal, rows, &mapper,
-    )? else {
+        bundle,
+        group_query,
+        &group_goal,
+        rows,
+        &mapper,
+    )?
+    else {
         return None;
     };
     let WitnessDirection::Feasible(join_cases) =
