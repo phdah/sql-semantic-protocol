@@ -3851,3 +3851,80 @@ fn grouped_count_output_filter_proves_complete_positive_and_rejected_sources() {
         WitnessDirection::Residual { .. }
     ));
 }
+
+#[test]
+fn empty_physical_subquery_producers_prove_correlated_positive_and_negative_membership() {
+    let schema = |relation: &str, column: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("orders", "id"),
+        schema("lines", "order_id"),
+        schema("stage_orders", "id"),
+        schema("stage_lines", "order_id"),
+    ];
+    let producers = [
+        "CREATE TABLE stage_orders AS SELECT id FROM orders",
+        "CREATE TABLE stage_lines AS SELECT order_id FROM lines",
+    ];
+    for (keyword, count) in [
+        ("EXISTS", 0_u64),
+        ("NOT EXISTS", 3),
+        ("IN", 0),
+        ("NOT IN", 3),
+    ] {
+        let query = match keyword {
+            "EXISTS" | "NOT EXISTS" => format!(
+                "SELECT o.id FROM stage_orders o WHERE {keyword} (SELECT 1 FROM stage_lines l WHERE l.order_id = o.id)"
+            ),
+            _ => format!(
+                "SELECT o.id FROM stage_orders o WHERE o.id {keyword} (SELECT l.order_id FROM stage_lines l)"
+            ),
+        };
+        let statements = [producers[0], producers[1], &query];
+        let b = bundle_with_schemas(&statements, "postgresql", &schemas);
+        let target = b.layers()[2].id();
+        let plan = physical_joint_source_plan(&b, &[(target, count)]);
+        let WitnessDirection::Feasible(cases) = plan.outcome() else {
+            panic!("{keyword} physical emptiness was not proved: {plan:?}");
+        };
+        assert!(cases.iter().any(|case| case.obligations().iter().any(|o| matches!(
+            o, WitnessObligation::Membership {
+                case: sql_semantic_protocol::SubqueryMembershipCase::NoCandidates,
+                closed_world: true,
+                ..
+            }
+        ))));
+        let db = Connection::open_in_memory().unwrap();
+        db.execute_batch(
+            "CREATE TABLE orders(id INTEGER);
+             CREATE TABLE lines(order_id INTEGER);
+             INSERT INTO orders VALUES (0),(1),(NULL);
+             CREATE TABLE stage_orders AS SELECT id FROM orders;
+             CREATE TABLE stage_lines AS SELECT order_id FROM lines;",
+        )
+        .unwrap();
+        let found: i64 = db.query_row(
+            &format!("SELECT COUNT(*) FROM ({query})"),
+            [],
+            |row| row.get(0),
+        ).unwrap();
+        assert_eq!(found as u64, count, "{keyword}");
+    }
+
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage_orders AS SELECT id FROM orders",
+            "CREATE TABLE stage_lines AS SELECT id AS order_id FROM orders",
+            "SELECT o.id FROM stage_orders o WHERE NOT EXISTS (SELECT 1 FROM stage_lines l WHERE l.order_id = o.id)",
+        ],
+        "postgresql",
+        &schemas,
+    );
+    let same = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3)]);
+    assert!(matches!(same.outcome(), WitnessDirection::Residual { .. }));
+}
