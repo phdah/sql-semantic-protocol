@@ -1335,6 +1335,208 @@ fn scalar_physical_row_truth(
     })
 }
 
+/// A certified operator population controls the *complete* physical leaf
+/// relation, not an arbitrary matching row. The local typed witness owns SQL
+/// grouping, ranking, bag multiplicity and NULL equality; only the graph
+/// composer assigns those existing facts to physical boundaries.
+fn operator_population_witness(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    rows: u64,
+) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    use crate::outcome_proofs::OutcomeWitness;
+    if rows == 0 {
+        return None;
+    }
+    let target = bundle.layers().iter().find(|layer| layer.id() == target_layer_id)?;
+    let query = query_for(bundle, target)?;
+    let goal =
+        crate::outcome_goals::OutcomeGoal::new(target_layer_id, Some(rows), None, Vec::new()).ok()?;
+    let result = crate::outcome_proofs::construct(bundle, target, query, &goal)
+        .or_else(|| physical_operator_count_witness(bundle, target_layer_id, rows))
+        .or_else(|| {
+            physical_materialized_group_or_rank_witness(bundle, target_layer_id, rows, None)
+        })
+        .or_else(|| physical_materialized_set_witness(bundle, target_layer_id, &goal))?;
+    matches!(
+        result,
+        OutcomeWitness::Groups { .. }
+            | OutcomeWitness::Ranked { .. }
+            | OutcomeWitness::SetTuples { .. }
+    )
+    .then_some(result)
+}
+
+/// Translate a full-source, operator-local construction into exact physical
+/// relation counts. These are complete assignments, not independently
+/// feasible candidate rows. A set case is one tuple class repeated across
+/// distinct values, with the proven ALL/DISTINCT scaling rules.
+fn operator_population_counts(
+    witness: &crate::outcome_proofs::OutcomeWitness,
+    wanted: u64,
+) -> Option<BTreeMap<String, u64>> {
+    use crate::outcome_proofs::OutcomeWitness;
+    let mut counts = BTreeMap::new();
+    match witness {
+        OutcomeWitness::Groups {
+            relation,
+            groups,
+            rows_per_group,
+            ..
+        } if *groups == wanted => {
+            counts.insert(relation.clone(), groups.checked_mul(*rows_per_group)?);
+        }
+        OutcomeWitness::Ranked { relation, rows, .. } if *rows == wanted => {
+            counts.insert(relation.clone(), *rows);
+        }
+        OutcomeWitness::SetTuples {
+            tuples,
+            case,
+            values,
+            scale_by_value_rows,
+        } => {
+            let copies = if values.is_empty() {
+                *tuples
+            } else if *scale_by_value_rows {
+                values.iter().try_fold(0_u64, |total, entry| {
+                    total.checked_add(entry.rows())
+                })?
+            } else {
+                u64::try_from(values.iter().filter(|entry| entry.rows() > 0).count()).ok()?
+            };
+            if (!*scale_by_value_rows && copies != wanted)
+                || (*scale_by_value_rows && !values.is_empty() && copies != wanted)
+                || case.obligations().is_empty()
+            {
+                return None;
+            }
+            for obligation in case.obligations() {
+                let boundary = obligation.boundary();
+                if boundary.is_intermediate()
+                    || boundary.tuple_columns().is_empty()
+                    || counts.contains_key(boundary.relation())
+                {
+                    // Repeated physical operands require a shared-row tuple
+                    // proof. Never assume two local arms are independent.
+                    return None;
+                }
+                counts.insert(
+                    boundary.relation().to_string(),
+                    obligation.matching_tuple_count().checked_mul(copies)?,
+                );
+            }
+        }
+        _ => return None,
+    }
+    Some(counts)
+}
+
+fn physical_operator_population_case(
+    bundle: &AnalysisBundle,
+    layer_id: &str,
+    rows: u64,
+) -> Option<(crate::outcome_proofs::OutcomeWitness, BTreeMap<String, u64>, WitnessCase)> {
+    let witness = operator_population_witness(bundle, layer_id, rows)?;
+    let counts = operator_population_counts(&witness, rows)?;
+    let mut walker = Walker::new(bundle);
+    walker.visit(layer_id).ok()?;
+    if counts.keys().cloned().collect::<BTreeSet<_>>() != walker.sources {
+        return None;
+    }
+    let mut obligations = vec![WitnessObligation::OperatorPopulation {
+        witness: witness.clone(),
+    }];
+    for (relation, count) in &counts {
+        let boundary = WitnessBoundary::new(
+            relation,
+            GroupBoundaryKind::Physical,
+            layer_id,
+        )?;
+        obligations.push(WitnessObligation::Rows {
+            boundary: boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds: CountBounds::new(*count, Some(*count))?,
+            predicate: count_tautology(),
+            closed_world: true,
+        });
+        obligations.push(WitnessObligation::ClosedWorld {
+            boundary,
+            coverage: ClosedWorldCoverage::EntireRelation,
+        });
+    }
+    obligations.push(WitnessObligation::OutputRows {
+        layer_id: layer_id.to_string(),
+        bounds: CountBounds::new(rows, Some(rows))?,
+    });
+    let case = WitnessCase::new(obligations, ProofStrength::Sufficient)?;
+    Some((witness, counts, case))
+}
+
+/// Safely share fully controlled physical relations across several terminal
+/// operators. Identical constructions can reuse the same rows; independent
+/// sources remain disjoint. A different sufficient population over one source
+/// is *residual*, even when their example counts conflict: other complete
+/// populations might satisfy both terminal goals.
+fn joint_operator_population_goals(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> Option<WitnessDirection> {
+    if !targets.iter().any(|(id, rows)| {
+        operator_population_witness(bundle, id, *rows).is_some()
+    }) {
+        return None;
+    }
+    let mut populations = BTreeMap::<String, crate::outcome_proofs::OutcomeWitness>::new();
+    let mut sources = BTreeMap::<String, u64>::new();
+    let mut obligations = Vec::new();
+    for &(id, rows) in targets {
+        if let Some((witness, counts, case)) = physical_operator_population_case(bundle, id, rows) {
+            for (relation, count) in counts {
+                if let Some(existing) = sources.get(&relation) {
+                    if *existing != count || populations.get(&relation) != Some(&witness) {
+                        return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
+                    }
+                } else {
+                    sources.insert(relation.clone(), count);
+                    populations.insert(relation, witness.clone());
+                }
+            }
+            obligations.extend(case.obligations().iter().cloned());
+        } else if let Some(relation) = exact_transparent_source(bundle, id) {
+            let Some(&existing) = sources.get(&relation) else {
+                // Process operator and transparent goals in either order
+                // without inventing independent source populations.
+                continue;
+            };
+            if rows != existing {
+                return Some(residual(PhysicalProofGap::MultipleWitnesses));
+            }
+            obligations.push(WitnessObligation::OutputRows {
+                layer_id: id.to_string(),
+                bounds: CountBounds::new(rows, Some(rows))?,
+            });
+        } else {
+            return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
+        }
+    }
+    // The first pass may have deferred transparent goals encountered before
+    // their source's operator. Re-check every goal against the same assignment.
+    for &(id, rows) in targets {
+        if let Some(relation) = exact_transparent_source(bundle, id) {
+            if sources.get(&relation) != Some(&rows) {
+                return Some(residual(PhysicalProofGap::MultipleWitnesses));
+            }
+            obligations.push(WitnessObligation::OutputRows {
+                layer_id: id.to_string(),
+                bounds: CountBounds::new(rows, Some(rows))?,
+            });
+        }
+    }
+    WitnessCase::new(obligations, ProofStrength::Sufficient)
+        .and_then(|case| WitnessDirection::feasible(vec![case]))
+        .or_else(|| Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation)))
+}
+
 /// Produce typed, whole-physical-source obligations for an exact terminal
 /// row-count request. This is an independent constructive plan; it never
 /// upgrades the single-candidate row classification returned by
@@ -1405,6 +1607,12 @@ pub fn physical_row_count_plan(
     // hide multi-parent or repeated-source join proofs.
     if let Some(join_plan) = physical_join_population_count_plan(bundle, target_layer_id, rows) {
         return join_plan;
+    }
+    if let Some((_, _, case)) =
+        physical_operator_population_case(bundle, target_layer_id, rows)
+    {
+        return WitnessDirection::feasible(vec![case])
+            .unwrap_or_else(|| residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
     }
     if physical.sources().len() != 1 {
         return residual(PhysicalProofGap::UnboundPhysicalSource);
@@ -3081,6 +3289,9 @@ pub fn physical_joint_row_count_plan(
     ordered.dedup();
     if necessarily_missing_positive_join_input(bundle, &ordered) {
         return WitnessDirection::Impossible;
+    }
+    if let Some(witness) = joint_operator_population_goals(bundle, &ordered) {
+        return witness;
     }
     if let Some(witness) = jointly_realized_join_goals(bundle, &ordered) {
         return witness;
