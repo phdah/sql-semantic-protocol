@@ -2184,20 +2184,29 @@ fn operator_population_counts(
             {
                 return None;
             }
+            let mut assigned = BTreeMap::<String, (Vec<String>, u64)>::new();
             for obligation in case.obligations() {
                 let boundary = obligation.boundary();
-                if boundary.is_intermediate()
-                    || boundary.tuple_columns().is_empty()
-                    || counts.contains_key(boundary.relation())
-                {
-                    // Repeated physical operands require a shared-row tuple
-                    // proof. Never assume two local arms are independent.
+                if boundary.is_intermediate() || boundary.tuple_columns().is_empty() {
                     return None;
                 }
-                counts.insert(
-                    boundary.relation().to_string(),
+                let relation = boundary.relation().to_string();
+                let population = (
+                    boundary.tuple_columns().to_vec(),
                     obligation.matching_tuple_count().checked_mul(copies)?,
                 );
+                if let Some(previous) = assigned.get(&relation) {
+                    if previous != &population {
+                        // The same physical rows cannot satisfy different
+                        // column/frequency obligations in two copied arms.
+                        return None;
+                    }
+                } else {
+                    assigned.insert(relation, population);
+                }
+            }
+            for (relation, (_, count)) in assigned {
+                counts.insert(relation, count);
             }
         }
         _ => return None,
@@ -2976,7 +2985,7 @@ pub(crate) fn physical_materialized_set_witness(
     }
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
-    if walker.sources.len() != 2 {
+    if !(1..=2).contains(&walker.sources.len()) {
         return None;
     }
     let mut operator_id = None::<&str>;
@@ -3049,7 +3058,9 @@ pub(crate) fn physical_materialized_set_witness(
         .iter()
         .map(|branch| map(branch.witness_boundary()?))
         .collect::<Option<Vec<_>>>()?;
-    if mapped_relations[0].relation() == mapped_relations[1].relation() {
+    if mapped_relations[0].relation() == mapped_relations[1].relation()
+        && mapped_relations[0].tuple_columns() != mapped_relations[1].tuple_columns()
+    {
         return None;
     }
     crate::outcome_proofs::construct_mapped_set(bundle, query, goal, rows, &map)
