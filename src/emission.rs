@@ -2022,6 +2022,10 @@ fn constructive_obligation_to_value(obligation: &crate::WitnessObligation) -> Va
             "output_rows": output_rows,
             "closed_world": closed_world
         }),
+        crate::WitnessObligation::OperatorPopulation { witness } => json!({
+            "kind": "operator_population",
+            "witness": outcome_witness_to_value(witness)
+        }),
         crate::WitnessObligation::Group {
             boundary,
             key,
