@@ -3736,26 +3736,29 @@ fn mixed_joined_group_and_source_terminals_share_join_key_assignments() {
         "postgresql",
         &schemas,
     );
-    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
-    let compatible = physical_joint_source_plan(
-        &b,
-        &[(ids[1], 1), (ids[2], 2), (ids[3], 1)],
-    );
+    let ids = b
+        .layers()
+        .iter()
+        .map(|layer| layer.id())
+        .collect::<Vec<_>>();
+    let compatible = physical_joint_source_plan(&b, &[(ids[1], 1), (ids[2], 2), (ids[3], 1)]);
     let WitnessDirection::Feasible(cases) = compatible.outcome() else {
         panic!("one complete join source assignment expected: {compatible:?}");
     };
-    assert!(cases.iter().any(|case| case
-        .obligations()
+    assert!(cases
         .iter()
-        .any(|o| matches!(o, WitnessObligation::JoinPopulation {
-            pattern: JoinPopulationPattern::CommonMatched,
-            left_rows: 2,
-            right_rows: 1,
-            ..
-        }))));
-    let unproven = physical_joint_source_plan(
-        &b,
-        &[(ids[1], 1), (ids[2], 3), (ids[3], 1)],
-    );
-    assert!(matches!(unproven.outcome(), WitnessDirection::Residual { .. }));
+        .any(|case| case.obligations().iter().any(|o| matches!(
+            o,
+            WitnessObligation::JoinPopulation {
+                pattern: JoinPopulationPattern::CommonMatched,
+                left_rows: 2,
+                right_rows: 1,
+                ..
+            }
+        ))));
+    let unproven = physical_joint_source_plan(&b, &[(ids[1], 1), (ids[2], 3), (ids[3], 1)]);
+    assert!(matches!(
+        unproven.outcome(),
+        WitnessDirection::Residual { .. }
+    ));
 }
