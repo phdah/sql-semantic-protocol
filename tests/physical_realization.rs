@@ -3685,16 +3685,19 @@ fn common_matched_join_rows_make_one_multi_contributor_having_group() {
         panic!("nontrivial join contribution should be constructible: {plan:?}");
     };
     assert!(cases.iter().any(|case| {
-        case.obligations().iter().any(|o| matches!(
-            o,
-            WitnessObligation::JoinPopulation {
-                pattern: JoinPopulationPattern::CommonMatched,
-                output_rows: 2,
-                ..
-            }
-        )) && case.obligations().iter().any(|o| matches!(
-            o, WitnessObligation::Group { .. }
-        ))
+        case.obligations().iter().any(|o| {
+            matches!(
+                o,
+                WitnessObligation::JoinPopulation {
+                    pattern: JoinPopulationPattern::CommonMatched,
+                    output_rows: 2,
+                    ..
+                }
+            )
+        }) && case
+            .obligations()
+            .iter()
+            .any(|o| matches!(o, WitnessObligation::Group { .. }))
     }));
 
     let db = Connection::open_in_memory().unwrap();
