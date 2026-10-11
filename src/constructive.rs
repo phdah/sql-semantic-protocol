@@ -297,6 +297,13 @@ pub enum WitnessObligation {
         output_rows: u64,
         closed_world: bool,
     },
+    /// A complete operator-specific population at controlled physical leaves.
+    /// Its typed witness carries every required key, multiplicity and NULL-aware
+    /// branch count; the surrounding case must also close each leaf relation.
+    OperatorPopulation {
+        /// Canonical physical operator construction, never an intermediate write.
+        witness: crate::outcome_proofs::OutcomeWitness,
+    },
     /// Complete group construction at the named boundary, including contributor tests.
     Group {
         boundary: WitnessBoundary,
@@ -486,6 +493,12 @@ fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 || pattern.output_rows(*join_kind, *left_rows, *right_rows) != Some(*output_rows)
                 || (left_row.relation() == right_row.relation() && left_rows != right_rows)
         }
+        WitnessObligation::OperatorPopulation { witness } => !matches!(
+            witness,
+            crate::outcome_proofs::OutcomeWitness::Groups { groups: 1.., rows_per_group: 1.., .. }
+                | crate::outcome_proofs::OutcomeWitness::Ranked { rows: 1.., .. }
+                | crate::outcome_proofs::OutcomeWitness::SetTuples { tuples: 1.., .. }
+        ),
         WitnessObligation::Group { rows, non_null, .. } => {
             non_null.minimum() > rows.maximum().unwrap_or(u64::MAX)
         }
