@@ -2041,63 +2041,106 @@ fn joint_mixed_operator_and_source_goals(
     if targets.len() < 2 {
         return None;
     }
-    let mut mixed = None;
-    let mut other_goals = Vec::new();
+
+    // Each already-proven mixed operator case contains a complete source
+    // population. Separate cases may be conjoined only when no physical
+    // relation is assigned twice; overlapping operators still need a
+    // correlated population proof and remain residual.
+    let mut mixed_plans = Vec::new();
+    let mut transparent = Vec::new();
     for &(id, rows) in targets {
         if let Some(plan) = physical_join_group_count_plan(bundle, id, rows)
             .or_else(|| physical_group_rank_count_plan(bundle, id, rows))
             .or_else(|| physical_group_aggregate_filter_count_plan(bundle, id, rows))
             .or_else(|| physical_empty_subquery_membership_plan(bundle, id, rows))
         {
-            if mixed.is_some() {
+            let WitnessDirection::Feasible(cases) = plan else {
                 return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
-            }
-            mixed = Some(plan);
+            };
+            mixed_plans.push(cases);
         } else {
             let relation = exact_transparent_source(bundle, id)?;
-            other_goals.push((id, relation, rows));
+            transparent.push((id, relation, rows));
         }
     }
-    let WitnessDirection::Feasible(mixed_cases) = mixed? else {
-        return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
-    };
-    let mut cases = Vec::new();
-    for mixed_case in mixed_cases {
-        let source_counts = mixed_case
-            .obligations()
-            .iter()
-            .filter_map(|obligation| match obligation {
-                WitnessObligation::Rows {
+    if mixed_plans.is_empty() {
+        return None;
+    }
+
+    let mut combinations = vec![(Vec::<WitnessObligation>::new(), BTreeMap::<String, u64>::new())];
+    for plan_cases in mixed_plans {
+        let mut next = Vec::new();
+        for case in &plan_cases {
+            let mut counts = BTreeMap::new();
+            for obligation in case.obligations() {
+                if let WitnessObligation::Rows {
                     boundary,
                     quantifier: RowQuantifier::ForAll,
                     bounds,
                     closed_world: true,
                     ..
-                } if boundary.kind() == GroupBoundaryKind::Physical
-                    && bounds.maximum() == Some(bounds.minimum()) =>
+                } = obligation
                 {
-                    Some((boundary.relation().to_string(), bounds.minimum()))
+                    if boundary.kind() == GroupBoundaryKind::Physical
+                        && bounds.maximum() == Some(bounds.minimum())
+                    {
+                        if counts
+                            .insert(boundary.relation().to_string(), bounds.minimum())
+                            .is_some()
+                        {
+                            // Repeated row obligations must be reconciled by
+                            // the operator-local proof, not counted twice.
+                            return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
+                        }
+                    }
                 }
-                _ => None,
-            })
-            .collect::<BTreeMap<_, _>>();
-        if other_goals
-            .iter()
-            .any(|(_, source, rows)| source_counts.get(source) != Some(rows))
-        {
-            continue;
+            }
+            if counts.is_empty()
+                || counts.keys().any(|relation| {
+                    !case.obligations().iter().any(|obligation| {
+                        matches!(
+                            obligation,
+                            WitnessObligation::ClosedWorld { boundary, coverage: ClosedWorldCoverage::EntireRelation }
+                                if boundary.kind() == GroupBoundaryKind::Physical
+                                    && boundary.relation() == relation
+                        )
+                    })
+                })
+            {
+                return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
+            }
+            for (obligations, existing) in &combinations {
+                if counts.keys().any(|relation| existing.contains_key(relation)) {
+                    continue;
+                }
+                let mut joined = obligations.clone();
+                joined.extend(case.obligations().iter().cloned());
+                let mut assigned = existing.clone();
+                assigned.extend(counts.iter().map(|(key, value)| (key.clone(), *value)));
+                next.push((joined, assigned));
+            }
         }
-        let mut obligations = mixed_case.obligations().to_vec();
-        for &(id, _, rows) in &other_goals {
-            obligations.push(WitnessObligation::OutputRows {
-                layer_id: id.to_string(),
-                bounds: CountBounds::new(rows, Some(rows))?,
-            });
+        if next.is_empty() {
+            return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
         }
-        if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
-            cases.push(case);
-        }
+        combinations = next;
     }
+
+    let cases = combinations
+        .into_iter()
+        .filter_map(|(mut obligations, counts)| {
+            for &(id, ref relation, rows) in &transparent {
+                if counts.get(relation) != Some(&rows) {
+                    return None;
+                }
+                obligations.push(WitnessObligation::OutputRows {
+                    layer_id: id.to_string(),
+                    bounds: CountBounds::new(rows, Some(rows))?,
+                });
+            }
+            WitnessCase::new(obligations, ProofStrength::Sufficient)
+        })
+        .collect::<Vec<_>>();
     Some(
         WitnessDirection::feasible(cases)
             .unwrap_or_else(|| residual(PhysicalProofGap::MultipleWitnesses)),
