@@ -1400,7 +1400,11 @@ fn physical_group_aggregate_filter_count_plan(
     let LiteralValue::Number(number) = bound.value() else {
         return None;
     };
-    if column.relation() != Some(relation) || bound.literal_type() != LiteralType::Integer {
+    // An unqualified reference is unambiguous at this one-source scope.
+    // Reject only a qualified reference to a different relation.
+    if column.relation().is_some_and(|name| name != relation)
+        || bound.literal_type() != LiteralType::Integer
+    {
         return None;
     }
     let threshold = number.parse::<u64>().ok()?;
