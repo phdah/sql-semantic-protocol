@@ -3762,3 +3762,77 @@ fn mixed_joined_group_and_source_terminals_share_join_key_assignments() {
         WitnessDirection::Residual { .. }
     ));
 }
+
+#[test]
+fn grouped_count_output_filter_proves_complete_positive_and_rejected_sources() {
+    let schema = |name: &str, columns: &[(&str, &str)]| {
+        RelationSchema::new(
+            name,
+            columns.iter()
+                .map(|(column, ty)| SchemaColumn::from_sql_type(*column, ty, "postgresql").unwrap())
+                .collect(),
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("t", &[("a", "INTEGER")]),
+        schema("grouped", &[("a", "INTEGER"), ("n", "BIGINT")]),
+    ];
+    let producer =
+        "CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2";
+    let positive = "SELECT a FROM grouped WHERE n >= 2";
+    for &dialect in DIALECTS {
+        let b = bundle_with_schemas(&[producer, positive], dialect, &schemas);
+        let id = b.layers()[1].id();
+        let plan = physical_joint_source_plan(&b, &[(id, 2)]);
+        let WitnessDirection::Feasible(cases) = plan.outcome() else {
+            panic!("{dialect}: physical aggregate count filter not proven: {plan:?}");
+        };
+        assert!(cases.iter().any(|case| case.obligations().iter().any(|o| {
+            matches!(o, WitnessObligation::OperatorPopulation {
+                witness: OutcomeWitness::Groups {
+                    relation, groups: 2, rows_per_group: 2, ..
+                }
+            } if relation == "t")
+        })), "{dialect}: closed-world group values must originate at t");
+    }
+    let b = bundle_with_schemas(
+        &[producer, "SELECT a FROM grouped WHERE n < 2"],
+        "postgresql",
+        &schemas,
+    );
+    let id = b.layers()[1].id();
+    let rejected = physical_joint_source_plan(&b, &[(id, 0)]);
+    let WitnessDirection::Feasible(cases) = rejected.outcome() else {
+        panic!("nonempty rejected grouping must be provable: {rejected:?}");
+    };
+    assert!(cases.iter().any(|case| case.obligations().iter().any(|o| {
+        matches!(o, WitnessObligation::OperatorPopulation {
+            witness: OutcomeWitness::Groups {
+                relation, groups: 1, rows_per_group: 2, ..
+            }
+        } if relation == "t")
+    })));
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (0),(0),(1),(1);
+         CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2;",
+    )
+    .unwrap();
+    let pos: i64 = db
+        .query_row("SELECT COUNT(*) FROM grouped WHERE n >= 2", [], |row| row.get(0))
+        .unwrap();
+    let neg: i64 = db
+        .query_row("SELECT COUNT(*) FROM grouped WHERE n < 2", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!((pos, neg), (2, 0));
+    let b = bundle_with_schemas(
+        &[producer, "SELECT a FROM grouped WHERE n + 1 >= 2"],
+        "postgresql",
+        &schemas,
+    );
+    assert!(matches!(
+        physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]).outcome(),
+        WitnessDirection::Residual { .. }
+    ));
+}
