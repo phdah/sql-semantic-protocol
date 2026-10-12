@@ -197,12 +197,12 @@ fn aggregate_count_composed_filters_use_three_valued_boolean_expressions() {
     let schema = |relation: &str, columns: &[(&str, &str)]| {
         RelationSchema::new(
             relation,
-            columns.iter()
-                .map(|(name, ty)| {
-                    SchemaColumn::from_sql_type(*name, ty, "postgresql").unwrap()
-                })
+            columns
+                .iter()
+                .map(|(name, ty)| SchemaColumn::from_sql_type(*name, ty, "postgresql").unwrap())
                 .collect(),
-        ).unwrap()
+        )
+        .unwrap()
     };
     let schemas = [
         schema("t", &[("a", "INTEGER")]),
@@ -230,9 +230,11 @@ fn aggregate_count_composed_filters_use_three_valued_boolean_expressions() {
                  INSERT INTO t VALUES (0),(0),(1),(1);
                  CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2;"
             ).unwrap();
-            let actual: i64 = db.query_row(
-                &format!("SELECT COUNT(*) FROM ({query})"), [], |row| row.get(0)
-            ).unwrap();
+            let actual: i64 = db
+                .query_row(&format!("SELECT COUNT(*) FROM ({query})"), [], |row| {
+                    row.get(0)
+                })
+                .unwrap();
             assert_eq!(actual as u64, wanted, "{dialect} {filter}");
         }
     }
@@ -241,7 +243,7 @@ fn aggregate_count_composed_filters_use_three_valued_boolean_expressions() {
     let b = bundle_with_schemas(
         &[producer, "SELECT a FROM grouped WHERE n + 1 >= 3"],
         "postgresql",
-        &schemas
+        &schemas,
     );
     let plan = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
     assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
