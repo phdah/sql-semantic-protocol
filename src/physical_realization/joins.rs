@@ -34,9 +34,11 @@ fn direct_filtered_source(
         || query.predicates().having_predicate().is_some()
         || query.predicates().qualify_predicate().is_some()
         || !query.diagnostics().is_empty()
-        || !query.output().columns().iter().all(|column| {
-            total_scalar_projection(column.expression())
-        })
+        || !query
+            .output()
+            .columns()
+            .iter()
+            .all(|column| total_scalar_projection(column.expression()))
     {
         return None;
     }
@@ -54,12 +56,16 @@ fn direct_filtered_source(
     if column.relation().is_some_and(|relation| relation != source) {
         return None;
     }
-    let resolved = crate::protocol::ColumnRef::new(
-        Some(source.clone()),
-        column.column().to_string(),
-    );
-    let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == source)?;
-    let typed = schema.columns().iter().find(|item| item.name() == resolved.name())?;
+    let resolved =
+        crate::protocol::ColumnRef::new(Some(source.clone()), column.column().to_string());
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == source)?;
+    let typed = schema
+        .columns()
+        .iter()
+        .find(|item| item.name() == resolved.name())?;
     let term = match (literal.literal_type(), literal.value()) {
         (LiteralType::Boolean, LiteralValue::Boolean(value))
             if typed.data_type().kind() == "boolean" =>
@@ -77,8 +83,7 @@ fn direct_filtered_source(
         _ => return None,
     };
     if bundle.relation_constraints().iter().any(|set| {
-        set.relation() == source
-            && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+        set.relation() == source && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
     }) {
         return None;
     }
@@ -179,7 +184,8 @@ pub(super) fn physical_join_population_with_source_counts(
     // producer may additionally select a typed, repeatable literal equality
     // on an independent column. Its computed projection must be total so
     // that it cannot change row count. No derived input is writable.
-    let mut source_filters = BTreeMap::<String, (crate::protocol::ColumnRef, WitnessFormula)>::new();
+    let mut source_filters =
+        BTreeMap::<String, (crate::protocol::ColumnRef, WitnessFormula)>::new();
     for node in &walker.nodes {
         let PhysicalPlanRef::Layer(id) = node.id() else {
             continue;
