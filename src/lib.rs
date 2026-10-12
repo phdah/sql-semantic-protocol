@@ -158,10 +158,9 @@ pub use protocol::{
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
     WindowSpecification, WriteAffectedRows, WriteCardinalityRule, WriteCountError,
-    WriteEffectAction, WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind,
-    WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty, WriteValue,
-    WriteDefinitionMode,
-    PROTOCOL_VERSION,
+    WriteDefinitionMode, WriteEffectAction, WriteEffectBranch, WriteIdempotence, WriteInitialState,
+    WriteKind, WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty,
+    WriteValue, PROTOCOL_VERSION,
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
