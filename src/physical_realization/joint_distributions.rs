@@ -55,7 +55,10 @@ pub fn physical_joint_distribution_plan(
         if actual != rows {
             return residual(PhysicalProofGap::LocalWitnessUnproven);
         }
-        if source_rows.insert(relation.clone(), rows).is_some_and(|previous| previous != rows) {
+        if source_rows
+            .insert(relation.clone(), rows)
+            .is_some_and(|previous| previous != rows)
+        {
             // A transparent path is count-preserving, not just an example
             // sufficient population. Two complete different source row counts
             // are therefore necessarily contradictory.
@@ -63,7 +66,9 @@ pub fn physical_joint_distribution_plan(
         }
         let named = columns.entry(relation).or_default();
         for item in mapped {
-            let frequency = named.entry(item.column().to_string()).or_insert_with(|| item.values().to_vec());
+            let frequency = named
+                .entry(item.column().to_string())
+                .or_insert_with(|| item.values().to_vec());
             if !equivalent_frequencies(frequency, item.values()) {
                 return WitnessDirection::Impossible;
             }
