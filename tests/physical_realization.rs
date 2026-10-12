@@ -56,23 +56,23 @@ fn bundle_with_schemas(
     analyze_configured_inputs_with_catalog(&inputs, &catalog).expect("analysis")
 }
 
-#[path = "physical_realization/joins.rs"]
-mod joins;
-#[path = "physical_realization/graph.rs"]
-mod graph;
 #[path = "physical_realization/filters.rs"]
 mod filters;
-#[path = "physical_realization/joint_graph.rs"]
-mod joint_graph;
-#[path = "physical_realization/joint_filters.rs"]
-mod joint_filters;
-#[path = "physical_realization/lineage.rs"]
-mod lineage;
-#[path = "physical_realization/producers.rs"]
-mod producers;
+#[path = "physical_realization/graph.rs"]
+mod graph;
 #[path = "physical_realization/group_rank_set.rs"]
 mod group_rank_set;
+#[path = "physical_realization/joins.rs"]
+mod joins;
+#[path = "physical_realization/joint_filters.rs"]
+mod joint_filters;
+#[path = "physical_realization/joint_graph.rs"]
+mod joint_graph;
 #[path = "physical_realization/joint_operators.rs"]
 mod joint_operators;
+#[path = "physical_realization/lineage.rs"]
+mod lineage;
 #[path = "physical_realization/mixed.rs"]
 mod mixed;
+#[path = "physical_realization/producers.rs"]
+mod producers;

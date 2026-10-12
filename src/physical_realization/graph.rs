@@ -162,7 +162,10 @@ pub(super) fn row_local_expression(expression: &Expression) -> bool {
 /// GROUPING SETS, global aggregates or opaque producers. Set operators,
 /// including DISTINCT and nested bag operations, cannot create a tuple from
 /// entirely empty leaf inputs.
-pub(super) fn empty_input_eliminates_set(operation: &SetOperation, layer: &TransformationLayer) -> bool {
+pub(super) fn empty_input_eliminates_set(
+    operation: &SetOperation,
+    layer: &TransformationLayer,
+) -> bool {
     fn leaf_count(operation: &SetOperation) -> usize {
         let count = |operand: &SetOperand| match operand {
             SetOperand::Query => 1,
@@ -190,7 +193,11 @@ pub(super) fn empty_input_eliminates_set(operation: &SetOperation, layer: &Trans
 ///
 /// An empty source is not a constructive proof of any positive cardinality,
 /// and must not be applied to global aggregates or source-free projections.
-pub(super) fn prove_zero_rows(bundle: &AnalysisBundle, walker: &Walker<'_>, target: &str) -> WitnessDirection {
+pub(super) fn prove_zero_rows(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    target: &str,
+) -> WitnessDirection {
     if walker.sources.is_empty() {
         return residual(PhysicalProofGap::UnboundPhysicalSource);
     }
