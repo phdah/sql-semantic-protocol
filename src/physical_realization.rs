@@ -468,6 +468,8 @@ mod joins;
 mod joint_counts;
 mod membership;
 mod operators;
+mod ranking;
+mod sets;
 
 pub(crate) use counts::physical_distribution_plan;
 pub use counts::{
@@ -487,3 +489,5 @@ use grouping::*;
 use joins::*;
 use joint_counts::*;
 use membership::*;
+use ranking::*;
+use sets::*;

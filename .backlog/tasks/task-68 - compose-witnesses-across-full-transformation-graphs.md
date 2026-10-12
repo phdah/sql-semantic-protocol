@@ -64,7 +64,7 @@ cycle.
 
 - **[TASK-93](task-93%20-%20compose-joint-physical-source-dag-constraints.md)**: Compose jointly satisfiable physical-source DAG constraints
 - **[TASK-94](task-94%20-%20realize-multiparent-join-and-shared-source-dags.md)**: Realize multi-parent joins and repeated-source DAGs
-- **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs (PR #95 is a CI-verified landing increment; **still In Progress**; next agent starts a fresh TASK-95 PR against `main`)
+- **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs (**Done** via merged baseline PR #95 and verified completion PR #101; merge PR #101 before starting TASK-96)
 - **[TASK-96](task-96%20-%20resolve-projection-inversion-and-output-distributions.md)**: Prove safe projection inversion and complete output distributions
 - **[TASK-97](task-97%20-%20prove-complete-cardinality-and-negative-closed-world-outcomes.md)**: Prove complete cardinality and negative closed-world outcomes
 - **[TASK-98](task-98%20-%20realize-ordered-dml-before-after-source-states.md)**: Realize ordered DML and DDL before/after physical states

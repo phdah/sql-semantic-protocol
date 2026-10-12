@@ -20,7 +20,7 @@ pub fn physical_row_count_plan(
     rows: u64,
 ) -> WitnessDirection {
     let physical = physical_source_plan(bundle, target_layer_id);
-    if let Some(plan) = physical_empty_subquery_membership_plan(bundle, target_layer_id, rows) {
+    if let Some(plan) = physical_subquery_membership_plan(bundle, target_layer_id, rows) {
         return plan;
     }
     if let Some(plan) = physical_group_aggregate_filter_count_plan(bundle, target_layer_id, rows) {

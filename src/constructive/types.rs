@@ -186,6 +186,9 @@ pub enum JoinPopulationPattern {
     /// Every row on both sides has the same non-NULL integer key zero.
     /// A matching equijoin has left_rows * right_rows pairs, preserving bags.
     CommonMatched,
+    /// Keys 0..groups occur exactly left_rows/groups and right_rows/groups
+    /// times, respectively. SQL bags multiply those contributor counts.
+    GroupedMatched { groups: u64 },
     /// The left population has no rows. The right may be nonempty.
     EmptyLeft,
     /// The right population has no rows. The left may be nonempty.
@@ -198,8 +201,19 @@ impl JoinPopulationPattern {
         match self {
             Self::DistinctMatched => "distinct_matched",
             Self::CommonMatched => "common_matched",
+            Self::GroupedMatched { .. } => "grouped_matched",
             Self::EmptyLeft => "empty_left",
             Self::EmptyRight => "empty_right",
+        }
+    }
+
+    /// Distinct non-NULL join-key groups in a homogeneous grouped assignment.
+    pub const fn group_count(self) -> Option<u64> {
+        match self {
+            Self::GroupedMatched { groups } => Some(groups),
+            Self::DistinctMatched | Self::CommonMatched | Self::EmptyLeft | Self::EmptyRight => {
+                None
+            }
         }
     }
 
@@ -215,6 +229,15 @@ impl JoinPopulationPattern {
         let pairs = match self {
             Self::DistinctMatched if left > 0 && left == right => left,
             Self::CommonMatched if left > 0 && right > 0 => left.checked_mul(right)?,
+            Self::GroupedMatched { groups }
+                if groups > 1
+                    && left >= groups
+                    && right >= groups
+                    && left.is_multiple_of(groups)
+                    && right.is_multiple_of(groups) =>
+            {
+                left.checked_div(groups)?.checked_mul(right)?
+            }
             Self::EmptyLeft if left == 0 => 0,
             Self::EmptyRight if right == 0 => 0,
             _ => return None,
@@ -311,6 +334,21 @@ pub enum WitnessObligation {
         order_by: Vec<WindowOrderKey>,
         preceding: CountBounds,
         strict_unique: bool,
+        closed_world: bool,
+    },
+    /// A complete row-number population at one physical input. Partition
+    /// values are the integers 0..partitions, repeated rows_per_partition
+    /// times each; order values are 0..rows_per_partition within each
+    /// partition, so ties cannot affect ROW_NUMBER/QUALIFY. The exact
+    /// surviving output cardinality is partitions * min(rows_per_partition,
+    /// rank_limit). A local ROW_NUMBER witness must justify this rule.
+    RankPopulation {
+        boundary: WitnessBoundary,
+        partition_key: ColumnRef,
+        order: WindowOrderKey,
+        partitions: u64,
+        rows_per_partition: u64,
+        rank_limit: u64,
         closed_world: bool,
     },
     /// A membership case with explicit NULL and correlated-key laws.

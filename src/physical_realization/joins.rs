@@ -181,6 +181,35 @@ pub(super) fn physical_join_population_count_plan(
             candidates.push((JoinPopulationPattern::CommonMatched, other, divisor));
         }
     }
+    // Homogeneous key groups extend the two extreme constructions:
+    // one shared key or a bijection. Each matched group has separately
+    // controlled source contributors and contributes their product.
+    for groups in 2..=wanted.min(64) {
+        if !wanted.is_multiple_of(groups) {
+            continue;
+        }
+        let product = wanted / groups;
+        candidates.push((
+            JoinPopulationPattern::GroupedMatched { groups },
+            wanted,
+            groups,
+        ));
+        candidates.push((
+            JoinPopulationPattern::GroupedMatched { groups },
+            groups,
+            wanted,
+        ));
+        for left_per_group in 2..=product.isqrt().min(64) {
+            if product.is_multiple_of(left_per_group) {
+                let right_per_group = product / left_per_group;
+                candidates.push((
+                    JoinPopulationPattern::GroupedMatched { groups },
+                    groups.checked_mul(left_per_group)?,
+                    groups.checked_mul(right_per_group)?,
+                ));
+            }
+        }
+    }
     let mut cases = Vec::new();
     for (pattern, left_rows, right_rows) in candidates {
         if pattern.output_rows(join.kind(), left_rows, right_rows) != Some(wanted)
@@ -188,10 +217,12 @@ pub(super) fn physical_join_population_count_plan(
         {
             continue;
         }
-        let max_value = if pattern == JoinPopulationPattern::DistinctMatched {
-            i128::from(left_rows.saturating_sub(1))
-        } else {
-            0
+        let max_value = match pattern {
+            JoinPopulationPattern::DistinctMatched => i128::from(left_rows.saturating_sub(1)),
+            JoinPopulationPattern::GroupedMatched { groups } => i128::from(groups - 1),
+            JoinPopulationPattern::CommonMatched
+            | JoinPopulationPattern::EmptyLeft
+            | JoinPopulationPattern::EmptyRight => 0,
         };
         if (left_rows > 0 && max_value > left_bounds.maximum)
             || (right_rows > 0 && max_value > right_bounds.maximum)
@@ -231,7 +262,9 @@ pub(super) fn physical_join_population_count_plan(
             closed_world: true,
         });
         match pattern {
-            JoinPopulationPattern::DistinctMatched | JoinPopulationPattern::CommonMatched => {
+            JoinPopulationPattern::DistinctMatched
+            | JoinPopulationPattern::CommonMatched
+            | JoinPopulationPattern::GroupedMatched { .. } => {
                 // The complete key-population law establishes all pairs.
                 // Retain an existing typed local matched-pair obligation
                 // as one representative without substituting it for that law.
@@ -439,6 +472,7 @@ pub(super) fn jointly_realized_join_goals(
                         pattern,
                         JoinPopulationPattern::DistinctMatched
                             | JoinPopulationPattern::CommonMatched
+                            | JoinPopulationPattern::GroupedMatched { .. }
                     ) {
                         for (row, key, count) in [
                             (left_row, left_key, left_rows),

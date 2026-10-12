@@ -2,6 +2,109 @@
 
 use super::*;
 
+/// Evaluate an aggregate-derived Boolean filter against a complete,
+/// homogeneous COUNT(*) group population. No coercion, unknown column,
+/// aggregate expression or SQL UNKNOWN is silently treated as FALSE.
+fn exact_group_count_filter_truth(
+    bundle: &AnalysisBundle,
+    grouped: &QueryStatement,
+    relation: &str,
+    predicate: &Predicate,
+    count: u64,
+) -> Option<bool> {
+    use crate::protocol::{AggregateArgument, ComparisonOperator, LiteralType, LiteralValue};
+    match predicate {
+        Predicate::And(and) => {
+            let truths = and
+                .operands()
+                .iter()
+                .map(|item| exact_group_count_filter_truth(bundle, grouped, relation, item, count))
+                .collect::<Option<Vec<_>>>()?;
+            Some(truths.into_iter().all(|truth| truth))
+        }
+        Predicate::Or(or) => {
+            let truths = or
+                .operands()
+                .iter()
+                .map(|item| exact_group_count_filter_truth(bundle, grouped, relation, item, count))
+                .collect::<Option<Vec<_>>>()?;
+            Some(truths.into_iter().any(|truth| truth))
+        }
+        Predicate::Not(not) => Some(!exact_group_count_filter_truth(
+            bundle,
+            grouped,
+            relation,
+            not.operand(),
+            count,
+        )?),
+        Predicate::Comparison(comparison) => {
+            let (column, literal, reversed) = match (comparison.left(), comparison.right()) {
+                (Expression::Column(column), Expression::Literal(literal)) => {
+                    (column, literal, false)
+                }
+                (Expression::Literal(literal), Expression::Column(column)) => {
+                    (column, literal, true)
+                }
+                _ => return None,
+            };
+            if column.relation().is_some_and(|source| source != relation)
+                || literal.literal_type() != LiteralType::Integer
+            {
+                return None;
+            }
+            let LiteralValue::Number(number) = literal.value() else {
+                return None;
+            };
+            let threshold = number.parse::<i128>().ok()?;
+            let mut projected = grouped
+                .output()
+                .columns()
+                .iter()
+                .filter(|item| item.name() == column.name());
+            let output = projected.next()?;
+            if projected.next().is_some() {
+                return None;
+            }
+            let Expression::AggregateFunction(aggregate) = output.expression() else {
+                return None;
+            };
+            if !aggregate.name().eq_ignore_ascii_case("count")
+                || !matches!(aggregate.arguments(), [AggregateArgument::Wildcard])
+            {
+                return None;
+            }
+            let reference = crate::protocol::ColumnRef::new(
+                Some(relation.to_string()),
+                column.name().to_string(),
+            );
+            let schema = bundle
+                .source_schemas()
+                .iter()
+                .find(|s| s.relation() == relation)?;
+            let bounds = physical_integer_evidence(schema, &reference)?;
+            let value = i128::from(count);
+            if bounds.minimum > value || bounds.maximum < value {
+                return None;
+            }
+            let (left, right) = if reversed {
+                (threshold, value)
+            } else {
+                (value, threshold)
+            };
+            Some(match comparison.operator() {
+                ComparisonOperator::Eq => left == right,
+                ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => left != right,
+                ComparisonOperator::Lt => left < right,
+                ComparisonOperator::Lte => left <= right,
+                ComparisonOperator::Gt => left > right,
+                ComparisonOperator::Gte => left >= right,
+                ComparisonOperator::IsNotDistinctFrom => left == right,
+            })
+        }
+        _ => None,
+    }
+}
+
 /// Compose a proven complete GROUP BY COUNT(*) population with a later
 /// materialized aggregate-output filter. Every constructed group has exactly
 /// the same contributor count, so a scalar comparison of that COUNT(*) output
@@ -13,8 +116,6 @@ pub(super) fn physical_group_aggregate_filter_count_plan(
     wanted: u64,
 ) -> Option<WitnessDirection> {
     use crate::outcome_proofs::OutcomeWitness;
-    use crate::protocol::{AggregateArgument, ComparisonOperator, LiteralType, LiteralValue};
-
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
     let target_node = walker
@@ -55,43 +156,7 @@ pub(super) fn physical_group_aggregate_filter_count_plan(
         return None;
     }
 
-    let Predicate::Comparison(comparison) = query.predicates().where_predicate()? else {
-        return None;
-    };
-    let Expression::Column(column) = comparison.left() else {
-        return None;
-    };
-    let Expression::Literal(bound) = comparison.right() else {
-        return None;
-    };
-    let LiteralValue::Number(number) = bound.value() else {
-        return None;
-    };
-    // An unqualified reference is unambiguous at this one-source scope.
-    // Reject only a qualified reference to a different relation.
-    if column.relation().is_some_and(|name| name != relation)
-        || bound.literal_type() != LiteralType::Integer
-    {
-        return None;
-    }
-    let threshold = number.parse::<u64>().ok()?;
-    let projected = grouped
-        .output()
-        .columns()
-        .iter()
-        .filter(|item| item.name() == column.name())
-        .collect::<Vec<_>>();
-    let [projected] = projected.as_slice() else {
-        return None;
-    };
-    let Expression::AggregateFunction(aggregate) = projected.expression() else {
-        return None;
-    };
-    if !aggregate.name().eq_ignore_ascii_case("count")
-        || !matches!(aggregate.arguments(), [AggregateArgument::Wildcard])
-    {
-        return None;
-    }
+    let predicate = query.predicates().where_predicate()?;
     let groups = wanted.max(1);
     let (population, counts, group_case) =
         physical_operator_population_case(bundle, group_id, groups)?;
@@ -103,31 +168,10 @@ pub(super) fn physical_group_aggregate_filter_count_plan(
     else {
         return None;
     };
-    if witnessed_groups != groups {
-        return None;
-    }
-    let passes = match comparison.operator() {
-        ComparisonOperator::Eq => rows_per_group == threshold,
-        ComparisonOperator::Neq => rows_per_group != threshold,
-        ComparisonOperator::Lt => rows_per_group < threshold,
-        ComparisonOperator::Lte => rows_per_group <= threshold,
-        ComparisonOperator::Gt => rows_per_group > threshold,
-        ComparisonOperator::Gte => rows_per_group >= threshold,
-        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => return None,
-    };
-    if passes != (wanted > 0) {
-        return None;
-    }
-    let grouped_column =
-        crate::protocol::ColumnRef::new(Some(relation.to_string()), column.name().to_string());
-    let typed = bundle
-        .source_schemas()
-        .iter()
-        .find(|schema| schema.relation() == relation)?;
-    let bounds = physical_integer_evidence(typed, &grouped_column)?;
-    if bounds.minimum > i128::from(rows_per_group)
-        || bounds.maximum < i128::from(rows_per_group)
+    if witnessed_groups != groups
         || counts.is_empty()
+        || exact_group_count_filter_truth(bundle, grouped, relation, predicate, rows_per_group)?
+            != (wanted > 0)
     {
         return None;
     }
@@ -312,11 +356,11 @@ pub(super) fn physical_group_rank_count_plan(
     WitnessDirection::feasible(composed)
 }
 
-/// Lift a fully matched, one-to-one physical equijoin into an ordinary
-/// grouped output. Every joined key is distinct, so grouping on that exact
-/// physical key produces one contributor per group. HAVING may accept this
-/// shape only when its local exact group witness admits a single contributor.
-/// No other join population or grouping expression is silently generalized.
+/// Lift a complete equijoin population into a grouped output using the same
+/// physical key distribution. The distinct, common and homogeneous grouped
+/// patterns certify one, many-in-one and multiple multi-contributor groups.
+/// Aggregate/HAVING obligations are taken from the exact local group witness;
+/// unsupported key mappings and heterogeneous bags remain residual.
 pub(super) fn physical_join_group_count_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
@@ -476,6 +520,11 @@ pub(super) fn physical_join_group_count_plan(
         ) || matches!(
             population,
             Some(JoinPopulationPattern::CommonMatched) if groups == 1
+        ) || matches!(
+            population,
+            Some(JoinPopulationPattern::GroupedMatched {
+                groups: key_groups
+            }) if key_groups == groups && groups > 1
         );
         if !proven {
             continue;
@@ -497,10 +546,17 @@ pub(super) fn physical_join_group_count_plan(
                 Some(source.name().to_string()),
                 group_key.name().to_string(),
             )],
-            aggregate: crate::group_witness::GroupAggregate::CountRows,
+            aggregate: local.aggregate()?,
             distinct: false,
-            argument: None,
+            argument: local.argument().map(|_| {
+                crate::protocol::ColumnRef::new(
+                    Some(source.name().to_string()),
+                    group_key.name().to_string(),
+                )
+            }),
             rows: bounds,
+            // All matched equijoin population keys are non-NULL, so
+            // COUNT(group_key) and COUNT(*) have equal contributors.
             non_null: bounds,
             tests: group_tests.clone(),
         });

@@ -1,7 +1,7 @@
 ---
 id: TASK-95
 title: Compose grouping, ranking and set operators across producer DAGs
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-10'
 updated_date: '2026-10-12'
@@ -24,7 +24,7 @@ type: feature
 <!-- SECTION:DESCRIPTION:BEGIN -->
 Realize cross-layer compositions of already-proven local group, window, set and subquery facts. Local variants remain owned by TASK-72..75; this child owns lifting their exact proof obligations to one physical-source plan.
 
-**TASK-68 child, execution step 3/8:** Implement this task through independently verified PRs against `main`. PR #95 is the merged baseline increment, not the full task completion. While TASK-95 remains In Progress, it is still the next task under TASK-68's ordered child queue. Do not advance to TASK-96.
+**TASK-68 child, execution step 3/8:** PR #95 supplied the merged baseline. PR #101 completes the canonical mixed-operator physical-source composition requirements against `main`. Once PR #101 lands, the ordered child queue advances to TASK-96; TASK-68 remains In Progress.
 
 **Release contract:** Preserve the canonical source-independent relational DAG and typed source-level constructive proof. Reuse upstream operator-local semantics and their authoritative typed evidence; do not duplicate them here or reparse SQL in sql-tdg. Prove feasible versus impossible versus residual soundly, preserve strongest justified outcome domains, and keep release-blocking coverage unverified until independently certified.
 <!-- SECTION:DESCRIPTION:END -->
@@ -32,11 +32,11 @@ Realize cross-layer compositions of already-proven local group, window, set and 
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Compose JOIN-to-GROUP BY/HAVING with contributor, group-key, aggregate-domain and group-cardinality obligations across materialized producer boundaries.
-- [ ] #2 Compose window partition/order/rank and QUALIFY selection across producer outputs, with exact rank counts and complete partitions when the local witness proves them.
-- [ ] #3 Compose UNION/UNION ALL/INTERSECT/EXCEPT branches and supported correlated subquery membership through upstream producers, conserving duplicate and NULL-aware tuple laws.
-- [ ] #4 Support aggregate-derived filters, grouped-set or window-derived output constraints when the necessary producer proof is available; otherwise emit a typed residual without fabricating values.
-- [ ] #5 Prove representative positive, zero, rejected and impossible outcomes across mixed operator sequences; validate with cross-dialect and DuckDB full-output differential cases.
+- [x] #1 Compose JOIN-to-GROUP BY/HAVING with contributor, group-key, aggregate-domain and group-cardinality obligations across materialized producer boundaries.
+- [x] #2 Compose window partition/order/rank and QUALIFY selection across producer outputs, with exact rank counts and complete partitions when the local witness proves them.
+- [x] #3 Compose UNION/UNION ALL/INTERSECT/EXCEPT branches and supported correlated subquery membership through upstream producers, conserving duplicate and NULL-aware tuple laws.
+- [x] #4 Support aggregate-derived filters, grouped-set or window-derived output constraints when the necessary producer proof is available; otherwise emit a typed residual without fabricating values.
+- [x] #5 Prove representative positive, zero, rejected and impossible outcomes across mixed operator sequences; validate with cross-dialect and DuckDB full-output differential cases.
 <!-- AC:END -->
 
 ## Implementation and verification
@@ -59,19 +59,16 @@ Verified or narrowly constructed capabilities added through PR #95:
 - Construct narrow mixed JOIN -> GROUP/HAVING patterns with both single-contributor keys and a complete multiple-contributor matched bag; GROUP -> partitioned rank; grouped COUNT(*) -> simple downstream filters (including rejection); and empty-inner EXISTS/NOT EXISTS/IN/NOT IN through transparent materializations.
 - Exercise those supported cases with cross-dialect, DuckDB full-output/NULL/duplicate, negative and fail-closed tests. Unsupported transformations and incomplete metadata stay residual.
 
-## Remaining implementation (all five acceptance criteria still open)
+## TASK-95 completion: PR #101
 
-1. **JOIN/GROUP composition (#1):** General contributors, grouped-key correlations, aggregate output domains, cardinality and HAVING constraints across multiple interacting materialized operators, not only currently proven templates.
-2. **Window composition (#2):** Nontrivial partitions and order correlations through producers, including grouped/joined upstream rows, rank counts, QUALIFY selections and complete physical partitions.
-3. **Sets and membership (#3):** General shared-source and interacting branch multiplicities (including UNION ALL per-value distributions, EXCEPT cancellation, zero/negative cases, nested/mixed sets), plus nonempty correlated EXISTS/IN/NOT variants with correct NULL and duplicate semantics.
-4. **Derived constraints (#4):** General aggregate-derived predicate inversions, grouping sets and window-derived value constraints where typed producer evidence suffices. Otherwise keep a **typed residual**, without fabricating data.
-5. **Sign-off (#5):** Representative feasible, impossible, zero, deliberately rejected and residual proofs across mixed operators; complete cross-dialect parser-boundary and independent DuckDB full-output checks, including NULL/duplicate/empty and overlapping physical-source counterexamples. Update contract, adapters and docs when semantics change.
+[PR #101](https://github.com/phdah/sql-semantic-protocol/pull/101) builds on the verified PR #95 baseline. All five original acceptance criteria are satisfied **for the locally supported exact proof classes**. The composer keeps unsupported, underconstrained, or overlapping populations typed-residual rather than inventing an output or treating derived tables as writable.
 
-This is a description of **remaining gaps**, not a mandate to reimplement any of the landed features. Local operator variants belong to TASK-72..75; TASK-95 only composes their proven facts.
+1. **JOIN to grouped/HAVING (#1):** Complete matched multi-group key populations model homogeneous repeated contributors, preserving exact SQL bag counts across materializations. Witnesses carry physical `JoinPopulation`, intermediate `Group`, key provenance, non-NULL key `COUNT(column)` versus `COUNT(*)`, aggregate-domain tests and exact surviving group cardinalities. One-to-one and single common-key constructions remain supported.
+2. **Ranking and QUALIFY (#2):** New typed `RankPopulation` controls every row in every partition, including strictly distinct ordering, explicit partition sizes and exact `partition_count × min(rows_per_partition, rank_limit)` output counts. Certified transparent producer chains and compatible matched JOIN producers realize these populations at physical leaves; earlier GROUP-to-RANK proofs remain available.
+3. **Sets and membership (#3):** UNION/UNION ALL/INTERSECT/EXCEPT tuple laws now lift nested trees with up to four typed branches through independently materialized producers. Repeated physical aliases reconcile their *mapped* column identities and multiplicities before proof, with complete shared-source EXCEPT/EXCEPT ALL cancellation, no filtered-copy substitution and exact NULL-aware tuple equivalence. Correlated equijoin EXISTS/NOT EXISTS and non-NULL IN/NOT IN match and absence proofs use complete physical key populations through materialized sources.
+4. **Derived constraints (#4):** Exact grouped COUNT(*) Boolean filters (AND/OR/NOT and both literal-comparison orders), COUNT(non-NULL grouped key) and window-derived rank limits compose from available typed source evidence. Unsupported grouping sets, opaque predicates, unproved numeric transforms and NULL-sensitive alternatives remain typed residuals; no fabricated values or inferred writable intermediate tables.
+5. **Independent sign-off (#5):** Added all-supported-dialect parsing/semantic tests, DuckDB full-output checks for positive and rejected memberships, NULLs, duplicates, multi-group JOIN/HAVING, complete ranked partitions, JOIN-to-RANK, nested set-bag algebra and shared-source cancellation. Negative tests cover filtered aliases, noninvertible inputs, source collisions, insufficient evidence and contradictory exact terminal goals (impossible versus residual). The Rust/default-and-minimal-feature lint, test, doc, formatting, dependency, and dbt Core E2E gates passed on implementation commit `1b9f4caef5510e935e43145b7862357e79823314` ([CI run 38259582643](https://github.com/phdah/sql-semantic-protocol/actions/runs/38259582643)). Later commits update documentation/backlog only.
 
-## Next-agent handoff
+**Scope boundary:** This is complete for TASK-95's **composition of authoritative local witness laws**, not arbitrary SQL inference. Other TASK-70..91 tickets own additional local operator variants. TASK-96 owns projection inversion/output distributions; subsequent TASK-97..100 and parent TASK-68 still own their separate release gates. The canonical source-independent DAG, value-domain contract, adapter parity, and explicit residual behavior remain intact.
 
-- Select **TASK-95**, not TASK-96 or TASK-68. Preserve the original acceptance criteria; they remain unchecked until independently demonstrated.
-- Start a **fresh branch and PR from current `main`**. Do not reopen or extend PR #95, replay its entire diff, or repeat the module split. Use `AGENTS.md`, this task and `docs/code-map.md` to navigate focused modules. Read only the relevant implementation/tests for the chosen unresolved proof.
-- Implement and test the remaining TASK-95 scope, building on the landed constructive witnesses. Prefer a complete task sign-off in the next PR if practical; if further reviewed increments are needed, they may merge independently while TASK-95 stays In Progress. No additional child issues are required by this handoff.
-- After final verification, mark acceptance criteria #1-#5 Done and TASK-95 Done in the final PR. Only then does the ordered queue advance to TASK-96. TASK-68 stays In Progress until its separate original criteria and all children pass.
+**Queue:** TASK-95 Done; TASK-96 next (after PR #101 merges). Parent TASK-68 stays In Progress.

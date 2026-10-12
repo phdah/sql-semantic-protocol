@@ -356,9 +356,14 @@ fn construct_group_with_map(
                 Expression::Column(_) => false,
                 Expression::AggregateFunction(function) => {
                     !function.name().eq_ignore_ascii_case("count")
+                        || function.distinct()
+                        || function.filter().is_some()
                         || !matches!(
                             function.arguments(),
                             [crate::protocol::AggregateArgument::Wildcard]
+                                | [crate::protocol::AggregateArgument::Expression(
+                                    Expression::Column(_)
+                                )]
                         )
                 }
                 _ => true,
@@ -390,6 +395,22 @@ fn construct_group_with_map(
         .iter()
         .filter_map(|output| output.plain_copy_source())
         .find(|source| source.column() == group_key.name() && source.relation() == relation)?;
+    // COUNT(group_key) is equal to COUNT(*) only for a fully controlled
+    // non-NULL key population. The mapped integer-key witness below proves
+    // exactly that value assignment, including across named producers.
+    if query.output().columns().iter().any(|output| {
+        if let Expression::AggregateFunction(function) = output.expression() {
+            if let [crate::protocol::AggregateArgument::Expression(Expression::Column(column))] =
+                function.arguments()
+            {
+                return column.name() != key.column()
+                    || column.relation().is_some_and(|name| name != relation);
+            }
+        }
+        false
+    }) {
+        return None;
+    }
     let mapped = map(&ColumnRef::new(
         Some(relation.to_string()),
         key.column().to_string(),
@@ -405,9 +426,15 @@ fn construct_group_with_map(
     if query.predicates().having_predicate().is_some() {
         let witness = query.group_witness()?;
         if witness.boundary() != Some(relation)
-            || witness.aggregate() != Some(GroupAggregate::CountRows)
+            || !matches!(
+                witness.aggregate(),
+                Some(GroupAggregate::CountRows | GroupAggregate::CountValues)
+            )
             || witness.group_keys().len() != 1
             || witness.group_keys()[0].name() != key.column()
+            || witness.argument().is_some_and(|argument| {
+                argument.name() != key.column() || argument.relation() != Some(relation)
+            })
         {
             return None;
         }
@@ -417,8 +444,11 @@ fn construct_group_with_map(
         rows_per_group = cases
             .iter()
             .filter_map(|case| {
-                let min_rows = case.min_rows().max(1);
-                if case.max_rows().is_some_and(|max| min_rows > max) {
+                let min_rows = case.min_rows().max(case.min_non_null()).max(1);
+                if case.max_rows().is_some_and(|max| min_rows > max)
+                    || (witness.aggregate() == Some(GroupAggregate::CountValues)
+                        && case.max_non_null().is_some_and(|max| min_rows > max))
+                {
                     None
                 } else {
                     Some(min_rows)
@@ -647,7 +677,7 @@ fn construct_set_with_map(
     }
     let operation = query.set_operation()?;
     let branches = operation.branches();
-    if branches.len() != 2 {
+    if !(2..=4).contains(&branches.len()) {
         return None;
     }
     let mut relations = Vec::<String>::new();
@@ -680,9 +710,14 @@ fn construct_set_with_map(
     // Two distinct producer branches may refer to the same physical rows.
     // They can share a source only if they select precisely the same column;
     // a local set case must additionally require identical multiplicities.
-    let shared_source = relations[0] == relations[1];
-    if shared_source && boundaries[0].tuple_columns() != boundaries[1].tuple_columns() {
-        return None;
+    let mut shared_columns = std::collections::BTreeMap::new();
+    for boundary in &boundaries {
+        if shared_columns
+            .insert(boundary.relation(), boundary.tuple_columns())
+            .is_some_and(|old| old != boundary.tuple_columns())
+        {
+            return None;
+        }
     }
     let (positive, negative) = operation.witness_directions();
     if rows == 0 {
@@ -744,19 +779,30 @@ fn construct_set_with_map(
             let output_per_tuple = case.output_tuple_count();
             if output_per_tuple == 0
                 || (output_per_tuple != 1
-                    && (!shared_source
-                        || !values.is_empty()
-                        || !rows.is_multiple_of(output_per_tuple)))
+                    && (!values.is_empty() || !rows.is_multiple_of(output_per_tuple)))
             {
                 return false;
             }
-            let [left, right] = case.obligations() else {
-                return false;
-            };
-            // Identical physical rows cannot supply different counts in
-            // copied set arms. UNION ALL can emit two rows per source tuple;
-            // it is constructive only for a divisible, complete row goal.
-            !shared_source || left.matching_tuple_count() == right.matching_tuple_count()
+            // Every copied relation must assign exactly the same physical
+            // tuple class and multiplicity, regardless of how many nested
+            // UNION/INTERSECT/EXCEPT branches read it.
+            let mut complete_sources = std::collections::BTreeMap::new();
+            case.obligations().iter().all(|obligation| {
+                // Local branch names do not identify the physical population.
+                // Resolve before comparing multiplicities, or independently
+                // materialized aliases can silently double a shared source.
+                let Some(boundary) = map(obligation.boundary()) else {
+                    return false;
+                };
+                let assignment = (
+                    boundary.tuple_columns().to_vec(),
+                    obligation.matching_tuple_count(),
+                );
+                match complete_sources.insert(boundary.relation().to_string(), assignment.clone()) {
+                    Some(previous) => previous == assignment,
+                    None => true,
+                }
+            })
         })?
         .with_physical_boundaries(map)?;
     let scale_by_value_rows = matches!(

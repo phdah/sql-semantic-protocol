@@ -342,6 +342,28 @@ pub fn physical_joint_row_count_plan(
     if necessarily_missing_positive_join_input(bundle, &ordered) {
         return WitnessDirection::Impossible;
     }
+    if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(WitnessDirection::Feasible(mut partitions)) =
+            physical_rank_partition_count_plan(bundle, layer_id, *rows)
+        {
+            // Retain the already proven direct ranked population as a
+            // separate sufficient alternative. Each case controls its own
+            // complete source; combining their obligations would be unsound.
+            if let Some(WitnessDirection::Feasible(cases)) =
+                joint_operator_population_goals(bundle, &ordered)
+            {
+                partitions.extend(cases);
+            }
+            if let Some(direction) = WitnessDirection::feasible(partitions) {
+                return direction;
+            }
+        }
+    }
+    if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(proof) = physical_shared_set_cancellation_plan(bundle, layer_id, *rows) {
+            return proof;
+        }
+    }
     if let Some(witness) = joint_mixed_operator_and_source_goals(bundle, &ordered) {
         return witness;
     }
@@ -349,12 +371,22 @@ pub fn physical_joint_row_count_plan(
         return witness;
     }
     if let [(layer_id, rows)] = ordered.as_slice() {
-        if let Some(witness) = physical_empty_subquery_membership_plan(bundle, layer_id, *rows) {
+        if let Some(witness) = physical_subquery_membership_plan(bundle, layer_id, *rows) {
             return witness;
         }
     }
     if let [(layer_id, rows)] = ordered.as_slice() {
         if let Some(witness) = physical_group_aggregate_filter_count_plan(bundle, layer_id, *rows) {
+            return witness;
+        }
+    }
+    if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(witness) = physical_join_rank_count_plan(bundle, layer_id, *rows) {
+            return witness;
+        }
+    }
+    if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(witness) = physical_rank_partition_count_plan(bundle, layer_id, *rows) {
             return witness;
         }
     }
