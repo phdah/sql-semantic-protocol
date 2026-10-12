@@ -54,7 +54,7 @@ use crate::protocol::{
     SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
     UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
     WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteOperation,
-    WriteValue,
+    WriteValue, WriteDefinitionMode,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 
@@ -202,19 +202,28 @@ fn analyze_statement(
         }
         SqlStatement::CreateTable(create_table) => match &create_table.query {
             Some(query) => {
+                if create_table.if_not_exists {
+                    return unsupported_statement();
+                }
                 let target = create_table.name.to_string();
+                let mode = if create_table.or_replace {
+                    WriteDefinitionMode::ReplaceTable
+                } else {
+                    WriteDefinitionMode::CreateTable
+                };
                 ProtocolStatement::Query(
                     analyze_query(query, Some(target.clone()), metadata)
-                        .with_write(Some(WriteOperation::definition(target))),
+                        .with_write(Some(WriteOperation::definition(target, mode))),
                 )
             }
             None => unsupported_queryless_create_table(),
         },
-        SqlStatement::CreateView { name, query, .. } => {
+        SqlStatement::CreateView { name, query, or_replace, .. } => {
             let target = name.to_string();
+            let mode = if *or_replace { WriteDefinitionMode::ReplaceView } else { WriteDefinitionMode::CreateView };
             ProtocolStatement::Query(
                 analyze_query(query, Some(target.clone()), metadata)
-                    .with_write(Some(WriteOperation::definition(target))),
+                    .with_write(Some(WriteOperation::definition(target, mode))),
             )
         }
         SqlStatement::Insert(insert) => analyze_insert(insert, metadata),
