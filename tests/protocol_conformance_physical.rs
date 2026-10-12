@@ -280,13 +280,19 @@ fn filtered_join_and_group_share_a_complete_positive_source_population() {
     assert!(
         cases.iter().any(|case| {
             let obligations = case.obligations();
-            obligations.iter().any(|item| matches!(
-                item, WitnessObligation::JoinPopulation { output_rows: 1, .. }
-            )) && obligations.iter().any(|item| matches!(
-                item, WitnessObligation::Group { .. }
-            )) && obligations.iter().filter(|item| matches!(
-                item, WitnessObligation::ClosedWorld { .. }
-            )).count() == 2
+            obligations.iter().any(|item| {
+                matches!(
+                    item,
+                    WitnessObligation::JoinPopulation { output_rows: 1, .. }
+                )
+            }) && obligations
+                .iter()
+                .any(|item| matches!(item, WitnessObligation::Group { .. }))
+                && obligations
+                    .iter()
+                    .filter(|item| matches!(item, WitnessObligation::ClosedWorld { .. }))
+                    .count()
+                    == 2
         }),
         "joint physical plan must control both source bags and both operators"
     );
@@ -299,29 +305,34 @@ fn filtered_join_and_group_share_a_complete_positive_source_population() {
          INSERT INTO raw_customers VALUES (0, TRUE);",
     )
     .expect("complete physical source bags");
-    conn.execute_batch(ADVANCED).expect("materialize dependent producer graph");
-    for relation in ["stage_orders", "stage_customers", "core_enriched", "mart_customer_summary"] {
-        let rows: i64 = conn.query_row(
-            &format!("SELECT COUNT(*) FROM {relation}"),
-            [],
-            |row| row.get(0),
-        ).expect("terminal count");
+    conn.execute_batch(ADVANCED)
+        .expect("materialize dependent producer graph");
+    for relation in [
+        "stage_orders",
+        "stage_customers",
+        "core_enriched",
+        "mart_customer_summary",
+    ] {
+        let rows: i64 = conn
+            .query_row(&format!("SELECT COUNT(*) FROM {relation}"), [], |row| {
+                row.get(0)
+            })
+            .expect("terminal count");
         assert_eq!(rows, 1, "{relation}");
     }
-    let bucket: String = conn.query_row(
-        "SELECT amount_bucket FROM mart_customer_summary",
-        [],
-        |row| row.get(0),
-    ).expect("computed group key");
+    let bucket: String = conn
+        .query_row(
+            "SELECT amount_bucket FROM mart_customer_summary",
+            [],
+            |row| row.get(0),
+        )
+        .expect("computed group key");
     assert_eq!(bucket, "high");
 }
 
 #[test]
 fn filtered_join_group_cannot_ignore_conflicting_downstream_predicate() {
-    let conflicting = ADVANCED.replace(
-        "WHERE enriched.amount = 100",
-        "WHERE enriched.amount = 90",
-    );
+    let conflicting = ADVANCED.replace("WHERE enriched.amount = 100", "WHERE enriched.amount = 90");
     let bundle = fixture_bundle(&conflicting);
     let summary = layer_id(&bundle, "mart_customer_summary");
     let result = physical_row_count_plan(&bundle, summary, 1);
@@ -353,10 +364,7 @@ fn filtered_join_source_proof_is_identical_across_parsing_dialects() {
 
 #[test]
 fn join_filter_on_an_unreconciled_key_remains_residual() {
-    let sql = BOUNDARY.replace(
-        "WHERE amount = 100",
-        "WHERE customer_id = 100",
-    );
+    let sql = BOUNDARY.replace("WHERE amount = 100", "WHERE customer_id = 100");
     let bundle = fixture_bundle(&sql);
     let joined = layer_id(&bundle, "core_enriched");
     let proof = physical_row_count_plan(&bundle, joined, 1);
