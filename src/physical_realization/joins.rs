@@ -11,6 +11,25 @@ pub(super) fn physical_join_population_count_plan(
     target_layer_id: &str,
     wanted: u64,
 ) -> Option<WitnessDirection> {
+    physical_join_population_with_source_counts(
+        bundle,
+        target_layer_id,
+        wanted,
+        &BTreeMap::new(),
+    )
+}
+
+/// Enumerate additional complete empty-partner join populations when a
+/// second terminal fixes the surviving source's exact positive row count.
+/// An empty right/left side cannot create a match, but the same law is not
+/// valid for preserved outer or anti-join sides; the existing join-kind
+/// cardinality computation decides those cases before admitting a witness.
+pub(super) fn physical_join_population_with_source_counts(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+    exact_sources: &BTreeMap<String, u64>,
+) -> Option<WitnessDirection> {
     use crate::join_witness::JoinWitnessDirection;
     use crate::protocol::JoinKind;
 
@@ -170,6 +189,12 @@ pub(super) fn physical_join_population_count_plan(
     ];
     if wanted == 0 {
         candidates.push((JoinPopulationPattern::EmptyLeft, 0, 0));
+        if let Some(&count) = exact_sources.get(left_source) {
+            candidates.push((JoinPopulationPattern::EmptyRight, count, 0));
+        }
+        if let Some(&count) = exact_sources.get(right_source) {
+            candidates.push((JoinPopulationPattern::EmptyLeft, 0, count));
+        }
     }
     // Enumerate bounded factorizations without floating-point roundoff.
     // These are constructive examples only, never an exhaustive proof that
@@ -395,10 +420,25 @@ pub(super) fn jointly_realized_join_goals(
     if goals.len() < 2 {
         return None;
     }
+    // Row-preserving terminals provide necessary, complete source counts.
+    // A zero-count join can use an empty partner while preserving those
+    // positive source rows, rather than demanding that both parents vanish.
+    let mut exact_sources = BTreeMap::<String, u64>::new();
+    for &(layer_id, rows) in goals {
+        if let Some(source) = exact_transparent_source(bundle, layer_id) {
+            if exact_sources
+                .insert(source, rows)
+                .is_some_and(|previous| previous != rows)
+            {
+                return Some(WitnessDirection::Impossible);
+            }
+        }
+    }
     let mut alternatives = Vec::new();
     let mut includes_join = false;
     for &(layer_id, rows) in goals {
-        let join_proof = physical_join_population_count_plan(bundle, layer_id, rows);
+        let join_proof =
+            physical_join_population_with_source_counts(bundle, layer_id, rows, &exact_sources);
         includes_join |= join_proof.is_some();
         let direction =
             join_proof.unwrap_or_else(|| physical_row_count_plan(bundle, layer_id, rows));
