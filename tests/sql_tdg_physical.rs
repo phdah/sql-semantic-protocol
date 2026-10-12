@@ -4,6 +4,9 @@
 //! 90ec0e12a2d5cd2c1294556336fc947e176c9db9.
 //! These SQL fixture files are byte-for-byte copies, not recreated examples.
 
+mod common;
+use common::DIALECTS;
+
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
@@ -486,7 +489,7 @@ fn raw_sql_and_dbt_semantics_are_deterministic_across_pinned_catalog_inputs() {
     let range = fixture_bundle(RANGE);
     let bound = physical_row_count_plan(&range, layer_id(&range, "range_result"), 2);
     assert_eq!(bound, physical_row_count_plan(&range, layer_id(&range, "range_result"), 2));
-    for dialect in ["generic", "postgresql", "duckdb", "mysql", "snowflake", "bigquery"] {
+    for &dialect in DIALECTS {
         let parser = dialect_from_name(dialect).unwrap();
         let input = SqlInput::inline("SELECT value FROM raw_range WHERE value >= 10 AND value <= 1000");
         let configured = ConfiguredSqlInput::new("range", &input, dialect, parser.as_ref());
