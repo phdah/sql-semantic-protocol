@@ -2,6 +2,97 @@
 
 use super::*;
 
+/// Exact positive row selector for a direct filtered producer. The filter
+/// fixes one typed non-join column to a concrete literal. Repeating that row
+/// is safe for an unconstrained physical bag; a join-key restriction must be
+/// reconciled separately and is intentionally unsupported here.
+fn direct_filtered_source(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    node: &PhysicalPlanNode,
+) -> Option<(String, crate::protocol::ColumnRef, WitnessFormula)> {
+    use crate::protocol::{ComparisonOperator, LiteralType, LiteralValue};
+    let [PhysicalPlanRef::Source(source)] = node.inputs() else {
+        return None;
+    };
+    let PhysicalPlanRef::Layer(id) = node.id() else {
+        return None;
+    };
+    let layer = walker.layers.get(id.as_str()).copied()?;
+    let query = query_for(bundle, layer)?;
+    let [input] = query.sources() else {
+        return None;
+    };
+    if input.name() != source
+        || !matches!(node.write_kind(), Some(WriteKind::Definition))
+        || !query.filter_only_row_shape()
+        || !query.joins().is_empty()
+        || query.aggregation().is_some()
+        || query.set_operation().is_some()
+        || query.window_witness().is_some()
+        || !query.subquery_witnesses().is_empty()
+        || query.predicates().having_predicate().is_some()
+        || query.predicates().qualify_predicate().is_some()
+        || !query.diagnostics().is_empty()
+        || !query.output().columns().iter().all(|column| {
+            total_scalar_projection(column.expression())
+        })
+    {
+        return None;
+    }
+    let Predicate::Comparison(comparison) = query.predicates().where_predicate()? else {
+        return None;
+    };
+    if comparison.operator() != ComparisonOperator::Eq {
+        return None;
+    }
+    let (Expression::Column(column), Expression::Literal(literal)) =
+        (comparison.left(), comparison.right())
+    else {
+        return None;
+    };
+    if column.relation().is_some_and(|relation| relation != source) {
+        return None;
+    }
+    let resolved = crate::protocol::ColumnRef::new(
+        Some(source.clone()),
+        column.column().to_string(),
+    );
+    let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == source)?;
+    let typed = schema.columns().iter().find(|item| item.name() == resolved.name())?;
+    let term = match (literal.literal_type(), literal.value()) {
+        (LiteralType::Boolean, LiteralValue::Boolean(value))
+            if typed.data_type().kind() == "boolean" =>
+        {
+            WitnessTerm::Boolean(*value)
+        }
+        (LiteralType::Integer, LiteralValue::Number(value)) => {
+            let integer = value.parse::<i64>().ok()?;
+            let bounds = physical_integer_evidence(schema, &resolved)?;
+            if i128::from(integer) < bounds.minimum || i128::from(integer) > bounds.maximum {
+                return None;
+            }
+            WitnessTerm::Integer(integer)
+        }
+        _ => return None,
+    };
+    if bundle.relation_constraints().iter().any(|set| {
+        set.relation() == source
+            && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+    }) {
+        return None;
+    }
+    let formula = WitnessFormula::Comparison {
+        left: WitnessTerm::Column {
+            row: RowVariable::new(source, source, "filtered_source")?,
+            column: resolved.clone(),
+        },
+        operator: ComparisonOperator::Eq,
+        right: term,
+    };
+    Some((source.clone(), resolved, formula))
+}
+
 /// Realize one local equijoin through a complete physical source population
 /// shared by all its named producers and aliases. No intermediate relation is
 /// treated as writable. Each source receives one cardinality and one assigned
@@ -84,9 +175,11 @@ pub(super) fn physical_join_population_with_source_counts(
         return None;
     }
 
-    // Every node other than this one join must be an identity-only,
-    // unfiltered, complete, materialized or inline projection. This also
-    // handles arbitrarily long left and right producer chains.
+    // Identity-only producer chains remain supported. A direct filtered
+    // producer may additionally select a typed, repeatable literal equality
+    // on an independent column. Its computed projection must be total so
+    // that it cannot change row count. No derived input is writable.
+    let mut source_filters = BTreeMap::<String, (crate::protocol::ColumnRef, WitnessFormula)>::new();
     for node in &walker.nodes {
         let PhysicalPlanRef::Layer(id) = node.id() else {
             continue;
@@ -95,9 +188,14 @@ pub(super) fn physical_join_population_with_source_counts(
             continue;
         }
         let layer = walker.layers.get(id.as_str()).copied()?;
-        if !transparent_projection(query_for(bundle, layer)?)
-            || !matches!(node.write_kind(), None | Some(WriteKind::Definition))
-        {
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
+        if transparent_projection(query_for(bundle, layer)?) {
+            continue;
+        }
+        let (source, column, predicate) = direct_filtered_source(bundle, &walker, node)?;
+        if source_filters.insert(source, (column, predicate)).is_some() {
             return None;
         }
     }
@@ -133,7 +231,10 @@ pub(super) fn physical_join_population_with_source_counts(
             // All intermediate key projections have proven identical
             // datatypes at every producer edge. An endpoint-only match
             // cannot attest to implicit warehouse coercions.
-            resolve_filter_column_with_evidence(bundle, &walker, join_layer.id(), &column, 0, true)?
+            // SQL identity copies retain the physical key's value and type.
+            // The physical leaf supplies authoritative signed-integer evidence;
+            // a filtered view does not need a separate warehouse catalog row.
+            resolve_filter_column(bundle, &walker, join_layer.id(), &column, 0)?
         };
         walker
             .sources
@@ -147,6 +248,15 @@ pub(super) fn physical_join_population_with_source_counts(
     }
     let left_source = left_key.relation()?;
     let right_source = right_key.relation()?;
+    // The construction controls join keys independently of source filters.
+    // If a filter mentions either join key, the literal must instead be
+    // reconciled with each candidate population, which is not done here.
+    if source_filters.iter().any(|(source, (column, _))| {
+        (source == left_source && column == &left_key)
+            || (source == right_source && column == &right_key)
+    }) {
+        return None;
+    }
     // Require actual attested physical signed integer key types. An opaque
     // type, uniqueness contract or range restriction cannot be guessed.
     let left_schema = bundle
@@ -261,7 +371,10 @@ pub(super) fn physical_join_population_with_source_counts(
                 boundary: boundary.clone(),
                 quantifier: RowQuantifier::ForAll,
                 bounds,
-                predicate: count_tautology(),
+                predicate: source_filters
+                    .get(relation)
+                    .map(|(_, predicate)| predicate.clone())
+                    .unwrap_or_else(count_tautology),
                 closed_world: true,
             });
             obligations.push(WitnessObligation::ClosedWorld {

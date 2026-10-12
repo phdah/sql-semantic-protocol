@@ -2706,12 +2706,22 @@
         },
         "target_alias": {
           "oneOf": [
-            { "$ref": "#/$defs/nonEmptyString" },
-            { "type": "null" }
+            {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "definition_mode": {
-          "enum": ["create_table", "replace_table", "create_view", "replace_view", null]
+          "enum": [
+            "create_table",
+            "replace_table",
+            "create_view",
+            "replace_view",
+            null
+          ]
         },
         "kind": {
           "enum": [
@@ -5897,6 +5907,22 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "boolean"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
             "kind"
           ],
           "properties": {
@@ -6269,14 +6295,20 @@
                     "const": "grouped_matched"
                   }
                 },
-                "required": ["pattern"]
+                "required": [
+                  "pattern"
+                ]
               },
               "then": {
-                "required": ["pattern_groups"]
+                "required": [
+                  "pattern_groups"
+                ]
               },
               "else": {
                 "not": {
-                  "required": ["pattern_groups"]
+                  "required": [
+                    "pattern_groups"
+                  ]
                 }
               }
             }
@@ -6482,27 +6514,60 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "kind", "boundary", "partition_key", "order", "partitions",
-            "rows_per_partition", "rank_limit", "closed_world"
+            "kind",
+            "boundary",
+            "partition_key",
+            "order",
+            "partitions",
+            "rows_per_partition",
+            "rank_limit",
+            "closed_world"
           ],
           "properties": {
-            "kind": {"const": "rank_population"},
-            "boundary": {"$ref": "#/$defs/constructiveBoundary"},
-            "partition_key": {"$ref": "#/$defs/groupWitnessColumn"},
+            "kind": {
+              "const": "rank_population"
+            },
+            "boundary": {
+              "$ref": "#/$defs/constructiveBoundary"
+            },
+            "partition_key": {
+              "$ref": "#/$defs/groupWitnessColumn"
+            },
             "order": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["column", "ascending", "nulls_first"],
+              "required": [
+                "column",
+                "ascending",
+                "nulls_first"
+              ],
               "properties": {
-                "column": {"$ref": "#/$defs/groupWitnessColumn"},
-                "ascending": {"type": "boolean"},
-                "nulls_first": {"type": "boolean"}
+                "column": {
+                  "$ref": "#/$defs/groupWitnessColumn"
+                },
+                "ascending": {
+                  "type": "boolean"
+                },
+                "nulls_first": {
+                  "type": "boolean"
+                }
               }
             },
-            "partitions": {"type": "integer", "minimum": 1},
-            "rows_per_partition": {"type": "integer", "minimum": 1},
-            "rank_limit": {"type": "integer", "minimum": 0},
-            "closed_world": {"const": true}
+            "partitions": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "rows_per_partition": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "rank_limit": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "closed_world": {
+              "const": true
+            }
           }
         },
         {
