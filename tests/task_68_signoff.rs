@@ -154,7 +154,11 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
         "canonical raw fixture inventory unexpectedly shrank"
     );
     for (fixture_id, target, expected) in [
-        ("multi_layer_join_group", "mart_customer_summary", "residual"),
+        (
+            "multi_layer_join_group",
+            "mart_customer_summary",
+            "residual",
+        ),
         ("joined_boundary", "core_enriched", "feasible"),
     ] {
         let fixture = raw
