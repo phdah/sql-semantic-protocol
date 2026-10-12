@@ -88,7 +88,13 @@ pub(super) fn validate_all_constraints(
                             .iter()
                             .any(|col| matches!(row.values.get(col), Some(LiteralValue::Null)))
                         {
-                            continue;
+                            // Dialects differ on UNIQUE NULL equality (for
+                            // example, SQL Server versus PostgreSQL). A generic
+                            // uniqueness proof may not assume NULLS DISTINCT.
+                            return Err(residual_gap(
+                                PhysicalWriteStateGap::UnprovedConstraint,
+                                "nullable UNIQUE key requires dialect-specific NULL uniqueness law",
+                            ));
                         }
                         for prior in &state.rows[..index] {
                             if key.columns().iter().any(|col| {
@@ -105,6 +111,25 @@ pub(super) fn validate_all_constraints(
                     }
                 }
                 RelationConstraint::ForeignKey(key) => {
+                    // A foreign key may reference only a dialect-legitimate
+                    // unique target key. Do not infer one from coincidental
+                    // sample values or from the FK declaration alone.
+                    let referenced_key_attested = bundle.relation_constraints().iter()
+                        .filter(|set| set.relation() == key.referenced_relation())
+                        .flat_map(|set| set.constraints())
+                        .any(|constraint| match constraint {
+                            RelationConstraint::PrimaryKey(ref_key) | RelationConstraint::UniqueKey(ref_key) => {
+                                ref_key.columns() == key.referenced_columns()
+                                    && ref_key.evidence().iter().any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
+                            }
+                            _ => false,
+                        });
+                    if !referenced_key_attested {
+                        return Err(residual_gap(
+                            PhysicalWriteStateGap::UnprovedConstraint,
+                            "foreign-key referenced columns lack an attested unique key",
+                        ));
+                    }
                     let referenced = states.get(key.referenced_relation()).ok_or_else(|| {
                         residual("foreign-key target population is not controlled")
                     })?;
