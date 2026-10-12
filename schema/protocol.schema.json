@@ -2689,6 +2689,7 @@
       "additionalProperties": false,
       "required": [
         "target",
+        "target_alias",
         "kind",
         "target_columns",
         "match_condition",
@@ -2701,6 +2702,12 @@
       "properties": {
         "target": {
           "$ref": "#/$defs/relationName"
+        },
+        "target_alias": {
+          "oneOf": [
+            { "$ref": "#/$defs/nonEmptyString" },
+            { "type": "null" }
+          ]
         },
         "kind": {
           "enum": [
