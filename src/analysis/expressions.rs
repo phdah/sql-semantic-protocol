@@ -367,7 +367,11 @@ pub(super) fn analyze_value(
     }
 }
 
-pub(super) fn analyze_number(value: &str, expression: &Expr, diagnostics: &mut Vec<Diagnostic>) -> Expression {
+pub(super) fn analyze_number(
+    value: &str,
+    expression: &Expr,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Expression {
     match Number::from_str(value) {
         Ok(number) => {
             let literal_type = if value.contains('.') || value.contains('e') || value.contains('E')

@@ -241,7 +241,11 @@ pub(super) fn is_plain_boolean_column(expression: &Expr) -> bool {
     }
 }
 
-pub(super) fn normalize_boolean_test(expression: Expression, value: bool, include_null: bool) -> Predicate {
+pub(super) fn normalize_boolean_test(
+    expression: Expression,
+    value: bool,
+    include_null: bool,
+) -> Predicate {
     normalize_comparison(
         expression,
         if include_null {

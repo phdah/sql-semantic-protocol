@@ -2,7 +2,10 @@
 
 use super::*;
 
-pub(super) fn analyze_query_predicates(query: &SqlQuery, diagnostics: &mut Vec<Diagnostic>) -> Predicates {
+pub(super) fn analyze_query_predicates(
+    query: &SqlQuery,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Predicates {
     analyze_query_predicates_with_outer_scope(query, &[], diagnostics)
 }
 

@@ -194,7 +194,10 @@ pub(super) fn select_local_qualifiers(select: &Select) -> BTreeSet<String> {
     qualifiers
 }
 
-pub(super) fn collect_table_factor_qualifiers(factor: &TableFactor, qualifiers: &mut BTreeSet<String>) {
+pub(super) fn collect_table_factor_qualifiers(
+    factor: &TableFactor,
+    qualifiers: &mut BTreeSet<String>,
+) {
     match factor {
         TableFactor::Table { name, alias, .. } => {
             if let Some(alias) = alias {

@@ -15,7 +15,11 @@ pub(super) fn unsupported_queryless_create_table() -> ProtocolStatement {
     ))
 }
 
-pub(super) fn unsupported_write_statement(category: &str, code: &str, message: &str) -> ProtocolStatement {
+pub(super) fn unsupported_write_statement(
+    category: &str,
+    code: &str,
+    message: &str,
+) -> ProtocolStatement {
     ProtocolStatement::Unsupported(UnsupportedStatement::new(
         category.to_string(),
         vec![warning(code, DiagnosticArea::Statement, message)],

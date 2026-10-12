@@ -318,7 +318,9 @@ pub(super) fn check_column_name(expression: &Expr) -> Option<&str> {
     }
 }
 
-pub(super) fn constraint_value_from_expression(expression: &Expr) -> Option<(ConstraintValue, Option<bool>)> {
+pub(super) fn constraint_value_from_expression(
+    expression: &Expr,
+) -> Option<(ConstraintValue, Option<bool>)> {
     match unwrap_nested_expression(expression) {
         Expr::Value(value) => constraint_value_from_sql_value(&value.value),
         Expr::UnaryOp {
@@ -333,7 +335,9 @@ pub(super) fn constraint_value_from_expression(expression: &Expr) -> Option<(Con
     }
 }
 
-pub(super) fn constraint_value_from_sql_value(value: &Value) -> Option<(ConstraintValue, Option<bool>)> {
+pub(super) fn constraint_value_from_sql_value(
+    value: &Value,
+) -> Option<(ConstraintValue, Option<bool>)> {
     match value {
         Value::Null => Some((ConstraintValue::Null, None)),
         Value::Boolean(value) => Some((ConstraintValue::Boolean(*value), Some(false))),
@@ -343,7 +347,10 @@ pub(super) fn constraint_value_from_sql_value(value: &Value) -> Option<(Constrai
     }
 }
 
-pub(super) fn constraint_number_from_expression(expression: &Expr, negative: bool) -> Option<ConstraintValue> {
+pub(super) fn constraint_number_from_expression(
+    expression: &Expr,
+    negative: bool,
+) -> Option<ConstraintValue> {
     let Expr::Value(value) = unwrap_nested_expression(expression) else {
         return None;
     };

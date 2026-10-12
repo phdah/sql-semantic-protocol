@@ -136,7 +136,10 @@ pub(super) fn analyze_set_expr_output_with_outer_scope(
 // Branch-local output domains include WHERE-derived restrictions. Combining raw
 // SELECT AST output domains loses those restrictions, so recompute the final
 // domains from the already analyzed leaves in the recursive operation tree.
-pub(super) fn refine_set_operation_output_domains(output: Output, operation: &SetOperation) -> Output {
+pub(super) fn refine_set_operation_output_domains(
+    output: Output,
+    operation: &SetOperation,
+) -> Output {
     let mut next_branch = 0;
     let Some(domains) = operation_output_domains(operation, operation.branches(), &mut next_branch)
     else {
@@ -314,7 +317,10 @@ pub(super) fn analyze_output_item(
     }
 }
 
-pub(super) fn inherit_local_case_expression(expression: Expression, scope: &[OutputRelation]) -> Expression {
+pub(super) fn inherit_local_case_expression(
+    expression: Expression,
+    scope: &[OutputRelation],
+) -> Expression {
     let Expression::Column(column) = &expression else {
         return expression;
     };
@@ -439,7 +445,10 @@ pub(super) fn expand_wildcard(
     }
 }
 
-pub(super) fn unresolved_wildcard_column(name: String, diagnostics: &mut Vec<Diagnostic>) -> OutputColumn {
+pub(super) fn unresolved_wildcard_column(
+    name: String,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> OutputColumn {
     let reason = "wildcard output cannot be resolved without source schema information";
     diagnostics.push(warning(
         "unresolved_wildcard",

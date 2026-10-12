@@ -381,7 +381,11 @@ pub(super) fn type_literal(
     }
 }
 
-pub(super) fn decimal_literal_fits(value: &str, precision: Option<u64>, scale: Option<u64>) -> bool {
+pub(super) fn decimal_literal_fits(
+    value: &str,
+    precision: Option<u64>,
+    scale: Option<u64>,
+) -> bool {
     let mantissa = value
         .split(['e', 'E'])
         .next()

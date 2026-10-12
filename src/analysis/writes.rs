@@ -2,7 +2,10 @@
 
 use super::*;
 
-pub(super) fn analyze_insert(insert: &SqlInsert, metadata: &AnalysisMetadata<'_>) -> ProtocolStatement {
+pub(super) fn analyze_insert(
+    insert: &SqlInsert,
+    metadata: &AnalysisMetadata<'_>,
+) -> ProtocolStatement {
     let target = match &insert.table {
         TableObject::TableName(name) => name.to_string(),
         TableObject::TableFunction(_) => {

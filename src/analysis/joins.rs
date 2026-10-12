@@ -46,7 +46,9 @@ pub(super) fn analyze_join(
     ProtocolJoin::new(kind, left.clone(), right.clone(), condition)
 }
 
-pub(super) fn analyze_join_operator(operator: &JoinOperator) -> (JoinKind, Option<&JoinConstraint>, bool) {
+pub(super) fn analyze_join_operator(
+    operator: &JoinOperator,
+) -> (JoinKind, Option<&JoinConstraint>, bool) {
     match operator {
         JoinOperator::Join(constraint) | JoinOperator::Inner(constraint) => {
             (JoinKind::Inner, Some(constraint), true)
@@ -214,7 +216,9 @@ pub(super) fn remap_join_equality_expression(
     }
 }
 
-pub(super) fn combine_conjunction(predicates: impl IntoIterator<Item = Predicate>) -> Option<Predicate> {
+pub(super) fn combine_conjunction(
+    predicates: impl IntoIterator<Item = Predicate>,
+) -> Option<Predicate> {
     let mut predicates = predicates.into_iter();
     let first = predicates.next()?;
     Some(predicates.fold(first, |left, right| {
