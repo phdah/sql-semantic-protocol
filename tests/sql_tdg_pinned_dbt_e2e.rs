@@ -163,7 +163,7 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
         graph
             .sources()
             .iter()
-            .any(|source| source.ends_with(".orders")),
+            .any(|source| source.contains("\"raw\".\"orders\"")),
         "the canonical graph lost the physical source: {graph:?}"
     );
     let zero = physical_joint_row_count_plan(
