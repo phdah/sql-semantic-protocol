@@ -69,6 +69,19 @@ Verified or narrowly constructed capabilities added through PR #95:
 
 This is a description of **remaining gaps**, not a mandate to reimplement any of the landed features. Local operator variants belong to TASK-72..75; TASK-95 only composes their proven facts.
 
+## Additional TASK-95 increment: uncorrelated nonempty membership
+
+- Extended the physical subquery composer with a complete one-row inner
+  population for unfiltered, uncorrelated EXISTS/NOT EXISTS, including positive
+  selection and deliberate zero-output rejection through separate transparent
+  producer chains.
+- Added cross-dialect and DuckDB full-output checks for duplicate and NULL
+  outer rows, plus conservative correlated/filtered/IN residuals and
+  overlapping/independent source goal regressions.
+- This remains a narrowly sufficient population, not a general correlated
+  key-match construction. **All five task acceptance criteria remain open**;
+  complete TASK-95 sign-off has not been established.
+
 ## Next-agent handoff
 
 - Select **TASK-95**, not TASK-96 or TASK-68. Preserve the original acceptance criteria; they remain unchecked until independently demonstrated.
