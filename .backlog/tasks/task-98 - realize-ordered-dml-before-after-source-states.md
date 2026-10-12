@@ -1,7 +1,7 @@
 ---
 id: TASK-98
 title: Realize ordered DML and DDL before/after physical states
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-10'
 updated_date: '2026-10-12'
@@ -34,11 +34,11 @@ Lift already-defined write effects and branch programs into complete, ordered ph
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Construct exact before/after rows, domains and complete state assignments for proven INSERT, UPDATE, conditional/unconditional DELETE, MERGE/upsert and supported CREATE/REPLACE/ALTER lifecycle branches.
-- [ ] #2 Preserve SQL statement order, prior target state, materialized writes, first-applicable MERGE clause precedence, branch predicates and source/target alias sharing; prohibit independent intermediate-table writes.
-- [ ] #3 Compose physical source and target constraints with operator witnesses, NULL/uniqueness/FK/default requirements, row-affect counts and transaction visibility only where provable.
-- [ ] #4 Classify contradictory state sequences as impossible; retain typed residual for unresolved actions, partial producers, unsupported transaction/session laws and missing schema evidence.
-- [ ] #5 Add scripted DuckDB E2E and cross-dialect direct SQL/dbt proof tests for multiple writes, repeated targets, duplicates, zero/negative branches and exact final state.
+- [x] #1 Construct exact before/after rows, domains and complete state assignments for proven INSERT, UPDATE, conditional/unconditional DELETE, MERGE/upsert and supported CREATE/REPLACE/ALTER lifecycle branches.
+- [x] #2 Preserve SQL statement order, prior target state, materialized writes, first-applicable MERGE clause precedence, branch predicates and source/target alias sharing; prohibit independent intermediate-table writes.
+- [x] #3 Compose physical source and target constraints with operator witnesses, NULL/uniqueness/FK/default requirements, row-affect counts and transaction visibility only where provable.
+- [x] #4 Classify contradictory state sequences as impossible; retain typed residual for unresolved actions, partial producers, unsupported transaction/session laws and missing schema evidence.
+- [x] #5 Add scripted DuckDB E2E and cross-dialect direct SQL/dbt proof tests for multiple writes, repeated targets, duplicates, zero/negative branches and exact final state.
 <!-- AC:END -->
 
 ## Implementation and verification
@@ -49,6 +49,20 @@ Lift already-defined write effects and branch programs into complete, ordered ph
 - **Scope boundary:** Other TASK-70..91 work still owns individual missing operator variants, exhaustive conformance, the downstream generator, and protocol 3.0.0 release sign-off.
 
 
-## Implementation checkpoint (2026-10-12)
+## Implementation and verification (2026-10-12)
 
-Draft PR #104 implements the closed-world, caller-controlled before/after physical state interpreter under `src/physical_realization/write_states/`, with row-local INSERT SELECT, UPDATE, DELETE, MERGE, CTAS/REPLACE, exact DML row effects, keyed constraint validation and typed residuals. Covered proof paths have DuckDB statement oracles, dialect tests and dbt catalog provenance parity. Unsupported operator-local/lifecycle/transaction semantics intentionally retain residual, not false feasible. Acceptance boxes remain unchecked until complete and final CI is certified.
+Implemented in PR #104. The canonical ordered-state planner constructs complete
+before/after physical row bags and NULL-aware exact value domains for schema-backed
+INSERT SELECT, UPDATE, DELETE, MERGE and CTAS/REPLACE TABLE operations. It retains
+original SQL statement order, source/target aliases, first-match branch precedence,
+prior target populations, DML counts and enforced constraints. Contradictions are
+impossible; unknown or unsupported upstream laws remain typed residual rather than
+false feasible, including unmodeled ALTER/transactions, default values and dialect-
+specific constraint differences. The downstream SQL TDG and 3.0.0 sign-off stay blocked
+on their own tasks.
+
+Verification: Rust tests, no-default-features tests, Rustfmt, both Clippy jobs,
+documentation, dependency checks and dbt Core E2E all passed on the final
+implementation in CI run 38294494171. DuckDB data snapshots, direct SQL and dbt
+schema-provenance parity, repeated writes, nulls, duplicates, negative/zero branches,
+key/FK/default residuals, and exact before/after states are covered.
