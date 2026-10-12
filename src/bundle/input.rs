@@ -156,4 +156,3 @@ impl AnalyzedInput {
         &self.relation_constraints
     }
 }
-

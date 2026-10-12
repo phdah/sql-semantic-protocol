@@ -275,4 +275,3 @@ mod tests {
         assert!(WitnessDirection::feasible(vec![case]).is_none());
     }
 }
-

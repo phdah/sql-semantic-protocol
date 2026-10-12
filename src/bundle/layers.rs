@@ -93,4 +93,3 @@ impl LayerWriteStateEffect {
         self.target_constraints.as_ref()
     }
 }
-

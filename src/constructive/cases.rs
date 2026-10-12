@@ -208,4 +208,3 @@ pub(super) fn disjoint(left: CountBounds, right: CountBounds) -> bool {
     left.maximum.is_some_and(|max| max < right.minimum)
         || right.maximum.is_some_and(|max| max < left.minimum)
 }
-

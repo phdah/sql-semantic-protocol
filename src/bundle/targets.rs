@@ -163,4 +163,3 @@ pub(super) fn diagnostic_cmp(
             right.message(),
         ))
 }
-

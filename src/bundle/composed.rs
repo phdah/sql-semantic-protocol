@@ -618,4 +618,3 @@ impl UnresolvedComposedSemantics {
         &self.diagnostics
     }
 }
-

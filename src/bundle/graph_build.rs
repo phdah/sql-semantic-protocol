@@ -213,7 +213,11 @@ pub(super) fn mark_cycle_edges(edges: &mut [GraphEdge]) {
     }
 }
 
-pub(super) fn path_exists(start: &str, target: &str, adjacency: &BTreeMap<String, Vec<String>>) -> bool {
+pub(super) fn path_exists(
+    start: &str,
+    target: &str,
+    adjacency: &BTreeMap<String, Vec<String>>,
+) -> bool {
     if start == target {
         return true;
     }
@@ -241,7 +245,10 @@ pub(super) fn path_exists(start: &str, target: &str, adjacency: &BTreeMap<String
     false
 }
 
-pub(super) fn build_components(layers: &[TransformationLayer], edges: &[GraphEdge]) -> Vec<GraphComponent> {
+pub(super) fn build_components(
+    layers: &[TransformationLayer],
+    edges: &[GraphEdge],
+) -> Vec<GraphComponent> {
     let mut neighbors = layers
         .iter()
         .map(|layer| (layer.id().to_string(), BTreeSet::<String>::new()))
@@ -370,7 +377,10 @@ pub(super) fn build_component(
     }
 }
 
-pub(super) fn topological_layer_order(layer_ids: &BTreeSet<String>, edges: &[GraphEdge]) -> Vec<String> {
+pub(super) fn topological_layer_order(
+    layer_ids: &BTreeSet<String>,
+    edges: &[GraphEdge],
+) -> Vec<String> {
     let mut indegree = layer_ids
         .iter()
         .map(|layer_id| (layer_id.clone(), 0_usize))
@@ -457,4 +467,3 @@ pub(super) fn component_final_outcomes(
     outcomes.dedup();
     outcomes
 }
-

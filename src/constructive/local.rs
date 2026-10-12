@@ -497,4 +497,3 @@ pub fn local_constructive_witnesses(
     }
     proofs
 }
-

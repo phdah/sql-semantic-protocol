@@ -388,4 +388,3 @@ pub enum ProofStrength {
     /// The obligations are both necessary and sufficient.
     Equivalent,
 }
-
