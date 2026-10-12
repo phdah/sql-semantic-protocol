@@ -366,8 +366,7 @@ fn physical_filtered_join_single_group(
     target_layer_id: &str,
     wanted: u64,
 ) -> Option<WitnessDirection> {
-    use crate::group_witness::GroupWitnessDirection;
-    use crate::protocol::{ComparisonOperator, LiteralValue};
+    use crate::protocol::{AggregateArgument, ComparisonOperator, LiteralType, LiteralValue};
 
     if wanted != 1 {
         return None;
@@ -518,16 +517,44 @@ fn physical_filtered_join_single_group(
         }
     }
 
-    let local = group_query.group_witness()?;
-    let GroupWitnessDirection::Exact(cases) = local.qualifying() else {
+    // Count(*) from a one-row complete join bag is exactly one, including
+    // when the grouping key is NULL. The existing local HAVING witness is
+    // conservatively residual for a preceding WHERE; independently prove
+    // this precise typed law only after the WHERE has been linked to the
+    // complete upstream source filter above.
+    let Predicate::Comparison(having) = group_query.predicates().having_predicate()? else {
         return None;
     };
-    let tested = cases
-        .iter()
-        .find(|case| case.min_rows() <= 1 && case.max_rows().is_none_or(|max| max >= 1))?;
-    // Only COUNT(*) establishes exactly one non-NULL aggregate contributor
-    // without a separate source-value and nullability assignment.
-    if local.argument().is_some() {
+    let (function, operator, literal) = match (having.left(), having.right()) {
+        (Expression::AggregateFunction(function), Expression::Literal(literal)) => {
+            (function, having.operator(), literal)
+        }
+        (Expression::Literal(literal), Expression::AggregateFunction(function)) => {
+            (function, having.operator().reversed(), literal)
+        }
+        _ => return None,
+    };
+    if !function.name().eq_ignore_ascii_case("count")
+        || !matches!(function.arguments(), [AggregateArgument::Wildcard])
+        || function.distinct()
+        || function.filter().is_some()
+        || literal.literal_type() != LiteralType::Integer
+    {
+        return None;
+    }
+    let LiteralValue::Number(threshold) = literal.value() else {
+        return None;
+    };
+    let value = threshold.parse::<i128>().ok()?;
+    let survives = match operator {
+        ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => 1 == value,
+        ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => 1 != value,
+        ComparisonOperator::Lt => 1 < value,
+        ComparisonOperator::Lte => 1 <= value,
+        ComparisonOperator::Gt => 1 > value,
+        ComparisonOperator::Gte => 1 >= value,
+    };
+    if !survives {
         return None;
     }
     let WitnessDirection::Feasible(join_cases) =
@@ -555,12 +582,12 @@ fn physical_filtered_join_single_group(
                 Some(source.name().to_string()),
                 key.name().to_string(),
             )],
-            aggregate: local.aggregate()?,
+            aggregate: crate::group_witness::GroupAggregate::CountRows,
             distinct: false,
             argument: None,
             rows: bounds,
             non_null: bounds,
-            tests: tested.tests().to_vec(),
+            tests: Vec::new(),
         });
         obligations.push(WitnessObligation::OutputRows {
             layer_id: target_layer_id.to_string(),
