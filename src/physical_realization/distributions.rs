@@ -133,13 +133,20 @@ pub(crate) fn physical_inverted_set_distribution_plan(
     }
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
-    let sets = walker.nodes.iter().filter_map(|node| {
-        let PhysicalPlanRef::Layer(id) = node.id() else {
-            return None;
-        };
-        let layer = walker.layers.get(id.as_str()).copied()?;
-        query_for(bundle, layer)?.set_operation().is_some().then_some(id.as_str())
-    }).collect::<Vec<_>>();
+    let sets = walker
+        .nodes
+        .iter()
+        .filter_map(|node| {
+            let PhysicalPlanRef::Layer(id) = node.id() else {
+                return None;
+            };
+            let layer = walker.layers.get(id.as_str()).copied()?;
+            query_for(bundle, layer)?
+                .set_operation()
+                .is_some()
+                .then_some(id.as_str())
+        })
+        .collect::<Vec<_>>();
     let [set_id] = sets.as_slice() else {
         return None;
     };
@@ -165,7 +172,11 @@ pub(crate) fn physical_inverted_set_distribution_plan(
         if !safe_projection(query, current, &covered) {
             return None;
         }
-        let mut output = query.output().columns().iter().filter(|item| item.name() == output_name);
+        let mut output = query
+            .output()
+            .columns()
+            .iter()
+            .filter(|item| item.name() == output_name);
         let projected = output.next()?;
         if output.next().is_some() {
             return None;
@@ -174,10 +185,19 @@ pub(crate) fn physical_inverted_set_distribution_plan(
             return None;
         };
         let canonical = layer.canonical_relation(lineage.relation());
-        let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == canonical)?;
-        let input = schema.columns().iter().find(|column| column.name() == lineage.column())?;
+        let schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == canonical)?;
+        let input = schema
+            .columns()
+            .iter()
+            .find(|column| column.name() == lineage.column())?;
         let data_type = input.data_type().clone();
-        if expected_type.as_ref().is_some_and(|expected| expected != &data_type) {
+        if expected_type
+            .as_ref()
+            .is_some_and(|expected| expected != &data_type)
+        {
             return None;
         }
         values = invert_values(
@@ -187,9 +207,11 @@ pub(crate) fn physical_inverted_set_distribution_plan(
             &data_type,
             values,
         )?;
-        let mut edges = bundle.graph().edges().iter().filter(|edge| {
-            edge.consumer_layer_id() == current && edge.relation() == canonical
-        });
+        let mut edges = bundle
+            .graph()
+            .edges()
+            .iter()
+            .filter(|edge| edge.consumer_layer_id() == current && edge.relation() == canonical);
         let edge = edges.next()?;
         if edges.next().is_some() || edge.resolution() != RelationResolution::Resolved {
             return None;
@@ -197,9 +219,10 @@ pub(crate) fn physical_inverted_set_distribution_plan(
         let [producer] = edge.producer_layer_ids() else {
             return None;
         };
-        let node = walker.nodes.iter().find(|node| {
-            node.id() == &PhysicalPlanRef::Layer(current.to_string())
-        })?;
+        let node = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(current.to_string()))?;
         if node.inputs() != [PhysicalPlanRef::Layer(producer.clone())] {
             return None;
         }
