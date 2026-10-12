@@ -2,6 +2,8 @@
 
 use super::*;
 
+/// Multi-input analysis result with deterministic local layers and relation dependency graph.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisBundle {
     protocol_version: &'static str,
     inputs: Vec<AnalyzedInput>,
@@ -268,4 +270,3 @@ impl AnalysisBundle {
     }
 }
 
-#[derive(Debug)]

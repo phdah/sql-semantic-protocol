@@ -157,6 +157,3 @@ impl AnalyzedInput {
     }
 }
 
-/// Dataset produced by one transformation layer.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[non_exhaustive]

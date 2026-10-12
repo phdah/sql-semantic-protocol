@@ -2,6 +2,8 @@
 
 use super::*;
 
+/// Return typed intermediate-source obligations that cannot be satisfied by
+/// inserting rows directly into a derived relation.
 ///
 /// Consumers must discharge these against the producer graph, with the physical
 /// leaf dependencies in `ResolvedComposedSemantics::dependencies`. A pending

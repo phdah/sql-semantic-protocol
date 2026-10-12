@@ -2,6 +2,7 @@
 
 use super::*;
 
+/// A jointly enforced conjunction of typed witness obligations.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WitnessCase {
     obligations: Vec<WitnessObligation>,

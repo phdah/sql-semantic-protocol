@@ -2,6 +2,8 @@
 
 use super::*;
 
+/// One local transformation layer derived from an analyzed query statement.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TransformationLayer {
     id: String,
     input_id: String,
@@ -92,5 +94,3 @@ impl LayerWriteStateEffect {
     }
 }
 
-/// Multi-input analysis result with deterministic local layers and relation dependency graph.
-#[derive(Debug, Clone, PartialEq, Eq)]

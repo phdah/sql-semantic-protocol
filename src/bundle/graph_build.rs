@@ -2,6 +2,7 @@
 
 use super::*;
 
+#[derive(Debug)]
 pub(super) struct LayerBuildError {
     input_id: String,
     error: RelationResolutionError,

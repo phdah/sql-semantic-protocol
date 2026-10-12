@@ -389,4 +389,3 @@ pub enum ProofStrength {
     Equivalent,
 }
 
-/// A jointly enforced conjunction of typed witness obligations.

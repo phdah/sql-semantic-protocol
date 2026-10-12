@@ -2,6 +2,8 @@
 
 use super::*;
 
+/// Diagnostic attached to graph construction or one graph component.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CompositionDiagnostic {
     severity: DiagnosticSeverity,
     code: String,
@@ -617,5 +619,3 @@ impl UnresolvedComposedSemantics {
     }
 }
 
-/// One connected component of transformation layers.
-#[derive(Debug, Clone, PartialEq, Eq)]

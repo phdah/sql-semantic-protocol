@@ -116,5 +116,3 @@ impl ConstructiveWitness {
     }
 }
 
-/// Return typed intermediate-source obligations that cannot be satisfied by
-/// inserting rows directly into a derived relation.

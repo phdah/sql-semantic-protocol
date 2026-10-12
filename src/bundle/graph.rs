@@ -2,6 +2,9 @@
 
 use super::*;
 
+/// Dataset produced by one transformation layer.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[non_exhaustive]
 pub enum DatasetRef {
     /// A named relation created by query-backed DDL.
     Relation {
@@ -98,7 +101,7 @@ impl GraphEdge {
     }
 }
 
-/// Diagnostic attached to graph construction or one graph component.
+/// One connected component of transformation layers.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GraphComponent {
     id: String,
@@ -154,5 +157,3 @@ impl AnalysisGraph {
     }
 }
 
-/// One local transformation layer derived from an analyzed query statement.
-#[derive(Debug, Clone, PartialEq, Eq)]
