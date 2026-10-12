@@ -347,7 +347,7 @@ fn conformance_corpus_has_all_seven_raw_and_eleven_dbt_model_shapes() {
             let bundle = fixture_bundle(&sql);
             for goal in goals {
                 let target = goal["target"].as_str().expect("target relation");
-                let rows = goal["rows"].as_u64().expect("nonnegative count") as usize;
+                let rows = goal["rows"].as_u64().expect("nonnegative count");
                 let proof = physical_row_count_plan(&bundle, layer_id(&bundle, target), rows);
                 let expected = goal["outcome"].as_str().expect("proof outcome");
                 let agrees = match expected {
