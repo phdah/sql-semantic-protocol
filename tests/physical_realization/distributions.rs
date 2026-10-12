@@ -508,6 +508,37 @@ fn reversed_computed_aliases_reconcile_and_detect_necessary_conflicts() {
 }
 
 #[test]
+fn materialized_set_histogram_rejects_incompatible_branch_type() {
+    let mut b = bundle_with_schemas(
+        &[
+            "CREATE TABLE left_stage AS SELECT a AS id FROM l",
+            "CREATE TABLE right_stage AS SELECT a AS id FROM r",
+            "CREATE TABLE set_stage AS SELECT id FROM left_stage UNION SELECT id FROM right_stage",
+            "SELECT id + 1 AS shifted FROM set_stage",
+        ],
+        "postgresql",
+        &[
+            schema("l", &[("a", "INTEGER")]),
+            schema("r", &[("a", "INTEGER")]),
+            schema("left_stage", &[("id", "INTEGER")]),
+            schema("right_stage", &[("id", "INTEGER")]),
+            schema("set_stage", &[("id", "SMALLINT")]),
+        ],
+    );
+    goal(
+        &mut b,
+        3,
+        2,
+        vec![histogram("shifted", &[(ConstraintValue::Integer(4), 1), (ConstraintValue::Null, 1)])],
+    );
+    assert_eq!(
+        b.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Residual,
+        "set output type narrowing has no certified inverse to physical inputs"
+    );
+}
+
+#[test]
 fn reversible_terminal_histogram_lifts_complete_materialized_set_law() {
     for dialect in ["duckdb", "postgresql"] {
         let schemas = [
