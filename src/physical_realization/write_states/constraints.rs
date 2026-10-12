@@ -114,13 +114,19 @@ pub(super) fn validate_all_constraints(
                     // A foreign key may reference only a dialect-legitimate
                     // unique target key. Do not infer one from coincidental
                     // sample values or from the FK declaration alone.
-                    let referenced_key_attested = bundle.relation_constraints().iter()
+                    let referenced_key_attested = bundle
+                        .relation_constraints()
+                        .iter()
                         .filter(|set| set.relation() == key.referenced_relation())
                         .flat_map(|set| set.constraints())
                         .any(|constraint| match constraint {
-                            RelationConstraint::PrimaryKey(ref_key) | RelationConstraint::UniqueKey(ref_key) => {
+                            RelationConstraint::PrimaryKey(ref_key)
+                            | RelationConstraint::UniqueKey(ref_key) => {
                                 ref_key.columns() == key.referenced_columns()
-                                    && ref_key.evidence().iter().any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
+                                    && ref_key
+                                        .evidence()
+                                        .iter()
+                                        .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
                             }
                             _ => false,
                         });
@@ -262,12 +268,19 @@ fn value_conforms(value: &LiteralValue, kind: &DataType) -> bool {
                 _ => false,
             }
         }
-        (LiteralValue::Text(text), DataType::String { length, fixed: false }) => {
+        (
+            LiteralValue::Text(text),
+            DataType::String {
+                length,
+                fixed: false,
+            },
+        ) => {
             // SQL's character-count semantics differ for non-ASCII strings
             // across warehouses. Without an exact dialect-specific rule a
             // non-ASCII length comparison cannot certify physical storage.
-            text.is_ascii() && length.is_none_or(|max| u64::try_from(text.len()).is_ok_and(|n| n <= max))
-        },
+            text.is_ascii()
+                && length.is_none_or(|max| u64::try_from(text.len()).is_ok_and(|n| n <= max))
+        }
         _ => false,
     }
 }
