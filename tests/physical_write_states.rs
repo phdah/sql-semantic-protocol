@@ -7,8 +7,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
     AnalysisBundle, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
     ConstraintProvenance, ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    RelationConstraint, RelationConstraintSet,
-    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
+    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
@@ -298,32 +298,54 @@ fn initial_population_is_unique_and_complete() {
     assert!(states[0].rows().is_empty());
 }
 
-
 #[test]
 fn create_table_from_complete_source_and_reject_existing_target() {
     for dialect in ["duckdb", "postgresql", "snowflake"] {
-        let b = bundle(&["CREATE TABLE target AS SELECT id, score FROM source"], dialect);
-        let plan = physical_ordered_write_state_plan(&b, &[
-            state("source", &[(Some(1),Some(4)),(Some(2),None)]),
-        ]);
+        let b = bundle(
+            &["CREATE TABLE target AS SELECT id, score FROM source"],
+            dialect,
+        );
+        let plan = physical_ordered_write_state_plan(
+            &b,
+            &[state("source", &[(Some(1), Some(4)), (Some(2), None)])],
+        );
         let (steps, states) = outcome(&plan);
         assert_eq!(steps.len(), 1, "{dialect}");
         assert_eq!(steps[0].kind(), WriteKind::Definition);
         assert_eq!(steps[0].affected().inserted(), 2);
-        assert_eq!(states.iter().find(|s| s.relation() == "target").unwrap().rows(),
-            &[row(Some(1), Some(4)), row(Some(2), None)]);
-        let impossible = physical_ordered_write_state_plan(&b, &[
-            state("source", &[(Some(1),Some(4))]),
-            state("target", &[(Some(3),Some(3))]),
-        ]);
-        assert!(matches!(impossible, PhysicalWriteStatePlan::Impossible { .. }), "{impossible:?}");
+        assert_eq!(
+            states
+                .iter()
+                .find(|s| s.relation() == "target")
+                .unwrap()
+                .rows(),
+            &[row(Some(1), Some(4)), row(Some(2), None)]
+        );
+        let impossible = physical_ordered_write_state_plan(
+            &b,
+            &[
+                state("source", &[(Some(1), Some(4))]),
+                state("target", &[(Some(3), Some(3))]),
+            ],
+        );
+        assert!(
+            matches!(impossible, PhysicalWriteStatePlan::Impossible { .. }),
+            "{impossible:?}"
+        );
     }
 
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE source(id INTEGER,score INTEGER);
+    db.execute_batch(
+        "CREATE TABLE source(id INTEGER,score INTEGER);
         INSERT INTO source VALUES (1,4),(2,NULL);
-        CREATE TABLE target AS SELECT id,score FROM source;").unwrap();
-    assert_eq!(db.query_row("SELECT COUNT(*) FROM target", [], |r| r.get::<_,i64>(0)).unwrap(), 2);
+        CREATE TABLE target AS SELECT id,score FROM source;",
+    )
+    .unwrap();
+    assert_eq!(
+        db.query_row("SELECT COUNT(*) FROM target", [], |r| r.get::<_, i64>(0))
+            .unwrap(),
+        2
+    );
 }
 
 #[test]
@@ -332,15 +354,21 @@ fn merge_source_and_target_aliases_share_one_physical_snapshot() {
          WHEN MATCHED THEN UPDATE SET score=s.score
          WHEN NOT MATCHED THEN INSERT (id,score) VALUES (s.id,s.score)";
     let b = bundle(&[sql], "snowflake");
-    let plan = physical_ordered_write_state_plan(&b, &[
-        state("target", &[(Some(1),Some(0))]),
-        state("source", &[(Some(1),Some(9)),(Some(2),Some(20))]),
-    ]);
+    let plan = physical_ordered_write_state_plan(
+        &b,
+        &[
+            state("target", &[(Some(1), Some(0))]),
+            state("source", &[(Some(1), Some(9)), (Some(2), Some(20))]),
+        ],
+    );
     let (steps, states) = outcome(&plan);
     assert_eq!(steps[0].affected().updated(), 1);
     assert_eq!(steps[0].affected().inserted(), 1);
     let target = states.iter().find(|s| s.relation() == "target").unwrap();
-    assert_eq!(target.rows(), &[row(Some(1),Some(9)),row(Some(2),Some(20))]);
+    assert_eq!(
+        target.rows(),
+        &[row(Some(1), Some(9)), row(Some(2), Some(20))]
+    );
 }
 
 fn evidence() -> Vec<ConstraintEvidence> {
@@ -356,65 +384,110 @@ fn enforced_key_and_null_constraints_are_checked_on_entire_post_state() {
         &["INSERT INTO target (id,score) SELECT id,score FROM source"],
         "duckdb",
     );
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![
             RelationConstraint::primary_key(vec!["id".to_string()], evidence()).unwrap(),
             RelationConstraint::not_null("score", evidence()).unwrap(),
-        ]).unwrap(),
-    ]);
-    let duplicate = physical_ordered_write_state_plan(&b, &[
-        state("target", &[]),
-        state("source", &[(Some(1),Some(5)),(Some(1),Some(8))]),
-    ]);
-    assert!(matches!(duplicate, PhysicalWriteStatePlan::Impossible { .. }), "{duplicate:?}");
-    let null = physical_ordered_write_state_plan(&b, &[
-        state("target", &[]),
-        state("source", &[(Some(1),None)]),
-    ]);
-    assert!(matches!(null, PhysicalWriteStatePlan::Impossible { .. }), "{null:?}");
-    let valid = physical_ordered_write_state_plan(&b, &[
-        state("target", &[]),
-        state("source", &[(Some(1),Some(5)),(Some(2),Some(8))]),
-    ]);
-    assert!(matches!(valid, PhysicalWriteStatePlan::Feasible { .. }), "{valid:?}");
+        ],
+    )
+    .unwrap()]);
+    let duplicate = physical_ordered_write_state_plan(
+        &b,
+        &[
+            state("target", &[]),
+            state("source", &[(Some(1), Some(5)), (Some(1), Some(8))]),
+        ],
+    );
+    assert!(
+        matches!(duplicate, PhysicalWriteStatePlan::Impossible { .. }),
+        "{duplicate:?}"
+    );
+    let null = physical_ordered_write_state_plan(
+        &b,
+        &[state("target", &[]), state("source", &[(Some(1), None)])],
+    );
+    assert!(
+        matches!(null, PhysicalWriteStatePlan::Impossible { .. }),
+        "{null:?}"
+    );
+    let valid = physical_ordered_write_state_plan(
+        &b,
+        &[
+            state("target", &[]),
+            state("source", &[(Some(1), Some(5)), (Some(2), Some(8))]),
+        ],
+    );
+    assert!(
+        matches!(valid, PhysicalWriteStatePlan::Feasible { .. }),
+        "{valid:?}"
+    );
 
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER NOT NULL);
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER NOT NULL);
         CREATE TABLE source(id INTEGER, score INTEGER);
-        INSERT INTO source VALUES (1,5),(1,8);").unwrap();
-    assert!(db.execute_batch("INSERT INTO target SELECT id,score FROM source;").is_err());
+        INSERT INTO source VALUES (1,5),(1,8);",
+    )
+    .unwrap();
+    assert!(db
+        .execute_batch("INSERT INTO target SELECT id,score FROM source;")
+        .is_err());
 }
 
 #[test]
 fn declared_foreign_key_must_have_entire_referenced_population() {
-    let mut b = bundle(&["INSERT INTO target (id,score) SELECT id,score FROM source"], "duckdb");
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![
-            RelationConstraint::foreign_key(
-                vec!["id".to_string()], "source", vec!["id".to_string()], evidence(),
-            ).unwrap(),
-        ]).unwrap(),
-    ]);
-    let valid = physical_ordered_write_state_plan(&b, &[
-        state("target", &[]),
-        state("source", &[(Some(1),Some(9))]),
-    ]);
-    assert!(matches!(valid, PhysicalWriteStatePlan::Feasible { .. }), "{valid:?}");
-    let reference_missing = physical_ordered_write_state_plan(&b, &[
-        state("target", &[(Some(12),Some(1))]),
-        state("source", &[(Some(1),Some(9))]),
-    ]);
-    assert!(matches!(reference_missing, PhysicalWriteStatePlan::Residual { .. }), "{reference_missing:?}");
+    let mut b = bundle(
+        &["INSERT INTO target (id,score) SELECT id,score FROM source"],
+        "duckdb",
+    );
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::foreign_key(
+            vec!["id".to_string()],
+            "source",
+            vec!["id".to_string()],
+            evidence(),
+        )
+        .unwrap()],
+    )
+    .unwrap()]);
+    let valid = physical_ordered_write_state_plan(
+        &b,
+        &[state("target", &[]), state("source", &[(Some(1), Some(9))])],
+    );
+    assert!(
+        matches!(valid, PhysicalWriteStatePlan::Feasible { .. }),
+        "{valid:?}"
+    );
+    let reference_missing = physical_ordered_write_state_plan(
+        &b,
+        &[
+            state("target", &[(Some(12), Some(1))]),
+            state("source", &[(Some(1), Some(9))]),
+        ],
+    );
+    assert!(
+        matches!(reference_missing, PhysicalWriteStatePlan::Residual { .. }),
+        "{reference_missing:?}"
+    );
 }
 
 #[test]
 fn unsupported_alter_and_create_view_do_not_masquerade_as_physical_tables() {
-    let b = bundle(&["CREATE VIEW target AS SELECT id,score FROM source"], "duckdb");
-    let view = physical_ordered_write_state_plan(&b, &[
-        state("source", &[(Some(1),Some(5))]),
-    ]);
-    assert!(matches!(view, PhysicalWriteStatePlan::Residual { .. }), "{view:?}");
+    let b = bundle(
+        &["CREATE VIEW target AS SELECT id,score FROM source"],
+        "duckdb",
+    );
+    let view = physical_ordered_write_state_plan(&b, &[state("source", &[(Some(1), Some(5))])]);
+    assert!(
+        matches!(view, PhysicalWriteStatePlan::Residual { .. }),
+        "{view:?}"
+    );
     let b = bundle(&["ALTER TABLE target ADD COLUMN x INTEGER"], "duckdb");
     let alter = physical_ordered_write_state_plan(&b, &[state("target", &[])]);
-    assert!(matches!(alter, PhysicalWriteStatePlan::Residual { .. }), "{alter:?}");
+    assert!(
+        matches!(alter, PhysicalWriteStatePlan::Residual { .. }),
+        "{alter:?}"
+    );
 }
