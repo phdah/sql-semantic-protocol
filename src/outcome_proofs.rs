@@ -744,8 +744,7 @@ fn construct_set_with_map(
             let output_per_tuple = case.output_tuple_count();
             if output_per_tuple == 0
                 || (output_per_tuple != 1
-                    && (!shared_source
-                        || !values.is_empty()
+                    && (!values.is_empty()
                         || !rows.is_multiple_of(output_per_tuple)))
             {
                 return false;
@@ -753,9 +752,10 @@ fn construct_set_with_map(
             let [left, right] = case.obligations() else {
                 return false;
             };
-            // Identical physical rows cannot supply different counts in
-            // copied set arms. UNION ALL can emit two rows per source tuple;
-            // it is constructive only for a divisible, complete row goal.
+            // Distinct source arms may also contribute multiple copies of
+            // each tuple. Scaling a complete two-arm tuple bag is constructive
+            // for a divisible output, never for a partial per-value histogram.
+            // Shared source arms additionally need equal tuple counts.
             !shared_source || left.matching_tuple_count() == right.matching_tuple_count()
         })?
         .with_physical_boundaries(map)?;
