@@ -441,17 +441,21 @@ fn declared_foreign_key_must_have_entire_referenced_population() {
         &["INSERT INTO target (id,score) SELECT id,score FROM source"],
         "duckdb",
     );
-    b.enrich_relation_constraints(&[RelationConstraintSet::new(
-        "target",
-        vec![RelationConstraint::foreign_key(
-            vec!["id".to_string()],
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::foreign_key(
+                vec!["id".to_string()],
+                "source",
+                vec!["id".to_string()],
+                evidence(),
+            ).unwrap()],
+        ).unwrap(),
+        RelationConstraintSet::new(
             "source",
-            vec!["id".to_string()],
-            evidence(),
-        )
-        .unwrap()],
-    )
-    .unwrap()]);
+            vec![RelationConstraint::primary_key(vec!["id".to_string()], evidence()).unwrap()],
+        ).unwrap(),
+    ]);
     let valid = physical_ordered_write_state_plan(
         &b,
         &[state("target", &[]), state("source", &[(Some(1), Some(9))])],
@@ -639,4 +643,53 @@ fn one_input_sql_script_uses_statement_indices_and_shared_prior_state() {
             .map(|v| v.unwrap()).collect()
     };
     assert_eq!(expected, vec![(1,3),(3,5)]);
+}
+
+
+#[test]
+fn nullable_unique_keys_and_missing_fk_reference_key_remain_residual() {
+    let mut b = bundle(&["DELETE FROM target WHERE id = 999"], "duckdb");
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![
+            RelationConstraint::unique_key(vec!["id".to_string()], evidence()).unwrap()
+        ]).unwrap(),
+    ]);
+    let plan = physical_ordered_write_state_plan(
+        &b,
+        &[state("target", &[(None, Some(1)), (None, Some(2))])],
+    );
+    assert!(matches!(plan, PhysicalWriteStatePlan::Residual {
+        gap: sql_semantic_protocol::PhysicalWriteStateGap::UnprovedConstraint,
+        ..
+    }), "{plan:?}");
+
+    let mut b = bundle(&["DELETE FROM target WHERE id=999"], "duckdb");
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![
+            RelationConstraint::foreign_key(
+                vec!["id".to_string()], "source", vec!["id".to_string()], evidence(),
+            ).unwrap(),
+        ]).unwrap(),
+    ]);
+    let plan = physical_ordered_write_state_plan(
+        &b,
+        &[state("target", &[(Some(1), Some(2))]), state("source", &[(Some(1), Some(3))])],
+    );
+    assert!(matches!(plan, PhysicalWriteStatePlan::Residual {
+        gap: sql_semantic_protocol::PhysicalWriteStateGap::UnprovedConstraint,
+        ..
+    }), "{plan:?}");
+}
+
+#[test]
+fn a_missing_insert_default_remains_residual_without_materialized_value() {
+    let b = bundle(
+        &["INSERT INTO target(id) SELECT id FROM source"],
+        "duckdb",
+    );
+    let plan = physical_ordered_write_state_plan(
+        &b,
+        &[state("target", &[]), state("source", &[(Some(1), Some(6))])],
+    );
+    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
 }
