@@ -622,16 +622,16 @@ fn dbt_catalog_and_direct_sql_share_closed_world_negative_source_cardinality() {
         RelationSchema::new(
             "warehouse.raw.orders",
             vec![
-                SchemaColumn::from_sql_type("id", "INTEGER", "postgresql").unwrap(),
-                SchemaColumn::from_sql_type("amount", "BIGINT", "postgresql").unwrap(),
+                SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+                SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
             ],
         )
         .unwrap(),
         RelationSchema::new(
             "warehouse.analytics.stg_orders",
             vec![
-                SchemaColumn::from_sql_type("id", "INTEGER", "postgresql").unwrap(),
-                SchemaColumn::from_sql_type("amount", "BIGINT", "postgresql").unwrap(),
+                SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+                SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
             ],
         )
         .unwrap(),
