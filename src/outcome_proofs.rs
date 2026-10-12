@@ -80,8 +80,9 @@ pub enum OutcomeWitness {
     },
     /// For every distinct tuple, apply these complete per-branch counts.
     /// If provided, `values` is a complete output histogram. For ALL operations,
-    /// scale each branch obligation by that value's requested row frequency.
-    /// Otherwise keys are 0..tuples-1 with one emitted row per key.
+    /// per-value scaling is supported only when the case emits one row per
+    /// tuple. Without a histogram, keys are 0..tuples-1; the case's
+    /// output_tuple_count determines how many rows each key emits.
     SetTuples {
         tuples: u64,
         case: SetWitnessCase,
