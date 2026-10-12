@@ -285,13 +285,11 @@ pub(crate) fn construct_mapped_source(
         return None;
     }
     let mut columns = Vec::new();
-    for (column, values) in mappings {
-        if columns
+    for (column, mut values) in mappings {
+        values.sort_by(|left, right| left.value().cmp(right.value()));
+        if values
             .iter()
-            .any(|existing: &SourceColumnValues| existing.column() == column)
-            || values
-                .iter()
-                .any(|entry| !value_fits(bundle, relation, &column, entry.value()))
+            .any(|entry| !value_fits(bundle, relation, &column, entry.value()))
         {
             return None;
         }
@@ -302,6 +300,17 @@ pub(crate) fn construct_mapped_source(
             .try_fold(0_u64, |sum, item| sum.checked_add(item.rows()))?;
         if total != rows {
             return None;
+        }
+        if let Some(existing) = columns
+            .iter()
+            .find(|existing: &&SourceColumnValues| existing.column() == column)
+        {
+            // Two different output aliases may resolve to this single source
+            // column. Their complete histograms must describe the same bag.
+            if !crate::outcome_goals::equivalent_frequencies(existing.values(), &values) {
+                return None;
+            }
+            continue;
         }
         columns.push(SourceColumnValues { column, values });
     }
