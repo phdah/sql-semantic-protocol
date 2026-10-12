@@ -2690,6 +2690,7 @@
       "required": [
         "target",
         "target_alias",
+        "definition_mode",
         "kind",
         "target_columns",
         "match_condition",
@@ -2708,6 +2709,9 @@
             { "$ref": "#/$defs/nonEmptyString" },
             { "type": "null" }
           ]
+        },
+        "definition_mode": {
+          "enum": ["create_table", "replace_table", "create_view", "replace_view", null]
         },
         "kind": {
           "enum": [
