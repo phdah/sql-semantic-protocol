@@ -206,18 +206,19 @@ fn nested_materialized_arithmetic_inverts_complete_physical_bags() {
             3,
             vec![histogram(
                 "total",
-                &[
-                    (ConstraintValue::Null, 1),
-                    (ConstraintValue::Integer(7), 2),
-                ],
+                &[(ConstraintValue::Null, 1), (ConstraintValue::Integer(7), 2)],
             )],
         );
         let Some(OutcomeWitness::SourceRows {
             relation,
             rows,
             columns,
-        }) = b.outcome_goals()[0].witness() else {
-            panic!("{dialect}: transitive inverse must reach the true physical source: {:?}", b.outcome_goals());
+        }) = b.outcome_goals()[0].witness()
+        else {
+            panic!(
+                "{dialect}: transitive inverse must reach the true physical source: {:?}",
+                b.outcome_goals()
+            );
         };
         assert_eq!((relation.as_str(), *rows), ("t", 3));
         assert_eq!(columns.len(), 1);
@@ -235,15 +236,18 @@ fn nested_materialized_arithmetic_inverts_complete_physical_bags() {
         "CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (4), (NULL), (4);
          CREATE TABLE stage AS SELECT a + 1 AS x FROM t;
          CREATE TABLE mart AS SELECT x + 2 AS y FROM stage;",
-    ).expect("complete materialized arithmetic");
-    let actual: (i64, i64, i64) = conn.query_row(
-        "SELECT COUNT(*), COUNT(*) FILTER (WHERE total = 7),
+    )
+    .expect("complete materialized arithmetic");
+    let actual: (i64, i64, i64) = conn
+        .query_row(
+            "SELECT COUNT(*), COUNT(*) FILTER (WHERE total = 7),
                 COUNT(*) FILTER (WHERE total IS NULL)
          FROM (SELECT y AS total FROM mart)",
-        [],
-        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
-    ).expect("full end-to-end output bag");
-    assert_eq!(actual, (3,2,1));
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .expect("full end-to-end output bag");
+    assert_eq!(actual, (3, 2, 1));
 }
 
 #[test]
@@ -390,9 +394,7 @@ fn unrelated_computation_is_not_declared_total_from_another_column_histogram() {
 
 #[test]
 fn complete_bool_text_and_null_histograms_preserve_declared_column_types() {
-    let source = [
-        schema("t", &[("flag", "BOOLEAN"), ("label", "VARCHAR(8)")]),
-    ];
+    let source = [schema("t", &[("flag", "BOOLEAN"), ("label", "VARCHAR(8)")])];
     let mut b = bundle_with_schemas(
         &["SELECT flag AS out_flag, label AS out_text FROM t"],
         "postgresql",
@@ -405,7 +407,10 @@ fn complete_bool_text_and_null_histograms_preserve_declared_column_types() {
         vec![
             histogram(
                 "out_flag",
-                &[(ConstraintValue::Boolean(true), 2), (ConstraintValue::Null, 1)],
+                &[
+                    (ConstraintValue::Boolean(true), 2),
+                    (ConstraintValue::Null, 1),
+                ],
             ),
             histogram(
                 "out_text",
@@ -420,35 +425,41 @@ fn complete_bool_text_and_null_histograms_preserve_declared_column_types() {
         panic!("complete typed boolean and text source assignments must be constructive");
     };
     assert_eq!(columns.len(), 2);
-    assert_eq!((columns[0].column(), columns[1].column()), ("flag", "label"));
+    assert_eq!(
+        (columns[0].column(), columns[1].column()),
+        ("flag", "label")
+    );
 
     let target = b.layers()[0].id().to_string();
-    b.set_outcome_goals(&[
-        OutcomeGoal::new(
-            target,
-            Some(1),
-            None,
-            vec![histogram(
-                "out_text",
-                &[(ConstraintValue::String("over-eight".to_string()), 1)],
-            )],
-        ).unwrap(),
-    ]).unwrap();
+    b.set_outcome_goals(&[OutcomeGoal::new(
+        target,
+        Some(1),
+        None,
+        vec![histogram(
+            "out_text",
+            &[(ConstraintValue::String("over-eight".to_string()), 1)],
+        )],
+    )
+    .unwrap()])
+        .unwrap();
     assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
 
     let conn = Connection::open_in_memory().unwrap();
     conn.execute_batch(
         "CREATE TABLE t(flag BOOLEAN, label VARCHAR(8));
          INSERT INTO t VALUES (TRUE, 'abc'), (NULL, NULL), (TRUE, 'abc');",
-    ).unwrap();
-    let actual: (i64, i64, i64) = conn.query_row(
-        "SELECT COUNT(*), COUNT(*) FILTER (WHERE out_flag AND out_text='abc'),
+    )
+    .unwrap();
+    let actual: (i64, i64, i64) = conn
+        .query_row(
+            "SELECT COUNT(*), COUNT(*) FILTER (WHERE out_flag AND out_text='abc'),
              COUNT(*) FILTER (WHERE out_flag IS NULL AND out_text IS NULL)
          FROM (SELECT flag AS out_flag, label AS out_text FROM t)",
-        [],
-        |row| Ok((row.get(0)?,row.get(1)?,row.get(2)?)),
-    ).unwrap();
-    assert_eq!(actual, (3,2,1));
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .unwrap();
+    assert_eq!(actual, (3, 2, 1));
 }
 
 #[test]
