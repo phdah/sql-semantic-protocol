@@ -23,18 +23,23 @@ fn several_zero_terminals_admit_one_nonempty_closed_physical_source() {
             panic!("{dialect}: expected simultaneous negative proof: {plan:?}");
         };
         assert_eq!(plan.sources(), &["t".to_string()]);
-        assert!(cases.iter().any(|case| case.obligations().iter().any(|obligation| {
-            matches!(
-                obligation,
-                WitnessObligation::Rows {
-                    boundary,
-                    bounds,
-                    closed_world: true,
-                    ..
-                } if boundary.relation() == "t"
-                    && bounds.minimum() == 0 && bounds.maximum() == Some(0)
-            )
-        })), "{dialect}: preserve the alternative all-empty source proof");
+        assert!(
+            cases
+                .iter()
+                .any(|case| case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::Rows {
+                            boundary,
+                            bounds,
+                            closed_world: true,
+                            ..
+                        } if boundary.relation() == "t"
+                            && bounds.minimum() == 0 && bounds.maximum() == Some(0)
+                    )
+                })),
+            "{dialect}: preserve the alternative all-empty source proof"
+        );
         assert!(cases.iter().any(|case| {
             case.obligations().iter().any(|obligation| {
                 matches!(obligation,
