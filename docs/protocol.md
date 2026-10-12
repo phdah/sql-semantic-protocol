@@ -1246,7 +1246,18 @@ zero-count bucket decorations. A final SELECT may use guarded reversible
 signed-integer +, -, and unary negation over one traced column after a
 certified transparent producer chain, provided each source and intermediate
 value is in range and NULL is preserved. This is emitted as ordinary
-physical-column frequencies, with no new wire contract. Lossy or
+physical-column frequencies, with no new wire contract. Repeated reversible
+arithmetic across producers is inverted one layer at a time with
+schema-attested type equality on every materialization edge. Boolean and
+variable-length string frequencies are supported where catalog typing
+permits exact storage without padding or truncation. The Rust
+`physical_joint_distribution_plan` returns a typed `WitnessDirection`
+with a single physical `source_rows` operator-population witness per
+independent source, full-source closed-world row counts, and exact terminal
+counts. Shared complete histograms and source counts must reconcile;
+otherwise the proof is impossible or residual. The existing
+`operator_population` / `outcomeWitness` JSON schema covers this
+source-row population without adding a wire type. Lossy or
 unguarded computations, unsupported row shaping, mismatched producer
 datatypes and unknown catalog columns remain residual.
 
