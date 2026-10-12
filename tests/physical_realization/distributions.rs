@@ -196,6 +196,30 @@ fn computed_histograms_fail_closed_for_lossy_overflow_and_intermediate_coercion(
         }
     }
 
+    // A NULL-only goal must not skip expression-structure validation:
+    // COALESCE does not propagate source NULL.
+    let mut null_bundle = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage AS SELECT a AS x FROM t",
+            "SELECT COALESCE(x, 0) AS v FROM stage",
+        ],
+        "postgresql",
+        &[
+            schema("t", &[("a", "INTEGER")]),
+            schema("stage", &[("x", "INTEGER")]),
+        ],
+    );
+    goal(
+        &mut null_bundle,
+        1,
+        1,
+        vec![histogram("v", &[(ConstraintValue::Null, 1)])],
+    );
+    assert_eq!(
+        null_bundle.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Residual
+    );
+
     let mut bundle = bundle_with_schemas(
         &[
             "CREATE TABLE stage AS SELECT a AS x FROM t",
