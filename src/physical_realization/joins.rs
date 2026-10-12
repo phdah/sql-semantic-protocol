@@ -11,12 +11,7 @@ pub(super) fn physical_join_population_count_plan(
     target_layer_id: &str,
     wanted: u64,
 ) -> Option<WitnessDirection> {
-    physical_join_population_with_source_counts(
-        bundle,
-        target_layer_id,
-        wanted,
-        &BTreeMap::new(),
-    )
+    physical_join_population_with_source_counts(bundle, target_layer_id, wanted, &BTreeMap::new())
 }
 
 /// Enumerate additional complete empty-partner join populations when a
