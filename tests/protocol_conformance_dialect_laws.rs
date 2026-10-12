@@ -1,4 +1,4 @@
-//! Cross-dialect canonical equivalence for SQL shapes pinned by TASK-99.
+//! Cross-dialect canonical equivalence for the protocol-owned conformance suite.
 //! A dialect that cannot parse a fixture must not inherit semantic certification.
 
 mod common;
@@ -8,15 +8,15 @@ use serde_json::Value;
 use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json, Error};
 
 #[test]
-fn shared_pinned_operator_shapes_have_identical_canonical_outcomes() {
+fn shared_conformance_operator_shapes_have_identical_canonical_outcomes() {
     let cases = [
         (
             "range",
-            include_str!("fixtures/sql_tdg/raw_sql/range_sampling.sql"),
+            include_str!("fixtures/conformance/v1/raw_sql/range_sampling.sql"),
         ),
         (
             "insert",
-            include_str!("fixtures/sql_tdg/raw_sql/insert_workflow.sql"),
+            include_str!("fixtures/conformance/v1/raw_sql/insert_workflow.sql"),
         ),
         (
             "join",

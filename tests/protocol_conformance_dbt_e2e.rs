@@ -1,4 +1,4 @@
-//! Executable TASK-99 integration gate against the byte-pinned sql-tdg dbt corpus.
+//! Executable TASK-99 integration gate against the byte-protocol conformance dbt corpus.
 //! Run through `make dbt-e2e`, which materializes all eleven models before this test.
 
 use std::fs;
@@ -13,7 +13,7 @@ use sql_semantic_protocol::{
     SqlInput, WitnessDirection,
 };
 
-const PROJECT: &str = "sql_tdg_e2e";
+const PROJECT: &str = "protocol_conformance";
 const MODELS: [&str; 11] = [
     "aggregate_summary",
     "boundary_final_orders",
@@ -29,14 +29,14 @@ const MODELS: [&str; 11] = [
 ];
 
 fn root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sql_tdg/dbt_core_project")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/conformance/v1/dbt_core_project")
 }
 
 fn model<'a>(manifest: &'a Value, name: &str) -> &'a Value {
     let id = format!("model.{PROJECT}.{name}");
     manifest["nodes"]
         .get(&id)
-        .unwrap_or_else(|| panic!("missing pinned model {id}"))
+        .unwrap_or_else(|| panic!("missing conformance model {id}"))
 }
 
 fn layer_id<'a>(bundle: &'a AnalysisBundle, name: &str) -> &'a str {
@@ -55,23 +55,27 @@ fn count(db: &Connection, model: &str) -> i64 {
         [],
         |row| row.get(0),
     )
-    .unwrap_or_else(|error| panic!("pinned dbt model {model} failed: {error}"))
+    .unwrap_or_else(|error| panic!("conformance dbt model {model} failed: {error}"))
 }
 
 #[test]
-#[ignore = "requires compiled pinned dbt artifacts; run make dbt-e2e"]
-fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
+#[ignore = "requires compiled conformance dbt artifacts; run make dbt-e2e"]
+fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plans() {
     let root = root();
+    let suite: Value = serde_json::from_str(include_str!("fixtures/conformance/v1/suite.json"))
+        .expect("protocol-owned conformance suite");
+    let expectations = suite["dbt"]["models"].as_array().expect("dbt expectations");
+    assert_eq!(expectations.len(), MODELS.len());
     let manifest_text = fs::read_to_string(root.join("target/manifest.json"))
-        .expect("make dbt-e2e must compile the pinned sql-tdg manifest");
+        .expect("make dbt-e2e must compile the protocol conformance manifest");
     let catalog_text = fs::read_to_string(root.join("target/catalog.json"))
-        .expect("make dbt-e2e must introspect the pinned sql-tdg catalog");
+        .expect("make dbt-e2e must introspect the protocol conformance catalog");
     let json: Value = serde_json::from_str(&manifest_text).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     let manifest = parse_dbt_manifest(&manifest_text).unwrap();
     let catalog = parse_dbt_catalog(&catalog_text).unwrap();
     let bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref())
-        .expect("pinned direct dbt model graph is analyzable");
+        .expect("conformance direct dbt model graph is analyzable");
     assert_eq!(
         to_bundle_json(&bundle),
         to_bundle_json(
@@ -92,103 +96,34 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
         let _ = layer_id(&bundle, name);
     }
     let db_path =
-        std::env::var("DBT_E2E_DATABASE").expect("Makefile must select the pinned dbt database");
+        std::env::var("DBT_E2E_DATABASE").expect("Makefile must select the conformance dbt database");
     let db = Connection::open(db_path).expect("dbt-generated DuckDB fixture");
-    for (name, expected) in [
-        ("aggregate_summary", 1),
-        ("boundary_final_orders", 1),
-        ("derived_orders", 1),
-        ("enriched_orders", 1),
-        ("final_orders", 1),
-        ("independent_return_summary", 1),
-        ("ranked_orders", 1),
-        ("stg_customers", 1),
-        ("stg_orders", 1),
-        ("subquery_orders", 1),
-        ("unioned_orders", 2),
-    ] {
-        assert_eq!(
-            count(&db, name),
-            expected,
-            "{name}: whole-project target changed"
-        );
-    }
-    // Every terminal sees the same physical seed bag. Check output values,
-    // including duplicate multiplicity, rather than counts alone.
-    let snapshots: [(&str, &str, &[&str]); 11] = [
-        (
-            "stg_orders",
-            "order_id::VARCHAR || ':' || amount::VARCHAR || ':' || status || ':' || region",
-            &["1:42:paid:north"],
-        ),
-        (
-            "stg_customers",
-            "customer_id::VARCHAR || ':' || score::VARCHAR",
-            &["10:7"],
-        ),
-        (
-            "enriched_orders",
-            "order_id::VARCHAR || ':' || amount::VARCHAR || ':' || score::VARCHAR",
-            &["1:42:7"],
-        ),
-        (
-            "aggregate_summary",
-            "region || ':' || order_count::VARCHAR || ':' || max_amount::VARCHAR",
-            &["north:1:42"],
-        ),
-        ("boundary_final_orders", "amount::VARCHAR", &["42"]),
-        (
-            "derived_orders",
-            "amount_bucket || ':' || paid_flag::VARCHAR",
-            &["medium:1"],
-        ),
-        (
-            "final_orders",
-            "amount::VARCHAR || ':' || status || ':' || region",
-            &["42:paid:north"],
-        ),
-        (
-            "independent_return_summary",
-            "reason || ':' || return_count::VARCHAR || ':' || max_refund::VARCHAR",
-            &["full:1:70"],
-        ),
-        (
-            "ranked_orders",
-            "region || ':' || amount::VARCHAR || ':' || rn::VARCHAR",
-            &["north:42:1"],
-        ),
-        (
-            "subquery_orders",
-            "amount::VARCHAR || ':' || region",
-            &["42:north"],
-        ),
-        (
-            "unioned_orders",
-            "amount::VARCHAR || ':' || region",
-            &["42:north", "42:north"],
-        ),
-    ];
-    for (name, expr, expected) in snapshots {
-        let query = format!("SELECT {expr} FROM raw_analytics.{name} ORDER BY 1");
+    // Shared versioned suite expectations are the only output oracle source.
+    for (index, expectation) in expectations.iter().enumerate() {
+        let name = expectation["name"].as_str().expect("model name");
+        assert_eq!(name, MODELS[index], "model inventory has drifted");
+        let expected = expectation["row_count"].as_i64().expect("row count");
+        assert_eq!(count(&db, name), expected, "{name}: whole-project target changed");
+        let expression = expectation["snapshot_expression"].as_str().expect("snapshot projection");
+        let query = format!("SELECT {expression} FROM raw_analytics.\"{name}\" ORDER BY 1");
         let mut statement = db.prepare(&query).expect("snapshot query");
         let observed = statement
             .query_map([], |row| row.get::<_, String>(0))
             .expect("typed snapshot")
             .map(|row| row.expect("snapshot text"))
             .collect::<Vec<_>>();
-        let expected = expected
+        let expected_rows = expectation["expected_rows"]
+            .as_array()
+            .expect("expected rows")
             .iter()
-            .map(|value| value.to_string())
+            .map(|row| row.as_str().expect("expected value").to_owned())
             .collect::<Vec<_>>();
-        assert_eq!(
-            observed, expected,
-            "{name}: complete physical output changed"
-        );
+        assert_eq!(observed, expected_rows, "{name}: complete physical output changed");
     }
     for relation in ["orders", "customers", "legacy_orders", "returns"] {
         let query = format!("SELECT COUNT(*) FROM raw.{relation}");
         let rows: i64 = db.query_row(&query, [], |row| row.get(0)).unwrap();
-        assert_eq!(rows, 2, "{relation}: pinned source was not materialized");
+        assert_eq!(rows, 2, "{relation}: conformance source was not materialized");
     }
     let joined: (String, i64, i64) = db
         .query_row(
@@ -270,7 +205,7 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
     let configured = ConfiguredSqlInput::new("direct", &stage_input, "duckdb", dialect.as_ref());
     let source_catalog = RelationCatalog::from_schemas(bundle.source_schemas()).unwrap();
     let direct = analyze_configured_inputs_with_catalog(&[configured], &source_catalog)
-        .expect("direct pinned compiled SQL");
+        .expect("direct conformance compiled SQL");
     let direct_graph = physical_source_plan(&direct, direct.layers()[0].id());
     let dbt_graph = physical_source_plan(&bundle, layer_id(&bundle, "stg_orders"));
     assert_eq!(direct_graph.sources(), dbt_graph.sources());

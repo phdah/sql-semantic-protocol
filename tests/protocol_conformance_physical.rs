@@ -1,8 +1,5 @@
-//! Physical-source parity against unchanged sql-tdg fixtures.
-//!
-//! Pinned from phdah/sql-tdg at commit
-//! 90ec0e12a2d5cd2c1294556336fc947e176c9db9.
-//! These SQL fixture files are byte-for-byte copies, not recreated examples.
+//! Physical-source proofs against the protocol-owned versioned conformance suite.
+//! The protocol owns the fixture cases, proof expectations and physical oracles.
 
 mod common;
 use common::DIALECTS;
@@ -16,13 +13,13 @@ use sql_semantic_protocol::{
     WitnessDirection, WitnessObligation,
 };
 
-const ADVANCED: &str = include_str!("fixtures/sql_tdg/advanced_pipeline.sql");
-const BOUNDARY: &str = include_str!("fixtures/sql_tdg/advanced_boundary.sql");
-const SETS: &str = include_str!("fixtures/sql_tdg/set_operations.sql");
-const WINDOW: &str = include_str!("fixtures/sql_tdg/raw_sql/window_ranked.sql");
-const INSERT: &str = include_str!("fixtures/sql_tdg/raw_sql/insert_workflow.sql");
-const EXISTS: &str = include_str!("fixtures/sql_tdg/raw_sql/unsupported_exists.sql");
-const RANGE: &str = include_str!("fixtures/sql_tdg/raw_sql/range_sampling.sql");
+const ADVANCED: &str = include_str!("fixtures/conformance/v1/advanced_pipeline.sql");
+const BOUNDARY: &str = include_str!("fixtures/conformance/v1/advanced_boundary.sql");
+const SETS: &str = include_str!("fixtures/conformance/v1/set_operations.sql");
+const WINDOW: &str = include_str!("fixtures/conformance/v1/raw_sql/window_ranked.sql");
+const INSERT: &str = include_str!("fixtures/conformance/v1/raw_sql/insert_workflow.sql");
+const EXISTS: &str = include_str!("fixtures/conformance/v1/raw_sql/unsupported_exists.sql");
+const RANGE: &str = include_str!("fixtures/conformance/v1/raw_sql/range_sampling.sql");
 
 fn fixture_bundle(sql: &str) -> AnalysisBundle {
     let dialect = "postgresql";
@@ -74,7 +71,7 @@ fn fixture_bundle(sql: &str) -> AnalysisBundle {
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
     let input = SqlInput::inline(sql);
-    let configured = ConfiguredSqlInput::new("sql-tdg", &input, dialect, parser.as_ref());
+    let configured = ConfiguredSqlInput::new("protocol-conformance", &input, dialect, parser.as_ref());
     analyze_configured_inputs_with_catalog(&[configured], &catalog).expect("fixture analysis")
 }
 
@@ -93,7 +90,7 @@ fn layer_id<'a>(bundle: &'a AnalysisBundle, relation: &str) -> &'a str {
 }
 
 #[test]
-fn sql_tdg_advanced_pipeline_constructs_joint_terminal_zero_from_raw_sources() {
+fn conformance_advanced_pipeline_constructs_joint_terminal_zero_from_raw_sources() {
     let bundle = fixture_bundle(ADVANCED);
     let summary = layer_id(&bundle, "mart_customer_summary");
     let stage = layer_id(&bundle, "stage_orders");
@@ -104,7 +101,7 @@ fn sql_tdg_advanced_pipeline_constructs_joint_terminal_zero_from_raw_sources() {
     );
     assert!(
         matches!(plan.zero_output(), WitnessDirection::Feasible(_)),
-        "pinned pipeline must be empty-preserving: {plan:?}; each layer: {:?}",
+        "conformance pipeline must be empty-preserving: {plan:?}; each layer: {:?}",
         bundle
             .layers()
             .iter()
@@ -118,7 +115,7 @@ fn sql_tdg_advanced_pipeline_constructs_joint_terminal_zero_from_raw_sources() {
     );
     let joint = physical_joint_row_count_plan(&bundle, &[(stage, 0), (summary, 0)]);
     let WitnessDirection::Feasible(cases) = joint else {
-        panic!("shared sources must prove both real sql-tdg terminals empty: {joint:?}");
+        panic!("shared sources must prove both protocol conformance terminals empty: {joint:?}");
     };
     assert_eq!(
         cases[0]
@@ -135,7 +132,7 @@ fn sql_tdg_advanced_pipeline_constructs_joint_terminal_zero_from_raw_sources() {
     )
     .expect("source schemas");
     conn.execute_batch(ADVANCED)
-        .expect("committed sql-tdg pipeline");
+        .expect("protocol conformance pipeline");
     for sql in [
         "SELECT COUNT(*) FROM stage_orders",
         "SELECT COUNT(*) FROM stage_customers",
@@ -148,7 +145,7 @@ fn sql_tdg_advanced_pipeline_constructs_joint_terminal_zero_from_raw_sources() {
 }
 
 #[test]
-fn sql_tdg_boundary_fixture_retains_join_provenance_and_zero_rejection() {
+fn conformance_boundary_fixture_retains_join_provenance_and_zero_rejection() {
     let bundle = fixture_bundle(BOUNDARY);
     let enriched = layer_id(&bundle, "core_enriched");
     let plan = physical_source_plan(&bundle, enriched);
@@ -164,7 +161,7 @@ fn sql_tdg_boundary_fixture_retains_join_provenance_and_zero_rejection() {
     )
     .expect("source schemas");
     conn.execute_batch(BOUNDARY)
-        .expect("committed sql-tdg boundary");
+        .expect("protocol conformance boundary");
     let rows: i64 = conn
         .query_row("SELECT COUNT(*) FROM core_enriched", [], |row| row.get(0))
         .expect("enriched count");
@@ -172,7 +169,7 @@ fn sql_tdg_boundary_fixture_retains_join_provenance_and_zero_rejection() {
 }
 
 #[test]
-fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
+fn conformance_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
     let bundle = fixture_bundle(SETS);
     let wire: serde_json::Value =
         serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&bundle))
@@ -196,7 +193,7 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
         let proof = physical_row_count_plan(&bundle, id, 0);
         assert!(
             matches!(proof, WitnessDirection::Feasible(_)),
-            "pinned sql-tdg set fixture {target} must preserve empty inputs: {proof:?}; source plan: {:?}",
+            "protocol conformance set fixture {target} must preserve empty inputs: {proof:?}; source plan: {:?}",
             physical_source_plan(&bundle, id)
         );
     }
@@ -208,7 +205,7 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
     )
     .expect("source schemas");
     conn.execute_batch(SETS)
-        .expect("committed sql-tdg set pipeline");
+        .expect("protocol conformance set pipeline");
     for target in [
         "union_all_result",
         "union_result",
@@ -226,7 +223,7 @@ fn sql_tdg_set_fixtures_prove_empty_closed_world_and_respect_multiplicities() {
 }
 
 #[test]
-fn pinned_sql_tdg_advanced_pipeline_oracle_exercises_positive_and_rejected_rows() {
+fn conformance_advanced_pipeline_oracle_exercises_positive_and_rejected_rows() {
     let bundle = fixture_bundle(ADVANCED);
     let summary = layer_id(&bundle, "mart_customer_summary");
     assert!(
@@ -246,7 +243,7 @@ fn pinned_sql_tdg_advanced_pipeline_oracle_exercises_positive_and_rejected_rows(
     )
     .expect("controlled source data");
     conn.execute_batch(ADVANCED)
-        .expect("committed sql-tdg advanced SQL");
+        .expect("protocol conformance advanced SQL");
     let counts = [
         ("stage_orders", 3_i64),
         ("stage_customers", 1),
@@ -269,7 +266,7 @@ fn pinned_sql_tdg_advanced_pipeline_oracle_exercises_positive_and_rejected_rows(
 }
 
 #[test]
-fn pinned_sql_tdg_set_oracles_preserve_duplicate_and_distinct_multiplicity() {
+fn conformance_set_oracles_preserve_duplicate_and_distinct_multiplicity() {
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
         "CREATE TABLE raw_a(value INTEGER);
@@ -280,7 +277,7 @@ fn pinned_sql_tdg_set_oracles_preserve_duplicate_and_distinct_multiplicity() {
          INSERT INTO raw_c VALUES (30);",
     )
     .expect("controlled duplicate and NULL inputs");
-    conn.execute_batch(SETS).expect("committed sql-tdg set SQL");
+    conn.execute_batch(SETS).expect("protocol conformance set SQL");
     for (target, expected) in [
         ("set_a", 2_i64),
         ("set_b", 1),
@@ -330,41 +327,35 @@ fn source_free_set_leaf_cannot_be_erased_by_emptying_the_other_source() {
 }
 
 #[test]
-fn pinned_sql_tdg_corpus_has_all_seven_raw_and_eleven_dbt_model_shapes() {
-    // Keep the source corpus from the exact upstream revision, not paraphrased SQL.
-    const RAW: [&str; 7] = [ADVANCED, BOUNDARY, SETS, WINDOW, INSERT, EXISTS, RANGE];
-    const DBT: [&str; 11] = [
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/aggregate_summary.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/boundary_final_orders.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/derived_orders.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/enriched_orders.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/final_orders.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/independent_return_summary.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/ranked_orders.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/stg_customers.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/stg_orders.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/subquery_orders.sql"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/models/unioned_orders.sql"),
-    ];
-    let expected_raw_lengths = [800, 514, 842, 236, 79, 242, 95];
-    for (sql, length) in RAW.iter().zip(expected_raw_lengths) {
-        assert_eq!(sql.len(), length, "pinned upstream SQL was modified");
+fn conformance_corpus_has_all_seven_raw_and_eleven_dbt_model_shapes() {
+    let suite: serde_json::Value = serde_json::from_str(include_str!(
+        "fixtures/conformance/v1/suite.json"
+    ))
+    .expect("protocol-owned suite manifest");
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/conformance/v1");
+    let raw = suite["raw_sql"].as_array().expect("raw SQL cases");
+    assert_eq!(raw.len(), 7);
+    for case in raw {
+        let sql = std::fs::read_to_string(root.join(case["path"].as_str().unwrap()))
+            .expect("protocol-owned SQL case");
+        assert!(!sql.trim().is_empty());
     }
-    let expected_dbt_lengths = [149, 84, 74, 258, 113, 164, 174, 144, 388, 184, 206];
-    for (sql, length) in DBT.iter().zip(expected_dbt_lengths) {
-        assert_eq!(sql.len(), length, "pinned upstream dbt model was modified");
+    let models = suite["dbt"]["models"].as_array().expect("dbt models");
+    assert_eq!(models.len(), 11);
+    for model in models {
+        let sql = std::fs::read_to_string(root.join(model["path"].as_str().unwrap()))
+            .expect("protocol-owned model");
         assert!(sql.contains("select") || sql.contains("SELECT"));
     }
-    for seed in [
-        include_str!("fixtures/sql_tdg/dbt_core_project/seeds/orders.csv"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/seeds/customers.csv"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/seeds/legacy_orders.csv"),
-        include_str!("fixtures/sql_tdg/dbt_core_project/seeds/returns.csv"),
-    ] {
-        assert!(
-            seed.lines().count() >= 3,
-            "seed must contain data and its header"
-        );
+    let seeds = suite["dbt"]["seeds"].as_array().expect("dbt seeds");
+    assert_eq!(seeds.len(), 4);
+    for seed in seeds {
+        let csv = std::fs::read_to_string(
+            root.join("dbt_core_project/seeds").join(seed.as_str().unwrap()),
+        )
+        .expect("protocol-owned seed");
+        assert!(csv.lines().count() >= 3, "source has header and data");
     }
 }
 
@@ -482,7 +473,7 @@ fn pinned_insert_select_realizes_a_closed_world_state_with_duplicates() {
         final_states,
     } = plan
     else {
-        panic!("pinned INSERT has a complete typed source state: {plan:?}");
+        panic!("conformance INSERT has a complete typed source state: {plan:?}");
     };
     assert_eq!(transitions.len(), 1);
     assert_eq!(transitions[0].affected().inserted(), 2);
