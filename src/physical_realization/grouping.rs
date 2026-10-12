@@ -371,7 +371,6 @@ fn physical_filtered_join_single_group(
     if wanted != 1 {
         return None;
     }
-    eprintln!("PFG TRACE start target={target_layer_id} wanted={wanted}");
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
     let target = walker.layers.get(target_layer_id).copied()?;
@@ -385,7 +384,6 @@ fn physical_filtered_join_single_group(
     };
     let join_layer = walker.layers.get(join_id.as_str()).copied()?;
     let join_query = query_for(bundle, join_layer)?;
-    eprintln!("PFG TRACE found join id={join_id} group inputs={:?}", group_node.inputs());
     let [source] = group_query.sources() else {
         return None;
     };
@@ -404,6 +402,7 @@ fn physical_filtered_join_single_group(
             .iter()
             .all(|item| item.code() == "unsupported_order_by")
         || join_query.joins().len() != 1
+        || join_query.joins()[0].kind() != crate::protocol::JoinKind::Inner
         || !walker
             .nodes
             .iter()
@@ -413,7 +412,6 @@ fn physical_filtered_join_single_group(
     {
         return None;
     }
-    eprintln!("PFG TRACE group gate passed");
     let key = match group_query.aggregation()?.group_by()? {
         GroupBy::Expressions(keys) if keys.len() == 1 => match &keys[0] {
             GroupingExpression::Expression(Expression::Column(key)) => key,
@@ -435,7 +433,6 @@ fn physical_filtered_join_single_group(
         .iter()
         .find(|column| column.name() == key.name())?;
     let key_origin = key_output.plain_copy_source()?;
-    eprintln!("PFG TRACE key_origin={key_origin:?}");
     // Query source aliases are scoped to this SELECT; a layer-level producer
     // identity alone does not necessarily contain its local SQL alias.
     let unique_join_source = |name: &str| {
@@ -459,7 +456,6 @@ fn physical_filtered_join_single_group(
         .columns()
         .iter()
         .find(|column| column.name() == key_origin.column())?;
-    eprintln!("PFG TRACE stage key total={} expr={:?}", total_scalar_projection(key_stage.expression()), key_stage.expression());
     if !total_scalar_projection(key_stage.expression()) {
         return None;
     }
@@ -467,7 +463,6 @@ fn physical_filtered_join_single_group(
     // WHERE on the grouped input may never be assumed TRUE merely because
     // a concrete DuckDB example passed. It must be the exact same equality
     // as a complete upstream source filter, transported through plain copies.
-    eprintln!("PFG TRACE reached grouped WHERE");
     if let Some(predicate) = group_query.predicates().where_predicate() {
         let Predicate::Comparison(comparison) = predicate else {
             return None;
@@ -537,7 +532,6 @@ fn physical_filtered_join_single_group(
     // conservatively residual for a preceding WHERE; independently prove
     // this precise typed law only after the WHERE has been linked to the
     // complete upstream source filter above.
-    eprintln!("PFG TRACE WHERE passed");
     let Predicate::Comparison(having) = group_query.predicates().having_predicate()? else {
         return None;
     };
@@ -570,11 +564,9 @@ fn physical_filtered_join_single_group(
         ComparisonOperator::Gt => 1 > value,
         ComparisonOperator::Gte => 1 >= value,
     };
-    eprintln!("PFG TRACE HAVING evaluated survives={survives}");
     if !survives {
         return None;
     }
-    eprintln!("PFG TRACE seeking join case");
     let WitnessDirection::Feasible(join_cases) =
         physical_join_population_count_plan(bundle, join_id, 1)?
     else {

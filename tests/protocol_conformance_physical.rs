@@ -22,7 +22,10 @@ const EXISTS: &str = include_str!("fixtures/conformance/v1/raw_sql/unsupported_e
 const RANGE: &str = include_str!("fixtures/conformance/v1/raw_sql/range_sampling.sql");
 
 fn fixture_bundle(sql: &str) -> AnalysisBundle {
-    let dialect = "postgresql";
+    fixture_bundle_for_dialect(sql, "postgresql")
+}
+
+fn fixture_bundle_for_dialect(sql: &str, dialect: &str) -> AnalysisBundle {
     let parser = dialect_from_name(dialect).expect("dialect");
     let columns = [
         (
@@ -228,18 +231,6 @@ fn conformance_set_fixtures_prove_empty_closed_world_and_respect_multiplicities(
 fn conformance_advanced_pipeline_oracle_exercises_positive_and_rejected_rows() {
     let bundle = fixture_bundle(ADVANCED);
     let summary = layer_id(&bundle, "mart_customer_summary");
-    if let sql_semantic_protocol::ProtocolStatement::Query(grouped) =
-        &bundle.inputs()[0].statements()[3]
-    {
-        eprintln!(
-            "group physical diagnostics: shape={} group={} witness={:?} diagnostic={:?} where={:?}",
-            grouped.plain_goal_output_shape(),
-            grouped.group_rows_match_surviving_groups(),
-            grouped.group_witness(),
-            grouped.diagnostics(),
-            grouped.predicates().where_predicate()
-        );
-    }
     let positive = physical_row_count_plan(&bundle, summary, 1);
     assert!(
         matches!(positive, WitnessDirection::Feasible(_)),
@@ -337,6 +328,41 @@ fn filtered_join_group_cannot_ignore_conflicting_downstream_predicate() {
     assert!(
         !matches!(result, WitnessDirection::Feasible(_)),
         "upstream amount=100 and downstream amount=90 must not yield a feasible group: {result:?}"
+    );
+}
+
+#[test]
+fn filtered_join_source_proof_is_identical_across_parsing_dialects() {
+    let mut accepted = 0;
+    for &dialect in DIALECTS {
+        let parser = dialect_from_name(dialect).expect("exposed dialect");
+        if sqlparser::parser::Parser::parse_sql(parser.as_ref(), BOUNDARY).is_err() {
+            continue;
+        }
+        let bundle = fixture_bundle_for_dialect(BOUNDARY, dialect);
+        let joined = layer_id(&bundle, "core_enriched");
+        let proof = physical_row_count_plan(&bundle, joined, 1);
+        assert!(
+            matches!(proof, WitnessDirection::Feasible(_)),
+            "dialect {dialect} parsed the equivalent filtered JOIN but changed its proof: {proof:?}"
+        );
+        accepted += 1;
+    }
+    assert!(accepted >= 3, "expected several parser-supported dialects");
+}
+
+#[test]
+fn join_filter_on_an_unreconciled_key_remains_residual() {
+    let sql = BOUNDARY.replace(
+        "WHERE amount = 100",
+        "WHERE customer_id = 100",
+    );
+    let bundle = fixture_bundle(&sql);
+    let joined = layer_id(&bundle, "core_enriched");
+    let proof = physical_row_count_plan(&bundle, joined, 1);
+    assert!(
+        !matches!(proof, WitnessDirection::Feasible(_)),
+        "the join-key filter must be reconciled with the physical key histogram: {proof:?}"
     );
 }
 

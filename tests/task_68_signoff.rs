@@ -157,7 +157,7 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
         (
             "multi_layer_join_group",
             "mart_customer_summary",
-            "residual",
+            "feasible",
         ),
         ("joined_boundary", "core_enriched", "feasible"),
     ] {
