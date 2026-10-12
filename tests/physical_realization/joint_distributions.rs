@@ -38,7 +38,8 @@ fn three_correlated_terminals_share_one_closed_world_histogram() {
             RelationSchema::new(
                 relation,
                 vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
-            ).unwrap()
+            )
+            .unwrap()
         };
         let b = bundle_with_schemas(
             &[
