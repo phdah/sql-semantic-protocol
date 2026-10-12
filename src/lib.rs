@@ -29,6 +29,7 @@
 //!   claiming source construction or guessing unsupported NULL/key semantics.
 //! - physical_source_plan builds a canonical reference-based physical dependency DAG and proves supported row witnesses.
 //! - physical_row_count_plan and physical_joint_row_count_plan construct complete source-backed counts for verified DAG subsets.
+//! - physical_joint_distribution_plan reconciles complete physical source histograms across terminal goals.
 //! - physical_joint_source_plan returns one canonical topologically ordered source graph and typed joint goal proof.
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
