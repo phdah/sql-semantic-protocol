@@ -34,7 +34,13 @@ fn targets(bundle: &AnalysisBundle, rows: u64, input: &[HistogramTarget<'_>]) ->
 #[test]
 fn three_correlated_terminals_share_one_closed_world_histogram() {
     for &dialect in DIALECTS {
-        let b = bundle(
+        let typed = |relation: &str, column: &str| {
+            RelationSchema::new(
+                relation,
+                vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+            ).unwrap()
+        };
+        let b = bundle_with_schemas(
             &[
                 "CREATE TABLE stage AS SELECT a AS x FROM t",
                 "SELECT x AS first FROM stage",
@@ -42,6 +48,7 @@ fn three_correlated_terminals_share_one_closed_world_histogram() {
                 "SELECT a AS third FROM t",
             ],
             dialect,
+            &[typed("t", "a"), typed("stage", "x")],
         );
         let values = vec![(ConstraintValue::Null, 1), (ConstraintValue::Integer(4), 2)];
         let goals = targets(
