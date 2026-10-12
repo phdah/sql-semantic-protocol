@@ -279,3 +279,58 @@ fn empty_join_alternative_excludes_all_matches_and_preserves_other_source() {
         .unwrap();
     assert_eq!(source_count, 3);
 }
+
+#[test]
+fn zero_outer_join_with_nonempty_preserved_physical_side_is_impossible() {
+    for &dialect in DIALECTS {
+        let b = bundle(
+            &[
+                "CREATE TABLE stage AS SELECT a, k FROM l",
+                "CREATE TABLE mart AS SELECT a, k FROM r",
+                "SELECT s.a FROM stage s LEFT JOIN mart m ON s.k = m.k",
+                "SELECT a FROM l",
+            ],
+            dialect,
+        );
+        let plan = physical_joint_source_plan(
+            &b,
+            &[(b.layers()[2].id(), 0), (b.layers()[3].id(), 3)],
+        );
+        assert!(
+            matches!(plan.outcome(), WitnessDirection::Impossible),
+            "{dialect}: LEFT join preserves three left rows: {plan:?}"
+        );
+    }
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, k INTEGER);
+         INSERT INTO l VALUES (1, NULL), (2, 0), (3, 0);
+         CREATE TABLE stage AS SELECT a,k FROM l;
+         CREATE TABLE mart AS SELECT a,k FROM r;",
+    )
+    .unwrap();
+    let count: i64 = db.query_row(
+        "SELECT COUNT(*) FROM stage s LEFT JOIN mart m ON s.k = m.k",
+        [],
+        |row| row.get(0),
+    ).unwrap();
+    assert_eq!(count, 3);
+}
+
+#[test]
+fn zero_nonpreserving_join_with_nonempty_input_does_not_become_impossible() {
+    let b = bundle(
+        &[
+            "SELECT l.a FROM l INNER JOIN r ON l.k = r.k",
+            "SELECT a FROM l",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_source_plan(
+        &b,
+        &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 3)],
+    );
+    assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)), "{plan:?}");
+}
