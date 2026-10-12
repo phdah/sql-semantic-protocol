@@ -793,7 +793,7 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
 }
 
 #[test]
-fn nonempty_membership_with_correlations_key_comparisons_or_inner_filters_stays_residual() {
+fn membership_with_unproved_inner_filters_stays_residual() {
     let schema = |relation: &str, column: &str| {
         RelationSchema::new(
             relation,
@@ -812,9 +812,8 @@ fn nonempty_membership_with_correlations_key_comparisons_or_inner_filters_stays_
         "CREATE TABLE stage_lines AS SELECT order_id FROM lines",
     ];
     for query in [
-        "SELECT o.id FROM stage_orders o WHERE EXISTS (SELECT 1 FROM stage_lines l WHERE l.order_id = o.id)",
         "SELECT o.id FROM stage_orders o WHERE EXISTS (SELECT 1 FROM stage_lines l WHERE l.order_id > 5)",
-        "SELECT o.id FROM stage_orders o WHERE o.id IN (SELECT l.order_id FROM stage_lines l)",
+        "SELECT o.id FROM stage_orders o WHERE o.id IN (SELECT l.order_id FROM stage_lines l WHERE l.order_id > 5)",
     ] {
         let b = bundle_with_schemas(&[producers[0], producers[1], query], "duckdb", &schemas);
         let outcome = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3)]);
@@ -822,6 +821,97 @@ fn nonempty_membership_with_correlations_key_comparisons_or_inner_filters_stays_
             matches!(outcome.outcome(), WitnessDirection::Residual { .. }),
             "unsupported candidate proof must not be exact: {query}: {outcome:?}"
         );
+    }
+}
+
+#[test]
+fn correlated_exists_and_nonnull_in_are_realized_as_full_key_populations() {
+    let schema = |relation: &str, column: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("orders", "id"),
+        schema("lines", "order_id"),
+        schema("stage_orders", "id"),
+        schema("stage_lines", "order_id"),
+    ];
+    let producers = [
+        "CREATE TABLE stage_orders AS SELECT id FROM orders",
+        "CREATE TABLE stage_lines AS SELECT order_id FROM lines",
+    ];
+    for dialect in DIALECTS {
+        for (operator, wanted, outer_key) in [
+            ("EXISTS", 3_u64, 0_i32),
+            ("EXISTS", 0, 1),
+            ("NOT EXISTS", 0, 0),
+            ("NOT EXISTS", 3, 1),
+            ("IN", 3, 0),
+            ("IN", 0, 1),
+            ("NOT IN", 0, 0),
+            ("NOT IN", 3, 1),
+        ] {
+            let query = if operator.contains("EXISTS") {
+                format!(
+                    "SELECT o.id FROM stage_orders o WHERE {operator} \
+                     (SELECT 1 FROM stage_lines l WHERE l.order_id = o.id)"
+                )
+            } else {
+                format!(
+                    "SELECT o.id FROM stage_orders o WHERE o.id {operator} \
+                     (SELECT l.order_id FROM stage_lines l)"
+                )
+            };
+            let b = bundle_with_schemas(
+                &[producers[0], producers[1], &query], dialect, &schemas
+            );
+            let target = b.layers()[2].id();
+            let proof = physical_joint_source_plan(&b, &[(target, wanted)]);
+            let WitnessDirection::Feasible(cases) = proof.outcome() else {
+                panic!("{dialect} {operator} rows={wanted}: expected proof: {proof:?}");
+            };
+            let complete = cases.iter().any(|case| {
+                case.obligations().iter().any(|o| matches!(
+                    o, WitnessObligation::Membership { closed_world: true, .. }
+                )) && case.obligations().iter().any(|o| matches!(
+                    o, WitnessObligation::Rows {
+                        boundary, bounds, closed_world: true, ..
+                    } if boundary.relation() == "orders"
+                        && bounds.minimum() == wanted.max(1)
+                )) && case.obligations().iter().any(|o| matches!(
+                    o, WitnessObligation::Rows {
+                        boundary, bounds, closed_world: true, ..
+                    } if boundary.relation() == "lines"
+                        && bounds.minimum() == 1
+                ))
+            });
+            assert!(complete, "{dialect} {operator}: missing closed source proof");
+
+            let db = Connection::open_in_memory().unwrap();
+            let outer_values = std::iter::repeat_n(format!("({outer_key})"), wanted.max(1) as usize)
+                .collect::<Vec<_>>()
+                .join(",");
+            db.execute_batch(&format!(
+                "CREATE TABLE orders(id INTEGER);
+                 CREATE TABLE lines(order_id INTEGER);
+                 INSERT INTO orders VALUES {outer_values};
+                 INSERT INTO lines VALUES (0);
+                 {}; {};",
+                producers[0], producers[1]
+            ))
+            .unwrap();
+            let result = format!("SELECT id FROM ({query}) ORDER BY id");
+            let mut stmt = db.prepare(&result).unwrap();
+            let values = stmt.query_map([], |row| row.get::<_, i32>(0))
+                .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+            assert_eq!(
+                values, vec![outer_key; wanted as usize],
+                "{dialect} {operator} rows={wanted}"
+            );
+        }
     }
 }
 
