@@ -525,6 +525,11 @@ fn physical_filtered_join_single_group(
     let tested = cases
         .iter()
         .find(|case| case.min_rows() <= 1 && case.max_rows().is_none_or(|max| max >= 1))?;
+    // Only COUNT(*) establishes exactly one non-NULL aggregate contributor
+    // without a separate source-value and nullability assignment.
+    if local.argument().is_some() {
+        return None;
+    }
     let WitnessDirection::Feasible(join_cases) =
         physical_join_population_count_plan(bundle, join_id, 1)?
     else {
@@ -552,12 +557,7 @@ fn physical_filtered_join_single_group(
             )],
             aggregate: local.aggregate()?,
             distinct: false,
-            argument: local.argument().map(|_| {
-                crate::protocol::ColumnRef::new(
-                    Some(source.name().to_string()),
-                    key.name().to_string(),
-                )
-            }),
+            argument: None,
             rows: bounds,
             non_null: bounds,
             tests: tested.tests().to_vec(),
