@@ -26,98 +26,38 @@ pub(crate) fn physical_distribution_plan(
     let [source] = physical.sources() else {
         return None;
     };
-    if !matches!(
-        physical_row_count_plan(bundle, target_layer_id, rows),
-        WitnessDirection::Feasible(_)
-    ) {
-        return None;
-    }
-
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
+    let mut covered = BTreeSet::<(String, String)>::new();
+    let mut mappings = Vec::new();
+    for distribution in goal.distributions() {
+        let assignment = invert_distribution(
+            bundle,
+            &walker,
+            target_layer_id,
+            distribution.column(),
+            distribution.values().to_vec(),
+            &mut covered,
+            0,
+        )?;
+        if assignment.column.relation() != Some(source.as_str()) {
+            return None;
+        }
+        mappings.push((assignment.column.name().to_string(), assignment.values));
+    }
+
+    // Every expression in a materialized producer must be total for the
+    // complete, explicitly assigned input bag. Uncontrolled computations
+    // could abort a statement and must remain residual.
     for node in &walker.nodes {
         let PhysicalPlanRef::Layer(id) = node.id() else {
             continue;
         };
         let layer = walker.layers.get(id.as_str()).copied()?;
         let query = query_for(bundle, layer)?;
-        if query.aggregation().is_some()
-            || query.set_operation().is_some()
-            || query.window_witness().is_some()
-            || !query.subquery_witnesses().is_empty()
-            || !query.joins().is_empty()
-            || !query.diagnostics().is_empty()
-            || (id != target_layer_id && !transparent_projection(query))
-            || (id == target_layer_id && !safe_terminal_projection(query, goal))
-        {
+        if !safe_projection(query, id, &covered) {
             return None;
         }
-    }
-
-    let target = walker.layers.get(target_layer_id).copied()?;
-    let query = query_for(bundle, target)?;
-    let mut mappings = Vec::new();
-    for distribution in goal.distributions() {
-        let mut matches = query
-            .output()
-            .columns()
-            .iter()
-            .filter(|column| column.name() == distribution.column());
-        let projected = matches.next()?;
-        if matches.next().is_some() {
-            return None;
-        }
-        let [lineage] = projected.lineage() else {
-            return None;
-        };
-        let column = ColumnRef::new(
-            Some(lineage.relation().to_string()),
-            lineage.column().to_string(),
-        );
-        let physical_column = if lineage.relation() == source {
-            column
-        } else {
-            resolve_filter_column_with_evidence(bundle, &walker, target_layer_id, &column, 0, true)?
-        };
-        if physical_column.relation() != Some(source.as_str()) {
-            return None;
-        }
-
-        let values = if projected.plain_copy_source().is_some() {
-            distribution.values().to_vec()
-        } else {
-            if !reversible_integer_expression(projected.expression(), lineage.column()) {
-                return None;
-            }
-            let bits = integer_width(bundle, source, physical_column.name())?;
-            distribution
-                .values()
-                .iter()
-                .map(|bucket| {
-                    let input = match bucket.value() {
-                        ConstraintValue::Null => ConstraintValue::Null,
-                        ConstraintValue::Integer(output) => {
-                            let source_value =
-                                invert_integer(projected.expression(), *output, lineage.column())?;
-                            if !fits_integer(source_value, bits)
-                                || evaluate_integer(
-                                    projected.expression(),
-                                    source_value,
-                                    lineage.column(),
-                                    bits,
-                                )? != *output
-                            {
-                                return None;
-                            }
-                            ConstraintValue::Integer(source_value)
-                        }
-                        _ => return None,
-                    };
-                    Some(OutputValueCount::new(input, bucket.rows()))
-                })
-                .collect::<Option<Vec<_>>>()?
-        };
-        mappings.push((physical_column.name().to_string(), values));
     }
     crate::outcome_proofs::construct_mapped_source(bundle, source, rows, mappings)
 }
