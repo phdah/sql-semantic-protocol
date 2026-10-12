@@ -72,7 +72,9 @@ fn child_queue_is_complete_but_release_gate_is_independent() {
         "physical proof closure must not approve the separate release"
     );
     assert!(
-        criteria(&release).iter().any(|line| line.starts_with("- [ ] #")),
+        criteria(&release)
+            .iter()
+            .any(|line| line.starts_with("- [ ] #")),
         "release gate cannot silently become accepted"
     );
     assert!(AUDIT.contains("Release Please PR #79 remain blocked"));
@@ -90,10 +92,12 @@ fn physical_contract_signoff_has_traceable_code_tests_and_json_schema() {
     assert_eq!(evidence["signoff_task"], "TASK-100");
     assert_eq!(evidence["signoff_document"], "docs/task-68-signoff.md");
     assert_eq!(evidence["release_gate"], "blocked_TASK_91");
-    assert_eq!(manifest["review_status"], "maintainer_scope_approved_coverage_evidence_pending");
+    assert_eq!(
+        manifest["review_status"],
+        "maintainer_scope_approved_coverage_evidence_pending"
+    );
 
-    let expected_children: BTreeSet<_> =
-        (93..=100).map(|id| format!("TASK-{id}")).collect();
+    let expected_children: BTreeSet<_> = (93..=100).map(|id| format!("TASK-{id}")).collect();
     let children: BTreeSet<_> = evidence["child_tasks"]
         .as_array()
         .expect("child list")
@@ -108,12 +112,19 @@ fn physical_contract_signoff_has_traceable_code_tests_and_json_schema() {
         .iter()
         .map(|value| value.as_str().expect("evidence path"))
     {
-        assert!(root().join(path).is_file(), "missing physical evidence: {path}");
+        assert!(
+            root().join(path).is_file(),
+            "missing physical evidence: {path}"
+        );
     }
 
     let contract: Value = serde_json::from_str(SCHEMA).expect("active protocol schema");
     let graph = &contract["$defs"]["graph"]["properties"];
-    for name in ["physical_nodes", "physical_source_plans", "physical_joint_count_plan"] {
+    for name in [
+        "physical_nodes",
+        "physical_source_plans",
+        "physical_joint_count_plan",
+    ] {
         assert!(graph.get(name).is_some(), "missing graph contract: {name}");
     }
     for id in 1..=6 {
@@ -133,18 +144,26 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
     for fixture in raw {
         let path = fixture["path"].as_str().expect("SQL path");
         assert!(
-            root().join("tests/fixtures/conformance/v1").join(path).is_file(),
+            root()
+                .join("tests/fixtures/conformance/v1")
+                .join(path)
+                .is_file(),
             "missing SQL conformance fixture {path}"
         );
     }
     assert_eq!(
-        suite["dbt"]["models"].as_array().expect("dbt model inventory").len(),
+        suite["dbt"]["models"]
+            .as_array()
+            .expect("dbt model inventory")
+            .len(),
         11
     );
 
     let manifest: Value = serde_json::from_str(MANIFEST).expect("manifest JSON");
     let evidence = &manifest["task_68_physical_source_evidence"];
-    let unproved = evidence["unproved_scope"].as_array().expect("fail-closed scope");
+    let unproved = evidence["unproved_scope"]
+        .as_array()
+        .expect("fail-closed scope");
     assert!(!unproved.is_empty());
     for case in [
         "unproved_general_multi_join_operator_chain",
@@ -170,6 +189,8 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
         "tests/physical_write_states.rs",
         "tests/physical_write_adapter_parity.rs",
     ] {
-        assert!(Path::new(env!("CARGO_MANIFEST_DIR")).join(evidence_path).is_file());
+        assert!(Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(evidence_path)
+            .is_file());
     }
 }
