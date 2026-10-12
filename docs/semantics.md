@@ -704,8 +704,16 @@ inner physical relation is proven empty. The outer source is explicitly
 nonempty and fully closed, preserving SQL NULL behavior for IN/NOT IN.
 The generated `Membership` obligation is source-backed; correlation
 and membership keys are vacuous because no inner row can qualify.
-Nonempty correlated matches, mixed predicates and repeated physical
-sources are still residual.
+A nonempty inner source is also sufficient for **uncorrelated, unfiltered
+EXISTS** to select every outer row, or **NOT EXISTS** to reject every outer
+row. This witness assigns exactly one complete inner physical row and the
+requested (or one, for zero-output rejection) complete outer population.
+It requires independent schema-backed physical leaves, transparent producers,
+a locally exact `matching_row` case, and no nested WHERE condition. The
+joint composer can reconcile the same assignments with transparent source
+readers; a different sufficient inner count is residual, not impossible.
+Nonempty correlated matches, IN/NOT IN key comparisons, nested filters,
+mixed predicates and repeated physical sources are still residual.
 
 
 Two separately materialized, lossless set operands may also resolve to the
@@ -724,4 +732,4 @@ rows may be fabricated for copied branches.
 
 ### Independent mixed physical operator DAGs
 
-Complete mixed join/group, group/rank, grouped COUNT filter and empty-inner membership populations can be composed across separate terminal targets when their sets of physical source relations are disjoint. Each local case must prove an exact entire-relation closed source count; the joint case carries both operator laws and any transparent source terminal counts. A repeated physical source across different mixed cases still requires a correlated proof and remains residual, even if the sampled row counts happen to agree.
+Complete mixed join/group, group/rank, grouped COUNT filter and certified empty/nonempty-inner membership populations can be composed across separate terminal targets when their sets of physical source relations are disjoint. Each local case must prove an exact entire-relation closed source count; the joint case carries both operator laws and any transparent source terminal counts. A repeated physical source across different mixed cases still requires a correlated proof and remains residual, even if the sampled row counts happen to agree.
