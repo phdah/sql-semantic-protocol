@@ -394,11 +394,14 @@ fn physical_filtered_join_single_group(
         .all(|input| matches!(input, PhysicalPlanRef::Layer(_)))
         || !matches!(group_node.write_kind(), None | Some(WriteKind::Definition))
         || !group_query.group_rows_match_surviving_groups()
-        || group_query.joins().len() != 0
+        || !group_query.joins().is_empty()
         || group_query.window_witness().is_some()
         || group_query.set_operation().is_some()
         || !group_query.subquery_witnesses().is_empty()
-        || !group_query.diagnostics().iter().all(|item| item.code() == "unsupported_order_by")
+        || !group_query
+            .diagnostics()
+            .iter()
+            .all(|item| item.code() == "unsupported_order_by")
         || join_query.joins().len() != 1
         || !walker
             .nodes
@@ -416,7 +419,10 @@ fn physical_filtered_join_single_group(
         },
         _ => return None,
     };
-    if key.relation().is_some_and(|relation| target.canonical_relation(relation) != source.name()) {
+    if key
+        .relation()
+        .is_some_and(|relation| target.canonical_relation(relation) != source.name())
+    {
         return None;
     }
     // The group key is a deterministic per-row value projected by the join.
@@ -430,7 +436,8 @@ fn physical_filtered_join_single_group(
     let key_origin = key_output.plain_copy_source()?;
     let key_stage_name = join_layer.canonical_relation(key_origin.relation());
     let stage_node = walker.nodes.iter().find(|node| {
-        node.produced_relations().contains(&key_stage_name.to_string())
+        node.produced_relations()
+            .contains(&key_stage_name.to_string())
     })?;
     let PhysicalPlanRef::Layer(stage_id) = stage_node.id() else {
         return None;
@@ -460,7 +467,10 @@ fn physical_filtered_join_single_group(
         else {
             return None;
         };
-        if column.relation().is_some_and(|name| target.canonical_relation(name) != source.name()) {
+        if column
+            .relation()
+            .is_some_and(|name| target.canonical_relation(name) != source.name())
+        {
             return None;
         }
         let origin = join_query
@@ -470,9 +480,10 @@ fn physical_filtered_join_single_group(
             .find(|output| output.name() == column.name())?
             .plain_copy_source()?;
         let stage_name = join_layer.canonical_relation(origin.relation());
-        let stage_node = walker.nodes.iter().find(|node| {
-            node.produced_relations().contains(&stage_name.to_string())
-        })?;
+        let stage_node = walker
+            .nodes
+            .iter()
+            .find(|node| node.produced_relations().contains(&stage_name.to_string()))?;
         let PhysicalPlanRef::Layer(stage_id) = stage_node.id() else {
             return None;
         };
@@ -495,10 +506,13 @@ fn physical_filtered_join_single_group(
         if filter.operator() != ComparisonOperator::Eq
             || filter_value != value
             || filter_column.name() != copy.column()
-            || filter_column.relation().is_some_and(|name| {
-                stage_layer.canonical_relation(name) != copy.relation()
-            })
-            || !matches!(value.value(), LiteralValue::Number(_) | LiteralValue::Boolean(_))
+            || filter_column
+                .relation()
+                .is_some_and(|name| stage_layer.canonical_relation(name) != copy.relation())
+            || !matches!(
+                value.value(),
+                LiteralValue::Number(_) | LiteralValue::Boolean(_)
+            )
         {
             return None;
         }
@@ -508,17 +522,20 @@ fn physical_filtered_join_single_group(
     let GroupWitnessDirection::Exact(cases) = local.qualifying() else {
         return None;
     };
-    let tested = cases.iter().find(|case| {
-        case.min_rows() <= 1 && case.max_rows().is_none_or(|max| max >= 1)
-    })?;
+    let tested = cases
+        .iter()
+        .find(|case| case.min_rows() <= 1 && case.max_rows().is_none_or(|max| max >= 1))?;
     let WitnessDirection::Feasible(join_cases) =
         physical_join_population_count_plan(bundle, join_id, 1)?
     else {
         return None;
     };
 
-    let group_boundary =
-        WitnessBoundary::new(source.name(), GroupBoundaryKind::Intermediate, target_layer_id)?;
+    let group_boundary = WitnessBoundary::new(
+        source.name(),
+        GroupBoundaryKind::Intermediate,
+        target_layer_id,
+    )?;
     let bounds = CountBounds::new(1, Some(1))?;
     let mut proven = Vec::new();
     for join_case in join_cases {
