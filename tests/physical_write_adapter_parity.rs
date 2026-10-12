@@ -22,25 +22,37 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_write_states() {
     let dialect = PostgreSqlDialect {};
     let dbt = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect).unwrap();
 
-    let schema = RelationSchema::new("warehouse.raw.orders", vec![
-        SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
-        SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
-    ]).unwrap();
+    let schema = RelationSchema::new(
+        "warehouse.raw.orders",
+        vec![
+            SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap();
     let direct_catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let input = SqlInput::inline(SQL);
     let direct = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("direct", &input, "postgresql", &dialect)],
+        &[ConfiguredSqlInput::new(
+            "direct",
+            &input,
+            "postgresql",
+            &dialect,
+        )],
         &direct_catalog,
-    ).unwrap();
+    )
+    .unwrap();
     let rows = vec![
         PhysicalWriteRow::new(BTreeMap::from([
             ("id".to_string(), LiteralValue::Number("1".to_string())),
             ("amount".to_string(), LiteralValue::Number("4".to_string())),
-        ])).unwrap(),
+        ]))
+        .unwrap(),
         PhysicalWriteRow::new(BTreeMap::from([
             ("id".to_string(), LiteralValue::Number("2".to_string())),
             ("amount".to_string(), LiteralValue::Number("5".to_string())),
-        ])).unwrap(),
+        ]))
+        .unwrap(),
     ];
     let initial = PhysicalWriteState::new("warehouse.raw.orders", rows).unwrap();
     let plan = |bundle: &sql_semantic_protocol::AnalysisBundle| {
@@ -48,10 +60,18 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_write_states() {
     };
     let direct = plan(&direct);
     let dbt = plan(&dbt);
-    let PhysicalWriteStatePlan::Feasible { transitions: direct_steps, final_states: direct_states } = direct else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions: direct_steps,
+        final_states: direct_states,
+    } = direct
+    else {
         panic!("direct write is not exact: {direct:?}");
     };
-    let PhysicalWriteStatePlan::Feasible { transitions: dbt_steps, final_states: dbt_states } = dbt else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions: dbt_steps,
+        final_states: dbt_states,
+    } = dbt
+    else {
         panic!("compiled dbt write is not exact: {dbt:?}");
     };
     assert_eq!(direct_steps.len(), 1);
