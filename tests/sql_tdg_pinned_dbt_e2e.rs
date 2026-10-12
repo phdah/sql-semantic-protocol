@@ -136,6 +136,7 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
             .expect("typed snapshot")
             .map(|row| row.expect("snapshot text"))
             .collect::<Vec<_>>();
+        let expected = expected.iter().map(|value| value.to_string()).collect::<Vec<_>>();
         assert_eq!(observed, expected, "{name}: complete physical output changed");
     }
     for relation in ["orders", "customers", "legacy_orders", "returns"] {
