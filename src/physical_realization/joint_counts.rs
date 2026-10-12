@@ -206,7 +206,10 @@ pub(super) fn joint_nonempty_rejected_terminals(
         let [relation] = physical.sources() else {
             return None;
         };
-        if source.as_deref().is_some_and(|existing| existing != relation.as_str()) {
+        if source
+            .as_deref()
+            .is_some_and(|existing| existing != relation.as_str())
+        {
             return None;
         }
         source = Some(relation.clone());
