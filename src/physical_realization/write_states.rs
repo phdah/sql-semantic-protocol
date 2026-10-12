@@ -873,7 +873,7 @@ fn evaluate_simple_select(
     query: &QueryStatement,
     states: &BTreeMap<String, PhysicalWriteState>,
 ) -> StateResult<Vec<Vec<LiteralValue>>> {
-    if !query.filter_only_row_shape()
+    if !(query.filter_only_row_shape() || query.row_preserving_projection())
         || query.set_operation().is_some()
         || query.aggregation().is_some()
         || !query.joins().is_empty()
