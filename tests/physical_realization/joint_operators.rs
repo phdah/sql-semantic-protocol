@@ -268,13 +268,18 @@ fn matched_join_population_proves_materialized_distinct_key_grouping() {
     let WitnessDirection::Feasible(cases) = grouped.outcome() else {
         panic!("homogeneous multi-contributor groups must be physical: {grouped:?}");
     };
-    assert!(cases.iter().any(|case| case.obligations().iter().any(|obligation| {
-        matches!(obligation, WitnessObligation::JoinPopulation {
-            pattern: JoinPopulationPattern::GroupedMatched { groups: 2 },
-            output_rows: 4,
-            ..
-        })
-    })));
+    assert!(cases
+        .iter()
+        .any(|case| case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::JoinPopulation {
+                    pattern: JoinPopulationPattern::GroupedMatched { groups: 2 },
+                    output_rows: 4,
+                    ..
+                }
+            )
+        })));
 }
 
 #[test]
