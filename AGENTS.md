@@ -232,3 +232,21 @@ before unrelated backlog work when asked for the "next task". Do not select the
 parent itself for new implementation work or mark it Done until the child
 closure checks and original acceptance criteria are verified. The parent
 task file owns the concrete queue; keep general routing guidance here.
+
+## Agent skills
+
+### Issue tracker
+
+Issues, specs, and tickets live on the local Backlog.md board in `.backlog/`, via the
+`backlog_*` MCP tools when available or by editing the task files directly otherwise. See
+`docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role vocabulary, applied as Backlog.md task labels. See
+`docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `GLOSSARY.md`, `docs/adr/`, and existing `.backlog/decisions/`. See
+`docs/agents/domain.md`.
