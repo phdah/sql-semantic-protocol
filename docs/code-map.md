@@ -1,0 +1,48 @@
+# Code map: find the smallest canonical owner
+
+This map is a **navigation index**, not a second semantic specification. For a change, start with the narrowest owner below. Follow the interfaces to adjacent modules only when required, and run the focused test first. The canonical protocol is the Rust model in `src/protocol/`; its serialized contract is `schema/protocol.schema.json`. Do not duplicate a semantic rule in an adapter or emitter.
+
+## Starting points
+
+| Change or question | Read first | Follow only if needed | Focused tests |
+|---|---|---|---|
+| SQL `JOIN`, ON, equality or join kind | `src/analysis/joins.rs` | `src/analysis/relations.rs`, `src/join_witness.rs`, `src/physical_realization/joins.rs` | `tests/differential_conformance.rs`, `tests/physical_realization/joins.rs` |
+| CTE, derived table, source alias, table scope | `src/analysis/relations.rs` | `src/analysis/lineage.rs`, `src/composition.rs` | `tests/local_relations.rs` |
+| `WHERE`, `HAVING`, `QUALIFY`, SQL truth | `src/analysis/predicates.rs` | `src/analysis/exactness.rs`, `src/boolean_witness.rs`, `src/domain.rs` | `tests/differential_conformance.rs`, `tests/boolean_witness.rs` |
+| Numeric bounds, scalar domains or comparisons | `src/domain.rs` | `src/analysis/domains.rs`, `src/analysis/typing.rs`, `src/protocol/values.rs` | `tests/typed_domains.rs`, `tests/output_domains.rs` |
+| `GROUP BY`, aggregation or grouped physical rows | `src/analysis/aggregation.rs` | `src/group_witness.rs`, `src/physical_realization/grouping.rs`, `src/protocol/aggregation.rs` | `tests/group_witness.rs`, `tests/physical_realization/group_rank_set.rs` |
+| Window/ranking functions | `src/analysis/functions.rs` | `src/window_witness.rs`, `src/physical_realization/grouping.rs` | `tests/physical_realization/group_rank_set.rs` |
+| `UNION`, `INTERSECT`, `EXCEPT` | `src/analysis/sets.rs` | `src/protocol/sets.rs`, `src/physical_realization/operators.rs` | `tests/set_operations.rs`, `tests/physical_realization/group_rank_set.rs` |
+| `INSERT`, `UPDATE`, `DELETE`, `MERGE` | `src/analysis/writes.rs` | `src/protocol/writes.rs`, `src/bundle/layers.rs`, `src/emission/statements.rs` | `tests/dml_transformations.rs` |
+| Correlated or nested subquery membership | `src/analysis/subqueries.rs` | `src/subquery_witness.rs`, `src/physical_realization/membership.rs` | `tests/subquery_witness.rs`, `tests/constructive_membership.rs` |
+| Output projection, expression, lineage | `src/analysis/output.rs` | `src/analysis/expressions.rs`, `src/analysis/lineage.rs`, `src/protocol/relations.rs` | `tests/output_domains.rs` |
+| SQL DDL constraints | `src/analysis/constraints.rs` | `src/constraints.rs`, `src/protocol/relations.rs` | `tests/dbt_constraints.rs` |
+| Multi-query graph, producer/consumer, cycle | `src/bundle/graph_build.rs` | `src/bundle/graph.rs`, `src/bundle/orchestration.rs`, `src/composition.rs` | `tests/composition.rs`, `tests/physical_realization/graph.rs` |
+| Transitive composition and column identities | `src/composition.rs` | `src/bundle/composed.rs`, `src/physical_realization/graph.rs` | `tests/composition.rs`, `tests/composition_exactness.rs` |
+| Local constructive obligations and strength | `src/constructive/local.rs` | `src/constructive/types.rs`, `src/constructive/cases.rs`, `src/constructive/direction.rs` | `tests/constructive_witness.rs`, `tests/constructive_adapter_parity.rs` |
+| Joint physical source proof | `src/physical_realization/composition.rs` | `src/physical_realization/joint_counts.rs`, `src/physical_realization/graph.rs` | `tests/physical_realization/mixed.rs`, `tests/physical_realization/joint_operators.rs` |
+| Public Rust protocol model | `src/protocol/` (relevant domain module) | `src/lib.rs`, `schema/protocol.schema.json` | `tests/library_api.rs` |
+| Protocol JSON output | `src/emission/` (matching output family) | `src/protocol/`, `schema/protocol.schema.json` | `tests/library_api.rs` |
+| dbt inputs, compiled SQL and constraints | `src/dbt.rs` | `src/bundle/orchestration.rs`, `src/constraints.rs` | `tests/dbt_manifest.rs`, `tests/dbt_constraints.rs`, `tests/dbt_core_e2e.rs` |
+| Data contracts (ODCS) | `src/odcs.rs` | `src/relation.rs`, `src/constraints.rs` | `tests/odcs.rs` |
+| CLI inputs and output options | `src/main.rs` | `src/manifest.rs`, `src/emission/document.rs` | `tests/cli.rs` |
+
+## Emission module ownership
+
+- `src/emission/document.rs`: top-level protocol shape and bundle fields; **only here** assemble the document
+- `src/emission/graph.rs` and `composition.rs`: DAG nodes/edges, layer and composed semantics
+- `src/emission/statements.rs`: query, writes and mutation state
+- `src/emission/operator_witnesses.rs`, `constructive.rs`: operator and constructive proof serialization
+- `src/emission/aggregation_sets.rs`, `predicates.rs`, `expressions.rs`, `scalars.rs`: feature-specific SQL values
+- `src/emission/relations_domains.rs`, `constraints.rs`, `outcomes.rs`: value domains and evidence
+
+All emitters read canonical parser-independent values. To change protocol meaning, update its actual canonical owner and schema (when required), rather than silently changing one JSON encoder.
+
+## How to use this map
+
+1. Identify the affected semantic concept and read its **first owner**.
+2. Read adjacent interfaces and the narrowly relevant test file; do not ingest whole modules/directories by default.
+3. If a feature crosses ownership boundaries, follow explicit API contracts and keep evidence/provenance with the canonical owner.
+4. Run a targeted test (`cargo test --test <integration-test-name>`), then the repository's full verification gate before merge.
+
+If a path or responsibility changes, update this map **in the same PR**. Keep this document short and factual; it should not become a parallel product roadmap.
