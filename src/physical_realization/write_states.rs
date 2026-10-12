@@ -218,14 +218,7 @@ pub fn physical_ordered_write_state_plan(
         let target = write.target();
         let before = states.get(target).cloned();
         let result = match kind {
-            WriteKind::Definition => {
-                // CREATE VIEW versus CREATE TABLE and replace/exists flags are
-                // not yet distinguished by WriteOperation. Neither may be
-                // silently interpreted as an unconditional physical overwrite.
-                Err(residual(
-                    "definition DDL lacks a proven physical lifecycle kind",
-                ))
-            }
+            WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
             WriteKind::Append => append_rows(bundle, query, &states, target, before.as_ref()),
             WriteKind::Update => {
                 mutate_rows(bundle, query, &states, target, before.as_ref(), false)
@@ -239,27 +232,20 @@ pub fn physical_ordered_write_state_plan(
             Ok(value) => value,
             Err(error) => return failure(Some(layer.id()), error),
         };
-        let Some(effect) = write.state_effect() else {
-            return failure(
-                Some(layer.id()),
-                residual("missing canonical write count law"),
-            );
-        };
+        let effect = write.state_effect();
         let old_count = before.as_ref().map_or(0, |state| state.rows.len());
         let Ok(old_count) = u64::try_from(old_count) else {
             return failure(Some(layer.id()), residual("initial row count overflow"));
         };
-        let Ok(expected) = effect.resulting_rows(old_count, counts) else {
-            return failure(
-                Some(layer.id()),
-                impossible("write action violates cardinality law"),
-            );
-        };
-        if usize::try_from(expected).ok() != Some(after.rows.len()) {
-            return failure(
-                Some(layer.id()),
-                impossible("constructed rows contradict DML count law"),
-            );
+        if let Some(effect) = effect {
+            let Ok(expected) = effect.resulting_rows(old_count, counts) else {
+                return failure(Some(layer.id()), impossible("write action violates cardinality law"));
+            };
+            if usize::try_from(expected).ok() != Some(after.rows.len()) {
+                return failure(Some(layer.id()), impossible("constructed rows contradict DML count law"));
+            }
+        } else if kind != WriteKind::Definition {
+            return failure(Some(layer.id()), residual("missing canonical write count law"));
         }
         if let Err(error) = validate_state(bundle, &after) {
             return failure(Some(layer.id()), error);
@@ -464,6 +450,43 @@ fn initial_target<'a>(
     before: Option<&'a PhysicalWriteState>,
 ) -> StateResult<&'a PhysicalWriteState> {
     before.ok_or_else(|| residual(format!("missing complete initial target state: {target}")))
+}
+
+fn define_rows(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    states: &BTreeMap<String, PhysicalWriteState>,
+    target: &str,
+    before: Option<&PhysicalWriteState>,
+) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
+    let write = query.write().ok_or_else(|| residual("missing definition operation"))?;
+    match write.definition_mode() {
+        Some(WriteDefinitionMode::CreateTable) if before.is_some() => {
+            return Err(impossible("CREATE TABLE conflicts with a prior physical target"));
+        }
+        Some(WriteDefinitionMode::CreateTable | WriteDefinitionMode::ReplaceTable) => {}
+        Some(WriteDefinitionMode::CreateView | WriteDefinitionMode::ReplaceView) => {
+            return Err(residual("logical CREATE VIEW is not a writable physical table"));
+        }
+        None => return Err(residual("missing CREATE/REPLACE lifecycle evidence")),
+    }
+    let schema = schema_for(bundle, target)?;
+    let projected = evaluate_simple_select(bundle, query, states)?;
+    let columns = query.output().columns().iter().map(|c| c.name().to_string()).collect::<Vec<_>>();
+    if columns.len() != schema.columns().len()
+        || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
+        || schema.columns().iter().any(|c| !columns.contains(&c.name().to_string()))
+    {
+        return Err(residual("definition projection does not determine all target columns"));
+    }
+    let rows = projected.into_iter().map(|values| {
+        if values.len() != columns.len() { return Err(residual("invalid definition projection arity")); }
+        Ok(PhysicalWriteRow { values: columns.iter().cloned().zip(values).collect() })
+    }).collect::<StateResult<Vec<_>>>()?;
+    let before_rows = before.map_or(0, |state| state.rows.len());
+    let deleted = u64::try_from(before_rows).map_err(|_| residual("replaced table overflow"))?;
+    let inserted = u64::try_from(rows.len()).map_err(|_| residual("definition result overflow"))?;
+    Ok((PhysicalWriteState { relation: target.to_string(), rows }, WriteRowCounts::new(inserted, 0, deleted)))
 }
 
 fn append_rows(
