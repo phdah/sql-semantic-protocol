@@ -423,30 +423,41 @@ pub(super) fn necessarily_nonempty_preserved_join_side(
     if !fixed.values().any(|count| *count > 0) {
         return false;
     }
-    targets.iter().filter(|(_, rows)| *rows == 0).any(|&(layer, _)| {
-        let Some(WitnessDirection::Feasible(cases)) =
-            physical_join_population_count_plan(bundle, layer, 0)
-        else {
-            return false;
-        };
-        cases.iter().any(|case| {
-            case.obligations().iter().any(|obligation| {
-                let WitnessObligation::JoinPopulation {
-                    left_row, right_row, join_kind, ..
-                } = obligation else {
-                    return false;
-                };
-                let left = fixed.get(left_row.relation()).is_some_and(|count| *count > 0);
-                let right = fixed.get(right_row.relation()).is_some_and(|count| *count > 0);
-                match join_kind {
-                    JoinKind::Left => left,
-                    JoinKind::Right => right,
-                    JoinKind::Full => left || right,
-                    _ => false,
-                }
+    targets
+        .iter()
+        .filter(|(_, rows)| *rows == 0)
+        .any(|&(layer, _)| {
+            let Some(WitnessDirection::Feasible(cases)) =
+                physical_join_population_count_plan(bundle, layer, 0)
+            else {
+                return false;
+            };
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    let WitnessObligation::JoinPopulation {
+                        left_row,
+                        right_row,
+                        join_kind,
+                        ..
+                    } = obligation
+                    else {
+                        return false;
+                    };
+                    let left = fixed
+                        .get(left_row.relation())
+                        .is_some_and(|count| *count > 0);
+                    let right = fixed
+                        .get(right_row.relation())
+                        .is_some_and(|count| *count > 0);
+                    match join_kind {
+                        JoinKind::Left => left,
+                        JoinKind::Right => right,
+                        JoinKind::Full => left || right,
+                        _ => false,
+                    }
+                })
             })
         })
-    })
 }
 
 /// Compose closed physical key populations across multiple terminal goals.
