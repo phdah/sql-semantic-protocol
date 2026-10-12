@@ -602,8 +602,15 @@ be transported through *downstream* single-parent, value- and
 row-preserving materializations. This reuses the independently validated
 physical construction, not merely its apparent output count. Complete
 typed scalar distributions are likewise mapped through validated
-physical-column lineage and actual source/producer catalog schemas;
-ambiguous, computed, or unknown columns remain residual.
+physical-column lineage and actual source/producer catalog schemas.
+Repeated output aliases share a single physical histogram; contradictory
+complete frequencies for direct copies are impossible. At a terminal SELECT
+following a fully row-preserving typed producer chain, reversible signed
+integer additions, subtractions and negation may also be inverted bucket
+by bucket with checked arithmetic at the source integer width. NULL
+propagation, overflow, materialization datatype equality and every projected
+column are checked. Lossy, ambiguous or unguarded computations and unknown
+columns remain residual. No intermediate table is independently writable.
 
 A narrow positive group or rank population may now be constructed even
 when its source is a materialized, identity-preserving producer rather than a
