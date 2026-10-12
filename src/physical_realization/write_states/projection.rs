@@ -1,14 +1,22 @@
 //! Project complete physical inputs and atomically apply SQL assignments.
 
-use super::*;
 use super::evaluator::{eval, selected, Context};
+use super::*;
 
-pub(super) fn schema_for<'a>(bundle: &'a AnalysisBundle, relation: &str) -> StateResult<&'a RelationSchema> {
+pub(super) fn schema_for<'a>(
+    bundle: &'a AnalysisBundle,
+    relation: &str,
+) -> StateResult<&'a RelationSchema> {
     bundle
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == relation)
-        .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingSchema, format!("missing schema for {relation}")))
+        .ok_or_else(|| {
+            residual_gap(
+                PhysicalWriteStateGap::MissingSchema,
+                format!("missing schema for {relation}"),
+            )
+        })
 }
 
 pub(super) fn evaluate_simple_select(
@@ -30,9 +38,12 @@ pub(super) fn evaluate_simple_select(
     let [source] = query.sources() else {
         return Err(residual("INSERT SELECT must read one physical relation"));
     };
-    let rows = states
-        .get(source.name())
-        .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingPopulation, "missing complete INSERT source population"))?;
+    let rows = states.get(source.name()).ok_or_else(|| {
+        residual_gap(
+            PhysicalWriteStateGap::MissingPopulation,
+            "missing complete INSERT source population",
+        )
+    })?;
     let aliases = [source.alias().unwrap_or(source.name()), source.name()];
     let mut result = Vec::new();
     for row in &rows.rows {
@@ -89,4 +100,3 @@ pub(super) fn apply_assignments(
     }
     Ok(next)
 }
-
