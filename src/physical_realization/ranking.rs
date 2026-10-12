@@ -69,8 +69,7 @@ pub(super) fn physical_rank_partition_count_plan(
     }
     let limit = local.limit()?;
     match local.qualifying() {
-        WindowWitnessDirection::Exact(case)
-            if limit > 0 && case.min_preceding() == 0 => {}
+        WindowWitnessDirection::Exact(case) if limit > 0 && case.min_preceding() == 0 => {}
         WindowWitnessDirection::Impossible if limit == 0 && wanted == 0 => {}
         _ => return None,
     }
@@ -82,9 +81,10 @@ pub(super) fn physical_rank_partition_count_plan(
         if current == operator_id {
             break;
         }
-        let node = walker.nodes.iter().find(|node| {
-            node.id() == &PhysicalPlanRef::Layer(current.to_string())
-        })?;
+        let node = walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(current.to_string()))?;
         let [PhysicalPlanRef::Layer(parent)] = node.inputs() else {
             return None;
         };
@@ -98,22 +98,22 @@ pub(super) fn physical_rank_partition_count_plan(
     if !walker.sources.contains(&source) {
         return None;
     }
-    let partition = resolve_filter_column_with_evidence(
-        bundle, &walker, operator_id, partition_key, 0, true
-    )?;
-    let order_key = resolve_filter_column_with_evidence(
-        bundle, &walker, operator_id, order.column(), 0, true
-    )?;
+    let partition =
+        resolve_filter_column_with_evidence(bundle, &walker, operator_id, partition_key, 0, true)?;
+    let order_key =
+        resolve_filter_column_with_evidence(bundle, &walker, operator_id, order.column(), 0, true)?;
     if partition.relation() != Some(source.as_str())
         || order_key.relation() != Some(source.as_str())
         || partition == order_key
     {
         return None;
     }
-    let schema = bundle.source_schemas().iter().find(|item| item.relation() == source)?;
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|item| item.relation() == source)?;
     if bundle.relation_constraints().iter().any(|set| {
-        set.relation() == source
-            && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+        set.relation() == source && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
     }) {
         return None;
     }
@@ -154,15 +154,14 @@ pub(super) fn physical_rank_partition_count_plan(
         };
         let selected = rows_per_partition.min(limit);
         if partitions.checked_mul(selected) != Some(wanted)
-            || (partitions > 0
-                && i128::from(partitions - 1) > partition_domain.maximum)
+            || (partitions > 0 && i128::from(partitions - 1) > partition_domain.maximum)
             || i128::from(rows_per_partition - 1) > order_domain.maximum
         {
             continue;
         }
-        let Some(boundary) = WitnessBoundary::new(
-            &source, GroupBoundaryKind::Physical, target_layer_id
-        ) else {
+        let Some(boundary) =
+            WitnessBoundary::new(&source, GroupBoundaryKind::Physical, target_layer_id)
+        else {
             continue;
         };
         let mapped_order = order.with_column(order_key.clone());
@@ -191,9 +190,8 @@ pub(super) fn physical_rank_partition_count_plan(
             });
         }
         if rank_input != source {
-            let intermediate = WitnessBoundary::new(
-                rank_input, GroupBoundaryKind::Intermediate, target_layer_id
-            )?;
+            let intermediate =
+                WitnessBoundary::new(rank_input, GroupBoundaryKind::Intermediate, target_layer_id)?;
             obligations.push(WitnessObligation::Producer {
                 boundary: intermediate,
                 physical_sources: vec![source.clone()],
