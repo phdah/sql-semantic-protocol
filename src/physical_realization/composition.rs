@@ -24,6 +24,7 @@ pub(super) fn joint_mixed_operator_and_source_goals(
     for &(id, rows) in targets {
         if let Some(plan) = physical_join_group_count_plan(bundle, id, rows)
             .or_else(|| physical_group_rank_count_plan(bundle, id, rows))
+            .or_else(|| physical_rank_partition_count_plan(bundle, id, rows))
             .or_else(|| physical_group_aggregate_filter_count_plan(bundle, id, rows))
             .or_else(|| physical_subquery_membership_plan(bundle, id, rows))
         {
