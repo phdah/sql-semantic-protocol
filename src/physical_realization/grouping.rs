@@ -421,10 +421,9 @@ fn physical_filtered_join_single_group(
         },
         _ => return None,
     };
-    if key
-        .relation()
-        .is_some_and(|relation| target.canonical_relation(relation) != source.name())
-    {
+    if key.relation().is_some_and(|relation| {
+        relation != source.name() && source.alias() != Some(relation)
+    }) {
         return None;
     }
     // The group key is a deterministic per-row value projected by the join.
@@ -437,7 +436,16 @@ fn physical_filtered_join_single_group(
         .find(|column| column.name() == key.name())?;
     let key_origin = key_output.plain_copy_source()?;
     eprintln!("PFG TRACE key_origin={key_origin:?}");
-    let key_stage_name = join_layer.canonical_relation(key_origin.relation());
+    // Query source aliases are scoped to this SELECT; a layer-level producer
+    // identity alone does not necessarily contain its local SQL alias.
+    let unique_join_source = |name: &str| {
+        let mut matches = join_query.sources().iter().filter(|input| {
+            input.name() == name || input.alias() == Some(name)
+        });
+        let first = matches.next()?;
+        matches.next().is_none().then_some(first.name())
+    };
+    let key_stage_name = unique_join_source(key_origin.relation())?.to_string();
     let stage_node = walker.nodes.iter().find(|node| {
         node.produced_relations()
             .contains(&key_stage_name.to_string())
@@ -472,10 +480,9 @@ fn physical_filtered_join_single_group(
         else {
             return None;
         };
-        if column
-            .relation()
-            .is_some_and(|name| target.canonical_relation(name) != source.name())
-        {
+        if column.relation().is_some_and(|name| {
+            name != source.name() && source.alias() != Some(name)
+        }) {
             return None;
         }
         let origin = join_query
@@ -484,7 +491,7 @@ fn physical_filtered_join_single_group(
             .iter()
             .find(|output| output.name() == column.name())?
             .plain_copy_source()?;
-        let stage_name = join_layer.canonical_relation(origin.relation());
+        let stage_name = unique_join_source(origin.relation())?.to_string();
         let stage_node = walker
             .nodes
             .iter()
@@ -511,9 +518,11 @@ fn physical_filtered_join_single_group(
         if filter.operator() != ComparisonOperator::Eq
             || filter_value != value
             || filter_column.name() != copy.column()
-            || filter_column
-                .relation()
-                .is_some_and(|name| stage_layer.canonical_relation(name) != copy.relation())
+            || filter_column.relation().is_some_and(|name| {
+                stage_query.sources()[0].name() != name
+                    && stage_query.sources()[0].alias() != Some(name)
+            })
+            || stage_query.sources()[0].name() != copy.relation()
             || !matches!(
                 value.value(),
                 LiteralValue::Number(_) | LiteralValue::Boolean(_)
