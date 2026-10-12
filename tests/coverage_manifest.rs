@@ -531,6 +531,11 @@ fn pinned_task_99_fixture_contract_is_reproducible_and_release_blocked() {
         "90ec0e12a2d5cd2c1294556336fc947e176c9db9"
     );
     assert_eq!(required_array(pinned, "raw_sql").len(), 7);
+    for path in required_array(pinned, "raw_sql") {
+        let file = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join(path.as_str().expect("pinned raw SQL must have a path"));
+        assert!(file.is_file(), "pinned fixture is missing: {}", file.display());
+    }
     assert_eq!(pinned["dbt_model_count"], 11);
     assert_eq!(pinned["dbt_source_seed_count"], 4);
     assert_eq!(
