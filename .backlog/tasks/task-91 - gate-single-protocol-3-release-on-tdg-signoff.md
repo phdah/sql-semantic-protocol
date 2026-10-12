@@ -90,3 +90,16 @@ The executable coverage inventory lives in [docs/coverage-manifest.json](../../d
 ## Inventory completion does not imply release acceptance
 
 TASK-66 was closed as the 53-family, 251-variant, 13-dialect **inventory and ownership handoff** in protocol PR #88. Its status must not be used to infer that an unverified manifest cell has passed. TASK-67..90, sql-tdg TASK-24..31/35/36/43/44 and the executable final TASK-91 release gate are still required; do not merge Release Please PR #79 based on TASK-66 alone.
+
+## TASK-99 pinned upstream fixture mapping (2026-10-12)
+
+The protocol-side integration gate pins sql-tdg commit
+`90ec0e12a2d5cd2c1294556336fc947e176c9db9` under
+`tests/fixtures/sql_tdg/`. Executable raw SQL and actual eleven-model dbt
+DuckDB oracle gates are `tests/sql_tdg_physical.rs` and
+`tests/sql_tdg_pinned_dbt_e2e.rs` (`make dbt-e2e`). See
+`docs/tdg-certification.md` and
+`docs/coverage-manifest.json.task_99_upstream_fixture_contract` for
+exact-versus-residual classifications. sql-tdg TASK-31/35/36 generated
+DML/DDL and randomized negative output oracles remain independently pending;
+this protocol-side evidence does **not** unblock the 3.0.0 release.
