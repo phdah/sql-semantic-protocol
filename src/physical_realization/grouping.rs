@@ -419,9 +419,10 @@ fn physical_filtered_join_single_group(
         },
         _ => return None,
     };
-    if key.relation().is_some_and(|relation| {
-        relation != source.name() && source.alias() != Some(relation)
-    }) {
+    if key
+        .relation()
+        .is_some_and(|relation| relation != source.name() && source.alias() != Some(relation))
+    {
         return None;
     }
     // The group key is a deterministic per-row value projected by the join.
@@ -436,9 +437,10 @@ fn physical_filtered_join_single_group(
     // Query source aliases are scoped to this SELECT; a layer-level producer
     // identity alone does not necessarily contain its local SQL alias.
     let unique_join_source = |name: &str| {
-        let mut matches = join_query.sources().iter().filter(|input| {
-            input.name() == name || input.alias() == Some(name)
-        });
+        let mut matches = join_query
+            .sources()
+            .iter()
+            .filter(|input| input.name() == name || input.alias() == Some(name));
         let first = matches.next()?;
         matches.next().is_none().then_some(first.name())
     };
@@ -475,9 +477,10 @@ fn physical_filtered_join_single_group(
         else {
             return None;
         };
-        if column.relation().is_some_and(|name| {
-            name != source.name() && source.alias() != Some(name)
-        }) {
+        if column
+            .relation()
+            .is_some_and(|name| name != source.name() && source.alias() != Some(name))
+        {
             return None;
         }
         let origin = join_query
