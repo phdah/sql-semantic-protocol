@@ -227,8 +227,7 @@ fn value_fits_type(data_type: &DataType, value: &ConstraintValue) -> bool {
             bits.is_none_or(|bits| {
                 bits > 0
                     && (bits >= 128
-                        || (integer >= -(1_i128 << (bits - 1))
-                            && integer < (1_i128 << (bits - 1))))
+                        || (integer >= -(1_i128 << (bits - 1)) && integer < (1_i128 << (bits - 1))))
             })
         }
         DataType::UnsignedInteger { bits } => {
