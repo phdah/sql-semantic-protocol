@@ -1,10 +1,10 @@
 ---
 id: TASK-98
 title: Realize ordered DML and DDL before/after physical states
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-10'
-updated_date: '2026-10-10'
+updated_date: '2026-10-12'
 labels: []
 milestone: m-3
 dependencies:
@@ -48,3 +48,7 @@ Lift already-defined write effects and branch programs into complete, ordered ph
 - **Next:** After this task is Done, proceed to TASK-99; do not skip ahead.
 - **Scope boundary:** Other TASK-70..91 work still owns individual missing operator variants, exhaustive conformance, the downstream generator, and protocol 3.0.0 release sign-off.
 
+
+## Implementation checkpoint (2026-10-12)
+
+Draft PR #104 implements the closed-world, caller-controlled before/after physical state interpreter under `src/physical_realization/write_states/`, with row-local INSERT SELECT, UPDATE, DELETE, MERGE, CTAS/REPLACE, exact DML row effects, keyed constraint validation and typed residuals. Covered proof paths have DuckDB statement oracles, dialect tests and dbt catalog provenance parity. Unsupported operator-local/lifecycle/transaction semantics intentionally retain residual, not false feasible. Acceptance boxes remain unchecked until complete and final CI is certified.
