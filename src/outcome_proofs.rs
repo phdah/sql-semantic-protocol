@@ -740,14 +740,21 @@ fn construct_set_with_map(
     let case = cases
         .into_iter()
         .find(|case| {
-            if case.output_tuple_count() != 1 {
+            let output_per_tuple = case.output_tuple_count();
+            if output_per_tuple == 0
+                || (output_per_tuple != 1
+                    && (!shared_source
+                        || !values.is_empty()
+                        || rows % output_per_tuple != 0))
+            {
                 return false;
             }
             let [left, right] = case.obligations() else {
                 return false;
             };
-            // A pair of copies of the *same* physical relation cannot
-            // independently contain differing frequencies for one tuple.
+            // Identical physical rows cannot supply different counts in
+            // copied set arms. UNION ALL can emit two rows per source tuple;
+            // it is constructive only for a divisible, complete row goal.
             !shared_source || left.matching_tuple_count() == right.matching_tuple_count()
         })?
         .with_physical_boundaries(map)?;
@@ -758,7 +765,7 @@ fn construct_set_with_map(
             | SetMultiplicityRule::SaturatingDifference
     );
     let tuples = if values.is_empty() {
-        rows
+        rows.checked_div(case.output_tuple_count())?
     } else {
         values.iter().filter(|entry| entry.rows() > 0).count() as u64
     };
