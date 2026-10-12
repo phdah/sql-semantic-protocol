@@ -865,35 +865,47 @@ fn correlated_exists_and_nonnull_in_are_realized_as_full_key_populations() {
                      (SELECT l.order_id FROM stage_lines l)"
                 )
             };
-            let b = bundle_with_schemas(
-                &[producers[0], producers[1], &query], dialect, &schemas
-            );
+            let b = bundle_with_schemas(&[producers[0], producers[1], &query], dialect, &schemas);
             let target = b.layers()[2].id();
             let proof = physical_joint_source_plan(&b, &[(target, wanted)]);
             let WitnessDirection::Feasible(cases) = proof.outcome() else {
                 panic!("{dialect} {operator} rows={wanted}: expected proof: {proof:?}");
             };
             let complete = cases.iter().any(|case| {
-                case.obligations().iter().any(|o| matches!(
-                    o, WitnessObligation::Membership { closed_world: true, .. }
-                )) && case.obligations().iter().any(|o| matches!(
-                    o, WitnessObligation::Rows {
-                        boundary, bounds, closed_world: true, ..
-                    } if boundary.relation() == "orders"
-                        && bounds.minimum() == wanted.max(1)
-                )) && case.obligations().iter().any(|o| matches!(
-                    o, WitnessObligation::Rows {
-                        boundary, bounds, closed_world: true, ..
-                    } if boundary.relation() == "lines"
-                        && bounds.minimum() == 1
-                ))
+                case.obligations().iter().any(|o| {
+                    matches!(
+                        o,
+                        WitnessObligation::Membership {
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                }) && case.obligations().iter().any(|o| {
+                    matches!(
+                        o, WitnessObligation::Rows {
+                            boundary, bounds, closed_world: true, ..
+                        } if boundary.relation() == "orders"
+                            && bounds.minimum() == wanted.max(1)
+                    )
+                }) && case.obligations().iter().any(|o| {
+                    matches!(
+                        o, WitnessObligation::Rows {
+                            boundary, bounds, closed_world: true, ..
+                        } if boundary.relation() == "lines"
+                            && bounds.minimum() == 1
+                    )
+                })
             });
-            assert!(complete, "{dialect} {operator}: missing closed source proof");
+            assert!(
+                complete,
+                "{dialect} {operator}: missing closed source proof"
+            );
 
             let db = Connection::open_in_memory().unwrap();
-            let outer_values = std::iter::repeat_n(format!("({outer_key})"), wanted.max(1) as usize)
-                .collect::<Vec<_>>()
-                .join(",");
+            let outer_values =
+                std::iter::repeat_n(format!("({outer_key})"), wanted.max(1) as usize)
+                    .collect::<Vec<_>>()
+                    .join(",");
             db.execute_batch(&format!(
                 "CREATE TABLE orders(id INTEGER);
                  CREATE TABLE lines(order_id INTEGER);
@@ -905,10 +917,14 @@ fn correlated_exists_and_nonnull_in_are_realized_as_full_key_populations() {
             .unwrap();
             let result = format!("SELECT id FROM ({query}) ORDER BY id");
             let mut stmt = db.prepare(&result).unwrap();
-            let values = stmt.query_map([], |row| row.get::<_, i32>(0))
-                .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+            let values = stmt
+                .query_map([], |row| row.get::<_, i32>(0))
+                .unwrap()
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap();
             assert_eq!(
-                values, vec![outer_key; wanted as usize],
+                values,
+                vec![outer_key; wanted as usize],
                 "{dialect} {operator} rows={wanted}"
             );
         }
