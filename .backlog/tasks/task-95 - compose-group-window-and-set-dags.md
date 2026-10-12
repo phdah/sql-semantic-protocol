@@ -4,7 +4,7 @@ title: Compose grouping, ranking and set operators across producer DAGs
 status: In Progress
 assignee: []
 created_date: '2026-10-10'
-updated_date: '2026-10-10'
+updated_date: '2026-10-12'
 labels: []
 milestone: m-3
 dependencies:
@@ -118,3 +118,10 @@ cross-dialect sign-off. TASK-95's five criteria remain unchecked.
 - Conjoin independently closed, physical mixed-operator populations over disjoint physical source sets into a single joint plan, preserving every local operator obligation, full-source closure and transparent terminal count.
 - Add DuckDB full-output tests for two independent JOIN-to-GROUP/HAVING DAGs and explicit residual for shared-source collisions.
 - Arbitrary shared physical populations and interacting mixed branch laws remain unresolved; TASK-95 is not complete.
+
+### Shared-source UNION ALL complete-bag increment
+
+- Reused the canonical local `Sum` tuple law for two identity-preserving materialized branches bound to the same typed physical column.
+- Proved even-sized positive terminal counts from one complete source assignment: each distinct physical tuple is read once by each branch and emitted twice. The source cardinality is half the requested output count, not one population per branch.
+- Added cross-dialect cases and DuckDB full-output bag checks for outputs with 2, 4 and 6 rows. Odd positive counts, mismatched columns, positive shared `EXCEPT ALL` and explicit per-value inverted multiplicities still remain residual in this increment.
+- The five acceptance criteria remain open pending general shared-source bag laws, correlated membership, larger mixed DAG proofs and independent sign-off.
