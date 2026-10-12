@@ -137,7 +137,7 @@ pub use physical_realization::{
     physical_ordered_write_state_plan, physical_rejected_row_count_plan, physical_row_count_plan,
     physical_source_plan, physical_unconditional_delete_plan, PhysicalJointSourcePlan,
     PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan,
-    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan,
+    PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan,
     PhysicalWriteTransition,
 };
 pub use protocol::{
