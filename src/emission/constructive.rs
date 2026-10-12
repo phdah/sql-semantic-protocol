@@ -261,6 +261,28 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
             "strict_unique": strict_unique,
             "closed_world": closed_world
         }),
+        crate::WitnessObligation::RankPopulation {
+            boundary,
+            partition_key,
+            order,
+            partitions,
+            rows_per_partition,
+            rank_limit,
+            closed_world,
+        } => json!({
+            "kind": "rank_population",
+            "boundary": constructive_boundary_to_value(boundary),
+            "partition_key": column_ref_to_value(partition_key),
+            "order": {
+                "column": column_ref_to_value(order.column()),
+                "ascending": order.ascending(),
+                "nulls_first": order.nulls_first()
+            },
+            "partitions": partitions,
+            "rows_per_partition": rows_per_partition,
+            "rank_limit": rank_limit,
+            "closed_world": closed_world
+        }),
         crate::WitnessObligation::Membership {
             outer,
             inner,
