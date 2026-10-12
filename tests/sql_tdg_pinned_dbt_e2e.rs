@@ -155,8 +155,14 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
     let final_id = layer_id(&bundle, "aggregate_summary");
     let final_proof = physical_row_count_plan(&bundle, final_id, 1);
     assert!(
-        !matches!(final_proof, WitnessDirection::Impossible),
-        "an actual DuckDB witness disproves impossible: {final_proof:?}"
+        matches!(final_proof, WitnessDirection::Residual { .. }),
+        "positive multi-parent aggregate cannot claim a source-level proof without complete joint populations: {final_proof:?}"
+    );
+    let stage = layer_id(&bundle, "stg_orders");
+    let contradiction = physical_joint_row_count_plan(&bundle, &[(stage, 0), (stage, 1)]);
+    assert!(
+        matches!(contradiction, WitnessDirection::Impossible),
+        "two different exact counts for one canonical terminal must contradict: {contradiction:?}"
     );
     let graph = physical_source_plan(&bundle, final_id);
     assert!(
