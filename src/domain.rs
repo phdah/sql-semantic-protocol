@@ -1546,3 +1546,89 @@ fn parse_decimal_number(value: &str) -> Option<DecimalNumber> {
 fn null_literal() -> LiteralExpression {
     LiteralExpression::new(LiteralType::Null, LiteralValue::Null)
 }
+
+#[cfg(test)]
+mod constraint_frequency_membership_tests {
+    use super::*;
+    use crate::constraints::ConstraintValue;
+
+    #[test]
+    fn integer_range_membership_observes_exact_bound_inclusivity() {
+        let lower = Bound::new(
+            LiteralExpression::new(
+                LiteralType::Integer,
+                LiteralValue::Number("10".to_string()),
+            ),
+            false,
+        );
+        let upper = Bound::new(
+            LiteralExpression::new(
+                LiteralType::Integer,
+                LiteralValue::Number("20".to_string()),
+            ),
+            true,
+        );
+        let domain = ValueDomain::ranges(vec![ValueRange::new(Some(lower), Some(upper))]);
+        for (value, expected) in [(9, false), (10, false), (11, true), (20, true), (21, false)] {
+            assert_eq!(
+                domain_admits_constraint_value(&domain, &ConstraintValue::Integer(value)),
+                Some(expected),
+            );
+        }
+        assert_eq!(
+            domain_admits_constraint_value(&domain, &ConstraintValue::Null),
+            Some(false),
+        );
+    }
+
+    #[test]
+    fn set_membership_is_exact_for_null_numeric_bool_and_string_values() {
+        let numeric = ValueDomain::set(
+            SetMode::Include,
+            vec![LiteralExpression::new(
+                LiteralType::Integer,
+                LiteralValue::Number("4".to_string()),
+            )],
+        );
+        assert_eq!(
+            domain_admits_constraint_value(&numeric, &ConstraintValue::Integer(4)),
+            Some(true),
+        );
+        assert_eq!(
+            domain_admits_constraint_value(&numeric, &ConstraintValue::Integer(5)),
+            Some(false),
+        );
+        let excluding = ValueDomain::set(
+            SetMode::Exclude,
+            vec![LiteralExpression::new(
+                LiteralType::String,
+                LiteralValue::Text("blocked".to_string()),
+            )],
+        );
+        assert_eq!(
+            domain_admits_constraint_value(
+                &excluding,
+                &ConstraintValue::String("blocked".to_string()),
+            ),
+            Some(false),
+        );
+        assert_eq!(
+            domain_admits_constraint_value(
+                &excluding,
+                &ConstraintValue::String("allowed".to_string()),
+            ),
+            Some(true),
+        );
+        assert_eq!(
+            domain_admits_constraint_value(&ValueDomain::Unbounded, &ConstraintValue::Null),
+            Some(true),
+        );
+        assert_eq!(
+            domain_admits_constraint_value(
+                &ValueDomain::unknown("comparison unavailable"),
+                &ConstraintValue::Integer(4),
+            ),
+            None,
+        );
+    }
+}
