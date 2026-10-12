@@ -2,19 +2,66 @@
 
 use super::*;
 
-/// A complete empty inner source proves correlated or uncorrelated absence.
-/// One complete nonempty inner row also proves uncorrelated, unfiltered EXISTS
-/// true (and NOT EXISTS false) for all outer rows. Both constructions are
-/// valid through transparent producer chains. Nonempty correlated matches or
-/// IN key comparisons require joint key-population proofs and remain residual.
+/// A nested filter is safe for the controlled-key population only when every
+/// conjunct is a correlated equality. Other inner restrictions require their
+/// own jointly realized source assignment and remain residual.
+fn correlated_equalities_only(predicate: &Predicate) -> bool {
+    match predicate {
+        Predicate::And(and) => and.operands().iter().all(correlated_equalities_only),
+        Predicate::Comparison(comparison) => {
+            comparison.operator() == crate::protocol::ComparisonOperator::Eq
+                && matches!(comparison.left(), Expression::Column(_))
+                && matches!(comparison.right(), Expression::Column(_))
+        }
+        _ => false,
+    }
+}
+
+/// Assign one complete non-NULL integer key population. All source rows are
+/// constrained, not merely an arbitrary membership candidate. Repeated keys
+/// mapped onto the same physical column must agree on their chosen value.
+fn assign_membership_key(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    target: &str,
+    key: &crate::protocol::ColumnRef,
+    value: i64,
+    assignments: &mut BTreeMap<(String, String), i64>,
+) -> Option<crate::protocol::ColumnRef> {
+    let mapped = resolve_filter_column_with_evidence(bundle, walker, target, key, 0, true)?;
+    let relation = mapped.relation()?;
+    if !walker.sources.contains(relation) {
+        return None;
+    }
+    let schema = bundle.source_schemas().iter().find(|s| s.relation() == relation)?;
+    let domain = physical_integer_evidence(schema, &mapped)?;
+    if domain.minimum > i128::from(value) || domain.maximum < i128::from(value) {
+        return None;
+    }
+    let identity = (relation.to_string(), mapped.name().to_string());
+    if assignments.insert(identity, value).is_some_and(|prior| prior != value) {
+        return None;
+    }
+    Some(mapped)
+}
+
+/// Construct one complete physical population for an EXISTS/IN/NOT predicate
+/// through certified, identity-only producer chains. Correlated equality and
+/// IN matching keys use a shared, typed integer value for *every* physical
+/// outer/inner row. A distinct key realizes complete absence for a correlated
+/// EXISTS or a non-NULL IN candidate set. No SQL NULL or arbitrary nested
+/// filter is silently equated with FALSE.
 pub(super) fn physical_subquery_membership_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
     wanted: u64,
 ) -> Option<WitnessDirection> {
+    use crate::protocol::ComparisonOperator;
     use crate::subquery_witness::{
         SubqueryMembershipCase, SubqueryMembershipDirection, SubqueryMembershipKind,
+        SubqueryCorrelation,
     };
+
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
     let layer = walker.layers.get(target_layer_id).copied()?;
@@ -25,10 +72,14 @@ pub(super) fn physical_subquery_membership_plan(
     let [local] = query.subquery_witnesses() else {
         return None;
     };
-    if !matches!(
-        query.predicates().where_predicate()?,
-        Predicate::Exists(_) | Predicate::InSubquery(_)
-    ) || !matches!(layer.write_kind(), None | Some(WriteKind::Definition))
+    let inner_filter = match query.predicates().where_predicate()? {
+        Predicate::Exists(exists) => exists.subquery().predicates().where_predicate(),
+        Predicate::InSubquery(membership) => {
+            membership.subquery().predicates().where_predicate()
+        }
+        _ => return None,
+    };
+    if !matches!(layer.write_kind(), None | Some(WriteKind::Definition))
         || !query.joins().is_empty()
         || query.aggregation().is_some()
         || query.set_operation().is_some()
@@ -39,46 +90,23 @@ pub(super) fn physical_subquery_membership_plan(
             .columns()
             .iter()
             .all(|column| column.plain_copy_source().is_some())
-    {
-        return None;
-    }
-    // The local membership direction is authoritative. An empty inner source
-    // proves every outer row's rejection/selection even for correlated IN.
-    // A *nonempty* inner source proves all-row truth only for EXISTS without
-    // correlations or nested filters. IN needs equal, non-NULL key evidence.
-    let empty_selects = matches!(
-        local.kind(),
-        SubqueryMembershipKind::NotExists | SubqueryMembershipKind::NotIn
-    );
-    let (membership_case, inner_rows) = if empty_selects == (wanted > 0) {
-        (SubqueryMembershipCase::NoCandidates, 0)
-    } else {
-        if !matches!(
-            local.kind(),
-            SubqueryMembershipKind::Exists | SubqueryMembershipKind::NotExists
-        ) || !local.correlations().is_empty()
-            || local.membership_key().is_some()
-            || !local.inner_column_domains().is_empty()
-            || !matches!(
-                query.predicates().where_predicate(),
-                Some(Predicate::Exists(exists))
-                    if exists.subquery().predicates().where_predicate().is_none()
-            )
-        {
-            return None;
+        || !local.inner_column_domains().is_empty()
+        || match inner_filter {
+            None => !local.correlations().is_empty(),
+            Some(predicate) => {
+                local.correlations().is_empty() || !correlated_equalities_only(predicate)
+            }
         }
-        (SubqueryMembershipCase::MatchingRow, 1)
-    };
-    let direction = if wanted > 0 {
-        local.qualifying()
-    } else {
-        local.rejected()
-    };
-    if !matches!(direction, SubqueryMembershipDirection::Exact(cases)
-        if cases.contains(&membership_case))
     {
         return None;
     }
+
+    let positive = wanted > 0;
+    let direction = if positive { local.qualifying() } else { local.rejected() };
+    let SubqueryMembershipDirection::Exact(allowed) = direction else {
+        return None;
+    };
+
     let outer_physical =
         physical_transparent_producer_leaf(bundle, &walker, outer_relation.name())?;
     let inner_relation = local.inner_relation()?;
@@ -90,13 +118,8 @@ pub(super) fn physical_subquery_membership_plan(
     {
         return None;
     }
-    // Only independently controllable, actually attested relations can be
-    // assigned source rows; constraints cannot be assumed away.
     for relation in [&outer_physical, &inner_physical] {
-        bundle
-            .source_schemas()
-            .iter()
-            .find(|s| s.relation() == relation)?;
+        bundle.source_schemas().iter().find(|s| s.relation() == relation)?;
         if bundle.relation_constraints().iter().any(|set| {
             set.relation() == relation
                 && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
@@ -104,46 +127,160 @@ pub(super) fn physical_subquery_membership_plan(
             return None;
         }
     }
-    let outer_rows = wanted.max(1);
-    let outer_boundary = WitnessBoundary::new(
-        &outer_physical,
-        GroupBoundaryKind::Physical,
-        target_layer_id,
-    )?;
-    let inner_boundary = WitnessBoundary::new(
-        &inner_physical,
-        GroupBoundaryKind::Physical,
-        target_layer_id,
-    )?;
-    let outer_row = RowVariable::new(&outer_physical, outer_relation.name(), "membership_outer")?;
-    let mut obligations = vec![WitnessObligation::Membership {
-        outer: outer_row,
-        inner: inner_boundary.clone(),
-        case: membership_case,
-        // Empty inner inputs make candidate conditions vacuous. Nonempty
-        // constructions are limited to unfiltered, uncorrelated EXISTS.
-        correlations: Vec::new(),
-        membership_key: None,
-        inner_domains: Vec::new(),
-        closed_world: true,
-    }];
-    for (boundary, count) in [(outer_boundary, outer_rows), (inner_boundary, inner_rows)] {
-        obligations.push(WitnessObligation::Rows {
-            boundary: boundary.clone(),
-            quantifier: RowQuantifier::ForAll,
-            bounds: CountBounds::new(count, Some(count))?,
-            predicate: count_tautology(),
-            closed_world: true,
-        });
-        obligations.push(WitnessObligation::ClosedWorld {
-            boundary,
-            coverage: ClosedWorldCoverage::EntireRelation,
-        });
+
+    // Each entry is a complete sufficient construction, not an exhaustive
+    // classification. Zero-inner is still valid for arbitrary correlations
+    // and membership keys, since no candidate can survive.
+    let empty_selects = matches!(
+        local.kind(),
+        SubqueryMembershipKind::NotExists | SubqueryMembershipKind::NotIn
+    );
+    let mut populations = Vec::new();
+    if empty_selects == positive {
+        populations.push((SubqueryMembershipCase::NoCandidates, 0_u64, false));
     }
-    obligations.push(WitnessObligation::OutputRows {
-        layer_id: target_layer_id.to_string(),
-        bounds: CountBounds::new(wanted, Some(wanted))?,
-    });
-    let case = WitnessCase::new(obligations, ProofStrength::Sufficient)?;
-    WitnessDirection::feasible(vec![case])
+    match (local.kind(), positive) {
+        (SubqueryMembershipKind::Exists, true)
+        | (SubqueryMembershipKind::NotExists, false) => {
+            populations.push((SubqueryMembershipCase::MatchingRow, 1, false));
+        }
+        (SubqueryMembershipKind::In, true)
+        | (SubqueryMembershipKind::NotIn, false) => {
+            populations.push((SubqueryMembershipCase::MatchingNonNullKey, 1, false));
+        }
+        (SubqueryMembershipKind::Exists, false)
+        | (SubqueryMembershipKind::NotExists, true)
+            if !local.correlations().is_empty() =>
+        {
+            populations.push((SubqueryMembershipCase::NoCandidates, 1, true));
+        }
+        (SubqueryMembershipKind::In, false)
+        | (SubqueryMembershipKind::NotIn, true) => {
+            populations.push((SubqueryMembershipCase::NoMatchNoNull, 1, true));
+        }
+        _ => {}
+    }
+
+    let outer_rows = wanted.max(1);
+    let mut cases = Vec::new();
+    for (membership_case, inner_rows, nonmatching) in populations {
+        if !allowed.contains(&membership_case) {
+            continue;
+        }
+        let mut assignments = BTreeMap::<(String, String), i64>::new();
+        let mut correlations = Vec::new();
+        let mut invalid = false;
+        if inner_rows > 0 {
+            for pair in local.correlations() {
+                let outer_value = if nonmatching
+                    && local.membership_key().is_none()
+                {
+                    1
+                } else {
+                    0
+                };
+                let Some(outer) = assign_membership_key(
+                    bundle, &walker, target_layer_id, pair.outer(), outer_value, &mut assignments
+                ) else {
+                    invalid = true;
+                    break;
+                };
+                let Some(inner) = assign_membership_key(
+                    bundle, &walker, target_layer_id, pair.inner(), 0, &mut assignments
+                ) else {
+                    invalid = true;
+                    break;
+                };
+                let Some(mapped) = SubqueryCorrelation::new(outer, inner) else {
+                    invalid = true;
+                    break;
+                };
+                correlations.push(mapped);
+            }
+        }
+        if invalid {
+            continue;
+        }
+        let membership_key = if inner_rows > 0 {
+            if let Some(pair) = local.membership_key() {
+                let Some(outer) = assign_membership_key(
+                    bundle, &walker, target_layer_id, pair.outer(),
+                    if nonmatching { 1 } else { 0 }, &mut assignments
+                ) else { continue };
+                let Some(inner) = assign_membership_key(
+                    bundle, &walker, target_layer_id, pair.inner(), 0, &mut assignments
+                ) else { continue };
+                SubqueryCorrelation::new(outer, inner)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        if inner_rows > 0 && local.membership_key().is_some() && membership_key.is_none() {
+            continue;
+        }
+        let Some(outer_boundary) = WitnessBoundary::new(
+            &outer_physical, GroupBoundaryKind::Physical, target_layer_id
+        ) else { continue };
+        let Some(inner_boundary) = WitnessBoundary::new(
+            &inner_physical, GroupBoundaryKind::Physical, target_layer_id
+        ) else { continue };
+        let Some(outer_row) = RowVariable::new(
+            &outer_physical, local.outer_relation(), "membership_outer"
+        ) else { continue };
+        let Some(inner_row) = RowVariable::new(
+            &inner_physical, inner_relation, "membership_inner"
+        ) else { continue };
+        let mut obligations = vec![WitnessObligation::Membership {
+            outer: outer_row.clone(),
+            inner: inner_boundary.clone(),
+            case: membership_case,
+            correlations,
+            membership_key,
+            inner_domains: Vec::new(),
+            closed_world: true,
+        }];
+        for (boundary, count, variable) in [
+            (outer_boundary, outer_rows, outer_row),
+            (inner_boundary, inner_rows, inner_row),
+        ] {
+            let predicates = assignments.iter().filter_map(|((relation, column), value)| {
+                (relation == boundary.relation()).then(|| WitnessFormula::Comparison {
+                    left: WitnessTerm::Column {
+                        row: variable.clone(),
+                        column: crate::protocol::ColumnRef::new(
+                            Some(relation.clone()), column.clone()
+                        ),
+                    },
+                    operator: ComparisonOperator::Eq,
+                    right: WitnessTerm::Integer(*value),
+                })
+            }).collect::<Vec<_>>();
+            let predicate = if predicates.is_empty() {
+                count_tautology()
+            } else {
+                WitnessFormula::All(predicates)
+            };
+            obligations.push(WitnessObligation::Rows {
+                boundary: boundary.clone(),
+                quantifier: RowQuantifier::ForAll,
+                bounds: CountBounds::new(count, Some(count))?,
+                predicate,
+                closed_world: true,
+            });
+            obligations.push(WitnessObligation::ClosedWorld {
+                boundary,
+                coverage: ClosedWorldCoverage::EntireRelation,
+            });
+        }
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id: target_layer_id.to_string(),
+            bounds: CountBounds::new(wanted, Some(wanted))?,
+        });
+        if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+            cases.push(case);
+        }
+    }
+    WitnessDirection::feasible(cases)
 }
