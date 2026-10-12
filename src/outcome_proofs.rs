@@ -196,29 +196,49 @@ fn value_fits(
     let Some(column) = schema.columns().iter().find(|item| item.name() == column) else {
         return false;
     };
-    match (column.data_type(), value) {
-        (DataType::SignedInteger { bits }, ConstraintValue::Integer(value)) => {
-            bits.is_none_or(|width| {
-                width >= 64
-                    || (width > 0 && {
-                        let half = 1_i128 << (width - 1);
-                        i128::from(*value) >= -half && i128::from(*value) < half
-                    })
+    value_fits_type(column.data_type(), value)
+}
+
+/// A physical-source histogram must carry values representable by the actual
+/// warehouse column. Never depend on implicit casts, collation, rounding or
+/// fixed-width text padding for the equality of copied source values.
+fn value_fits_type(data_type: &DataType, value: &ConstraintValue) -> bool {
+    if matches!(value, ConstraintValue::Null) {
+        return true;
+    }
+    match data_type {
+        DataType::Nullable(inner) => value_fits_type(inner, value),
+        DataType::Boolean => matches!(value, ConstraintValue::Boolean(_)),
+        DataType::String {
+            fixed: false,
+            length,
+        } => match value {
+            ConstraintValue::String(text) => {
+                length.is_none_or(|max| text.chars().count() as u64 <= max)
+            }
+            _ => false,
+        },
+        DataType::SignedInteger { bits } => {
+            let integer = match value {
+                ConstraintValue::Integer(value) => i128::from(*value),
+                ConstraintValue::UnsignedInteger(value) => i128::from(*value),
+                _ => return false,
+            };
+            bits.is_none_or(|bits| {
+                bits > 0
+                    && (bits >= 128
+                        || (integer >= -(1_i128 << (bits - 1))
+                            && integer < (1_i128 << (bits - 1))))
             })
         }
-        (DataType::UnsignedInteger { bits }, ConstraintValue::UnsignedInteger(value)) => bits
-            .is_none_or(|width| {
-                width >= 64 || (width > 0 && u128::from(*value) < (1_u128 << width))
-            }),
-        (DataType::UnsignedInteger { bits }, ConstraintValue::Integer(value)) if *value >= 0 => {
-            bits.is_none_or(|width| {
-                width >= 64 || (width > 0 && (*value as u128) < (1_u128 << width))
-            })
+        DataType::UnsignedInteger { bits } => {
+            let integer = match value {
+                ConstraintValue::Integer(value) if *value >= 0 => *value as u128,
+                ConstraintValue::UnsignedInteger(value) => u128::from(*value),
+                _ => return false,
+            };
+            bits.is_none_or(|bits| bits > 0 && (bits >= 128 || integer < (1_u128 << bits)))
         }
-        (
-            DataType::SignedInteger { .. } | DataType::UnsignedInteger { .. },
-            ConstraintValue::Null,
-        ) => true,
         _ => false,
     }
 }
