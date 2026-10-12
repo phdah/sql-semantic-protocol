@@ -7,10 +7,9 @@ use std::path::PathBuf;
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql,
-    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest,
-    physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan,
-    to_bundle_json, AnalysisBundle, ConfiguredSqlInput, RelationCatalog,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
+    parse_dbt_catalog, parse_dbt_manifest, physical_joint_row_count_plan, physical_row_count_plan,
+    physical_source_plan, to_bundle_json, AnalysisBundle, ConfiguredSqlInput, RelationCatalog,
     SqlInput, WitnessDirection,
 };
 
@@ -30,19 +29,21 @@ const MODELS: [&str; 11] = [
 ];
 
 fn root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/sql_tdg/dbt_core_project")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sql_tdg/dbt_core_project")
 }
 
 fn model<'a>(manifest: &'a Value, name: &str) -> &'a Value {
     let id = format!("model.{PROJECT}.{name}");
-    manifest["nodes"].get(&id)
+    manifest["nodes"]
+        .get(&id)
         .unwrap_or_else(|| panic!("missing pinned model {id}"))
 }
 
 fn layer_id<'a>(bundle: &'a AnalysisBundle, name: &str) -> &'a str {
     let id = format!("model.{PROJECT}.{name}");
-    bundle.layers().iter()
+    bundle
+        .layers()
+        .iter()
         .find(|layer| layer.input_id() == id)
         .unwrap_or_else(|| panic!("missing analyzed model {id}"))
         .id()
@@ -53,7 +54,8 @@ fn count(db: &Connection, model: &str) -> i64 {
         &format!("SELECT COUNT(*) FROM raw_analytics.\"{model}\""),
         [],
         |row| row.get(0),
-    ).unwrap_or_else(|error| panic!("pinned dbt model {model} failed: {error}"))
+    )
+    .unwrap_or_else(|error| panic!("pinned dbt model {model} failed: {error}"))
 }
 
 #[test]
@@ -72,12 +74,15 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
         .expect("pinned direct dbt model graph is analyzable");
     assert_eq!(
         to_bundle_json(&bundle),
-        to_bundle_json(&analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap()),
+        to_bundle_json(
+            &analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap()
+        ),
         "canonical dbt analysis is not byte deterministic"
     );
     for &name in &MODELS {
         let node = model(&json, name);
-        let compiled = node["compiled_code"].as_str()
+        let compiled = node["compiled_code"]
+            .as_str()
             .unwrap_or_else(|| panic!("{name} is not compiled"));
         let original = fs::read_to_string(root.join("models").join(format!("{name}.sql"))).unwrap();
         assert_eq!(node["raw_code"].as_str().unwrap().trim(), original.trim());
@@ -86,8 +91,8 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
             .unwrap_or_else(|error| panic!("compiled {name} is invalid SQL: {error}"));
         let _ = layer_id(&bundle, name);
     }
-    let db_path = std::env::var("DBT_E2E_DATABASE")
-        .expect("Makefile must select the pinned dbt database");
+    let db_path =
+        std::env::var("DBT_E2E_DATABASE").expect("Makefile must select the pinned dbt database");
     let db = Connection::open(db_path).expect("dbt-generated DuckDB fixture");
     for (name, expected) in [
         ("aggregate_summary", 1),
@@ -102,27 +107,41 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
         ("subquery_orders", 1),
         ("unioned_orders", 2),
     ] {
-        assert_eq!(count(&db, name), expected, "{name}: whole-project target changed");
+        assert_eq!(
+            count(&db, name),
+            expected,
+            "{name}: whole-project target changed"
+        );
     }
-    let joined: (String, i64, i64) = db.query_row(
-        "SELECT region, order_count, max_amount FROM raw_analytics.aggregate_summary",
-        [], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
-    ).unwrap();
+    let joined: (String, i64, i64) = db
+        .query_row(
+            "SELECT region, order_count, max_amount FROM raw_analytics.aggregate_summary",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .unwrap();
     assert_eq!(joined, ("north".to_string(), 1, 42));
-    let derived: (String, i64) = db.query_row(
-        "SELECT amount_bucket, paid_flag FROM raw_analytics.derived_orders",
-        [], |r| Ok((r.get(0)?, r.get(1)?)),
-    ).unwrap();
+    let derived: (String, i64) = db
+        .query_row(
+            "SELECT amount_bucket, paid_flag FROM raw_analytics.derived_orders",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
     assert_eq!(derived, ("medium".to_string(), 1));
-    let rank: i64 = db.query_row(
-        "SELECT rn FROM raw_analytics.ranked_orders",
-        [], |r| r.get(0),
-    ).unwrap();
+    let rank: i64 = db
+        .query_row("SELECT rn FROM raw_analytics.ranked_orders", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
     assert_eq!(rank, 1);
-    let duplicate_count: i64 = db.query_row(
-        "SELECT COUNT(*) FROM raw_analytics.unioned_orders WHERE amount=42 AND region='north'",
-        [], |r| r.get(0),
-    ).unwrap();
+    let duplicate_count: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM raw_analytics.unioned_orders WHERE amount=42 AND region='north'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
     assert_eq!(duplicate_count, 2);
     for name in ["final_orders", "boundary_final_orders", "subquery_orders"] {
         let rejections: i64 = db.query_row(
@@ -141,7 +160,10 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
     );
     let graph = physical_source_plan(&bundle, final_id);
     assert!(
-        graph.sources().iter().any(|source| source.ends_with(".orders")),
+        graph
+            .sources()
+            .iter()
+            .any(|source| source.ends_with(".orders")),
         "the canonical graph lost the physical source: {graph:?}"
     );
     let zero = physical_joint_row_count_plan(
@@ -158,7 +180,9 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
 
     // Compare schema-backed direct SQL and dbt adapter for a source-local
     // terminal. Both derive the same physical source, count proof, and SQL.
-    let stage_sql = model(&json, "stg_orders")["compiled_code"].as_str().unwrap();
+    let stage_sql = model(&json, "stg_orders")["compiled_code"]
+        .as_str()
+        .unwrap();
     let stage_input = SqlInput::inline(stage_sql);
     let configured = ConfiguredSqlInput::new("direct", &stage_input, "duckdb", dialect.as_ref());
     let source_catalog = RelationCatalog::from_schemas(bundle.source_schemas()).unwrap();
