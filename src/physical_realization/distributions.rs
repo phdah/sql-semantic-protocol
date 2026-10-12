@@ -192,10 +192,8 @@ pub(crate) fn physical_inverted_set_distribution_plan(
         };
         if values.iter().any(|bucket| {
             bucket.rows() > 0
-                && crate::domain::domain_admits_constraint_value(
-                    projected.domain(),
-                    bucket.value(),
-                ) == Some(false)
+                && crate::domain::domain_admits_constraint_value(projected.domain(), bucket.value())
+                    == Some(false)
         }) {
             return None;
         }
@@ -313,10 +311,8 @@ fn invert_distribution(
     };
     if values.iter().any(|bucket| {
         bucket.rows() > 0
-            && crate::domain::domain_admits_constraint_value(
-                output.domain(),
-                bucket.value(),
-            ) == Some(false)
+            && crate::domain::domain_admits_constraint_value(output.domain(), bucket.value())
+                == Some(false)
     }) {
         return None;
     }
