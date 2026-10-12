@@ -193,6 +193,61 @@ fn grouped_count_output_filter_proves_complete_positive_and_rejected_sources() {
 }
 
 #[test]
+fn aggregate_count_composed_filters_use_three_valued_boolean_expressions() {
+    let schema = |relation: &str, columns: &[(&str, &str)]| {
+        RelationSchema::new(
+            relation,
+            columns.iter()
+                .map(|(name, ty)| {
+                    SchemaColumn::from_sql_type(*name, ty, "postgresql").unwrap()
+                })
+                .collect(),
+        ).unwrap()
+    };
+    let schemas = [
+        schema("t", &[("a", "INTEGER")]),
+        schema("grouped", &[("a", "INTEGER"), ("n", "BIGINT")]),
+    ];
+    let producer =
+        "CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2";
+    for dialect in DIALECTS {
+        for (filter, wanted) in [
+            ("n >= 2 AND n < 3", 2_u64),
+            ("n < 2 OR n >= 3", 0),
+            ("NOT (n < 2)", 2),
+            ("2 <= n", 2),
+        ] {
+            let query = format!("SELECT a FROM grouped WHERE {filter}");
+            let b = bundle_with_schemas(&[producer, &query], dialect, &schemas);
+            let plan = physical_joint_source_plan(&b, &[(b.layers()[1].id(), wanted)]);
+            assert!(
+                matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+                "{dialect} {filter}: expected complete aggregate filter proof: {plan:?}"
+            );
+            let db = Connection::open_in_memory().unwrap();
+            db.execute_batch(
+                "CREATE TABLE t(a INTEGER);
+                 INSERT INTO t VALUES (0),(0),(1),(1);
+                 CREATE TABLE grouped AS SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2;"
+            ).unwrap();
+            let actual: i64 = db.query_row(
+                &format!("SELECT COUNT(*) FROM ({query})"), [], |row| row.get(0)
+            ).unwrap();
+            assert_eq!(actual as u64, wanted, "{dialect} {filter}");
+        }
+    }
+    // No other expression is assumed to be COUNT(*) or an exact Boolean
+    // combination of it, even if DuckDB could evaluate that expression.
+    let b = bundle_with_schemas(
+        &[producer, "SELECT a FROM grouped WHERE n + 1 >= 3"],
+        "postgresql",
+        &schemas
+    );
+    let plan = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
+    assert!(matches!(plan.outcome(), WitnessDirection::Residual { .. }));
+}
+
+#[test]
 fn empty_physical_subquery_producers_prove_correlated_positive_and_negative_membership() {
     let schema = |relation: &str, column: &str| {
         RelationSchema::new(
