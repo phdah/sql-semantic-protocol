@@ -139,7 +139,10 @@ fn invert_distribution(
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == canonical)?;
-    let column = schema.columns().iter().find(|col| col.name() == lineage.column())?;
+    let column = schema
+        .columns()
+        .iter()
+        .find(|col| col.name() == lineage.column())?;
     let data_type = column.data_type().clone();
     let values = if output.plain_copy_source().is_some() {
         values
@@ -154,10 +157,14 @@ fn invert_distribution(
                 let input = match bucket.value() {
                     ConstraintValue::Null => ConstraintValue::Null,
                     ConstraintValue::Integer(wanted) => {
-                        let actual = invert_integer(output.expression(), *wanted, lineage.column())?;
+                        let actual =
+                            invert_integer(output.expression(), *wanted, lineage.column())?;
                         if !fits_integer(actual, bits)
                             || evaluate_integer(
-                                output.expression(), actual, lineage.column(), bits,
+                                output.expression(),
+                                actual,
+                                lineage.column(),
+                                bits,
                             )? != *wanted
                         {
                             return None;
@@ -171,9 +178,11 @@ fn invert_distribution(
             .collect::<Option<Vec<_>>>()?
     };
     covered.insert((layer_id.to_string(), output_name.to_string()));
-    let mut edges = bundle.graph().edges().iter().filter(|edge| {
-        edge.consumer_layer_id() == layer_id && edge.relation() == canonical
-    });
+    let mut edges = bundle
+        .graph()
+        .edges()
+        .iter()
+        .filter(|edge| edge.consumer_layer_id() == layer_id && edge.relation() == canonical);
     let edge = edges.next()?;
     if edges.next().is_some() {
         return None;
