@@ -356,7 +356,10 @@ fn conformance_corpus_has_all_seven_raw_and_eleven_dbt_model_shapes() {
                     "impossible" => matches!(proof, WitnessDirection::Impossible),
                     _ => panic!("unknown conformance classification: {expected}"),
                 };
-                assert!(agrees, "{target}/{rows}: expected {expected}, got {proof:?}");
+                assert!(
+                    agrees,
+                    "{target}/{rows}: expected {expected}, got {proof:?}"
+                );
             }
         }
     }

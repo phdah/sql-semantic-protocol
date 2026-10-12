@@ -115,13 +115,22 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
             "{name}: complete physical output changed"
         );
     }
-    for seed in suite["dbt"]["seeds"].as_array().expect("canonical seed names") {
-        let relation = seed.as_str().expect("seed file").strip_suffix(".csv").unwrap();
+    for seed in suite["dbt"]["seeds"]
+        .as_array()
+        .expect("canonical seed names")
+    {
+        let relation = seed
+            .as_str()
+            .expect("seed file")
+            .strip_suffix(".csv")
+            .unwrap();
         let query = format!("SELECT COUNT(*) FROM raw.{relation}");
         let rows: i64 = db.query_row(&query, [], |row| row.get(0)).unwrap();
         assert_eq!(
             rows,
-            suite["dbt"]["source_row_count"].as_i64().expect("source row count"),
+            suite["dbt"]["source_row_count"]
+                .as_i64()
+                .expect("source row count"),
             "{relation}: conformance source was not materialized"
         );
     }
