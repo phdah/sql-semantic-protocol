@@ -229,7 +229,6 @@ pub fn physical_row_count_plan(
     WitnessDirection::feasible(vec![case])
         .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
 }
-
 /// Construct a deliberately rejected, nonempty physical source for a
 /// terminal with exactly zero output rows. Every physical row must fail the
 /// entire jointly proved filter path with SQL FALSE or UNKNOWN, and the
