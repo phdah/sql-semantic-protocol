@@ -6680,6 +6680,22 @@
               }
             }
           }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "witness"
+          ],
+          "properties": {
+            "kind": {
+              "const": "operator_population"
+            },
+            "witness": {
+              "$ref": "#/$defs/outcomeWitness"
+            }
+          }
         }
       ]
     },

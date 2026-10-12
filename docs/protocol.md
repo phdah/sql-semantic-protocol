@@ -1257,3 +1257,9 @@ available from `physical_row_count_plan`, but the older `source_rows`
 witness cannot encode required `RowTruth` obligations. The adapter
 therefore remains residual rather than emitting unrestricted arbitrary
 source rows. Output distributions and group counts need separate proofs.
+
+### TASK-95 physical operator population obligation
+
+`operator_population` is a canonical constructive obligation containing an exact schema-validated `outcomeWitness` for a complete physical `groups`, `ranked`, or `set_tuples` population. The surrounding case includes per-physical-source `rows` and `closed_world(entire_relation)` obligations and an exact terminal `output_rows`. The obligation never permits inserting rows into a computed producer. Shared physical sources require a single reconciled assignment; unsupported multi-operator correlation remains residual. See [semantics](semantics.md).
+
+Exact producer-composed `Membership(no_candidates)` may constrain independent physical outer/inner leaves when the inner entire relation is empty and the outer row count is complete, including SQL NULL-sensitive EXISTS/IN negation. An outer COUNT(*) projection filter can be certified only against a complete preceding grouping population. These are typed `Rows`, `ClosedWorld`, `Producer`, `Membership` and `OutputRows` obligations, not guessed SQL reruns.

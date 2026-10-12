@@ -605,6 +605,26 @@ typed scalar distributions are likewise mapped through validated
 physical-column lineage and actual source/producer catalog schemas;
 ambiguous, computed, or unknown columns remain residual.
 
+A narrow positive group or rank population may now be constructed even
+when its source is a materialized, identity-preserving producer rather than a
+direct physical table. The outcome-goal `groups` or `ranked` witness
+references only the actual physical relation and schema-certified keys,
+including renamed GROUP BY, partition and ordering columns. A group witness
+must still have a locally exact COUNT(*) / HAVING law; a rank witness must
+have a locally exact ROW_NUMBER / QUALIFY law. Group keys use distinct
+physical integer values, and ranked partitions use complete physical rows.
+The producer chain cannot filter, compute, duplicate or coerce mapped
+columns. Two-branch `UNION`, `UNION ALL`, `INTERSECT`, and `EXCEPT` local
+tuple laws can also be transported across independently materialized
+row-preserving single-column branches when every branch column maps
+through type-certified producer scopes to a **different** physical source.
+The resulting `set_tuples` obligations name the physical source columns
+and retain the local duplicate and NULL-equality multiplicity law, rather
+than claiming that derived relations can be written to directly.
+Identical, independently materialized branches can also reuse a single
+typed physical tuple column when their entire bag counts agree; arbitrary
+shared-source operator interactions remain residual.
+
 The physical-source Rust API proves exact counts through schema-backed
 transparent producer chains and identity-preserving WHERE chains with a
 jointly proven SQL-TRUE physical-row predicate. Positive filtered cases
@@ -625,3 +645,83 @@ detached string-collation predicates, remain residual. The legacy outcome-goal a
 remains residual for positive filtered counts because its `source_rows`
 witness cannot encode required predicate obligations. General join,
 group, QUALIFY, set and DML counts remain residual.
+
+
+### Joint physical operator populations (TASK-95, partial)
+
+An exact `group`, `ranked`, or `set_tuples` outcome witness can be promoted
+to a `operator_population` obligation only after the complete physical
+source DAG is certified: every materialization is resolved, each involved
+column has compatible type evidence, and every independent leaf relation
+is assigned a **complete** source-row count with an entire-relation closed
+world. Set branch counts preserve per-tuple ALL/DISTINCT and NULL equality
+semantics. A source table is assigned only once.
+
+A multi-terminal `physical_joint_source_plan` may conjoin such operator
+populations with independent sources or with matching transparent
+source-count goals. Repeated source assignments are accepted only when the
+same typed operator population and exact physical count agree. Incompatible
+*sufficient* examples remain residual rather than being mislabeled
+impossible; they do not rule out other satisfying populations.
+
+Two narrowly certified multi-operator chains also have constructive
+physical plans: a distinct matched equijoin followed by GROUP BY/HAVING
+with **exactly one matched row per grouping key**, and an ordinary
+GROUP BY/HAVING producer followed by ROW_NUMBER/QUALIFY that selects
+the only row of each key partition. The latter retains an intermediate
+rank obligation linked by `Producer` to the complete physical group
+population, without authorizing an independent write to the group result.
+
+Mixed joins with duplicated keys, join-to-HAVING requiring multiple
+contributors, aggregate-derived arbitrary filters, grouped sets,
+shared-source set operands, and general subquery/branch correlations
+are not yet constructively certified. They remain typed residuals,
+not false feasible results. The end-to-end TASK-95 acceptance gate is
+not satisfied by this subset.
+
+### Extended mixed-operator count and deliberate-rejection proofs
+
+For an identity-only materialized INNER equijoin, the group composer now
+supports both distinct matched keys (one contributor per group) and a
+complete common-key bag (one group with multiple contributors). HAVING
+`COUNT(*)` uses the existing exact group-count interval; it is never
+assumed true merely because a group is present. The mixed join/group
+construction can share the same exact physical counts with transparent
+source-reading terminals, reconciling each source identity once.
+
+A materialized ordinary GROUP BY/HAVING producer can also feed a single
+outer WHERE comparison of its copied `COUNT(*)` result. The producer
+supplies a complete group population, so the outer predicate is checked
+against every exact per-group count. SQL-FALSE outcomes are constructive
+nonempty-source rejections: they are not inferred from an open-world
+single-row candidate. Ambiguous, non-count, computed and unsupported
+predicates fail closed.
+
+For correlated EXISTS/NOT EXISTS or IN/NOT IN, a locally exact
+`no_candidates` case can be lifted through complete row-preserving
+materializations of independent outer and inner sources when the whole
+inner physical relation is proven empty. The outer source is explicitly
+nonempty and fully closed, preserving SQL NULL behavior for IN/NOT IN.
+The generated `Membership` obligation is source-backed; correlation
+and membership keys are vacuous because no inner row can qualify.
+Nonempty correlated matches, mixed predicates and repeated physical
+sources are still residual.
+
+
+Two separately materialized, lossless set operands may also resolve to the
+**same** typed physical source and column. This is constructive only when the
+existing operator-local positive tuple case requires identical multiplicities
+on both operands (for example, `UNION DISTINCT` and `INTERSECT` with
+identical source projections). The joint population binds the repeated
+operand obligations to **one** physical relation, with one exact source-row
+count and entire-relation closure. For `UNION ALL`, each input tuple is emitted
+twice, so complete positive even-sized output counts are constructible from
+half as many distinct physical tuples. An odd row target, a mismatched mapped
+column, an unproved shared bag law, or a frequency distribution requiring
+per-value inversion remains residual. `EXCEPT` positive shared-source
+populations are not yet separately classified as impossible. No independent
+rows may be fabricated for copied branches.
+
+### Independent mixed physical operator DAGs
+
+Complete mixed join/group, group/rank, grouped COUNT filter and empty-inner membership populations can be composed across separate terminal targets when their sets of physical source relations are disjoint. Each local case must prove an exact entire-relation closed source count; the joint case carries both operator laws and any transparent source terminal counts. A repeated physical source across different mixed cases still requires a correlated proof and remains residual, even if the sampled row counts happen to agree.
