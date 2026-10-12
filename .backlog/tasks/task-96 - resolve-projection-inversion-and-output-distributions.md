@@ -1,10 +1,10 @@
 ---
 id: TASK-96
 title: Prove safe projection inversion and complete output distributions
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-10'
-updated_date: '2026-10-10'
+updated_date: '2026-10-12'
 labels: []
 milestone: m-3
 dependencies:
@@ -46,3 +46,12 @@ Resolve output value obligations back to canonical physical columns and expressi
 - **Next:** After this task is Done, proceed to TASK-97; do not skip ahead.
 - **Scope boundary:** Other TASK-70..91 work still owns individual missing operator variants, exhaustive conformance, the downstream generator, and protocol 3.0.0 release sign-off.
 
+
+## Implementation progress: physical histogram inversion PR
+
+- Extracted histogram composition into a canonical physical-distribution owner while retaining the existing `source_rows` protocol shape.
+- Reconciled repeated output aliases to one physical source column, rejected contradictory direct-copy histograms, and verified complete count totals.
+- Added guarded inverse mappings of reversible signed integer terminal expressions over a typed transparent materialization chain; reject arithmetic overflow, SQL NULL mispropagation, lossy projections, datatype mismatch, partial producers, and unchecked expressions.
+- Added cross-dialect, NULL/duplicate/overflow cases and complete DuckDB output-histogram checks.
+
+**Remaining for closure:** complete multi-parent/branch inversion, general domain and correlated-terminal distribution proofs, richer reversible transformations, and raw-SQL/dbt catalog parity with full differential validation. All original acceptance criteria remain open until those requirements are discharged and CI evidence is available. TASK-97 stays blocked.
