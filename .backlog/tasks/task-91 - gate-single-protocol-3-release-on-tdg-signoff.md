@@ -108,3 +108,14 @@ consume the canonical fixture suite and validate its own generated output
 without consumer-side SQL reparsing. TASK-31/35/36 DML/DDL generation and
 randomized negative output oracles remain pending. This suite does **not**
 unblock protocol 3.0.0.
+
+## TASK-68 bounded composition sign-off (2026-10-12)
+
+TASK-100 closes the parent TASK-68 child sequence after its seven preceding
+children and six original acceptance criteria have traceable, bounded
+constructive proof evidence in
+[docs/task-68-signoff.md](../../docs/task-68-signoff.md).
+This **only** certifies proved physical-source subsets and typed fail-closed
+residuals. All remaining protocol feature/dialect matrix obligations,
+consumer generator TASK-31/35/36/43 and final release approval in this
+TASK-91 remain open; Release Please PR #79 must not be merged.
