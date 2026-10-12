@@ -733,7 +733,7 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
                             ..
                         }
                     )
-                }) && [("orders", 3), ("lines", 1)]
+                }) && [("orders", wanted.max(1)), ("lines", 1)]
                     .iter()
                     .all(|(relation, count)| {
                         case.obligations().iter().any(|obligation| {
@@ -751,14 +751,19 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
             // The proof controls every physical row. Duplicated and NULL
             // outer values still survive EXISTS; one NULL inner row suffices.
             let db = Connection::open_in_memory().unwrap();
-            db.execute_batch(
+            let outer_values = if wanted > 0 {
+                "(0), (0), (NULL)"
+            } else {
+                "(NULL)"
+            };
+            db.execute_batch(&format!(
                 "CREATE TABLE orders(id INTEGER);
                  CREATE TABLE lines(order_id INTEGER);
-                 INSERT INTO orders VALUES (0), (0), (NULL);
+                 INSERT INTO orders VALUES {outer_values};
                  INSERT INTO lines VALUES (NULL);
                  CREATE TABLE stage_orders AS SELECT id FROM orders;
-                 CREATE TABLE stage_lines AS SELECT order_id FROM lines;",
-            )
+                 CREATE TABLE stage_lines AS SELECT order_id FROM lines;"
+            ))
             .unwrap();
             let ordered = format!("SELECT id FROM ({query}) ORDER BY id NULLS LAST");
             let mut statement = db.prepare(&ordered).unwrap();
