@@ -263,8 +263,7 @@ pub(super) fn joint_nonempty_rejected_terminals(
     // SQL row-preserving filters cannot synthesize rows from a wholly empty
     // physical source. Retain this second sufficient case rather than hiding
     // a valid zero-input construction behind the new nonempty witness.
-    let empty_boundary =
-        WitnessBoundary::new(&source, GroupBoundaryKind::Physical, targets[0].0)?;
+    let empty_boundary = WitnessBoundary::new(&source, GroupBoundaryKind::Physical, targets[0].0)?;
     let mut empty = vec![
         WitnessObligation::Rows {
             boundary: empty_boundary.clone(),
