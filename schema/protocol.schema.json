@@ -6250,6 +6250,26 @@
         {
           "type": "object",
           "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "pattern": {
+                    "const": "grouped_matched"
+                  }
+                },
+                "required": ["pattern"]
+              },
+              "then": {
+                "required": ["pattern_groups"]
+              },
+              "else": {
+                "not": {
+                  "required": ["pattern_groups"]
+                }
+              }
+            }
+          ],
           "required": [
             "kind",
             "left_row",
