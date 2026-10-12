@@ -445,6 +445,34 @@ fn assess_goal(
         }
     }
 
+    // The composed outcome domain owns surviving bounds and inclusivity.
+    // Reject only a *proved* contradiction, never a value whose comparison
+    // or SQL typing cannot be established by the canonical domain algebra.
+    for distribution in goal.distributions() {
+        let Some(projected) = output
+            .columns()
+            .iter()
+            .find(|column| column.name() == distribution.column())
+        else {
+            continue;
+        };
+        if distribution.values().iter().any(|bucket| {
+            bucket.rows() > 0
+                && crate::domain::domain_admits_constraint_value(
+                    projected.domain(),
+                    bucket.value(),
+                ) == Some(false)
+        }) {
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Unsatisfiable,
+                "requested complete histogram contradicts proven output value-domain bounds",
+                min_rows,
+                max_rows,
+            ));
+        }
+    }
+
     if let Some(query) = query {
         let simple_groups = query.group_rows_match_surviving_groups();
         if simple_groups && goal.rows.is_some() && goal.groups != goal.rows && goal.groups.is_some()
