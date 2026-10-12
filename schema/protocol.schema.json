@@ -6295,9 +6295,14 @@
               "enum": [
                 "distinct_matched",
                 "common_matched",
+                "grouped_matched",
                 "empty_left",
                 "empty_right"
               ]
+            },
+            "pattern_groups": {
+              "type": "integer",
+              "minimum": 2
             },
             "left_rows": {
               "type": "integer",
