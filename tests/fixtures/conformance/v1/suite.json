@@ -10,49 +10,115 @@
       "path": "advanced_pipeline.sql",
       "family": "join_group",
       "dialect": "postgresql",
-      "expected_proof": "zero_feasible_positive_residual"
+      "expected_proof": "zero_feasible_positive_residual",
+      "row_count_goals": [
+        {
+          "target": "mart_customer_summary",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "mart_customer_summary",
+          "rows": 1,
+          "outcome": "residual"
+        }
+      ]
     },
     {
       "id": "joined_boundary",
       "path": "advanced_boundary.sql",
       "family": "join",
       "dialect": "postgresql",
-      "expected_proof": "zero_feasible_positive_residual"
+      "expected_proof": "zero_feasible_positive_residual",
+      "row_count_goals": [
+        {
+          "target": "core_enriched",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "core_enriched",
+          "rows": 1,
+          "outcome": "residual"
+        }
+      ]
     },
     {
       "id": "set_operations",
       "path": "set_operations.sql",
       "family": "set",
       "dialect": "postgresql",
-      "expected_proof": "zero_feasible_concrete_duplicates_and_nulls"
+      "expected_proof": "zero_feasible_concrete_duplicates_and_nulls",
+      "row_count_goals": [
+        {
+          "target": "union_all_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "union_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "intersect_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "except_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "distinct_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "limited_result",
+          "rows": 0,
+          "outcome": "feasible"
+        }
+      ]
     },
     {
       "id": "window_rank",
       "path": "raw_sql/window_ranked.sql",
       "family": "window",
       "dialect": "postgresql",
-      "expected_proof": "concrete_oracle_positive_general_distribution_residual"
+      "expected_proof": "concrete_oracle_positive_general_distribution_residual",
+      "row_count_goals": []
     },
     {
       "id": "ordered_insert_select",
       "path": "raw_sql/insert_workflow.sql",
       "family": "insert",
       "dialect": "postgresql",
-      "expected_proof": "typed_complete_before_after_state_feasible"
+      "expected_proof": "typed_complete_before_after_state_feasible",
+      "row_count_goals": []
     },
     {
       "id": "correlated_exists",
       "path": "raw_sql/unsupported_exists.sql",
       "family": "subquery",
       "dialect": "postgresql",
-      "expected_proof": "concrete_oracle_general_construction_residual"
+      "expected_proof": "concrete_oracle_general_construction_residual",
+      "row_count_goals": []
     },
     {
       "id": "inclusive_integer_range",
       "path": "raw_sql/range_sampling.sql",
       "family": "filter",
       "dialect": "postgresql",
-      "expected_proof": "positive_count_feasible"
+      "expected_proof": "positive_count_feasible",
+      "row_count_goals": [
+        {
+          "target": "range_result",
+          "rows": 2,
+          "outcome": "feasible"
+        }
+      ]
     }
   ],
   "dbt": {

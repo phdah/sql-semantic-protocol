@@ -341,6 +341,24 @@ fn conformance_corpus_has_all_seven_raw_and_eleven_dbt_model_shapes() {
         let sql = std::fs::read_to_string(root.join(case["path"].as_str().unwrap()))
             .expect("protocol-owned SQL case");
         assert!(!sql.trim().is_empty());
+        // The portable manifest is authoritative for certified physical count
+        // classes; compare them against the actual typed protocol planner.
+        if let Some(goals) = case["row_count_goals"].as_array() {
+            let bundle = fixture_bundle(&sql);
+            for goal in goals {
+                let target = goal["target"].as_str().expect("target relation");
+                let rows = goal["rows"].as_u64().expect("nonnegative count") as usize;
+                let proof = physical_row_count_plan(&bundle, layer_id(&bundle, target), rows);
+                let expected = goal["outcome"].as_str().expect("proof outcome");
+                let agrees = match expected {
+                    "feasible" => matches!(proof, WitnessDirection::Feasible(_)),
+                    "residual" => matches!(proof, WitnessDirection::Residual { .. }),
+                    "impossible" => matches!(proof, WitnessDirection::Impossible),
+                    _ => panic!("unknown conformance classification: {expected}"),
+                };
+                assert!(agrees, "{target}/{rows}: expected {expected}, got {proof:?}");
+            }
+        }
     }
     let models = suite["dbt"]["models"].as_array().expect("dbt models");
     assert_eq!(models.len(), 11);

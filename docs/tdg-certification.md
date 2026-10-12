@@ -30,9 +30,11 @@ reviewed here, with ordinary protocol Git history.
 | `v1/dbt_core_project/models/sources.yml` | dbt source metadata, manifest and warehouse catalog adapters |
 
 The versioned `suite.json` lists seven SQL cases by stable ID, family, SQL path,
-dialect and expected proof classification, and 11 dbt models with concrete
+dialect, expected proof classification and typed row-count goals, and 11 dbt models with concrete
 expected row counts and SQL expressions for sorted terminal value snapshots.
-It also enumerates seed paths, source population counts and release gates.
+The raw SQL row-count goals are executed directly against the protocol's typed
+physical planner on every test run. The suite also enumerates seed paths,
+source population counts and release gates.
 Expected output expressions are **DuckDB oracle projections**, not instructions
 for consumers to reparse SQL or reconstruct semantic proofs.
 

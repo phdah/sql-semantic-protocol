@@ -14,20 +14,6 @@ use sql_semantic_protocol::{
 };
 
 const PROJECT: &str = "protocol_conformance";
-const MODELS: [&str; 11] = [
-    "aggregate_summary",
-    "boundary_final_orders",
-    "derived_orders",
-    "enriched_orders",
-    "final_orders",
-    "independent_return_summary",
-    "ranked_orders",
-    "stg_customers",
-    "stg_orders",
-    "subquery_orders",
-    "unioned_orders",
-];
-
 fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/conformance/v1/dbt_core_project")
 }
@@ -65,7 +51,7 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
     let suite: Value = serde_json::from_str(include_str!("fixtures/conformance/v1/suite.json"))
         .expect("protocol-owned conformance suite");
     let expectations = suite["dbt"]["models"].as_array().expect("dbt expectations");
-    assert_eq!(expectations.len(), MODELS.len());
+    assert_eq!(expectations.len(), 11, "the v1 conformance inventory");
     let manifest_text = fs::read_to_string(root.join("target/manifest.json"))
         .expect("make dbt-e2e must compile the protocol conformance manifest");
     let catalog_text = fs::read_to_string(root.join("target/catalog.json"))
@@ -83,7 +69,8 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         ),
         "canonical dbt analysis is not byte deterministic"
     );
-    for &name in &MODELS {
+    for expectation in expectations {
+        let name = expectation["name"].as_str().expect("model name");
         let node = model(&json, name);
         let compiled = node["compiled_code"]
             .as_str()
@@ -99,9 +86,8 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
         .expect("Makefile must select the conformance dbt database");
     let db = Connection::open(db_path).expect("dbt-generated DuckDB fixture");
     // Shared versioned suite expectations are the only output oracle source.
-    for (index, expectation) in expectations.iter().enumerate() {
+    for expectation in expectations {
         let name = expectation["name"].as_str().expect("model name");
-        assert_eq!(name, MODELS[index], "model inventory has drifted");
         let expected = expectation["row_count"].as_i64().expect("row count");
         assert_eq!(
             count(&db, name),
@@ -129,11 +115,13 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
             "{name}: complete physical output changed"
         );
     }
-    for relation in ["orders", "customers", "legacy_orders", "returns"] {
+    for seed in suite["dbt"]["seeds"].as_array().expect("canonical seed names") {
+        let relation = seed.as_str().expect("seed file").strip_suffix(".csv").unwrap();
         let query = format!("SELECT COUNT(*) FROM raw.{relation}");
         let rows: i64 = db.query_row(&query, [], |row| row.get(0)).unwrap();
         assert_eq!(
-            rows, 2,
+            rows,
+            suite["dbt"]["source_row_count"].as_i64().expect("source row count"),
             "{relation}: conformance source was not materialized"
         );
     }
