@@ -550,13 +550,16 @@ fn reversible_terminal_histogram_lifts_complete_materialized_set_law() {
          CREATE TABLE left_stage AS SELECT a AS id FROM l;
          CREATE TABLE right_stage AS SELECT a AS id FROM r;
          CREATE TABLE set_stage AS SELECT id FROM left_stage UNION SELECT id FROM right_stage;",
-    ).expect("complete distinct physical branches");
-    let actual: (i64, i64, i64) = db.query_row(
-        "SELECT COUNT(*), COUNT(*) FILTER (WHERE shifted = 4),
+    )
+    .expect("complete distinct physical branches");
+    let actual: (i64, i64, i64) = db
+        .query_row(
+            "SELECT COUNT(*), COUNT(*) FILTER (WHERE shifted = 4),
                 COUNT(*) FILTER (WHERE shifted IS NULL)
          FROM (SELECT id + 1 AS shifted FROM set_stage)",
-        [],
-        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
-    ).unwrap();
-    assert_eq!(actual, (2,1,1));
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .unwrap();
+    assert_eq!(actual, (2, 1, 1));
 }
