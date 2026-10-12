@@ -359,6 +359,11 @@ pub fn physical_joint_row_count_plan(
             }
         }
     }
+    if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(proof) = physical_shared_set_cancellation_plan(bundle, layer_id, *rows) {
+            return proof;
+        }
+    }
     if let Some(witness) = joint_mixed_operator_and_source_goals(bundle, &ordered) {
         return witness;
     }
