@@ -231,62 +231,64 @@ pub(super) fn physical_join_population_with_source_counts(
         return None;
     }
 
-    let (left_key, left_instance, right_key, right_instance) =
-        if source_filters.is_empty() {
-            if join.comparison() != Some(crate::protocol::ComparisonOperator::Eq) {
-                return None;
-            }
-            let map = |endpoint: &crate::bundle::ComposedJoinColumn| {
-                let column = crate::protocol::ColumnRef::new(
-                    Some(endpoint.relation().to_string()),
-                    endpoint.column().to_string(),
-                );
-                let mapped = if walker.sources.contains(endpoint.relation()) {
-                    column
-                } else {
-                    resolve_filter_column_with_evidence(
-                        bundle, &walker, join_layer.id(), &column, 0, true,
-                    )?
-                };
-                walker.sources.contains(mapped.relation()?).then(|| {
-                    (mapped, endpoint.relation_instance().to_string())
-                })
+    let (left_key, left_instance, right_key, right_instance) = if source_filters.is_empty() {
+        if join.comparison() != Some(crate::protocol::ComparisonOperator::Eq) {
+            return None;
+        }
+        let map = |endpoint: &crate::bundle::ComposedJoinColumn| {
+            let column = crate::protocol::ColumnRef::new(
+                Some(endpoint.relation().to_string()),
+                endpoint.column().to_string(),
+            );
+            let mapped = if walker.sources.contains(endpoint.relation()) {
+                column
+            } else {
+                resolve_filter_column_with_evidence(
+                    bundle,
+                    &walker,
+                    join_layer.id(),
+                    &column,
+                    0,
+                    true,
+                )?
             };
-            let (left, left_instance) = map(join.left()?)?;
-            let (right, right_instance) = map(join.right()?)?;
-            (left, left_instance, right, right_instance)
-        } else {
-            // A composed local witness may be residual for filtered parents
-            // and therefore have no endpoints. Recover them from the *same*
-            // canonical query's typed ON comparison, never by reparsing SQL.
-            let Some(Predicate::Comparison(on)) = join_query.joins()[0].condition() else {
-                return None;
-            };
-            if on.operator() != crate::protocol::ComparisonOperator::Eq {
-                return None;
-            }
-            let (Expression::Column(left), Expression::Column(right)) =
-                (on.left(), on.right())
-            else {
-                return None;
-            };
-            let map = |column: &crate::protocol::ColumnExpression| {
-                let instance = column.relation()?;
-                let source = crate::protocol::ColumnRef::new(
-                    Some(instance.to_string()),
-                    column.name().to_string(),
-                );
-                let mapped = resolve_filter_column(
-                    bundle, &walker, join_layer.id(), &source, 0,
-                )?;
-                walker.sources.contains(mapped.relation()?).then(|| {
-                    (mapped, instance.to_string())
-                })
-            };
-            let (left, left_instance) = map(left)?;
-            let (right, right_instance) = map(right)?;
-            (left, left_instance, right, right_instance)
+            walker
+                .sources
+                .contains(mapped.relation()?)
+                .then(|| (mapped, endpoint.relation_instance().to_string()))
         };
+        let (left, left_instance) = map(join.left()?)?;
+        let (right, right_instance) = map(join.right()?)?;
+        (left, left_instance, right, right_instance)
+    } else {
+        // A composed local witness may be residual for filtered parents
+        // and therefore have no endpoints. Recover them from the *same*
+        // canonical query's typed ON comparison, never by reparsing SQL.
+        let Some(Predicate::Comparison(on)) = join_query.joins()[0].condition() else {
+            return None;
+        };
+        if on.operator() != crate::protocol::ComparisonOperator::Eq {
+            return None;
+        }
+        let (Expression::Column(left), Expression::Column(right)) = (on.left(), on.right()) else {
+            return None;
+        };
+        let map = |column: &crate::protocol::ColumnExpression| {
+            let instance = column.relation()?;
+            let source = crate::protocol::ColumnRef::new(
+                Some(instance.to_string()),
+                column.name().to_string(),
+            );
+            let mapped = resolve_filter_column(bundle, &walker, join_layer.id(), &source, 0)?;
+            walker
+                .sources
+                .contains(mapped.relation()?)
+                .then(|| (mapped, instance.to_string()))
+        };
+        let (left, left_instance) = map(left)?;
+        let (right, right_instance) = map(right)?;
+        (left, left_instance, right, right_instance)
+    };
     if left_instance == right_instance {
         return None;
     }
