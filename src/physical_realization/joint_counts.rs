@@ -381,6 +381,11 @@ pub fn physical_joint_row_count_plan(
         }
     }
     if let [(layer_id, rows)] = ordered.as_slice() {
+        if let Some(witness) = physical_join_rank_count_plan(bundle, layer_id, *rows) {
+            return witness;
+        }
+    }
+    if let [(layer_id, rows)] = ordered.as_slice() {
         if let Some(witness) = physical_rank_partition_count_plan(bundle, layer_id, *rows) {
             return witness;
         }
