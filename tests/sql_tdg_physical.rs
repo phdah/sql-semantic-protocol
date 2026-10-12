@@ -9,11 +9,17 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_row_count_plan,
     physical_row_count_plan, physical_source_plan, AnalysisBundle, ConfiguredSqlInput,
     RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection, WitnessObligation,
+    PhysicalWriteState, PhysicalWriteRow, PhysicalWriteStatePlan, LiteralValue,
+    physical_ordered_write_state_plan,
 };
 
 const ADVANCED: &str = include_str!("fixtures/sql_tdg/advanced_pipeline.sql");
 const BOUNDARY: &str = include_str!("fixtures/sql_tdg/advanced_boundary.sql");
 const SETS: &str = include_str!("fixtures/sql_tdg/set_operations.sql");
+const WINDOW: &str = include_str!("fixtures/sql_tdg/raw_sql/window_ranked.sql");
+const INSERT: &str = include_str!("fixtures/sql_tdg/raw_sql/insert_workflow.sql");
+const EXISTS: &str = include_str!("fixtures/sql_tdg/raw_sql/unsupported_exists.sql");
+const RANGE: &str = include_str!("fixtures/sql_tdg/raw_sql/range_sampling.sql");
 
 fn fixture_bundle(sql: &str) -> AnalysisBundle {
     let dialect = "postgresql";
@@ -34,6 +40,12 @@ fn fixture_bundle(sql: &str) -> AnalysisBundle {
         ("raw_a", &[("value", "INTEGER")][..]),
         ("raw_b", &[("value", "INTEGER")][..]),
         ("raw_c", &[("value", "INTEGER")][..]),
+        ("raw_window", &[("category", "VARCHAR"), ("score", "INTEGER")][..]),
+        ("raw_insert", &[("value", "INTEGER")][..]),
+        ("insert_sink", &[("value", "INTEGER")][..]),
+        ("raw_exists_orders", &[("customer_id", "INTEGER"), ("amount", "INTEGER")][..]),
+        ("raw_exists_customers", &[("customer_id", "INTEGER")][..]),
+        ("raw_range", &[("value", "INTEGER")][..]),
     ];
     let schemas = columns
         .iter()
@@ -306,4 +318,186 @@ fn source_free_set_leaf_cannot_be_erased_by_emptying_the_other_source() {
         )
         .expect("set count");
     assert_eq!(count, 1);
+}
+
+#[test]
+fn pinned_sql_tdg_corpus_has_all_seven_raw_and_eleven_dbt_model_shapes() {
+    // Keep the source corpus from the exact upstream revision, not paraphrased SQL.
+    const RAW: [&str; 7] = [
+        ADVANCED,
+        BOUNDARY,
+        SETS,
+        WINDOW,
+        INSERT,
+        EXISTS,
+        RANGE,
+    ];
+    const DBT: [&str; 11] = [
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/aggregate_summary.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/boundary_final_orders.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/derived_orders.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/enriched_orders.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/final_orders.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/independent_return_summary.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/ranked_orders.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/stg_customers.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/stg_orders.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/subquery_orders.sql"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/models/unioned_orders.sql"),
+    ];
+    let expected_raw_lengths = [800, 514, 842, 236, 79, 242, 95];
+    for (sql, length) in RAW.iter().zip(expected_raw_lengths) {
+        assert_eq!(sql.len(), length, "pinned upstream SQL was modified");
+    }
+    let expected_dbt_lengths = [149, 84, 74, 258, 113, 164, 174, 144, 388, 184, 206];
+    for (sql, length) in DBT.iter().zip(expected_dbt_lengths) {
+        assert_eq!(sql.len(), length, "pinned upstream dbt model was modified");
+        assert!(sql.contains("select") || sql.contains("SELECT"));
+    }
+    for seed in [
+        include_str!("fixtures/sql_tdg/dbt_core_project/seeds/orders.csv"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/seeds/customers.csv"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/seeds/legacy_orders.csv"),
+        include_str!("fixtures/sql_tdg/dbt_core_project/seeds/returns.csv"),
+    ] {
+        assert!(seed.lines().count() >= 3, "seed must contain data and its header");
+    }
+}
+
+#[test]
+fn pinned_range_fixture_has_exact_positive_and_rejected_source_rows() {
+    let bundle = fixture_bundle(RANGE);
+    let id = layer_id(&bundle, "range_result");
+    let first = physical_row_count_plan(&bundle, id, 2);
+    assert!(
+        matches!(first, WitnessDirection::Feasible(_)),
+        "a single filtered physical source must produce a complete positive count: {first:?}"
+    );
+    assert_eq!(first, physical_row_count_plan(&bundle, id, 2));
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE raw_range(value INTEGER);
+         INSERT INTO raw_range VALUES (10), (10), (NULL), (9), (1001);
+    ").unwrap();
+    db.execute_batch(RANGE).unwrap();
+    let (total, nulls, rejected): (i64, i64, i64) = db
+        .query_row(
+            "SELECT (SELECT COUNT(*) FROM range_result),
+                    (SELECT COUNT(*) FROM range_result WHERE value IS NULL),
+                    (SELECT COUNT(*) FROM raw_range WHERE value IS NULL OR value < 10 OR value > 1000)",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .unwrap();
+    assert_eq!((total, nulls, rejected), (2, 0, 3));
+}
+
+#[test]
+fn pinned_window_qualify_fixture_obeys_partition_and_null_rejection() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE raw_window(category VARCHAR, score INTEGER);
+         INSERT INTO raw_window VALUES
+           ('keep',10),('keep',10),('keep',NULL),('discard',10),('keep',11);",
+    ).unwrap();
+    db.execute_batch(WINDOW).unwrap();
+    let values: (i64, i64, i64) = db
+        .query_row(
+            "SELECT COUNT(*), MIN(marker), MAX(rn) FROM ranked_result",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .unwrap();
+    assert_eq!(values, (1, 1, 1));
+    // Rank-one is a single terminal row even with duplicate eligible sources.
+    let source_matches: i64 = db
+        .query_row("SELECT COUNT(*) FROM raw_window WHERE category='keep' AND score=10", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(source_matches, 2);
+}
+
+#[test]
+fn pinned_exists_fixture_requires_a_matching_source_row_and_rejects_null() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE raw_exists_orders(customer_id INTEGER, amount INTEGER);
+         CREATE TABLE raw_exists_customers(customer_id INTEGER);
+         INSERT INTO raw_exists_orders VALUES (1,100),(2,100),(NULL,100),(1,90);
+         INSERT INTO raw_exists_customers VALUES (1),(NULL);",
+    ).unwrap();
+    db.execute_batch(EXISTS).unwrap();
+    let matches: i64 = db
+        .query_row("SELECT COUNT(*) FROM exists_result", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(matches, 1);
+    let bundle = fixture_bundle(EXISTS);
+    let id = layer_id(&bundle, "exists_result");
+    let plan = physical_source_plan(&bundle, id);
+    assert_eq!(plan.sources(), &["raw_exists_customers".to_string(), "raw_exists_orders".to_string()]);
+    // Do not infer that executing an example proves arbitrary correlated populations.
+    let proof = physical_row_count_plan(&bundle, id, 1);
+    assert!(!matches!(proof, WitnessDirection::Impossible), "{proof:?}");
+}
+
+#[test]
+fn pinned_insert_select_realizes_a_closed_world_state_with_duplicates() {
+    use std::collections::BTreeMap;
+    let bundle = fixture_bundle(INSERT);
+    let row = |value: Option<i64>| {
+        PhysicalWriteRow::new(BTreeMap::from([(
+            "value".to_string(),
+            value.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string())),
+        )])).unwrap()
+    };
+    let initial = [
+        PhysicalWriteState::new("raw_insert", vec![row(Some(10)), row(Some(10)), row(None), row(Some(11))]).unwrap(),
+        PhysicalWriteState::new("insert_sink", Vec::new()).unwrap(),
+    ];
+    let plan = physical_ordered_write_state_plan(&bundle, &initial);
+    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = plan else {
+        panic!("pinned INSERT has a complete typed source state: {plan:?}");
+    };
+    assert_eq!(transitions.len(), 1);
+    assert_eq!(transitions[0].affected().inserted(), 2);
+    let target = final_states.iter().find(|state| state.relation() == "insert_sink").unwrap();
+    assert_eq!(target.rows(), &[row(Some(10)), row(Some(10))]);
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE raw_insert(value INTEGER);
+         CREATE TABLE insert_sink(value INTEGER);
+         INSERT INTO raw_insert VALUES (10),(10),(NULL),(11);",
+    ).unwrap();
+    db.execute_batch(INSERT).unwrap();
+    let snapshot: (i64, i64, i64) = db.query_row(
+        "SELECT COUNT(*), COUNT(*) FILTER (WHERE value=10), COUNT(*) FILTER (WHERE value IS NULL) FROM insert_sink",
+        [],
+        |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?)),
+    ).unwrap();
+    assert_eq!(snapshot, (2, 2, 0));
+}
+
+#[test]
+fn raw_sql_and_dbt_semantics_are_deterministic_across_pinned_catalog_inputs() {
+    let sql = "CREATE VIEW range_result AS SELECT value FROM raw_range WHERE value >= 10 AND value <= 1000";
+    let reference = fixture_bundle(sql);
+    let serialized = sql_semantic_protocol::to_bundle_json(&reference);
+    assert_eq!(serialized, sql_semantic_protocol::to_bundle_json(&fixture_bundle(sql)));
+    let range = fixture_bundle(RANGE);
+    let bound = physical_row_count_plan(&range, layer_id(&range, "range_result"), 2);
+    assert_eq!(bound, physical_row_count_plan(&range, layer_id(&range, "range_result"), 2));
+    for dialect in ["generic", "postgresql", "duckdb", "mysql", "snowflake", "bigquery"] {
+        let parser = dialect_from_name(dialect).unwrap();
+        let input = SqlInput::inline("SELECT value FROM raw_range WHERE value >= 10 AND value <= 1000");
+        let configured = ConfiguredSqlInput::new("range", &input, dialect, parser.as_ref());
+        let schema = RelationSchema::new(
+            "raw_range",
+            vec![SchemaColumn::from_sql_type("value", "INTEGER", "postgresql").unwrap()],
+        ).unwrap();
+        let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+        let b = analyze_configured_inputs_with_catalog(&[configured], &catalog)
+            .unwrap_or_else(|e| panic!("{dialect} must parse shared SQL: {e}"));
+        let proof = physical_row_count_plan(&b, b.layers()[0].id(), 2);
+        assert!(matches!(proof, WitnessDirection::Feasible(_)), "{dialect}: {proof:?}");
+    }
 }
