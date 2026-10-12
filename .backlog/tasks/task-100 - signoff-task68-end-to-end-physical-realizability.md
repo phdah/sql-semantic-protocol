@@ -1,10 +1,10 @@
 ---
 id: TASK-100
 title: Sign off TASK-68 end-to-end physical-source realizability
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-10'
-updated_date: '2026-10-10'
+updated_date: '2026-10-12'
 labels: []
 milestone: m-3
 dependencies:
@@ -34,11 +34,11 @@ Close the original six TASK-68 acceptance criteria only after verifying the impl
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Confirm TASK-93..99 are Done and merged, and map every original TASK-68 acceptance criterion #1..#6 to specific source code, tests, schema and documented evidence.
-- [ ] #2 Audit shared physical identities, multi-parent operator composition, projection inversion, exact positive/negative cardinality, DML states and partial/cyclic/conflicting typed diagnostics; no unsupported shape may be silently feasible.
-- [ ] #3 Re-run pinned sql-tdg fixture, direct SQL/dbt, cross-dialect canonical, NULL/duplicate and DuckDB complete-DAG oracle tests, including joint terminal and deliberate rejection proofs.
-- [ ] #4 Verify deterministic Rust API, active JSON schema/examples, adapter parity, coverage manifest, docs and complete CI (fmt, clippy, test, doc, no-default-features and dbt E2E); record checked residual/deferred limitations explicitly.
-- [ ] #5 Only then check all TASK-68 parent ACs and mark the parent Done; keep TASK-91 and the protocol 3.0.0 release gate separate and blocked pending their own acceptance.
+- [x] #1 Confirm TASK-93..99 are Done and merged, and map every original TASK-68 acceptance criterion #1..#6 to specific source code, tests, schema and documented evidence.
+- [x] #2 Audit shared physical identities, multi-parent operator composition, projection inversion, exact positive/negative cardinality, DML states and partial/cyclic/conflicting typed diagnostics; no unsupported shape may be silently feasible.
+- [x] #3 Re-run pinned sql-tdg fixture, direct SQL/dbt, cross-dialect canonical, NULL/duplicate and DuckDB complete-DAG oracle tests, including joint terminal and deliberate rejection proofs.
+- [x] #4 Verify deterministic Rust API, active JSON schema/examples, adapter parity, coverage manifest, docs and complete CI (fmt, clippy, test, doc, no-default-features and dbt E2E); record checked residual/deferred limitations explicitly.
+- [x] #5 Only then check all TASK-68 parent ACs and mark the parent Done; keep TASK-91 and the protocol 3.0.0 release gate separate and blocked pending their own acceptance.
 <!-- AC:END -->
 
 ## Implementation and verification
@@ -48,3 +48,17 @@ Close the original six TASK-68 acceptance criteria only after verifying the impl
 - **Next:** Mark TASK-68 Done only when the original six acceptance criteria have independently verified evidence.
 - **Scope boundary:** Other TASK-70..91 work still owns individual missing operator variants, exhaustive conformance, the downstream generator, and protocol 3.0.0 release sign-off.
 
+
+## Sign-off evidence (2026-10-12)
+
+The acceptance-to-source/test/schema/doc mapping, typed feasibility audit,
+SQL/dbt/DuckDB fixtures, 13-dialect parser-equivalence evidence and
+remaining intentionally residual limitations are recorded in
+[docs/task-68-signoff.md](../../docs/task-68-signoff.md).
+
+The executable `tests/task_68_signoff.rs` enforces the completed
+TASK-93..100 queue, checked original TASK-68 acceptance criteria, active
+physical graph schema, versioned conformance fixtures and blocked TASK-91
+release state. Full CI is required on the resulting PR head before merge.
+No consumer SHA is pinned by this repository, and this sign-off does not
+mark downstream generation or the 3.0.0 release accepted.
