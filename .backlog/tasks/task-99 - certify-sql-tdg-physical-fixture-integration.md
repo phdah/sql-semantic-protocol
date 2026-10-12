@@ -1,10 +1,10 @@
 ---
 id: TASK-99
 title: Certify physical-source proofs against committed sql-tdg fixture shapes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-10'
-updated_date: '2026-10-10'
+updated_date: '2026-10-12'
 labels: []
 milestone: m-3
 dependencies:
@@ -46,3 +46,19 @@ Certify actual pinned sql-tdg raw-SQL/dbt fixture shapes with the canonical prot
 - **Next:** After this task is Done, proceed to TASK-100; do not skip ahead.
 - **Scope boundary:** Other TASK-70..91 work still owns individual missing operator variants, exhaustive conformance, the downstream generator, and protocol 3.0.0 release sign-off.
 
+
+## Pinned executable certification evidence (2026-10-12)
+
+The PR pins sql-tdg revision `90ec0e12a2d5cd2c1294556336fc947e176c9db9`
+under `tests/fixtures/sql_tdg/`, including all seven committed raw SQL
+fixtures, all eleven dbt model SQL files and four dbt seed relations. The
+pinned corpus is exercised by `tests/sql_tdg_physical.rs` and the independent
+`tests/sql_tdg_pinned_dbt_e2e.rs` DuckDB/dbt integration gate invoked by
+`make dbt-e2e`. Exact physical proof and residual boundaries are recorded
+in `docs/tdg-certification.md` and the executable coverage manifest.
+
+**Closure guard:** Do not convert a DuckDB example with a residual upstream
+physical plan into a general constructive certificate. The original pinned
+upstream revision does not commit UPDATE/DELETE/MERGE/CTAS scripts; those
+operator-level source-state laws are tested here, while downstream generated
+script coverage remains owned by sql-tdg TASK-31/36 and protocol TASK-91.
