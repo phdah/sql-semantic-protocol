@@ -98,11 +98,16 @@ fn mixed_nested_except_all_keeps_branch_multiplicity_and_null_laws() {
         RelationSchema::new(
             relation,
             vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
-        ).unwrap()
+        )
+        .unwrap()
     };
     let schemas = [
-        schema("a", "k"), schema("b", "k"), schema("c", "k"),
-        schema("sa", "id"), schema("sb", "id"), schema("sc", "id")
+        schema("a", "k"),
+        schema("b", "k"),
+        schema("c", "k"),
+        schema("sa", "id"),
+        schema("sb", "id"),
+        schema("sc", "id"),
     ];
     let query = "(SELECT id FROM sa UNION ALL SELECT id FROM sb) EXCEPT ALL SELECT id FROM sc";
     let statements = [
@@ -128,10 +133,16 @@ fn mixed_nested_except_all_keeps_branch_multiplicity_and_null_laws() {
          INSERT INTO c VALUES (0),(0),(0),(NULL);
          CREATE TABLE sa AS SELECT k AS id FROM a;
          CREATE TABLE sb AS SELECT k AS id FROM b;
-         CREATE TABLE sc AS SELECT k AS id FROM c;"
-    ).unwrap();
+         CREATE TABLE sc AS SELECT k AS id FROM c;",
+    )
+    .unwrap();
     let sql = format!("SELECT id FROM ({query}) ORDER BY id NULLS LAST");
-    let values = db.prepare(&sql).unwrap().query_map([], |row| row.get::<_, Option<i64>>(0))
-        .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    let values = db
+        .prepare(&sql)
+        .unwrap()
+        .query_map([], |row| row.get::<_, Option<i64>>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     assert_eq!(values, vec![Some(1), None]);
 }
