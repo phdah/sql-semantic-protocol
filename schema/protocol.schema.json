@@ -6471,6 +6471,33 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "kind", "boundary", "partition_key", "order", "partitions",
+            "rows_per_partition", "rank_limit", "closed_world"
+          ],
+          "properties": {
+            "kind": {"const": "rank_population"},
+            "boundary": {"$ref": "#/$defs/constructiveBoundary"},
+            "partition_key": {"$ref": "#/$defs/groupWitnessColumn"},
+            "order": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["column", "ascending", "nulls_first"],
+              "properties": {
+                "column": {"$ref": "#/$defs/groupWitnessColumn"},
+                "ascending": {"type": "boolean"},
+                "nulls_first": {"type": "boolean"}
+              }
+            },
+            "partitions": {"type": "integer", "minimum": 1},
+            "rows_per_partition": {"type": "integer", "minimum": 1},
+            "rank_limit": {"type": "integer", "minimum": 0},
+            "closed_world": {"const": true}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
             "kind",
             "outer",
             "inner",
