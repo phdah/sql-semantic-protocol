@@ -1,14 +1,22 @@
 //! Enforced key, nullability and referential physical snapshot validation.
 
-use super::*;
 use super::evaluator::scalar_equality;
+use super::*;
 
-pub(super) fn validate_state(bundle: &AnalysisBundle, state: &PhysicalWriteState) -> StateResult<()> {
+pub(super) fn validate_state(
+    bundle: &AnalysisBundle,
+    state: &PhysicalWriteState,
+) -> StateResult<()> {
     let schema = bundle
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == state.relation)
-        .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingSchema, format!("missing complete schema for {}", state.relation)))?;
+        .ok_or_else(|| {
+            residual_gap(
+                PhysicalWriteStateGap::MissingSchema,
+                format!("missing complete schema for {}", state.relation),
+            )
+        })?;
     for row in &state.rows {
         if row.values.len() != schema.columns().len() {
             return Err(impossible(
@@ -41,7 +49,10 @@ pub(super) fn validate_all_constraints(
             continue;
         };
         if !set.diagnostics().is_empty() {
-            return Err(residual_gap(PhysicalWriteStateGap::UnprovedConstraint, "unresolved canonical constraint diagnostics"));
+            return Err(residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "unresolved canonical constraint diagnostics",
+            ));
         }
         for constraint in set.constraints() {
             if !constraint
@@ -49,7 +60,10 @@ pub(super) fn validate_all_constraints(
                 .iter()
                 .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
             {
-                return Err(residual_gap(PhysicalWriteStateGap::UnprovedConstraint, "constraint enforcement not attested"));
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "constraint enforcement not attested",
+                ));
             }
             match constraint {
                 RelationConstraint::NotNull(rule) => {
@@ -227,4 +241,3 @@ fn value_conforms(value: &LiteralValue, kind: &DataType) -> bool {
         _ => false,
     }
 }
-
