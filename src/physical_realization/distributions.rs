@@ -62,28 +62,142 @@ pub(crate) fn physical_distribution_plan(
     crate::outcome_proofs::construct_mapped_source(bundle, source, rows, mappings)
 }
 
-/// Row-preserving shape is required for the whole SELECT. Every expression not
-/// pinned by a complete histogram must be trivially total for every source row.
-fn safe_terminal_projection(query: &QueryStatement, goal: &OutcomeGoal) -> bool {
+/// One fully traced physical column and its complete frequency bag.
+struct InvertedDistribution {
+    column: ColumnRef,
+    values: Vec<OutputValueCount>,
+    data_type: DataType,
+}
+
+/// Walk one output alias backwards through every producer, applying each
+/// locally normalized inverse and checking the declared intermediate type.
+fn invert_distribution(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    layer_id: &str,
+    output_name: &str,
+    values: Vec<OutputValueCount>,
+    covered: &mut BTreeSet<(String, String)>,
+    depth: usize,
+) -> Option<InvertedDistribution> {
+    if depth > walker.layers.len() {
+        return None;
+    }
+    let layer = walker.layers.get(layer_id).copied()?;
+    let query = query_for(bundle, layer)?;
+    let mut outputs = query
+        .output()
+        .columns()
+        .iter()
+        .filter(|output| output.name() == output_name);
+    let output = outputs.next()?;
+    if outputs.next().is_some() {
+        return None;
+    }
+    let [lineage] = output.lineage() else {
+        return None;
+    };
+    let canonical = layer.canonical_relation(lineage.relation());
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == canonical)?;
+    let column = schema.columns().iter().find(|col| col.name() == lineage.column())?;
+    let data_type = column.data_type().clone();
+    let values = if output.plain_copy_source().is_some() {
+        values
+    } else {
+        if !reversible_integer_expression(output.expression(), lineage.column()) {
+            return None;
+        }
+        let bits = signed_integer_width(&data_type)?;
+        values
+            .iter()
+            .map(|bucket| {
+                let input = match bucket.value() {
+                    ConstraintValue::Null => ConstraintValue::Null,
+                    ConstraintValue::Integer(wanted) => {
+                        let actual = invert_integer(output.expression(), *wanted, lineage.column())?;
+                        if !fits_integer(actual, bits)
+                            || evaluate_integer(
+                                output.expression(), actual, lineage.column(), bits,
+                            )? != *wanted
+                        {
+                            return None;
+                        }
+                        ConstraintValue::Integer(actual)
+                    }
+                    _ => return None,
+                };
+                Some(OutputValueCount::new(input, bucket.rows()))
+            })
+            .collect::<Option<Vec<_>>>()?
+    };
+    covered.insert((layer_id.to_string(), output_name.to_string()));
+    let mut edges = bundle.graph().edges().iter().filter(|edge| {
+        edge.consumer_layer_id() == layer_id && edge.relation() == canonical
+    });
+    let edge = edges.next()?;
+    if edges.next().is_some() {
+        return None;
+    }
+    match edge.resolution() {
+        RelationResolution::External => Some(InvertedDistribution {
+            column: ColumnRef::new(
+                Some(edge.relation().to_string()),
+                lineage.column().to_string(),
+            ),
+            values,
+            data_type,
+        }),
+        RelationResolution::Resolved => {
+            let [producer_id] = edge.producer_layer_ids() else {
+                return None;
+            };
+            let assignment = invert_distribution(
+                bundle,
+                walker,
+                producer_id,
+                lineage.column(),
+                values,
+                covered,
+                depth + 1,
+            )?;
+            // No intermediate write, narrowing or implicit cast is inferred.
+            if assignment.data_type != data_type {
+                return None;
+            }
+            Some(assignment)
+        }
+        _ => None,
+    }
+}
+
+/// A complete histogram pins the values of each checked computation for
+/// *every* row. Non-covered computations must be trivially total.
+fn safe_projection(
+    query: &QueryStatement,
+    layer_id: &str,
+    covered: &BTreeSet<(String, String)>,
+) -> bool {
     query.row_preserving_projection()
         && query.sources().len() == 1
         && query.condition_exactness().is_exact()
+        && query.aggregation().is_none()
+        && query.set_operation().is_none()
+        && query.window_witness().is_none()
+        && query.subquery_witnesses().is_empty()
+        && query.joins().is_empty()
+        && query.diagnostics().is_empty()
         && query.output().columns().iter().all(|column| {
-            goal.distributions()
-                .iter()
-                .any(|goal| goal.column() == column.name())
+            covered.contains(&(layer_id.to_string(), column.name().to_string()))
                 || column.plain_copy_source().is_some()
                 || matches!(column.expression(), Expression::Literal(_))
         })
 }
 
-fn integer_width(bundle: &AnalysisBundle, source: &str, column: &str) -> Option<u16> {
-    let schema = bundle
-        .source_schemas()
-        .iter()
-        .find(|s| s.relation() == source)?;
-    let column = schema.columns().iter().find(|c| c.name() == column)?;
-    let mut data_type = column.data_type();
+fn signed_integer_width(data_type: &DataType) -> Option<u16> {
+    let mut data_type = data_type;
     while let DataType::Nullable(inner) = data_type {
         data_type = inner.as_ref();
     }
