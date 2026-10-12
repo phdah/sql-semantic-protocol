@@ -57,7 +57,7 @@ fn direct_filtered_source(
         return None;
     }
     let resolved =
-        crate::protocol::ColumnRef::new(Some(source.clone()), column.column().to_string());
+        crate::protocol::ColumnRef::new(Some(source.clone()), column.name().to_string());
     let schema = bundle
         .source_schemas()
         .iter()
