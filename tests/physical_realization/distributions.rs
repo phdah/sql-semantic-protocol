@@ -506,3 +506,57 @@ fn reversed_computed_aliases_reconcile_and_detect_necessary_conflicts() {
         );
     }
 }
+
+#[test]
+fn reversible_terminal_histogram_lifts_complete_materialized_set_law() {
+    for dialect in ["duckdb", "postgresql"] {
+        let schemas = [
+            schema("l", &[("a", "INTEGER")]),
+            schema("r", &[("a", "INTEGER")]),
+            schema("left_stage", &[("id", "INTEGER")]),
+            schema("right_stage", &[("id", "INTEGER")]),
+            schema("set_stage", &[("id", "INTEGER")]),
+        ];
+        let mut b = bundle_with_schemas(
+            &[
+                "CREATE TABLE left_stage AS SELECT a AS id FROM l",
+                "CREATE TABLE right_stage AS SELECT a AS id FROM r",
+                "CREATE TABLE set_stage AS SELECT id FROM left_stage UNION SELECT id FROM right_stage",
+                "SELECT id + 1 AS shifted FROM set_stage",
+            ],
+            dialect,
+            &schemas,
+        );
+        goal(
+            &mut b,
+            3,
+            2,
+            vec![histogram(
+                "shifted",
+                &[(ConstraintValue::Null, 1), (ConstraintValue::Integer(4), 1)],
+            )],
+        );
+        assert!(
+            matches!(b.outcome_goals()[0].witness(), Some(OutcomeWitness::SetTuples { .. })),
+            "{dialect}: complete DISTINCT set membership should survive a reversible final projection: {:?}",
+            b.outcome_goals()
+        );
+    }
+    let db = Connection::open_in_memory().expect("duckdb");
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER); CREATE TABLE r(a INTEGER);
+         INSERT INTO l VALUES (3),(NULL);
+         INSERT INTO r VALUES (NULL),(3);
+         CREATE TABLE left_stage AS SELECT a AS id FROM l;
+         CREATE TABLE right_stage AS SELECT a AS id FROM r;
+         CREATE TABLE set_stage AS SELECT id FROM left_stage UNION SELECT id FROM right_stage;",
+    ).expect("complete distinct physical branches");
+    let actual: (i64, i64, i64) = db.query_row(
+        "SELECT COUNT(*), COUNT(*) FILTER (WHERE shifted = 4),
+                COUNT(*) FILTER (WHERE shifted IS NULL)
+         FROM (SELECT id + 1 AS shifted FROM set_stage)",
+        [],
+        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+    ).unwrap();
+    assert_eq!(actual, (2,1,1));
+}
