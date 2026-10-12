@@ -33,6 +33,17 @@ impl OutputValueCount {
     }
 }
 
+/// Equality of complete histograms ignores zero-count bucket decorations.
+/// Both inputs are sorted by canonical scalar value.
+pub(crate) fn equivalent_frequencies(
+    left: &[OutputValueCount],
+    right: &[OutputValueCount],
+) -> bool {
+    left.iter()
+        .filter(|bucket| bucket.rows() > 0)
+        .eq(right.iter().filter(|bucket| bucket.rows() > 0))
+}
+
 /// A complete, typed frequency distribution for one projected output column.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct OutputDistribution {
@@ -343,6 +354,41 @@ fn assess_goal(
         }
     }
 
+    // Direct aliases of the same semantic input are equal on every output row,
+    // even for NULL. Distinct requested complete histograms cannot both hold.
+    if let Some(query) = query {
+        for (index, left) in goal.distributions().iter().enumerate() {
+            let Some(left_source) = query
+                .output()
+                .columns()
+                .iter()
+                .find(|column| column.name() == left.column())
+                .and_then(|column| column.plain_copy_source())
+            else {
+                continue;
+            };
+            for right in goal.distributions().iter().skip(index + 1) {
+                let right_source = query
+                    .output()
+                    .columns()
+                    .iter()
+                    .find(|column| column.name() == right.column())
+                    .and_then(|column| column.plain_copy_source());
+                if right_source == Some(left_source)
+                    && !equivalent_frequencies(left.values(), right.values())
+                {
+                    return Ok(assessed(
+                        goal,
+                        OutcomeGoalStatus::Unsatisfiable,
+                        "two aliases of one source column require identical complete histograms",
+                        0,
+                        None,
+                    ));
+                }
+            }
+        }
+    }
+
     let singleton = query.is_some_and(QueryStatement::proven_single_row_output)
         && resolved.diagnostics().is_empty();
     let min_rows = u64::from(singleton);
@@ -393,6 +439,32 @@ fn assess_goal(
                 goal,
                 OutcomeGoalStatus::Unsatisfiable,
                 "complete distribution does not sum to requested output rows",
+                min_rows,
+                max_rows,
+            ));
+        }
+    }
+
+    // The composed outcome domain owns surviving bounds and inclusivity.
+    // Reject only a *proved* contradiction, never a value whose comparison
+    // or SQL typing cannot be established by the canonical domain algebra.
+    for distribution in goal.distributions() {
+        let Some(projected) = output
+            .columns()
+            .iter()
+            .find(|column| column.name() == distribution.column())
+        else {
+            continue;
+        };
+        if distribution.values().iter().any(|bucket| {
+            bucket.rows() > 0
+                && crate::domain::domain_admits_constraint_value(projected.domain(), bucket.value())
+                    == Some(false)
+        }) {
+            return Ok(assessed(
+                goal,
+                OutcomeGoalStatus::Unsatisfiable,
+                "requested complete histogram contradicts proven output value-domain bounds",
                 min_rows,
                 max_rows,
             ));
@@ -604,6 +676,23 @@ fn assess_goal(
         }
     }
 
+    // Exact set tuple laws can also be transported through a downstream
+    // reversible scalar, but only after full source-level set membership
+    // evidence and materialization datatype guards are certified.
+    if let Some(witness) = crate::physical_realization::physical_inverted_set_distribution_plan(
+        bundle,
+        layer.id(),
+        &goal,
+    ) {
+        return Ok(proved(
+            goal,
+            "complete output distribution is inverted through a proven physical set population",
+            min_rows,
+            max_rows,
+            witness,
+        ));
+    }
+
     // Identity-only materialized producers preserve complete physical
     // distributions when every projected value is traceable to the same
     // source column. This is separate from count-only feasibility: a positive
@@ -617,6 +706,16 @@ fn assess_goal(
             min_rows,
             max_rows,
             witness,
+        ));
+    }
+
+    if crate::physical_realization::physical_distribution_conflict(bundle, layer.id(), &goal) {
+        return Ok(assessed(
+            goal,
+            OutcomeGoalStatus::Unsatisfiable,
+            "certified reversible outputs require contradictory complete physical frequencies",
+            min_rows,
+            max_rows,
         ));
     }
 

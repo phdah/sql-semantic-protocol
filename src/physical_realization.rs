@@ -461,22 +461,28 @@ impl<'a> Walker<'a> {
 // Implementations are grouped by physical proof responsibility.
 mod composition;
 mod counts;
+mod distributions;
 mod filters;
 mod graph;
 mod grouping;
 mod joins;
 mod joint_counts;
+mod joint_distributions;
 mod membership;
 mod operators;
 mod ranking;
 mod sets;
 
-pub(crate) use counts::physical_distribution_plan;
 pub use counts::{
     physical_rejected_row_count_plan, physical_row_count_plan, physical_unconditional_delete_plan,
 };
+pub(crate) use distributions::{
+    physical_distribution_conflict, physical_distribution_plan,
+    physical_inverted_set_distribution_plan,
+};
 pub use filters::physical_source_plan;
 pub use joint_counts::physical_joint_row_count_plan;
+pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{
     physical_materialized_group_or_rank_witness, physical_materialized_join_witness,
     physical_materialized_set_witness, physical_operator_count_witness,

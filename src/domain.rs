@@ -17,6 +17,87 @@ use crate::protocol::{
 
 type DomainMap = BTreeMap<ColumnRef, ValueDomain>;
 
+/// Check one requested scalar against a canonical outcome domain.
+///
+/// Only sound memberships are reported. Unrecognized scalar encodings or
+/// incomparable bounds return None so physical inversion remains residual
+/// rather than silently treating unknown comparisons as exclusions.
+pub(crate) fn domain_admits_constraint_value(
+    domain: &ValueDomain,
+    value: &crate::constraints::ConstraintValue,
+) -> Option<bool> {
+    use crate::constraints::ConstraintValue;
+    let literal = match value {
+        ConstraintValue::Null => LiteralExpression::new(LiteralType::Null, LiteralValue::Null),
+        ConstraintValue::Boolean(value) => {
+            LiteralExpression::new(LiteralType::Boolean, LiteralValue::Boolean(*value))
+        }
+        ConstraintValue::Integer(value) => LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(value.to_string()),
+        ),
+        ConstraintValue::UnsignedInteger(value) => LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(value.to_string()),
+        ),
+        ConstraintValue::Number(value) => {
+            LiteralExpression::new(LiteralType::Decimal, LiteralValue::Number(value.clone()))
+        }
+        ConstraintValue::String(value) => {
+            LiteralExpression::new(LiteralType::String, LiteralValue::Text(value.clone()))
+        }
+    };
+    match domain {
+        ValueDomain::Unbounded => Some(true),
+        ValueDomain::Unknown(_) => None,
+        ValueDomain::Empty => Some(false),
+        ValueDomain::Ranges(ranges) => {
+            let mut unknown = false;
+            for range in ranges.ranges() {
+                match literal_in_range(&literal, range) {
+                    Some(true) => return Some(true),
+                    None => unknown = true,
+                    Some(false) => {}
+                }
+            }
+            if unknown {
+                None
+            } else {
+                Some(false)
+            }
+        }
+        ValueDomain::Set(set) => {
+            let mut unknown = false;
+            let present = set.values().iter().any(|accepted| {
+                if accepted == &literal
+                    || compare_literals(&literal, accepted) == Some(Ordering::Equal)
+                {
+                    true
+                } else {
+                    if !matches!(
+                        (literal.value(), accepted.value()),
+                        (LiteralValue::Boolean(_), LiteralValue::Boolean(_))
+                            | (LiteralValue::Text(_), LiteralValue::Text(_))
+                            | (LiteralValue::Null, _)
+                            | (_, LiteralValue::Null)
+                    ) && compare_literals(&literal, accepted).is_none()
+                    {
+                        unknown = true;
+                    }
+                    false
+                }
+            });
+            if present {
+                Some(set.mode() == SetMode::Include)
+            } else if unknown {
+                None
+            } else {
+                Some(set.mode() == SetMode::Exclude)
+            }
+        }
+    }
+}
+
 pub(crate) fn derive_column_domains(
     predicates: &Predicates,
     sources: &[SourceRelation],
@@ -1469,4 +1550,84 @@ fn parse_decimal_number(value: &str) -> Option<DecimalNumber> {
 
 fn null_literal() -> LiteralExpression {
     LiteralExpression::new(LiteralType::Null, LiteralValue::Null)
+}
+
+#[cfg(test)]
+mod constraint_frequency_membership_tests {
+    use super::*;
+    use crate::constraints::ConstraintValue;
+
+    #[test]
+    fn integer_range_membership_observes_exact_bound_inclusivity() {
+        let lower = Bound::new(
+            LiteralExpression::new(LiteralType::Integer, LiteralValue::Number("10".to_string())),
+            false,
+        );
+        let upper = Bound::new(
+            LiteralExpression::new(LiteralType::Integer, LiteralValue::Number("20".to_string())),
+            true,
+        );
+        let domain = ValueDomain::ranges(vec![ValueRange::new(Some(lower), Some(upper))]);
+        for (value, expected) in [(9, false), (10, false), (11, true), (20, true), (21, false)] {
+            assert_eq!(
+                domain_admits_constraint_value(&domain, &ConstraintValue::Integer(value)),
+                Some(expected),
+            );
+        }
+        assert_eq!(
+            domain_admits_constraint_value(&domain, &ConstraintValue::Null),
+            Some(false),
+        );
+    }
+
+    #[test]
+    fn set_membership_is_exact_for_null_numeric_bool_and_string_values() {
+        let numeric = ValueDomain::set(
+            SetMode::Include,
+            vec![LiteralExpression::new(
+                LiteralType::Integer,
+                LiteralValue::Number("4".to_string()),
+            )],
+        );
+        assert_eq!(
+            domain_admits_constraint_value(&numeric, &ConstraintValue::Integer(4)),
+            Some(true),
+        );
+        assert_eq!(
+            domain_admits_constraint_value(&numeric, &ConstraintValue::Integer(5)),
+            Some(false),
+        );
+        let excluding = ValueDomain::set(
+            SetMode::Exclude,
+            vec![LiteralExpression::new(
+                LiteralType::String,
+                LiteralValue::Text("blocked".to_string()),
+            )],
+        );
+        assert_eq!(
+            domain_admits_constraint_value(
+                &excluding,
+                &ConstraintValue::String("blocked".to_string()),
+            ),
+            Some(false),
+        );
+        assert_eq!(
+            domain_admits_constraint_value(
+                &excluding,
+                &ConstraintValue::String("allowed".to_string()),
+            ),
+            Some(true),
+        );
+        assert_eq!(
+            domain_admits_constraint_value(&ValueDomain::Unbounded, &ConstraintValue::Null),
+            Some(true),
+        );
+        assert_eq!(
+            domain_admits_constraint_value(
+                &ValueDomain::unknown("comparison unavailable"),
+                &ConstraintValue::Integer(4),
+            ),
+            None,
+        );
+    }
 }

@@ -53,7 +53,7 @@ constructive subset only; after it passes CI and is merged, TASK-68 stays **In
 Progress**. Its original six acceptance criteria remain unchecked until the
 children establish the full proof obligations.
 
-**Next task after PR #92 merges: TASK-93.** When asked to work on the "next
+**Current next child after merging TASK-96 PR #102: TASK-97.** When asked to work on the "next
 task", take the first unfinished, dependency-ready child in this queue **before
 unrelated backlog TASK-70..92**. Child PRs target `main` independently. A child may land multiple
 CI-verified, independently safe increments while remaining In Progress; the
@@ -64,8 +64,8 @@ cycle.
 
 - **[TASK-93](task-93%20-%20compose-joint-physical-source-dag-constraints.md)**: Compose jointly satisfiable physical-source DAG constraints
 - **[TASK-94](task-94%20-%20realize-multiparent-join-and-shared-source-dags.md)**: Realize multi-parent joins and repeated-source DAGs
-- **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs (**Done** via merged baseline PR #95 and verified completion PR #101; merge PR #101 before starting TASK-96)
-- **[TASK-96](task-96%20-%20resolve-projection-inversion-and-output-distributions.md)**: Prove safe projection inversion and complete output distributions
+- **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs (**Done** via merged PRs #95 and #101)
+- **[TASK-96](task-96%20-%20resolve-projection-inversion-and-output-distributions.md)**: Prove safe projection inversion and complete output distributions (**Done** in CI-verified PR #102; merge PR #102 before starting TASK-97)
 - **[TASK-97](task-97%20-%20prove-complete-cardinality-and-negative-closed-world-outcomes.md)**: Prove complete cardinality and negative closed-world outcomes
 - **[TASK-98](task-98%20-%20realize-ordered-dml-before-after-source-states.md)**: Realize ordered DML and DDL before/after physical states
 - **[TASK-99](task-99%20-%20certify-sql-tdg-physical-fixture-integration.md)**: Certify physical-source proofs against committed sql-tdg fixture shapes

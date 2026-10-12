@@ -1241,8 +1241,25 @@ output frequency to exactly one typed physical source column, and the
 catalog must contain the actual materialized output columns, including
 renames. The existing `source_rows` wire witness then records complete
 typed frequencies for the physical column, not intermediate aliases.
-Computed or ambiguous projections, unsupported row shaping, and unknown
-catalog columns remain residual.
+Duplicate aliases must agree on their complete frequencies, ignoring
+zero-count bucket decorations. A final SELECT may use guarded reversible
+signed-integer +, -, and unary negation over one traced column after a
+certified transparent producer chain, provided each source and intermediate
+value is in range and NULL is preserved. This is emitted as ordinary
+physical-column frequencies, with no new wire contract. Repeated reversible
+arithmetic across producers is inverted one layer at a time with
+schema-attested type equality on every materialization edge. Boolean and
+variable-length string frequencies are supported where catalog typing
+permits exact storage without padding or truncation. The Rust
+`physical_joint_distribution_plan` returns a typed `WitnessDirection`
+with a single physical `source_rows` operator-population witness per
+independent source, full-source closed-world row counts, and exact terminal
+counts. Shared complete histograms and source counts must reconcile;
+otherwise the proof is impossible or residual. Inversion across downstream set-producing DAGs delegates tuple multiplicity and NULL membership to the existing set witness; it requires identical attested physical branch and materialized-set column types to rule out hidden casts. The existing
+`operator_population` / `outcomeWitness` JSON schema covers this
+source-row population without adding a wire type. Lossy or
+unguarded computations, unsupported row shaping, mismatched producer
+datatypes and unknown catalog columns remain residual.
 
 Each `physical_nodes[]` entry may additionally expose
 `operator_witnesses` and `pending_producers`. These are the normalized,
@@ -1268,7 +1285,7 @@ The `rank_population` constructive obligation closes a physical input with `part
 
 ### TASK-95 physical operator population obligation
 
-`operator_population` is a canonical constructive obligation containing an exact schema-validated `outcomeWitness` for a complete physical `groups`, `ranked`, or `set_tuples` population. The surrounding case includes per-physical-source `rows` and `closed_world(entire_relation)` obligations and an exact terminal `output_rows`. The obligation never permits inserting rows into a computed producer. Shared physical sources require a single reconciled assignment; unsupported multi-operator correlation remains residual. See [semantics](semantics.md).
+`operator_population` is a canonical constructive obligation containing an exact schema-validated `outcomeWitness` for a complete physical `groups`, `ranked`, `set_tuples`, or `source_rows` histogram population. The surrounding case includes per-physical-source `rows` and `closed_world(entire_relation)` obligations and an exact terminal `output_rows`. The obligation never permits inserting rows into a computed producer. Shared physical sources require a single reconciled assignment; unsupported multi-operator correlation remains residual. See [semantics](semantics.md).
 
 Exact producer-composed `Membership(no_candidates)` certifies an empty complete inner physical relation for both correlated and uncorrelated EXISTS/IN/NOT forms. Nonempty unfiltered EXISTS/NOT EXISTS, non-NULL IN/NOT IN, and locally proved correlated equijoin membership may instead use complete physical key populations, with typed `Membership`, `Rows`, `ClosedWorld` and `OutputRows` obligations. The selected matching or nonmatching integer values must fit the attested source types and be compatible on every shared physical column. Opaque inner filters, unchecked NULL-sensitive cases and overlapping physical leaves stay explicitly residual.
 

@@ -10,6 +10,7 @@
       "physical_source_plan",
       "physical_row_count_plan",
       "physical_joint_row_count_plan",
+      "physical_joint_distribution_plan",
       "PhysicalSourcePlan",
       "PhysicalPlanNode",
       "PhysicalPlanRef",
@@ -35,6 +36,13 @@
       "positive_schema_backed_physical_filter_row_counts",
       "joint_preserved_filter_truth_counts",
       "transitive_materialized_value_distributions",
+      "typed_reversible_multistage_projection_inversion",
+      "complete_correlated_physical_source_histograms",
+      "physical_histogram_column_and_closed_world_count_reconciliation",
+      "typed_null_duplicate_boolean_text_histograms",
+      "domain_bound_inclusivity_and_computed_alias_contradictions",
+      "inverted_materialized_set_distribution_with_branch_type_guards",
+      "dbt_artifact_catalog_and_direct_sql_histogram_parity",
       "transitive_direct_operator_count_witnesses",
       "independent_two_parent_materialized_equijoin_pairs",
       "nonempty_closed_world_rejected_source_rows",
@@ -63,6 +71,9 @@
     ],
     "evidence": [
       "tests/physical_realization.rs",
+      "tests/physical_realization/distributions.rs",
+      "tests/physical_realization/joint_distributions.rs",
+      "tests/dbt_manifest.rs",
       "docs/protocol.md"
     ],
     "unproved_scope": [
@@ -76,7 +87,9 @@
       "shared_source_join_group_window_set_cross_row_realizability",
       "unproved_cross_join_without_local_exact_witness",
       "unproved_general_multi_join_operator_chain",
-      "unproved_key_distribution_for_filtering_join_inputs"
+      "unproved_key_distribution_for_filtering_join_inputs",
+      "unproved_value_distributions_across_filter_join_group_window_DAGs",
+      "unproved_general_non_bijective_scalar_inversion"
     ],
     "release_limit": "This records foundational partial evidence only. All TASK-68 acceptance criteria remain open and the 3.0.0 release gate is held.",
     "child_tasks": [
@@ -90,6 +103,7 @@
       "TASK-100"
     ],
     "next_task_after_foundation": "TASK-93",
+    "next_dependency_ready_after_TASK_96_merge": "TASK-97",
     "closure_rule": "TASK-68 remains In Progress until TASK-93..100 are Done and all six parent acceptance criteria are verified; release TASK-91 remains blocked independently."
   },
   "task_69_operator_local_evidence": {

@@ -16,6 +16,7 @@ This map is a **navigation index**, not a second semantic specification. For a c
 | `INSERT`, `UPDATE`, `DELETE`, `MERGE` | `src/analysis/writes.rs` | `src/protocol/writes.rs`, `src/bundle/layers.rs`, `src/emission/statements.rs` | `tests/dml_transformations.rs` |
 | Correlated or nested subquery membership | `src/analysis/subqueries.rs` | `src/subquery_witness.rs`, `src/physical_realization/membership.rs` | `tests/subquery_witness.rs`, `tests/constructive_membership.rs` |
 | Output projection, expression, lineage | `src/analysis/output.rs` | `src/analysis/expressions.rs`, `src/analysis/lineage.rs`, `src/protocol/relations.rs` | `tests/output_domains.rs` |
+| Physical projection inversion, complete value histograms | `src/physical_realization/distributions.rs` | `src/physical_realization/joint_distributions.rs`, `src/physical_realization/graph.rs`, `src/outcome_goals.rs`, `src/outcome_proofs.rs` | `tests/physical_realization/distributions.rs` |
 | SQL DDL constraints | `src/analysis/constraints.rs` | `src/constraints.rs`, `src/protocol/relations.rs` | `tests/dbt_constraints.rs` |
 | Multi-query graph, producer/consumer, cycle | `src/bundle/graph_build.rs` | `src/bundle/graph.rs`, `src/bundle/orchestration.rs`, `src/composition.rs` | `tests/composition.rs`, `tests/physical_realization/graph.rs` |
 | Transitive composition and column identities | `src/composition.rs` | `src/bundle/composed.rs`, `src/physical_realization/graph.rs` | `tests/composition.rs`, `tests/composition_exactness.rs` |

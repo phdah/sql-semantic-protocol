@@ -483,3 +483,117 @@ fn dbt_cli_without_catalog_names_missing_manifest_type() {
     assert!(error.contains("warehouse.raw.orders"), "{error}");
     assert!(error.contains("amount"), "{error}");
 }
+
+#[test]
+fn dbt_catalog_projection_histograms_match_raw_sql_physical_inversion() {
+    use sql_semantic_protocol::{
+        ConstraintValue, OutcomeGoal, OutcomeGoalStatus, OutcomeWitness, OutputDistribution,
+        OutputValueCount, RelationSchema, SchemaColumn,
+    };
+
+    let mut manifest: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] =
+        serde_json::json!("SELECT id, amount AS value FROM warehouse.raw.orders");
+    manifest["nodes"]["model.demo.final_orders"]["compiled_code"] =
+        serde_json::json!("SELECT value + 1 AS adjusted FROM warehouse.analytics.stg_orders");
+    let manifest = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt manifest");
+
+    let mut catalog: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
+    for (name, replacement) in [
+        ("model.demo.stg_orders", "value"),
+        ("model.demo.final_orders", "adjusted"),
+    ] {
+        let columns = catalog["nodes"][name]["columns"].as_object_mut().unwrap();
+        let mut renamed = columns.remove("amount").unwrap();
+        renamed["name"] = serde_json::json!(replacement);
+        columns.insert(replacement.to_string(), renamed);
+    }
+    let catalog = parse_dbt_catalog(&catalog.to_string()).expect("typed dbt catalog");
+    let dialect = dialect_from_str("postgres").expect("postgresql dialect");
+    let mut adapted = analyze_dbt_artifacts(&manifest, &catalog, "postgres", dialect.as_ref())
+        .expect("dbt schema parity");
+
+    let raw_columns = vec![
+        SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+        SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
+    ];
+    let stage_columns = vec![
+        SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+        SchemaColumn::from_sql_type("value", "INTEGER", "postgresql").unwrap(),
+    ];
+    let schemas = [
+        RelationSchema::new("warehouse.raw.orders", raw_columns).unwrap(),
+        RelationSchema::new("warehouse.analytics.stg_orders", stage_columns).unwrap(),
+    ];
+    let inputs = [
+        SqlInput::inline(
+            "CREATE TABLE warehouse.analytics.stg_orders AS SELECT id, amount AS value FROM warehouse.raw.orders",
+        ),
+        SqlInput::inline(
+            "CREATE TABLE warehouse.analytics.final_orders AS SELECT value + 1 AS adjusted FROM warehouse.analytics.stg_orders",
+        ),
+    ];
+    let ids = (0..inputs.len())
+        .map(|n| format!("q{n}"))
+        .collect::<Vec<_>>();
+    let configured = inputs
+        .iter()
+        .zip(&ids)
+        .map(|(sql, id)| ConfiguredSqlInput::new(id, sql, "postgres", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let raw_catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let mut raw = analyze_configured_inputs_with_catalog(&configured, &raw_catalog)
+        .expect("direct SQL bundle");
+
+    let histogram = OutputDistribution::new(
+        "adjusted",
+        vec![
+            OutputValueCount::new(ConstraintValue::Integer(5), 2),
+            OutputValueCount::new(ConstraintValue::Null, 1),
+        ],
+    )
+    .unwrap();
+    let adapted_id = layer_for_relation(adapted.layers(), "warehouse.analytics.final_orders")
+        .id()
+        .to_string();
+    adapted
+        .set_outcome_goals(&[
+            OutcomeGoal::new(adapted_id, Some(3), None, vec![histogram.clone()]).unwrap(),
+        ])
+        .unwrap();
+
+    let raw_id = layer_for_relation(raw.layers(), "warehouse.analytics.final_orders")
+        .id()
+        .to_string();
+    raw.set_outcome_goals(&[OutcomeGoal::new(raw_id, Some(3), None, vec![histogram]).unwrap()])
+        .unwrap();
+
+    assert_eq!(
+        adapted.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Feasible
+    );
+    assert_eq!(raw.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
+    let Some(OutcomeWitness::SourceRows {
+        relation: adapted_relation,
+        rows: adapted_rows,
+        columns: adapted_columns,
+    }) = adapted.outcome_goals()[0].witness()
+    else {
+        panic!("dbt must expose the canonical physical-source histogram");
+    };
+    let Some(OutcomeWitness::SourceRows {
+        relation: raw_relation,
+        rows: raw_rows,
+        columns: raw_columns,
+    }) = raw.outcome_goals()[0].witness()
+    else {
+        panic!("direct SQL must expose the canonical physical-source histogram");
+    };
+    assert_eq!(adapted_relation, raw_relation);
+    assert_eq!(adapted_rows, raw_rows);
+    assert_eq!(adapted_columns, raw_columns);
+    assert_eq!(adapted_relation, "warehouse.raw.orders");
+    assert_eq!(adapted_columns[0].column(), "amount");
+}
