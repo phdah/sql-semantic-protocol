@@ -237,7 +237,12 @@ fn value_conforms(value: &LiteralValue, kind: &DataType) -> bool {
                 _ => false,
             }
         }
-        (LiteralValue::Text(_), DataType::String { fixed: false, .. }) => true,
+        (LiteralValue::Text(text), DataType::String { length, fixed: false }) => {
+            // SQL's character-count semantics differ for non-ASCII strings
+            // across warehouses. Without an exact dialect-specific rule a
+            // non-ASCII length comparison cannot certify physical storage.
+            text.is_ascii() && length.is_none_or(|max| u64::try_from(text.len()).is_ok_and(|n| n <= max))
+        },
         _ => false,
     }
 }
