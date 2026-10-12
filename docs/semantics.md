@@ -666,8 +666,17 @@ laws can be composed when their complete assignments are compatible.
 In particular, two lossless materialized copies of the same physical
 bag cancel under EXCEPT/EXCEPT ALL at any certified positive source
 count, including NULLs and duplicates; a transparent positive terminal
-may reuse that exact count. Arbitrary operator combinations and
-unproved correlated source assignments remain typed residuals. General
+may reuse that exact count. Exact nonempty transparent source
+counts also permit an INNER JOIN to have zero output through a completely
+empty physical partner, with one source counted and its other partner
+explicitly closed. By contrast, an unfiltered LEFT, RIGHT or FULL JOIN
+cannot have zero output when a verified preserved input has nonzero
+cardinality, which is reported as impossible rather than a missing
+sufficient join candidate. Both laws retain join-kind and materialized
+producer provenance. Direct SQL and dbt manifest/catalog evidence must
+reach the same physical-row truth and closed-world population.
+Arbitrary operator combinations and unproved correlated source
+assignments remain typed residuals. General
 DML state construction beyond the proven unconditional DELETE is still
 unverified.
 
