@@ -189,8 +189,16 @@ pub(super) fn physical_join_population_count_plan(
             continue;
         }
         let product = wanted / groups;
-        candidates.push((JoinPopulationPattern::GroupedMatched { groups }, wanted, groups));
-        candidates.push((JoinPopulationPattern::GroupedMatched { groups }, groups, wanted));
+        candidates.push((
+            JoinPopulationPattern::GroupedMatched { groups },
+            wanted,
+            groups,
+        ));
+        candidates.push((
+            JoinPopulationPattern::GroupedMatched { groups },
+            groups,
+            wanted,
+        ));
         for left_per_group in 2..=product.isqrt().min(64) {
             if product.is_multiple_of(left_per_group) {
                 let right_per_group = product / left_per_group;
