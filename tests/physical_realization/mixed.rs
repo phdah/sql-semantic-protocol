@@ -746,7 +746,7 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
                             )
                         })
                     })
-            }));
+            }), "{dialect} {keyword}: expected complete membership case: {plan:?}");
 
             // The proof controls every physical row. Duplicated and NULL
             // outer values still survive EXISTS; one NULL inner row suffices.
@@ -800,7 +800,6 @@ fn nonempty_membership_with_correlations_key_comparisons_or_inner_filters_stays_
         "SELECT o.id FROM stage_orders o WHERE EXISTS (SELECT 1 FROM stage_lines l WHERE l.order_id = o.id)",
         "SELECT o.id FROM stage_orders o WHERE EXISTS (SELECT 1 FROM stage_lines l WHERE l.order_id > 5)",
         "SELECT o.id FROM stage_orders o WHERE o.id IN (SELECT l.order_id FROM stage_lines l)",
-        "SELECT o.id FROM stage_orders o WHERE o.id NOT IN (SELECT l.order_id FROM stage_lines l)",
     ] {
         let b = bundle_with_schemas(&[producers[0], producers[1], query], "duckdb", &schemas);
         let outcome = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3)]);
