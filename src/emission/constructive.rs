@@ -192,19 +192,25 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
             right_rows,
             output_rows,
             closed_world,
-        } => json!({
-            "kind": "join_population",
-            "left_row": constructive_row_to_value(left_row),
-            "right_row": constructive_row_to_value(right_row),
-            "left_key": column_ref_to_value(left_key),
-            "right_key": column_ref_to_value(right_key),
-            "join_kind": join_kind.as_str(),
-            "pattern": pattern.as_str(),
-            "left_rows": left_rows,
-            "right_rows": right_rows,
-            "output_rows": output_rows,
-            "closed_world": closed_world
-        }),
+        } => {
+            let mut value = json!({
+                "kind": "join_population",
+                "left_row": constructive_row_to_value(left_row),
+                "right_row": constructive_row_to_value(right_row),
+                "left_key": column_ref_to_value(left_key),
+                "right_key": column_ref_to_value(right_key),
+                "join_kind": join_kind.as_str(),
+                "pattern": pattern.as_str(),
+                "left_rows": left_rows,
+                "right_rows": right_rows,
+                "output_rows": output_rows,
+                "closed_world": closed_world
+            });
+            if let Some(groups) = pattern.group_count() {
+                value["pattern_groups"] = json!(groups);
+            }
+            value
+        },
         crate::WitnessObligation::OperatorPopulation { witness } => json!({
             "kind": "operator_population",
             "witness": outcome_witness_to_value(witness)
