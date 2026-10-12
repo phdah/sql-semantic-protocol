@@ -286,17 +286,25 @@ fn joint_histograms_reconcile_transparent_count_only_and_empty_goals() {
         b.layers()[0].id(),
         Some(3),
         None,
-        vec![buckets("x", &[(ConstraintValue::Null, 1), (ConstraintValue::Integer(3), 2)])],
-    ).unwrap();
+        vec![buckets(
+            "x",
+            &[(ConstraintValue::Null, 1), (ConstraintValue::Integer(3), 2)],
+        )],
+    )
+    .unwrap();
     let count = OutcomeGoal::new(b.layers()[1].id(), Some(3), None, Vec::new()).unwrap();
     let proof = physical_joint_distribution_plan(&b, &[histogram_goal.clone(), count]);
     let WitnessDirection::Feasible(cases) = proof else {
         panic!("transparent count must reuse complete histogram source: {proof:?}");
     };
     assert_eq!(
-        cases[0].obligations().iter().filter(|obligation| {
-            matches!(obligation, WitnessObligation::OperatorPopulation { .. })
-        }).count(),
+        cases[0]
+            .obligations()
+            .iter()
+            .filter(|obligation| {
+                matches!(obligation, WitnessObligation::OperatorPopulation { .. })
+            })
+            .count(),
         1,
     );
     let conflict = OutcomeGoal::new(b.layers()[1].id(), Some(2), None, Vec::new()).unwrap();
@@ -311,13 +319,15 @@ fn joint_histograms_reconcile_transparent_count_only_and_empty_goals() {
             Some(0),
             None,
             vec![buckets("x", &[(ConstraintValue::Integer(1), 0)])],
-        ).unwrap(),
+        )
+        .unwrap(),
         OutcomeGoal::new(
             b.layers()[1].id(),
             Some(0),
             None,
             vec![buckets("y", &[(ConstraintValue::Null, 0)])],
-        ).unwrap(),
+        )
+        .unwrap(),
     ];
     assert!(matches!(
         physical_joint_distribution_plan(&b, &empty),
