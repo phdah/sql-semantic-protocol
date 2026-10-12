@@ -115,13 +115,13 @@
     "upstream_git_sha": "90ec0e12a2d5cd2c1294556336fc947e176c9db9",
     "source_directory": "tests/fixtures/sql_tdg",
     "raw_sql": [
-      "advanced_pipeline.sql",
-      "advanced_boundary.sql",
-      "set_operations.sql",
-      "window_ranked.sql",
-      "insert_workflow.sql",
-      "unsupported_exists.sql",
-      "range_sampling.sql"
+      "tests/fixtures/sql_tdg/advanced_pipeline.sql",
+      "tests/fixtures/sql_tdg/advanced_boundary.sql",
+      "tests/fixtures/sql_tdg/set_operations.sql",
+      "tests/fixtures/sql_tdg/raw_sql/window_ranked.sql",
+      "tests/fixtures/sql_tdg/raw_sql/insert_workflow.sql",
+      "tests/fixtures/sql_tdg/raw_sql/unsupported_exists.sql",
+      "tests/fixtures/sql_tdg/raw_sql/range_sampling.sql"
     ],
     "dbt_model_count": 11,
     "dbt_source_seed_count": 4,
@@ -139,6 +139,7 @@
     "oracle_evidence": [
       "tests/sql_tdg_physical.rs",
       "tests/sql_tdg_pinned_dbt_e2e.rs",
+      "tests/sql_tdg_dialect_laws.rs",
       "tests/physical_write_states.rs",
       "tests/physical_write_adapter_parity.rs",
       "docs/tdg-certification.md"
