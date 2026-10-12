@@ -558,7 +558,7 @@ fn evaluate_simple_select(
     let aliases = [source.alias().unwrap_or(source.name()), source.name()];
     let mut result = Vec::new();
     for row in &rows.rows {
-        let context = Context { target: None, source: Some((source.name(), row)) };
+        let context = Context { target: None, target_alias: None, source: Some((source.name(), row)) };
         if !selected(query.predicates().where_predicate(), &context, &aliases)? { continue; }
         let values = query.output().columns().iter()
             .map(|column| eval(column.expression(), &context, &aliases))
