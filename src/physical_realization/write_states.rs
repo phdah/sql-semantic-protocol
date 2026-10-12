@@ -12,7 +12,8 @@ use crate::constraints::{ConstraintEnforcement, ConstraintValue, RelationConstra
 use crate::data_type::DataType;
 use crate::protocol::{
     BinaryOperator, ComparisonOperator, Expression, LiteralValue, MergeAction, MergeMatchKind,
-    Predicate, ProtocolStatement, QueryStatement, UnaryOperator, WriteKind, WriteRowCounts,
+    Predicate, ProtocolStatement, QueryStatement, UnaryOperator, WriteDefinitionMode, WriteKind,
+    WriteRowCounts,
 };
 use crate::relation::RelationSchema;
 
