@@ -112,6 +112,23 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
             order_by,
             ..
         } => !strict_unique || !closed_world || order_by.is_empty(),
+        WitnessObligation::RankPopulation {
+            boundary,
+            partition_key,
+            order,
+            partitions,
+            rows_per_partition,
+            closed_world,
+            ..
+        } => {
+            !closed_world
+                || boundary.kind() != GroupBoundaryKind::Physical
+                || *partitions == 0
+                || *rows_per_partition == 0
+                || partition_key == order.column()
+                || partition_key.relation() != Some(boundary.relation())
+                || order.column().relation() != Some(boundary.relation())
+        },
         WitnessObligation::Membership { closed_world, .. } => !closed_world,
         WitnessObligation::SetTuple {
             branch_identity,
