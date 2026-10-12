@@ -1,0 +1,412 @@
+//! Root query orchestration and SELECT-level filtering.
+
+use super::*;
+
+pub(super) fn analyze_query(
+    query: &SqlQuery,
+    produced_relation: Option<String>,
+    metadata: &AnalysisMetadata<'_>,
+) -> QueryStatement {
+    let mut diagnostics = Vec::new();
+    let mut derived_index = 0;
+    let relation_analysis = analyze_query_relations(
+        query,
+        &BTreeSet::new(),
+        &mut diagnostics,
+        &mut derived_index,
+        Some(metadata),
+    );
+
+    let set_operation = analyze_set_operation(query.body.as_ref()).map(|operation| {
+        let mut branches = Vec::new();
+        collect_set_branch_evidence(
+            query.body.as_ref(),
+            query,
+            "body",
+            metadata,
+            true,
+            &mut branches,
+        );
+        populate_set_operation_evidence(
+            query.body.as_ref(),
+            operation,
+            &branches,
+            query.limit_clause.is_none() && query.fetch.is_none(),
+        )
+    });
+    let aggregation = analyze_query_aggregation(query, &mut diagnostics);
+    let output = analyze_query_output(query, &BTreeMap::new(), &mut diagnostics, Some(metadata));
+
+    let predicates = match query.body.as_ref() {
+        SetExpr::Select(select) => analyze_select(select, &mut diagnostics),
+        SetExpr::SetOperation { .. } => Predicates::new(None, None, None),
+        SetExpr::Query(query) => analyze_query_predicates(query, &mut diagnostics),
+        _ => {
+            diagnostics.push(warning(
+                "unsupported_query_body",
+                DiagnosticArea::Statement,
+                "the parsed query body is not supported by semantic analysis",
+            ));
+            Predicates::new(None, None, None)
+        }
+    };
+
+    let (column_domains, typing_failures) = type_column_domains(
+        analyze_query_column_domains(
+            query,
+            &BTreeSet::new(),
+            &BTreeMap::new(),
+            &BTreeMap::new(),
+            Some(metadata),
+        ),
+        metadata,
+    );
+    // The output expression for a set operation is an Unknown placeholder. Its
+    // actual domain is the recursive composition of the independently analyzed
+    // branch outputs, not a refinement of that placeholder.
+    let output = match set_operation.as_ref() {
+        Some(operation) => refine_set_operation_output_domains(output, operation),
+        None => refine_output_domains_from_column_domains(
+            output,
+            &column_domains,
+            &relation_analysis.sources,
+        ),
+    };
+
+    if matches!(query.body.as_ref(), SetExpr::SetOperation { .. }) {
+        inspect_set_expr_features(query.body.as_ref(), &mut diagnostics);
+    }
+    inspect_query_features(query, &mut diagnostics);
+    let missing_column_residuals = validate_schema_column_references(
+        query,
+        &predicates,
+        &output,
+        &relation_analysis.joins,
+        &relation_analysis.sources,
+        metadata,
+        &mut diagnostics,
+    );
+    let predicate_exactness = analyze_query_condition_exactness(
+        query,
+        &predicates,
+        &relation_analysis.sources,
+        &relation_analysis.dependencies,
+        &relation_analysis.joins,
+        &diagnostics,
+        false,
+    );
+    let condition_exactness = predicate_exactness
+        .merged_with(&unknown_column_domain_exactness(
+            &column_domains,
+            &typing_failures,
+            &predicates,
+            &relation_analysis.joins,
+            &relation_analysis.sources,
+            &predicate_exactness,
+        ))
+        .merged_with(&comparison_domain_exactness(&column_domains, metadata))
+        .merged_with(&ConditionExactness::from_residuals(
+            relation_analysis.residual_conditions.clone(),
+        ))
+        .merged_with(&ConditionExactness::from_residuals(
+            missing_column_residuals,
+        ));
+    let boolean_witness = crate::boolean_witness::analyze(
+        predicates.where_predicate(),
+        &relation_analysis.sources,
+        |column| {
+            let original_type = metadata.column_data_type(column)?;
+            let data_type = match original_type {
+                DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
+            };
+            match data_type {
+                DataType::SignedInteger { bits: Some(bits) } if *bits > 0 && *bits <= 64 => {
+                    let magnitude = 1_i128 << (u32::from(*bits) - 1);
+                    Some(crate::boolean_witness::SignedIntegerEvidence {
+                        minimum: -magnitude,
+                        maximum: magnitude - 1,
+                    })
+                }
+                _ => None,
+            }
+        },
+        |column| {
+            let original_type = metadata.column_data_type(column)?;
+            let data_type = match original_type {
+                DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
+            };
+            match data_type {
+                DataType::String {
+                    length,
+                    fixed: false,
+                } => Some(crate::boolean_witness::StringEvidence { max_chars: *length }),
+                _ => None,
+            }
+        },
+    );
+    let (column_domains, output) =
+        refine_boolean_qualifying_outcomes(column_domains, output, boolean_witness.as_ref());
+    sort_diagnostics(&mut diagnostics);
+
+    // Only a plain one-to-one projection preserves all source-row truth
+    // assignments when a downstream boolean witness is mapped to its inputs.
+    // Filtered, limited, grouped, sampled, and joined producers must remain
+    // intermediate witness boundaries, even if their columns are plain copies.
+    let row_preserving_projection = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. })
+                && select.from[0].joins.is_empty()
+                && select.distinct.is_none()
+                && select.top.is_none()
+                && select.selection.is_none()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.lateral_views.is_empty()
+                && select.connect_by.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty()));
+
+    // A plain single-source WHERE filters source rows without other row shaping.
+    let filter_only_row_shape = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. })
+                && select.from[0].joins.is_empty()
+                && select.distinct.is_none()
+                && select.top.is_none()
+                && select.selection.is_some()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.lateral_views.is_empty()
+                && select.connect_by.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty()));
+
+    // Prove singleton output only for source-free literal SELECTs and global
+    // aggregates without grouping or any row-limiting, HAVING, or QUALIFY clause.
+    // This is a result-row fact, not a source-row cardinality assumption.
+    let proven_single_row_output = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && diagnostics.is_empty()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.top.is_none()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.connect_by.is_none()
+                && select.lateral_views.is_empty()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty())
+                && ((select.from.is_empty()
+                        && select.selection.is_none()
+                        && output.columns().iter().all(|column| matches!(column.expression(), Expression::Literal(_))))
+                    || (output.columns().iter().any(|column| matches!(column.expression(), Expression::AggregateFunction(_)))
+                        && output.columns().iter().all(|column| matches!(column.expression(), Expression::AggregateFunction(_) | Expression::Literal(_))))));
+
+    // GROUP BY normally emits one final row per surviving group. Additional
+    // output-shaping (DISTINCT, QUALIFY, TOP, LIMIT, FETCH) can change that count.
+    let group_rows_match_surviving_groups = query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.distinct.is_none()
+                && select.qualify.is_none()
+                && select.top.is_none()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if !items.is_empty() && modifiers.is_empty()
+                        && items.iter().all(|item| !matches!(item, Expr::GroupingSets(_) | Expr::Cube(_) | Expr::Rollup(_)))));
+
+    let (plain_goal_output_shape, ranked_goal_output_shape) =
+        if query.with.is_none() && query.limit_clause.is_none() && query.fetch.is_none() {
+            match query.body.as_ref() {
+                SetExpr::Select(select)
+                    if select.top.is_none()
+                        && select.distinct.is_none()
+                        && select.selection.is_none()
+                        && select.having.is_none()
+                        && select.prewhere.is_none()
+                        && select.connect_by.is_none()
+                        && select.lateral_views.is_empty()
+                        && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                            if items.is_empty() && modifiers.is_empty())
+                        && select.from.len() == 1
+                        && matches!(
+                            &select.from[0].relation,
+                            TableFactor::Table { sample: None, .. }
+                        ) =>
+                {
+                    (
+                        select.qualify.is_none(),
+                        select.qualify.is_some() && select.from[0].joins.is_empty(),
+                    )
+                }
+                _ => (false, false),
+            }
+        } else {
+            (false, false)
+        };
+
+    QueryStatement::new(
+        relation_analysis.sources,
+        relation_analysis.dependencies.into_iter().collect(),
+        relation_analysis.joins,
+        RowConditions::new(predicates, column_domains, condition_exactness),
+        output,
+        diagnostics,
+    )
+    .with_aggregation(aggregation)
+    .with_set_operation(set_operation)
+    .with_subquery_witnesses()
+    .with_boolean_witness(boolean_witness)
+    .with_row_preserving_projection(row_preserving_projection)
+    .with_filter_only_row_shape(filter_only_row_shape)
+    .with_proven_single_row_output(proven_single_row_output)
+    .with_group_row_correspondence(group_rows_match_surviving_groups)
+    .with_goal_shapes(plain_goal_output_shape, ranked_goal_output_shape)
+    .with_group_witness()
+    .with_window_witness()
+    .with_projected_window_witness(projected_window_filter(query, metadata))
+    .with_produced_relation(produced_relation)
+}
+
+// Exact same-row conjunctions may prove source scalar bounds even where
+// general expression-domain analysis conservatively returned Unknown. Never
+// distribute OR branches into independently sampled per-column intervals.
+pub(super) fn refine_boolean_qualifying_outcomes(
+    column_domains: Vec<ColumnDomain>,
+    output: Output,
+    witness: Option<&crate::boolean_witness::BooleanWitness>,
+) -> (Vec<ColumnDomain>, Output) {
+    let proven = witness
+        .map(crate::boolean_witness::BooleanWitness::qualifying_conjunctive_domains)
+        .unwrap_or_default();
+    if proven.is_empty() {
+        return (column_domains, output);
+    }
+
+    let mut domains = column_domains
+        .into_iter()
+        .map(|item| (item.column().clone(), item.domain().clone()))
+        .collect::<BTreeMap<_, _>>();
+    for item in proven {
+        let column = item.column().clone();
+        let domain = item.domain().clone();
+        domains
+            .entry(column)
+            .and_modify(|existing| {
+                if matches!(existing, ValueDomain::Unknown(_)) {
+                    *existing = domain.clone();
+                } else {
+                    *existing = intersect_domains(existing, &domain);
+                }
+            })
+            .or_insert(domain);
+    }
+
+    let output = Output::new(
+        output
+            .columns()
+            .iter()
+            .cloned()
+            .map(|column| {
+                let Some(source) = column.plain_copy_source() else {
+                    return column;
+                };
+                let reference = ColumnRef::new(
+                    Some(source.relation().to_string()),
+                    source.column().to_string(),
+                );
+                let Some(domain) = domains.get(&reference) else {
+                    return column;
+                };
+                let refined = match column.domain() {
+                    ValueDomain::Unknown(_) => domain.clone(),
+                    other => intersect_domains(other, domain),
+                };
+                column.with_domain(refined)
+            })
+            .collect(),
+    );
+
+    (
+        domains
+            .into_iter()
+            .map(|(column, domain)| ColumnDomain::new(column, domain))
+            .collect(),
+        output,
+    )
+}
+
+/// Resolve one immediately projected ROW_NUMBER filter through a direct derived
+/// table or one local CTE. Refuse joins and other row-set shaping at this boundary.
+pub(super) fn projected_window_filter(
+    query: &SqlQuery,
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<(crate::window_witness::WindowWitness, String)> {
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return None;
+    };
+    let [source] = select.from.as_slice() else {
+        return None;
+    };
+    if !source.joins.is_empty()
+        || select.having.is_some()
+        || select.qualify.is_some()
+        || query.limit_clause.is_some()
+        || query.fetch.is_some()
+        || select.distinct.is_some()
+        || select.top.is_some()
+        || select.prewhere.is_some()
+        || !select.lateral_views.is_empty()
+        || select.connect_by.is_some()
+        || !matches!(
+            &select.group_by,
+            GroupByExpr::Expressions(expressions, modifiers)
+                if expressions.is_empty() && modifiers.is_empty()
+        )
+    {
+        return None;
+    }
+    let nested = match &source.relation {
+        TableFactor::Derived { subquery, .. } => subquery.as_ref(),
+        TableFactor::Table { name, .. } => {
+            let with = query.with.as_ref()?;
+            let [cte] = with.cte_tables.as_slice() else {
+                return None;
+            };
+            if cte.alias.name.value != name.to_string() {
+                return None;
+            }
+            cte.query.as_ref()
+        }
+        _ => return None,
+    };
+    let nested_analysis = analyze_query(nested, None, metadata);
+    let mut diagnostics = Vec::new();
+    let scope = build_output_scope(select, &BTreeMap::new(), &[], &mut diagnostics, None);
+    let predicates = analyze_select_predicates_with_scope(select, &scope, &mut diagnostics);
+    let filter = predicates.where_predicate()?;
+    let outer_source = SourceRelation::new(
+        match &source.relation {
+            TableFactor::Table { name, .. } => name.to_string(),
+            TableFactor::Derived { .. } => source.relation.to_string(),
+            _ => return None,
+        },
+        match &source.relation {
+            TableFactor::Table { alias, .. } | TableFactor::Derived { alias, .. } => {
+                alias.as_ref().map(|alias| alias.name.value.clone())
+            }
+            _ => None,
+        },
+    );
+    crate::window_witness::analyze_projected(&nested_analysis, filter, &outer_source)
+}
