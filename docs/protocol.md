@@ -1258,6 +1258,10 @@ witness cannot encode required `RowTruth` obligations. The adapter
 therefore remains residual rather than emitting unrestricted arbitrary
 source rows. Output distributions and group counts need separate proofs.
 
+
+
+A complete physical `join_population` with `pattern: "grouped_matched"` includes mandatory `pattern_groups` (integer >= 2). The physical left and right row populations each distribute uniformly over key values `0..pattern_groups-1`, with multiplicities `left_rows/pattern_groups` and `right_rows/pattern_groups`. Exact inner matched bag cardinality is `left_rows * right_rows / pattern_groups` (subject to checked arithmetic); every key produces that key's Cartesian contributor product. This extends `distinct_matched` and `common_matched` without changing their format. The typed `group` obligation can lift the same key and contributor counts to GROUP BY/HAVING through materialized producers. No nonuniform or incompatible source histograms are inferred.
+
 ### TASK-95 physical operator population obligation
 
 `operator_population` is a canonical constructive obligation containing an exact schema-validated `outcomeWitness` for a complete physical `groups`, `ranked`, or `set_tuples` population. The surrounding case includes per-physical-source `rows` and `closed_world(entire_relation)` obligations and an exact terminal `output_rows`. The obligation never permits inserting rows into a computed producer. Shared physical sources require a single reconciled assignment; unsupported multi-operator correlation remains residual. See [semantics](semantics.md).
