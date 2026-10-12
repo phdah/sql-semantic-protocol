@@ -676,6 +676,25 @@ fn assess_goal(
         }
     }
 
+    // Exact set tuple laws can also be transported through a downstream
+    // reversible scalar, but only after full source-level set membership
+    // evidence and materialization datatype guards are certified.
+    if let Some(witness) =
+        crate::physical_realization::physical_inverted_set_distribution_plan(
+            bundle,
+            layer.id(),
+            &goal,
+        )
+    {
+        return Ok(proved(
+            goal,
+            "complete output distribution is inverted through a proven physical set population",
+            min_rows,
+            max_rows,
+            witness,
+        ));
+    }
+
     // Identity-only materialized producers preserve complete physical
     // distributions when every projected value is traceable to the same
     // source column. This is separate from count-only feasibility: a positive
