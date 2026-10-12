@@ -441,6 +441,40 @@ pub fn physical_joint_row_count_plan(
         return WitnessDirection::Impossible;
     }
     ordered.dedup();
+    // A single constructive source assignment may already carry exact
+    // OutputRows for several terminals in the same producer graph. Reuse
+    // that entire sufficient case rather than intersecting independent
+    // locally-feasible populations that might disagree on shared sources.
+    if ordered.len() > 1 {
+        for &(candidate, rows) in &ordered {
+            let WitnessDirection::Feasible(cases) =
+                physical_row_count_plan(bundle, candidate, rows)
+            else {
+                continue;
+            };
+            let jointly_complete = cases
+                .into_iter()
+                .filter(|case| {
+                    ordered.iter().all(|(layer_id, requested)| {
+                        case.obligations().iter().any(|obligation| {
+                            matches!(
+                                obligation,
+                                WitnessObligation::OutputRows {
+                                    layer_id: proved,
+                                    bounds,
+                                } if proved == layer_id
+                                    && bounds.minimum() == *requested
+                                    && bounds.maximum() == Some(*requested)
+                            )
+                        })
+                    })
+                })
+                .collect::<Vec<_>>();
+            if let Some(proof) = WitnessDirection::feasible(jointly_complete) {
+                return proof;
+            }
+        }
+    }
     if let Some(plan) = joint_nonempty_rejected_terminals(bundle, &ordered) {
         return plan;
     }
