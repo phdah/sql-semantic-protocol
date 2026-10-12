@@ -117,12 +117,12 @@ impl SqlInput {
 /// One analyzed input in a multi-input protocol bundle.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalyzedInput {
-    id: String,
-    source: SqlInputSource,
-    dialect: String,
-    relation_context: Option<RelationContext>,
-    statements: Vec<ProtocolStatement>,
-    relation_constraints: Vec<RelationConstraintSet>,
+    pub(super) id: String,
+    pub(super) source: SqlInputSource,
+    pub(super) dialect: String,
+    pub(super) relation_context: Option<RelationContext>,
+    pub(super) statements: Vec<ProtocolStatement>,
+    pub(super) relation_constraints: Vec<RelationConstraintSet>,
 }
 
 impl AnalyzedInput {

@@ -4,8 +4,8 @@ use super::*;
 
 #[derive(Debug)]
 pub(super) struct LayerBuildError {
-    input_id: String,
-    error: RelationResolutionError,
+    pub(super) input_id: String,
+    pub(super) error: RelationResolutionError,
 }
 
 pub(super) fn build_layers(

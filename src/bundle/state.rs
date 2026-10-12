@@ -5,15 +5,15 @@ use super::*;
 /// Multi-input analysis result with deterministic local layers and relation dependency graph.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisBundle {
-    protocol_version: &'static str,
-    inputs: Vec<AnalyzedInput>,
-    layers: Vec<TransformationLayer>,
-    graph: AnalysisGraph,
-    source_schemas: Vec<RelationSchema>,
-    relation_constraints: Vec<RelationConstraintSet>,
-    constraint_diagnostics: Vec<ConstraintDiagnostic>,
-    comparison_declarations: Vec<ComparisonAssumption>,
-    outcome_goals: Vec<crate::outcome_goals::EvaluatedOutcomeGoal>,
+    pub(super) protocol_version: &'static str,
+    pub(super) inputs: Vec<AnalyzedInput>,
+    pub(super) layers: Vec<TransformationLayer>,
+    pub(super) graph: AnalysisGraph,
+    pub(super) source_schemas: Vec<RelationSchema>,
+    pub(super) relation_constraints: Vec<RelationConstraintSet>,
+    pub(super) constraint_diagnostics: Vec<ConstraintDiagnostic>,
+    pub(super) comparison_declarations: Vec<ComparisonAssumption>,
+    pub(super) outcome_goals: Vec<crate::outcome_goals::EvaluatedOutcomeGoal>,
 }
 
 impl AnalysisBundle {
@@ -226,13 +226,13 @@ impl AnalysisBundle {
         bundle
     }
 
-    fn from_inputs(inputs: Vec<AnalyzedInput>) -> Self {
+    pub(super) fn from_inputs(inputs: Vec<AnalyzedInput>) -> Self {
         let catalog = RelationCatalog::default();
         Self::from_inputs_with_resolver(inputs, &catalog)
             .expect("empty resolver metadata preserves textual relation identities")
     }
 
-    fn from_inputs_with_resolver(
+    pub(super) fn from_inputs_with_resolver(
         inputs: Vec<AnalyzedInput>,
         resolver: &dyn RelationResolver,
     ) -> Result<Self, LayerBuildError> {

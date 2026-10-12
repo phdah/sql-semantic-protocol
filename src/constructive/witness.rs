@@ -36,10 +36,10 @@ impl WitnessOperator {
 /// Canonical typed local witness with two independent proof directions.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConstructiveWitness {
-    operator: WitnessOperator,
-    origin_layer_id: String,
-    qualifying: WitnessDirection,
-    rejected: WitnessDirection,
+    pub(super) operator: WitnessOperator,
+    pub(super) origin_layer_id: String,
+    pub(super) qualifying: WitnessDirection,
+    pub(super) rejected: WitnessDirection,
 }
 
 impl ConstructiveWitness {

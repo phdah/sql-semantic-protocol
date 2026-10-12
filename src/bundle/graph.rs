@@ -73,10 +73,10 @@ impl RelationResolution {
 /// One relation dependency edge from a consumer layer to zero or more candidate producers.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GraphEdge {
-    consumer_layer_id: String,
-    relation: String,
-    resolution: RelationResolution,
-    producer_layer_ids: Vec<String>,
+    pub(super) consumer_layer_id: String,
+    pub(super) relation: String,
+    pub(super) resolution: RelationResolution,
+    pub(super) producer_layer_ids: Vec<String>,
 }
 
 impl GraphEdge {
@@ -104,10 +104,10 @@ impl GraphEdge {
 /// One connected component of transformation layers.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GraphComponent {
-    id: String,
-    layer_ids: Vec<String>,
-    final_outcomes: Vec<DatasetRef>,
-    diagnostics: Vec<CompositionDiagnostic>,
+    pub(super) id: String,
+    pub(super) layer_ids: Vec<String>,
+    pub(super) final_outcomes: Vec<DatasetRef>,
+    pub(super) diagnostics: Vec<CompositionDiagnostic>,
 }
 
 impl GraphComponent {
@@ -135,9 +135,9 @@ impl GraphComponent {
 /// Deterministic dependency graph across all transformation layers in an analysis bundle.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisGraph {
-    edges: Vec<GraphEdge>,
-    components: Vec<GraphComponent>,
-    diagnostics: Vec<CompositionDiagnostic>,
+    pub(super) edges: Vec<GraphEdge>,
+    pub(super) components: Vec<GraphComponent>,
+    pub(super) diagnostics: Vec<CompositionDiagnostic>,
 }
 
 impl AnalysisGraph {

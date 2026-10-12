@@ -63,7 +63,7 @@ pub fn local_pending_producers(semantics: &ResolvedComposedSemantics) -> Vec<Wit
         }
     }
     boundaries
-        .sort_by(|a, b| (&a.origin_layer_id, &a.relation).cmp(&(&b.origin_layer_id, &b.relation)));
+        .sort_by(|a, b| (a.origin_layer_id(), a.relation()).cmp(&(b.origin_layer_id(), b.relation())));
     boundaries
         .into_iter()
         .map(|boundary| {

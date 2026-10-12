@@ -113,7 +113,7 @@ impl WitnessDirection {
         }
     }
 
-    fn residual(reason: &str) -> Self {
+    pub(super) fn residual(reason: &str) -> Self {
         Self::Residual {
             reason: reason.to_string(),
         }

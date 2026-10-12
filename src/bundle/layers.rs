@@ -5,14 +5,14 @@ use super::*;
 /// One local transformation layer derived from an analyzed query statement.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TransformationLayer {
-    id: String,
-    input_id: String,
-    statement_index: usize,
-    produces: Vec<DatasetRef>,
-    consumes: Vec<String>,
-    relation_identities: BTreeMap<String, String>,
-    write_kind: Option<WriteKind>,
-    composed_semantics: ComposedSemantics,
+    pub(super) id: String,
+    pub(super) input_id: String,
+    pub(super) statement_index: usize,
+    pub(super) produces: Vec<DatasetRef>,
+    pub(super) consumes: Vec<String>,
+    pub(super) relation_identities: BTreeMap<String, String>,
+    pub(super) write_kind: Option<WriteKind>,
+    pub(super) composed_semantics: ComposedSemantics,
 }
 
 impl TransformationLayer {

@@ -14,7 +14,7 @@ pub struct CompositionDiagnostic {
 }
 
 impl CompositionDiagnostic {
-    fn warning(
+    pub(super) fn warning(
         code: impl Into<String>,
         message: impl Into<String>,
         layer_id: Option<String>,
@@ -518,8 +518,8 @@ pub struct ResolvedComposedSemantics {
     group_witnesses: Box<[ComposedGroupWitness]>,
     window_witnesses: Box<[ComposedWindowWitness]>,
     subquery_witnesses: Box<[ComposedSubqueryWitness]>,
-    boolean_witnesses: Box<[ComposedBooleanWitness]>,
-    condition_exactness: ConditionExactness,
+    pub(super) boolean_witnesses: Box<[ComposedBooleanWitness]>,
+    pub(super) condition_exactness: ConditionExactness,
     output: Output,
     diagnostics: Vec<CompositionDiagnostic>,
 }
