@@ -733,15 +733,19 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
                             ..
                         }
                     )
-                }) && [("orders", 3), ("lines", 1)].iter().all(|(relation, count)| {
-                    case.obligations().iter().any(|obligation| matches!(
-                        obligation,
-                        WitnessObligation::Rows { boundary, bounds, closed_world: true, .. }
-                            if boundary.relation() == *relation
-                                && bounds.minimum() == *count
-                                && bounds.maximum() == Some(*count)
-                    ))
-                })
+                }) && [("orders", 3), ("lines", 1)]
+                    .iter()
+                    .all(|(relation, count)| {
+                        case.obligations().iter().any(|obligation| {
+                            matches!(
+                                obligation,
+                                WitnessObligation::Rows { boundary, bounds, closed_world: true, .. }
+                                    if boundary.relation() == *relation
+                                        && bounds.minimum() == *count
+                                        && bounds.maximum() == Some(*count)
+                            )
+                        })
+                    })
             }));
 
             // The proof controls every physical row. Duplicated and NULL
@@ -833,7 +837,11 @@ fn nonempty_exists_jointly_reconciles_outer_and_inner_source_goals() {
         "duckdb",
         &schemas,
     );
-    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let ids = b
+        .layers()
+        .iter()
+        .map(|layer| layer.id())
+        .collect::<Vec<_>>();
     let valid = physical_joint_source_plan(&b, &[(ids[2], 3), (ids[3], 3), (ids[4], 1)]);
     assert!(
         matches!(valid.outcome(), WitnessDirection::Feasible(_)),
