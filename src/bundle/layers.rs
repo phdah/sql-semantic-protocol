@@ -64,11 +64,11 @@ impl TransformationLayer {
 /// Absent constraint evidence is not a proof that a target has no keys.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LayerWriteStateEffect {
-    layer_id: String,
-    target: String,
-    sources: Vec<String>,
-    effect: WriteStateEffect,
-    target_constraints: Option<RelationConstraintSet>,
+    pub(super) layer_id: String,
+    pub(super) target: String,
+    pub(super) sources: Vec<String>,
+    pub(super) effect: WriteStateEffect,
+    pub(super) target_constraints: Option<RelationConstraintSet>,
 }
 
 impl LayerWriteStateEffect {
