@@ -759,9 +759,17 @@ fn construct_set_with_map(
             // UNION/INTERSECT/EXCEPT branches read it.
             let mut complete_sources = std::collections::BTreeMap::new();
             case.obligations().iter().all(|obligation| {
-                let boundary = obligation.boundary();
-                let assignment = (boundary.tuple_columns(), obligation.matching_tuple_count());
-                match complete_sources.insert(boundary.relation(), assignment) {
+                // Local branch names do not identify the physical population.
+                // Resolve before comparing multiplicities, or independently
+                // materialized aliases can silently double a shared source.
+                let Some(boundary) = map(obligation.boundary()) else {
+                    return false;
+                };
+                let assignment = (
+                    boundary.tuple_columns().to_vec(),
+                    obligation.matching_tuple_count(),
+                );
+                match complete_sources.insert(boundary.relation().to_string(), assignment.clone()) {
                     Some(previous) => previous == assignment,
                     None => true,
                 }
