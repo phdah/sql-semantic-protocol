@@ -472,6 +472,7 @@ mod membership;
 mod operators;
 mod ranking;
 mod sets;
+mod write_states;
 
 pub use counts::{
     physical_rejected_row_count_plan, physical_row_count_plan, physical_unconditional_delete_plan,
@@ -481,6 +482,10 @@ pub(crate) use distributions::{
     physical_inverted_set_distribution_plan,
 };
 pub use filters::physical_source_plan;
+pub use write_states::{
+    physical_ordered_write_state_plan, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan, PhysicalWriteTransition,
+};
 pub use joint_counts::physical_joint_row_count_plan;
 pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{
