@@ -160,39 +160,13 @@ fn invert_distribution(
         .iter()
         .find(|col| col.name() == lineage.column())?;
     let data_type = column.data_type().clone();
-    let values = if output.plain_copy_source().is_some() {
-        values
-    } else {
-        if !reversible_integer_expression(output.expression(), lineage.column()) {
-            return None;
-        }
-        let bits = signed_integer_width(&data_type)?;
-        values
-            .iter()
-            .map(|bucket| {
-                let input = match bucket.value() {
-                    ConstraintValue::Null => ConstraintValue::Null,
-                    ConstraintValue::Integer(wanted) => {
-                        let actual =
-                            invert_integer(output.expression(), *wanted, lineage.column())?;
-                        if !fits_integer(actual, bits)
-                            || evaluate_integer(
-                                output.expression(),
-                                actual,
-                                lineage.column(),
-                                bits,
-                            )? != *wanted
-                        {
-                            return None;
-                        }
-                        ConstraintValue::Integer(actual)
-                    }
-                    _ => return None,
-                };
-                Some(OutputValueCount::new(input, bucket.rows()))
-            })
-            .collect::<Option<Vec<_>>>()?
-    };
+    let values = invert_values(
+        output.expression(),
+        output.plain_copy_source().is_some(),
+        lineage.column(),
+        &data_type,
+        values,
+    )?;
     covered.insert((layer_id.to_string(), output_name.to_string()));
     let mut edges = bundle
         .graph()
@@ -233,6 +207,43 @@ fn invert_distribution(
         }
         _ => None,
     }
+}
+
+/// Invert one normalized, NULL-propagating scalar projection, retaining
+/// exact frequencies and verifying *both* inverse and forward arithmetic.
+fn invert_values(
+    expression: &Expression,
+    plain_copy: bool,
+    column_name: &str,
+    input_type: &DataType,
+    values: Vec<OutputValueCount>,
+) -> Option<Vec<OutputValueCount>> {
+    if plain_copy {
+        return Some(values);
+    }
+    if !reversible_integer_expression(expression, column_name) {
+        return None;
+    }
+    let bits = signed_integer_width(input_type)?;
+    values
+        .into_iter()
+        .map(|bucket| {
+            let input = match bucket.value() {
+                ConstraintValue::Null => ConstraintValue::Null,
+                ConstraintValue::Integer(wanted) => {
+                    let actual = invert_integer(expression, *wanted, column_name)?;
+                    if !fits_integer(actual, bits)
+                        || evaluate_integer(expression, actual, column_name, bits)? != *wanted
+                    {
+                        return None;
+                    }
+                    ConstraintValue::Integer(actual)
+                }
+                _ => return None,
+            };
+            Some(OutputValueCount::new(input, bucket.rows()))
+        })
+        .collect()
 }
 
 /// A complete histogram pins the values of each checked computation for
