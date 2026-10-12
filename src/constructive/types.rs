@@ -211,7 +211,9 @@ impl JoinPopulationPattern {
     pub const fn group_count(self) -> Option<u64> {
         match self {
             Self::GroupedMatched { groups } => Some(groups),
-            Self::DistinctMatched | Self::CommonMatched | Self::EmptyLeft | Self::EmptyRight => None,
+            Self::DistinctMatched | Self::CommonMatched | Self::EmptyLeft | Self::EmptyRight => {
+                None
+            }
         }
     }
 
