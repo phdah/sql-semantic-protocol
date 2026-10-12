@@ -1203,14 +1203,14 @@ fn nonempty_exists_jointly_reconciles_outer_and_inner_source_goals() {
     );
 }
 
-
 #[test]
 fn identical_physical_set_arms_prove_nonempty_except_cancellation() {
     let schema = |relation: &str, column: &str| {
         RelationSchema::new(
             relation,
             vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
-        ).unwrap()
+        )
+        .unwrap()
     };
     let schemas = [
         schema("t", "a"),
@@ -1233,28 +1233,39 @@ fn identical_physical_set_arms_prove_nonempty_except_cancellation() {
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
                 panic!("{dialect} {operator}: nonempty cancellation not proved: {plan:?}");
             };
-            assert!(cases.iter().any(|case| {
-                case.obligations().iter().filter(|obligation| matches!(
-                    obligation,
-                    WitnessObligation::SetTuple {
-                        boundary,
-                        matching_rows: 1,
-                        closed_world: true,
-                        ..
-                    } if boundary.relation() == "t"
-                )).count() == 2
-                && case.obligations().iter().any(|obligation| matches!(
-                    obligation,
-                    WitnessObligation::Rows {
-                        boundary,
-                        bounds,
-                        closed_world: true,
-                        ..
-                    } if boundary.relation() == "t"
-                        && bounds.minimum() == 1
-                        && bounds.maximum() == Some(1)
-                ))
-            }), "{dialect} {operator}: expected one complete source with two copies");
+            assert!(
+                cases.iter().any(|case| {
+                    case.obligations()
+                        .iter()
+                        .filter(|obligation| {
+                            matches!(
+                                obligation,
+                                WitnessObligation::SetTuple {
+                                    boundary,
+                                    matching_rows: 1,
+                                    closed_world: true,
+                                    ..
+                                } if boundary.relation() == "t"
+                            )
+                        })
+                        .count()
+                        == 2
+                        && case.obligations().iter().any(|obligation| {
+                            matches!(
+                                obligation,
+                                WitnessObligation::Rows {
+                                    boundary,
+                                    bounds,
+                                    closed_world: true,
+                                    ..
+                                } if boundary.relation() == "t"
+                                    && bounds.minimum() == 1
+                                    && bounds.maximum() == Some(1)
+                            )
+                        })
+                }),
+                "{dialect} {operator}: expected one complete source with two copies"
+            );
 
             // The cancellation identity also holds for duplicates and NULL
             // tuple values, even though this sufficient example closes one
@@ -1265,15 +1276,18 @@ fn identical_physical_set_arms_prove_nonempty_except_cancellation() {
                  INSERT INTO t VALUES (0),(0),(NULL),(1),(NULL);
                  CREATE TABLE left_stage AS SELECT a AS id FROM t;
                  CREATE TABLE right_stage AS SELECT a AS id FROM t;",
-            ).unwrap();
+            )
+            .unwrap();
             let mut statement = db.prepare(&query).unwrap();
-            let output = statement.query_map([], |row| row.get::<_, Option<i64>>(0))
-                .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+            let output = statement
+                .query_map([], |row| row.get::<_, Option<i64>>(0))
+                .unwrap()
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap();
             assert!(output.is_empty(), "{dialect} {operator}: got {output:?}");
         }
     }
 }
-
 
 #[test]
 fn filtered_copy_cannot_inherit_shared_except_cancellation_population() {
@@ -1281,7 +1295,8 @@ fn filtered_copy_cannot_inherit_shared_except_cancellation_population() {
         RelationSchema::new(
             relation,
             vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
-        ).unwrap()
+        )
+        .unwrap()
     };
     let schemas = [
         schema("t", "a"),
@@ -1301,10 +1316,15 @@ fn filtered_copy_cannot_inherit_shared_except_cancellation_population() {
     if let WitnessDirection::Feasible(cases) = plan.outcome() {
         assert!(
             cases.iter().all(|case| {
-                !case.obligations().iter().any(|o| matches!(
-                    o,
-                    WitnessObligation::SetTuple { matching_rows: 1, .. }
-                ))
+                !case.obligations().iter().any(|o| {
+                    matches!(
+                        o,
+                        WitnessObligation::SetTuple {
+                            matching_rows: 1,
+                            ..
+                        }
+                    )
+                })
             }),
             "a filtered source copy must not inherit complete bag identity: {plan:?}"
         );
@@ -1314,11 +1334,15 @@ fn filtered_copy_cannot_inherit_shared_except_cancellation_population() {
         "CREATE TABLE t(a INTEGER);
          INSERT INTO t VALUES (0),(0),(1);
          CREATE TABLE left_stage AS SELECT a AS id FROM t;
-         CREATE TABLE right_stage AS SELECT a AS id FROM t WHERE a > 0;"
-    ).unwrap();
-    let output = db.prepare(
-        "SELECT id FROM left_stage EXCEPT ALL SELECT id FROM right_stage ORDER BY id"
-    ).unwrap().query_map([], |row| row.get::<_, i64>(0))
-        .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+         CREATE TABLE right_stage AS SELECT a AS id FROM t WHERE a > 0;",
+    )
+    .unwrap();
+    let output = db
+        .prepare("SELECT id FROM left_stage EXCEPT ALL SELECT id FROM right_stage ORDER BY id")
+        .unwrap()
+        .query_map([], |row| row.get::<_, i64>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     assert_eq!(output, vec![0, 0]);
 }
