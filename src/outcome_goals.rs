@@ -458,10 +458,8 @@ fn assess_goal(
         };
         if distribution.values().iter().any(|bucket| {
             bucket.rows() > 0
-                && crate::domain::domain_admits_constraint_value(
-                    projected.domain(),
-                    bucket.value(),
-                ) == Some(false)
+                && crate::domain::domain_admits_constraint_value(projected.domain(), bucket.value())
+                    == Some(false)
         }) {
             return Ok(assessed(
                 goal,
@@ -694,11 +692,7 @@ fn assess_goal(
         ));
     }
 
-    if crate::physical_realization::physical_distribution_conflict(
-        bundle,
-        layer.id(),
-        &goal,
-    ) {
+    if crate::physical_realization::physical_distribution_conflict(bundle, layer.id(), &goal) {
         return Ok(assessed(
             goal,
             OutcomeGoalStatus::Unsatisfiable,
