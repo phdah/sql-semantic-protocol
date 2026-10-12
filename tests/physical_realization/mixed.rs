@@ -734,19 +734,22 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
                         }
                     )
                 });
-                let complete_counts = [("orders", wanted.max(1)), ("lines", 1)].iter().all(
-                    |(relation, count)| {
-                        case.obligations().iter().any(|obligation| {
-                            matches!(
-                                obligation,
-                                WitnessObligation::Rows { boundary, bounds, closed_world: true, .. }
-                                    if boundary.relation() == *relation
-                                        && bounds.minimum() == *count
-                                        && bounds.maximum() == Some(*count)
-                            )
-                        })
-                    },
-                );
+                let source_counts = case
+                    .obligations()
+                    .iter()
+                    .filter_map(|obligation| match obligation {
+                        WitnessObligation::Rows {
+                            boundary,
+                            bounds,
+                            closed_world: true,
+                            ..
+                        } => Some((boundary.relation(), bounds.minimum(), bounds.maximum())),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+                let outer_rows = wanted.max(1);
+                let complete_counts = source_counts.contains(&("orders", outer_rows, Some(outer_rows)))
+                    && source_counts.contains(&("lines", 1, Some(1)));
                 matched && complete_counts
             });
             assert!(
