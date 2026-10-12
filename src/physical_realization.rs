@@ -461,6 +461,7 @@ impl<'a> Walker<'a> {
 // Implementations are grouped by physical proof responsibility.
 mod composition;
 mod counts;
+mod distributions;
 mod filters;
 mod graph;
 mod grouping;
@@ -471,7 +472,7 @@ mod operators;
 mod ranking;
 mod sets;
 
-pub(crate) use counts::physical_distribution_plan;
+pub(crate) use distributions::physical_distribution_plan;
 pub use counts::{
     physical_rejected_row_count_plan, physical_row_count_plan, physical_unconditional_delete_plan,
 };
