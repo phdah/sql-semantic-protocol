@@ -1,0 +1,3 @@
+id,customer_id,amount,status,created_at,region
+101,10,42,paid,2025-12-20 09:00:00,north
+102,30,70,paid,2025-12-21 09:00:00,east
