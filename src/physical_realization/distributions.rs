@@ -10,6 +10,13 @@ use crate::data_type::DataType;
 use crate::outcome_goals::{OutcomeGoal, OutputValueCount};
 use crate::protocol::{BinaryOperator, ColumnRef, LiteralType, LiteralValue, UnaryOperator};
 
+/// Exact, complete physical-source frequencies for one terminal goal.
+struct MappedDistributions {
+    source: String,
+    rows: u64,
+    columns: Vec<(String, Vec<OutputValueCount>)>,
+}
+
 /// Construct complete physical histograms through type-certified copy producers,
 /// optionally inverting a guarded reversible terminal integer expression.
 /// Intermediate projections are never independently writable.
@@ -18,8 +25,13 @@ pub(crate) fn physical_distribution_plan(
     target_layer_id: &str,
     goal: &OutcomeGoal,
 ) -> Option<crate::outcome_proofs::OutcomeWitness> {
-    let (source, rows, mappings) = mapped_distributions(bundle, target_layer_id, goal)?;
-    crate::outcome_proofs::construct_mapped_source(bundle, &source, rows, mappings)
+    let assignment = mapped_distributions(bundle, target_layer_id, goal)?;
+    crate::outcome_proofs::construct_mapped_source(
+        bundle,
+        &assignment.source,
+        assignment.rows,
+        assignment.columns,
+    )
 }
 
 /// Two value distributions are mathematically incompatible when their fully
@@ -30,11 +42,11 @@ pub(crate) fn physical_distribution_conflict(
     target_layer_id: &str,
     goal: &OutcomeGoal,
 ) -> bool {
-    let Some((_, _, mappings)) = mapped_distributions(bundle, target_layer_id, goal) else {
+    let Some(assignment) = mapped_distributions(bundle, target_layer_id, goal) else {
         return false;
     };
     let mut seen = BTreeMap::<String, Vec<OutputValueCount>>::new();
-    for (column, mut values) in mappings {
+    for (column, mut values) in assignment.columns {
         values.sort_by(|left, right| left.value().cmp(right.value()));
         if let Some(other) = seen.get(&column) {
             if !crate::outcome_goals::equivalent_frequencies(other, &values) {
@@ -54,7 +66,7 @@ fn mapped_distributions(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
     goal: &OutcomeGoal,
-) -> Option<(String, u64, Vec<(String, Vec<OutputValueCount>)>)> {
+) -> Option<MappedDistributions> {
     let rows = goal.rows()?;
     if rows == 0 || goal.groups().is_some() || goal.distributions().is_empty() {
         return None;
@@ -96,7 +108,11 @@ fn mapped_distributions(
             return None;
         }
     }
-    Some((source.clone(), rows, mappings))
+    Some(MappedDistributions {
+        source: source.clone(),
+        rows,
+        columns: mappings,
+    })
 }
 
 /// One fully traced physical column and its complete frequency bag.
