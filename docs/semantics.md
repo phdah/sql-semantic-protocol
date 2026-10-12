@@ -651,14 +651,25 @@ Unsatisfiable conjunctions are impossible only when a necessary unfiltered
 source count fixes the entire population. Without that count, extra source
 rows could independently satisfy each filter, so the result is residual.
 Multiple independently rejected zero-output filters can likewise be
-jointly certified against a nonempty shared source by requiring their
-Boolean OR to be SQL NOT TRUE, retaining FALSE and UNKNOWN behavior.
-When those rejections cannot simultaneously hold, the closed-world
-nonempty construction is impossible. Other unproved combinations, including
+jointly certified against a nonempty shared source by requiring each
+canonical row predicate to be SQL NOT TRUE on the **same** physical row,
+retaining FALSE and UNKNOWN behavior. If no positive source count fixes
+the input size, the joint planner can choose a one-row nonempty,
+entire-relation-closed assignment for several zero-count terminals.
+A contradictory nonempty rejection conjunction does not make a zero
+terminal impossible: the existing all-empty physical construction
+remains a distinct sufficient alternative. Other unproved combinations, including
 detached string-collation predicates, remain residual. The legacy outcome-goal adapter
 remains residual for positive filtered counts because its `source_rows`
-witness cannot encode required predicate obligations. General join,
-group, QUALIFY, set and DML counts remain residual.
+witness cannot encode required predicate obligations. Already-certified physical join, grouping, QUALIFY and set population
+laws can be composed when their complete assignments are compatible.
+In particular, two lossless materialized copies of the same physical
+bag cancel under EXCEPT/EXCEPT ALL at any certified positive source
+count, including NULLs and duplicates; a transparent positive terminal
+may reuse that exact count. Arbitrary operator combinations and
+unproved correlated source assignments remain typed residuals. General
+DML state construction beyond the proven unconditional DELETE is still
+unverified.
 
 
 ### Joint physical operator populations (TASK-95)
