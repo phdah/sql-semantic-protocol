@@ -1411,3 +1411,79 @@ fn grouped_nonnull_count_key_proves_full_join_contributor_domains() {
         WitnessDirection::Residual { .. }
     ));
 }
+
+
+#[test]
+fn joined_bags_feed_complete_ordered_rank_partitions_without_intermediate_writes() {
+    let schema = |relation: &str, names: &[&str]| {
+        RelationSchema::new(
+            relation,
+            names.iter()
+                .map(|name| SchemaColumn::from_sql_type(*name, "INTEGER", "postgresql").unwrap())
+                .collect(),
+        ).unwrap()
+    };
+    let schemas = [
+        schema("l", &["k", "score"]),
+        schema("r", &["k"]),
+        schema("joined", &["k", "score"]),
+    ];
+    let join =
+        "CREATE TABLE joined AS SELECT l.k AS k, l.score AS score FROM l JOIN r ON l.k = r.k";
+    let rank =
+        "SELECT k, ROW_NUMBER() OVER (PARTITION BY k ORDER BY score ASC NULLS LAST) AS rn \
+         FROM joined QUALIFY rn <= 1";
+    for &dialect in DIALECTS {
+        let b = bundle_with_schemas(
+            &[join, rank, "SELECT k FROM l", "SELECT k FROM r"],
+            dialect, &schemas
+        );
+        let rank_id = b.layers()[1].id();
+        let physical = physical_joint_source_plan(&b, &[(rank_id, 2)]);
+        let WitnessDirection::Feasible(cases) = physical.outcome() else {
+            panic!("{dialect}: complete join-fed rank partitions missing: {physical:?}");
+        };
+        assert!(cases.iter().any(|case| {
+            case.obligations().iter().any(|o| matches!(
+                o, WitnessObligation::JoinPopulation {
+                    pattern: JoinPopulationPattern::GroupedMatched { groups: 2 },
+                    left_rows: 4, right_rows: 2, output_rows: 4,
+                    ..
+                }
+            )) && case.obligations().iter().any(|o| matches!(
+                o, WitnessObligation::RankPopulation {
+                    boundary,
+                    partition_key,
+                    partitions: 2,
+                    rows_per_partition: 2,
+                    rank_limit: 1,
+                    closed_world: true,
+                    ..
+                } if boundary.relation() == "l"
+                    && partition_key.relation() == Some("l")
+                    && partition_key.name() == "k"
+            ))
+        }), "{dialect}: joint bag/partition law must hold at physical source");
+
+        let joint = physical_joint_source_plan(
+            &b, &[(rank_id, 2), (b.layers()[2].id(), 4), (b.layers()[3].id(), 2)]
+        );
+        assert!(matches!(joint.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: rank population must agree with source readers: {joint:?}");
+        let impossible = physical_joint_source_plan(&b, &[(rank_id, 2), (rank_id, 3)]);
+        assert!(matches!(impossible.outcome(), WitnessDirection::Impossible));
+    }
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(k INTEGER, score INTEGER); CREATE TABLE r(k INTEGER);
+         INSERT INTO l VALUES (0,2),(0,3),(1,10),(1,11);
+         INSERT INTO r VALUES (0),(1);
+         CREATE TABLE joined AS SELECT l.k AS k, l.score AS score FROM l JOIN r ON l.k=r.k;"
+    ).unwrap();
+    let result = db.prepare(&format!(
+        "SELECT k, rn FROM ({rank}) ORDER BY k, rn"
+    )).unwrap().query_map([], |row| {
+        Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?))
+    }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    assert_eq!(result, vec![(0,1), (1,1)]);
+}
