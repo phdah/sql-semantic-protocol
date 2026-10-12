@@ -33,6 +33,7 @@
 //! - physical_joint_source_plan returns one canonical topologically ordered source graph and typed joint goal proof.
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
+//! - physical_ordered_write_state_plan constructs ordered complete DML snapshots from controlled physical rows and typed schemas, failing closed on unsupported laws.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
 //!   multiplicities with NULL, duplicates and shared physical aliases.
 
@@ -133,9 +134,11 @@ pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
     physical_joint_distribution_plan, physical_joint_row_count_plan, physical_joint_source_plan,
-    physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
-    physical_unconditional_delete_plan, PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef,
-    PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan,
+    physical_ordered_write_state_plan, physical_rejected_row_count_plan, physical_row_count_plan,
+    physical_source_plan, physical_unconditional_delete_plan, PhysicalJointSourcePlan,
+    PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan,
+    PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap,
+    PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
@@ -156,9 +159,9 @@ pub use protocol::{
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,
     WindowSpecification, WriteAffectedRows, WriteCardinalityRule, WriteCountError,
-    WriteEffectAction, WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind,
-    WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty, WriteValue,
-    PROTOCOL_VERSION,
+    WriteDefinitionMode, WriteEffectAction, WriteEffectBranch, WriteIdempotence, WriteInitialState,
+    WriteKind, WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty,
+    WriteValue, PROTOCOL_VERSION,
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,

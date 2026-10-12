@@ -113,6 +113,8 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
         .map(|effect| write_state_effect_to_value(&effect));
     json!({
         "target": write.target(),
+        "target_alias": write.target_alias(),
+        "definition_mode": write.definition_mode().map(|mode| mode.as_str()),
         "kind": write.kind().as_str(),
         "target_columns": write.target_columns(),
         "match_condition": write.match_condition().map_or(Value::Null, predicate_to_value),

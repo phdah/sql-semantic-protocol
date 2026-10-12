@@ -2689,6 +2689,8 @@
       "additionalProperties": false,
       "required": [
         "target",
+        "target_alias",
+        "definition_mode",
         "kind",
         "target_columns",
         "match_condition",
@@ -2701,6 +2703,15 @@
       "properties": {
         "target": {
           "$ref": "#/$defs/relationName"
+        },
+        "target_alias": {
+          "oneOf": [
+            { "$ref": "#/$defs/nonEmptyString" },
+            { "type": "null" }
+          ]
+        },
+        "definition_mode": {
+          "enum": ["create_table", "replace_table", "create_view", "replace_view", null]
         },
         "kind": {
           "enum": [

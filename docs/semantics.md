@@ -677,7 +677,8 @@ producer provenance. Direct SQL and dbt manifest/catalog evidence must
 reach the same physical-row truth and closed-world population.
 Arbitrary operator combinations and unproved correlated source
 assignments remain typed residuals. General
-DML state construction beyond the proven unconditional DELETE is still
+DML state construction is handled conservatively by the separate ordered
+physical-state API described below; unsupported operator populations remain
 unverified.
 
 
@@ -771,3 +772,47 @@ rows may be fabricated for copied branches.
 ### Independent mixed physical operator DAGs
 
 Complete mixed join/group, group/rank, grouped COUNT filter and certified empty/nonempty-inner membership populations can be composed across separate terminal targets when their sets of physical source relations are disjoint. Each local case must prove an exact entire-relation closed source count; the joint case carries both operator laws and any transparent source terminal counts. A repeated physical source across different mixed cases still requires a correlated proof and remains residual, even if the sampled row counts happen to agree.
+
+
+### Ordered physical write-state construction (TASK-98)
+
+`physical_ordered_write_state_plan(&bundle, &complete_initial_states)` realizes each
+canonical SQL write in statement order against one shared physical state per
+relation. The caller provides whole, closed-world typed populations, never
+sampled rows or independent assignments for intermediate producers. Each
+`PhysicalWriteTransition` carries its exact target `before` and `after` rows
+and counts of inserted, updated and deleted rows. `final_states` is a
+complete relation-to-bag assignment. `PhysicalWriteState::exact_domains(&schema)` derives a closed-world
+per-column `PhysicalWriteColumnDomain` with exact NULL and duplicate
+frequencies; even an empty table yields a certified empty domain for
+each declared column. The rows and domains refer to the same bag.
+
+Supported proof paths are single-source row-preserving or filter-only
+INSERT SELECT and CTAS/CREATE OR REPLACE TABLE, target-local UPDATE and
+DELETE, and first-applicable MERGE matched, not-matched and
+not-matched-by-source branches where each target sees at most one source
+match. SQL NULL is evaluated with three-valued Boolean predicates, SET
+expressions read the original row, and later statements read the entire
+already-written target. The existing canonical `WriteStateEffect` checks
+row-affect cardinality for DML; lifecycle kind explicitly distinguishes
+CREATE TABLE from view definitions. Normalized target and source aliases
+share one physical population.
+
+Before certifying feasibility, the plan verifies complete typed schemas
+and attested enforced NOT NULL, key, accepted-values and FK constraints,
+including cross-relation FK lookup. Known key/null contradictions are
+`Impossible`. Missing complete snapshots, ambiguous aliases or MERGE
+multiplicity, unknown expression and collation semantics, unverified
+constraint enforcement, implicit column defaults, logical views,
+unsupported ALTER or session/transaction laws are explicit
+`Residual { gap, reason }` outcomes, **never** fabricated feasible
+states. Foreign-key violations remain residual when deferred enforcement
+timing is not proved.
+
+This opt-in row construction is independent of the existing abstract
+`physical_joint_source_plan` outcome goals: arbitrary JOIN, aggregation,
+QUALIFY, nested set or multi-operator witness populations are not
+reinterpreted as scalar row tuples without an exact operator-specific
+evaluator. There is no implicit guarantee that an arbitrary positive or
+negative terminal goal can be realized. The consumer may use the exact
+snapshots to run the SQL program in DuckDB and verify its outcomes.

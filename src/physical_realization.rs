@@ -472,6 +472,7 @@ mod membership;
 mod operators;
 mod ranking;
 mod sets;
+mod write_states;
 
 pub use counts::{
     physical_rejected_row_count_plan, physical_row_count_plan, physical_unconditional_delete_plan,
@@ -486,6 +487,10 @@ pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{
     physical_materialized_group_or_rank_witness, physical_materialized_join_witness,
     physical_materialized_set_witness, physical_operator_count_witness,
+};
+pub use write_states::{
+    physical_ordered_write_state_plan, PhysicalWriteColumnDomain, PhysicalWriteRow,
+    PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 
 use composition::*;
