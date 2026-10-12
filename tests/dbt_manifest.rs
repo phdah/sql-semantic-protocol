@@ -535,11 +535,12 @@ fn dbt_catalog_projection_histograms_match_raw_sql_physical_inversion() {
             "CREATE TABLE warehouse.analytics.final_orders AS SELECT value + 1 AS adjusted FROM warehouse.analytics.stg_orders",
         ),
     ];
-    let configured = inputs.iter().enumerate().map(|(n, sql)| {
-        ConfiguredSqlInput::new(
-            &format!("q{n}"), sql, "postgres", dialect.as_ref(),
-        )
-    }).collect::<Vec<_>>();
+    let ids = (0..inputs.len()).map(|n| format!("q{n}")).collect::<Vec<_>>();
+    let configured = inputs
+        .iter()
+        .zip(&ids)
+        .map(|(sql, id)| ConfiguredSqlInput::new(id, sql, "postgres", dialect.as_ref()))
+        .collect::<Vec<_>>();
     let raw_catalog = RelationCatalog::from_schemas(&schemas).unwrap();
     let mut raw = analyze_configured_inputs_with_catalog(&configured, &raw_catalog)
         .expect("direct SQL bundle");
