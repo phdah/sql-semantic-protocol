@@ -101,6 +101,23 @@ impl PhysicalWriteTransition {
     }
 }
 
+/// Why an ordered source-state construction cannot yet be certified.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PhysicalWriteStateGap {
+    /// Physical input/target population was not supplied as a complete snapshot.
+    MissingPopulation,
+    /// Required typed schema evidence was not available.
+    MissingSchema,
+    /// Operator-local scalar, predicate, DML, or lifecycle proof is incomplete.
+    UnprovedOperation,
+    /// Authoritative physical uniqueness, nullability, default, or FK law is missing.
+    UnprovedConstraint,
+    /// Unsupported SQL, DDL, or transaction/session semantics.
+    UnsupportedStatement,
+    /// Source/target alias, multiplicity or shared relation identity is unresolved.
+    UnresolvedSourceIdentity,
+}
+
 /// Result of interpreting a sequence against closed-world physical inputs.
 ///
 /// Feasible carries every materialized intermediate target state. Impossible
@@ -125,6 +142,8 @@ pub enum PhysicalWriteStatePlan {
     Residual {
         /// Layer requiring further evidence, if applicable.
         layer_id: Option<String>,
+        /// Canonical category of missing evidence.
+        gap: PhysicalWriteStateGap,
         /// Explicit missing proof.
         reason: String,
     },
@@ -133,13 +152,17 @@ pub enum PhysicalWriteStatePlan {
 #[derive(Debug)]
 enum StateFailure {
     Impossible(String),
-    Residual(String),
+    Residual(PhysicalWriteStateGap, String),
 }
 
 type StateResult<T> = Result<T, StateFailure>;
 
 fn residual(reason: impl Into<String>) -> StateFailure {
-    StateFailure::Residual(reason.into())
+    residual_gap(PhysicalWriteStateGap::UnprovedOperation, reason)
+}
+
+fn residual_gap(gap: PhysicalWriteStateGap, reason: impl Into<String>) -> StateFailure {
+    StateFailure::Residual(gap, reason.into())
 }
 
 fn impossible(reason: impl Into<String>) -> StateFailure {
@@ -183,6 +206,7 @@ pub fn physical_ordered_write_state_plan(
     }) {
         return PhysicalWriteStatePlan::Residual {
             layer_id: None,
+            gap: PhysicalWriteStateGap::UnsupportedStatement,
             reason: "the program contains an unsupported SQL statement or DDL/transaction law"
                 .to_string(),
         };
@@ -286,7 +310,7 @@ fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePla
     let layer_id = layer_id.map(str::to_string);
     match error {
         StateFailure::Impossible(reason) => PhysicalWriteStatePlan::Impossible { layer_id, reason },
-        StateFailure::Residual(reason) => PhysicalWriteStatePlan::Residual { layer_id, reason },
+        StateFailure::Residual(gap, reason) => PhysicalWriteStatePlan::Residual { layer_id, gap, reason },
     }
 }
 
@@ -295,7 +319,7 @@ fn validate_state(bundle: &AnalysisBundle, state: &PhysicalWriteState) -> StateR
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == state.relation)
-        .ok_or_else(|| residual(format!("missing complete schema for {}", state.relation)))?;
+        .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingSchema, format!("missing complete schema for {}", state.relation)))?;
     for row in &state.rows {
         if row.values.len() != schema.columns().len() {
             return Err(impossible(
@@ -328,7 +352,7 @@ fn validate_all_constraints(
             continue;
         };
         if !set.diagnostics().is_empty() {
-            return Err(residual("unresolved canonical constraint diagnostics"));
+            return Err(residual_gap(PhysicalWriteStateGap::UnprovedConstraint, "unresolved canonical constraint diagnostics"));
         }
         for constraint in set.constraints() {
             if !constraint
@@ -336,7 +360,7 @@ fn validate_all_constraints(
                 .iter()
                 .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
             {
-                return Err(residual("constraint enforcement not attested"));
+                return Err(residual_gap(PhysicalWriteStateGap::UnprovedConstraint, "constraint enforcement not attested"));
             }
             match constraint {
                 RelationConstraint::NotNull(rule) => {
@@ -519,7 +543,7 @@ fn initial_target<'a>(
     target: &str,
     before: Option<&'a PhysicalWriteState>,
 ) -> StateResult<&'a PhysicalWriteState> {
-    before.ok_or_else(|| residual(format!("missing complete initial target state: {target}")))
+    before.ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingPopulation, format!("missing complete initial target state: {target}")))
 }
 
 fn define_rows(
@@ -705,7 +729,7 @@ fn merge_rows(
     schema_for(bundle, source.name())?;
     let source_rows = states
         .get(source.name())
-        .ok_or_else(|| residual("missing complete MERGE source population"))?;
+        .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingPopulation, "missing complete MERGE source population"))?;
     let aliases = [source.alias().unwrap_or(source.name()), source.name()];
     let mut matched_sources = BTreeSet::new();
     let mut updates = 0_u64;
@@ -865,7 +889,7 @@ fn schema_for<'a>(bundle: &'a AnalysisBundle, relation: &str) -> StateResult<&'a
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == relation)
-        .ok_or_else(|| residual(format!("missing schema for {relation}")))
+        .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingSchema, format!("missing schema for {relation}")))
 }
 
 fn evaluate_simple_select(
@@ -889,7 +913,7 @@ fn evaluate_simple_select(
     };
     let rows = states
         .get(source.name())
-        .ok_or_else(|| residual("missing complete INSERT source population"))?;
+        .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingPopulation, "missing complete INSERT source population"))?;
     let aliases = [source.alias().unwrap_or(source.name()), source.name()];
     let mut result = Vec::new();
     for row in &rows.rows {
