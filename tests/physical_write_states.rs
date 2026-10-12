@@ -547,3 +547,40 @@ fn replace_then_update_then_zero_delete_carries_exact_prior_state() {
     };
     assert_eq!(actual, vec![(2, 5), (3, 8)]);
 }
+
+
+#[test]
+fn complete_physical_column_domains_preserve_nulls_duplicates_and_empty_bags() {
+    let b = bundle(&["DELETE FROM target WHERE score < 0"], "duckdb");
+    let schema = b.source_schemas().iter().find(|s| s.relation() == "target").unwrap();
+    let prior = state("target", &[
+        (Some(1), Some(10)),
+        (Some(1), Some(10)),
+        (Some(2), None),
+        (Some(3), Some(-5)),
+    ]);
+    let domains = prior.exact_domains(schema).unwrap();
+    let score = domains.iter().find(|d| d.column() == "score").unwrap();
+    assert_eq!(
+        score.values(),
+        &[
+            (LiteralValue::Number("10".to_string()), 2),
+            (LiteralValue::Null, 1),
+            (LiteralValue::Number("-5".to_string()), 1),
+        ]
+    );
+    let plan = physical_ordered_write_state_plan(&b, &[prior]);
+    let (transitions, _) = outcome(&plan);
+    let post = transitions[0].after().exact_domains(schema).unwrap();
+    assert_eq!(
+        post.iter().find(|d| d.column() == "score").unwrap().values(),
+        &[
+            (LiteralValue::Number("10".to_string()), 2),
+            (LiteralValue::Null, 1)
+        ]
+    );
+    let empty = state("target", &[]);
+    let domains = empty.exact_domains(schema).unwrap();
+    assert_eq!(domains.len(), 2);
+    assert!(domains.iter().all(|domain| domain.values().is_empty()));
+}
