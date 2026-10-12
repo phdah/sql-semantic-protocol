@@ -151,6 +151,21 @@ fn conformance_boundary_fixture_retains_join_provenance_and_zero_rejection() {
     let enriched = layer_id(&bundle, "core_enriched");
     let plan = physical_source_plan(&bundle, enriched);
     assert!(matches!(plan.zero_output(), WitnessDirection::Feasible(_)));
+    for (i, statement) in bundle.inputs()[0].statements().iter().enumerate() {
+        if let sql_semantic_protocol::ProtocolStatement::Query(query) = statement {
+            eprintln!(
+                "fixture layer {i}: plain={} filter={} groups={} joins={} diagnostics={:?} projections={:?} predicate={:?}",
+                query.plain_goal_output_shape(),
+                query.filter_only_row_shape(),
+                query.group_rows_match_surviving_groups(),
+                query.joins().len(),
+                query.diagnostics(),
+                query.output().columns(),
+                query.predicates().where_predicate()
+            );
+        }
+    }
+    eprintln!("physical target graph: {:?}", physical_source_plan(&bundle, enriched));
     let positive = physical_row_count_plan(&bundle, enriched, 1);
     assert!(
         matches!(positive, WitnessDirection::Feasible(_)),
