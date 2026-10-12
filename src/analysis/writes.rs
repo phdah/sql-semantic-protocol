@@ -195,6 +195,7 @@ pub(super) fn analyze_delete(delete: &SqlDelete) -> ProtocolStatement {
         );
     };
     let target = target_source.name().to_string();
+    let target_alias = target_source.alias().map(str::to_string);
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let mut nonlocal_dependencies = BTreeSet::new();
@@ -260,6 +261,7 @@ pub(super) fn analyze_merge(
         );
     };
     let target = target_source.name().to_string();
+    let target_alias = target_source.alias().map(str::to_string);
 
     let mut diagnostics = Vec::new();
     if has_output {
