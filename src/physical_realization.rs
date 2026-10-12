@@ -469,6 +469,7 @@ mod joint_counts;
 mod membership;
 mod operators;
 mod ranking;
+mod sets;
 
 pub(crate) use counts::physical_distribution_plan;
 pub use counts::{
