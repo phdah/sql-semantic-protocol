@@ -1296,14 +1296,14 @@ Set `operator_population` compositions cover up to four locally proven, type-cer
 
 ### Ordered DML/DDL physical state evidence (TASK-98)
 
-The active write-operation JSON schema adds \`target_alias\` (nullable
-resolved SQL target qualifier) and \`definition_mode\` (nullable
-\`create_table\`, \`replace_table\`, \`create_view\`,
-\`replace_view\`). These are explicit semantic facts rather than inferred
+The active write-operation JSON schema adds `target_alias` (nullable
+resolved SQL target qualifier) and `definition_mode` (nullable
+`create_table`, `replace_table`, `create_view`,
+`replace_view`). These are explicit semantic facts rather than inferred
 table-writability hints. The corresponding Rust API
-\`physical_ordered_write_state_plan\` yields typed
-\`PhysicalWriteStatePlan::{Feasible, Impossible, Residual}\` outcomes.
+`physical_ordered_write_state_plan` yields typed
+`PhysicalWriteStatePlan::{Feasible, Impossible, Residual}` outcomes.
 Feasible results carry complete input and final physical rows and
-ordered transitions; residuals carry a typed \`PhysicalWriteStateGap\`
+ordered transitions; residuals carry a typed `PhysicalWriteStateGap`
 and reason. See [semantics](semantics.md) for the exact allow-list and
 unproved physical lifecycle/transaction laws.
