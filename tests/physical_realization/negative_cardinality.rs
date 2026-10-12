@@ -292,10 +292,8 @@ fn zero_outer_join_with_nonempty_preserved_physical_side_is_impossible() {
             ],
             dialect,
         );
-        let plan = physical_joint_source_plan(
-            &b,
-            &[(b.layers()[2].id(), 0), (b.layers()[3].id(), 3)],
-        );
+        let plan =
+            physical_joint_source_plan(&b, &[(b.layers()[2].id(), 0), (b.layers()[3].id(), 3)]);
         assert!(
             matches!(plan.outcome(), WitnessDirection::Impossible),
             "{dialect}: LEFT join preserves three left rows: {plan:?}"
@@ -311,11 +309,13 @@ fn zero_outer_join_with_nonempty_preserved_physical_side_is_impossible() {
          CREATE TABLE mart AS SELECT a,k FROM r;",
     )
     .unwrap();
-    let count: i64 = db.query_row(
-        "SELECT COUNT(*) FROM stage s LEFT JOIN mart m ON s.k = m.k",
-        [],
-        |row| row.get(0),
-    ).unwrap();
+    let count: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM stage s LEFT JOIN mart m ON s.k = m.k",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
     assert_eq!(count, 3);
 }
 
@@ -328,9 +328,9 @@ fn zero_nonpreserving_join_with_nonempty_input_does_not_become_impossible() {
         ],
         "postgresql",
     );
-    let plan = physical_joint_source_plan(
-        &b,
-        &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 3)],
+    let plan = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 0), (b.layers()[1].id(), 3)]);
+    assert!(
+        matches!(plan.outcome(), WitnessDirection::Feasible(_)),
+        "{plan:?}"
     );
-    assert!(matches!(plan.outcome(), WitnessDirection::Feasible(_)), "{plan:?}");
 }
