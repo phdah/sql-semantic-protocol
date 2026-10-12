@@ -109,6 +109,7 @@ pub(super) fn physical_subquery_membership_plan(
             }
         };
 
+    eprintln!("TEMP diagnostic: kind={:?} correlations={:?} membership={:?} inner_domains={:?} filter={:?} safe_nonempty={}", local.kind(), local.correlations(), local.membership_key(), local.inner_column_domains(), inner_filter, safe_nonempty);
     let positive = wanted > 0;
     let direction = if positive {
         local.qualifying()
@@ -174,6 +175,7 @@ pub(super) fn physical_subquery_membership_plan(
 
     let outer_rows = wanted.max(1);
     let mut cases = Vec::new();
+    eprintln!("TEMP diagnostic populations: {:?}", populations);
     for (membership_case, inner_rows, nonmatching) in populations {
         if (inner_rows > 0 && !safe_nonempty) || !allowed.contains(&membership_case) {
             continue;
@@ -328,5 +330,6 @@ pub(super) fn physical_subquery_membership_plan(
             cases.push(case);
         }
     }
+    eprintln!("TEMP diagnostic case count {}", cases.len());
     WitnessDirection::feasible(cases)
 }
