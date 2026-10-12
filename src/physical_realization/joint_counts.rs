@@ -420,7 +420,9 @@ pub fn physical_joint_row_count_plan(
     if let Some(plan) = joint_nonempty_rejected_terminals(bundle, &ordered) {
         return plan;
     }
-    if necessarily_missing_positive_join_input(bundle, &ordered) {
+    if necessarily_missing_positive_join_input(bundle, &ordered)
+        || necessarily_nonempty_preserved_join_side(bundle, &ordered)
+    {
         return WitnessDirection::Impossible;
     }
     if let [(layer_id, rows)] = ordered.as_slice() {
