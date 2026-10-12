@@ -356,11 +356,11 @@ pub(super) fn physical_group_rank_count_plan(
     WitnessDirection::feasible(composed)
 }
 
-/// Lift a fully matched, one-to-one physical equijoin into an ordinary
-/// grouped output. Every joined key is distinct, so grouping on that exact
-/// physical key produces one contributor per group. HAVING may accept this
-/// shape only when its local exact group witness admits a single contributor.
-/// No other join population or grouping expression is silently generalized.
+/// Lift a complete equijoin population into a grouped output using the same
+/// physical key distribution. The distinct, common and homogeneous grouped
+/// patterns certify one, many-in-one and multiple multi-contributor groups.
+/// Aggregate/HAVING obligations are taken from the exact local group witness;
+/// unsupported key mappings and heterogeneous bags remain residual.
 pub(super) fn physical_join_group_count_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
@@ -520,6 +520,11 @@ pub(super) fn physical_join_group_count_plan(
         ) || matches!(
             population,
             Some(JoinPopulationPattern::CommonMatched) if groups == 1
+        ) || matches!(
+            population,
+            Some(JoinPopulationPattern::GroupedMatched {
+                groups: key_groups
+            }) if key_groups == groups && groups > 1
         );
         if !proven {
             continue;
