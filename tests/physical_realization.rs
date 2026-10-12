@@ -66,6 +66,8 @@ mod graph;
 mod group_rank_set;
 #[path = "physical_realization/joins.rs"]
 mod joins;
+#[path = "physical_realization/joint_distributions.rs"]
+mod joint_distributions;
 #[path = "physical_realization/joint_filters.rs"]
 mod joint_filters;
 #[path = "physical_realization/joint_graph.rs"]
