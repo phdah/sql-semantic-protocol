@@ -49,7 +49,10 @@ fn several_zero_terminals_admit_one_nonempty_closed_physical_source() {
                 ))
         }), "{dialect}: no complete nonempty joint rejection witness: {plan:?}");
         let reversed = goals.iter().rev().copied().collect::<Vec<_>>();
-        assert_eq!(plan.outcome(), physical_joint_source_plan(&b, &reversed).outcome());
+        assert_eq!(
+            plan.outcome(),
+            physical_joint_source_plan(&b, &reversed).outcome()
+        );
     }
 
     let db = Connection::open_in_memory().unwrap();
@@ -74,7 +77,11 @@ fn mutually_exclusive_nonempty_rejections_keep_valid_all_empty_solution() {
         ],
         "duckdb",
     );
-    let goals = b.layers().iter().map(|layer| (layer.id(), 0)).collect::<Vec<_>>();
+    let goals = b
+        .layers()
+        .iter()
+        .map(|layer| (layer.id(), 0))
+        .collect::<Vec<_>>();
     let plan = physical_joint_source_plan(&b, &goals);
     let WitnessDirection::Feasible(cases) = plan.outcome() else {
         panic!("empty closed-world solution should remain possible: {plan:?}");
@@ -84,11 +91,13 @@ fn mutually_exclusive_nonempty_rejections_keep_valid_all_empty_solution() {
             WitnessObligation::Rows { boundary, bounds, closed_world: true, .. }
                 if boundary.relation() == "t" && bounds.minimum() == 0 && bounds.maximum() == Some(0))
     })));
-    assert!(!cases.iter().any(|case| case.obligations().iter().any(|obligation| {
-        matches!(obligation,
+    assert!(!cases
+        .iter()
+        .any(|case| case.obligations().iter().any(|obligation| {
+            matches!(obligation,
             WitnessObligation::Rows { boundary, bounds, closed_world: true, .. }
                 if boundary.relation() == "t" && bounds.minimum() > 0)
-    })));
+        })));
 }
 
 #[test]
@@ -102,28 +111,38 @@ fn transparent_positive_and_different_rejected_filters_share_all_source_rows() {
             ],
             dialect,
         );
-        let goals = [(b.layers()[0].id(), 3), (b.layers()[1].id(), 0), (b.layers()[2].id(), 0)];
+        let goals = [
+            (b.layers()[0].id(), 3),
+            (b.layers()[1].id(), 0),
+            (b.layers()[2].id(), 0),
+        ];
         let plan = physical_joint_source_plan(&b, &goals);
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{dialect}: exact positive and two independent rejections: {plan:?}");
         };
-        assert!(cases.iter().any(|case| case.obligations().iter().any(|obligation| {
-            matches!(obligation,
+        assert!(cases
+            .iter()
+            .any(|case| case.obligations().iter().any(|obligation| {
+                matches!(obligation,
                 WitnessObligation::Rows {
                     boundary, bounds, predicate: WitnessFormula::All(parts),
                     closed_world: true, ..
                 } if boundary.relation() == "t" && bounds.minimum() == 3
                   && bounds.maximum() == Some(3) && parts.len() == 2)
-        })));
+            })));
     }
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (1),(2),(3);").unwrap();
+    db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (1),(2),(3);")
+        .unwrap();
     for (sql, expected) in [
         ("SELECT COUNT(*) FROM t", 3_i64),
         ("SELECT COUNT(*) FROM t WHERE a > 10", 0),
         ("SELECT COUNT(*) FROM t WHERE a < 0", 0),
     ] {
-        assert_eq!(db.query_row(sql, [], |row| row.get::<_, i64>(0)).unwrap(), expected);
+        assert_eq!(
+            db.query_row(sql, [], |row| row.get::<_, i64>(0)).unwrap(),
+            expected
+        );
     }
 }
 
@@ -145,22 +164,41 @@ fn complete_shared_except_cancellation_coexists_with_nonempty_positive_source() 
             panic!("{dialect}: complete identical bags must cancel without emptying t: {plan:?}");
         };
         assert_eq!(plan.sources(), &["t".to_string()]);
-        assert!(cases.iter().any(|case| {
-            let obligations = case.obligations();
-            obligations.iter().any(|obligation| matches!(obligation,
+        assert!(
+            cases.iter().any(|case| {
+                let obligations = case.obligations();
+                obligations.iter().any(|obligation| {
+                    matches!(obligation,
                 WitnessObligation::Rows {
                     boundary, bounds, closed_world: true, ..
                 } if boundary.relation() == "t"
-                    && bounds.minimum() == 3 && bounds.maximum() == Some(3)))
-                && obligations.iter().filter(|obligation| matches!(obligation,
-                    WitnessObligation::SetTuple {
-                        matching_rows: 3, closed_world: true, ..
-                    })).count() == 2
-                && obligations.iter().any(|obligation| matches!(obligation,
-                    WitnessObligation::SetResultTuple {
-                        matching_rows: 0, nulls_equal: true
-                    }))
-        }), "{dialect}: failed to carry physical bag cancellation: {plan:?}");
+                    && bounds.minimum() == 3 && bounds.maximum() == Some(3))
+                }) && obligations
+                    .iter()
+                    .filter(|obligation| {
+                        matches!(
+                            obligation,
+                            WitnessObligation::SetTuple {
+                                matching_rows: 3,
+                                closed_world: true,
+                                ..
+                            }
+                        )
+                    })
+                    .count()
+                    == 2
+                    && obligations.iter().any(|obligation| {
+                        matches!(
+                            obligation,
+                            WitnessObligation::SetResultTuple {
+                                matching_rows: 0,
+                                nulls_equal: true
+                            }
+                        )
+                    })
+            }),
+            "{dialect}: failed to carry physical bag cancellation: {plan:?}"
+        );
     }
 
     let db = Connection::open_in_memory().unwrap();
@@ -169,12 +207,18 @@ fn complete_shared_except_cancellation_coexists_with_nonempty_positive_source() 
          INSERT INTO t VALUES (NULL), (NULL), (NULL);
          CREATE TABLE stage AS SELECT a FROM t;
          CREATE TABLE mart AS SELECT a FROM t;",
-    ).unwrap();
+    )
+    .unwrap();
     let count: i64 = db
-        .query_row("SELECT COUNT(*) FROM (SELECT a FROM stage EXCEPT SELECT a FROM mart)", [],
-            |row| row.get(0))
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a FROM stage EXCEPT SELECT a FROM mart)",
+            [],
+            |row| row.get(0),
+        )
         .unwrap();
-    let source_count: i64 = db.query_row("SELECT COUNT(*) FROM t", [], |row| row.get(0)).unwrap();
+    let source_count: i64 = db
+        .query_row("SELECT COUNT(*) FROM t", [], |row| row.get(0))
+        .unwrap();
     assert_eq!((count, source_count), (0, 3));
 }
 
@@ -190,18 +234,28 @@ fn empty_join_alternative_excludes_all_matches_and_preserves_other_source() {
             ],
             dialect,
         );
-        let plan = physical_joint_source_plan(
-            &b, &[(b.layers()[2].id(), 0), (b.layers()[3].id(), 3)],
-        );
+        let plan =
+            physical_joint_source_plan(&b, &[(b.layers()[2].id(), 0), (b.layers()[3].id(), 3)]);
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{dialect}: should empty only the join's right-hand side: {plan:?}");
         };
-        assert!(cases.iter().any(|case| {
-            case.obligations().iter().any(|obligation| matches!(obligation,
-                WitnessObligation::JoinPopulation {
-                    left_rows: 3, right_rows: 0, output_rows: 0, closed_world: true, ..
-                }))
-        }), "{dialect}: missing complete empty-partner join proof");
+        assert!(
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::JoinPopulation {
+                            left_rows: 3,
+                            right_rows: 0,
+                            output_rows: 0,
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                })
+            }),
+            "{dialect}: missing complete empty-partner join proof"
+        );
     }
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -210,12 +264,18 @@ fn empty_join_alternative_excludes_all_matches_and_preserves_other_source() {
          INSERT INTO l VALUES (1,7),(2,7),(3,NULL);
          CREATE TABLE stage AS SELECT a,k FROM l;
          CREATE TABLE mart AS SELECT a,k FROM r;",
-    ).unwrap();
-    let count: i64 = db.query_row(
-        "SELECT COUNT(*) FROM stage s JOIN mart m ON s.k = m.k", [],
-        |row| row.get(0),
-    ).unwrap();
+    )
+    .unwrap();
+    let count: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM stage s JOIN mart m ON s.k = m.k",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
     assert_eq!(count, 0);
-    let source_count: i64 = db.query_row("SELECT COUNT(*) FROM l", [], |row| row.get(0)).unwrap();
+    let source_count: i64 = db
+        .query_row("SELECT COUNT(*) FROM l", [], |row| row.get(0))
+        .unwrap();
     assert_eq!(source_count, 3);
 }
