@@ -597,3 +597,91 @@ fn dbt_catalog_projection_histograms_match_raw_sql_physical_inversion() {
     assert_eq!(adapted_relation, "warehouse.raw.orders");
     assert_eq!(adapted_columns[0].column(), "amount");
 }
+
+#[test]
+fn dbt_catalog_and_direct_sql_share_closed_world_negative_source_cardinality() {
+    use sql_semantic_protocol::{
+        physical_joint_source_plan, RelationSchema, SchemaColumn, WitnessDirection,
+        WitnessFormula, WitnessObligation, BooleanTruthCase,
+    };
+
+    let mut manifest: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] =
+        serde_json::json!("SELECT id, amount FROM warehouse.raw.orders");
+    manifest["nodes"]["model.demo.final_orders"]["compiled_code"] =
+        serde_json::json!("SELECT id, amount FROM warehouse.analytics.stg_orders WHERE amount > 100");
+    let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let catalog = fixture_catalog();
+    let dialect = dialect_from_str("postgres").unwrap();
+    let adapted = analyze_dbt_artifacts(&manifest, &catalog, "postgres", dialect.as_ref())
+        .expect("catalog backed dbt analysis");
+
+    let schemas = [
+        RelationSchema::new(
+            "warehouse.raw.orders",
+            vec![
+                SchemaColumn::from_sql_type("id", "INTEGER", "postgresql").unwrap(),
+                SchemaColumn::from_sql_type("amount", "BIGINT", "postgresql").unwrap(),
+            ],
+        ).unwrap(),
+        RelationSchema::new(
+            "warehouse.analytics.stg_orders",
+            vec![
+                SchemaColumn::from_sql_type("id", "INTEGER", "postgresql").unwrap(),
+                SchemaColumn::from_sql_type("amount", "BIGINT", "postgresql").unwrap(),
+            ],
+        ).unwrap(),
+    ];
+    let statements = [
+        SqlInput::inline(
+            "CREATE TABLE warehouse.analytics.stg_orders AS SELECT id, amount FROM warehouse.raw.orders",
+        ),
+        SqlInput::inline(
+            "CREATE TABLE warehouse.analytics.final_orders AS SELECT id, amount FROM warehouse.analytics.stg_orders WHERE amount > 100",
+        ),
+    ];
+    let names = ["stage", "final"];
+    let configured = statements
+        .iter()
+        .zip(names)
+        .map(|(sql, id)| ConfiguredSqlInput::new(id, sql, "postgres", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let raw = analyze_configured_inputs_with_catalog(
+        &configured,
+        &RelationCatalog::from_schemas(&schemas).unwrap(),
+    ).unwrap();
+
+    let check = |bundle: &sql_semantic_protocol::AnalysisBundle| {
+        let stage = layer_for_relation(bundle.layers(), "warehouse.analytics.stg_orders");
+        let final_layer = layer_for_relation(bundle.layers(), "warehouse.analytics.final_orders");
+        let goals = [(stage.id(), 3), (final_layer.id(), 0)];
+        let plan = physical_joint_source_plan(bundle, &goals);
+        let WitnessDirection::Feasible(cases) = plan.outcome() else {
+            panic!("adapter did not preserve physical-source negative proof: {plan:?}");
+        };
+        assert_eq!(plan.sources(), &["warehouse.raw.orders".to_string()]);
+        assert!(cases.iter().any(|case| {
+            let obligations = case.obligations();
+            obligations.iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::Rows {
+                    boundary, bounds,
+                    predicate: WitnessFormula::RowTruth {
+                        truth: BooleanTruthCase::NotTrue, ..
+                    },
+                    closed_world: true, ..
+                } if boundary.relation() == "warehouse.raw.orders"
+                    && bounds.minimum() == 3 && bounds.maximum() == Some(3)
+            )) && obligations.iter().any(|obligation| matches!(
+                obligation,
+                WitnessObligation::ClosedWorld { boundary, .. }
+                    if boundary.relation() == "warehouse.raw.orders"
+            )) && obligations.iter().filter(|obligation| matches!(
+                obligation, WitnessObligation::OutputRows { .. }
+            )).count() == 2
+        }), "adapter lost joint rejection or full source coverage: {plan:?}");
+    };
+    check(&adapted);
+    check(&raw);
+}
