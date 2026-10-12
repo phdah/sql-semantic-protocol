@@ -2,6 +2,7 @@
 mod common;
 
 use std::collections::BTreeSet;
+use std::path::PathBuf;
 
 use duckdb::Connection;
 use serde_json::Value;
@@ -517,4 +518,27 @@ fn duckdb_oracles_cover_feasible_impossible_null_and_duplicate_cases() {
         kinds,
         BTreeSet::from(["duplicate", "feasible", "impossible", "null"])
     );
+}
+
+#[test]
+fn pinned_task_99_fixture_contract_is_reproducible_and_release_blocked() {
+    let manifest = manifest();
+    let pinned = &manifest["task_99_upstream_fixture_contract"];
+    assert_eq!(pinned["owner"], "TASK-99");
+    assert_eq!(pinned["upstream_repo"], "phdah/sql-tdg");
+    assert_eq!(
+        pinned["upstream_git_sha"],
+        "90ec0e12a2d5cd2c1294556336fc947e176c9db9"
+    );
+    assert_eq!(required_array(pinned, "raw_sql").len(), 7);
+    assert_eq!(pinned["dbt_model_count"], 11);
+    assert_eq!(pinned["dbt_source_seed_count"], 4);
+    assert_eq!(pinned["sql_tdg_downstream_generator_signoff"], "pending_TASK_31_35_36");
+    assert_eq!(pinned["protocol_release_gate"], "blocked_TASK_91");
+    assert!(!required_array(pinned, "residual_scope").is_empty());
+    for path in required_array(pinned, "oracle_evidence") {
+        let file = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join(path.as_str().expect("proof evidence is a path"));
+        assert!(file.is_file(), "pinned evidence is missing: {}", file.display());
+    }
 }
