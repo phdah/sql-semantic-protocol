@@ -290,17 +290,24 @@ pub(super) fn physical_join_rank_count_plan(
             Some(source.relation().to_string()),
             source.column().to_string(),
         );
-        let mapped = resolve_filter_column_with_evidence(
-            bundle, &walker, join_id, &origin, 0, true
-        )?;
-        let produced_type = bundle.source_schemas().iter()
+        let mapped =
+            resolve_filter_column_with_evidence(bundle, &walker, join_id, &origin, 0, true)?;
+        let produced_type = bundle
+            .source_schemas()
+            .iter()
             .find(|schema| schema.relation() == input)?
-            .columns().iter().find(|item| item.name() == column.name())?
+            .columns()
+            .iter()
+            .find(|item| item.name() == column.name())?
             .data_type();
         let mapped_relation = mapped.relation()?;
-        let source_type = bundle.source_schemas().iter()
+        let source_type = bundle
+            .source_schemas()
+            .iter()
             .find(|schema| schema.relation() == mapped_relation)?
-            .columns().iter().find(|item| item.name() == mapped.name())?
+            .columns()
+            .iter()
+            .find(|item| item.name() == mapped.name())?
             .data_type();
         (produced_type == source_type).then_some(mapped)
     };
@@ -313,7 +320,9 @@ pub(super) fn physical_join_rank_count_plan(
         return None;
     }
     let physical_relation = key.relation()?;
-    let schema = bundle.source_schemas().iter()
+    let schema = bundle
+        .source_schemas()
+        .iter()
         .find(|item| item.relation() == physical_relation)?;
     let key_domain = physical_integer_evidence(schema, &key)?;
     let order_domain = physical_integer_evidence(schema, &ordered)?;
