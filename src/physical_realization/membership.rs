@@ -110,7 +110,11 @@ pub(super) fn physical_subquery_membership_plan(
         };
 
     let positive = wanted > 0;
-    let direction = if positive { local.qualifying() } else { local.rejected() };
+    let direction = if positive {
+        local.qualifying()
+    } else {
+        local.rejected()
+    };
     let SubqueryMembershipDirection::Exact(allowed) = direction else {
         return None;
     };
@@ -291,7 +295,8 @@ pub(super) fn physical_subquery_membership_plan(
                     left: WitnessTerm::Column {
                         row: variable.clone(),
                         column: crate::protocol::ColumnRef::new(
-                            Some(relation.clone()), column.clone()
+                            Some(relation.clone()),
+                            column.clone(),
                         ),
                     },
                     operator: ComparisonOperator::Eq,
