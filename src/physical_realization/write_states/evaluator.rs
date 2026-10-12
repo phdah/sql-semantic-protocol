@@ -316,4 +316,3 @@ pub(super) fn scalar_equality(a: &LiteralValue, b: &LiteralValue) -> StateResult
         _ => Err(residual("unproved coercion in distinct comparison")),
     }
 }
-
