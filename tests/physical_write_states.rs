@@ -593,3 +593,50 @@ fn complete_physical_column_domains_preserve_nulls_duplicates_and_empty_bags() {
     assert_eq!(domains.len(), 2);
     assert!(domains.iter().all(|domain| domain.values().is_empty()));
 }
+
+
+#[test]
+fn one_input_sql_script_uses_statement_indices_and_shared_prior_state() {
+    let b = bundle(
+        &["DELETE FROM target WHERE id = 9;
+           UPDATE target SET score=score+1 WHERE id=1;
+           INSERT INTO target (id,score) SELECT id,score FROM source WHERE id=3;
+           DELETE FROM target WHERE id < 0"],
+        "duckdb",
+    );
+    let plan = physical_ordered_write_state_plan(
+        &b,
+        &[
+            state("target", &[(Some(1),Some(2)), (Some(9),Some(4))]),
+            state("source", &[(Some(3),Some(5)),(Some(-1),Some(9))]),
+        ],
+    );
+    let (steps, states) = outcome(&plan);
+    assert_eq!(steps.len(), 4);
+    assert_eq!(steps[0].affected().deleted(), 1);
+    assert_eq!(steps[1].affected().updated(), 1);
+    assert_eq!(steps[2].affected().inserted(), 1);
+    assert_eq!(steps[3].affected().deleted(), 0);
+    for pair in steps.windows(2) {
+        assert_eq!(pair[0].after(), pair[1].before());
+    }
+    assert_eq!(
+        states.iter().find(|s| s.relation() == "target").unwrap().rows(),
+        &[row(Some(1),Some(3)), row(Some(3),Some(5))],
+    );
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE target(id INTEGER,score INTEGER);
+        CREATE TABLE source(id INTEGER,score INTEGER);
+        INSERT INTO target VALUES (1,2),(9,4);
+        INSERT INTO source VALUES (3,5),(-1,9);
+        DELETE FROM target WHERE id=9;
+        UPDATE target SET score=score+1 WHERE id=1;
+        INSERT INTO target (id,score) SELECT id,score FROM source WHERE id=3;
+        DELETE FROM target WHERE id<0;").unwrap();
+    let expected: Vec<(i64,i64)> = {
+        let mut stmt=db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
+        stmt.query_map([], |r| Ok((r.get(0)?,r.get(1)?))).unwrap()
+            .map(|v| v.unwrap()).collect()
+    };
+    assert_eq!(expected, vec![(1,3),(3,5)]);
+}
