@@ -208,7 +208,6 @@ pub(super) fn physical_rank_partition_count_plan(
     WitnessDirection::feasible(cases)
 }
 
-
 /// Lift a matched equijoin's complete keyed bag through one materialized
 /// ROW_NUMBER/QUALIFY. When the window partition and order columns both come
 /// from the join's repeated side, the other side contributes exactly one
@@ -225,9 +224,10 @@ pub(super) fn physical_join_rank_count_plan(
     }
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
-    let rank_node = walker.nodes.iter().find(|node| {
-        node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string())
-    })?;
+    let rank_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string()))?;
     let [PhysicalPlanRef::Layer(join_id)] = rank_node.inputs() else {
         return None;
     };
@@ -235,9 +235,10 @@ pub(super) fn physical_join_rank_count_plan(
     let rank_query = query_for(bundle, rank_layer)?;
     let join_layer = walker.layers.get(join_id.as_str()).copied()?;
     let join_query = query_for(bundle, join_layer)?;
-    let join_node = walker.nodes.iter().find(|node| {
-        node.id() == &PhysicalPlanRef::Layer(join_id.clone())
-    })?;
+    let join_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(join_id.clone()))?;
     if !rank_query.ranked_goal_output_shape()
         || rank_query.sources().len() != 1
         || rank_query.aggregation().is_some()
@@ -276,7 +277,10 @@ pub(super) fn physical_join_rank_count_plan(
         if column.relation() != Some(input) {
             return None;
         }
-        let mut projected = join_query.output().columns().iter()
+        let mut projected = join_query
+            .output()
+            .columns()
+            .iter()
             .filter(|item| item.name() == column.name());
         let source = projected.next()?.plain_copy_source()?;
         if projected.next().is_some() {
@@ -347,10 +351,15 @@ pub(super) fn physical_join_rank_count_plan(
         for case in join_cases {
             let compatible = case.obligations().iter().any(|obligation| {
                 let WitnessObligation::JoinPopulation {
-                    left_key, right_key,
-                    left_rows, right_rows,
-                    pattern, output_rows, ..
-                } = obligation else {
+                    left_key,
+                    right_key,
+                    left_rows,
+                    right_rows,
+                    pattern,
+                    output_rows,
+                    ..
+                } = obligation
+                else {
                     return false;
                 };
                 if *output_rows != join_rows {
@@ -375,11 +384,12 @@ pub(super) fn physical_join_rank_count_plan(
                 continue;
             }
             let physical = WitnessBoundary::new(
-                key.relation()?, GroupBoundaryKind::Physical, target_layer_id
+                key.relation()?,
+                GroupBoundaryKind::Physical,
+                target_layer_id,
             )?;
-            let computed = WitnessBoundary::new(
-                input, GroupBoundaryKind::Intermediate, target_layer_id
-            )?;
+            let computed =
+                WitnessBoundary::new(input, GroupBoundaryKind::Intermediate, target_layer_id)?;
             let mut obligations = case.obligations().to_vec();
             obligations.push(WitnessObligation::Producer {
                 boundary: computed,
@@ -398,9 +408,7 @@ pub(super) fn physical_join_rank_count_plan(
                 layer_id: target_layer_id.to_string(),
                 bounds: CountBounds::new(wanted, Some(wanted))?,
             });
-            if let Some(realization) =
-                WitnessCase::new(obligations, ProofStrength::Sufficient)
-            {
+            if let Some(realization) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
                 cases.push(realization);
             }
         }
