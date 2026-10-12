@@ -467,6 +467,7 @@ mod graph;
 mod grouping;
 mod joins;
 mod joint_counts;
+mod joint_distributions;
 mod membership;
 mod operators;
 mod ranking;
@@ -478,6 +479,7 @@ pub use counts::{
 pub(crate) use distributions::physical_distribution_plan;
 pub use filters::physical_source_plan;
 pub use joint_counts::physical_joint_row_count_plan;
+pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{
     physical_materialized_group_or_rank_witness, physical_materialized_join_witness,
     physical_materialized_set_witness, physical_operator_count_witness,
