@@ -30,6 +30,8 @@ analysis (walks the AST and builds the semantic model), and emission (serializes
 into the protocol format). The CLI in `main.rs` only reads input, calls the library, and
 writes output. It holds no analysis logic.
 
+**Focused modules and canonical ownership** Prefer small, cohesive files organized by semantic responsibility. When a file grows to span multiple distinct responsibilities, extract focused modules while preserving the canonical owner of each fact, public APIs, serialized protocol contract, and behavior. Avoid arbitrary size limits, fragmentation, and duplicated abstractions. Treat structural refactors separately from semantic changes and verify unchanged outcomes.
+
 **Canonical semantic graph**
 The protocol is an application-independent semantic representation,
 not an implementation tailored to any particular consumer.
