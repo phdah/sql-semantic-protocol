@@ -184,7 +184,7 @@ pub(crate) fn physical_materialized_set_witness(
     }
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
-    if !(1..=2).contains(&walker.sources.len()) {
+    if !(1..=4).contains(&walker.sources.len()) {
         return None;
     }
     let mut operator_id = None::<&str>;
@@ -210,7 +210,7 @@ pub(crate) fn physical_materialized_set_witness(
     let operator_layer = walker.layers.get(operator_id).copied()?;
     let query = query_for(bundle, operator_layer)?;
     let branches = query.set_operation()?.branches();
-    if branches.len() != 2 {
+    if !(2..=4).contains(&branches.len()) {
         return None;
     }
     // Require a linear path after the set. Upstream each arm can have its
@@ -257,10 +257,14 @@ pub(crate) fn physical_materialized_set_witness(
         .iter()
         .map(|branch| map(branch.witness_boundary()?))
         .collect::<Option<Vec<_>>>()?;
-    if mapped_relations[0].relation() == mapped_relations[1].relation()
-        && mapped_relations[0].tuple_columns() != mapped_relations[1].tuple_columns()
-    {
-        return None;
+    let mut physical_columns = std::collections::BTreeMap::new();
+    for boundary in &mapped_relations {
+        if physical_columns
+            .insert(boundary.relation(), boundary.tuple_columns())
+            .is_some_and(|previous| previous != boundary.tuple_columns())
+        {
+            return None;
+        }
     }
     crate::outcome_proofs::construct_mapped_set(bundle, query, goal, rows, &map)
 }
