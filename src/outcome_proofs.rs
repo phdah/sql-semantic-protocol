@@ -749,8 +749,7 @@ fn construct_set_with_map(
             let output_per_tuple = case.output_tuple_count();
             if output_per_tuple == 0
                 || (output_per_tuple != 1
-                    && (!values.is_empty()
-                        || !rows.is_multiple_of(output_per_tuple)))
+                    && (!values.is_empty() || !rows.is_multiple_of(output_per_tuple)))
             {
                 return false;
             }
