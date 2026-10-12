@@ -601,16 +601,17 @@ fn dbt_catalog_projection_histograms_match_raw_sql_physical_inversion() {
 #[test]
 fn dbt_catalog_and_direct_sql_share_closed_world_negative_source_cardinality() {
     use sql_semantic_protocol::{
-        physical_joint_source_plan, RelationSchema, SchemaColumn, WitnessDirection,
-        WitnessFormula, WitnessObligation, BooleanTruthCase,
+        physical_joint_source_plan, BooleanTruthCase, RelationSchema, SchemaColumn,
+        WitnessDirection, WitnessFormula, WitnessObligation,
     };
 
     let mut manifest: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
     manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] =
         serde_json::json!("SELECT id, amount FROM warehouse.raw.orders");
-    manifest["nodes"]["model.demo.final_orders"]["compiled_code"] =
-        serde_json::json!("SELECT id, amount FROM warehouse.analytics.stg_orders WHERE amount > 100");
+    manifest["nodes"]["model.demo.final_orders"]["compiled_code"] = serde_json::json!(
+        "SELECT id, amount FROM warehouse.analytics.stg_orders WHERE amount > 100"
+    );
     let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
     let catalog = fixture_catalog();
     let dialect = dialect_from_str("postgres").unwrap();
@@ -624,14 +625,16 @@ fn dbt_catalog_and_direct_sql_share_closed_world_negative_source_cardinality() {
                 SchemaColumn::from_sql_type("id", "INTEGER", "postgresql").unwrap(),
                 SchemaColumn::from_sql_type("amount", "BIGINT", "postgresql").unwrap(),
             ],
-        ).unwrap(),
+        )
+        .unwrap(),
         RelationSchema::new(
             "warehouse.analytics.stg_orders",
             vec![
                 SchemaColumn::from_sql_type("id", "INTEGER", "postgresql").unwrap(),
                 SchemaColumn::from_sql_type("amount", "BIGINT", "postgresql").unwrap(),
             ],
-        ).unwrap(),
+        )
+        .unwrap(),
     ];
     let statements = [
         SqlInput::inline(
@@ -650,7 +653,8 @@ fn dbt_catalog_and_direct_sql_share_closed_world_negative_source_cardinality() {
     let raw = analyze_configured_inputs_with_catalog(
         &configured,
         &RelationCatalog::from_schemas(&schemas).unwrap(),
-    ).unwrap();
+    )
+    .unwrap();
 
     let check = |bundle: &sql_semantic_protocol::AnalysisBundle| {
         let stage = layer_for_relation(bundle.layers(), "warehouse.analytics.stg_orders");
@@ -661,26 +665,35 @@ fn dbt_catalog_and_direct_sql_share_closed_world_negative_source_cardinality() {
             panic!("adapter did not preserve physical-source negative proof: {plan:?}");
         };
         assert_eq!(plan.sources(), &["warehouse.raw.orders".to_string()]);
-        assert!(cases.iter().any(|case| {
-            let obligations = case.obligations();
-            obligations.iter().any(|obligation| matches!(
-                obligation,
-                WitnessObligation::Rows {
-                    boundary, bounds,
-                    predicate: WitnessFormula::RowTruth {
-                        truth: BooleanTruthCase::NotTrue, ..
-                    },
-                    closed_world: true, ..
-                } if boundary.relation() == "warehouse.raw.orders"
-                    && bounds.minimum() == 3 && bounds.maximum() == Some(3)
-            )) && obligations.iter().any(|obligation| matches!(
-                obligation,
-                WitnessObligation::ClosedWorld { boundary, .. }
-                    if boundary.relation() == "warehouse.raw.orders"
-            )) && obligations.iter().filter(|obligation| matches!(
-                obligation, WitnessObligation::OutputRows { .. }
-            )).count() == 2
-        }), "adapter lost joint rejection or full source coverage: {plan:?}");
+        assert!(
+            cases.iter().any(|case| {
+                let obligations = case.obligations();
+                obligations.iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::Rows {
+                            boundary, bounds,
+                            predicate: WitnessFormula::RowTruth {
+                                truth: BooleanTruthCase::NotTrue, ..
+                            },
+                            closed_world: true, ..
+                        } if boundary.relation() == "warehouse.raw.orders"
+                            && bounds.minimum() == 3 && bounds.maximum() == Some(3)
+                    )
+                }) && obligations.iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::ClosedWorld { boundary, .. }
+                            if boundary.relation() == "warehouse.raw.orders"
+                    )
+                }) && obligations
+                    .iter()
+                    .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                    .count()
+                    == 2
+            }),
+            "adapter lost joint rejection or full source coverage: {plan:?}"
+        );
     };
     check(&adapted);
     check(&raw);
