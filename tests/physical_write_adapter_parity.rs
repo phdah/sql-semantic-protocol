@@ -33,7 +33,8 @@ fn dbt_catalog_schema_and_direct_sql_share_canonical_write_states() {
                     SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
                     SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
                 ],
-            ).unwrap()
+            )
+            .unwrap()
         })
         .collect::<Vec<_>>();
     let direct_catalog = RelationCatalog::from_schemas(&schemas).unwrap();
@@ -41,9 +42,15 @@ fn dbt_catalog_schema_and_direct_sql_share_canonical_write_states() {
     let input = SqlInput::inline(SQL);
     let make_bundle = |catalog: &RelationCatalog| {
         analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("direct", &input, "postgresql", &dialect)],
+            &[ConfiguredSqlInput::new(
+                "direct",
+                &input,
+                "postgresql",
+                &dialect,
+            )],
             catalog,
-        ).unwrap()
+        )
+        .unwrap()
     };
     let direct = make_bundle(&direct_catalog);
     let from_dbt_metadata = make_bundle(&dbt_catalog);
@@ -59,9 +66,7 @@ fn dbt_catalog_schema_and_direct_sql_share_canonical_write_states() {
         ]))
         .unwrap(),
     ];
-    let initial = vec![
-        PhysicalWriteState::new("warehouse.raw.orders", rows).unwrap(),
-    ];
+    let initial = vec![PhysicalWriteState::new("warehouse.raw.orders", rows).unwrap()];
     let plan = |bundle: &sql_semantic_protocol::AnalysisBundle| {
         physical_ordered_write_state_plan(bundle, &initial)
     };
