@@ -66,7 +66,10 @@ fn dbt_catalog_schema_and_direct_sql_share_canonical_write_states() {
         ]))
         .unwrap(),
     ];
-    let initial = vec![PhysicalWriteState::new("warehouse.raw.orders", rows).unwrap()];
+    let initial = vec![
+        PhysicalWriteState::new("warehouse.raw.orders", rows).unwrap(),
+        PhysicalWriteState::new("warehouse.analytics.stg_orders", vec![]).unwrap(),
+    ];
     let plan = |bundle: &sql_semantic_protocol::AnalysisBundle| {
         physical_ordered_write_state_plan(bundle, &initial)
     };
