@@ -274,3 +274,52 @@ fn unsupported_filter_and_missing_schema_remain_residual() {
         WitnessDirection::Residual { .. }
     ));
 }
+
+#[test]
+fn joint_histograms_reconcile_transparent_count_only_and_empty_goals() {
+    let b = bundle(
+        &["SELECT a AS x FROM t", "SELECT b AS y FROM t"],
+        "postgresql",
+    );
+    let histogram_goal = OutcomeGoal::new(
+        b.layers()[0].id(),
+        Some(3),
+        None,
+        vec![buckets("x", &[(ConstraintValue::Null, 1), (ConstraintValue::Integer(3), 2)])],
+    ).unwrap();
+    let count = OutcomeGoal::new(b.layers()[1].id(), Some(3), None, Vec::new()).unwrap();
+    let proof = physical_joint_distribution_plan(&b, &[histogram_goal.clone(), count]);
+    let WitnessDirection::Feasible(cases) = proof else {
+        panic!("transparent count must reuse complete histogram source: {proof:?}");
+    };
+    assert_eq!(
+        cases[0].obligations().iter().filter(|obligation| {
+            matches!(obligation, WitnessObligation::OperatorPopulation { .. })
+        }).count(),
+        1,
+    );
+    let conflict = OutcomeGoal::new(b.layers()[1].id(), Some(2), None, Vec::new()).unwrap();
+    assert_eq!(
+        physical_joint_distribution_plan(&b, &[histogram_goal, conflict]),
+        WitnessDirection::Impossible,
+    );
+
+    let empty = [
+        OutcomeGoal::new(
+            b.layers()[0].id(),
+            Some(0),
+            None,
+            vec![buckets("x", &[(ConstraintValue::Integer(1), 0)])],
+        ).unwrap(),
+        OutcomeGoal::new(
+            b.layers()[1].id(),
+            Some(0),
+            None,
+            vec![buckets("y", &[(ConstraintValue::Null, 0)])],
+        ).unwrap(),
+    ];
+    assert!(matches!(
+        physical_joint_distribution_plan(&b, &empty),
+        WitnessDirection::Feasible(_),
+    ));
+}
