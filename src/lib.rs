@@ -160,6 +160,7 @@ pub use protocol::{
     WindowSpecification, WriteAffectedRows, WriteCardinalityRule, WriteCountError,
     WriteEffectAction, WriteEffectBranch, WriteIdempotence, WriteInitialState, WriteKind,
     WriteOperation, WritePostState, WriteRowCounts, WriteStateEffect, WriteUncertainty, WriteValue,
+    WriteDefinitionMode,
     PROTOCOL_VERSION,
 };
 pub use relation::{
