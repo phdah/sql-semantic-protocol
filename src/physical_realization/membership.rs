@@ -101,15 +101,17 @@ pub(super) fn physical_subquery_membership_plan(
     // Only nonempty constructions need the entire nested predicate to be
     // certified as correlated key equalities. Empty-inner source proofs remain
     // valid even when other certified inner filters are present.
-    let safe_nonempty = local.inner_column_domains().is_empty()
-        && match inner_filter {
-            None => local.correlations().is_empty(),
-            Some(predicate) => {
-                !local.correlations().is_empty() && correlated_equalities_only(predicate)
-            }
-        };
+    let safe_nonempty = match inner_filter {
+        None => local.correlations().is_empty() && local.inner_column_domains().is_empty(),
+        // The normal domain analyzer cannot attach a scalar bound to a
+        // correlation, so its Unknown(column-vs-column) domains do not veto
+        // an otherwise exact, fully enumerated typed correlation witness.
+        // No additional inner filter is accepted on this path.
+        Some(predicate) => {
+            !local.correlations().is_empty() && correlated_equalities_only(predicate)
+        }
+    };
 
-    eprintln!("TEMP diagnostic: kind={:?} correlations={:?} membership={:?} inner_domains={:?} filter={:?} safe_nonempty={}", local.kind(), local.correlations(), local.membership_key(), local.inner_column_domains(), inner_filter, safe_nonempty);
     let positive = wanted > 0;
     let direction = if positive {
         local.qualifying()
@@ -175,7 +177,6 @@ pub(super) fn physical_subquery_membership_plan(
 
     let outer_rows = wanted.max(1);
     let mut cases = Vec::new();
-    eprintln!("TEMP diagnostic populations: {:?}", populations);
     for (membership_case, inner_rows, nonmatching) in populations {
         if (inner_rows > 0 && !safe_nonempty) || !allowed.contains(&membership_case) {
             continue;
@@ -330,6 +331,5 @@ pub(super) fn physical_subquery_membership_plan(
             cases.push(case);
         }
     }
-    eprintln!("TEMP diagnostic case count {}", cases.len());
     WitnessDirection::feasible(cases)
 }
