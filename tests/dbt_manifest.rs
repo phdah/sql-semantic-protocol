@@ -535,7 +535,9 @@ fn dbt_catalog_projection_histograms_match_raw_sql_physical_inversion() {
             "CREATE TABLE warehouse.analytics.final_orders AS SELECT value + 1 AS adjusted FROM warehouse.analytics.stg_orders",
         ),
     ];
-    let ids = (0..inputs.len()).map(|n| format!("q{n}")).collect::<Vec<_>>();
+    let ids = (0..inputs.len())
+        .map(|n| format!("q{n}"))
+        .collect::<Vec<_>>();
     let configured = inputs
         .iter()
         .zip(&ids)
@@ -551,33 +553,42 @@ fn dbt_catalog_projection_histograms_match_raw_sql_physical_inversion() {
             OutputValueCount::new(ConstraintValue::Integer(5), 2),
             OutputValueCount::new(ConstraintValue::Null, 1),
         ],
-    ).unwrap();
+    )
+    .unwrap();
     let adapted_id = layer_for_relation(adapted.layers(), "warehouse.analytics.final_orders")
-        .id().to_string();
-    adapted.set_outcome_goals(&[
-        OutcomeGoal::new(adapted_id, Some(3), None, vec![histogram.clone()]).unwrap(),
-    ]).unwrap();
+        .id()
+        .to_string();
+    adapted
+        .set_outcome_goals(&[
+            OutcomeGoal::new(adapted_id, Some(3), None, vec![histogram.clone()]).unwrap(),
+        ])
+        .unwrap();
 
     let raw_id = layer_for_relation(raw.layers(), "warehouse.analytics.final_orders")
-        .id().to_string();
-    raw.set_outcome_goals(&[
-        OutcomeGoal::new(raw_id, Some(3), None, vec![histogram]).unwrap(),
-    ]).unwrap();
+        .id()
+        .to_string();
+    raw.set_outcome_goals(&[OutcomeGoal::new(raw_id, Some(3), None, vec![histogram]).unwrap()])
+        .unwrap();
 
-    assert_eq!(adapted.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
+    assert_eq!(
+        adapted.outcome_goals()[0].status(),
+        OutcomeGoalStatus::Feasible
+    );
     assert_eq!(raw.outcome_goals()[0].status(), OutcomeGoalStatus::Feasible);
     let Some(OutcomeWitness::SourceRows {
         relation: adapted_relation,
         rows: adapted_rows,
         columns: adapted_columns,
-    }) = adapted.outcome_goals()[0].witness() else {
+    }) = adapted.outcome_goals()[0].witness()
+    else {
         panic!("dbt must expose the canonical physical-source histogram");
     };
     let Some(OutcomeWitness::SourceRows {
         relation: raw_relation,
         rows: raw_rows,
         columns: raw_columns,
-    }) = raw.outcome_goals()[0].witness() else {
+    }) = raw.outcome_goals()[0].witness()
+    else {
         panic!("direct SQL must expose the canonical physical-source histogram");
     };
     assert_eq!(adapted_relation, raw_relation);
