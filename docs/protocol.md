@@ -1241,8 +1241,14 @@ output frequency to exactly one typed physical source column, and the
 catalog must contain the actual materialized output columns, including
 renames. The existing `source_rows` wire witness then records complete
 typed frequencies for the physical column, not intermediate aliases.
-Computed or ambiguous projections, unsupported row shaping, and unknown
-catalog columns remain residual.
+Duplicate aliases must agree on their complete frequencies, ignoring
+zero-count bucket decorations. A final SELECT may use guarded reversible
+signed-integer +, -, and unary negation over one traced column after a
+certified transparent producer chain, provided each source and intermediate
+value is in range and NULL is preserved. This is emitted as ordinary
+physical-column frequencies, with no new wire contract. Lossy or
+unguarded computations, unsupported row shaping, mismatched producer
+datatypes and unknown catalog columns remain residual.
 
 Each `physical_nodes[]` entry may additionally expose
 `operator_witnesses` and `pending_producers`. These are the normalized,
