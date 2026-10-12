@@ -397,7 +397,7 @@ fn mutate_rows(
     let mut kept = Vec::new();
     let mut affected = 0_u64;
     for row in &before.rows {
-        let context = Context { target: Some((target, row)), source: None };
+        let context = Context { target: Some((target, row)), target_alias: write.target_alias(), source: None };
         if !selected(write.selection(), &context, &[])? {
             kept.push(row.clone());
             continue;
@@ -444,7 +444,7 @@ fn merge_rows(
     let mut retained = Vec::new();
     for target_row in &before.rows {
         let matches = source_rows.rows.iter().enumerate().filter_map(|(index, source_row)| {
-            let context = Context { target: Some((target, target_row)), source: Some((source.name(), source_row)) };
+            let context = Context { target: Some((target, target_row)), target_alias: write.target_alias(), source: Some((source.name(), source_row)) };
             match selected(Some(match_condition), &context, &aliases) {
                 Ok(true) => Some(Ok(index)),
                 Ok(false) => None,
@@ -458,7 +458,7 @@ fn merge_rows(
         if let Some(index) = matches.first().copied() {
             matched_sources.insert(index);
             let source_row = &source_rows.rows[index];
-            let context = Context { target: Some((target, target_row)), source: Some((source.name(), source_row)) };
+            let context = Context { target: Some((target, target_row)), target_alias: write.target_alias(), source: Some((source.name(), source_row)) };
             for clause in write.merge_clauses() {
                 if clause.match_kind() != MergeMatchKind::Matched
                     || !selected(clause.predicate(), &context, &aliases)? {
@@ -477,7 +477,7 @@ fn merge_rows(
                 break; // SQL's first-applicable branch, not independent actions.
             }
         } else {
-            let context = Context { target: Some((target, target_row)), source: None };
+            let context = Context { target: Some((target, target_row)), target_alias: write.target_alias(), source: None };
             for clause in write.merge_clauses() {
                 if clause.match_kind() != MergeMatchKind::NotMatchedBySource
                     || !selected(clause.predicate(), &context, &aliases)? {
@@ -498,7 +498,7 @@ fn merge_rows(
     }
     for (index, source_row) in source_rows.rows.iter().enumerate() {
         if matched_sources.contains(&index) { continue; }
-        let context = Context { target: None, source: Some((source.name(), source_row)) };
+        let context = Context { target: None, target_alias: write.target_alias(), source: Some((source.name(), source_row)) };
         for clause in write.merge_clauses() {
             if !matches!(clause.match_kind(), MergeMatchKind::NotMatched | MergeMatchKind::NotMatchedByTarget)
                 || !selected(clause.predicate(), &context, &aliases)? {
@@ -570,6 +570,7 @@ fn evaluate_simple_select(
 
 struct Context<'a> {
     target: Option<(&'a str, &'a PhysicalWriteRow)>,
+    target_alias: Option<&'a str>,
     source: Option<(&'a str, &'a PhysicalWriteRow)>,
 }
 
@@ -582,7 +583,7 @@ fn column<'a>(context: &'a Context<'_>, aliases: &[&str], relation: Option<&str>
                 }
             }
             if let Some((target, row)) = context.target {
-                if qualifier == target {
+                if qualifier == target || context.target_alias == Some(qualifier) {
                     return row.values.get(name).ok_or_else(|| residual("target column missing"));
                 }
             }
@@ -762,7 +763,7 @@ fn compare(a: &LiteralValue, operator: ComparisonOperator, b: &LiteralValue) -> 
         ComparisonOperator::Lte => order.is_le(),
         ComparisonOperator::Gt => order.is_gt(),
         ComparisonOperator::Gte => order.is_ge(),
-        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => unreachable!(),
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => return Err(residual("unexpected distinct comparison boundary")),
     };
     Ok(if ok { Truth::True } else { Truth::False })
 }
@@ -792,7 +793,7 @@ fn apply_assignments(
             let Some((canonical, _)) = context.target else {
                 return Err(residual("update assignment has no target"));
             };
-            if qualifier != canonical { return Err(residual("unresolved target column alias")); }
+            if qualifier != canonical && context.target_alias != Some(qualifier) { return Err(residual("unresolved target column alias")); }
             column
         } else { target };
         if !before.values.contains_key(name) {
