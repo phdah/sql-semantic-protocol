@@ -3,8 +3,11 @@
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
   "task_68_physical_source_evidence": {
-    "status": "partial_reference_dag_and_zero_row_proof_release_blocked",
+    "status": "verified_bounded_physical_source_contract_release_blocked",
     "owner": "TASK-68",
+    "signoff_task": "TASK-100",
+    "signoff_document": "docs/task-68-signoff.md",
+    "release_gate": "blocked_TASK_91",
     "canonical_contract": "reference DAG, typed full physical source row populations, closed-world join-key patterns, and jointly coupled terminal row-count plans",
     "rust_api": [
       "physical_source_plan",
@@ -70,7 +73,10 @@
       "outer_join_empty_partner_null_extensions",
       "semi_anti_matching_and_absence_cases",
       "joint_multi_terminal_join_key_reconciliation",
-      "necessary_join_positive_versus_transparent_zero_impossibility"
+      "necessary_join_positive_versus_transparent_zero_impossibility",
+      "complete_group_rank_set_operator_populations_with_proven_upstream_laws",
+      "ordered_insert_update_delete_merge_and_supported_ddl_before_after_states",
+      "protocol_owned_versioned_sql_dbt_conformance_suite_signoff"
     ],
     "evidence": [
       "tests/physical_realization.rs",
@@ -81,12 +87,19 @@
       "tests/protocol_conformance_dbt_e2e.rs",
       "tests/protocol_conformance_dialect_laws.rs",
       "docs/conformance-suite.md",
+      "docs/task-68-signoff.md",
+      "tests/task_68_signoff.rs",
+      "tests/physical_realization/joint_operators.rs",
+      "tests/physical_realization/negative_cardinality.rs",
+      "tests/physical_write_states.rs",
+      "tests/physical_write_adapter_parity.rs",
+      "tests/protocol_conformance_physical.rs",
       "docs/protocol.md"
     ],
     "unproved_scope": [
       "full_nonzero_cardinality",
       "general_negative_absence",
-      "DML_and_transaction_state_realization",
+      "general_DML_and_transaction_state_realization_beyond_proven_ordered_programs",
       "cross_feature_generator_signoff",
       "unproved_joint_mixed_operator_relational_dags",
       "cross_row_shared_source_correlations_beyond_scalar_truth",
@@ -98,7 +111,7 @@
       "unproved_value_distributions_across_filter_join_group_window_DAGs",
       "unproved_general_non_bijective_scalar_inversion"
     ],
-    "release_limit": "This records foundational partial evidence only. All TASK-68 acceptance criteria remain open and the 3.0.0 release gate is held.",
+    "release_limit": "TASK-68 is closed only for proven bounded, source-independent physical construction plus explicit impossible/residual diagnostics. General operator variants, downstream generator acceptance and 3.0.0 release remain unverified and blocked by TASK-70..91.",
     "child_tasks": [
       "TASK-93",
       "TASK-94",
@@ -111,8 +124,8 @@
     ],
     "next_task_after_foundation": "TASK-93",
     "next_dependency_ready_after_TASK_96_merge": "TASK-97",
-    "next_dependency_ready_after_TASK_99_merge": "TASK-100",
-    "closure_rule": "TASK-68 remains In Progress until TASK-93..100 are Done and all six parent acceptance criteria are verified; release TASK-91 remains blocked independently."
+    "next_dependency_ready_after_TASK_99_merge": "TASK-100 (Done in TASK-68 closure PR)",
+    "closure_rule": "TASK-68 closed after TASK-93..100 and all six original criteria were verified. This is bounded protocol-side proof closure, not sql-tdg generation or TASK-91 release sign-off."
   },
   "task_99_protocol_conformance_contract": {
     "owner": "TASK-99",
