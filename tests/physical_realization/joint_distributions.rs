@@ -14,7 +14,9 @@ fn buckets(column: &str, entries: &[(ConstraintValue, u64)]) -> OutputDistributi
     .expect("typed histogram")
 }
 
-fn targets(bundle: &AnalysisBundle, rows: u64, input: &[(usize, &str, Vec<(ConstraintValue, u64)>)]) -> Vec<OutcomeGoal> {
+type HistogramTarget<'a> = (usize, &'a str, Vec<(ConstraintValue, u64)>);
+
+fn targets(bundle: &AnalysisBundle, rows: u64, input: &[HistogramTarget<'_>]) -> Vec<OutcomeGoal> {
     input
         .iter()
         .map(|(layer, column, values)| {
