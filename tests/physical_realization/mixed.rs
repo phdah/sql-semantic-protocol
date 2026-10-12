@@ -723,8 +723,8 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
             let WitnessDirection::Feasible(cases) = plan.outcome() else {
                 panic!("{dialect} {keyword}: expected physical proof: {plan:?}");
             };
-            assert!(cases.iter().any(|case| {
-                case.obligations().iter().any(|obligation| {
+            let complete_membership = cases.iter().any(|case| {
+                let matched = case.obligations().iter().any(|obligation| {
                     matches!(
                         obligation,
                         WitnessObligation::Membership {
@@ -733,7 +733,8 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
                             ..
                         }
                     )
-                }) && [("orders", wanted.max(1)), ("lines", 1)]
+                });
+                let complete_counts = [("orders", wanted.max(1)), ("lines", 1)]
                     .iter()
                     .all(|(relation, count)| {
                         case.obligations().iter().any(|obligation| {
@@ -745,8 +746,13 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
                                         && bounds.maximum() == Some(*count)
                             )
                         })
-                    })
-            }), "{dialect} {keyword}: expected complete membership case: {plan:?}");
+                    });
+                matched && complete_counts
+            });
+            assert!(
+                complete_membership,
+                "{dialect} {keyword}: expected complete membership case: {plan:?}"
+            );
 
             // The proof controls every physical row. Duplicated and NULL
             // outer values still survive EXISTS; one NULL inner row suffices.
