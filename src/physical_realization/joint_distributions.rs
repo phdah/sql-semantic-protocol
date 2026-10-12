@@ -28,6 +28,12 @@ pub fn physical_joint_distribution_plan(
     // A complete empty result has one uniquely determined histogram: every
     // bucket has frequency zero. Reuse the canonical joint closed-world count
     // proof rather than pretending an arbitrary intermediate table is writable.
+    if goals.iter().any(|goal| goal.rows().is_none()) {
+        return residual(PhysicalProofGap::LocalWitnessUnproven);
+    }
+    if goals.iter().any(|goal| goal.groups().is_some()) {
+        return residual(PhysicalProofGap::UnprovedCrossRowCorrelation);
+    }
     let exact = goals
         .iter()
         .map(|goal| {
