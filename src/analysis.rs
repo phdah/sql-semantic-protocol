@@ -53,8 +53,8 @@ use crate::protocol::{
     SetOperator, SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression, SourceRelation,
     SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
     UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
-    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteOperation,
-    WriteValue, WriteDefinitionMode,
+    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteDefinitionMode,
+    WriteOperation, WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 
@@ -218,9 +218,18 @@ fn analyze_statement(
             }
             None => unsupported_queryless_create_table(),
         },
-        SqlStatement::CreateView { name, query, or_replace, .. } => {
+        SqlStatement::CreateView {
+            name,
+            query,
+            or_replace,
+            ..
+        } => {
             let target = name.to_string();
-            let mode = if *or_replace { WriteDefinitionMode::ReplaceView } else { WriteDefinitionMode::CreateView };
+            let mode = if *or_replace {
+                WriteDefinitionMode::ReplaceView
+            } else {
+                WriteDefinitionMode::CreateView
+            };
             ProtocolStatement::Query(
                 analyze_query(query, Some(target.clone()), metadata)
                     .with_write(Some(WriteOperation::definition(target, mode))),
