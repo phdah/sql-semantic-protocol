@@ -129,7 +129,7 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
         ("unioned_orders", "amount::VARCHAR || ':' || region", &["42:north", "42:north"]),
     ];
     for (name, expr, expected) in snapshots {
-        let query = format!("SELECT {expr} FROM raw_analytics.\\"{name}\\" ORDER BY 1");
+        let query = format!("SELECT {expr} FROM raw_analytics.{name} ORDER BY 1");
         let mut statement = db.prepare(&query).expect("snapshot query");
         let observed = statement
             .query_map([], |row| row.get::<_, String>(0))
@@ -139,7 +139,7 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
         assert_eq!(observed, expected, "{name}: complete physical output changed");
     }
     for relation in ["orders", "customers", "legacy_orders", "returns"] {
-        let query = format!("SELECT COUNT(*) FROM raw.\\"{relation}\\"");
+        let query = format!("SELECT COUNT(*) FROM raw.{relation}");
         let rows: i64 = db.query_row(&query, [], |row| row.get(0)).unwrap();
         assert_eq!(rows, 2, "{relation}: pinned source was not materialized");
     }
