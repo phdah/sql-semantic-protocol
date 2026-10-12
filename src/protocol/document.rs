@@ -1,21 +1,6 @@
-//! Root protocol document and statement metadata.
+//! Root SQL Semantic Protocol document and statement metadata.
 
 use super::*;
-
-//! Parser-independent SQL Semantic Protocol domain values.
-//!
-//! The Rust model intentionally contains no sqlparser AST types. Unknown and unsupported
-//! semantics remain explicit so consumers can distinguish incomplete analysis from known values.
-
-use std::collections::BTreeSet;
-
-use crate::boolean_witness::BooleanWitness;
-use crate::constraints::RelationConstraintSet;
-use crate::group_witness::GroupWitness;
-use crate::window_witness::WindowWitness;
-
-/// Current protocol version emitted by this crate.
-pub const PROTOCOL_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Root SQL Semantic Protocol document.
 #[derive(Debug, Clone, PartialEq, Eq)]
