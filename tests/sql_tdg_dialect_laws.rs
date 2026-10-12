@@ -78,6 +78,7 @@ fn shared_pinned_operator_shapes_have_identical_canonical_outcomes() {
                 Err(Error::Analysis(error)) => {
                     panic!("{label}/{dialect}: parsed shared SQL lost canonical analysis: {error}")
                 }
+                Err(error) => panic!("{label}/{dialect}: unexpected protocol failure: {error}"),
             }
         }
         assert!(
