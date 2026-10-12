@@ -450,3 +450,48 @@ fn complete_bool_text_and_null_histograms_preserve_declared_column_types() {
     ).unwrap();
     assert_eq!(actual, (3,2,1));
 }
+
+#[test]
+fn reversed_computed_aliases_reconcile_and_detect_necessary_conflicts() {
+    for &dialect in DIALECTS {
+        let mut b = bundle_with_schemas(
+            &["SELECT a + 1 AS x, 5 - a AS y FROM t"],
+            dialect,
+            &[schema("t", &[("a", "INTEGER")])],
+        );
+        goal(
+            &mut b,
+            0,
+            2,
+            vec![
+                histogram("x", &[(ConstraintValue::Integer(4), 2)]),
+                histogram("y", &[(ConstraintValue::Integer(2), 2)]),
+            ],
+        );
+        let Some(OutcomeWitness::SourceRows { columns, .. }) = b.outcome_goals()[0].witness()
+        else {
+            panic!("{dialect}: both inverses refer to two rows of a=3");
+        };
+        assert_eq!(columns.len(), 1);
+        assert_eq!(columns[0].column(), "a");
+        assert_eq!(
+            columns[0].values(),
+            &[OutputValueCount::new(ConstraintValue::Integer(3), 2)],
+        );
+
+        goal(
+            &mut b,
+            0,
+            2,
+            vec![
+                histogram("x", &[(ConstraintValue::Integer(4), 2)]),
+                histogram("y", &[(ConstraintValue::Integer(7), 2)]),
+            ],
+        );
+        assert_eq!(
+            b.outcome_goals()[0].status(),
+            OutcomeGoalStatus::Unsatisfiable,
+            "{dialect}: a=3 and a=-2 cannot both be the complete same physical bag",
+        );
+    }
+}
