@@ -1292,3 +1292,18 @@ Exact producer-composed `Membership(no_candidates)` certifies an empty complete 
 For `rank_population`, the protocol carries `boundary`, `partition_key`, `order` (column, ascending and nulls_first), `partitions` (positive), `rows_per_partition` (positive), `rank_limit` (nonnegative) and `closed_world: true`. One complete homogeneous source population assigns partition keys `0..partitions-1` and distinct order keys `0..rows_per_partition-1` within every partition. Exactly `partitions * min(rows_per_partition, rank_limit)` rows survive ROW_NUMBER()/QUALIFY. Materialized JOIN inputs additionally require a compatible complete `join_population` on the same physical partition key, without treating the join output as writable.
 
 Set `operator_population` compositions cover up to four locally proven, type-certified, lossless producer branches, including nested UNION/UNION ALL/INTERSECT/EXCEPT trees. Their typed per-branch tuple counts are reconciled only after mapping all boundaries to physical source identities, preserving SQL bag multiplicity and NULL-safe tuple equality. A shared-source EXCEPT/EXCEPT ALL zero-output proof requires two complete copies of the same physical tuple column; a filtered copy cannot substitute. Aggregate-derived COUNT(*) Boolean filters and non-NULL COUNT(group-key) groups lift exact contributor cardinalities while unsupported expressions retain typed residuals.
+
+
+### Ordered DML/DDL physical state evidence (TASK-98)
+
+The active write-operation JSON schema adds \`target_alias\` (nullable
+resolved SQL target qualifier) and \`definition_mode\` (nullable
+\`create_table\`, \`replace_table\`, \`create_view\`,
+\`replace_view\`). These are explicit semantic facts rather than inferred
+table-writability hints. The corresponding Rust API
+\`physical_ordered_write_state_plan\` yields typed
+\`PhysicalWriteStatePlan::{Feasible, Impossible, Residual}\` outcomes.
+Feasible results carry complete input and final physical rows and
+ordered transitions; residuals carry a typed \`PhysicalWriteStateGap\`
+and reason. See [semantics](semantics.md) for the exact allow-list and
+unproved physical lifecycle/transaction laws.
