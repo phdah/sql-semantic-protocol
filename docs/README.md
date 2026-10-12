@@ -14,7 +14,7 @@ Start with the [project README](../README.md) for an overview and first commands
 | [Generator release coverage](coverage.md) | 13-dialect feature and syntax-variant matrix, test evidence and downstream sign-off gate |
 | [Machine-readable coverage manifest](coverage-manifest.json) | Release-scoped feature variants, per-dialect evidence and executable fixtures |
 | [Protocol conformance suite](conformance-suite.md) | Versioned fixtures, output oracles and consumer handoff |
-| [TASK-68 physical-source evidence audit](task-68-signoff.md) | Bounded constructive evidence, outstanding in-scope proof gaps and release separation |
+| [TASK-68 physical-source sign-off](task-68-signoff.md) | Exact bounded JOIN/GROUP construction, joint terminal oracles, residual boundaries and independent release gate |
 | [Versioning and releases](releasing.md) | Shared application/protocol version and release automation |
 
 ## Historical contracts

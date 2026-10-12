@@ -1,11 +1,11 @@
-# TASK-100: TASK-68 physical-source composition evidence audit (acceptance pending)
+# TASK-100: TASK-68 bounded physical-source composition sign-off
 
-This documents bounded **protocol-side** evidence, not completion of the original
-TASK-68 acceptance criteria, approval to publish 3.0.0, or certification
-of sql-tdg's generator. The authoritative physical
-construction result is a typed `Feasible`, `Impossible` or `Residual`
-decision. A DuckDB example that happens to execute does **not** upgrade a
-residual into a general constructive proof.
+This certifies the original TASK-68 acceptance criteria for the documented
+**bounded constructive and typed fail-closed protocol scope**. It does not
+approve protocol 3.0.0, unverified feature/dialect variants or sql-tdg's
+generator. The authoritative source construction result remains typed
+`Feasible`, `Impossible` or `Residual`. A successful DuckDB example
+by itself never upgrades a general residual to a constructive proof.
 
 ## Preconditions and evidence ownership
 
@@ -26,15 +26,15 @@ The original physical reference DAG starts in merged PR
 [#92](https://github.com/phdah/sql-semantic-protocol/pull/92).
 Backlog status is never a substitute for the proof tests below.
 
-## Parent acceptance-criteria evidence and remaining gaps
+## Original parent acceptance-criteria traceability
 
 | TASK-68 AC | Implementation and safety argument | Checks and public contract |
 | --- | --- | --- |
 | **#1** Physical identity, truth, lineage, multiplicity and witness composition | `PhysicalPlanRef` deduplicates controlled leaves; `physical_joint_source_plan`, `physical_joint_row_count_plan`, `physical_joint_distribution_plan` and operator witnesses only merge assignments with a common physical identity | `joint_graph.rs`, `joint_filters.rs`, `joint_distributions.rs`, `physical_realization/graph.rs`; `docs/protocol.md` physical DAG API; `schema/protocol.schema.json` graph contracts |
-| **#2** Multi-parent, shared producer, JOIN/GROUP/HAVING/QUALIFY/set, selective projection | Operator-local proofs in `joins.rs`, `composition.rs`, `grouping.rs`, `ranking.rs`, `sets.rs`; reversible projection and value distribution in `distributions.rs`; uncertified mixed paths stay residual | `joins.rs`, `joint_operators.rs`, `group_rank_set.rs`, `nested_sets.rs`, `joint_distributions.rs` under `tests/physical_realization/`; cross-dialect conformance |
+| **#2** Multi-parent, shared producer, JOIN/GROUP/HAVING/QUALIFY/set, selective projection | Exact filtered two-parent equijoins and singleton joined GROUP/HAVING compose through complete source bags in `joins.rs` and `grouping.rs`, including total CASE group keys; grouping/window/set subclasses remain owned by their operator-local implementations; unsupported variants stay residual | `tests/protocol_conformance_physical.rs` jointly checks positive and negative terminals, filter contradictions and DuckDB; other operator subclasses: `tests/physical_realization/{joint_operators,group_rank_set,nested_sets}.rs` |
 | **#3** Materialization, write kind and complete negative/zero exclusion | Graph nodes preserve `write_kind` and do not mistake intermediate relations for writable physical sources. `joint_counts.rs` and `filters.rs` use closed-world row obligations; `write_states.rs` models ordered before/after physical state | `tests/physical_realization/{graph,negative_cardinality}.rs`, `tests/physical_write_states.rs`, `tests/protocol_conformance_physical.rs`; `docs/protocol.md` write-state contract |
 | **#4** Cycles, inversions, contradictions, unknown and partial producers | `PhysicalProofGap`, `WitnessDirection` and `PhysicalWriteStatePlan` distinguish residual from demonstrable impossibility. Incomplete schema, ambiguous writers, unproved cross-row correlations and non-invertible expressions never yield arbitrary feasible constructions | `tests/physical_realization/{graph,joint_graph,joint_distributions,negative_cardinality}.rs`, `tests/physical_write_states.rs`; typed `gap` in active JSON schema |
-| **#5** Reproducible sql-tdg-shaped DAGs, joint terminals and DuckDB oracle | The protocol **owns** the versioned seven-raw-script, eleven-dbt-model fixture suite and four source seeds. `suite.json` states exact or residual outcomes; consumer SHA is only historical provenance. Physical source plans and DuckDB complete result bags are checked independently | `tests/protocol_conformance_{physical,dialect_laws,dbt_e2e}.rs`, `make dbt-e2e`, `docs/conformance-suite.md` |
+| **#5** Reproducible sql-tdg-shaped DAGs, joint terminals and DuckDB oracle | The protocol owns seven raw scripts, eleven dbt models and four seeds. Positive filtered INNER JOIN and joined GROUP/HAVING goals now have exact jointly satisfiable source assignments, checked independently against actual DuckDB producer DAGs; other unproved fixtures retain typed residual evidence | `tests/protocol_conformance_{physical,dialect_laws,dbt_e2e}.rs`, `make dbt-e2e`, `tests/fixtures/conformance/v1/suite.json` |
 | **#6** Unit/dialect/differential, API/JSON/schema/docs/adapters | Rust API has typed physical outcomes and deterministic ordering. The active graph JSON schema and `docs/protocol.md` expose canonical nodes, plans and typed source-state effects; dbt compiled manifest/catalog and direct SQL share semantics where their evidence is equivalent | `tests/{emission_contract,library_api,coverage_manifest,physical_write_adapter_parity,protocol_conformance_dialect_laws,protocol_conformance_dbt_e2e}.rs`, `schema/protocol.schema.json`, `docs/{adapters,protocol,code-map}.md` |
 
 ## Audit of feasible versus residual versus impossible
@@ -64,27 +64,41 @@ Backlog status is never a substitute for the proof tests below.
   `PhysicalWriteStatePlan::Residual` retain typed diagnostic evidence.
 
 Representative regressions exercise feasible, residual and impossible
-directions, SQL NULL/UNKNOWN, duplicate bags, alternative join routes, full
-state snapshots, cross-dialect canonical identities and raw SQL/dbt adapter
-parity. `tests/task_68_signoff.rs` guards the task queue, reference paths,
-and, importantly, prevents the parent from being marked Done while the
-in-scope positive goals remain unproved.
+directions, SQL NULL/UNKNOWN, duplicate bags, shared join sources, full
+before/after state snapshots, canonical dialect evidence and raw SQL/dbt
+adapter parity. `tests/task_68_signoff.rs` guards completed backlog ACs,
+actual fixture classifications, reference paths, active schema and the
+independent release boundary.
 
-## Outstanding original TASK-68 acceptance
+## Constructive positive closure and sound residual boundaries
 
-The versioned `suite.json` explicitly expects a one-row
-`mart_customer_summary` from `multi_layer_join_group` to be `Residual`,
-and one-row `core_enriched` from `joined_boundary` to be `Residual`.
-Both use named in-scope multi-parent relational DAG shapes. Their concrete
-DuckDB positive cases execute with supplied rows, but the protocol cannot
-yet construct those source rows from the terminal requirement.
+`advanced_boundary.sql` proves a positive one-row
+`core_enriched` using **complete** raw-orders and raw-customers
+bags. A typed equality on a non-join source column holds for every
+constructed physical row (integer `amount = 100`, Boolean
+`active = TRUE`). A type-attested integer equijoin controls matching
+keys and cardinalities; neither materialized stage is independently
+writable.
 
-Consequently, original TASK-68 AC #2 (positive multi-operator composition)
-and AC #5 (deterministic constructive plans for exact fixture shapes) are
-not complete. The six original ACs remain unchecked for a holistic
-re-verification, TASK-100 AC #5 stays unchecked, and both tasks remain
-In Progress. An explicitly typed residual is safe and essential, but
-is not a substitute for the requested constructive capability.
+`advanced_pipeline.sql` further proves exactly one grouped output
+`mart_customer_summary`, with a total scalar CASE group key and
+downstream `WHERE` known identical to the upstream complete source
+filter. `HAVING COUNT(*) >= 1` is evaluated for one joined row.
+A single sufficient case controls both terminal output counts, and an
+independent DuckDB pipeline with one row in each physical input
+verifies `stage_orders`, `stage_customers`, `core_enriched` and
+`mart_customer_summary`, including computed key `high`.
+Existing multi-terminal zero outputs remain feasible: positive join
+capability does not turn joint closed-world empty-source proofs into
+spurious source-count conflicts.
+
+Typed Boolean `WitnessTerm` evidence is represented in Rust and
+the JSON schema; a dialect that parses `TRUE` differently from a
+Boolean literal is not upgraded to equivalent physical construction.
+Unreconciled join-key filtering, a conflicting downstream predicate,
+multi-join or outer-join singleton grouping and other unsupported
+shapes remain typed `Residual`. Protocol-owned SQL/dbt conformance
+and the coverage manifest guard these distinctions.
 
 ## Execution gates
 
@@ -107,19 +121,22 @@ make dbt-e2e
 DuckDB physical cases. `make dbt-e2e` runs both dbt projects, including the
 11-model canonical suite and catalog-based adapter parity. The CI
 `no-default-features / dependencies` job additionally rejects accidental
-`saphyr` inclusion. The full active JSON contract is covered by Rust emission
-and schema tests; **no protocol version bump** follows from this audit-only
-closure.
+`saphyr` inclusion. Rust and JSON witnesses now include typed Boolean terms and the
+filtered JOIN/GROUP population subset. These protocol-side features
+are candidates for the separately gated 3.0.0 release; TASK-91, not
+this sign-off, controls acceptance and actual publication.
 
 ## Explicitly not certified by TASK-68
 
-The evidence audit asserts that each *documented, actually constructible subset*
-has a sound physical proof, and all unproved variants fail closed. It does not
+This sign-off asserts sound complete physical proofs for every
+*documented and constructively certified subset*, while unproved
+general variants still fail closed. It does not
 assert arbitrary positive multi-operator joins/groups/windows/sets, arbitrary
 correlated EXISTS, non-bijective scalar inversion, unconstrained complete
 distributions, all dialect-specific execution semantics, arbitrary session
-behavior, or every DML/DDL sequence is constructible. Some concrete DuckDB
-examples succeed despite general plans being residual. This gap cannot be hidden by upgrading the corresponding coverage cell.
+behavior, or every DML/DDL sequence is constructible. Some concrete DuckDB examples still succeed even when the *general*
+construction remains residual; the global release matrix must not
+be upgraded on the strength of those examples.
 
 `docs/coverage-manifest.json` deliberately keeps the global 13-dialect /
 feature variant matrix at `unverified` and `not_end_to_end_proven` until

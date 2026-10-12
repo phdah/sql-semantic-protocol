@@ -109,13 +109,14 @@ without consumer-side SQL reparsing. TASK-31/35/36 DML/DDL generation and
 randomized negative output oracles remain pending. This suite does **not**
 unblock protocol 3.0.0.
 
-## TASK-68 bounded composition evidence audit (2026-10-12)
+## TASK-68 bounded composition sign-off (2026-10-12)
 
-TASK-93..99 have bounded physical-source proof evidence in
-[docs/task-68-signoff.md](../../docs/task-68-signoff.md).
-TASK-100 and its parent TASK-68 **remain In Progress**: positive
-joined/GROUP DAG and joined-boundary fixture goals are still typed
-`Residual`, not complete constructive proofs of in-scope outcomes.
-The independently blocking feature/dialect matrix, generator
-TASK-31/35/36/43 and TASK-91 acceptance remain open; Release Please
-PR #79 must not be merged.
+TASK-93..100 close the bounded protocol-side TASK-68 proof queue in
+PR #106. Its formerly residual positive filtered JOIN and singleton
+GROUP/HAVING terminal goals now have exact complete physical-source
+assignments, verified jointly with DuckDB, adapter and cross-dialect
+evidence in [docs/task-68-signoff.md](../../docs/task-68-signoff.md).
+This **does not** certify arbitrary feature/operator combinations or
+downstream generated source rows. The independent TASK-70..90
+dialect/feature matrix, consumer TASK-31/35/36/43 and TASK-91 release
+acceptance remain open. Release Please PR #79 must not be merged.
