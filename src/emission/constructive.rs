@@ -210,7 +210,7 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
                 value["pattern_groups"] = json!(groups);
             }
             value
-        },
+        }
         crate::WitnessObligation::OperatorPopulation { witness } => json!({
             "kind": "operator_population",
             "witness": outcome_witness_to_value(witness)
