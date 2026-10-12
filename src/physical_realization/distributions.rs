@@ -95,6 +95,9 @@ pub(crate) fn physical_distribution_plan(
         let values = if projected.plain_copy_source().is_some() {
             distribution.values().to_vec()
         } else {
+            if !reversible_integer_expression(projected.expression(), lineage.column()) {
+                return None;
+            }
             let bits = integer_width(bundle, source, physical_column.name())?;
             distribution
                 .values()
@@ -177,6 +180,26 @@ fn literal_integer(expression: &Expression) -> Option<i64> {
     match literal.value() {
         LiteralValue::Number(text) => text.parse().ok(),
         _ => None,
+    }
+}
+
+/// NULL is inverted only after proving the complete expression is
+/// NULL-propagating and reversible for every non-NULL source value.
+fn reversible_integer_expression(expression: &Expression, name: &str) -> bool {
+    match expression {
+        Expression::Column(column) => column.name() == name,
+        Expression::Unary(unary) => {
+            matches!(unary.operator(), UnaryOperator::Plus | UnaryOperator::Minus)
+                && reversible_integer_expression(unary.operand(), name)
+        }
+        Expression::Binary(binary) => {
+            matches!(binary.operator(), BinaryOperator::Add | BinaryOperator::Subtract)
+                && ((literal_integer(binary.right()).is_some()
+                    && reversible_integer_expression(binary.left(), name))
+                    || (literal_integer(binary.left()).is_some()
+                        && reversible_integer_expression(binary.right(), name)))
+        }
+        _ => false,
     }
 }
 
