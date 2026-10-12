@@ -387,3 +387,66 @@ fn unrelated_computation_is_not_declared_total_from_another_column_histogram() {
         OutcomeGoalStatus::Residual
     );
 }
+
+#[test]
+fn complete_bool_text_and_null_histograms_preserve_declared_column_types() {
+    let source = [
+        schema("t", &[("flag", "BOOLEAN"), ("label", "VARCHAR(8)")]),
+    ];
+    let mut b = bundle_with_schemas(
+        &["SELECT flag AS out_flag, label AS out_text FROM t"],
+        "postgresql",
+        &source,
+    );
+    goal(
+        &mut b,
+        0,
+        3,
+        vec![
+            histogram(
+                "out_flag",
+                &[(ConstraintValue::Boolean(true), 2), (ConstraintValue::Null, 1)],
+            ),
+            histogram(
+                "out_text",
+                &[
+                    (ConstraintValue::String("abc".to_string()), 2),
+                    (ConstraintValue::Null, 1),
+                ],
+            ),
+        ],
+    );
+    let Some(OutcomeWitness::SourceRows { columns, .. }) = b.outcome_goals()[0].witness() else {
+        panic!("complete typed boolean and text source assignments must be constructive");
+    };
+    assert_eq!(columns.len(), 2);
+    assert_eq!((columns[0].column(), columns[1].column()), ("flag", "label"));
+
+    let target = b.layers()[0].id().to_string();
+    b.set_outcome_goals(&[
+        OutcomeGoal::new(
+            target,
+            Some(1),
+            None,
+            vec![histogram(
+                "out_text",
+                &[(ConstraintValue::String("over-eight".to_string()), 1)],
+            )],
+        ).unwrap(),
+    ]).unwrap();
+    assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
+
+    let conn = Connection::open_in_memory().unwrap();
+    conn.execute_batch(
+        "CREATE TABLE t(flag BOOLEAN, label VARCHAR(8));
+         INSERT INTO t VALUES (TRUE, 'abc'), (NULL, NULL), (TRUE, 'abc');",
+    ).unwrap();
+    let actual: (i64, i64, i64) = conn.query_row(
+        "SELECT COUNT(*), COUNT(*) FILTER (WHERE out_flag AND out_text='abc'),
+             COUNT(*) FILTER (WHERE out_flag IS NULL AND out_text IS NULL)
+         FROM (SELECT flag AS out_flag, label AS out_text FROM t)",
+        [],
+        |row| Ok((row.get(0)?,row.get(1)?,row.get(2)?)),
+    ).unwrap();
+    assert_eq!(actual, (3,2,1));
+}
