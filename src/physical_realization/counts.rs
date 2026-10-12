@@ -400,4 +400,3 @@ pub fn physical_unconditional_delete_plan(
     WitnessDirection::feasible(vec![case])
         .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven))
 }
-
