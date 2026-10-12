@@ -688,3 +688,121 @@ fn independent_join_group_dags_compose_with_transparent_terminal_counts() {
         WitnessDirection::Residual { .. }
     ));
 }
+
+#[test]
+fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populations() {
+    let schema = |relation: &str, column: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("orders", "id"),
+        schema("lines", "order_id"),
+        schema("stage_orders", "id"),
+        schema("stage_lines", "order_id"),
+    ];
+    for dialect in ["generic", "postgresql", "duckdb"] {
+        for (keyword, wanted) in [("EXISTS", 3_u64), ("NOT EXISTS", 0)] {
+            let query = format!(
+                "SELECT o.id FROM stage_orders o WHERE {keyword} (SELECT 1 FROM stage_lines l)"
+            );
+            let b = bundle_with_schemas(
+                &[
+                    "CREATE TABLE stage_orders AS SELECT id FROM orders",
+                    "CREATE TABLE stage_lines AS SELECT order_id FROM lines",
+                    &query,
+                ],
+                dialect,
+                &schemas,
+            );
+            let target = b.layers()[2].id();
+            let plan = physical_joint_source_plan(&b, &[(target, wanted)]);
+            let WitnessDirection::Feasible(cases) = plan.outcome() else {
+                panic!("{dialect} {keyword}: expected physical proof: {plan:?}");
+            };
+            assert!(cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::Membership {
+                            case: sql_semantic_protocol::SubqueryMembershipCase::MatchingRow,
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                }) && [("orders", 3), ("lines", 1)].iter().all(|(relation, count)| {
+                    case.obligations().iter().any(|obligation| matches!(
+                        obligation,
+                        WitnessObligation::Rows { boundary, bounds, closed_world: true, .. }
+                            if boundary.relation() == *relation
+                                && bounds.minimum() == *count
+                                && bounds.maximum() == Some(*count)
+                    ))
+                })
+            }));
+
+            // The proof controls every physical row. Duplicated and NULL
+            // outer values still survive EXISTS; one NULL inner row suffices.
+            let db = Connection::open_in_memory().unwrap();
+            db.execute_batch(
+                "CREATE TABLE orders(id INTEGER);
+                 CREATE TABLE lines(order_id INTEGER);
+                 INSERT INTO orders VALUES (0), (0), (NULL);
+                 INSERT INTO lines VALUES (NULL);
+                 CREATE TABLE stage_orders AS SELECT id FROM orders;
+                 CREATE TABLE stage_lines AS SELECT order_id FROM lines;",
+            )
+            .unwrap();
+            let ordered = format!("SELECT id FROM ({query}) ORDER BY id NULLS LAST");
+            let mut statement = db.prepare(&ordered).unwrap();
+            let values = statement
+                .query_map([], |row| row.get::<_, Option<i32>>(0))
+                .unwrap()
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap();
+            let expected = if wanted == 3 {
+                vec![Some(0), Some(0), None]
+            } else {
+                Vec::new()
+            };
+            assert_eq!(values, expected, "{dialect} {keyword}");
+        }
+    }
+}
+
+#[test]
+fn nonempty_membership_with_correlations_key_comparisons_or_inner_filters_stays_residual() {
+    let schema = |relation: &str, column: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("orders", "id"),
+        schema("lines", "order_id"),
+        schema("stage_orders", "id"),
+        schema("stage_lines", "order_id"),
+    ];
+    let producers = [
+        "CREATE TABLE stage_orders AS SELECT id FROM orders",
+        "CREATE TABLE stage_lines AS SELECT order_id FROM lines",
+    ];
+    for query in [
+        "SELECT o.id FROM stage_orders o WHERE EXISTS (SELECT 1 FROM stage_lines l WHERE l.order_id = o.id)",
+        "SELECT o.id FROM stage_orders o WHERE EXISTS (SELECT 1 FROM stage_lines l WHERE l.order_id > 5)",
+        "SELECT o.id FROM stage_orders o WHERE o.id IN (SELECT l.order_id FROM stage_lines l)",
+        "SELECT o.id FROM stage_orders o WHERE o.id NOT IN (SELECT l.order_id FROM stage_lines l)",
+    ] {
+        let b = bundle_with_schemas(&[producers[0], producers[1], query], "duckdb", &schemas);
+        let outcome = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 3)]);
+        assert!(
+            matches!(outcome.outcome(), WitnessDirection::Residual { .. }),
+            "unsupported candidate proof must not be exact: {query}: {outcome:?}"
+        );
+    }
+}
