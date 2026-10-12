@@ -165,7 +165,10 @@ fn conformance_boundary_fixture_retains_join_provenance_and_zero_rejection() {
             );
         }
     }
-    eprintln!("physical target graph: {:?}", physical_source_plan(&bundle, enriched));
+    eprintln!(
+        "physical target graph: {:?}",
+        physical_source_plan(&bundle, enriched)
+    );
     let positive = physical_row_count_plan(&bundle, enriched, 1);
     assert!(
         matches!(positive, WitnessDirection::Feasible(_)),
