@@ -454,6 +454,84 @@ fn identical_set_producer_branches_share_one_complete_physical_population() {
 }
 
 #[test]
+fn shared_union_all_producers_reuse_one_physical_bag_with_even_output_counts() {
+    let schema = |name: &str, column: &str| {
+        RelationSchema::new(
+            name,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("t", "a"),
+        schema("left_stage", "id"),
+        schema("right_stage", "id"),
+    ];
+    let statements = [
+        "CREATE TABLE left_stage AS SELECT a AS id FROM t",
+        "CREATE TABLE right_stage AS SELECT a AS id FROM t",
+        "SELECT id FROM left_stage UNION ALL SELECT id FROM right_stage",
+    ];
+    for dialect in ["duckdb", "postgresql", "generic"] {
+        let mut b = bundle_with_schemas(&statements, dialect, &schemas);
+        let target = b.layers()[2].id().to_string();
+        for rows in [2_u64, 4, 6] {
+            b.set_outcome_goals(&[OutcomeGoal::new(&target, Some(rows), None, vec![]).unwrap()])
+                .unwrap();
+            let Some(OutcomeWitness::SetTuples { tuples, case, values, .. }) =
+                b.outcome_goals()[0].witness()
+            else {
+                panic!("{dialect} {rows}: missing constructive shared bag witness");
+            };
+            assert_eq!(*tuples, rows / 2);
+            assert!(values.is_empty());
+            assert_eq!(case.output_tuple_count(), 2);
+            assert_eq!(case.obligations().len(), 2);
+            assert!(case.obligations().iter().all(|o| {
+                o.boundary().relation() == "t"
+                    && o.boundary().tuple_columns() == ["a"]
+                    && o.matching_tuple_count() == 1
+            }));
+            let plan = physical_row_count_plan(&b, &target, rows);
+            let WitnessDirection::Feasible(cases) = plan else {
+                panic!("{dialect} {rows}: expected complete physical plan: {plan:?}");
+            };
+            assert!(cases.iter().any(|case| {
+                case.obligations().iter().filter(|o| {
+                    matches!(
+                        o,
+                        WitnessObligation::Rows {
+                            boundary,
+                            bounds,
+                            closed_world: true,
+                            ..
+                        } if boundary.relation() == "t"
+                            && bounds.minimum() == rows / 2
+                            && bounds.maximum() == Some(rows / 2)
+                    )
+                }).count() == 1
+            }));
+            let db = Connection::open_in_memory().unwrap();
+            db.execute_batch("CREATE TABLE t(a INTEGER);").unwrap();
+            for key in 0..rows / 2 {
+                db.execute_batch(&format!("INSERT INTO t VALUES ({key});")).unwrap();
+            }
+            db.execute_batch(
+                "CREATE TABLE left_stage AS SELECT a AS id FROM t;
+                 CREATE TABLE right_stage AS SELECT a AS id FROM t;",
+            ).unwrap();
+            let (total, distinct): (i64, i64) = db.query_row(
+                "SELECT COUNT(*), COUNT(DISTINCT id) FROM
+                 (SELECT id FROM left_stage UNION ALL SELECT id FROM right_stage)",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            ).unwrap();
+            assert_eq!((total, distinct), (rows as i64, (rows / 2) as i64));
+        }
+    }
+}
+
+#[test]
 fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
     let schema = |relation: &str, columns: &[&str]| {
         RelationSchema::new(
@@ -472,7 +550,7 @@ fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
         schema("left_stage", &["id"]),
         schema("right_stage", &["id"]),
     ];
-    for (right_projection, operator) in [("b", "INTERSECT"), ("a", "UNION ALL"), ("b", "UNION")] {
+    for (right_projection, operator, rows) in [("b", "INTERSECT", 2), ("a", "UNION ALL", 3), ("b", "UNION", 2), ("a", "EXCEPT ALL", 2)] {
         let statements = [
             "CREATE TABLE left_stage AS SELECT a AS id FROM t".to_string(),
             format!("CREATE TABLE right_stage AS SELECT {right_projection} AS id FROM t"),
@@ -481,7 +559,7 @@ fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
         let queries = statements.iter().map(String::as_str).collect::<Vec<_>>();
         let mut b = bundle_with_schemas(&queries, "duckdb", &schemas);
         let target = b.layers()[2].id().to_string();
-        b.set_outcome_goals(&[OutcomeGoal::new(&target, Some(2), None, vec![]).unwrap()])
+        b.set_outcome_goals(&[OutcomeGoal::new(&target, Some(rows), None, vec![]).unwrap()])
             .unwrap();
         assert_eq!(
             b.outcome_goals()[0].status(),
@@ -490,7 +568,7 @@ fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
         );
         assert!(
             matches!(
-                physical_row_count_plan(&b, &target, 2),
+                physical_row_count_plan(&b, &target, rows),
                 WitnessDirection::Residual { .. }
             ),
             "{right_projection} {operator}"
