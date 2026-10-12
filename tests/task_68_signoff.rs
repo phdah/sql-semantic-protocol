@@ -64,7 +64,9 @@ fn completed_children_do_not_waive_open_parent_acceptance() {
     assert!(signoff.lines().any(|line| line == "status: In Progress"));
     let signoff_acs = criteria(&signoff);
     assert_eq!(signoff_acs.len(), 5);
-    assert!(signoff_acs[..4].iter().all(|line| line.starts_with("- [x] #")));
+    assert!(signoff_acs[..4]
+        .iter()
+        .all(|line| line.starts_with("- [x] #")));
     assert!(signoff_acs[4].starts_with("- [ ] #5 "));
 
     let parent = task(68);
@@ -147,7 +149,10 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
     let suite: Value = serde_json::from_str(SUITE).expect("conformance suite");
     assert_eq!(suite["owner"], "phdah/sql-semantic-protocol");
     let raw = suite["raw_sql"].as_array().expect("raw SQL fixtures");
-    assert!(raw.len() >= 7, "canonical raw fixture inventory unexpectedly shrank");
+    assert!(
+        raw.len() >= 7,
+        "canonical raw fixture inventory unexpectedly shrank"
+    );
     for (fixture_id, target) in [
         ("multi_layer_join_group", "mart_customer_summary"),
         ("joined_boundary", "core_enriched"),
@@ -156,7 +161,9 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
             .iter()
             .find(|item| item["id"] == fixture_id)
             .unwrap_or_else(|| panic!("missing in-scope fixture {fixture_id}"));
-        let goals = fixture["row_count_goals"].as_array().expect("fixture row goals");
+        let goals = fixture["row_count_goals"]
+            .as_array()
+            .expect("fixture row goals");
         assert!(
             goals.iter().any(|goal| {
                 goal["target"] == target && goal["rows"] == 1 && goal["outcome"] == "residual"
