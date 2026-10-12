@@ -53,7 +53,7 @@ fn joint_plan_deduplicates_physical_dag_and_is_order_invariant() {
         assert!(joint["gap"].is_null());
     }
     let schema: serde_json::Value =
-        serde_json::from_str(include_str!("../schema/protocol.schema.json"))
+        serde_json::from_str(include_str!("../../schema/protocol.schema.json"))
             .expect("active protocol schema");
     assert_eq!(
         schema["$defs"]["graph"]["properties"]["physical_joint_count_plan"]["$ref"],

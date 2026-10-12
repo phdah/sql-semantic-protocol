@@ -522,7 +522,7 @@ fn canonical_wire_graph_deduplicates_producer_nodes_and_references() {
     assert_eq!(mart["gap"], "no_witness");
 
     let schema: serde_json::Value =
-        serde_json::from_str(include_str!("../schema/protocol.schema.json"))
+        serde_json::from_str(include_str!("../../schema/protocol.schema.json"))
             .expect("schema parses");
     assert_eq!(
         schema["$defs"]["graph"]["properties"]["physical_source_plans"]["items"]["$ref"],

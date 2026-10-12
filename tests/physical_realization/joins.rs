@@ -72,7 +72,7 @@ fn complete_equi_join_populations_certify_shared_and_independent_sources() {
                     && obligation["output_rows"] == 3
                     && obligation["closed_world"] == true)));
         let schema: serde_json::Value =
-            serde_json::from_str(include_str!("../schema/protocol.schema.json"))
+            serde_json::from_str(include_str!("../../schema/protocol.schema.json"))
                 .expect("schema JSON");
         assert!(schema["$defs"]["constructiveObligation"]["oneOf"]
             .as_array()
