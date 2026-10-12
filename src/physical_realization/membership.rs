@@ -90,16 +90,20 @@ pub(super) fn physical_subquery_membership_plan(
             .columns()
             .iter()
             .all(|column| column.plain_copy_source().is_some())
-        || !local.inner_column_domains().is_empty()
-        || match inner_filter {
-            None => !local.correlations().is_empty(),
-            Some(predicate) => {
-                local.correlations().is_empty() || !correlated_equalities_only(predicate)
-            }
-        }
     {
         return None;
     }
+
+    // Only nonempty constructions need the entire nested predicate to be
+    // certified as correlated key equalities. Empty-inner source proofs remain
+    // valid even when other certified inner filters are present.
+    let safe_nonempty = local.inner_column_domains().is_empty()
+        && match inner_filter {
+            None => local.correlations().is_empty(),
+            Some(predicate) => {
+                !local.correlations().is_empty() && correlated_equalities_only(predicate)
+            }
+        };
 
     let positive = wanted > 0;
     let direction = if positive { local.qualifying() } else { local.rejected() };
@@ -164,7 +168,7 @@ pub(super) fn physical_subquery_membership_plan(
     let outer_rows = wanted.max(1);
     let mut cases = Vec::new();
     for (membership_case, inner_rows, nonmatching) in populations {
-        if !allowed.contains(&membership_case) {
+        if (inner_rows > 0 && !safe_nonempty) || !allowed.contains(&membership_case) {
             continue;
         }
         let mut assignments = BTreeMap::<(String, String), i64>::new();
@@ -245,8 +249,10 @@ pub(super) fn physical_subquery_membership_plan(
             (outer_boundary, outer_rows, outer_row),
             (inner_boundary, inner_rows, inner_row),
         ] {
-            let predicates = assignments.iter().filter_map(|((relation, column), value)| {
-                (relation == boundary.relation()).then(|| WitnessFormula::Comparison {
+            let predicates = assignments
+                .iter()
+                .filter(|((relation, _), _)| relation.as_str() == boundary.relation())
+                .map(|((relation, column), value)| WitnessFormula::Comparison {
                     left: WitnessTerm::Column {
                         row: variable.clone(),
                         column: crate::protocol::ColumnRef::new(
@@ -256,7 +262,7 @@ pub(super) fn physical_subquery_membership_plan(
                     operator: ComparisonOperator::Eq,
                     right: WitnessTerm::Integer(*value),
                 })
-            }).collect::<Vec<_>>();
+                .collect::<Vec<_>>();
             let predicate = if predicates.is_empty() {
                 count_tautology()
             } else {
