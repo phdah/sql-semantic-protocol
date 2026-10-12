@@ -344,22 +344,53 @@ fn filtered_join_group_cannot_ignore_conflicting_downstream_predicate() {
 
 #[test]
 fn filtered_join_source_proof_is_identical_across_parsing_dialects() {
-    let mut accepted = 0;
+    let mut equivalent = 0;
+    let mut parser_differences = 0;
     for &dialect in DIALECTS {
         let parser = dialect_from_name(dialect).expect("exposed dialect");
         if sqlparser::parser::Parser::parse_sql(parser.as_ref(), BOUNDARY).is_err() {
+            parser_differences += 1;
             continue;
         }
         let bundle = fixture_bundle_for_dialect(BOUNDARY, dialect);
         let joined = layer_id(&bundle, "core_enriched");
         let proof = physical_row_count_plan(&bundle, joined, 1);
-        assert!(
-            matches!(proof, WitnessDirection::Feasible(_)),
-            "dialect {dialect} parsed the equivalent filtered JOIN but changed its proof: {proof:?}"
+        let canonical_boolean = matches!(
+            &bundle.inputs()[0].statements()[1],
+            sql_semantic_protocol::ProtocolStatement::Query(query)
+                if matches!(
+                    query.predicates().where_predicate(),
+                    Some(sql_semantic_protocol::Predicate::Comparison(comparison))
+                        if matches!(
+                            comparison.right(),
+                            sql_semantic_protocol::Expression::Literal(literal)
+                                if literal.value() == &LiteralValue::Boolean(true)
+                        )
+                )
         );
-        accepted += 1;
+        if canonical_boolean {
+            assert!(
+                matches!(proof, WitnessDirection::Feasible(_)),
+                "dialect {dialect}: equivalent typed Boolean filter lost physical proof: {proof:?}"
+            );
+            equivalent += 1;
+        } else {
+            // A parser may accept TRUE as an identifier instead of a typed
+            // SQL Boolean (notably dialects without Boolean literals).
+            // Never treat that different meaning as a certified equivalent.
+            assert!(
+                matches!(proof, WitnessDirection::Residual { .. }),
+                "dialect {dialect}: untyped Boolean syntax must fail closed: {proof:?}"
+            );
+            parser_differences += 1;
+        }
     }
-    assert!(accepted >= 3, "expected several parser-supported dialects");
+    assert!(equivalent >= 3, "expected several canonical Boolean dialects");
+    assert_eq!(
+        equivalent + parser_differences,
+        DIALECTS.len(),
+        "each dialect needs canonical equivalence or an explicit limitation"
+    );
 }
 
 #[test]
