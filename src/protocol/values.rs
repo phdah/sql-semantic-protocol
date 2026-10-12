@@ -473,7 +473,7 @@ impl SetDomain {
 /// Reason a safe scalar value domain could not be derived.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnknownDomain {
-    reason: String,
+    pub(super) reason: String,
 }
 
 impl UnknownDomain {
