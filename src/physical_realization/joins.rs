@@ -403,6 +403,52 @@ pub(super) fn necessarily_missing_positive_join_input(
         })
 }
 
+/// A complete, transparent physical source with N > 0 necessarily yields
+/// at least N rows on its preserved side of a pure LEFT/RIGHT/FULL join.
+/// This is an impossibility law (not merely exhaustion of constructed join
+/// populations), and only applies after the same join proof has validated
+/// the exact simple-join shape and physical identities.
+pub(super) fn necessarily_nonempty_preserved_join_side(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> bool {
+    use crate::protocol::JoinKind;
+
+    let fixed = targets
+        .iter()
+        .filter_map(|&(layer, rows)| {
+            exact_transparent_source(bundle, layer).map(|source| (source, rows))
+        })
+        .collect::<BTreeMap<_, _>>();
+    if !fixed.values().any(|count| *count > 0) {
+        return false;
+    }
+    targets.iter().filter(|(_, rows)| *rows == 0).any(|&(layer, _)| {
+        let Some(WitnessDirection::Feasible(cases)) =
+            physical_join_population_count_plan(bundle, layer, 0)
+        else {
+            return false;
+        };
+        cases.iter().any(|case| {
+            case.obligations().iter().any(|obligation| {
+                let WitnessObligation::JoinPopulation {
+                    left_row, right_row, join_kind, ..
+                } = obligation else {
+                    return false;
+                };
+                let left = fixed.get(left_row.relation()).is_some_and(|count| *count > 0);
+                let right = fixed.get(right_row.relation()).is_some_and(|count| *count > 0);
+                match join_kind {
+                    JoinKind::Left => left,
+                    JoinKind::Right => right,
+                    JoinKind::Full => left || right,
+                    _ => false,
+                }
+            })
+        })
+    })
+}
+
 /// Compose closed physical key populations across multiple terminal goals.
 /// Never cross-product independently feasible examples unless every selected
 /// case can share identical source-row counts and compatible key assignments.
