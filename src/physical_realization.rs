@@ -482,15 +482,15 @@ pub(crate) use distributions::{
     physical_inverted_set_distribution_plan,
 };
 pub use filters::physical_source_plan;
-pub use write_states::{
-    physical_ordered_write_state_plan, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, PhysicalWriteTransition,
-};
 pub use joint_counts::physical_joint_row_count_plan;
 pub use joint_distributions::physical_joint_distribution_plan;
 pub(crate) use operators::{
     physical_materialized_group_or_rank_witness, physical_materialized_join_witness,
     physical_materialized_set_witness, physical_operator_count_witness,
+};
+pub use write_states::{
+    physical_ordered_write_state_plan, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 
 use composition::*;
