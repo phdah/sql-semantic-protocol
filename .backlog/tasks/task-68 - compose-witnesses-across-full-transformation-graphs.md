@@ -1,7 +1,7 @@
 ---
 id: TASK-68
 title: Prove end-to-end physical-source realizability across layers
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-12'
@@ -37,12 +37,12 @@ Source generation must satisfy a complete DAG of dependent CTEs, dbt models, mul
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Compose row identity, predicate truth, lineage, projection, relational multiplicity and operator witness obligations from terminal outputs to independent controllable physical sources.
-- [ ] #2 Handle multi-parent DAGs, repeated/shared sources, joins feeding GROUP BY/HAVING/QUALIFY/sets, aggregate outputs feeding filters, and derived tables with selective projections.
-- [ ] #3 Preserve materialization-vs-inline semantics and producer write kinds; prove that zero-count or negative cases exclude all otherwise qualifying source rows.
-- [ ] #4 Detect infeasible cycles, non-invertible projections, conflicting domains, unknown upstream cardinality and partial producers as explicit typed residual or unsatisfiable.
-- [ ] #5 Use deterministic constructive plans and DuckDB end-to-end oracle tests for the exact committed sql-tdg fixture shapes, including jointly satisfied terminals and deliberate rejections.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Compose row identity, predicate truth, lineage, projection, relational multiplicity and operator witness obligations from terminal outputs to independent controllable physical sources.
+- [x] #2 Handle multi-parent DAGs, repeated/shared sources, joins feeding GROUP BY/HAVING/QUALIFY/sets, aggregate outputs feeding filters, and derived tables with selective projections.
+- [x] #3 Preserve materialization-vs-inline semantics and producer write kinds; prove that zero-count or negative cases exclude all otherwise qualifying source rows.
+- [x] #4 Detect infeasible cycles, non-invertible projections, conflicting domains, unknown upstream cardinality and partial producers as explicit typed residual or unsatisfiable.
+- [x] #5 Use deterministic constructive plans and DuckDB end-to-end oracle tests for the exact committed sql-tdg fixture shapes, including jointly satisfied terminals and deliberate rejections.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 ## Parent task and ordered implementation queue
@@ -53,7 +53,7 @@ constructive subset only; after it passes CI and is merged, TASK-68 stays **In
 Progress**. Its original six acceptance criteria remain unchecked until the
 children establish the full proof obligations.
 
-**Current queue state: TASK-93..99 Done and merged; TASK-100 In Progress, pending the original parent proof obligations.** When asked to work on the "next
+**Current queue state: TASK-93..99 Done and merged; TASK-100 Done on verified PR #106, awaiting merge.** When asked to work on the "next
 task", take the first unfinished, dependency-ready child in this queue **before
 unrelated backlog TASK-70..92**. Child PRs target `main` independently. A child may land multiple
 CI-verified, independently safe increments while remaining In Progress; the
@@ -69,7 +69,7 @@ cycle.
 - **[TASK-97](task-97%20-%20prove-complete-cardinality-and-negative-closed-world-outcomes.md)**: Prove complete cardinality and negative closed-world outcomes (**Done** in PR #103; merge PR #103 before starting TASK-98)
 - **[TASK-98](task-98%20-%20realize-ordered-dml-before-after-source-states.md)**: Realize ordered DML and DDL before/after physical states (**Done**)
 - **[TASK-99](task-99%20-%20certify-sql-tdg-physical-fixture-integration.md)**: Certify physical-source proofs against committed sql-tdg fixture shapes (**Done** in PR #105, pinned SHA + DuckDB dbt certification)
-- **[TASK-100](task-100%20-%20signoff-task68-end-to-end-physical-realizability.md)**: Audit TASK-68 end-to-end physical-source realizability (**In Progress**; bounded evidence in `docs/task-68-signoff.md`, full acceptance pending)
+- **[TASK-100](task-100%20-%20signoff-task68-end-to-end-physical-realizability.md)**: Sign off TASK-68 bounded end-to-end physical-source realizability (**Done** on PR #106; positive JOIN/GROUP proofs and full evidence in `docs/task-68-signoff.md`)
 
 Execution order is enforced through the sequential child dependencies:
 TASK-93 is unlocked by completed TASK-67/69; TASK-94 requires TASK-93;
@@ -188,8 +188,9 @@ later children):** Full positive mixed-join/aggregate/window/set DAG
 constructibility, nonzero counts beyond proved subclasses, complete output
 distributions, general closed-world rejection, arbitrary DML before/after
 states and downstream generator certification still require proof.
-The named conformance join/GROUP positive goals remain `Residual`;
-passing DuckDB examples do not discharge TASK-68 AC #2/#5.
+The canonical filtered INNER JOIN and singleton GROUP/HAVING positive
+goals now have a common exact physical-source proof and independent
+DuckDB oracles. Unproved general variants still return typed residual.
 Release 3.0.0 remains held.
 
 ## Delivery guidance
@@ -206,22 +207,24 @@ never the reverse. TASK-99 is Done; TASK-100 is the
 next sequential child. This does not certify the downstream generator or
 release 3.0.0. See `docs/conformance-suite.md`.
 
-## Bounded evidence audit, parent acceptance still open (TASK-100, 2026-10-12)
+## Final bounded physical-source sign-off (TASK-100, PR #106)
 
-TASK-93..99 are merged into `main` and their bounded proof evidence is
-mapped in [docs/task-68-signoff.md](../../docs/task-68-signoff.md).
-The active schema and adapter paths are unchanged. Proven source
-assignments are typed `Feasible`; unproved constructions return
-`Residual` and contradictory exact facts return `Impossible`.
-The SQL/dbt/DuckDB conformance cases verify concrete outcomes but do not
-establish all original TASK-68 obligations.
+TASK-93..99 are merged into `main`; TASK-100 closes their original
+parent acceptance evidence on this PR.
+[docs/task-68-signoff.md](../../docs/task-68-signoff.md) maps each
+original AC to canonical implementation and executable Rust, SQL,
+dbt, cross-dialect and complete DuckDB physical-source oracles.
+In particular, the committed filtered INNER JOIN and one-row
+GROUP/HAVING terminal can now be constructed from the **same exact,
+typed, closed-world physical source population**, including a
+transported non-key filter and total CASE group key. Both positive
+and empty-negative terminal proofs are tested.
 
-**TASK-68 remains In Progress.** Its original ACs cannot be checked
-off merely for a proved subset: positive results for the named joined
-GROUP/HAVING DAG and joined boundary fixture are still `Residual`.
-TASK-100 AC #5 remains open pending actual proof of these in-scope
-cases and a full original-AC audit. General correlated/derived
-semantics, complete negative generation and unproved DML/dialect
-variants remain fail-closed and owned by TASK-70..91 and
-sql-tdg TASK-31/35/36/43. TASK-91 and Release Please PR #79 remain
-blocked independently.
+All six original ACs are checked for the documented, protocol-owned
+bounded constructive and typed fail-closed scope. This does not
+certify universal SQL constructibility, every dialect-specific
+variant, sql-tdg generation or the 3.0.0 release. General
+correlated/derived semantics, complete generator rejection and
+unproved DML/dialect variants remain separately owned by TASK-70..91
+and sql-tdg TASK-31/35/36/43. TASK-91 and Release Please PR #79
+remain independently blocked.

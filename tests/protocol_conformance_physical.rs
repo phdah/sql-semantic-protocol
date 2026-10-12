@@ -385,7 +385,10 @@ fn filtered_join_source_proof_is_identical_across_parsing_dialects() {
             parser_differences += 1;
         }
     }
-    assert!(equivalent >= 3, "expected several canonical Boolean dialects");
+    assert!(
+        equivalent >= 3,
+        "expected several canonical Boolean dialects"
+    );
     assert_eq!(
         equivalent + parser_differences,
         DIALECTS.len(),

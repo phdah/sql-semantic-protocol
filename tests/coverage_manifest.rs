@@ -32,7 +32,7 @@ fn task_68_reports_only_proven_physical_source_scope() {
     assert_eq!(evidence["owner"], "TASK-68");
     assert_eq!(
         evidence["status"],
-        "bounded_physical_source_evidence_parent_open_release_blocked"
+        "verified_bounded_physical_source_contract_release_blocked"
     );
     assert!(evidence["unproved_scope"]
         .as_array()

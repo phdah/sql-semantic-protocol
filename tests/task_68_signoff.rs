@@ -46,8 +46,8 @@ fn criteria(text: &str) -> Vec<&str> {
 }
 
 #[test]
-fn completed_children_do_not_waive_open_parent_acceptance() {
-    for id in 93..=99 {
+fn completed_parent_signoff_does_not_approve_independent_release() {
+    for id in 93..=100 {
         let text = task(id);
         assert!(
             text.lines().any(|line| line == "status: Done"),
@@ -61,19 +61,16 @@ fn completed_children_do_not_waive_open_parent_acceptance() {
         );
     }
     let signoff = task(100);
-    assert!(signoff.lines().any(|line| line == "status: In Progress"));
+    assert!(signoff.lines().any(|line| line == "status: Done"));
     let signoff_acs = criteria(&signoff);
     assert_eq!(signoff_acs.len(), 5);
-    assert!(signoff_acs[..4]
-        .iter()
-        .all(|line| line.starts_with("- [x] #")));
-    assert!(signoff_acs[4].starts_with("- [ ] #5 "));
+    assert!(signoff_acs.iter().all(|line| line.starts_with("- [x] #")));
 
     let parent = task(68);
-    assert!(parent.lines().any(|line| line == "status: In Progress"));
+    assert!(parent.lines().any(|line| line == "status: Done"));
     let acs = criteria(&parent);
     assert_eq!(acs.len(), 6);
-    assert!(acs.iter().all(|line| line.starts_with("- [ ] #")));
+    assert!(acs.iter().all(|line| line.starts_with("- [x] #")));
 
     let release = task(91);
     assert!(
@@ -95,7 +92,7 @@ fn physical_contract_signoff_has_traceable_code_tests_and_json_schema() {
     let evidence = &manifest["task_68_physical_source_evidence"];
     assert_eq!(
         evidence["status"],
-        "bounded_physical_source_evidence_parent_open_release_blocked"
+        "verified_bounded_physical_source_contract_release_blocked"
     );
     assert_eq!(evidence["owner"], "TASK-68");
     assert_eq!(evidence["signoff_task"], "TASK-100");

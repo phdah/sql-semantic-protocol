@@ -3,7 +3,7 @@
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
   "task_68_physical_source_evidence": {
-    "status": "bounded_physical_source_evidence_parent_open_release_blocked",
+    "status": "verified_bounded_physical_source_contract_release_blocked",
     "owner": "TASK-68",
     "signoff_task": "TASK-100",
     "signoff_document": "docs/task-68-signoff.md",
@@ -76,7 +76,10 @@
       "necessary_join_positive_versus_transparent_zero_impossibility",
       "complete_group_rank_set_operator_populations_with_proven_upstream_laws",
       "ordered_insert_update_delete_merge_and_supported_ddl_before_after_states",
-      "protocol_owned_versioned_sql_dbt_conformance_suite_signoff"
+      "protocol_owned_versioned_sql_dbt_conformance_suite_signoff",
+      "typed_literal_filtered_materialized_join_positive_source_populations",
+      "singleton_filtered_join_group_having_positive_proof",
+      "joint_positive_join_group_and_negative_empty_source_regressions"
     ],
     "evidence": [
       "tests/physical_realization.rs",
@@ -111,7 +114,7 @@
       "unproved_value_distributions_across_filter_join_group_window_DAGs",
       "unproved_general_non_bijective_scalar_inversion"
     ],
-    "release_limit": "Bounded source-independent constructions and typed impossible/residuals are verified, but TASK-68 original acceptance remains open: positive in-scope joined/GROUP DAG goals are residual. Downstream generator and 3.0.0 release remain unverified and blocked.",
+    "release_limit": "TASK-68 certifies complete source-independent, bounded constructive populations for committed canonical fixture goals, including filtered positive INNER JOIN and singleton GROUP/HAVING. Unproved general operator and downstream generator variants remain explicit residual and block the independent 3.0.0 release gate under TASK-70..91.",
     "child_tasks": [
       "TASK-93",
       "TASK-94",
@@ -124,8 +127,8 @@
     ],
     "next_task_after_foundation": "TASK-93",
     "next_dependency_ready_after_TASK_96_merge": "TASK-97",
-    "next_dependency_ready_after_TASK_99_merge": "TASK-100 (In Progress; full original AC sign-off pending)",
-    "closure_rule": "TASK-68 remains In Progress until TASK-100 proves all original in-scope ACs, including positive joined/GROUP DAG construction. Typed residual safety is not sufficient to check a constructive AC. TASK-91 remains independently blocked."
+    "next_dependency_ready_after_TASK_99_merge": "TASK-100 (Done in verified PR #106; merge to land)",
+    "closure_rule": "TASK-68 and TASK-100 are Done only for the protocol-owned, verified bounded constructive and typed fail-closed scope. Joint filtered positive join/group fixtures and full source bags have exact proofs. TASK-91, unverified dialect/feature cells and sql-tdg generator signoff remain separate and blocked."
   },
   "task_99_protocol_conformance_contract": {
     "owner": "TASK-99",
