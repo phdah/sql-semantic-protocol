@@ -449,12 +449,15 @@ fn declared_foreign_key_must_have_entire_referenced_population() {
                 "source",
                 vec!["id".to_string()],
                 evidence(),
-            ).unwrap()],
-        ).unwrap(),
+            )
+            .unwrap()],
+        )
+        .unwrap(),
         RelationConstraintSet::new(
             "source",
             vec![RelationConstraint::primary_key(vec!["id".to_string()], evidence()).unwrap()],
-        ).unwrap(),
+        )
+        .unwrap(),
     ]);
     let valid = physical_ordered_write_state_plan(
         &b,
@@ -598,7 +601,6 @@ fn complete_physical_column_domains_preserve_nulls_duplicates_and_empty_bags() {
     assert!(domains.iter().all(|domain| domain.values().is_empty()));
 }
 
-
 #[test]
 fn one_input_sql_script_uses_statement_indices_and_shared_prior_state() {
     let b = bundle(
@@ -611,8 +613,8 @@ fn one_input_sql_script_uses_statement_indices_and_shared_prior_state() {
     let plan = physical_ordered_write_state_plan(
         &b,
         &[
-            state("target", &[(Some(1),Some(2)), (Some(9),Some(4))]),
-            state("source", &[(Some(3),Some(5)),(Some(-1),Some(9))]),
+            state("target", &[(Some(1), Some(2)), (Some(9), Some(4))]),
+            state("source", &[(Some(3), Some(5)), (Some(-1), Some(9))]),
         ],
     );
     let (steps, states) = outcome(&plan);
@@ -625,71 +627,100 @@ fn one_input_sql_script_uses_statement_indices_and_shared_prior_state() {
         assert_eq!(pair[0].after(), pair[1].before());
     }
     assert_eq!(
-        states.iter().find(|s| s.relation() == "target").unwrap().rows(),
-        &[row(Some(1),Some(3)), row(Some(3),Some(5))],
+        states
+            .iter()
+            .find(|s| s.relation() == "target")
+            .unwrap()
+            .rows(),
+        &[row(Some(1), Some(3)), row(Some(3), Some(5))],
     );
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE target(id INTEGER,score INTEGER);
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER,score INTEGER);
         CREATE TABLE source(id INTEGER,score INTEGER);
         INSERT INTO target VALUES (1,2),(9,4);
         INSERT INTO source VALUES (3,5),(-1,9);
         DELETE FROM target WHERE id=9;
         UPDATE target SET score=score+1 WHERE id=1;
         INSERT INTO target (id,score) SELECT id,score FROM source WHERE id=3;
-        DELETE FROM target WHERE id<0;").unwrap();
-    let expected: Vec<(i64,i64)> = {
-        let mut stmt=db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
-        stmt.query_map([], |r| Ok((r.get(0)?,r.get(1)?))).unwrap()
-            .map(|v| v.unwrap()).collect()
+        DELETE FROM target WHERE id<0;",
+    )
+    .unwrap();
+    let expected: Vec<(i64, i64)> = {
+        let mut stmt = db
+            .prepare("SELECT id,score FROM target ORDER BY id")
+            .unwrap();
+        stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+            .unwrap()
+            .map(|v| v.unwrap())
+            .collect()
     };
-    assert_eq!(expected, vec![(1,3),(3,5)]);
+    assert_eq!(expected, vec![(1, 3), (3, 5)]);
 }
-
 
 #[test]
 fn nullable_unique_keys_and_missing_fk_reference_key_remain_residual() {
     let mut b = bundle(&["DELETE FROM target WHERE id = 999"], "duckdb");
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![
-            RelationConstraint::unique_key(vec!["id".to_string()], evidence()).unwrap()
-        ]).unwrap(),
-    ]);
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::unique_key(vec!["id".to_string()], evidence()).unwrap()],
+    )
+    .unwrap()]);
     let plan = physical_ordered_write_state_plan(
         &b,
         &[state("target", &[(None, Some(1)), (None, Some(2))])],
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual {
-        gap: sql_semantic_protocol::PhysicalWriteStateGap::UnprovedConstraint,
-        ..
-    }), "{plan:?}");
+    assert!(
+        matches!(
+            plan,
+            PhysicalWriteStatePlan::Residual {
+                gap: sql_semantic_protocol::PhysicalWriteStateGap::UnprovedConstraint,
+                ..
+            }
+        ),
+        "{plan:?}"
+    );
 
     let mut b = bundle(&["DELETE FROM target WHERE id=999"], "duckdb");
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![
-            RelationConstraint::foreign_key(
-                vec!["id".to_string()], "source", vec!["id".to_string()], evidence(),
-            ).unwrap(),
-        ]).unwrap(),
-    ]);
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::foreign_key(
+            vec!["id".to_string()],
+            "source",
+            vec!["id".to_string()],
+            evidence(),
+        )
+        .unwrap()],
+    )
+    .unwrap()]);
     let plan = physical_ordered_write_state_plan(
         &b,
-        &[state("target", &[(Some(1), Some(2))]), state("source", &[(Some(1), Some(3))])],
+        &[
+            state("target", &[(Some(1), Some(2))]),
+            state("source", &[(Some(1), Some(3))]),
+        ],
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual {
-        gap: sql_semantic_protocol::PhysicalWriteStateGap::UnprovedConstraint,
-        ..
-    }), "{plan:?}");
+    assert!(
+        matches!(
+            plan,
+            PhysicalWriteStatePlan::Residual {
+                gap: sql_semantic_protocol::PhysicalWriteStateGap::UnprovedConstraint,
+                ..
+            }
+        ),
+        "{plan:?}"
+    );
 }
 
 #[test]
 fn a_missing_insert_default_remains_residual_without_materialized_value() {
-    let b = bundle(
-        &["INSERT INTO target(id) SELECT id FROM source"],
-        "duckdb",
-    );
+    let b = bundle(&["INSERT INTO target(id) SELECT id FROM source"], "duckdb");
     let plan = physical_ordered_write_state_plan(
         &b,
         &[state("target", &[]), state("source", &[(Some(1), Some(6))])],
     );
-    assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+        "{plan:?}"
+    );
 }
