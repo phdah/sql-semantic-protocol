@@ -18,6 +18,43 @@ pub(crate) fn physical_distribution_plan(
     target_layer_id: &str,
     goal: &OutcomeGoal,
 ) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    let (source, rows, mappings) = mapped_distributions(bundle, target_layer_id, goal)?;
+    crate::outcome_proofs::construct_mapped_source(bundle, &source, rows, mappings)
+}
+
+/// Two value distributions are mathematically incompatible when their fully
+/// certified inverses target the very same physical column with different
+/// complete frequencies. An unproved inverse is residual, not impossible.
+pub(crate) fn physical_distribution_conflict(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    goal: &OutcomeGoal,
+) -> bool {
+    let Some((_, _, mappings)) = mapped_distributions(bundle, target_layer_id, goal) else {
+        return false;
+    };
+    let mut seen = BTreeMap::<String, Vec<OutputValueCount>>::new();
+    for (column, mut values) in mappings {
+        values.sort_by(|left, right| left.value().cmp(right.value()));
+        if let Some(other) = seen.get(&column) {
+            if !crate::outcome_goals::equivalent_frequencies(other, &values) {
+                return true;
+            }
+        } else {
+            seen.insert(column, values);
+        }
+    }
+    false
+}
+
+/// Map and validate every intermediate expression before considering either
+/// feasibility or a necessary contradiction. This avoids inferring
+/// impossibility from underconstrained or partially produced relations.
+fn mapped_distributions(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    goal: &OutcomeGoal,
+) -> Option<(String, u64, Vec<(String, Vec<OutputValueCount>)>)> {
     let rows = goal.rows()?;
     if rows == 0 || goal.groups().is_some() || goal.distributions().is_empty() {
         return None;
@@ -59,7 +96,7 @@ pub(crate) fn physical_distribution_plan(
             return None;
         }
     }
-    crate::outcome_proofs::construct_mapped_source(bundle, source, rows, mappings)
+    Some((source.clone(), rows, mappings))
 }
 
 /// One fully traced physical column and its complete frequency bag.
