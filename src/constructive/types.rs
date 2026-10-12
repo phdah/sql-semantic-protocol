@@ -336,6 +336,21 @@ pub enum WitnessObligation {
         strict_unique: bool,
         closed_world: bool,
     },
+    /// A complete row-number population at one physical input. Partition
+    /// values are the integers 0..partitions, repeated rows_per_partition
+    /// times each; order values are 0..rows_per_partition within each
+    /// partition, so ties cannot affect ROW_NUMBER/QUALIFY. The exact
+    /// surviving output cardinality is partitions * min(rows_per_partition,
+    /// rank_limit). A local ROW_NUMBER witness must justify this rule.
+    RankPopulation {
+        boundary: WitnessBoundary,
+        partition_key: ColumnRef,
+        order: WindowOrderKey,
+        partitions: u64,
+        rows_per_partition: u64,
+        rank_limit: u64,
+        closed_world: bool,
+    },
     /// A membership case with explicit NULL and correlated-key laws.
     Membership {
         /// Candidate physical outer row.
