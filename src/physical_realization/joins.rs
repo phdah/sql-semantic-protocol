@@ -173,7 +173,7 @@ pub(super) fn physical_join_population_with_source_counts(
     };
     if join.origin_layer_id() != join_layer.id()
         || join.comparison() != Some(crate::protocol::ComparisonOperator::Eq)
-        || !matches!(join.qualifying(), JoinWitnessDirection::Exact(_))
+        || matches!(join.qualifying(), JoinWitnessDirection::Impossible)
         || matches!(join.kind(), JoinKind::Cross | JoinKind::Unknown)
     {
         return None;
@@ -203,6 +203,16 @@ pub(super) fn physical_join_population_with_source_counts(
         if source_filters.insert(source, (column, predicate)).is_some() {
             return None;
         }
+    }
+
+    // A residual local join witness cannot certify source rows through a
+    // filtered producer. The physical construction below independently
+    // proves an ordinary typed equijoin over complete filtered source bags.
+    // Without such a filter, retain the stronger original local gate.
+    if source_filters.is_empty()
+        && !matches!(join.qualifying(), JoinWitnessDirection::Exact(_))
+    {
+        return None;
     }
 
     // The target may follow the join through a linear sequence of copies,
