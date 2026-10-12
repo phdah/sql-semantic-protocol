@@ -8,9 +8,7 @@ use super::*;
 use crate::constraints::ConstraintValue;
 use crate::data_type::DataType;
 use crate::outcome_goals::{OutcomeGoal, OutputValueCount};
-use crate::protocol::{
-    BinaryOperator, ColumnRef, LiteralType, LiteralValue, UnaryOperator,
-};
+use crate::protocol::{BinaryOperator, ColumnRef, LiteralType, LiteralValue, UnaryOperator};
 
 /// Construct complete physical histograms through type-certified copy producers,
 /// optionally inverting a guarded reversible terminal integer expression.
@@ -79,14 +77,7 @@ pub(crate) fn physical_distribution_plan(
         let physical_column = if lineage.relation() == source {
             column
         } else {
-            resolve_filter_column_with_evidence(
-                bundle,
-                &walker,
-                target_layer_id,
-                &column,
-                0,
-                true,
-            )?
+            resolve_filter_column_with_evidence(bundle, &walker, target_layer_id, &column, 0, true)?
         };
         if physical_column.relation() != Some(source.as_str()) {
             return None;
@@ -106,11 +97,8 @@ pub(crate) fn physical_distribution_plan(
                     let input = match bucket.value() {
                         ConstraintValue::Null => ConstraintValue::Null,
                         ConstraintValue::Integer(output) => {
-                            let source_value = invert_integer(
-                                projected.expression(),
-                                *output,
-                                lineage.column(),
-                            )?;
+                            let source_value =
+                                invert_integer(projected.expression(), *output, lineage.column())?;
                             if !fits_integer(source_value, bits)
                                 || evaluate_integer(
                                     projected.expression(),
@@ -141,21 +129,28 @@ fn safe_terminal_projection(query: &QueryStatement, goal: &OutcomeGoal) -> bool 
         && query.sources().len() == 1
         && query.condition_exactness().is_exact()
         && query.output().columns().iter().all(|column| {
-            goal.distributions().iter().any(|goal| goal.column() == column.name())
+            goal.distributions()
+                .iter()
+                .any(|goal| goal.column() == column.name())
                 || column.plain_copy_source().is_some()
                 || matches!(column.expression(), Expression::Literal(_))
         })
 }
 
 fn integer_width(bundle: &AnalysisBundle, source: &str, column: &str) -> Option<u16> {
-    let schema = bundle.source_schemas().iter().find(|s| s.relation() == source)?;
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == source)?;
     let column = schema.columns().iter().find(|c| c.name() == column)?;
     let mut data_type = column.data_type();
     while let DataType::Nullable(inner) = data_type {
         data_type = inner.as_ref();
     }
     match data_type {
-        DataType::SignedInteger { bits: Some(bits @ 8..=64) } => Some(*bits),
+        DataType::SignedInteger {
+            bits: Some(bits @ 8..=64),
+        } => Some(*bits),
         _ => None,
     }
 }
@@ -193,11 +188,13 @@ fn reversible_integer_expression(expression: &Expression, name: &str) -> bool {
                 && reversible_integer_expression(unary.operand(), name)
         }
         Expression::Binary(binary) => {
-            matches!(binary.operator(), BinaryOperator::Add | BinaryOperator::Subtract)
-                && ((literal_integer(binary.right()).is_some()
-                    && reversible_integer_expression(binary.left(), name))
-                    || (literal_integer(binary.left()).is_some()
-                        && reversible_integer_expression(binary.right(), name)))
+            matches!(
+                binary.operator(),
+                BinaryOperator::Add | BinaryOperator::Subtract
+            ) && ((literal_integer(binary.right()).is_some()
+                && reversible_integer_expression(binary.left(), name))
+                || (literal_integer(binary.left()).is_some()
+                    && reversible_integer_expression(binary.right(), name)))
         }
         _ => false,
     }
