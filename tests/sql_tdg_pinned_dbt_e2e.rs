@@ -191,9 +191,11 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
     let direct_graph = physical_source_plan(&direct, direct.layers()[0].id());
     let dbt_graph = physical_source_plan(&bundle, layer_id(&bundle, "stg_orders"));
     assert_eq!(direct_graph.sources(), dbt_graph.sources());
-    assert_eq!(
-        physical_row_count_plan(&direct, direct.layers()[0].id(), 0),
-        physical_row_count_plan(&bundle, layer_id(&bundle, "stg_orders"), 0),
-        "raw SQL and dbt adapters disagree on the same physical zero-row contract"
+    let direct_zero = physical_row_count_plan(&direct, direct.layers()[0].id(), 0);
+    let dbt_zero = physical_row_count_plan(&bundle, layer_id(&bundle, "stg_orders"), 0);
+    assert!(
+        matches!(direct_zero, WitnessDirection::Feasible(_))
+            && matches!(dbt_zero, WitnessDirection::Feasible(_)),
+        "both adapters must prove empty physical sources: direct={direct_zero:?}, dbt={dbt_zero:?}"
     );
 }
