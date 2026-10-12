@@ -1347,14 +1347,14 @@ fn filtered_copy_cannot_inherit_shared_except_cancellation_population() {
     assert_eq!(output, vec![0, 0]);
 }
 
-
 #[test]
 fn grouped_nonnull_count_key_proves_full_join_contributor_domains() {
     let schema = |relation: &str| {
         RelationSchema::new(
             relation,
             vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
-        ).unwrap()
+        )
+        .unwrap()
     };
     let schemas = [schema("l"), schema("r"), schema("joined")];
     for &dialect in DIALECTS {
@@ -1363,38 +1363,52 @@ fn grouped_nonnull_count_key_proves_full_join_contributor_domains() {
                 "CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k",
                 "SELECT k, COUNT(k) AS n FROM joined GROUP BY k HAVING COUNT(k) >= 2",
             ],
-            dialect, &schemas
+            dialect,
+            &schemas,
         );
         let plan = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
         let WitnessDirection::Feasible(cases) = plan.outcome() else {
             panic!("{dialect}: COUNT(key) requires a nonnull contributor proof: {plan:?}");
         };
-        assert!(cases.iter().any(|case| {
-            case.obligations().iter().any(|o| matches!(
-                o, WitnessObligation::JoinPopulation {
-                    pattern: JoinPopulationPattern::GroupedMatched { groups: 2 },
-                    output_rows: 4, ..
-                }
-            )) && case.obligations().iter().any(|o| matches!(
-                o, WitnessObligation::Group {
-                    aggregate: sql_semantic_protocol::GroupAggregate::CountValues,
-                    rows, non_null, ..
-                } if rows.minimum() == 2
-                    && non_null.minimum() == 2
-            ))
-        }), "{dialect}: group count must certify two nonnull contributors");
+        assert!(
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|o| {
+                    matches!(
+                        o,
+                        WitnessObligation::JoinPopulation {
+                            pattern: JoinPopulationPattern::GroupedMatched { groups: 2 },
+                            output_rows: 4,
+                            ..
+                        }
+                    )
+                }) && case.obligations().iter().any(|o| {
+                    matches!(
+                        o, WitnessObligation::Group {
+                            aggregate: sql_semantic_protocol::GroupAggregate::CountValues,
+                            rows, non_null, ..
+                        } if rows.minimum() == 2
+                            && non_null.minimum() == 2
+                    )
+                })
+            }),
+            "{dialect}: group count must certify two nonnull contributors"
+        );
     }
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE l(k INTEGER); CREATE TABLE r(k INTEGER);
          INSERT INTO l VALUES (0),(0),(1),(1);
          INSERT INTO r VALUES (0),(1);
-         CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k;"
-    ).unwrap();
-    let rows = db.prepare(
-        "SELECT k, COUNT(k) AS n FROM joined GROUP BY k HAVING COUNT(k) >= 2 ORDER BY k"
-    ).unwrap().query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
-        .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+         CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k;",
+    )
+    .unwrap();
+    let rows = db
+        .prepare("SELECT k, COUNT(k) AS n FROM joined GROUP BY k HAVING COUNT(k) >= 2 ORDER BY k")
+        .unwrap()
+        .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     assert_eq!(rows, vec![(0, 2), (1, 2)]);
 
     // COUNT(key) = 0 can be achieved by a NULL group, but it is not
@@ -1404,7 +1418,8 @@ fn grouped_nonnull_count_key_proves_full_join_contributor_domains() {
             "CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k",
             "SELECT k, COUNT(k) AS n FROM joined GROUP BY k HAVING COUNT(k) = 0",
         ],
-        "postgresql", &schemas
+        "postgresql",
+        &schemas,
     );
     assert!(matches!(
         physical_joint_source_plan(&b, &[(b.layers()[1].id(), 1)]).outcome(),
@@ -1412,16 +1427,17 @@ fn grouped_nonnull_count_key_proves_full_join_contributor_domains() {
     ));
 }
 
-
 #[test]
 fn joined_bags_feed_complete_ordered_rank_partitions_without_intermediate_writes() {
     let schema = |relation: &str, names: &[&str]| {
         RelationSchema::new(
             relation,
-            names.iter()
+            names
+                .iter()
                 .map(|name| SchemaColumn::from_sql_type(*name, "INTEGER", "postgresql").unwrap())
                 .collect(),
-        ).unwrap()
+        )
+        .unwrap()
     };
     let schemas = [
         schema("l", &["k", "score"]),
@@ -1430,46 +1446,63 @@ fn joined_bags_feed_complete_ordered_rank_partitions_without_intermediate_writes
     ];
     let join =
         "CREATE TABLE joined AS SELECT l.k AS k, l.score AS score FROM l JOIN r ON l.k = r.k";
-    let rank =
-        "SELECT k, ROW_NUMBER() OVER (PARTITION BY k ORDER BY score ASC NULLS LAST) AS rn \
+    let rank = "SELECT k, ROW_NUMBER() OVER (PARTITION BY k ORDER BY score ASC NULLS LAST) AS rn \
          FROM joined QUALIFY rn <= 1";
     for &dialect in DIALECTS {
         let b = bundle_with_schemas(
             &[join, rank, "SELECT k FROM l", "SELECT k FROM r"],
-            dialect, &schemas
+            dialect,
+            &schemas,
         );
         let rank_id = b.layers()[1].id();
         let physical = physical_joint_source_plan(&b, &[(rank_id, 2)]);
         let WitnessDirection::Feasible(cases) = physical.outcome() else {
             panic!("{dialect}: complete join-fed rank partitions missing: {physical:?}");
         };
-        assert!(cases.iter().any(|case| {
-            case.obligations().iter().any(|o| matches!(
-                o, WitnessObligation::JoinPopulation {
-                    pattern: JoinPopulationPattern::GroupedMatched { groups: 2 },
-                    left_rows: 4, right_rows: 2, output_rows: 4,
-                    ..
-                }
-            )) && case.obligations().iter().any(|o| matches!(
-                o, WitnessObligation::RankPopulation {
-                    boundary,
-                    partition_key,
-                    partitions: 2,
-                    rows_per_partition: 2,
-                    rank_limit: 1,
-                    closed_world: true,
-                    ..
-                } if boundary.relation() == "l"
-                    && partition_key.relation() == Some("l")
-                    && partition_key.name() == "k"
-            ))
-        }), "{dialect}: joint bag/partition law must hold at physical source");
+        assert!(
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|o| {
+                    matches!(
+                        o,
+                        WitnessObligation::JoinPopulation {
+                            pattern: JoinPopulationPattern::GroupedMatched { groups: 2 },
+                            left_rows: 4,
+                            right_rows: 2,
+                            output_rows: 4,
+                            ..
+                        }
+                    )
+                }) && case.obligations().iter().any(|o| {
+                    matches!(
+                        o, WitnessObligation::RankPopulation {
+                            boundary,
+                            partition_key,
+                            partitions: 2,
+                            rows_per_partition: 2,
+                            rank_limit: 1,
+                            closed_world: true,
+                            ..
+                        } if boundary.relation() == "l"
+                            && partition_key.relation() == Some("l")
+                            && partition_key.name() == "k"
+                    )
+                })
+            }),
+            "{dialect}: joint bag/partition law must hold at physical source"
+        );
 
         let joint = physical_joint_source_plan(
-            &b, &[(rank_id, 2), (b.layers()[2].id(), 4), (b.layers()[3].id(), 2)]
+            &b,
+            &[
+                (rank_id, 2),
+                (b.layers()[2].id(), 4),
+                (b.layers()[3].id(), 2),
+            ],
         );
-        assert!(matches!(joint.outcome(), WitnessDirection::Feasible(_)),
-            "{dialect}: rank population must agree with source readers: {joint:?}");
+        assert!(
+            matches!(joint.outcome(), WitnessDirection::Feasible(_)),
+            "{dialect}: rank population must agree with source readers: {joint:?}"
+        );
         let impossible = physical_joint_source_plan(&b, &[(rank_id, 2), (rank_id, 3)]);
         assert!(matches!(impossible.outcome(), WitnessDirection::Impossible));
     }
@@ -1478,12 +1511,15 @@ fn joined_bags_feed_complete_ordered_rank_partitions_without_intermediate_writes
         "CREATE TABLE l(k INTEGER, score INTEGER); CREATE TABLE r(k INTEGER);
          INSERT INTO l VALUES (0,2),(0,3),(1,10),(1,11);
          INSERT INTO r VALUES (0),(1);
-         CREATE TABLE joined AS SELECT l.k AS k, l.score AS score FROM l JOIN r ON l.k=r.k;"
-    ).unwrap();
-    let result = db.prepare(&format!(
-        "SELECT k, rn FROM ({rank}) ORDER BY k, rn"
-    )).unwrap().query_map([], |row| {
-        Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?))
-    }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
-    assert_eq!(result, vec![(0,1), (1,1)]);
+         CREATE TABLE joined AS SELECT l.k AS k, l.score AS score FROM l JOIN r ON l.k=r.k;",
+    )
+    .unwrap();
+    let result = db
+        .prepare(&format!("SELECT k, rn FROM ({rank}) ORDER BY k, rn"))
+        .unwrap()
+        .query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    assert_eq!(result, vec![(0, 1), (1, 1)]);
 }
