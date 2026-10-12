@@ -206,19 +206,21 @@ pub(super) fn joint_nonempty_rejected_terminals(
         let [relation] = physical.sources() else {
             return None;
         };
-        if source.as_deref().is_some_and(|existing| existing != relation) {
+        if source.as_deref().is_some_and(|existing| existing != relation.as_str()) {
             return None;
         }
         source = Some(relation.clone());
         let rejected = physical_rejected_row_count_plan(bundle, layer_id, 1);
-        let WitnessFormula::RowTruth {
-            truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
-            ..
-        } = count_predicate_for_source(&rejected, relation, 1)?
-        else {
-            return None;
-        };
         let predicate = count_predicate_for_source(&rejected, relation, 1)?;
+        if !matches!(
+            predicate,
+            WitnessFormula::RowTruth {
+                truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
+                ..
+            }
+        ) {
+            return None;
+        }
         if !predicates.contains(&predicate) {
             predicates.push(predicate);
         }
