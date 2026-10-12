@@ -647,7 +647,7 @@ fn construct_set_with_map(
     }
     let operation = query.set_operation()?;
     let branches = operation.branches();
-    if branches.len() != 2 {
+    if !(2..=4).contains(&branches.len()) {
         return None;
     }
     let mut relations = Vec::<String>::new();
@@ -680,9 +680,14 @@ fn construct_set_with_map(
     // Two distinct producer branches may refer to the same physical rows.
     // They can share a source only if they select precisely the same column;
     // a local set case must additionally require identical multiplicities.
-    let shared_source = relations[0] == relations[1];
-    if shared_source && boundaries[0].tuple_columns() != boundaries[1].tuple_columns() {
-        return None;
+    let mut shared_columns = std::collections::BTreeMap::new();
+    for boundary in &boundaries {
+        if shared_columns
+            .insert(boundary.relation(), boundary.tuple_columns())
+            .is_some_and(|old| old != boundary.tuple_columns())
+        {
+            return None;
+        }
     }
     let (positive, negative) = operation.witness_directions();
     if rows == 0 {
@@ -749,14 +754,18 @@ fn construct_set_with_map(
             {
                 return false;
             }
-            let [left, right] = case.obligations() else {
-                return false;
-            };
-            // Distinct source arms may also contribute multiple copies of
-            // each tuple. Scaling a complete two-arm tuple bag is constructive
-            // for a divisible output, never for a partial per-value histogram.
-            // Shared source arms additionally need equal tuple counts.
-            !shared_source || left.matching_tuple_count() == right.matching_tuple_count()
+            // Every copied relation must assign exactly the same physical
+            // tuple class and multiplicity, regardless of how many nested
+            // UNION/INTERSECT/EXCEPT branches read it.
+            let mut complete_sources = std::collections::BTreeMap::new();
+            case.obligations().iter().all(|obligation| {
+                let boundary = obligation.boundary();
+                let assignment = (boundary.tuple_columns(), obligation.matching_tuple_count());
+                match complete_sources.insert(boundary.relation(), assignment) {
+                    Some(previous) => previous == assignment,
+                    None => true,
+                }
+            })
         })?
         .with_physical_boundaries(map)?;
     let scale_by_value_rows = matches!(
