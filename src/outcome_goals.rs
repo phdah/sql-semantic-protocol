@@ -694,6 +694,20 @@ fn assess_goal(
         ));
     }
 
+    if crate::physical_realization::physical_distribution_conflict(
+        bundle,
+        layer.id(),
+        &goal,
+    ) {
+        return Ok(assessed(
+            goal,
+            OutcomeGoalStatus::Unsatisfiable,
+            "certified reversible outputs require contradictory complete physical frequencies",
+            min_rows,
+            max_rows,
+        ));
+    }
+
     // A complete empty physical state also proves empty histograms and zero
     // surviving groups on ordinary grouping, independently of value-domain
     // distributions that would otherwise require a positive-row construction.
