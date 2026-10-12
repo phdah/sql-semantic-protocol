@@ -1273,3 +1273,52 @@ fn identical_physical_set_arms_prove_nonempty_except_cancellation() {
         }
     }
 }
+
+
+#[test]
+fn filtered_copy_cannot_inherit_shared_except_cancellation_population() {
+    let schema = |relation: &str, column: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        ).unwrap()
+    };
+    let schemas = [
+        schema("t", "a"),
+        schema("left_stage", "id"),
+        schema("right_stage", "id"),
+    ];
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE left_stage AS SELECT a AS id FROM t",
+            "CREATE TABLE right_stage AS SELECT a AS id FROM t WHERE a > 0",
+            "SELECT id FROM left_stage EXCEPT ALL SELECT id FROM right_stage",
+        ],
+        "duckdb",
+        &schemas,
+    );
+    let plan = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 0)]);
+    if let WitnessDirection::Feasible(cases) = plan.outcome() {
+        assert!(
+            cases.iter().all(|case| {
+                !case.obligations().iter().any(|o| matches!(
+                    o,
+                    WitnessObligation::SetTuple { matching_rows: 1, .. }
+                ))
+            }),
+            "a filtered source copy must not inherit complete bag identity: {plan:?}"
+        );
+    }
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (0),(0),(1);
+         CREATE TABLE left_stage AS SELECT a AS id FROM t;
+         CREATE TABLE right_stage AS SELECT a AS id FROM t WHERE a > 0;"
+    ).unwrap();
+    let output = db.prepare(
+        "SELECT id FROM left_stage EXCEPT ALL SELECT id FROM right_stage ORDER BY id"
+    ).unwrap().query_map([], |row| row.get::<_, i64>(0))
+        .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    assert_eq!(output, vec![0, 0]);
+}
