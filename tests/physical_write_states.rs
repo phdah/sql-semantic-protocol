@@ -491,3 +491,45 @@ fn unsupported_alter_and_create_view_do_not_masquerade_as_physical_tables() {
         "{alter:?}"
     );
 }
+
+
+#[test]
+fn replace_then_update_then_zero_delete_carries_exact_prior_state() {
+    let statements = [
+        "CREATE OR REPLACE TABLE target AS SELECT id,score FROM source WHERE id > 1",
+        "UPDATE target SET score=score+1 WHERE id=2",
+        "DELETE FROM target WHERE id=999",
+    ];
+    let b = bundle(&statements, "snowflake");
+    let plan = physical_ordered_write_state_plan(&b, &[
+        state("target", &[(Some(7),Some(70))]),
+        state("source", &[(Some(1),Some(-8)),(Some(2),Some(4)),(Some(3),Some(8))]),
+    ]);
+    let (steps, states) = outcome(&plan);
+    assert_eq!(steps.len(), 3);
+    assert_eq!(steps[0].affected().deleted(), 1);
+    assert_eq!(steps[0].affected().inserted(), 2);
+    assert_eq!(steps[1].before().rows(), steps[0].after().rows());
+    assert_eq!(steps[1].affected().updated(), 1);
+    assert_eq!(steps[2].affected().deleted(), 0);
+    assert_eq!(steps[2].after().rows(), steps[1].after().rows());
+    assert_eq!(
+        states.iter().find(|s| s.relation()=="target").unwrap().rows(),
+        &[row(Some(2),Some(5)), row(Some(3),Some(8))],
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE source(id INTEGER,score INTEGER);
+        CREATE TABLE target(id INTEGER,score INTEGER);
+        INSERT INTO target VALUES (7,70);
+        INSERT INTO source VALUES (1,-8),(2,4),(3,8);
+        CREATE OR REPLACE TABLE target AS SELECT id,score FROM source WHERE id>1;
+        UPDATE target SET score=score+1 WHERE id=2;
+        DELETE FROM target WHERE id=999;").unwrap();
+    let actual: Vec<(i64,i64)> = {
+        let mut stmt = db.prepare("SELECT id,score FROM target ORDER BY id").unwrap();
+        let rows = stmt.query_map([], |r| Ok((r.get(0)?,r.get(1)?))).unwrap();
+        rows.map(|r| r.unwrap()).collect()
+    };
+    assert_eq!(actual, vec![(2,5),(3,8)]);
+}
