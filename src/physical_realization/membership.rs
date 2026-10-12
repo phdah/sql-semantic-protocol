@@ -33,13 +33,19 @@ fn assign_membership_key(
     if !walker.sources.contains(relation) {
         return None;
     }
-    let schema = bundle.source_schemas().iter().find(|s| s.relation() == relation)?;
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|s| s.relation() == relation)?;
     let domain = physical_integer_evidence(schema, &mapped)?;
     if domain.minimum > i128::from(value) || domain.maximum < i128::from(value) {
         return None;
     }
     let identity = (relation.to_string(), mapped.name().to_string());
-    if assignments.insert(identity, value).is_some_and(|prior| prior != value) {
+    if assignments
+        .insert(identity, value)
+        .is_some_and(|prior| prior != value)
+    {
         return None;
     }
     Some(mapped)
@@ -58,8 +64,8 @@ pub(super) fn physical_subquery_membership_plan(
 ) -> Option<WitnessDirection> {
     use crate::protocol::ComparisonOperator;
     use crate::subquery_witness::{
-        SubqueryMembershipCase, SubqueryMembershipDirection, SubqueryMembershipKind,
-        SubqueryCorrelation,
+        SubqueryCorrelation, SubqueryMembershipCase, SubqueryMembershipDirection,
+        SubqueryMembershipKind,
     };
 
     let mut walker = Walker::new(bundle);
@@ -74,9 +80,7 @@ pub(super) fn physical_subquery_membership_plan(
     };
     let inner_filter = match query.predicates().where_predicate()? {
         Predicate::Exists(exists) => exists.subquery().predicates().where_predicate(),
-        Predicate::InSubquery(membership) => {
-            membership.subquery().predicates().where_predicate()
-        }
+        Predicate::InSubquery(membership) => membership.subquery().predicates().where_predicate(),
         _ => return None,
     };
     if !matches!(layer.write_kind(), None | Some(WriteKind::Definition))
@@ -123,7 +127,10 @@ pub(super) fn physical_subquery_membership_plan(
         return None;
     }
     for relation in [&outer_physical, &inner_physical] {
-        bundle.source_schemas().iter().find(|s| s.relation() == relation)?;
+        bundle
+            .source_schemas()
+            .iter()
+            .find(|s| s.relation() == relation)?;
         if bundle.relation_constraints().iter().any(|set| {
             set.relation() == relation
                 && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
@@ -144,22 +151,18 @@ pub(super) fn physical_subquery_membership_plan(
         populations.push((SubqueryMembershipCase::NoCandidates, 0_u64, false));
     }
     match (local.kind(), positive) {
-        (SubqueryMembershipKind::Exists, true)
-        | (SubqueryMembershipKind::NotExists, false) => {
+        (SubqueryMembershipKind::Exists, true) | (SubqueryMembershipKind::NotExists, false) => {
             populations.push((SubqueryMembershipCase::MatchingRow, 1, false));
         }
-        (SubqueryMembershipKind::In, true)
-        | (SubqueryMembershipKind::NotIn, false) => {
+        (SubqueryMembershipKind::In, true) | (SubqueryMembershipKind::NotIn, false) => {
             populations.push((SubqueryMembershipCase::MatchingNonNullKey, 1, false));
         }
-        (SubqueryMembershipKind::Exists, false)
-        | (SubqueryMembershipKind::NotExists, true)
+        (SubqueryMembershipKind::Exists, false) | (SubqueryMembershipKind::NotExists, true)
             if !local.correlations().is_empty() =>
         {
             populations.push((SubqueryMembershipCase::NoCandidates, 1, true));
         }
-        (SubqueryMembershipKind::In, false)
-        | (SubqueryMembershipKind::NotIn, true) => {
+        (SubqueryMembershipKind::In, false) | (SubqueryMembershipKind::NotIn, true) => {
             populations.push((SubqueryMembershipCase::NoMatchNoNull, 1, true));
         }
         _ => {}
@@ -176,21 +179,29 @@ pub(super) fn physical_subquery_membership_plan(
         let mut invalid = false;
         if inner_rows > 0 {
             for pair in local.correlations() {
-                let outer_value = if nonmatching
-                    && local.membership_key().is_none()
-                {
+                let outer_value = if nonmatching && local.membership_key().is_none() {
                     1
                 } else {
                     0
                 };
                 let Some(outer) = assign_membership_key(
-                    bundle, &walker, target_layer_id, pair.outer(), outer_value, &mut assignments
+                    bundle,
+                    &walker,
+                    target_layer_id,
+                    pair.outer(),
+                    outer_value,
+                    &mut assignments,
                 ) else {
                     invalid = true;
                     break;
                 };
                 let Some(inner) = assign_membership_key(
-                    bundle, &walker, target_layer_id, pair.inner(), 0, &mut assignments
+                    bundle,
+                    &walker,
+                    target_layer_id,
+                    pair.inner(),
+                    0,
+                    &mut assignments,
                 ) else {
                     invalid = true;
                     break;
@@ -208,12 +219,25 @@ pub(super) fn physical_subquery_membership_plan(
         let membership_key = if inner_rows > 0 {
             if let Some(pair) = local.membership_key() {
                 let Some(outer) = assign_membership_key(
-                    bundle, &walker, target_layer_id, pair.outer(),
-                    if nonmatching { 1 } else { 0 }, &mut assignments
-                ) else { continue };
+                    bundle,
+                    &walker,
+                    target_layer_id,
+                    pair.outer(),
+                    if nonmatching { 1 } else { 0 },
+                    &mut assignments,
+                ) else {
+                    continue;
+                };
                 let Some(inner) = assign_membership_key(
-                    bundle, &walker, target_layer_id, pair.inner(), 0, &mut assignments
-                ) else { continue };
+                    bundle,
+                    &walker,
+                    target_layer_id,
+                    pair.inner(),
+                    0,
+                    &mut assignments,
+                ) else {
+                    continue;
+                };
                 SubqueryCorrelation::new(outer, inner)
             } else {
                 None
@@ -225,17 +249,28 @@ pub(super) fn physical_subquery_membership_plan(
             continue;
         }
         let Some(outer_boundary) = WitnessBoundary::new(
-            &outer_physical, GroupBoundaryKind::Physical, target_layer_id
-        ) else { continue };
+            &outer_physical,
+            GroupBoundaryKind::Physical,
+            target_layer_id,
+        ) else {
+            continue;
+        };
         let Some(inner_boundary) = WitnessBoundary::new(
-            &inner_physical, GroupBoundaryKind::Physical, target_layer_id
-        ) else { continue };
-        let Some(outer_row) = RowVariable::new(
-            &outer_physical, local.outer_relation(), "membership_outer"
-        ) else { continue };
-        let Some(inner_row) = RowVariable::new(
-            &inner_physical, inner_relation, "membership_inner"
-        ) else { continue };
+            &inner_physical,
+            GroupBoundaryKind::Physical,
+            target_layer_id,
+        ) else {
+            continue;
+        };
+        let Some(outer_row) =
+            RowVariable::new(&outer_physical, local.outer_relation(), "membership_outer")
+        else {
+            continue;
+        };
+        let Some(inner_row) = RowVariable::new(&inner_physical, inner_relation, "membership_inner")
+        else {
+            continue;
+        };
         let mut obligations = vec![WitnessObligation::Membership {
             outer: outer_row.clone(),
             inner: inner_boundary.clone(),
