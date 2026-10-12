@@ -56,8 +56,7 @@ fn direct_filtered_source(
     if column.relation().is_some_and(|relation| relation != source) {
         return None;
     }
-    let resolved =
-        crate::protocol::ColumnRef::new(Some(source.clone()), column.name().to_string());
+    let resolved = crate::protocol::ColumnRef::new(Some(source.clone()), column.name().to_string());
     let schema = bundle
         .source_schemas()
         .iter()
