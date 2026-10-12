@@ -40,6 +40,20 @@ pub struct SubqueryCorrelation {
 }
 
 impl SubqueryCorrelation {
+    /// A jointly proven equality between two identified relation columns.
+    /// This constructor also permits certified physical-column remapping
+    /// without parsing the original SQL again.
+    pub fn new(outer: ColumnRef, inner: ColumnRef) -> Option<Self> {
+        if outer.relation().is_none_or(str::is_empty)
+            || inner.relation().is_none_or(str::is_empty)
+            || outer.name().is_empty()
+            || inner.name().is_empty()
+        {
+            return None;
+        }
+        Some(Self { outer, inner })
+    }
+
     /// Outer source column, including its physical relation identity.
     pub fn outer(&self) -> &ColumnRef {
         &self.outer
