@@ -59,12 +59,11 @@ pub(super) fn physical_shared_set_cancellation_plan(
             Some(boundary.relation().to_string()),
             column.to_string(),
         );
-        let resolved = resolve_filter_column_with_evidence(
-            bundle, &walker, target_layer_id, &input, 0, true
-        )?;
+        let resolved =
+            resolve_filter_column_with_evidence(bundle, &walker, target_layer_id, &input, 0, true)?;
         (resolved.relation() == Some(physical_leaf.as_str())
             && resolved.relation() == walker.sources.iter().next().map(String::as_str))
-            .then_some(resolved)
+        .then_some(resolved)
     };
     let left_key = map(left)?;
     let right_key = map(right)?;
@@ -77,7 +76,8 @@ pub(super) fn physical_shared_set_cancellation_plan(
         .iter()
         .find(|item| item.relation() == relation)?;
     let evidence = physical_integer_evidence(schema, &left_key)?;
-    if evidence.minimum > 0 || evidence.maximum < 0
+    if evidence.minimum > 0
+        || evidence.maximum < 0
         || bundle.relation_constraints().iter().any(|set| {
             set.relation() == relation
                 && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
@@ -95,11 +95,12 @@ pub(super) fn physical_shared_set_cancellation_plan(
     let witness = negative.iter().find(|candidate| {
         candidate.output_tuple_count() == 0
             && candidate.obligations().len() == 2
-            && candidate.obligations().iter().all(|part| part.matching_tuple_count() == 1)
+            && candidate
+                .obligations()
+                .iter()
+                .all(|part| part.matching_tuple_count() == 1)
     })?;
-    let boundary = WitnessBoundary::new(
-        relation, GroupBoundaryKind::Physical, target_layer_id
-    )?;
+    let boundary = WitnessBoundary::new(relation, GroupBoundaryKind::Physical, target_layer_id)?;
     let mut obligations = vec![
         WitnessObligation::Rows {
             boundary: boundary.clone(),
