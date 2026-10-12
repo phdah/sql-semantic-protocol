@@ -12,11 +12,13 @@ use sql_semantic_protocol::{
 use sqlparser::dialect::PostgreSqlDialect;
 
 #[test]
-fn dbt_compiled_sql_and_direct_sql_share_canonical_write_states() {
-    const SQL: &str = "CREATE TABLE warehouse.analytics.stg_orders AS SELECT id,amount FROM warehouse.raw.orders WHERE id = 2";
+fn dbt_catalog_schema_and_direct_sql_share_canonical_write_states() {
+    const SQL: &str = "INSERT INTO warehouse.analytics.stg_orders (id,amount) SELECT id,amount FROM warehouse.raw.orders WHERE id = 2";
     let mut manifest: Value =
         serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
-    manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
+    // A dbt model supplies canonical schema/graph evidence; a caller-owned
+    // write statement consumes that same evidence, without pretending that
+    // compiled dbt model SELECTs are executable DML statements.
     let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
     let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
     let dialect = PostgreSqlDialect {};
@@ -35,17 +37,16 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_write_states() {
         })
         .collect::<Vec<_>>();
     let direct_catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let dbt_catalog = RelationCatalog::from_schemas(dbt.source_schemas()).unwrap();
     let input = SqlInput::inline(SQL);
-    let direct = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new(
-            "direct",
-            &input,
-            "postgresql",
-            &dialect,
-        )],
-        &direct_catalog,
-    )
-    .unwrap();
+    let make_bundle = |catalog: &RelationCatalog| {
+        analyze_configured_inputs_with_catalog(
+            &[ConfiguredSqlInput::new("direct", &input, "postgresql", &dialect)],
+            catalog,
+        ).unwrap()
+    };
+    let direct = make_bundle(&direct_catalog);
+    let from_dbt_metadata = make_bundle(&dbt_catalog);
     let rows = vec![
         PhysicalWriteRow::new(BTreeMap::from([
             ("id".to_string(), LiteralValue::Number("1".to_string())),
@@ -65,7 +66,7 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_write_states() {
         physical_ordered_write_state_plan(bundle, &initial)
     };
     let direct = plan(&direct);
-    let dbt = plan(&dbt);
+    let dbt = plan(&from_dbt_metadata);
     let PhysicalWriteStatePlan::Feasible {
         transitions: direct_steps,
         final_states: direct_states,
@@ -78,7 +79,7 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_write_states() {
         final_states: dbt_states,
     } = dbt
     else {
-        panic!("compiled dbt write is not exact: {dbt:?}");
+        panic!("dbt-provenanced schema DML is not exact: {dbt:?}");
     };
     assert_eq!(direct_steps.len(), 1);
     assert_eq!(dbt_steps.len(), 1);
