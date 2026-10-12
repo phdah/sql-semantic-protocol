@@ -128,7 +128,7 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 || partition_key == order.column()
                 || partition_key.relation() != Some(boundary.relation())
                 || order.column().relation() != Some(boundary.relation())
-        },
+        }
         WitnessObligation::Membership { closed_world, .. } => !closed_world,
         WitnessObligation::SetTuple {
             branch_identity,
