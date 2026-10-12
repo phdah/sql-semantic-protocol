@@ -679,13 +679,11 @@ fn assess_goal(
     // Exact set tuple laws can also be transported through a downstream
     // reversible scalar, but only after full source-level set membership
     // evidence and materialization datatype guards are certified.
-    if let Some(witness) =
-        crate::physical_realization::physical_inverted_set_distribution_plan(
-            bundle,
-            layer.id(),
-            &goal,
-        )
-    {
+    if let Some(witness) = crate::physical_realization::physical_inverted_set_distribution_plan(
+        bundle,
+        layer.id(),
+        &goal,
+    ) {
         return Ok(proved(
             goal,
             "complete output distribution is inverted through a proven physical set population",
