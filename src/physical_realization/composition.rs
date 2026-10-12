@@ -15,6 +15,21 @@ pub(super) fn joint_mixed_operator_and_source_goals(
         return None;
     }
 
+    // A transparent output fixes its physical relation's *necessary* row
+    // count. Feed that count into source-equivalent EXCEPT cancellation rather
+    // than hardcoding one witness row and then discarding a valid joint plan.
+    let mut required_counts = BTreeMap::<String, u64>::new();
+    for &(id, rows) in targets {
+        if let Some(source) = exact_transparent_source(bundle, id) {
+            if required_counts
+                .insert(source, rows)
+                .is_some_and(|existing| existing != rows)
+            {
+                return Some(WitnessDirection::Impossible);
+            }
+        }
+    }
+
     // Each already-proven mixed operator case contains a complete source
     // population. Separate cases may be conjoined only when no physical
     // relation is assigned twice; overlapping operators still need a
@@ -28,6 +43,14 @@ pub(super) fn joint_mixed_operator_and_source_goals(
             .or_else(|| physical_join_rank_count_plan(bundle, id, rows))
             .or_else(|| physical_group_aggregate_filter_count_plan(bundle, id, rows))
             .or_else(|| physical_subquery_membership_plan(bundle, id, rows))
+            .or_else(|| {
+                let physical = physical_source_plan(bundle, id);
+                let [source] = physical.sources() else {
+                    return None;
+                };
+                let count = required_counts.get(source).copied().unwrap_or(1);
+                physical_shared_set_cancellation_with_rows(bundle, id, rows, count)
+            })
         {
             let WitnessDirection::Feasible(cases) = plan else {
                 return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
