@@ -1202,3 +1202,74 @@ fn nonempty_exists_jointly_reconciles_outer_and_inner_source_goals() {
         "two producer aliases of one physical population must not be counted independently"
     );
 }
+
+
+#[test]
+fn identical_physical_set_arms_prove_nonempty_except_cancellation() {
+    let schema = |relation: &str, column: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        ).unwrap()
+    };
+    let schemas = [
+        schema("t", "a"),
+        schema("left_stage", "id"),
+        schema("right_stage", "id"),
+    ];
+    for &dialect in DIALECTS {
+        for operator in ["EXCEPT", "EXCEPT ALL"] {
+            let query = format!("SELECT id FROM left_stage {operator} SELECT id FROM right_stage");
+            let b = bundle_with_schemas(
+                &[
+                    "CREATE TABLE left_stage AS SELECT a AS id FROM t",
+                    "CREATE TABLE right_stage AS SELECT a AS id FROM t",
+                    &query,
+                ],
+                dialect,
+                &schemas,
+            );
+            let plan = physical_joint_source_plan(&b, &[(b.layers()[2].id(), 0)]);
+            let WitnessDirection::Feasible(cases) = plan.outcome() else {
+                panic!("{dialect} {operator}: nonempty cancellation not proved: {plan:?}");
+            };
+            assert!(cases.iter().any(|case| {
+                case.obligations().iter().filter(|obligation| matches!(
+                    obligation,
+                    WitnessObligation::SetTuple {
+                        boundary,
+                        matching_rows: 1,
+                        closed_world: true,
+                        ..
+                    } if boundary.relation() == "t"
+                )).count() == 2
+                && case.obligations().iter().any(|obligation| matches!(
+                    obligation,
+                    WitnessObligation::Rows {
+                        boundary,
+                        bounds,
+                        closed_world: true,
+                        ..
+                    } if boundary.relation() == "t"
+                        && bounds.minimum() == 1
+                        && bounds.maximum() == Some(1)
+                ))
+            }), "{dialect} {operator}: expected one complete source with two copies");
+
+            // The cancellation identity also holds for duplicates and NULL
+            // tuple values, even though this sufficient example closes one
+            // controlled non-NULL integer source row.
+            let db = Connection::open_in_memory().unwrap();
+            db.execute_batch(
+                "CREATE TABLE t(a INTEGER);
+                 INSERT INTO t VALUES (0),(0),(NULL),(1),(NULL);
+                 CREATE TABLE left_stage AS SELECT a AS id FROM t;
+                 CREATE TABLE right_stage AS SELECT a AS id FROM t;",
+            ).unwrap();
+            let mut statement = db.prepare(&query).unwrap();
+            let output = statement.query_map([], |row| row.get::<_, Option<i64>>(0))
+                .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+            assert!(output.is_empty(), "{dialect} {operator}: got {output:?}");
+        }
+    }
+}
