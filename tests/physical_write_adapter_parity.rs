@@ -14,7 +14,7 @@ use sqlparser::dialect::PostgreSqlDialect;
 #[test]
 fn dbt_catalog_schema_and_direct_sql_share_canonical_write_states() {
     const SQL: &str = "INSERT INTO warehouse.analytics.stg_orders (id,amount) SELECT id,amount FROM warehouse.raw.orders WHERE id = 2";
-    let mut manifest: Value =
+    let manifest: Value =
         serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
     // A dbt model supplies canonical schema/graph evidence; a caller-owned
     // write statement consumes that same evidence, without pretending that
