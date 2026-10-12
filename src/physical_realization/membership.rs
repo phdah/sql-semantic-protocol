@@ -7,7 +7,7 @@ use super::*;
 /// true (and NOT EXISTS false) for all outer rows. Both constructions are
 /// valid through transparent producer chains. Nonempty correlated matches or
 /// IN key comparisons require joint key-population proofs and remain residual.
-pub(super) fn physical_empty_subquery_membership_plan(
+pub(super) fn physical_subquery_membership_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
     wanted: u64,
@@ -56,7 +56,7 @@ pub(super) fn physical_empty_subquery_membership_plan(
         if !matches!(
             local.kind(),
             SubqueryMembershipKind::Exists | SubqueryMembershipKind::NotExists
-        ) || local.correlations().len() != 0
+        ) || !local.correlations().is_empty()
             || local.membership_key().is_some()
             || !local.inner_column_domains().is_empty()
             || !matches!(
