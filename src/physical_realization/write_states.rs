@@ -89,16 +89,12 @@ impl PhysicalWriteState {
         &self.rows
     }
 
-
     /// Derive exact per-column domains from a complete schema-backed population.
     ///
     /// Returns None if the schema does not identify this relation or if any
     /// physical row is missing/exceeding the declared set of columns. This
     /// method does not replace datatype or constraint validation.
-    pub fn exact_domains(
-        &self,
-        schema: &RelationSchema,
-    ) -> Option<Vec<PhysicalWriteColumnDomain>> {
+    pub fn exact_domains(&self, schema: &RelationSchema) -> Option<Vec<PhysicalWriteColumnDomain>> {
         if schema.relation() != self.relation {
             return None;
         }
