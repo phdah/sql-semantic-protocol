@@ -57,6 +57,82 @@ fn common_matched_join_rows_make_one_multi_contributor_having_group() {
 }
 
 #[test]
+fn complete_rank_partitions_prove_exact_selected_counts_across_producers() {
+    let schema = |relation: &str, names: &[&str]| {
+        RelationSchema::new(
+            relation,
+            names.iter()
+                .map(|name| SchemaColumn::from_sql_type(*name, "INTEGER", "postgresql").unwrap())
+                .collect()
+        ).unwrap()
+    };
+    let schemas = [
+        schema("t", &["a", "b"]),
+        schema("stage", &["grp", "score"]),
+        schema("mart", &["group_id", "sort_value"]),
+    ];
+    let prefix = [
+        "CREATE TABLE stage AS SELECT a AS grp, b AS score FROM t",
+        "CREATE TABLE mart AS SELECT grp AS group_id, score AS sort_value FROM stage",
+    ];
+    for dialect in DIALECTS {
+        for (limit, wanted, partitions, per_partition) in [
+            (1_u64, 2_u64, 2_u64, 2_u64),
+            (2, 4, 2, 3),
+            (0, 0, 1, 1),
+        ] {
+            let query = format!(
+                "SELECT group_id, ROW_NUMBER() OVER \
+                 (PARTITION BY group_id ORDER BY sort_value ASC NULLS LAST) AS rn \
+                 FROM mart QUALIFY rn <= {limit}"
+            );
+            let b = bundle_with_schemas(&[prefix[0], prefix[1], &query], dialect, &schemas);
+            let target = b.layers()[2].id();
+            let plan = physical_joint_source_plan(&b, &[(target, wanted)]);
+            let WitnessDirection::Feasible(cases) = plan.outcome() else {
+                panic!("{dialect} limit={limit}: expected complete rank proof: {plan:?}");
+            };
+            assert!(cases.iter().any(|case| case.obligations().iter().any(|o| {
+                matches!(
+                    o,
+                    WitnessObligation::RankPopulation {
+                        boundary,
+                        partitions: p,
+                        rows_per_partition: n,
+                        rank_limit: cap,
+                        closed_world: true,
+                        ..
+                    } if boundary.relation() == "t"
+                        && *p == partitions && *n == per_partition && *cap == limit
+                )
+            })), "{dialect} limit={limit}: missing complete rank law: {plan:?}");
+
+            let db = Connection::open_in_memory().unwrap();
+            db.execute_batch("CREATE TABLE t(a INTEGER, b INTEGER);").unwrap();
+            for partition in 0..partitions {
+                for order in 0..per_partition {
+                    db.execute_batch(&format!(
+                        "INSERT INTO t VALUES ({partition},{order});"
+                    )).unwrap();
+                }
+            }
+            db.execute_batch(&format!("{};{};", prefix[0], prefix[1])).unwrap();
+            let mut stmt = db.prepare(&format!(
+                "SELECT group_id, rn FROM ({query}) ORDER BY group_id, rn"
+            )).unwrap();
+            let actual = stmt.query_map([], |row| {
+                Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?))
+            }).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+            let expected = (0..partitions).flat_map(|partition| {
+                (1..=limit.min(per_partition))
+                    .map(move |rank| (partition as i64, rank as i64))
+            }).collect::<Vec<_>>();
+            assert_eq!(actual, expected, "{dialect} limit={limit}");
+        }
+    }
+}
+
+#[test]
 fn grouped_join_key_populations_preserve_contributor_bags_through_having() {
     let schema = |relation: &str| {
         RelationSchema::new(
