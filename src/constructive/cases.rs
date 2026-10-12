@@ -102,6 +102,7 @@ pub(super) fn invalid_obligation(obligation: &WitnessObligation) -> bool {
                 ..
             } | crate::outcome_proofs::OutcomeWitness::Ranked { rows: 1.., .. }
                 | crate::outcome_proofs::OutcomeWitness::SetTuples { tuples: 1.., .. }
+                | crate::outcome_proofs::OutcomeWitness::SourceRows { rows: 1.., columns, .. } if !columns.is_empty()
         ),
         WitnessObligation::Group { rows, non_null, .. } => {
             non_null.minimum() > rows.maximum().unwrap_or(u64::MAX)
