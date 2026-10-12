@@ -54,6 +54,8 @@
       "joint_shared_source_distinct_positive_integer_null_filters",
       "joint_shared_source_distinct_negative_integer_null_filters",
       "joint_mixed_positive_negative_filter_counts",
+      "joint_multi_terminal_nonempty_negative_closed_world",
+      "joint_shared_bag_except_cancellation_with_transparent_nonzero_source",
       "deterministic_joint_physical_graph_and_optional_protocol_json",
       "shared_alias_duplicate_and_unknown_schema_fail_closed_oracles",
       "typed_multistage_materialization_lineage",
@@ -73,6 +75,7 @@
       "tests/physical_realization.rs",
       "tests/physical_realization/distributions.rs",
       "tests/physical_realization/joint_distributions.rs",
+      "tests/physical_realization/negative_cardinality.rs",
       "tests/dbt_manifest.rs",
       "docs/protocol.md"
     ],

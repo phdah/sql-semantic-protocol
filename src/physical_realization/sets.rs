@@ -11,9 +11,23 @@ pub(super) fn physical_shared_set_cancellation_plan(
     target_layer_id: &str,
     wanted: u64,
 ) -> Option<WitnessDirection> {
+    physical_shared_set_cancellation_with_rows(bundle, target_layer_id, wanted, 1)
+}
+
+/// Scale the complete, lossless shared-source EXCEPT cancellation to a
+/// caller-proven physical source count. Both operands read the same bag of
+/// rows, including duplicate and NULL tuples, so subtracting its entire
+/// multiplicity from itself yields exactly zero. No intermediate relation
+/// is assigned independently.
+pub(super) fn physical_shared_set_cancellation_with_rows(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+    source_rows: u64,
+) -> Option<WitnessDirection> {
     use crate::protocol::{SetMultiplicityRule, SetWitnessDirection};
 
-    if wanted != 0 {
+    if wanted != 0 || source_rows == 0 {
         return None;
     }
     let mut walker = Walker::new(bundle);
@@ -105,7 +119,7 @@ pub(super) fn physical_shared_set_cancellation_plan(
         WitnessObligation::Rows {
             boundary: boundary.clone(),
             quantifier: RowQuantifier::ForAll,
-            bounds: CountBounds::new(1, Some(1))?,
+            bounds: CountBounds::new(source_rows, Some(source_rows))?,
             predicate: count_tautology(),
             closed_world: true,
         },
@@ -119,7 +133,7 @@ pub(super) fn physical_shared_set_cancellation_plan(
             branch_identity: part.branch_identity().to_string(),
             boundary: boundary.clone(),
             tuple_columns: vec![left_key.name().to_string()],
-            matching_rows: 1,
+            matching_rows: source_rows,
             column_domains: Vec::new(),
             closed_world: true,
         });

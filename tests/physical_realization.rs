@@ -78,6 +78,8 @@ mod joint_operators;
 mod lineage;
 #[path = "physical_realization/mixed.rs"]
 mod mixed;
+#[path = "physical_realization/negative_cardinality.rs"]
+mod negative_cardinality;
 #[path = "physical_realization/nested_sets.rs"]
 mod nested_sets;
 #[path = "physical_realization/producers.rs"]

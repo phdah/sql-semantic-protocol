@@ -53,7 +53,7 @@ constructive subset only; after it passes CI and is merged, TASK-68 stays **In
 Progress**. Its original six acceptance criteria remain unchecked until the
 children establish the full proof obligations.
 
-**Current next child after merging TASK-96 PR #102: TASK-97.** When asked to work on the "next
+**Current next child after merging TASK-97 PR #103: TASK-98.** When asked to work on the "next
 task", take the first unfinished, dependency-ready child in this queue **before
 unrelated backlog TASK-70..92**. Child PRs target `main` independently. A child may land multiple
 CI-verified, independently safe increments while remaining In Progress; the
@@ -66,7 +66,7 @@ cycle.
 - **[TASK-94](task-94%20-%20realize-multiparent-join-and-shared-source-dags.md)**: Realize multi-parent joins and repeated-source DAGs
 - **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs (**Done** via merged PRs #95 and #101)
 - **[TASK-96](task-96%20-%20resolve-projection-inversion-and-output-distributions.md)**: Prove safe projection inversion and complete output distributions (**Done** in CI-verified PR #102; merge PR #102 before starting TASK-97)
-- **[TASK-97](task-97%20-%20prove-complete-cardinality-and-negative-closed-world-outcomes.md)**: Prove complete cardinality and negative closed-world outcomes
+- **[TASK-97](task-97%20-%20prove-complete-cardinality-and-negative-closed-world-outcomes.md)**: Prove complete cardinality and negative closed-world outcomes (**Done** in PR #103; merge PR #103 before starting TASK-98)
 - **[TASK-98](task-98%20-%20realize-ordered-dml-before-after-source-states.md)**: Realize ordered DML and DDL before/after physical states
 - **[TASK-99](task-99%20-%20certify-sql-tdg-physical-fixture-integration.md)**: Certify physical-source proofs against committed sql-tdg fixture shapes
 - **[TASK-100](task-100%20-%20signoff-task68-end-to-end-physical-realizability.md)**: Sign off TASK-68 end-to-end physical-source realizability

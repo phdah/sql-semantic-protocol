@@ -185,6 +185,108 @@ pub(super) fn joint_positive_and_rejected_pair(
     WitnessDirection::feasible(vec![case])
 }
 
+/// Construct a nonempty, complete source population rejected by every
+/// requested terminal. Unlike a single NOT TRUE candidate, this closes the
+/// entire physical relation, so no alternative qualifying row can survive.
+///
+/// Failure to find such a row is not an impossible zero-output goal: all
+/// sources may instead be empty. The explicit one-row construction is an
+/// additional sufficient alternative to the existing all-empty proof.
+pub(super) fn joint_nonempty_rejected_terminals(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> Option<WitnessDirection> {
+    if targets.is_empty() || targets.iter().any(|(_, count)| *count != 0) {
+        return None;
+    }
+    let mut predicates = Vec::new();
+    let mut source = None::<String>;
+    for &(layer_id, _) in targets {
+        let physical = physical_source_plan(bundle, layer_id);
+        let [relation] = physical.sources() else {
+            return None;
+        };
+        if source
+            .as_deref()
+            .is_some_and(|existing| existing != relation.as_str())
+        {
+            return None;
+        }
+        source = Some(relation.clone());
+        let rejected = physical_rejected_row_count_plan(bundle, layer_id, 1);
+        let predicate = count_predicate_for_source(&rejected, relation, 1)?;
+        if !matches!(
+            predicate,
+            WitnessFormula::RowTruth {
+                truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
+                ..
+            }
+        ) {
+            return None;
+        }
+        if !predicates.contains(&predicate) {
+            predicates.push(predicate);
+        }
+    }
+    let source = source?;
+    if !joint_source_truths_satisfiable(bundle, &source, &predicates)? {
+        // Nonempty simultaneous rejection is unavailable, but an empty
+        // physical relation may still satisfy every requested zero count.
+        return None;
+    }
+    let boundary = WitnessBoundary::new(&source, GroupBoundaryKind::Physical, targets[0].0)?;
+    let predicate = match predicates.as_slice() {
+        [only] => only.clone(),
+        multiple => WitnessFormula::All(multiple.to_vec()),
+    };
+    let bounds = CountBounds::new(1, Some(1))?;
+    let mut obligations = vec![
+        WitnessObligation::Rows {
+            boundary: boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds,
+            predicate,
+            closed_world: true,
+        },
+        WitnessObligation::ClosedWorld {
+            boundary,
+            coverage: ClosedWorldCoverage::EntireRelation,
+        },
+    ];
+    for &(layer_id, _) in targets {
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id: layer_id.to_string(),
+            bounds: CountBounds::new(0, Some(0))?,
+        });
+    }
+    let populated = WitnessCase::new(obligations, ProofStrength::Sufficient)?;
+    // SQL row-preserving filters cannot synthesize rows from a wholly empty
+    // physical source. Retain this second sufficient case rather than hiding
+    // a valid zero-input construction behind the new nonempty witness.
+    let empty_boundary = WitnessBoundary::new(&source, GroupBoundaryKind::Physical, targets[0].0)?;
+    let mut empty = vec![
+        WitnessObligation::Rows {
+            boundary: empty_boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds: CountBounds::new(0, Some(0))?,
+            predicate: count_tautology(),
+            closed_world: true,
+        },
+        WitnessObligation::ClosedWorld {
+            boundary: empty_boundary,
+            coverage: ClosedWorldCoverage::EntireRelation,
+        },
+    ];
+    for &(layer_id, _) in targets {
+        empty.push(WitnessObligation::OutputRows {
+            layer_id: layer_id.to_string(),
+            bounds: CountBounds::new(0, Some(0))?,
+        });
+    }
+    let empty = WitnessCase::new(empty, ProofStrength::Sufficient)?;
+    WitnessDirection::feasible(vec![populated, empty])
+}
+
 /// Evidence for direct physical signed integer comparisons. Kept identical
 /// across the positive-only and mixed-truth physical row solvers.
 pub(super) fn physical_integer_evidence(
@@ -339,7 +441,12 @@ pub fn physical_joint_row_count_plan(
         return WitnessDirection::Impossible;
     }
     ordered.dedup();
-    if necessarily_missing_positive_join_input(bundle, &ordered) {
+    if let Some(plan) = joint_nonempty_rejected_terminals(bundle, &ordered) {
+        return plan;
+    }
+    if necessarily_missing_positive_join_input(bundle, &ordered)
+        || necessarily_nonempty_preserved_join_side(bundle, &ordered)
+    {
         return WitnessDirection::Impossible;
     }
     if let [(layer_id, rows)] = ordered.as_slice() {

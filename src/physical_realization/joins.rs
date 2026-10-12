@@ -11,6 +11,20 @@ pub(super) fn physical_join_population_count_plan(
     target_layer_id: &str,
     wanted: u64,
 ) -> Option<WitnessDirection> {
+    physical_join_population_with_source_counts(bundle, target_layer_id, wanted, &BTreeMap::new())
+}
+
+/// Enumerate additional complete empty-partner join populations when a
+/// second terminal fixes the surviving source's exact positive row count.
+/// An empty right/left side cannot create a match, but the same law is not
+/// valid for preserved outer or anti-join sides; the existing join-kind
+/// cardinality computation decides those cases before admitting a witness.
+pub(super) fn physical_join_population_with_source_counts(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+    exact_sources: &BTreeMap<String, u64>,
+) -> Option<WitnessDirection> {
     use crate::join_witness::JoinWitnessDirection;
     use crate::protocol::JoinKind;
 
@@ -170,6 +184,12 @@ pub(super) fn physical_join_population_count_plan(
     ];
     if wanted == 0 {
         candidates.push((JoinPopulationPattern::EmptyLeft, 0, 0));
+        if let Some(&count) = exact_sources.get(left_source) {
+            candidates.push((JoinPopulationPattern::EmptyRight, count, 0));
+        }
+        if let Some(&count) = exact_sources.get(right_source) {
+            candidates.push((JoinPopulationPattern::EmptyLeft, 0, count));
+        }
     }
     // Enumerate bounded factorizations without floating-point roundoff.
     // These are constructive examples only, never an exhaustive proof that
@@ -383,6 +403,63 @@ pub(super) fn necessarily_missing_positive_join_input(
         })
 }
 
+/// A complete, transparent physical source with N > 0 necessarily yields
+/// at least N rows on its preserved side of a pure LEFT/RIGHT/FULL join.
+/// This is an impossibility law (not merely exhaustion of constructed join
+/// populations), and only applies after the same join proof has validated
+/// the exact simple-join shape and physical identities.
+pub(super) fn necessarily_nonempty_preserved_join_side(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> bool {
+    use crate::protocol::JoinKind;
+
+    let fixed = targets
+        .iter()
+        .filter_map(|&(layer, rows)| {
+            exact_transparent_source(bundle, layer).map(|source| (source, rows))
+        })
+        .collect::<BTreeMap<_, _>>();
+    if !fixed.values().any(|count| *count > 0) {
+        return false;
+    }
+    targets
+        .iter()
+        .filter(|(_, rows)| *rows == 0)
+        .any(|&(layer, _)| {
+            let Some(WitnessDirection::Feasible(cases)) =
+                physical_join_population_count_plan(bundle, layer, 0)
+            else {
+                return false;
+            };
+            cases.iter().any(|case| {
+                case.obligations().iter().any(|obligation| {
+                    let WitnessObligation::JoinPopulation {
+                        left_row,
+                        right_row,
+                        join_kind,
+                        ..
+                    } = obligation
+                    else {
+                        return false;
+                    };
+                    let left = fixed
+                        .get(left_row.relation())
+                        .is_some_and(|count| *count > 0);
+                    let right = fixed
+                        .get(right_row.relation())
+                        .is_some_and(|count| *count > 0);
+                    match join_kind {
+                        JoinKind::Left => left,
+                        JoinKind::Right => right,
+                        JoinKind::Full => left || right,
+                        _ => false,
+                    }
+                })
+            })
+        })
+}
+
 /// Compose closed physical key populations across multiple terminal goals.
 /// Never cross-product independently feasible examples unless every selected
 /// case can share identical source-row counts and compatible key assignments.
@@ -395,10 +472,25 @@ pub(super) fn jointly_realized_join_goals(
     if goals.len() < 2 {
         return None;
     }
+    // Row-preserving terminals provide necessary, complete source counts.
+    // A zero-count join can use an empty partner while preserving those
+    // positive source rows, rather than demanding that both parents vanish.
+    let mut exact_sources = BTreeMap::<String, u64>::new();
+    for &(layer_id, rows) in goals {
+        if let Some(source) = exact_transparent_source(bundle, layer_id) {
+            if exact_sources
+                .insert(source, rows)
+                .is_some_and(|previous| previous != rows)
+            {
+                return Some(WitnessDirection::Impossible);
+            }
+        }
+    }
     let mut alternatives = Vec::new();
     let mut includes_join = false;
     for &(layer_id, rows) in goals {
-        let join_proof = physical_join_population_count_plan(bundle, layer_id, rows);
+        let join_proof =
+            physical_join_population_with_source_counts(bundle, layer_id, rows, &exact_sources);
         includes_join |= join_proof.is_some();
         let direction =
             join_proof.unwrap_or_else(|| physical_row_count_plan(bundle, layer_id, rows));
