@@ -2,10 +2,6 @@
 
 Understand how SQL and metadata become normalized, deterministic protocol outcomes. For the normative JSON shape, see [the protocol contract](protocol.md). For runnable commands, see [CLI usage](cli.md).
 
-
-
-Complete physical join key populations can also be homogeneous across multiple keys rather than only a bijection or one common key. The typed `grouped_matched` witness records an explicit group count and exact per-key contributor bag multiplicities, and only composes through named materialized grouping when the group key is traced to the same type-certified physical source and local HAVING aggregate tests admit each group. Derived filters over COUNT(*) can combine exact scalar comparisons using AND/OR/NOT, while arbitrary computed expressions remain residual. Correlated EXISTS and non-NULL IN/NOT IN can use a shared complete key population across transparent sources, never independent candidate samples; SQL NULL-sensitive cases not proved remain residual.
-
 ## Protocol contract
 
 The Cargo package version is the single active protocol version emitted by the library and CLI. It represents one or many SQL inputs with the same root document shape: `inputs`, `layers`, and `graph`. A single SQL string is therefore represented as one element in `inputs`, not by switching to a different protocol version.
@@ -651,7 +647,11 @@ witness cannot encode required predicate obligations. General join,
 group, QUALIFY, set and DML counts remain residual.
 
 
-### Joint physical operator populations (TASK-95, partial)
+### Joint physical operator populations (TASK-95)
+
+Complete physical join key populations can also be homogeneous across multiple keys rather than only a bijection or one common key. The typed `grouped_matched` witness records an explicit group count and exact per-key contributor bag multiplicities, and only composes through named materialized grouping when the group key is traced to the same type-certified physical source and local HAVING aggregate tests admit each group. Derived filters over COUNT(*) can combine exact scalar comparisons using AND/OR/NOT, while arbitrary computed expressions remain residual. Correlated EXISTS and non-NULL IN/NOT IN can use a shared complete key population across transparent sources, never independent candidate samples; SQL NULL-sensitive cases not proved remain residual.
+
+The complete `rank_population` proof assigns all rows of every physical partition, including a strictly unique order value for each row. It composes through certified identity producers and, when matching join-key bag assignments are compatible, through JOIN-to-ROW_NUMBER()/QUALIFY. The source and join populations must agree on grouping keys, per-key contributors and total cardinality. Up to four nested set branches can carry exact source-bag obligations through materialized producers. Two complete lossless aliases of the same physical source have identical bags, which proves EXCEPT/EXCEPT ALL cancellation, including NULL-safe tuple comparison; filtered branches are not interchangeable. A supported COUNT(group-key) aggregate is equal to COUNT(*) only where a non-NULL key assignment was constructed. In all other cases, preserve the typed residual and the canonical DAG provenance.
 
 An exact `group`, `ranked`, or `set_tuples` outcome witness can be promoted
 to a `operator_population` obligation only after the complete physical
