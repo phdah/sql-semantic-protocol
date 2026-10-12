@@ -102,7 +102,8 @@ pub fn physical_joint_distribution_plan(
             relation,
             rows: actual,
             columns: mapped,
-        }) = assigned else {
+        }) = assigned
+        else {
             return residual(PhysicalProofGap::NonInvertibleTransformation);
         };
         if actual != rows {
