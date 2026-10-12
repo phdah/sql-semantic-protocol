@@ -115,6 +115,115 @@ fn mapped_distributions(
     })
 }
 
+/// Invert an exact terminal histogram back to a proven materialized set
+/// producer. The existing canonical set-bag witness still owns branch tuple
+/// laws and all physical-source requirements; this function only certifies
+/// the downstream, cardinality-preserving scalar transformation.
+pub(crate) fn physical_inverted_set_distribution_plan(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    goal: &OutcomeGoal,
+) -> Option<crate::outcome_proofs::OutcomeWitness> {
+    let rows = goal.rows()?;
+    let [distribution] = goal.distributions() else {
+        return None;
+    };
+    if rows == 0 || goal.groups().is_some() {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let sets = walker.nodes.iter().filter_map(|node| {
+        let PhysicalPlanRef::Layer(id) = node.id() else {
+            return None;
+        };
+        let layer = walker.layers.get(id.as_str()).copied()?;
+        query_for(bundle, layer)?.set_operation().is_some().then_some(id.as_str())
+    }).collect::<Vec<_>>();
+    let [set_id] = sets.as_slice() else {
+        return None;
+    };
+    if *set_id == target_layer_id {
+        return None;
+    }
+
+    let mut current = target_layer_id;
+    let mut output_name = distribution.column().to_string();
+    let mut values = distribution.values().to_vec();
+    let mut covered = BTreeSet::<(String, String)>::new();
+    let mut expected_type = None::<DataType>;
+    for _ in 0..walker.layers.len() {
+        if current == *set_id {
+            break;
+        }
+        let layer = walker.layers.get(current).copied()?;
+        if !matches!(layer.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
+        let query = query_for(bundle, layer)?;
+        covered.insert((current.to_string(), output_name.clone()));
+        if !safe_projection(query, current, &covered) {
+            return None;
+        }
+        let mut output = query.output().columns().iter().filter(|item| item.name() == output_name);
+        let projected = output.next()?;
+        if output.next().is_some() {
+            return None;
+        }
+        let [lineage] = projected.lineage() else {
+            return None;
+        };
+        let canonical = layer.canonical_relation(lineage.relation());
+        let schema = bundle.source_schemas().iter().find(|schema| schema.relation() == canonical)?;
+        let input = schema.columns().iter().find(|column| column.name() == lineage.column())?;
+        let data_type = input.data_type().clone();
+        if expected_type.as_ref().is_some_and(|expected| expected != &data_type) {
+            return None;
+        }
+        values = invert_values(
+            projected.expression(),
+            projected.plain_copy_source().is_some(),
+            lineage.column(),
+            &data_type,
+            values,
+        )?;
+        let mut edges = bundle.graph().edges().iter().filter(|edge| {
+            edge.consumer_layer_id() == current && edge.relation() == canonical
+        });
+        let edge = edges.next()?;
+        if edges.next().is_some() || edge.resolution() != RelationResolution::Resolved {
+            return None;
+        }
+        let [producer] = edge.producer_layer_ids() else {
+            return None;
+        };
+        let node = walker.nodes.iter().find(|node| {
+            node.id() == &PhysicalPlanRef::Layer(current.to_string())
+        })?;
+        if node.inputs() != [PhysicalPlanRef::Layer(producer.clone())] {
+            return None;
+        }
+        current = producer;
+        output_name = lineage.column().to_string();
+        expected_type = Some(data_type);
+    }
+    if current != *set_id {
+        return None;
+    }
+
+    let set_layer = walker.layers.get(*set_id).copied()?;
+    let set_query = query_for(bundle, set_layer)?;
+    let [column] = set_query.output().columns() else {
+        return None;
+    };
+    if column.name() != output_name {
+        return None;
+    }
+    let histogram = crate::outcome_goals::OutputDistribution::new(output_name, values).ok()?;
+    let at_set = OutcomeGoal::new(set_layer.id(), Some(rows), None, vec![histogram]).ok()?;
+    physical_materialized_set_witness(bundle, set_layer.id(), &at_set)
+}
+
 /// One fully traced physical column and its complete frequency bag.
 struct InvertedDistribution {
     column: ColumnRef,
