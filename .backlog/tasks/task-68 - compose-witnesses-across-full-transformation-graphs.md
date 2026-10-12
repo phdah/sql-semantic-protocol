@@ -67,8 +67,8 @@ cycle.
 - **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs (**Done** via merged PRs #95 and #101)
 - **[TASK-96](task-96%20-%20resolve-projection-inversion-and-output-distributions.md)**: Prove safe projection inversion and complete output distributions (**Done** in CI-verified PR #102; merge PR #102 before starting TASK-97)
 - **[TASK-97](task-97%20-%20prove-complete-cardinality-and-negative-closed-world-outcomes.md)**: Prove complete cardinality and negative closed-world outcomes (**Done** in PR #103; merge PR #103 before starting TASK-98)
-- **[TASK-98](task-98%20-%20realize-ordered-dml-before-after-source-states.md)**: Realize ordered DML and DDL before/after physical states
-- **[TASK-99](task-99%20-%20certify-sql-tdg-physical-fixture-integration.md)**: Certify physical-source proofs against committed sql-tdg fixture shapes
+- **[TASK-98](task-98%20-%20realize-ordered-dml-before-after-source-states.md)**: Realize ordered DML and DDL before/after physical states (**Done**)
+- **[TASK-99](task-99%20-%20certify-sql-tdg-physical-fixture-integration.md)**: Certify physical-source proofs against committed sql-tdg fixture shapes (**Done** in PR #105, pinned SHA + DuckDB dbt certification)
 - **[TASK-100](task-100%20-%20signoff-task68-end-to-end-physical-realizability.md)**: Sign off TASK-68 end-to-end physical-source realizability
 
 Execution order is enforced through the sequential child dependencies:
@@ -193,3 +193,11 @@ Release 3.0.0 remains held.
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## TASK-99 handoff (2026-10-12)
+
+PR #105 certifies protocol-side pinned sql-tdg fixtures against an executable
+11-model dbt/DuckDB oracle, cross-dialect canonical variants and explicit
+typed residual/impossibility boundaries. TASK-99 is Done; TASK-100 is the
+next sequential child. This does not certify the downstream generator or
+release 3.0.0. See `docs/tdg-certification.md`.

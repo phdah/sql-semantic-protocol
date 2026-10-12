@@ -30,6 +30,7 @@
       "distinct_and_ranked_empty_input",
       "joint_shared_empty_source_output_goals",
       "pinned_sql_tdg_raw_fixture_zero_oracles",
+      "pinned_sql_tdg_concrete_multimodel_duckdb_terminal_oracles",
       "nested_global_aggregate_zero_row_exclusion",
       "joint_null_aware_boolean_filters",
       "exact_schema_backed_transparent_source_row_counts",
@@ -77,6 +78,9 @@
       "tests/physical_realization/joint_distributions.rs",
       "tests/physical_realization/negative_cardinality.rs",
       "tests/dbt_manifest.rs",
+      "tests/sql_tdg_pinned_dbt_e2e.rs",
+      "tests/sql_tdg_dialect_laws.rs",
+      "docs/tdg-certification.md",
       "docs/protocol.md"
     ],
     "unproved_scope": [
@@ -107,10 +111,13 @@
     ],
     "next_task_after_foundation": "TASK-93",
     "next_dependency_ready_after_TASK_96_merge": "TASK-97",
+    "next_dependency_ready_after_TASK_99_merge": "TASK-100",
     "closure_rule": "TASK-68 remains In Progress until TASK-93..100 are Done and all six parent acceptance criteria are verified; release TASK-91 remains blocked independently."
   },
   "task_99_upstream_fixture_contract": {
     "owner": "TASK-99",
+    "protocol_fixture_certification": "done_concrete_oracles_and_typed_residuals",
+    "next_task": "TASK-100",
     "upstream_repo": "phdah/sql-tdg",
     "upstream_git_sha": "90ec0e12a2d5cd2c1294556336fc947e176c9db9",
     "source_directory": "tests/fixtures/sql_tdg",

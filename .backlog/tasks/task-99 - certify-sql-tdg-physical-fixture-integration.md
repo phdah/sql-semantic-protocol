@@ -1,7 +1,7 @@
 ---
 id: TASK-99
 title: Certify physical-source proofs against committed sql-tdg fixture shapes
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-10'
 updated_date: '2026-10-12'
@@ -32,11 +32,11 @@ Certify actual pinned sql-tdg raw-SQL/dbt fixture shapes with the canonical prot
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Pin and enumerate exact committed sql-tdg multi-layer, join/group/window/set and scripted DML/DDL fixture sources, keeping a reproducible upstream SHA and shape inventory.
-- [ ] #2 Produce deterministic source-level constructive plans for all in-scope feasible fixture outcomes and typed impossible/residual diagnostics for unproved shapes, without consumer-side SQL reparsing.
-- [ ] #3 Run complete DuckDB pipeline oracles with physically inserted input rows; verify all jointly targeted terminal counts, distributions and deliberate rejection/nonmembership, including NULLs and duplicates.
-- [ ] #4 Compare canonical semantics across all supported dialects where sqlparser accepts equivalent fixture forms and check raw SQL versus dbt artifact/catalog adapter parity.
-- [ ] #5 Update proof evidence links and cross-repository dependency mapping in coverage manifest and TASK-91 without marking generator TASK-35/36 or protocol 3.0.0 release accepted prematurely.
+- [x] #1 Pin and enumerate exact committed sql-tdg multi-layer, join/group/window/set and scripted DML/DDL fixture sources, keeping a reproducible upstream SHA and shape inventory.
+- [x] #2 Produce deterministic source-level constructive plans for all in-scope feasible fixture outcomes and typed impossible/residual diagnostics for unproved shapes, without consumer-side SQL reparsing.
+- [x] #3 Run complete DuckDB pipeline oracles with physically inserted input rows; verify all jointly targeted terminal counts, distributions and deliberate rejection/nonmembership, including NULLs and duplicates.
+- [x] #4 Compare canonical semantics across all supported dialects where sqlparser accepts equivalent fixture forms and check raw SQL versus dbt artifact/catalog adapter parity.
+- [x] #5 Update proof evidence links and cross-repository dependency mapping in coverage manifest and TASK-91 without marking generator TASK-35/36 or protocol 3.0.0 release accepted prematurely.
 <!-- AC:END -->
 
 ## Implementation and verification
@@ -62,3 +62,25 @@ physical plan into a general constructive certificate. The original pinned
 upstream revision does not commit UPDATE/DELETE/MERGE/CTAS scripts; those
 operator-level source-state laws are tested here, while downstream generated
 script coverage remains owned by sql-tdg TASK-31/36 and protocol TASK-91.
+
+## Final TASK-99 proof handoff
+
+All five TASK-99 criteria are covered by PR #105. The pinned upstream
+commit is the sole SQL/dbt fixture reference. The concrete dbt pipeline
+seeds all four source tables once and checks exact row counts and value
+snapshots for each of eleven terminals, including deliberate rejection and
+bag duplicates; the upstream insert script is checked against an exact
+typed before/after physical state. Cross-dialect canonical operator outcomes
+are checked by `tests/sql_tdg_dialect_laws.rs` wherever the parser accepts
+the equivalent form. `tests/sql_tdg_pinned_dbt_e2e.rs` checks source-to-model
+graph identity, direct SQL versus dbt adapter zero-row proof parity, typed
+positive residuals and exact contradictions. Normal, no-default-feature and
+dbt Core CI are required gates.
+
+**Deliberately not certified:** general positive joined/grouped/ranked
+generation with incomplete upstream physical construction, arbitrary
+correlated EXISTS source populations, absent upstream scripted
+UPDATE/DELETE/MERGE/CTAS fixture files, and sql-tdg's own randomized
+multi-seed rejection/output snapshots. These are explicitly residual or
+downstream-owned by TASK-100, TASK-89/91 and sql-tdg TASK-31/35/36, not
+silent feasibility claims. TASK-68 remains In Progress and TASK-100 is next.
