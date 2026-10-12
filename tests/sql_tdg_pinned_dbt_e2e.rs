@@ -113,6 +113,36 @@ fn pinned_sql_tdg_dbt_project_certifies_all_models_and_fail_closed_plans() {
             "{name}: whole-project target changed"
         );
     }
+    // Every terminal sees the same physical seed bag. Check output values,
+    // including duplicate multiplicity, rather than counts alone.
+    let snapshots: [(&str, &str, &[&str]); 11] = [
+        ("stg_orders", "order_id::VARCHAR || ':' || amount::VARCHAR || ':' || status || ':' || region", &["1:42:paid:north"]),
+        ("stg_customers", "customer_id::VARCHAR || ':' || score::VARCHAR", &["10:7"]),
+        ("enriched_orders", "order_id::VARCHAR || ':' || amount::VARCHAR || ':' || score::VARCHAR", &["1:42:7"]),
+        ("aggregate_summary", "region || ':' || order_count::VARCHAR || ':' || max_amount::VARCHAR", &["north:1:42"]),
+        ("boundary_final_orders", "amount::VARCHAR", &["42"]),
+        ("derived_orders", "amount_bucket || ':' || paid_flag::VARCHAR", &["medium:1"]),
+        ("final_orders", "amount::VARCHAR || ':' || status || ':' || region", &["42:paid:north"]),
+        ("independent_return_summary", "reason || ':' || return_count::VARCHAR || ':' || max_refund::VARCHAR", &["full:1:70"]),
+        ("ranked_orders", "region || ':' || amount::VARCHAR || ':' || rn::VARCHAR", &["north:42:1"]),
+        ("subquery_orders", "amount::VARCHAR || ':' || region", &["42:north"]),
+        ("unioned_orders", "amount::VARCHAR || ':' || region", &["42:north", "42:north"]),
+    ];
+    for (name, expr, expected) in snapshots {
+        let query = format!("SELECT {expr} FROM raw_analytics.\\"{name}\\" ORDER BY 1");
+        let mut statement = db.prepare(&query).expect("snapshot query");
+        let observed = statement
+            .query_map([], |row| row.get::<_, String>(0))
+            .expect("typed snapshot")
+            .map(|row| row.expect("snapshot text"))
+            .collect::<Vec<_>>();
+        assert_eq!(observed, expected, "{name}: complete physical output changed");
+    }
+    for relation in ["orders", "customers", "legacy_orders", "returns"] {
+        let query = format!("SELECT COUNT(*) FROM raw.\\"{relation}\\"");
+        let rows: i64 = db.query_row(&query, [], |row| row.get(0)).unwrap();
+        assert_eq!(rows, 2, "{relation}: pinned source was not materialized");
+    }
     let joined: (String, i64, i64) = db
         .query_row(
             "SELECT region, order_count, max_amount FROM raw_analytics.aggregate_summary",
