@@ -70,11 +70,11 @@ fn state(relation: &str, rows: &[(Option<i64>, Option<i64>)]) -> PhysicalWriteSt
     .unwrap()
 }
 
-fn outcome<'a>(
-    plan: &'a PhysicalWriteStatePlan,
+fn outcome(
+    plan: &PhysicalWriteStatePlan,
 ) -> (
-    &'a [sql_semantic_protocol::PhysicalWriteTransition],
-    &'a [PhysicalWriteState],
+    &[sql_semantic_protocol::PhysicalWriteTransition],
+    &[PhysicalWriteState],
 ) {
     let PhysicalWriteStatePlan::Feasible {
         transitions,
