@@ -356,9 +356,14 @@ fn construct_group_with_map(
                 Expression::Column(_) => false,
                 Expression::AggregateFunction(function) => {
                     !function.name().eq_ignore_ascii_case("count")
+                        || function.distinct()
+                        || function.filter().is_some()
                         || !matches!(
                             function.arguments(),
                             [crate::protocol::AggregateArgument::Wildcard]
+                                | [crate::protocol::AggregateArgument::Expression(
+                                    Expression::Column(_)
+                                )]
                         )
                 }
                 _ => true,
@@ -390,6 +395,23 @@ fn construct_group_with_map(
         .iter()
         .filter_map(|output| output.plain_copy_source())
         .find(|source| source.column() == group_key.name() && source.relation() == relation)?;
+    // COUNT(group_key) is equal to COUNT(*) only for a fully controlled
+    // non-NULL key population. The mapped integer-key witness below proves
+    // exactly that value assignment, including across named producers.
+    if query.output().columns().iter().any(|output| {
+        if let Expression::AggregateFunction(function) = output.expression() {
+            if let [crate::protocol::AggregateArgument::Expression(
+                Expression::Column(column)
+            )] = function.arguments()
+            {
+                return column.name() != key.column()
+                    || column.relation().is_some_and(|name| name != relation);
+            }
+        }
+        false
+    }) {
+        return None;
+    }
     let mapped = map(&ColumnRef::new(
         Some(relation.to_string()),
         key.column().to_string(),
@@ -405,9 +427,16 @@ fn construct_group_with_map(
     if query.predicates().having_predicate().is_some() {
         let witness = query.group_witness()?;
         if witness.boundary() != Some(relation)
-            || witness.aggregate() != Some(GroupAggregate::CountRows)
+            || !matches!(
+                witness.aggregate(),
+                Some(GroupAggregate::CountRows | GroupAggregate::CountValues)
+            )
             || witness.group_keys().len() != 1
             || witness.group_keys()[0].name() != key.column()
+            || witness.argument().is_some_and(|argument| {
+                argument.name() != key.column()
+                    || argument.relation() != Some(relation)
+            })
         {
             return None;
         }
@@ -417,8 +446,11 @@ fn construct_group_with_map(
         rows_per_group = cases
             .iter()
             .filter_map(|case| {
-                let min_rows = case.min_rows().max(1);
-                if case.max_rows().is_some_and(|max| min_rows > max) {
+                let min_rows = case.min_rows().max(case.min_non_null()).max(1);
+                if case.max_rows().is_some_and(|max| min_rows > max)
+                    || (witness.aggregate() == Some(GroupAggregate::CountValues)
+                        && case.max_non_null().is_some_and(|max| min_rows > max))
+                {
                     None
                 } else {
                     Some(min_rows)
