@@ -80,7 +80,7 @@
       "tests/dbt_manifest.rs",
       "tests/protocol_conformance_dbt_e2e.rs",
       "tests/protocol_conformance_dialect_laws.rs",
-      "docs/tdg-certification.md",
+      "docs/conformance-suite.md",
       "docs/protocol.md"
     ],
     "unproved_scope": [
@@ -150,7 +150,7 @@
       "tests/protocol_conformance_dialect_laws.rs",
       "tests/physical_write_states.rs",
       "tests/physical_write_adapter_parity.rs",
-      "docs/tdg-certification.md"
+      "docs/conformance-suite.md"
     ],
     "sql_tdg_downstream_generator_signoff": "pending_TASK_31_35_36",
     "protocol_release_gate": "blocked_TASK_91"
@@ -10481,8 +10481,8 @@
   },
   "variant_matrix_semantics": "Variant/dialect cells inherit fail-closed defaults. Only named fixtures may override parse evidence; representative_only is partial sampling of combined variants, not full syntax-variant certification. Analysis success alone does NOT prove canonical meaning, generator construction, absence or cardinality.",
   "dbt_fixture_inventory": {
-    "source_repo": "phdah/sql-tdg",
-    "path": "tests/fixtures/dbt_core_project",
+    "consumer_repo": "phdah/sql-tdg",
+    "consumer_project_path": "tests/fixtures/dbt_core_project",
     "observed_date": "2026-10-09",
     "default_invocation": "make all (MATCHING=100 REJECTED=10 no target)",
     "current_gate": "not_certified",

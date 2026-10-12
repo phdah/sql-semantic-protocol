@@ -434,7 +434,7 @@ fn parser_and_analysis_claims_are_exercised_by_manifest_fixtures() {
 fn dbt_fixture_and_write_workloads_have_explicit_unproven_owners() {
     let manifest = manifest();
     let inventory = &manifest["dbt_fixture_inventory"];
-    assert_eq!(inventory["source_repo"], "phdah/sql-tdg");
+    assert_eq!(inventory["consumer_repo"], "phdah/sql-tdg");
     assert_eq!(inventory["current_gate"], "not_certified");
     let feature_ids: BTreeSet<_> = required_array(&manifest, "features")
         .iter()

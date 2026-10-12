@@ -202,4 +202,4 @@ dbt/DuckDB oracle, cross-dialect canonical variants and explicit typed
 residual/impossibility boundaries. Consumers pin a protocol revision,
 never the reverse. TASK-99 is Done; TASK-100 is the
 next sequential child. This does not certify the downstream generator or
-release 3.0.0. See `docs/tdg-certification.md`.
+release 3.0.0. See `docs/conformance-suite.md`.

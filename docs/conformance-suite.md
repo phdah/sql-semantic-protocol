@@ -1,4 +1,4 @@
-# Protocol-owned SQL conformance suite (TASK-99)
+# SQL Semantic Protocol: canonical conformance suite
 
 ## Ownership and versioning
 
@@ -28,6 +28,10 @@ reviewed here, with ordinary protocol Git history.
 | `v1/dbt_core_project/models/*.sql` | Eleven dbt models, canonical dbt graph and complete terminal value snapshots |
 | `v1/dbt_core_project/seeds/*.csv` | Four materialized physical input bags, including duplicate output witnesses |
 | `v1/dbt_core_project/models/sources.yml` | dbt source metadata, manifest and warehouse catalog adapters |
+
+The separate `dbt_fixture_inventory` in the release coverage manifest tracks the
+**downstream** sql-tdg generator's unverified acceptance work. Its `consumer_repo`
+and `consumer_project_path` are not canonical fixture sources.
 
 The versioned `suite.json` lists seven SQL cases by stable ID, family, SQL path,
 dialect, expected proof classification and typed row-count goals, and 11 dbt models with concrete

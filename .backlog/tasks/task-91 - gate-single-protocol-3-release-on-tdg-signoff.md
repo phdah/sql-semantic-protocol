@@ -98,7 +98,7 @@ and the portable `suite.json` inventory and expected outcomes. Its
 physical SQL tests are `tests/protocol_conformance_physical.rs` and
 `tests/protocol_conformance_dialect_laws.rs`; the eleven-model dbt DuckDB
 gate is `tests/protocol_conformance_dbt_e2e.rs` under `make dbt-e2e`.
-See `docs/tdg-certification.md` and
+See `docs/conformance-suite.md` and
 `docs/coverage-manifest.json.task_99_protocol_conformance_contract`.
 The original sql-tdg fixture SHA is historical provenance, **not** a
 protocol dependency.
