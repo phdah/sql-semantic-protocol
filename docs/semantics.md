@@ -782,8 +782,10 @@ relation. The caller provides whole, closed-world typed populations, never
 sampled rows or independent assignments for intermediate producers. Each
 `PhysicalWriteTransition` carries its exact target `before` and `after` rows
 and counts of inserted, updated and deleted rows. `final_states` is a
-complete relation-to-bag assignment. The resulting explicit values define
-singleton value domains; repeated rows remain separate bag occurrences.
+complete relation-to-bag assignment. `PhysicalWriteState::exact_domains(&schema)` derives a closed-world
+per-column `PhysicalWriteColumnDomain` with exact NULL and duplicate
+frequencies; even an empty table yields a certified empty domain for
+each declared column. The rows and domains refer to the same bag.
 
 Supported proof paths are single-source row-preserving or filter-only
 INSERT SELECT and CTAS/CREATE OR REPLACE TABLE, target-local UPDATE and
