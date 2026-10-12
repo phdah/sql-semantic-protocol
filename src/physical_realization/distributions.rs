@@ -77,6 +77,9 @@ fn mapped_distributions(
     };
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
+    if !unconstrained_produced_relations(bundle, &walker) {
+        return None;
+    }
     let mut covered = BTreeSet::<(String, String)>::new();
     let mut mappings = Vec::new();
     for distribution in goal.distributions() {
@@ -133,6 +136,9 @@ pub(crate) fn physical_inverted_set_distribution_plan(
     }
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
+    if !unconstrained_produced_relations(bundle, &walker) {
+        return None;
+    }
     let sets = walker
         .nodes
         .iter()
@@ -184,6 +190,15 @@ pub(crate) fn physical_inverted_set_distribution_plan(
         let [lineage] = projected.lineage() else {
             return None;
         };
+        if values.iter().any(|bucket| {
+            bucket.rows() > 0
+                && crate::domain::domain_admits_constraint_value(
+                    projected.domain(),
+                    bucket.value(),
+                ) == Some(false)
+        }) {
+            return None;
+        }
         let canonical = layer.canonical_relation(lineage.relation());
         let schema = bundle
             .source_schemas()
@@ -247,6 +262,20 @@ pub(crate) fn physical_inverted_set_distribution_plan(
     physical_materialized_set_witness(bundle, set_layer.id(), &at_set)
 }
 
+/// Fail closed when any materialized producer carries unproved source
+/// constraints. A transparent relational projection is not an exemption from
+/// accepted values, uniqueness or NOT NULL obligations.
+fn unconstrained_produced_relations(bundle: &AnalysisBundle, walker: &Walker<'_>) -> bool {
+    walker.nodes.iter().all(|node| {
+        node.produced_relations().iter().all(|relation| {
+            !bundle.relation_constraints().iter().any(|set| {
+                set.relation() == relation
+                    && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+            })
+        })
+    })
+}
+
 /// One fully traced physical column and its complete frequency bag.
 struct InvertedDistribution {
     column: ColumnRef,
@@ -282,6 +311,15 @@ fn invert_distribution(
     let [lineage] = output.lineage() else {
         return None;
     };
+    if values.iter().any(|bucket| {
+        bucket.rows() > 0
+            && crate::domain::domain_admits_constraint_value(
+                output.domain(),
+                bucket.value(),
+            ) == Some(false)
+    }) {
+        return None;
+    }
     let canonical = layer.canonical_relation(lineage.relation());
     let schema = bundle
         .source_schemas()
