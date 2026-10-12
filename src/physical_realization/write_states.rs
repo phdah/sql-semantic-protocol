@@ -1009,7 +1009,9 @@ fn eval(
                 BinaryOperator::Subtract => a.checked_sub(b),
                 BinaryOperator::Multiply => a.checked_mul(b),
                 BinaryOperator::Divide | BinaryOperator::Modulo => {
-                    return Err(residual("division and modulo need dialect-specific exact scalar laws"))
+                    return Err(residual(
+                        "division and modulo need dialect-specific exact scalar laws",
+                    ))
                 }
                 _ => return Err(residual("unproved binary expression law")),
             }
@@ -1184,7 +1186,11 @@ fn compare(a: &LiteralValue, operator: ComparisonOperator, b: &LiteralValue) -> 
                 .map_err(|_| residual("unproved decimal comparison"))?;
             left.cmp(&right)
         }
-        (LiteralValue::Boolean(left), LiteralValue::Boolean(right)) if matches!(operator, ComparisonOperator::Eq | ComparisonOperator::Neq) => left.cmp(right),
+        (LiteralValue::Boolean(left), LiteralValue::Boolean(right))
+            if matches!(operator, ComparisonOperator::Eq | ComparisonOperator::Neq) =>
+        {
+            left.cmp(right)
+        }
         (LiteralValue::Text(_), LiteralValue::Text(_)) => {
             return Err(residual(
                 "string comparison requires binary collation and padding proof",
