@@ -583,11 +583,18 @@ pub fn physical_joint_row_count_plan(
                 Some(WitnessFormula::RowTruth { .. })
             )
         });
-        let requires_exact_count =
-            !has_filter && matches!(one_row_plan, WitnessDirection::Feasible(_));
-        if requires_exact_count && physical.sources().len() != 1 {
+        let has_positive_plan = matches!(one_row_plan, WitnessDirection::Feasible(_));
+        // A constructive joined population can use two physical sources;
+        // its terminal count is not an exact count requirement on each
+        // source. Keep positive multi-source combinations residual unless
+        // one complete case already proved every goal above. For requested
+        // zero outputs, the separate zero plan may still prove both sources
+        // empty and must not be invalidated by a positive join capability.
+        if !has_filter && has_positive_plan && physical.sources().len() != 1 && rows > 0 {
             return residual(PhysicalProofGap::UnboundPhysicalSource);
         }
+        let requires_exact_count =
+            physical.sources().len() == 1 && !has_filter && has_positive_plan;
 
         for relation in physical.sources() {
             let Some(predicate) = count_predicate_for_source(&row_plan, relation, rows) else {
