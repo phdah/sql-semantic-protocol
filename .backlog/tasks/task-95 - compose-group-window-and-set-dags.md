@@ -24,7 +24,7 @@ type: feature
 <!-- SECTION:DESCRIPTION:BEGIN -->
 Realize cross-layer compositions of already-proven local group, window, set and subquery facts. Local variants remain owned by TASK-72..75; this child owns lifting their exact proof obligations to one physical-source plan.
 
-**TASK-68 child, execution step 3/8:** After foundational PR #92 is merged, implement this task in its own PR against `main`. Follow the ordered child queue declared in TASK-68; do not work around a blocked prerequisite by marking it Done.
+**TASK-68 child, execution step 3/8:** Implement this task through independently verified PRs against `main`. PR #95 is the merged baseline increment, not the full task completion. While TASK-95 remains In Progress, it is still the next task under TASK-68's ordered child queue. Do not advance to TASK-96.
 
 **Release contract:** Preserve the canonical source-independent relational DAG and typed source-level constructive proof. Reuse upstream operator-local semantics and their authoritative typed evidence; do not duplicate them here or reparse SQL in sql-tdg. Prove feasible versus impossible versus residual soundly, preserve strongest justified outcome domains, and keep release-blocking coverage unverified until independently certified.
 <!-- SECTION:DESCRIPTION:END -->
@@ -42,86 +42,36 @@ Realize cross-layer compositions of already-proven local group, window, set and 
 ## Implementation and verification
 
 - **Parent:** [TASK-68](task-68%20-%20compose-witnesses-across-full-transformation-graphs.md); parent remains In Progress until all eight children are Done.
-- **Delivery:** A focused PR into `main` with code, tests, API/schema/docs/adapter updates proportional to changed semantics, and passing CI.
+- **Delivery:** One or more independently verified PRs into `main`, each with code, tests and documentation proportional to its changes. A verified increment may merge while this task remains In Progress. Close only when all five original acceptance criteria are independently satisfied.
 - **Next:** After this task is Done, proceed to TASK-96; do not skip ahead.
 - **Scope boundary:** Other TASK-70..91 work still owns individual missing operator variants, exhaustive conformance, the downstream generator, and protocol 3.0.0 release sign-off.
 
 
-## Implementation progress (draft PR)
+## Landed baseline: PR #95
 
-- Lifted exact grouped COUNT(*) / HAVING and ROW_NUMBER() / QUALIFY source-population
-  witnesses through several row-preserving producer layers, proving typed
-  source-column lineage at every intermediate schema boundary.
-- Remapped group, partition and ordering keys to the actual writable physical
-  source, preserving the pre-existing local operator law and full input count.
-  Noninvertible projections, filters, unrelated operators, incomplete schemas
-  and shared-source mixed plans continue to return residual.
-- Composed exact two-branch UNION/UNION ALL/INTERSECT/EXCEPT tuple multiplicity
-  through independently materialized identity-only branch producers, mapping
-  full candidate-tuple laws to schema-certified physical source columns.
-- Added DuckDB complete-output and NULL-duplicate differential checks,
-  cross-dialect grouping tests and fail-closed negative producer cases.
+[PR #95](https://github.com/phdah/sql-semantic-protocol/pull/95) contains a large **structural, logic-preserving module split** alongside genuine incremental operator-composition work. The line-count change is not a measure of the remaining semantic scope. Its final pre-handoff head `7e5eb5ecf0d308b5aafae086d508bb9e4a102fe2` passed all nine CI jobs (Rust formatting, both lint/test/doc configurations, dependencies, and dbt Core E2E). That CI result validates this landing increment, **not** completion of TASK-95.
 
-**Additional physical DAG progress:** a canonical schema-backed `OperatorPopulation`
-obligation captures complete grouped, ranked and set source fixtures. The
-joint solver composes disjoint operator populations, identical shared-source
-populations and exact transparent source counts, with explicit residuals for
-unproved shared assignment collisions. Two mixed chains have narrow
-constructive proofs: distinct one-to-one equijoin -> group with one
-contributor per key, and a grouped producer -> one-row-per-partition QUALIFY.
+Verified or narrowly constructed capabilities added through PR #95:
 
-**Still open:** general join-to-group with nontrivial contributors,
-join/group/window/set mixed branches, different-predicate and correlated
-shared-source plans, aggregate-derived filters, grouped sets, correlated
-subqueries, negative/rejected mixed outcomes, further NULL/duplicate
-counterexamples and full cross-dialect sign-off. Acceptance remains open.
+- Transport exact local GROUP BY/HAVING and ROW_NUMBER()/QUALIFY populations across identity-preserving, type-certified producer chains to writable physical columns, with complete group/rank counts.
+- Compose two-branch UNION, UNION ALL, INTERSECT and EXCEPT tuple laws across independently materialized source branches, conserving bag counts and SQL NULL-aware tuple equality. Identical source-column copies can share one complete physical population for proven laws, including even-row UNION ALL outputs.
+- Reuse closed operator populations across multiple disjoint physical-source terminal goals; identical shared source counts and transparent goals only where proved. Return typed residuals on unproved source collisions.
+- Construct narrow mixed JOIN -> GROUP/HAVING patterns with both single-contributor keys and a complete multiple-contributor matched bag; GROUP -> partitioned rank; grouped COUNT(*) -> simple downstream filters (including rejection); and empty-inner EXISTS/NOT EXISTS/IN/NOT IN through transparent materializations.
+- Exercise those supported cases with cross-dialect, DuckDB full-output/NULL/duplicate, negative and fail-closed tests. Unsupported transformations and incomplete metadata stay residual.
 
-### Additional implementation and CI verification
-- A common matched equijoin bag now realizes one GROUP BY/HAVING group
-  with multiple physical contributors, retaining typed join and local group
-  obligations on the exact producer boundary.
-- Joint mixed plans reuse independently closed physical source populations
-  for transparent terminal counts when all physical counts agree, otherwise
-  emit typed residual.
-- A grouped producer's exact COUNT(*) output supports simple downstream
-  row predicates, with nonempty closed-world negative/rejected outcomes
-  and DuckDB positive/negative differential oracles.
-- Exact correlated/uncorrelated `EXISTS`, `NOT EXISTS`, `IN` and
-  `NOT IN` NoCandidates cases can be physically realized through
-  row-preserving producer chains with an empty inner source. NULL-sensitive
-  behavior is exercised with actual DuckDB inputs.
-- The full CI matrix passed at commit `a195e29ce83ea007c847c01dd732f848beaa79a4`
-  (format, lint, tests, docs, no-default-features, and dbt Core E2E).
+## Remaining implementation (all five acceptance criteria still open)
 
-**Outstanding:** General correlated nonempty membership, arbitrary
-mixed grouping/window/set DAGs, computed aggregate inversions, shared
-source set cases, mutually constraining different operator populations,
-complete impossible-versus-residual law proofs and acceptance-wide
-cross-dialect sign-off. TASK-95's five criteria remain unchecked.
+1. **JOIN/GROUP composition (#1):** General contributors, grouped-key correlations, aggregate output domains, cardinality and HAVING constraints across multiple interacting materialized operators, not only currently proven templates.
+2. **Window composition (#2):** Nontrivial partitions and order correlations through producers, including grouped/joined upstream rows, rank counts, QUALIFY selections and complete physical partitions.
+3. **Sets and membership (#3):** General shared-source and interacting branch multiplicities (including UNION ALL per-value distributions, EXCEPT cancellation, zero/negative cases, nested/mixed sets), plus nonempty correlated EXISTS/IN/NOT variants with correct NULL and duplicate semantics.
+4. **Derived constraints (#4):** General aggregate-derived predicate inversions, grouping sets and window-derived value constraints where typed producer evidence suffices. Otherwise keep a **typed residual**, without fabricating data.
+5. **Sign-off (#5):** Representative feasible, impossible, zero, deliberately rejected and residual proofs across mixed operators; complete cross-dialect parser-boundary and independent DuckDB full-output checks, including NULL/duplicate/empty and overlapping physical-source counterexamples. Update contract, adapters and docs when semantics change.
 
+This is a description of **remaining gaps**, not a mandate to reimplement any of the landed features. Local operator variants belong to TASK-72..75; TASK-95 only composes their proven facts.
 
-### Shared-source set producer progress
+## Next-agent handoff
 
-- Reconciled the same typed physical tuple column read by two independent,
-  identity-preserving materialized set branches. Reuse a local exact positive
-  tuple law only when both branches require the same multiplicity, then
-  assign the closed physical relation once rather than duplicating source rows.
-- Added cross-dialect and DuckDB complete-output tests for shared-source
-  `UNION DISTINCT`, `INTERSECT` and `INTERSECT ALL`; differing source
-  columns and unsupported `UNION ALL` multiplicities remain residual.
-- Shared-source constructive coverage remains a strict subset of acceptance
-  criterion #3. Nonempty correlated subquery joins, arbitrary mixed DAG
-  populations and full independent acceptance verification are still open.
-
-### Disjoint mixed operator joint composition
-
-- Conjoin independently closed, physical mixed-operator populations over disjoint physical source sets into a single joint plan, preserving every local operator obligation, full-source closure and transparent terminal count.
-- Add DuckDB full-output tests for two independent JOIN-to-GROUP/HAVING DAGs and explicit residual for shared-source collisions.
-- Arbitrary shared physical populations and interacting mixed branch laws remain unresolved; TASK-95 is not complete.
-
-### Shared-source UNION ALL complete-bag increment
-
-- Reused the canonical local `Sum` tuple law for two identity-preserving materialized branches bound to the same typed physical column.
-- Proved even-sized positive terminal counts from one complete source assignment: each distinct physical tuple is read once by each branch and emitted twice. The source cardinality is half the requested output count, not one population per branch.
-- Added cross-dialect cases and DuckDB full-output bag checks for outputs with 2, 4 and 6 rows. Odd positive counts, mismatched columns, positive shared `EXCEPT ALL` and explicit per-value inverted multiplicities still remain residual in this increment.
-- The five acceptance criteria remain open pending general shared-source bag laws, correlated membership, larger mixed DAG proofs and independent sign-off.
+- Select **TASK-95**, not TASK-96 or TASK-68. Preserve the original acceptance criteria; they remain unchecked until independently demonstrated.
+- Start a **fresh branch and PR from current `main`**. Do not reopen or extend PR #95, replay its entire diff, or repeat the module split. Use `AGENTS.md`, this task and `docs/code-map.md` to navigate focused modules. Read only the relevant implementation/tests for the chosen unresolved proof.
+- Implement and test the remaining TASK-95 scope, building on the landed constructive witnesses. Prefer a complete task sign-off in the next PR if practical; if further reviewed increments are needed, they may merge independently while TASK-95 stays In Progress. No additional child issues are required by this handoff.
+- After final verification, mark acceptance criteria #1-#5 Done and TASK-95 Done in the final PR. Only then does the ordered queue advance to TASK-96. TASK-68 stays In Progress until its separate original criteria and all children pass.
