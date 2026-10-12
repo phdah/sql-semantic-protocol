@@ -1,0 +1,8 @@
+protocol_conformance:
+  target: ci
+  outputs:
+    ci:
+      type: duckdb
+      path: "{{ env_var('DBT_E2E_DATABASE') }}"
+      schema: raw
+      threads: 1

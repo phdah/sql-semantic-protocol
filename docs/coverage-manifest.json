@@ -29,7 +29,8 @@
       "empty_named_source_set_operations",
       "distinct_and_ranked_empty_input",
       "joint_shared_empty_source_output_goals",
-      "pinned_sql_tdg_raw_fixture_zero_oracles",
+      "protocol_conformance_raw_fixture_zero_oracles",
+      "protocol_conformance_concrete_multimodel_duckdb_terminal_oracles",
       "nested_global_aggregate_zero_row_exclusion",
       "joint_null_aware_boolean_filters",
       "exact_schema_backed_transparent_source_row_counts",
@@ -77,6 +78,9 @@
       "tests/physical_realization/joint_distributions.rs",
       "tests/physical_realization/negative_cardinality.rs",
       "tests/dbt_manifest.rs",
+      "tests/protocol_conformance_dbt_e2e.rs",
+      "tests/protocol_conformance_dialect_laws.rs",
+      "docs/conformance-suite.md",
       "docs/protocol.md"
     ],
     "unproved_scope": [
@@ -107,7 +111,49 @@
     ],
     "next_task_after_foundation": "TASK-93",
     "next_dependency_ready_after_TASK_96_merge": "TASK-97",
+    "next_dependency_ready_after_TASK_99_merge": "TASK-100",
     "closure_rule": "TASK-68 remains In Progress until TASK-93..100 are Done and all six parent acceptance criteria are verified; release TASK-91 remains blocked independently."
+  },
+  "task_99_protocol_conformance_contract": {
+    "owner": "TASK-99",
+    "authority": "phdah/sql-semantic-protocol",
+    "suite_version": 1,
+    "suite_manifest": "tests/fixtures/conformance/v1/suite.json",
+    "protocol_fixture_certification": "done_concrete_oracles_and_typed_residuals",
+    "next_task": "TASK-100",
+    "source_directory": "tests/fixtures/conformance/v1",
+    "raw_sql": [
+      "tests/fixtures/conformance/v1/advanced_pipeline.sql",
+      "tests/fixtures/conformance/v1/advanced_boundary.sql",
+      "tests/fixtures/conformance/v1/set_operations.sql",
+      "tests/fixtures/conformance/v1/raw_sql/window_ranked.sql",
+      "tests/fixtures/conformance/v1/raw_sql/insert_workflow.sql",
+      "tests/fixtures/conformance/v1/raw_sql/unsupported_exists.sql",
+      "tests/fixtures/conformance/v1/raw_sql/range_sampling.sql"
+    ],
+    "dbt_model_count": 11,
+    "dbt_source_seed_count": 4,
+    "protocol_exact_classes": [
+      "joint_closed_world_empty_source_goals",
+      "positive_filtered_range_counts",
+      "ordered_insert_select_complete_source_state"
+    ],
+    "residual_scope": [
+      "unproved_general_joined_aggregate_positive_generation",
+      "unproved_correlated_exists_arbitrary_physical_population",
+      "unproved_general_ranked_output_distribution",
+      "unverified_generator_update_delete_merge_ctas_workloads"
+    ],
+    "oracle_evidence": [
+      "tests/protocol_conformance_physical.rs",
+      "tests/protocol_conformance_dbt_e2e.rs",
+      "tests/protocol_conformance_dialect_laws.rs",
+      "tests/physical_write_states.rs",
+      "tests/physical_write_adapter_parity.rs",
+      "docs/conformance-suite.md"
+    ],
+    "sql_tdg_downstream_generator_signoff": "pending_TASK_31_35_36",
+    "protocol_release_gate": "blocked_TASK_91"
   },
   "task_69_operator_local_evidence": {
     "status": "operator_local_evidence_only_release_blocked",
@@ -10435,8 +10481,8 @@
   },
   "variant_matrix_semantics": "Variant/dialect cells inherit fail-closed defaults. Only named fixtures may override parse evidence; representative_only is partial sampling of combined variants, not full syntax-variant certification. Analysis success alone does NOT prove canonical meaning, generator construction, absence or cardinality.",
   "dbt_fixture_inventory": {
-    "source_repo": "phdah/sql-tdg",
-    "path": "tests/fixtures/dbt_core_project",
+    "consumer_repo": "phdah/sql-tdg",
+    "consumer_project_path": "tests/fixtures/dbt_core_project",
     "observed_date": "2026-10-09",
     "default_invocation": "make all (MATCHING=100 REJECTED=10 no target)",
     "current_gate": "not_certified",

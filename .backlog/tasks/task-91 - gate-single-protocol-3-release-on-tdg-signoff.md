@@ -90,3 +90,21 @@ The executable coverage inventory lives in [docs/coverage-manifest.json](../../d
 ## Inventory completion does not imply release acceptance
 
 TASK-66 was closed as the 53-family, 251-variant, 13-dialect **inventory and ownership handoff** in protocol PR #88. Its status must not be used to infer that an unverified manifest cell has passed. TASK-67..90, sql-tdg TASK-24..31/35/36/43/44 and the executable final TASK-91 release gate are still required; do not merge Release Please PR #79 based on TASK-66 alone.
+
+## Protocol-owned conformance corpus and consumer gate (2026-10-12)
+
+The protocol repository is authoritative for `tests/fixtures/conformance/v1/`
+and the portable `suite.json` inventory and expected outcomes. Its
+physical SQL tests are `tests/protocol_conformance_physical.rs` and
+`tests/protocol_conformance_dialect_laws.rs`; the eleven-model dbt DuckDB
+gate is `tests/protocol_conformance_dbt_e2e.rs` under `make dbt-e2e`.
+See `docs/conformance-suite.md` and
+`docs/coverage-manifest.json.task_99_protocol_conformance_contract`.
+The original sql-tdg fixture SHA is historical provenance, **not** a
+protocol dependency.
+
+sql-tdg TASK-43 must pin the **protocol** Git SHA (never the reverse),
+consume the canonical fixture suite and validate its own generated output
+without consumer-side SQL reparsing. TASK-31/35/36 DML/DDL generation and
+randomized negative output oracles remain pending. This suite does **not**
+unblock protocol 3.0.0.

@@ -1,0 +1,241 @@
+{
+  "schema_version": 1,
+  "suite_id": "sql-semantic-protocol-conformance",
+  "owner": "phdah/sql-semantic-protocol",
+  "compatibility": "Pin the protocol repository revision; v1 fixture paths and IDs remain stable within that revision. Outcome changes require explicit review.",
+  "semantic_contract": "Canonical parsed outcomes and typed physical proof classifications, not a promise that any consumer can construct arbitrary data.",
+  "raw_sql": [
+    {
+      "id": "multi_layer_join_group",
+      "path": "advanced_pipeline.sql",
+      "family": "join_group",
+      "dialect": "postgresql",
+      "expected_proof": "zero_feasible_positive_residual",
+      "row_count_goals": [
+        {
+          "target": "mart_customer_summary",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "mart_customer_summary",
+          "rows": 1,
+          "outcome": "residual"
+        }
+      ]
+    },
+    {
+      "id": "joined_boundary",
+      "path": "advanced_boundary.sql",
+      "family": "join",
+      "dialect": "postgresql",
+      "expected_proof": "zero_feasible_positive_residual",
+      "row_count_goals": [
+        {
+          "target": "core_enriched",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "core_enriched",
+          "rows": 1,
+          "outcome": "residual"
+        }
+      ]
+    },
+    {
+      "id": "set_operations",
+      "path": "set_operations.sql",
+      "family": "set",
+      "dialect": "postgresql",
+      "expected_proof": "zero_feasible_concrete_duplicates_and_nulls",
+      "row_count_goals": [
+        {
+          "target": "union_all_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "union_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "intersect_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "except_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "distinct_result",
+          "rows": 0,
+          "outcome": "feasible"
+        },
+        {
+          "target": "limited_result",
+          "rows": 0,
+          "outcome": "feasible"
+        }
+      ]
+    },
+    {
+      "id": "window_rank",
+      "path": "raw_sql/window_ranked.sql",
+      "family": "window",
+      "dialect": "postgresql",
+      "expected_proof": "concrete_oracle_positive_general_distribution_residual",
+      "row_count_goals": []
+    },
+    {
+      "id": "ordered_insert_select",
+      "path": "raw_sql/insert_workflow.sql",
+      "family": "insert",
+      "dialect": "postgresql",
+      "expected_proof": "typed_complete_before_after_state_feasible",
+      "row_count_goals": []
+    },
+    {
+      "id": "correlated_exists",
+      "path": "raw_sql/unsupported_exists.sql",
+      "family": "subquery",
+      "dialect": "postgresql",
+      "expected_proof": "concrete_oracle_general_construction_residual",
+      "row_count_goals": []
+    },
+    {
+      "id": "inclusive_integer_range",
+      "path": "raw_sql/range_sampling.sql",
+      "family": "filter",
+      "dialect": "postgresql",
+      "expected_proof": "positive_count_feasible",
+      "row_count_goals": [
+        {
+          "target": "range_result",
+          "rows": 2,
+          "outcome": "feasible"
+        }
+      ]
+    }
+  ],
+  "dbt": {
+    "project_dir": "dbt_core_project",
+    "project": "protocol_conformance",
+    "source_schema": "raw",
+    "output_schema": "raw_analytics",
+    "source_row_count": 2,
+    "seeds": [
+      "customers.csv",
+      "legacy_orders.csv",
+      "orders.csv",
+      "returns.csv"
+    ],
+    "models": [
+      {
+        "name": "aggregate_summary",
+        "path": "dbt_core_project/models/aggregate_summary.sql",
+        "row_count": 1,
+        "snapshot_expression": "region || ':' || order_count::VARCHAR || ':' || max_amount::VARCHAR",
+        "expected_rows": [
+          "north:1:42"
+        ]
+      },
+      {
+        "name": "boundary_final_orders",
+        "path": "dbt_core_project/models/boundary_final_orders.sql",
+        "row_count": 1,
+        "snapshot_expression": "amount::VARCHAR",
+        "expected_rows": [
+          "42"
+        ]
+      },
+      {
+        "name": "derived_orders",
+        "path": "dbt_core_project/models/derived_orders.sql",
+        "row_count": 1,
+        "snapshot_expression": "amount_bucket || ':' || paid_flag::VARCHAR",
+        "expected_rows": [
+          "medium:1"
+        ]
+      },
+      {
+        "name": "enriched_orders",
+        "path": "dbt_core_project/models/enriched_orders.sql",
+        "row_count": 1,
+        "snapshot_expression": "order_id::VARCHAR || ':' || amount::VARCHAR || ':' || score::VARCHAR",
+        "expected_rows": [
+          "1:42:7"
+        ]
+      },
+      {
+        "name": "final_orders",
+        "path": "dbt_core_project/models/final_orders.sql",
+        "row_count": 1,
+        "snapshot_expression": "amount::VARCHAR || ':' || status || ':' || region",
+        "expected_rows": [
+          "42:paid:north"
+        ]
+      },
+      {
+        "name": "independent_return_summary",
+        "path": "dbt_core_project/models/independent_return_summary.sql",
+        "row_count": 1,
+        "snapshot_expression": "reason || ':' || return_count::VARCHAR || ':' || max_refund::VARCHAR",
+        "expected_rows": [
+          "full:1:70"
+        ]
+      },
+      {
+        "name": "ranked_orders",
+        "path": "dbt_core_project/models/ranked_orders.sql",
+        "row_count": 1,
+        "snapshot_expression": "region || ':' || amount::VARCHAR || ':' || rn::VARCHAR",
+        "expected_rows": [
+          "north:42:1"
+        ]
+      },
+      {
+        "name": "stg_customers",
+        "path": "dbt_core_project/models/stg_customers.sql",
+        "row_count": 1,
+        "snapshot_expression": "customer_id::VARCHAR || ':' || score::VARCHAR",
+        "expected_rows": [
+          "10:7"
+        ]
+      },
+      {
+        "name": "stg_orders",
+        "path": "dbt_core_project/models/stg_orders.sql",
+        "row_count": 1,
+        "snapshot_expression": "order_id::VARCHAR || ':' || amount::VARCHAR || ':' || status || ':' || region",
+        "expected_rows": [
+          "1:42:paid:north"
+        ]
+      },
+      {
+        "name": "subquery_orders",
+        "path": "dbt_core_project/models/subquery_orders.sql",
+        "row_count": 1,
+        "snapshot_expression": "amount::VARCHAR || ':' || region",
+        "expected_rows": [
+          "42:north"
+        ]
+      },
+      {
+        "name": "unioned_orders",
+        "path": "dbt_core_project/models/unioned_orders.sql",
+        "row_count": 2,
+        "snapshot_expression": "amount::VARCHAR || ':' || region",
+        "expected_rows": [
+          "42:north",
+          "42:north"
+        ]
+      }
+    ]
+  },
+  "downstream_generator_signoff": "pending_sql_tdg_TASK_31_35_36",
+  "release_gate": "blocked_protocol_TASK_91"
+}

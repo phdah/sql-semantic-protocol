@@ -1,0 +1,15 @@
+name: protocol_conformance
+version: "1.0.0"
+config-version: 2
+
+profile: protocol_conformance
+
+model-paths:
+  - models
+seed-paths:
+  - seeds
+
+models:
+  protocol_conformance:
+    +materialized: view
+    +schema: analytics
