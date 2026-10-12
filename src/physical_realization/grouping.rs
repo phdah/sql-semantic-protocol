@@ -14,16 +14,22 @@ fn exact_group_count_filter_truth(
 ) -> Option<bool> {
     use crate::protocol::{AggregateArgument, ComparisonOperator, LiteralType, LiteralValue};
     match predicate {
-        Predicate::And(and) => and.operands().iter().try_fold(true, |result, item| {
-            Some(result && exact_group_count_filter_truth(
-                bundle, grouped, relation, item, count
-            )?)
-        }),
-        Predicate::Or(or) => or.operands().iter().try_fold(false, |result, item| {
-            Some(result || exact_group_count_filter_truth(
-                bundle, grouped, relation, item, count
-            )?)
-        }),
+        Predicate::And(and) => {
+            let truths = and.operands().iter()
+                .map(|item| exact_group_count_filter_truth(
+                    bundle, grouped, relation, item, count
+                ))
+                .collect::<Option<Vec<_>>>()?;
+            Some(truths.into_iter().all(|truth| truth))
+        }
+        Predicate::Or(or) => {
+            let truths = or.operands().iter()
+                .map(|item| exact_group_count_filter_truth(
+                    bundle, grouped, relation, item, count
+                ))
+                .collect::<Option<Vec<_>>>()?;
+            Some(truths.into_iter().any(|truth| truth))
+        }
         Predicate::Not(not) => Some(!exact_group_count_filter_truth(
             bundle, grouped, relation, not.operand(), count
         )?),
