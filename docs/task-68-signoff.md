@@ -1,7 +1,8 @@
-# TASK-100: TASK-68 physical-source composition sign-off
+# TASK-100: TASK-68 physical-source composition evidence audit (acceptance pending)
 
-This is the bounded **protocol-side** sign-off of TASK-68, not approval to
-publish 3.0.0 or certify sql-tdg's generator. The authoritative physical
+This documents bounded **protocol-side** evidence, not completion of the original
+TASK-68 acceptance criteria, approval to publish 3.0.0, or certification
+of sql-tdg's generator. The authoritative physical
 construction result is a typed `Feasible`, `Impossible` or `Residual`
 decision. A DuckDB example that happens to execute does **not** upgrade a
 residual into a general constructive proof.
@@ -25,7 +26,7 @@ The original physical reference DAG starts in merged PR
 [#92](https://github.com/phdah/sql-semantic-protocol/pull/92).
 Backlog status is never a substitute for the proof tests below.
 
-## Parent acceptance-criteria traceability
+## Parent acceptance-criteria evidence and remaining gaps
 
 | TASK-68 AC | Implementation and safety argument | Checks and public contract |
 | --- | --- | --- |
@@ -62,11 +63,28 @@ Backlog status is never a substitute for the proof tests below.
   receive a feasible result. `PhysicalProofGap` and
   `PhysicalWriteStatePlan::Residual` retain typed diagnostic evidence.
 
-Representative regressions explicitly exercise feasible, residual and impossible
+Representative regressions exercise feasible, residual and impossible
 directions, SQL NULL/UNKNOWN, duplicate bags, alternative join routes, full
 state snapshots, cross-dialect canonical identities and raw SQL/dbt adapter
-parity. `tests/task_68_signoff.rs` guards the task queue, reference paths and
-release boundary so the closure cannot drift silently.
+parity. `tests/task_68_signoff.rs` guards the task queue, reference paths,
+and, importantly, prevents the parent from being marked Done while the
+in-scope positive goals remain unproved.
+
+## Outstanding original TASK-68 acceptance
+
+The versioned `suite.json` explicitly expects a one-row
+`mart_customer_summary` from `multi_layer_join_group` to be `Residual`,
+and one-row `core_enriched` from `joined_boundary` to be `Residual`.
+Both use named in-scope multi-parent relational DAG shapes. Their concrete
+DuckDB positive cases execute with supplied rows, but the protocol cannot
+yet construct those source rows from the terminal requirement.
+
+Consequently, original TASK-68 AC #2 (positive multi-operator composition)
+and AC #5 (deterministic constructive plans for exact fixture shapes) are
+not complete. The six original ACs remain unchecked for a holistic
+re-verification, TASK-100 AC #5 stays unchecked, and both tasks remain
+In Progress. An explicitly typed residual is safe and essential, but
+is not a substitute for the requested constructive capability.
 
 ## Execution gates
 
@@ -95,14 +113,13 @@ closure.
 
 ## Explicitly not certified by TASK-68
 
-The closure asserts that each *documented, actually constructible subset*
+The evidence audit asserts that each *documented, actually constructible subset*
 has a sound physical proof, and all unproved variants fail closed. It does not
 assert arbitrary positive multi-operator joins/groups/windows/sets, arbitrary
 correlated EXISTS, non-bijective scalar inversion, unconstrained complete
 distributions, all dialect-specific execution semantics, arbitrary session
 behavior, or every DML/DDL sequence is constructible. Some concrete DuckDB
-examples succeed despite general plans being residual. This is not a defect
-that may be hidden by upgrading the corresponding coverage cell.
+examples succeed despite general plans being residual. This gap cannot be hidden by upgrading the corresponding coverage cell.
 
 `docs/coverage-manifest.json` deliberately keeps the global 13-dialect /
 feature variant matrix at `unverified` and `not_end_to_end_proven` until

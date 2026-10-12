@@ -3,7 +3,7 @@
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
   "task_68_physical_source_evidence": {
-    "status": "verified_bounded_physical_source_contract_release_blocked",
+    "status": "bounded_physical_source_evidence_parent_open_release_blocked",
     "owner": "TASK-68",
     "signoff_task": "TASK-100",
     "signoff_document": "docs/task-68-signoff.md",
@@ -111,7 +111,7 @@
       "unproved_value_distributions_across_filter_join_group_window_DAGs",
       "unproved_general_non_bijective_scalar_inversion"
     ],
-    "release_limit": "TASK-68 is closed only for proven bounded, source-independent physical construction plus explicit impossible/residual diagnostics. General operator variants, downstream generator acceptance and 3.0.0 release remain unverified and blocked by TASK-70..91.",
+    "release_limit": "Bounded source-independent constructions and typed impossible/residuals are verified, but TASK-68 original acceptance remains open: positive in-scope joined/GROUP DAG goals are residual. Downstream generator and 3.0.0 release remain unverified and blocked.",
     "child_tasks": [
       "TASK-93",
       "TASK-94",
@@ -124,8 +124,8 @@
     ],
     "next_task_after_foundation": "TASK-93",
     "next_dependency_ready_after_TASK_96_merge": "TASK-97",
-    "next_dependency_ready_after_TASK_99_merge": "TASK-100 (Done in TASK-68 closure PR)",
-    "closure_rule": "TASK-68 closed after TASK-93..100 and all six original criteria were verified. This is bounded protocol-side proof closure, not sql-tdg generation or TASK-91 release sign-off."
+    "next_dependency_ready_after_TASK_99_merge": "TASK-100 (In Progress; full original AC sign-off pending)",
+    "closure_rule": "TASK-68 remains In Progress until TASK-100 proves all original in-scope ACs, including positive joined/GROUP DAG construction. Typed residual safety is not sufficient to check a constructive AC. TASK-91 remains independently blocked."
   },
   "task_99_protocol_conformance_contract": {
     "owner": "TASK-99",

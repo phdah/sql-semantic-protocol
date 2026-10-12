@@ -46,8 +46,8 @@ fn criteria(text: &str) -> Vec<&str> {
 }
 
 #[test]
-fn child_queue_is_complete_but_release_gate_is_independent() {
-    for id in 93..=100 {
+fn completed_children_do_not_waive_open_parent_acceptance() {
+    for id in 93..=99 {
         let text = task(id);
         assert!(
             text.lines().any(|line| line == "status: Done"),
@@ -60,11 +60,18 @@ fn child_queue_is_complete_but_release_gate_is_independent() {
             "TASK-{id} has an unchecked acceptance criterion"
         );
     }
+    let signoff = task(100);
+    assert!(signoff.lines().any(|line| line == "status: In Progress"));
+    let signoff_acs = criteria(&signoff);
+    assert_eq!(signoff_acs.len(), 5);
+    assert!(signoff_acs[..4].iter().all(|line| line.starts_with("- [x] #")));
+    assert!(signoff_acs[4].starts_with("- [ ] #5 "));
+
     let parent = task(68);
-    assert!(parent.lines().any(|line| line == "status: Done"));
+    assert!(parent.lines().any(|line| line == "status: In Progress"));
     let acs = criteria(&parent);
     assert_eq!(acs.len(), 6);
-    assert!(acs.iter().all(|line| line.starts_with("- [x] #")));
+    assert!(acs.iter().all(|line| line.starts_with("- [ ] #")));
 
     let release = task(91);
     assert!(
@@ -86,7 +93,7 @@ fn physical_contract_signoff_has_traceable_code_tests_and_json_schema() {
     let evidence = &manifest["task_68_physical_source_evidence"];
     assert_eq!(
         evidence["status"],
-        "verified_bounded_physical_source_contract_release_blocked"
+        "bounded_physical_source_evidence_parent_open_release_blocked"
     );
     assert_eq!(evidence["owner"], "TASK-68");
     assert_eq!(evidence["signoff_task"], "TASK-100");
@@ -140,7 +147,23 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
     let suite: Value = serde_json::from_str(SUITE).expect("conformance suite");
     assert_eq!(suite["owner"], "phdah/sql-semantic-protocol");
     let raw = suite["raw_sql"].as_array().expect("raw SQL fixtures");
-    assert_eq!(raw.len(), 7);
+    assert!(raw.len() >= 7, "canonical raw fixture inventory unexpectedly shrank");
+    for (fixture_id, target) in [
+        ("multi_layer_join_group", "mart_customer_summary"),
+        ("joined_boundary", "core_enriched"),
+    ] {
+        let fixture = raw
+            .iter()
+            .find(|item| item["id"] == fixture_id)
+            .unwrap_or_else(|| panic!("missing in-scope fixture {fixture_id}"));
+        let goals = fixture["row_count_goals"].as_array().expect("fixture row goals");
+        assert!(
+            goals.iter().any(|goal| {
+                goal["target"] == target && goal["rows"] == 1 && goal["outcome"] == "residual"
+            }),
+            "open positive construction gap must remain visible for {fixture_id}"
+        );
+    }
     for fixture in raw {
         let path = fixture["path"].as_str().expect("SQL path");
         assert!(
@@ -151,12 +174,13 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
             "missing SQL conformance fixture {path}"
         );
     }
-    assert_eq!(
+    assert!(
         suite["dbt"]["models"]
             .as_array()
             .expect("dbt model inventory")
-            .len(),
-        11
+            .len()
+            >= 11,
+        "canonical dbt model inventory unexpectedly shrank"
     );
 
     let manifest: Value = serde_json::from_str(MANIFEST).expect("manifest JSON");
