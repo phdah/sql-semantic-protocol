@@ -621,8 +621,9 @@ through type-certified producer scopes to a **different** physical source.
 The resulting `set_tuples` obligations name the physical source columns
 and retain the local duplicate and NULL-equality multiplicity law, rather
 than claiming that derived relations can be written to directly.
-Mixed join/group/window/set plans and shared-source set populations remain
-residual until complete correlated operator-level laws can be composed.
+Identical, independently materialized branches can also reuse a single
+typed physical tuple column when their entire bag counts agree; arbitrary
+shared-source operator interactions remain residual.
 
 The physical-source Rust API proves exact counts through schema-backed
 transparent producer chains and identity-preserving WHERE chains with a
@@ -713,10 +714,13 @@ existing operator-local positive tuple case requires identical multiplicities
 on both operands (for example, `UNION DISTINCT` and `INTERSECT` with
 identical source projections). The joint population binds the repeated
 operand obligations to **one** physical relation, with one exact source-row
-count and entire-relation closure. A differing mapped column or an
-incompatible bag-frequency law such as the currently unsupported shared-source
-`UNION ALL` positive case remains residual. No independent rows may be
-fabricated for copied branches.
+count and entire-relation closure. For `UNION ALL`, each input tuple is emitted
+twice, so complete positive even-sized output counts are constructible from
+half as many distinct physical tuples. An odd row target, a mismatched mapped
+column, an unproved shared bag law, or a frequency distribution requiring
+per-value inversion remains residual. `EXCEPT` positive shared-source
+populations are not yet separately classified as impossible. No independent
+rows may be fabricated for copied branches.
 
 ### Independent mixed physical operator DAGs
 
