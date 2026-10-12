@@ -1255,7 +1255,7 @@ permits exact storage without padding or truncation. The Rust
 with a single physical `source_rows` operator-population witness per
 independent source, full-source closed-world row counts, and exact terminal
 counts. Shared complete histograms and source counts must reconcile;
-otherwise the proof is impossible or residual. The existing
+otherwise the proof is impossible or residual. Inversion across downstream set-producing DAGs delegates tuple multiplicity and NULL membership to the existing set witness; it requires identical attested physical branch and materialized-set column types to rule out hidden casts. The existing
 `operator_population` / `outcomeWitness` JSON schema covers this
 source-row population without adding a wire type. Lossy or
 unguarded computations, unsupported row shaping, mismatched producer
@@ -1285,7 +1285,7 @@ The `rank_population` constructive obligation closes a physical input with `part
 
 ### TASK-95 physical operator population obligation
 
-`operator_population` is a canonical constructive obligation containing an exact schema-validated `outcomeWitness` for a complete physical `groups`, `ranked`, or `set_tuples` population. The surrounding case includes per-physical-source `rows` and `closed_world(entire_relation)` obligations and an exact terminal `output_rows`. The obligation never permits inserting rows into a computed producer. Shared physical sources require a single reconciled assignment; unsupported multi-operator correlation remains residual. See [semantics](semantics.md).
+`operator_population` is a canonical constructive obligation containing an exact schema-validated `outcomeWitness` for a complete physical `groups`, `ranked`, `set_tuples`, or `source_rows` histogram population. The surrounding case includes per-physical-source `rows` and `closed_world(entire_relation)` obligations and an exact terminal `output_rows`. The obligation never permits inserting rows into a computed producer. Shared physical sources require a single reconciled assignment; unsupported multi-operator correlation remains residual. See [semantics](semantics.md).
 
 Exact producer-composed `Membership(no_candidates)` certifies an empty complete inner physical relation for both correlated and uncorrelated EXISTS/IN/NOT forms. Nonempty unfiltered EXISTS/NOT EXISTS, non-NULL IN/NOT IN, and locally proved correlated equijoin membership may instead use complete physical key populations, with typed `Membership`, `Rows`, `ClosedWorld` and `OutputRows` obligations. The selected matching or nonmatching integer values must fit the attested source types and be compatible on every shared physical column. Opaque inner filters, unchecked NULL-sensitive cases and overlapping physical leaves stay explicitly residual.
 
