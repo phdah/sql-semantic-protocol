@@ -529,7 +529,10 @@ fn materialized_set_histogram_rejects_incompatible_branch_type() {
         &mut b,
         3,
         2,
-        vec![histogram("shifted", &[(ConstraintValue::Integer(4), 1), (ConstraintValue::Null, 1)])],
+        vec![histogram(
+            "shifted",
+            &[(ConstraintValue::Integer(4), 1), (ConstraintValue::Null, 1)],
+        )],
     );
     assert_eq!(
         b.outcome_goals()[0].status(),
