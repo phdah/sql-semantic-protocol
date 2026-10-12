@@ -533,12 +533,19 @@ fn pinned_task_99_fixture_contract_is_reproducible_and_release_blocked() {
     assert_eq!(required_array(pinned, "raw_sql").len(), 7);
     assert_eq!(pinned["dbt_model_count"], 11);
     assert_eq!(pinned["dbt_source_seed_count"], 4);
-    assert_eq!(pinned["sql_tdg_downstream_generator_signoff"], "pending_TASK_31_35_36");
+    assert_eq!(
+        pinned["sql_tdg_downstream_generator_signoff"],
+        "pending_TASK_31_35_36"
+    );
     assert_eq!(pinned["protocol_release_gate"], "blocked_TASK_91");
     assert!(!required_array(pinned, "residual_scope").is_empty());
     for path in required_array(pinned, "oracle_evidence") {
         let file = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join(path.as_str().expect("proof evidence is a path"));
-        assert!(file.is_file(), "pinned evidence is missing: {}", file.display());
+        assert!(
+            file.is_file(),
+            "pinned evidence is missing: {}",
+            file.display()
+        );
     }
 }
