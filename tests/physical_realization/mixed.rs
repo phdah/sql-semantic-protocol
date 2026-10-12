@@ -748,8 +748,9 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
                     })
                     .collect::<Vec<_>>();
                 let outer_rows = wanted.max(1);
-                let complete_counts = source_counts.contains(&("orders", outer_rows, Some(outer_rows)))
-                    && source_counts.contains(&("lines", 1, Some(1)));
+                let complete_counts =
+                    source_counts.contains(&("orders", outer_rows, Some(outer_rows)))
+                        && source_counts.contains(&("lines", 1, Some(1)));
                 matched && complete_counts
             });
             assert!(
