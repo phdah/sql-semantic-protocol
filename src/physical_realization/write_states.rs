@@ -239,13 +239,22 @@ pub fn physical_ordered_write_state_plan(
         };
         if let Some(effect) = effect {
             let Ok(expected) = effect.resulting_rows(old_count, counts) else {
-                return failure(Some(layer.id()), impossible("write action violates cardinality law"));
+                return failure(
+                    Some(layer.id()),
+                    impossible("write action violates cardinality law"),
+                );
             };
             if usize::try_from(expected).ok() != Some(after.rows.len()) {
-                return failure(Some(layer.id()), impossible("constructed rows contradict DML count law"));
+                return failure(
+                    Some(layer.id()),
+                    impossible("constructed rows contradict DML count law"),
+                );
             }
         } else if kind != WriteKind::Definition {
-            return failure(Some(layer.id()), residual("missing canonical write count law"));
+            return failure(
+                Some(layer.id()),
+                residual("missing canonical write count law"),
+            );
         }
         if let Err(error) = validate_state(bundle, &after) {
             return failure(Some(layer.id()), error);
@@ -309,18 +318,23 @@ fn validate_state(bundle: &AnalysisBundle, state: &PhysicalWriteState) -> StateR
     Ok(())
 }
 
-
 fn validate_all_constraints(
     bundle: &AnalysisBundle,
     states: &BTreeMap<String, PhysicalWriteState>,
 ) -> StateResult<()> {
     for set in bundle.relation_constraints() {
-        let Some(state) = states.get(set.relation()) else { continue };
+        let Some(state) = states.get(set.relation()) else {
+            continue;
+        };
         if !set.diagnostics().is_empty() {
             return Err(residual("unresolved canonical constraint diagnostics"));
         }
         for constraint in set.constraints() {
-            if !constraint.evidence().iter().any(|e| e.enforcement() == ConstraintEnforcement::Enforced) {
+            if !constraint
+                .evidence()
+                .iter()
+                .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
+            {
                 return Err(residual("constraint enforcement not attested"));
             }
             match constraint {
@@ -333,29 +347,54 @@ fn validate_all_constraints(
                 }
                 RelationConstraint::PrimaryKey(key) | RelationConstraint::UniqueKey(key) => {
                     for (index, row) in state.rows.iter().enumerate() {
-                        if matches!(constraint, RelationConstraint::PrimaryKey(_)) && key.columns().iter().any(|col| matches!(row.values.get(col), Some(LiteralValue::Null))) {
+                        if matches!(constraint, RelationConstraint::PrimaryKey(_))
+                            && key
+                                .columns()
+                                .iter()
+                                .any(|col| matches!(row.values.get(col), Some(LiteralValue::Null)))
+                        {
                             return Err(impossible("enforced PRIMARY KEY cannot contain NULL"));
                         }
-                        if key.columns().iter().any(|col| matches!(row.values.get(col), Some(LiteralValue::Null))) {
+                        if key
+                            .columns()
+                            .iter()
+                            .any(|col| matches!(row.values.get(col), Some(LiteralValue::Null)))
+                        {
                             continue;
                         }
                         for prior in &state.rows[..index] {
-                            if key.columns().iter().any(|col| matches!(prior.values.get(col), Some(LiteralValue::Null))) {
+                            if key.columns().iter().any(|col| {
+                                matches!(prior.values.get(col), Some(LiteralValue::Null))
+                            }) {
                                 continue;
                             }
                             if equal_key_rows(row, prior, key.columns(), key.columns())? {
-                                return Err(impossible("enforced key has duplicate physical values"));
+                                return Err(impossible(
+                                    "enforced key has duplicate physical values",
+                                ));
                             }
                         }
                     }
                 }
                 RelationConstraint::ForeignKey(key) => {
-                    let referenced = states.get(key.referenced_relation()).ok_or_else(|| residual("foreign-key target population is not controlled"))?;
+                    let referenced = states.get(key.referenced_relation()).ok_or_else(|| {
+                        residual("foreign-key target population is not controlled")
+                    })?;
                     for row in &state.rows {
-                        if key.columns().iter().any(|col| matches!(row.values.get(col), Some(LiteralValue::Null))) { continue; }
+                        if key
+                            .columns()
+                            .iter()
+                            .any(|col| matches!(row.values.get(col), Some(LiteralValue::Null)))
+                        {
+                            continue;
+                        }
                         let mut found = false;
                         for other in &referenced.rows {
-                            if equal_key_rows(row, other, key.columns(), key.referenced_columns())? { found = true; break; }
+                            if equal_key_rows(row, other, key.columns(), key.referenced_columns())?
+                            {
+                                found = true;
+                                break;
+                            }
                         }
                         if !found {
                             // Deferrability and statement-end enforcement timing
@@ -366,13 +405,23 @@ fn validate_all_constraints(
                 }
                 RelationConstraint::AcceptedValues(accepted) => {
                     for row in &state.rows {
-                        let value = row.values.get(accepted.column()).ok_or_else(|| residual("accepted-values column missing"))?;
-                        if *value == LiteralValue::Null { continue; }
+                        let value = row
+                            .values
+                            .get(accepted.column())
+                            .ok_or_else(|| residual("accepted-values column missing"))?;
+                        if *value == LiteralValue::Null {
+                            continue;
+                        }
                         let mut found = false;
                         for candidate in accepted.values() {
-                            if constraint_scalar_equal(value, candidate)? { found = true; break; }
+                            if constraint_scalar_equal(value, candidate)? {
+                                found = true;
+                                break;
+                            }
                         }
-                        if !found { return Err(impossible("enforced accepted-values constraint violated")); }
+                        if !found {
+                            return Err(impossible("enforced accepted-values constraint violated"));
+                        }
                     }
                 }
             }
@@ -388,9 +437,17 @@ fn equal_key_rows(
     right_columns: &[String],
 ) -> StateResult<bool> {
     for (left_name, right_name) in left_columns.iter().zip(right_columns) {
-        let a = left.values.get(left_name).ok_or_else(|| residual("key column missing"))?;
-        let b = right.values.get(right_name).ok_or_else(|| residual("referenced key column missing"))?;
-        if !scalar_equality(a, b)? { return Ok(false); }
+        let a = left
+            .values
+            .get(left_name)
+            .ok_or_else(|| residual("key column missing"))?;
+        let b = right
+            .values
+            .get(right_name)
+            .ok_or_else(|| residual("referenced key column missing"))?;
+        if !scalar_equality(a, b)? {
+            return Ok(false);
+        }
     }
     Ok(true)
 }
@@ -399,14 +456,26 @@ fn constraint_scalar_equal(value: &LiteralValue, candidate: &ConstraintValue) ->
     match (value, candidate) {
         (LiteralValue::Boolean(a), ConstraintValue::Boolean(b)) => Ok(a == b),
         (LiteralValue::Text(a), ConstraintValue::String(b)) => {
-            if a == b { Ok(true) } else { Err(residual("accepted string comparison needs collation proof")) }
+            if a == b {
+                Ok(true)
+            } else {
+                Err(residual("accepted string comparison needs collation proof"))
+            }
         }
-        (LiteralValue::Number(a), ConstraintValue::Integer(b)) => a.parse::<i128>()
-            .map(|a| a == i128::from(*b)).map_err(|_| residual("unsupported numeric constraint comparison")),
-        (LiteralValue::Number(a), ConstraintValue::UnsignedInteger(b)) => a.parse::<u128>()
-            .map(|a| a == u128::from(*b)).map_err(|_| residual("unsupported unsigned constraint comparison")),
+        (LiteralValue::Number(a), ConstraintValue::Integer(b)) => a
+            .parse::<i128>()
+            .map(|a| a == i128::from(*b))
+            .map_err(|_| residual("unsupported numeric constraint comparison")),
+        (LiteralValue::Number(a), ConstraintValue::UnsignedInteger(b)) => a
+            .parse::<u128>()
+            .map(|a| a == u128::from(*b))
+            .map_err(|_| residual("unsupported unsigned constraint comparison")),
         (LiteralValue::Number(a), ConstraintValue::Number(b)) => {
-            if a == b { Ok(true) } else { Err(residual("unproved decimal accepted-value equality")) }
+            if a == b {
+                Ok(true)
+            } else {
+                Err(residual("unproved decimal accepted-value equality"))
+            }
         }
         (LiteralValue::Null, ConstraintValue::Null) => Ok(true),
         _ => Err(residual("unproved accepted-value coercion")),
@@ -459,34 +528,63 @@ fn define_rows(
     target: &str,
     before: Option<&PhysicalWriteState>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
-    let write = query.write().ok_or_else(|| residual("missing definition operation"))?;
+    let write = query
+        .write()
+        .ok_or_else(|| residual("missing definition operation"))?;
     match write.definition_mode() {
         Some(WriteDefinitionMode::CreateTable) if before.is_some() => {
-            return Err(impossible("CREATE TABLE conflicts with a prior physical target"));
+            return Err(impossible(
+                "CREATE TABLE conflicts with a prior physical target",
+            ));
         }
         Some(WriteDefinitionMode::CreateTable | WriteDefinitionMode::ReplaceTable) => {}
         Some(WriteDefinitionMode::CreateView | WriteDefinitionMode::ReplaceView) => {
-            return Err(residual("logical CREATE VIEW is not a writable physical table"));
+            return Err(residual(
+                "logical CREATE VIEW is not a writable physical table",
+            ));
         }
         None => return Err(residual("missing CREATE/REPLACE lifecycle evidence")),
     }
     let schema = schema_for(bundle, target)?;
     let projected = evaluate_simple_select(bundle, query, states)?;
-    let columns = query.output().columns().iter().map(|c| c.name().to_string()).collect::<Vec<_>>();
+    let columns = query
+        .output()
+        .columns()
+        .iter()
+        .map(|c| c.name().to_string())
+        .collect::<Vec<_>>();
     if columns.len() != schema.columns().len()
         || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
-        || schema.columns().iter().any(|c| !columns.contains(&c.name().to_string()))
+        || schema
+            .columns()
+            .iter()
+            .any(|c| !columns.contains(&c.name().to_string()))
     {
-        return Err(residual("definition projection does not determine all target columns"));
+        return Err(residual(
+            "definition projection does not determine all target columns",
+        ));
     }
-    let rows = projected.into_iter().map(|values| {
-        if values.len() != columns.len() { return Err(residual("invalid definition projection arity")); }
-        Ok(PhysicalWriteRow { values: columns.iter().cloned().zip(values).collect() })
-    }).collect::<StateResult<Vec<_>>>()?;
+    let rows = projected
+        .into_iter()
+        .map(|values| {
+            if values.len() != columns.len() {
+                return Err(residual("invalid definition projection arity"));
+            }
+            Ok(PhysicalWriteRow {
+                values: columns.iter().cloned().zip(values).collect(),
+            })
+        })
+        .collect::<StateResult<Vec<_>>>()?;
     let before_rows = before.map_or(0, |state| state.rows.len());
     let deleted = u64::try_from(before_rows).map_err(|_| residual("replaced table overflow"))?;
     let inserted = u64::try_from(rows.len()).map_err(|_| residual("definition result overflow"))?;
-    Ok((PhysicalWriteState { relation: target.to_string(), rows }, WriteRowCounts::new(inserted, 0, deleted)))
+    Ok((
+        PhysicalWriteState {
+            relation: target.to_string(),
+            rows,
+        },
+        WriteRowCounts::new(inserted, 0, deleted),
+    ))
 }
 
 fn append_rows(
@@ -794,9 +892,18 @@ fn evaluate_simple_select(
     let aliases = [source.alias().unwrap_or(source.name()), source.name()];
     let mut result = Vec::new();
     for row in &rows.rows {
-        let context = Context { target: None, target_alias: None, source: Some((source.name(), row)) };
-        if !selected(query.predicates().where_predicate(), &context, &aliases)? { continue; }
-        let values = query.output().columns().iter()
+        let context = Context {
+            target: None,
+            target_alias: None,
+            source: Some((source.name(), row)),
+        };
+        if !selected(query.predicates().where_predicate(), &context, &aliases)? {
+            continue;
+        }
+        let values = query
+            .output()
+            .columns()
+            .iter()
             .map(|column| eval(column.expression(), &context, &aliases))
             .collect::<StateResult<Vec<_>>>()?;
         result.push(values);
