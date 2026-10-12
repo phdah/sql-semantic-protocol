@@ -1,14 +1,19 @@
 //! Ordered DML/DDL transitions that preserve target and source bag identities.
 
-use super::*;
 use super::evaluator::{eval, selected, Context};
 use super::projection::{apply_assignments, evaluate_simple_select, schema_for};
+use super::*;
 
 fn initial_target<'a>(
     target: &str,
     before: Option<&'a PhysicalWriteState>,
 ) -> StateResult<&'a PhysicalWriteState> {
-    before.ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingPopulation, format!("missing complete initial target state: {target}")))
+    before.ok_or_else(|| {
+        residual_gap(
+            PhysicalWriteStateGap::MissingPopulation,
+            format!("missing complete initial target state: {target}"),
+        )
+    })
 }
 
 pub(super) fn define_rows(
@@ -192,9 +197,12 @@ pub(super) fn merge_rows(
         ));
     }
     schema_for(bundle, source.name())?;
-    let source_rows = states
-        .get(source.name())
-        .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingPopulation, "missing complete MERGE source population"))?;
+    let source_rows = states.get(source.name()).ok_or_else(|| {
+        residual_gap(
+            PhysicalWriteStateGap::MissingPopulation,
+            "missing complete MERGE source population",
+        )
+    })?;
     let aliases = [source.alias().unwrap_or(source.name()), source.name()];
     let mut matched_sources = BTreeSet::new();
     let mut updates = 0_u64;
@@ -348,4 +356,3 @@ pub(super) fn merge_rows(
         WriteRowCounts::new(inserted, updates, deletes),
     ))
 }
-
