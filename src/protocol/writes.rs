@@ -38,6 +38,7 @@ impl WriteKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteOperation {
     target: String,
+    target_alias: Option<String>,
     kind: WriteKind,
     target_columns: Vec<String>,
     match_condition: Option<Predicate>,
@@ -51,6 +52,7 @@ impl WriteOperation {
     pub(crate) fn definition(target: String) -> Self {
         Self {
             target,
+            target_alias: None,
             kind: WriteKind::Definition,
             target_columns: Vec::new(),
             match_condition: None,
@@ -64,6 +66,7 @@ impl WriteOperation {
     pub(crate) fn append(target: String, target_columns: Vec<String>) -> Self {
         Self {
             target,
+            target_alias: None,
             kind: WriteKind::Append,
             target_columns,
             match_condition: None,
@@ -76,11 +79,13 @@ impl WriteOperation {
 
     pub(crate) fn conditional_mutation(
         target: String,
+        target_alias: Option<String>,
         match_condition: Predicate,
         merge_clauses: Vec<MergeClause>,
     ) -> Self {
         Self {
             target,
+            target_alias,
             kind: WriteKind::ConditionalMutation,
             target_columns: Vec::new(),
             match_condition: Some(match_condition),
@@ -93,12 +98,14 @@ impl WriteOperation {
 
     pub(crate) fn update(
         target: String,
+        target_alias: Option<String>,
         selection: Option<Predicate>,
         assignments: Vec<MergeAssignment>,
         selection_domains: Vec<ColumnDomain>,
     ) -> Self {
         Self {
             target,
+            target_alias,
             kind: WriteKind::Update,
             target_columns: Vec::new(),
             match_condition: None,
@@ -111,11 +118,13 @@ impl WriteOperation {
 
     pub(crate) fn delete(
         target: String,
+        target_alias: Option<String>,
         selection: Option<Predicate>,
         selection_domains: Vec<ColumnDomain>,
     ) -> Self {
         Self {
             target,
+            target_alias,
             kind: WriteKind::Delete,
             target_columns: Vec::new(),
             match_condition: None,
@@ -129,6 +138,11 @@ impl WriteOperation {
     /// Return the relation written by the transformation.
     pub fn target(&self) -> &str {
         &self.target
+    }
+
+    /// SQL qualifier for the target when it was explicitly aliased.
+    pub fn target_alias(&self) -> Option<&str> {
+        self.target_alias.as_deref()
     }
 
     /// Return how the write changes the target relation.
