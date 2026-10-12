@@ -39,6 +39,28 @@ impl PhysicalWriteRow {
     }
 }
 
+/// An exact closed-world column value domain, including SQL NULL and bag multiplicity.
+///
+/// Values are in first-occurrence row order. A domain with no values is
+/// exactly empty, not an unbounded open-world approximation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalWriteColumnDomain {
+    column: String,
+    values: Vec<(LiteralValue, u64)>,
+}
+
+impl PhysicalWriteColumnDomain {
+    /// Column name from the attested physical schema.
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+
+    /// Exact frequency of each scalar value in the complete physical bag.
+    pub fn values(&self) -> &[(LiteralValue, u64)] {
+        &self.values
+    }
+}
+
 /// An entire closed-world relation population, not an open-world row sample.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PhysicalWriteState {
@@ -65,6 +87,43 @@ impl PhysicalWriteState {
     /// Complete rows in deterministic caller-supplied order; duplicates remain distinct.
     pub fn rows(&self) -> &[PhysicalWriteRow] {
         &self.rows
+    }
+
+
+    /// Derive exact per-column domains from a complete schema-backed population.
+    ///
+    /// Returns None if the schema does not identify this relation or if any
+    /// physical row is missing/exceeding the declared set of columns. This
+    /// method does not replace datatype or constraint validation.
+    pub fn exact_domains(
+        &self,
+        schema: &RelationSchema,
+    ) -> Option<Vec<PhysicalWriteColumnDomain>> {
+        if schema.relation() != self.relation {
+            return None;
+        }
+        let mut domains = schema
+            .columns()
+            .iter()
+            .map(|column| PhysicalWriteColumnDomain {
+                column: column.name().to_string(),
+                values: Vec::new(),
+            })
+            .collect::<Vec<_>>();
+        for row in &self.rows {
+            if row.values.len() != domains.len() {
+                return None;
+            }
+            for domain in &mut domains {
+                let value = row.values.get(&domain.column)?;
+                if let Some((_, count)) = domain.values.iter_mut().find(|(v, _)| v == value) {
+                    *count = count.checked_add(1)?;
+                } else {
+                    domain.values.push((value.clone(), 1));
+                }
+            }
+        }
+        Some(domains)
     }
 }
 
