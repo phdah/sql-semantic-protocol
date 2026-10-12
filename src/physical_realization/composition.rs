@@ -197,8 +197,9 @@ pub(super) fn operator_population_counts(
             } else {
                 u64::try_from(values.iter().filter(|entry| entry.rows() > 0).count()).ok()?
             };
-            if (!*scale_by_value_rows && copies != wanted)
-                || (*scale_by_value_rows && !values.is_empty() && copies != wanted)
+            if (values.is_empty()
+                && case.output_tuple_count().checked_mul(copies) != Some(wanted))
+                || (!values.is_empty() && copies != wanted)
                 || case.obligations().is_empty()
             {
                 return None;
