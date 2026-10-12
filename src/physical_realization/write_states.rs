@@ -310,7 +310,11 @@ fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePla
     let layer_id = layer_id.map(str::to_string);
     match error {
         StateFailure::Impossible(reason) => PhysicalWriteStatePlan::Impossible { layer_id, reason },
-        StateFailure::Residual(gap, reason) => PhysicalWriteStatePlan::Residual { layer_id, gap, reason },
+        StateFailure::Residual(gap, reason) => PhysicalWriteStatePlan::Residual {
+            layer_id,
+            gap,
+            reason,
+        },
     }
 }
 
