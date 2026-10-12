@@ -10,9 +10,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::bundle::AnalysisBundle;
 use crate::data_type::DataType;
 use crate::protocol::{
-    BinaryOperator, ComparisonOperator, Expression, LiteralValue, MergeAction,
-    MergeMatchKind, Predicate, ProtocolStatement, QueryStatement, UnaryOperator,
-    WriteKind, WriteRowCounts,
+    BinaryOperator, ComparisonOperator, Expression, LiteralValue, MergeAction, MergeMatchKind,
+    Predicate, ProtocolStatement, QueryStatement, UnaryOperator, WriteKind, WriteRowCounts,
 };
 use crate::relation::RelationSchema;
 
@@ -159,7 +158,10 @@ pub fn physical_ordered_write_state_plan(
 ) -> PhysicalWriteStatePlan {
     let mut states = BTreeMap::<String, PhysicalWriteState>::new();
     for state in initial_states {
-        if states.insert(state.relation.clone(), state.clone()).is_some() {
+        if states
+            .insert(state.relation.clone(), state.clone())
+            .is_some()
+        {
             return PhysicalWriteStatePlan::Impossible {
                 layer_id: None,
                 reason: "a physical relation has more than one initial population".to_string(),
@@ -172,7 +174,8 @@ pub fn physical_ordered_write_state_plan(
     // An unsupported statement cannot disappear from a multi-statement
     // program simply because the bundle has no TransformationLayer for it.
     if bundle.inputs().iter().any(|input| {
-        input.statements()
+        input
+            .statements()
             .iter()
             .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_)))
     }) {
@@ -197,10 +200,16 @@ pub fn physical_ordered_write_state_plan(
                 ProtocolStatement::Unsupported(_) => None,
             })
         else {
-            return failure(Some(layer.id()), residual("missing canonical write statement"));
+            return failure(
+                Some(layer.id()),
+                residual("missing canonical write statement"),
+            );
         };
         let Some(write) = query.write() else {
-            return failure(Some(layer.id()), residual("missing normalized write operation"));
+            return failure(
+                Some(layer.id()),
+                residual("missing normalized write operation"),
+            );
         };
         let target = write.target();
         let before = states.get(target).cloned();
@@ -209,15 +218,15 @@ pub fn physical_ordered_write_state_plan(
                 // CREATE VIEW versus CREATE TABLE and replace/exists flags are
                 // not yet distinguished by WriteOperation. Neither may be
                 // silently interpreted as an unconditional physical overwrite.
-                Err(residual("definition DDL lacks a proven physical lifecycle kind"))
+                Err(residual(
+                    "definition DDL lacks a proven physical lifecycle kind",
+                ))
             }
             WriteKind::Append => append_rows(bundle, query, &states, target, before.as_ref()),
             WriteKind::Update => {
                 mutate_rows(bundle, query, &states, target, before.as_ref(), false)
             }
-            WriteKind::Delete => {
-                mutate_rows(bundle, query, &states, target, before.as_ref(), true)
-            }
+            WriteKind::Delete => mutate_rows(bundle, query, &states, target, before.as_ref(), true),
             WriteKind::ConditionalMutation => {
                 merge_rows(bundle, query, &states, target, before.as_ref())
             }
@@ -227,17 +236,26 @@ pub fn physical_ordered_write_state_plan(
             Err(error) => return failure(Some(layer.id()), error),
         };
         let Some(effect) = write.state_effect() else {
-            return failure(Some(layer.id()), residual("missing canonical write count law"));
+            return failure(
+                Some(layer.id()),
+                residual("missing canonical write count law"),
+            );
         };
         let old_count = before.as_ref().map_or(0, |state| state.rows.len());
         let Ok(old_count) = u64::try_from(old_count) else {
             return failure(Some(layer.id()), residual("initial row count overflow"));
         };
         let Ok(expected) = effect.resulting_rows(old_count, counts) else {
-            return failure(Some(layer.id()), impossible("write action violates cardinality law"));
+            return failure(
+                Some(layer.id()),
+                impossible("write action violates cardinality law"),
+            );
         };
         if usize::try_from(expected).ok() != Some(after.rows.len()) {
-            return failure(Some(layer.id()), impossible("constructed rows contradict DML count law"));
+            return failure(
+                Some(layer.id()),
+                impossible("constructed rows contradict DML count law"),
+            );
         }
         if let Err(error) = validate_state(bundle, &after) {
             return failure(Some(layer.id()), error);
@@ -288,7 +306,9 @@ fn validate_state(bundle: &AnalysisBundle, state: &PhysicalWriteState) -> StateR
     }
     for row in &state.rows {
         if row.values.len() != schema.columns().len() {
-            return Err(impossible("physical row column count contradicts declared schema"));
+            return Err(impossible(
+                "physical row column count contradicts declared schema",
+            ));
         }
         for column in schema.columns() {
             let value = row
@@ -359,16 +379,25 @@ fn append_rows(
     };
     let schema = schema_for(bundle, target)?;
     let columns = if write.target_columns().is_empty() {
-        schema.columns().iter().map(|c| c.name().to_string()).collect::<Vec<_>>()
+        schema
+            .columns()
+            .iter()
+            .map(|c| c.name().to_string())
+            .collect::<Vec<_>>()
     } else {
         write.target_columns().to_vec()
     };
     // Defaults and generated columns require independent canonical evidence.
     if columns.len() != schema.columns().len()
         || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
-        || schema.columns().iter().any(|c| !columns.contains(&c.name().to_string()))
+        || schema
+            .columns()
+            .iter()
+            .any(|c| !columns.contains(&c.name().to_string()))
     {
-        return Err(residual("implicit/default/partial INSERT target columns not proved"));
+        return Err(residual(
+            "implicit/default/partial INSERT target columns not proved",
+        ));
     }
     let produced = evaluate_simple_select(bundle, query, states)?;
     let mut next = before.clone();
@@ -393,16 +422,24 @@ fn mutate_rows(
     delete: bool,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
-    let write = query.write().ok_or_else(|| residual("missing mutation write"))?;
+    let write = query
+        .write()
+        .ok_or_else(|| residual("missing mutation write"))?;
     let mut kept = Vec::new();
     let mut affected = 0_u64;
     for row in &before.rows {
-        let context = Context { target: Some((target, row)), target_alias: write.target_alias(), source: None };
+        let context = Context {
+            target: Some((target, row)),
+            target_alias: write.target_alias(),
+            source: None,
+        };
         if !selected(write.selection(), &context, &[])? {
             kept.push(row.clone());
             continue;
         }
-        affected = affected.checked_add(1).ok_or_else(|| residual("affected count overflow"))?;
+        affected = affected
+            .checked_add(1)
+            .ok_or_else(|| residual("affected count overflow"))?;
         if !delete {
             kept.push(apply_assignments(row, write.assignments(), &context, &[])?);
         }
@@ -412,7 +449,13 @@ fn mutate_rows(
     } else {
         WriteRowCounts::new(0, affected, 0)
     };
-    Ok((PhysicalWriteState { relation: target.to_string(), rows: kept }, counts))
+    Ok((
+        PhysicalWriteState {
+            relation: target.to_string(),
+            rows: kept,
+        },
+        counts,
+    ))
 }
 
 fn merge_rows(
@@ -423,7 +466,9 @@ fn merge_rows(
     before: Option<&PhysicalWriteState>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
-    let write = query.write().ok_or_else(|| residual("missing MERGE write"))?;
+    let write = query
+        .write()
+        .ok_or_else(|| residual("missing MERGE write"))?;
     let Some(match_condition) = write.match_condition() else {
         return Err(residual("missing MERGE match condition"));
     };
@@ -431,10 +476,13 @@ fn merge_rows(
         return Err(residual("MERGE must have one independent physical source"));
     };
     if source.name() == target {
-        return Err(residual("MERGE self-source needs joint physical alias proof"));
+        return Err(residual(
+            "MERGE self-source needs joint physical alias proof",
+        ));
     }
     schema_for(bundle, source.name())?;
-    let source_rows = states.get(source.name())
+    let source_rows = states
+        .get(source.name())
         .ok_or_else(|| residual("missing complete MERGE source population"))?;
     let aliases = [source.alias().unwrap_or(source.name()), source.name()];
     let mut matched_sources = BTreeSet::new();
@@ -443,33 +491,57 @@ fn merge_rows(
     let mut inserts = Vec::new();
     let mut retained = Vec::new();
     for target_row in &before.rows {
-        let matches = source_rows.rows.iter().enumerate().filter_map(|(index, source_row)| {
-            let context = Context { target: Some((target, target_row)), target_alias: write.target_alias(), source: Some((source.name(), source_row)) };
-            match selected(Some(match_condition), &context, &aliases) {
-                Ok(true) => Some(Ok(index)),
-                Ok(false) => None,
-                Err(error) => Some(Err(error)),
-            }
-        }).collect::<StateResult<Vec<_>>>()?;
+        let matches = source_rows
+            .rows
+            .iter()
+            .enumerate()
+            .filter_map(|(index, source_row)| {
+                let context = Context {
+                    target: Some((target, target_row)),
+                    target_alias: write.target_alias(),
+                    source: Some((source.name(), source_row)),
+                };
+                match selected(Some(match_condition), &context, &aliases) {
+                    Ok(true) => Some(Ok(index)),
+                    Ok(false) => None,
+                    Err(error) => Some(Err(error)),
+                }
+            })
+            .collect::<StateResult<Vec<_>>>()?;
         if matches.len() > 1 {
-            return Err(residual("multiple MERGE source matches require deterministic branch/multiplicity law"));
+            return Err(residual(
+                "multiple MERGE source matches require deterministic branch/multiplicity law",
+            ));
         }
         let mut result = Some(target_row.clone());
         if let Some(index) = matches.first().copied() {
             matched_sources.insert(index);
             let source_row = &source_rows.rows[index];
-            let context = Context { target: Some((target, target_row)), target_alias: write.target_alias(), source: Some((source.name(), source_row)) };
+            let context = Context {
+                target: Some((target, target_row)),
+                target_alias: write.target_alias(),
+                source: Some((source.name(), source_row)),
+            };
             for clause in write.merge_clauses() {
                 if clause.match_kind() != MergeMatchKind::Matched
-                    || !selected(clause.predicate(), &context, &aliases)? {
+                    || !selected(clause.predicate(), &context, &aliases)?
+                {
                     continue;
                 }
                 match clause.action() {
                     MergeAction::Update { assignments } => {
-                        result = Some(apply_assignments(target_row, assignments, &context, &aliases)?);
+                        result = Some(apply_assignments(
+                            target_row,
+                            assignments,
+                            &context,
+                            &aliases,
+                        )?);
                         updates += 1;
                     }
-                    MergeAction::Delete => { result = None; deletes += 1; }
+                    MergeAction::Delete => {
+                        result = None;
+                        deletes += 1;
+                    }
                     MergeAction::Insert { .. } | MergeAction::Unsupported(_) => {
                         return Err(residual("unproved MATCHED MERGE action"));
                     }
@@ -477,42 +549,74 @@ fn merge_rows(
                 break; // SQL's first-applicable branch, not independent actions.
             }
         } else {
-            let context = Context { target: Some((target, target_row)), target_alias: write.target_alias(), source: None };
+            let context = Context {
+                target: Some((target, target_row)),
+                target_alias: write.target_alias(),
+                source: None,
+            };
             for clause in write.merge_clauses() {
                 if clause.match_kind() != MergeMatchKind::NotMatchedBySource
-                    || !selected(clause.predicate(), &context, &aliases)? {
+                    || !selected(clause.predicate(), &context, &aliases)?
+                {
                     continue;
                 }
                 match clause.action() {
                     MergeAction::Update { assignments } => {
-                        result = Some(apply_assignments(target_row, assignments, &context, &aliases)?);
+                        result = Some(apply_assignments(
+                            target_row,
+                            assignments,
+                            &context,
+                            &aliases,
+                        )?);
                         updates += 1;
                     }
-                    MergeAction::Delete => { result = None; deletes += 1; }
+                    MergeAction::Delete => {
+                        result = None;
+                        deletes += 1;
+                    }
                     _ => return Err(residual("unproved BY SOURCE MERGE action")),
                 }
                 break;
             }
         }
-        if let Some(row) = result { retained.push(row); }
+        if let Some(row) = result {
+            retained.push(row);
+        }
     }
     for (index, source_row) in source_rows.rows.iter().enumerate() {
-        if matched_sources.contains(&index) { continue; }
-        let context = Context { target: None, target_alias: write.target_alias(), source: Some((source.name(), source_row)) };
+        if matched_sources.contains(&index) {
+            continue;
+        }
+        let context = Context {
+            target: None,
+            target_alias: write.target_alias(),
+            source: Some((source.name(), source_row)),
+        };
         for clause in write.merge_clauses() {
-            if !matches!(clause.match_kind(), MergeMatchKind::NotMatched | MergeMatchKind::NotMatchedByTarget)
-                || !selected(clause.predicate(), &context, &aliases)? {
+            if !matches!(
+                clause.match_kind(),
+                MergeMatchKind::NotMatched | MergeMatchKind::NotMatchedByTarget
+            ) || !selected(clause.predicate(), &context, &aliases)?
+            {
                 continue;
             }
             match clause.action() {
                 MergeAction::Insert { columns, values } => {
                     let schema = schema_for(bundle, target)?;
                     if columns.len() != schema.columns().len() || values.len() != 1 {
-                        return Err(residual("MERGE INSERT requires complete target-column tuple"));
+                        return Err(residual(
+                            "MERGE INSERT requires complete target-column tuple",
+                        ));
                     }
                     let mut row_values = BTreeMap::new();
                     for (column, value) in columns.iter().zip(&values[0]) {
-                        if row_values.insert(column.clone(), eval(value.expression(), &context, &aliases)?).is_some() {
+                        if row_values
+                            .insert(
+                                column.clone(),
+                                eval(value.expression(), &context, &aliases)?,
+                            )
+                            .is_some()
+                        {
                             return Err(impossible("duplicate MERGE target column"));
                         }
                     }
@@ -526,13 +630,19 @@ fn merge_rows(
     let inserted = u64::try_from(inserts.len()).map_err(|_| residual("inserted count overflow"))?;
     retained.extend(inserts);
     Ok((
-        PhysicalWriteState { relation: target.to_string(), rows: retained },
+        PhysicalWriteState {
+            relation: target.to_string(),
+            rows: retained,
+        },
         WriteRowCounts::new(inserted, updates, deletes),
     ))
 }
 
 fn schema_for<'a>(bundle: &'a AnalysisBundle, relation: &str) -> StateResult<&'a RelationSchema> {
-    bundle.source_schemas().iter().find(|schema| schema.relation() == relation)
+    bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == relation)
         .ok_or_else(|| residual(format!("missing schema for {relation}")))
 }
 
@@ -548,12 +658,15 @@ fn evaluate_simple_select(
         || query.predicates().having_predicate().is_some()
         || query.predicates().qualify_predicate().is_some()
     {
-        return Err(residual("INSERT source is not a proven row-local, one-source SELECT"));
+        return Err(residual(
+            "INSERT source is not a proven row-local, one-source SELECT",
+        ));
     }
     let [source] = query.sources() else {
         return Err(residual("INSERT SELECT must read one physical relation"));
     };
-    let rows = states.get(source.name())
+    let rows = states
+        .get(source.name())
         .ok_or_else(|| residual("missing complete INSERT source population"))?;
     let aliases = [source.alias().unwrap_or(source.name()), source.name()];
     let mut result = Vec::new();
@@ -574,20 +687,33 @@ struct Context<'a> {
     source: Option<(&'a str, &'a PhysicalWriteRow)>,
 }
 
-fn column<'a>(context: &'a Context<'_>, aliases: &[&str], relation: Option<&str>, name: &str) -> StateResult<&'a LiteralValue> {
+fn column<'a>(
+    context: &'a Context<'_>,
+    aliases: &[&str],
+    relation: Option<&str>,
+    name: &str,
+) -> StateResult<&'a LiteralValue> {
     match relation {
         Some(qualifier) => {
             if let Some((source, row)) = context.source {
                 if qualifier == source || aliases.contains(&qualifier) {
-                    return row.values.get(name).ok_or_else(|| residual("source column missing"));
+                    return row
+                        .values
+                        .get(name)
+                        .ok_or_else(|| residual("source column missing"));
                 }
             }
             if let Some((target, row)) = context.target {
                 if qualifier == target || context.target_alias == Some(qualifier) {
-                    return row.values.get(name).ok_or_else(|| residual("target column missing"));
+                    return row
+                        .values
+                        .get(name)
+                        .ok_or_else(|| residual("target column missing"));
                 }
             }
-            Err(residual("column qualifier/target alias not canonically resolved"))
+            Err(residual(
+                "column qualifier/target alias not canonically resolved",
+            ))
         }
         None => {
             let target = context.target.and_then(|(_, row)| row.values.get(name));
@@ -601,18 +727,33 @@ fn column<'a>(context: &'a Context<'_>, aliases: &[&str], relation: Option<&str>
     }
 }
 
-fn eval(expression: &Expression, context: &Context<'_>, aliases: &[&str]) -> StateResult<LiteralValue> {
+fn eval(
+    expression: &Expression,
+    context: &Context<'_>,
+    aliases: &[&str],
+) -> StateResult<LiteralValue> {
     match expression {
         Expression::Literal(literal) => Ok(literal.value().clone()),
-        Expression::Column(col) => Ok(column(context, aliases, col.relation(), col.name())?.clone()),
+        Expression::Column(col) => {
+            Ok(column(context, aliases, col.relation(), col.name())?.clone())
+        }
         Expression::Unary(unary) => {
             let value = eval(unary.operand(), context, aliases)?;
             match (unary.operator(), value) {
                 (_, LiteralValue::Null) => Ok(LiteralValue::Null),
-                (UnaryOperator::Plus, LiteralValue::Number(value)) => Ok(LiteralValue::Number(value)),
+                (UnaryOperator::Plus, LiteralValue::Number(value)) => {
+                    Ok(LiteralValue::Number(value))
+                }
                 (UnaryOperator::Minus, LiteralValue::Number(value)) => {
-                    let number = value.parse::<i128>().map_err(|_| residual("noninteger unary negation"))?;
-                    Ok(LiteralValue::Number(number.checked_neg().ok_or_else(|| residual("numeric overflow"))?.to_string()))
+                    let number = value
+                        .parse::<i128>()
+                        .map_err(|_| residual("noninteger unary negation"))?;
+                    Ok(LiteralValue::Number(
+                        number
+                            .checked_neg()
+                            .ok_or_else(|| residual("numeric overflow"))?
+                            .to_string(),
+                    ))
                 }
                 _ => Err(residual("unproved unary scalar semantics")),
             }
@@ -626,36 +767,61 @@ fn eval(expression: &Expression, context: &Context<'_>, aliases: &[&str]) -> Sta
             let (LiteralValue::Number(left), LiteralValue::Number(right)) = (left, right) else {
                 return Err(residual("binary expression requires proved numeric types"));
             };
-            let a = left.parse::<i128>().map_err(|_| residual("noninteger arithmetic"))?;
-            let b = right.parse::<i128>().map_err(|_| residual("noninteger arithmetic"))?;
+            let a = left
+                .parse::<i128>()
+                .map_err(|_| residual("noninteger arithmetic"))?;
+            let b = right
+                .parse::<i128>()
+                .map_err(|_| residual("noninteger arithmetic"))?;
             let result = match binary.operator() {
                 BinaryOperator::Add => a.checked_add(b),
                 BinaryOperator::Subtract => a.checked_sub(b),
                 BinaryOperator::Multiply => a.checked_mul(b),
-                BinaryOperator::Divide | BinaryOperator::Modulo if b == 0 => return Err(residual("division by zero")),
+                BinaryOperator::Divide | BinaryOperator::Modulo if b == 0 => {
+                    return Err(residual("division by zero"))
+                }
                 BinaryOperator::Divide => a.checked_div(b),
                 BinaryOperator::Modulo => a.checked_rem(b),
                 _ => return Err(residual("unproved binary expression law")),
-            }.ok_or_else(|| residual("numeric overflow"))?;
+            }
+            .ok_or_else(|| residual("numeric overflow"))?;
             Ok(LiteralValue::Number(result.to_string()))
         }
-        Expression::BooleanPredicate(predicate) => match predicate_truth(predicate, context, aliases)? {
-            Truth::True => Ok(LiteralValue::Boolean(true)),
-            Truth::False => Ok(LiteralValue::Boolean(false)),
-            Truth::Unknown => Ok(LiteralValue::Null),
-        },
-        _ => Err(residual("unsupported scalar expression cannot be physically evaluated")),
+        Expression::BooleanPredicate(predicate) => {
+            match predicate_truth(predicate, context, aliases)? {
+                Truth::True => Ok(LiteralValue::Boolean(true)),
+                Truth::False => Ok(LiteralValue::Boolean(false)),
+                Truth::Unknown => Ok(LiteralValue::Null),
+            }
+        }
+        _ => Err(residual(
+            "unsupported scalar expression cannot be physically evaluated",
+        )),
     }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum Truth { True, False, Unknown }
-
-fn selected(predicate: Option<&Predicate>, context: &Context<'_>, aliases: &[&str]) -> StateResult<bool> {
-    predicate.map_or(Ok(true), |predicate| Ok(predicate_truth(predicate, context, aliases)? == Truth::True))
+enum Truth {
+    True,
+    False,
+    Unknown,
 }
 
-fn predicate_truth(predicate: &Predicate, context: &Context<'_>, aliases: &[&str]) -> StateResult<Truth> {
+fn selected(
+    predicate: Option<&Predicate>,
+    context: &Context<'_>,
+    aliases: &[&str],
+) -> StateResult<bool> {
+    predicate.map_or(Ok(true), |predicate| {
+        Ok(predicate_truth(predicate, context, aliases)? == Truth::True)
+    })
+}
+
+fn predicate_truth(
+    predicate: &Predicate,
+    context: &Context<'_>,
+    aliases: &[&str],
+) -> StateResult<Truth> {
     match predicate {
         Predicate::Comparison(comparison) => {
             let a = eval(comparison.left(), context, aliases)?;
@@ -664,7 +830,11 @@ fn predicate_truth(predicate: &Predicate, context: &Context<'_>, aliases: &[&str
         }
         Predicate::IsNull(test) => {
             let value = eval(test.expression(), context, aliases)?;
-            Ok(if (value == LiteralValue::Null) != test.negated() { Truth::True } else { Truth::False })
+            Ok(if (value == LiteralValue::Null) != test.negated() {
+                Truth::True
+            } else {
+                Truth::False
+            })
         }
         Predicate::And(logical) => {
             let mut truth = Truth::True;
@@ -689,7 +859,9 @@ fn predicate_truth(predicate: &Predicate, context: &Context<'_>, aliases: &[&str
             Ok(truth)
         }
         Predicate::Not(not) => Ok(match predicate_truth(not.operand(), context, aliases)? {
-            Truth::True => Truth::False, Truth::False => Truth::True, Truth::Unknown => Truth::Unknown,
+            Truth::True => Truth::False,
+            Truth::False => Truth::True,
+            Truth::Unknown => Truth::Unknown,
         }),
         Predicate::Between(between) => {
             let value = eval(between.expression(), context, aliases)?;
@@ -698,7 +870,11 @@ fn predicate_truth(predicate: &Predicate, context: &Context<'_>, aliases: &[&str
             let lower = compare(&value, ComparisonOperator::Gte, &lo)?;
             let upper = compare(&value, ComparisonOperator::Lte, &hi)?;
             let truth = and_truth(lower, upper);
-            Ok(if between.negated() { negate_truth(truth) } else { truth })
+            Ok(if between.negated() {
+                negate_truth(truth)
+            } else {
+                truth
+            })
         }
         Predicate::In(test) => {
             let value = eval(test.expression(), context, aliases)?;
@@ -707,38 +883,63 @@ fn predicate_truth(predicate: &Predicate, context: &Context<'_>, aliases: &[&str
                 let candidate = eval(expression, context, aliases)?;
                 truth = or_truth(truth, compare(&value, ComparisonOperator::Eq, &candidate)?);
             }
-            Ok(if test.negated() { negate_truth(truth) } else { truth })
+            Ok(if test.negated() {
+                negate_truth(truth)
+            } else {
+                truth
+            })
         }
         Predicate::BooleanExpression(expression) => match eval(expression, context, aliases)? {
             LiteralValue::Boolean(true) => Ok(Truth::True),
             LiteralValue::Boolean(false) => Ok(Truth::False),
             LiteralValue::Null => Ok(Truth::Unknown),
             _ => Err(residual("non-boolean predicate expression")),
-        }
-        _ => Err(residual("unsupported predicate requires operator-local proof")),
+        },
+        _ => Err(residual(
+            "unsupported predicate requires operator-local proof",
+        )),
     }
 }
 
 fn negate_truth(truth: Truth) -> Truth {
-    match truth { Truth::True => Truth::False, Truth::False => Truth::True, Truth::Unknown => Truth::Unknown }
+    match truth {
+        Truth::True => Truth::False,
+        Truth::False => Truth::True,
+        Truth::Unknown => Truth::Unknown,
+    }
 }
 fn and_truth(a: Truth, b: Truth) -> Truth {
-    if a == Truth::False || b == Truth::False { Truth::False }
-    else if a == Truth::Unknown || b == Truth::Unknown { Truth::Unknown }
-    else { Truth::True }
+    if a == Truth::False || b == Truth::False {
+        Truth::False
+    } else if a == Truth::Unknown || b == Truth::Unknown {
+        Truth::Unknown
+    } else {
+        Truth::True
+    }
 }
 fn or_truth(a: Truth, b: Truth) -> Truth {
-    if a == Truth::True || b == Truth::True { Truth::True }
-    else if a == Truth::Unknown || b == Truth::Unknown { Truth::Unknown }
-    else { Truth::False }
+    if a == Truth::True || b == Truth::True {
+        Truth::True
+    } else if a == Truth::Unknown || b == Truth::Unknown {
+        Truth::Unknown
+    } else {
+        Truth::False
+    }
 }
 
 fn compare(a: &LiteralValue, operator: ComparisonOperator, b: &LiteralValue) -> StateResult<Truth> {
-    if matches!(operator, ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom) {
+    if matches!(
+        operator,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+    ) {
         // IS DISTINCT FROM treats NULL = NULL as not distinct.
         let equal = scalar_equality(a, b)?;
         let distinct = !equal;
-        let truth = if operator == ComparisonOperator::IsDistinctFrom { distinct } else { !distinct };
+        let truth = if operator == ComparisonOperator::IsDistinctFrom {
+            distinct
+        } else {
+            !distinct
+        };
         return Ok(if truth { Truth::True } else { Truth::False });
     }
     if *a == LiteralValue::Null || *b == LiteralValue::Null {
@@ -746,13 +947,19 @@ fn compare(a: &LiteralValue, operator: ComparisonOperator, b: &LiteralValue) -> 
     }
     let order = match (a, b) {
         (LiteralValue::Number(left), LiteralValue::Number(right)) => {
-            let left = left.parse::<i128>().map_err(|_| residual("unproved decimal comparison"))?;
-            let right = right.parse::<i128>().map_err(|_| residual("unproved decimal comparison"))?;
+            let left = left
+                .parse::<i128>()
+                .map_err(|_| residual("unproved decimal comparison"))?;
+            let right = right
+                .parse::<i128>()
+                .map_err(|_| residual("unproved decimal comparison"))?;
             left.cmp(&right)
         }
         (LiteralValue::Boolean(left), LiteralValue::Boolean(right)) => left.cmp(right),
         (LiteralValue::Text(_), LiteralValue::Text(_)) => {
-            return Err(residual("string comparison requires binary collation and padding proof"));
+            return Err(residual(
+                "string comparison requires binary collation and padding proof",
+            ));
         }
         _ => return Err(residual("implicit comparison coercion is not proved")),
     };
@@ -763,7 +970,9 @@ fn compare(a: &LiteralValue, operator: ComparisonOperator, b: &LiteralValue) -> 
         ComparisonOperator::Lte => order.is_le(),
         ComparisonOperator::Gt => order.is_gt(),
         ComparisonOperator::Gte => order.is_ge(),
-        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => return Err(residual("unexpected distinct comparison boundary")),
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
+            return Err(residual("unexpected distinct comparison boundary"))
+        }
     };
     Ok(if ok { Truth::True } else { Truth::False })
 }
@@ -772,9 +981,13 @@ fn scalar_equality(a: &LiteralValue, b: &LiteralValue) -> StateResult<bool> {
     match (a, b) {
         (LiteralValue::Null, LiteralValue::Null) => Ok(true),
         (LiteralValue::Null, _) | (_, LiteralValue::Null) => Ok(false),
-        (LiteralValue::Text(_), LiteralValue::Text(_)) => Err(residual("unverified text collation")),
-        (LiteralValue::Number(_), LiteralValue::Number(_)) |
-        (LiteralValue::Boolean(_), LiteralValue::Boolean(_)) => Ok(compare(a, ComparisonOperator::Eq, b)? == Truth::True),
+        (LiteralValue::Text(_), LiteralValue::Text(_)) => {
+            Err(residual("unverified text collation"))
+        }
+        (LiteralValue::Number(_), LiteralValue::Number(_))
+        | (LiteralValue::Boolean(_), LiteralValue::Boolean(_)) => {
+            Ok(compare(a, ComparisonOperator::Eq, b)? == Truth::True)
+        }
         _ => Err(residual("unproved coercion in distinct comparison")),
     }
 }
@@ -793,13 +1006,19 @@ fn apply_assignments(
             let Some((canonical, _)) = context.target else {
                 return Err(residual("update assignment has no target"));
             };
-            if qualifier != canonical && context.target_alias != Some(qualifier) { return Err(residual("unresolved target column alias")); }
+            if qualifier != canonical && context.target_alias != Some(qualifier) {
+                return Err(residual("unresolved target column alias"));
+            }
             column
-        } else { target };
+        } else {
+            target
+        };
         if !before.values.contains_key(name) {
             return Err(residual("assignment targets an unknown physical column"));
         }
-        if !written.insert(name) { return Err(residual("overlapping UPDATE assignments")); }
+        if !written.insert(name) {
+            return Err(residual("overlapping UPDATE assignments"));
+        }
         let value = eval(assignment.value().expression(), context, aliases)?;
         // SQL evaluates all SET expressions against the original row, not
         // the previous SET value in the same statement.
