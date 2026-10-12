@@ -196,8 +196,10 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 ## TASK-99 handoff (2026-10-12)
 
-PR #105 certifies protocol-side pinned sql-tdg fixtures against an executable
-11-model dbt/DuckDB oracle, cross-dialect canonical variants and explicit
-typed residual/impossibility boundaries. TASK-99 is Done; TASK-100 is the
+PR #105 certifies the protocol-owned versioned conformance corpus
+(`tests/fixtures/conformance/v1/suite.json`) against an executable 11-model
+dbt/DuckDB oracle, cross-dialect canonical variants and explicit typed
+residual/impossibility boundaries. Consumers pin a protocol revision,
+never the reverse. TASK-99 is Done; TASK-100 is the
 next sequential child. This does not certify the downstream generator or
 release 3.0.0. See `docs/tdg-certification.md`.

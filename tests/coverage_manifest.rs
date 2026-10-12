@@ -521,40 +521,73 @@ fn duckdb_oracles_cover_feasible_impossible_null_and_duplicate_cases() {
 }
 
 #[test]
-fn pinned_task_99_fixture_contract_is_reproducible_and_release_blocked() {
+fn protocol_owned_conformance_manifest_is_portable_and_release_blocked() {
     let manifest = manifest();
-    let pinned = &manifest["task_99_upstream_fixture_contract"];
-    assert_eq!(pinned["owner"], "TASK-99");
-    assert_eq!(pinned["upstream_repo"], "phdah/sql-tdg");
+    let contract = &manifest["task_99_protocol_conformance_contract"];
+    let suite: Value = serde_json::from_str(include_str!("fixtures/conformance/v1/suite.json"))
+        .expect("canonical suite manifest");
+    assert_eq!(contract["owner"], "TASK-99");
+    assert_eq!(contract["authority"], "phdah/sql-semantic-protocol");
+    assert_eq!(contract["suite_version"], suite["schema_version"]);
+    assert_eq!(suite["owner"], "phdah/sql-semantic-protocol");
     assert_eq!(
-        pinned["upstream_git_sha"],
-        "90ec0e12a2d5cd2c1294556336fc947e176c9db9"
+        contract["suite_manifest"],
+        "tests/fixtures/conformance/v1/suite.json"
     );
-    assert_eq!(required_array(pinned, "raw_sql").len(), 7);
-    for path in required_array(pinned, "raw_sql") {
-        let file = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join(path.as_str().expect("pinned raw SQL must have a path"));
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let fixture_root = root.join("tests/fixtures/conformance/v1");
+    let cases = required_array(&suite, "raw_sql");
+    assert_eq!(cases.len(), 7);
+    let mut ids = BTreeSet::new();
+    let mut expected_paths = BTreeSet::new();
+    for case in cases {
+        assert!(ids.insert(required_string(case, "id")), "duplicate case ID");
+        let path = required_string(case, "path");
+        assert!(!required_string(case, "expected_proof").is_empty());
+        assert!(!required_string(case, "dialect").is_empty());
+        expected_paths.insert(format!("tests/fixtures/conformance/v1/{path}"));
+        assert!(fixture_root.join(path).is_file(), "missing canonical SQL: {path}");
+    }
+    let paths: BTreeSet<_> = required_array(contract, "raw_sql")
+        .iter()
+        .map(|path| path.as_str().expect("SQL path").to_owned())
+        .collect();
+    assert_eq!(paths, expected_paths, "suite and coverage manifest disagree");
+    let dbt = &suite["dbt"];
+    assert_eq!(dbt["project"], "protocol_conformance");
+    assert_eq!(dbt["source_row_count"], 2);
+    let models = required_array(dbt, "models");
+    assert_eq!(models.len(), 11);
+    assert_eq!(contract["dbt_model_count"], models.len());
+    ids.clear();
+    for model in models {
+        let name = required_string(model, "name");
+        assert!(ids.insert(name), "duplicate dbt model");
+        let path = required_string(model, "path");
+        assert_eq!(path, format!("dbt_core_project/models/{name}.sql"));
+        assert!(fixture_root.join(path).is_file(), "missing canonical model: {path}");
+        let rows = required_array(model, "expected_rows");
+        assert_eq!(rows.len(), model["row_count"].as_u64().unwrap() as usize);
+        assert!(!required_string(model, "snapshot_expression").is_empty());
+    }
+    let seeds = required_array(dbt, "seeds");
+    assert_eq!(seeds.len(), 4);
+    assert_eq!(contract["dbt_source_seed_count"], seeds.len());
+    for seed in seeds {
+        let seed = seed.as_str().expect("seed name");
         assert!(
-            file.is_file(),
-            "pinned fixture is missing: {}",
-            file.display()
+            fixture_root.join("dbt_core_project/seeds").join(seed).is_file(),
+            "missing canonical seed: {seed}"
         );
     }
-    assert_eq!(pinned["dbt_model_count"], 11);
-    assert_eq!(pinned["dbt_source_seed_count"], 4);
     assert_eq!(
-        pinned["sql_tdg_downstream_generator_signoff"],
+        contract["sql_tdg_downstream_generator_signoff"],
         "pending_TASK_31_35_36"
     );
-    assert_eq!(pinned["protocol_release_gate"], "blocked_TASK_91");
-    assert!(!required_array(pinned, "residual_scope").is_empty());
-    for path in required_array(pinned, "oracle_evidence") {
-        let file = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join(path.as_str().expect("proof evidence is a path"));
-        assert!(
-            file.is_file(),
-            "pinned evidence is missing: {}",
-            file.display()
-        );
+    assert_eq!(contract["protocol_release_gate"], "blocked_TASK_91");
+    assert!(!required_array(contract, "residual_scope").is_empty());
+    for path in required_array(contract, "oracle_evidence") {
+        let file = root.join(path.as_str().expect("proof evidence path"));
+        assert!(file.is_file(), "missing proof evidence: {}", file.display());
     }
 }

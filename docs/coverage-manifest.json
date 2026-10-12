@@ -29,8 +29,8 @@
       "empty_named_source_set_operations",
       "distinct_and_ranked_empty_input",
       "joint_shared_empty_source_output_goals",
-      "pinned_sql_tdg_raw_fixture_zero_oracles",
-      "pinned_sql_tdg_concrete_multimodel_duckdb_terminal_oracles",
+      "protocol_conformance_raw_fixture_zero_oracles",
+      "protocol_conformance_concrete_multimodel_duckdb_terminal_oracles",
       "nested_global_aggregate_zero_row_exclusion",
       "joint_null_aware_boolean_filters",
       "exact_schema_backed_transparent_source_row_counts",
@@ -78,8 +78,8 @@
       "tests/physical_realization/joint_distributions.rs",
       "tests/physical_realization/negative_cardinality.rs",
       "tests/dbt_manifest.rs",
-      "tests/sql_tdg_pinned_dbt_e2e.rs",
-      "tests/sql_tdg_dialect_laws.rs",
+      "tests/protocol_conformance_dbt_e2e.rs",
+      "tests/protocol_conformance_dialect_laws.rs",
       "docs/tdg-certification.md",
       "docs/protocol.md"
     ],
@@ -114,21 +114,22 @@
     "next_dependency_ready_after_TASK_99_merge": "TASK-100",
     "closure_rule": "TASK-68 remains In Progress until TASK-93..100 are Done and all six parent acceptance criteria are verified; release TASK-91 remains blocked independently."
   },
-  "task_99_upstream_fixture_contract": {
+  "task_99_protocol_conformance_contract": {
     "owner": "TASK-99",
+    "authority": "phdah/sql-semantic-protocol",
+    "suite_version": 1,
+    "suite_manifest": "tests/fixtures/conformance/v1/suite.json",
     "protocol_fixture_certification": "done_concrete_oracles_and_typed_residuals",
     "next_task": "TASK-100",
-    "upstream_repo": "phdah/sql-tdg",
-    "upstream_git_sha": "90ec0e12a2d5cd2c1294556336fc947e176c9db9",
-    "source_directory": "tests/fixtures/sql_tdg",
+    "source_directory": "tests/fixtures/conformance/v1",
     "raw_sql": [
-      "tests/fixtures/sql_tdg/advanced_pipeline.sql",
-      "tests/fixtures/sql_tdg/advanced_boundary.sql",
-      "tests/fixtures/sql_tdg/set_operations.sql",
-      "tests/fixtures/sql_tdg/raw_sql/window_ranked.sql",
-      "tests/fixtures/sql_tdg/raw_sql/insert_workflow.sql",
-      "tests/fixtures/sql_tdg/raw_sql/unsupported_exists.sql",
-      "tests/fixtures/sql_tdg/raw_sql/range_sampling.sql"
+      "tests/fixtures/conformance/v1/advanced_pipeline.sql",
+      "tests/fixtures/conformance/v1/advanced_boundary.sql",
+      "tests/fixtures/conformance/v1/set_operations.sql",
+      "tests/fixtures/conformance/v1/raw_sql/window_ranked.sql",
+      "tests/fixtures/conformance/v1/raw_sql/insert_workflow.sql",
+      "tests/fixtures/conformance/v1/raw_sql/unsupported_exists.sql",
+      "tests/fixtures/conformance/v1/raw_sql/range_sampling.sql"
     ],
     "dbt_model_count": 11,
     "dbt_source_seed_count": 4,
@@ -141,12 +142,12 @@
       "unproved_general_joined_aggregate_positive_generation",
       "unproved_correlated_exists_arbitrary_physical_population",
       "unproved_general_ranked_output_distribution",
-      "uncommitted_upstream_update_delete_merge_ctas_workloads"
+      "unverified_generator_update_delete_merge_ctas_workloads"
     ],
     "oracle_evidence": [
-      "tests/sql_tdg_physical.rs",
-      "tests/sql_tdg_pinned_dbt_e2e.rs",
-      "tests/sql_tdg_dialect_laws.rs",
+      "tests/protocol_conformance_physical.rs",
+      "tests/protocol_conformance_dbt_e2e.rs",
+      "tests/protocol_conformance_dialect_laws.rs",
       "tests/physical_write_states.rs",
       "tests/physical_write_adapter_parity.rs",
       "docs/tdg-certification.md"

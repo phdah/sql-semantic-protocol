@@ -32,7 +32,7 @@ Certify actual pinned sql-tdg raw-SQL/dbt fixture shapes with the canonical prot
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [x] #1 Pin and enumerate exact committed sql-tdg multi-layer, join/group/window/set and scripted DML/DDL fixture sources, keeping a reproducible upstream SHA and shape inventory.
+- [x] #1 Adopt and enumerate multi-layer, join/group/window/set and scripted DML/DDL fixture shapes as a protocol-owned versioned conformance suite, reproducible by protocol Git SHA; retain the original donor SHA only as historical provenance.
 - [x] #2 Produce deterministic source-level constructive plans for all in-scope feasible fixture outcomes and typed impossible/residual diagnostics for unproved shapes, without consumer-side SQL reparsing.
 - [x] #3 Run complete DuckDB pipeline oracles with physically inserted input rows; verify all jointly targeted terminal counts, distributions and deliberate rejection/nonmembership, including NULLs and duplicates.
 - [x] #4 Compare canonical semantics across all supported dialects where sqlparser accepts equivalent fixture forms and check raw SQL versus dbt artifact/catalog adapter parity.
@@ -47,40 +47,25 @@ Certify actual pinned sql-tdg raw-SQL/dbt fixture shapes with the canonical prot
 - **Scope boundary:** Other TASK-70..91 work still owns individual missing operator variants, exhaustive conformance, the downstream generator, and protocol 3.0.0 release sign-off.
 
 
-## Pinned executable certification evidence (2026-10-12)
+## Canonical conformance certification (2026-10-12)
 
-The PR pins sql-tdg revision `90ec0e12a2d5cd2c1294556336fc947e176c9db9`
-under `tests/fixtures/sql_tdg/`, including all seven committed raw SQL
-fixtures, all eleven dbt model SQL files and four dbt seed relations. The
-pinned corpus is exercised by `tests/sql_tdg_physical.rs` and the independent
-`tests/sql_tdg_pinned_dbt_e2e.rs` DuckDB/dbt integration gate invoked by
-`make dbt-e2e`. Exact physical proof and residual boundaries are recorded
-in `docs/tdg-certification.md` and the executable coverage manifest.
+The protocol **owns** `tests/fixtures/conformance/v1/`, including seven raw SQL
+scripts, eleven dbt models, four physical source seeds and the portable
+machine-readable `suite.json` with expected outcomes. The initial examples
+came from sql-tdg commit `90ec0e12a2d5cd2c1294556336fc947e176c9db9`,
+but this is historical provenance. There is no consumer repo pin or import;
+consumers pin a **protocol** Git SHA or published release.
 
-**Closure guard:** Do not convert a DuckDB example with a residual upstream
-physical plan into a general constructive certificate. The original pinned
-upstream revision does not commit UPDATE/DELETE/MERGE/CTAS scripts; those
-operator-level source-state laws are tested here, while downstream generated
-script coverage remains owned by sql-tdg TASK-31/36 and protocol TASK-91.
+`tests/protocol_conformance_physical.rs` checks sound source construction,
+NULLs, duplicates, rejection and ordered INSERT state;
+`tests/protocol_conformance_dialect_laws.rs` checks shared canonical meaning.
+`make dbt-e2e` runs the canonical dbt project and
+`tests/protocol_conformance_dbt_e2e.rs` checks the eleven outputs against
+`suite.json` row counts and value snapshots, source identity, adapter parity
+and typed residuals/contradictions.
 
-## Final TASK-99 proof handoff
-
-All five TASK-99 criteria are covered by PR #105. The pinned upstream
-commit is the sole SQL/dbt fixture reference. The concrete dbt pipeline
-seeds all four source tables once and checks exact row counts and value
-snapshots for each of eleven terminals, including deliberate rejection and
-bag duplicates; the upstream insert script is checked against an exact
-typed before/after physical state. Cross-dialect canonical operator outcomes
-are checked by `tests/sql_tdg_dialect_laws.rs` wherever the parser accepts
-the equivalent form. `tests/sql_tdg_pinned_dbt_e2e.rs` checks source-to-model
-graph identity, direct SQL versus dbt adapter zero-row proof parity, typed
-positive residuals and exact contradictions. Normal, no-default-feature and
-dbt Core CI are required gates.
-
-**Deliberately not certified:** general positive joined/grouped/ranked
-generation with incomplete upstream physical construction, arbitrary
-correlated EXISTS source populations, absent upstream scripted
-UPDATE/DELETE/MERGE/CTAS fixture files, and sql-tdg's own randomized
-multi-seed rejection/output snapshots. These are explicitly residual or
-downstream-owned by TASK-100, TASK-89/91 and sql-tdg TASK-31/35/36, not
-silent feasibility claims. TASK-68 remains In Progress and TASK-100 is next.
+**Closure guard:** Successful parsing and executable DuckDB examples do not
+prove arbitrary constructive physical-source feasibility. General joined,
+grouped, ranked or correlated outputs and randomized downstream generator
+fixtures remain residual or downstream-owned by sql-tdg TASK-31/35/36 and
+protocol TASK-89/91. TASK-68 remains In Progress; TASK-100 is next.

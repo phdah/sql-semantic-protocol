@@ -1,89 +1,97 @@
-# TASK-99: sql-tdg pinned physical-source fixture certification
+# Protocol-owned SQL conformance suite (TASK-99)
 
-## Immutable source corpus
+## Ownership and versioning
 
-The authoritative fixture source is `phdah/sql-tdg` at commit
-`90ec0e12a2d5cd2c1294556336fc947e176c9db9`. The copied files under
-`tests/fixtures/sql_tdg/` are byte-for-byte snapshots, never generated
-equivalents. They must be changed only when the pinned upstream revision is
-explicitly advanced and all output oracles are reviewed again.
+**The canonical suite belongs to `phdah/sql-semantic-protocol`.** Its
+machine-readable entrypoint is
+[`tests/fixtures/conformance/v1/suite.json`](../tests/fixtures/conformance/v1/suite.json).
+The `schema_version: 1` identifies the suite manifest format, not the emitted
+protocol JSON version. The protocol release or **protocol Git commit SHA** is
+the reproducible source of truth for the fixtures, expected outcomes and API.
+Consumers pin that protocol revision; the protocol never pins a consumer.
 
-| Family | Committed upstream fixture | Protocol check |
-| --- | --- | --- |
-| Multi-parent joined GROUP/HAVING | `advanced_pipeline.sql` | `tests/sql_tdg_physical.rs`: zero DAG, positive/rejected DuckDB |
-| Joined boundary | `advanced_boundary.sql` | zero DAG, positive DuckDB |
-| UNION ALL, UNION, INTERSECT, EXCEPT, DISTINCT, LIMIT | `set_operations.sql` | zero membership and duplicate/NULL DuckDB |
-| Ranking/QUALIFY | `raw_sql/window_ranked.sql` | ranked physical DuckDB and NULL/duplicate exclusion |
-| Ordered INSERT SELECT | `raw_sql/insert_workflow.sql` | exact typed before/after row bag and DuckDB |
-| Correlated EXISTS | `raw_sql/unsupported_exists.sql` | physical dependency graph and DuckDB nonmembership |
-| Typed inclusive interval | `raw_sql/range_sampling.sql` | full exact source count, all 14 dialects, DuckDB negative exclusion |
-| dbt source and producer DAG | `dbt_core_project/models/*.sql` | eleven committed models, direct parsing, canonical dbt graph, complete DuckDB output snapshots |
-| dbt source population | `dbt_core_project/seeds/*.csv` | complete four-table source initialization with duplicate output in union |
-| dbt catalog and declared model identity | `dbt_core_project/models/sources.yml` | compiled manifest and warehouse catalog metadata |
+The initial SQL/dbt examples were adopted from `phdah/sql-tdg` at commit
+`90ec0e12a2d5cd2c1294556336fc947e176c9db9` as *historical provenance
+only*. This is not a maintained import, a CI dependency, or an authority over
+expected semantics. New cases and corrected expectations are authored and
+reviewed here, with ordinary protocol Git history.
 
-The first three SQL snapshots predate TASK-99 and live directly under `tests/fixtures/sql_tdg/`. The other four raw SQL snapshots live under its `raw_sql/` subdirectory. All file paths are enforced by `tests/coverage_manifest.rs`.
+| Suite asset | What is certified |
+| --- | --- |
+| `v1/advanced_pipeline.sql` | Multi-parent joined GROUP/HAVING, jointly empty physical sources and a concrete positive/rejected DuckDB example |
+| `v1/advanced_boundary.sql` | Joined boundaries and typed positive residual |
+| `v1/set_operations.sql` | UNION ALL, UNION, INTERSECT, EXCEPT, DISTINCT, LIMIT, NULLs and duplicate multiplicity |
+| `v1/raw_sql/window_ranked.sql` | Ranking/QUALIFY with excluded NULL/duplicate sources |
+| `v1/raw_sql/insert_workflow.sql` | Ordered INSERT SELECT, exact typed before/after source-row state |
+| `v1/raw_sql/unsupported_exists.sql` | Correlated EXISTS dependency, concrete inclusion and NULL nonmembership |
+| `v1/raw_sql/range_sampling.sql` | Inclusive interval bounds, positive physical counts and negative exclusions |
+| `v1/dbt_core_project/models/*.sql` | Eleven dbt models, canonical dbt graph and complete terminal value snapshots |
+| `v1/dbt_core_project/seeds/*.csv` | Four materialized physical input bags, including duplicate output witnesses |
+| `v1/dbt_core_project/models/sources.yml` | dbt source metadata, manifest and warehouse catalog adapters |
 
-The dbt fixture has 11 exact models: `stg_orders`, `stg_customers`,
-`enriched_orders`, `aggregate_summary`, `ranked_orders`,
-`subquery_orders`, `unioned_orders`, `derived_orders`,
-`final_orders`, `boundary_final_orders`, and
-`independent_return_summary`. Source files and seeds are unchanged.
+The versioned `suite.json` lists seven SQL cases by stable ID, family, SQL path,
+dialect and expected proof classification, and 11 dbt models with concrete
+expected row counts and SQL expressions for sorted terminal value snapshots.
+It also enumerates seed paths, source population counts and release gates.
+Expected output expressions are **DuckDB oracle projections**, not instructions
+for consumers to reparse SQL or reconstruct semantic proofs.
 
-## Exactness boundary
+## Running and consuming the suite
 
-A DuckDB row snapshot proves the result for *that concrete complete source
-population*, not constructive feasibility of every requested distribution.
-Only canonical `WitnessDirection::Feasible` /
-`PhysicalWriteStatePlan::Feasible` cases are source-plan-certified.
-`Residual` means source generation must fail closed for that requested goal;
-`Impossible` is reserved for a proved contradiction. A successful
-example must never promote a residual physical plan to a generic feasible
-claim.
+From the protocol repository:
 
-- Verified exact classes include closed-world all-empty multi-parent
-  terminal goals, source-backed range counts, NULL/duplicate-preserving
-  direct source states, and pinned INSERT SELECT mutation state.
-- A complete multi-parent positive aggregate, ranked/joined window
-  distribution, and correlated subquery population can execute on the
-  pinned seeds, but may still be **residual** if the canonical planner does
-  not supply a complete physical construction. They are **not** claimed as
-  accepted arbitrary generator shapes.
-- All terminal outputs and rejected/nonmember cases are independently
-  observed in DuckDB, with source rows materialized first. This is an
-  oracle comparison, not a substitute for a source-level proof.
-- Cross-dialect equivalence for the shared range, INSERT, JOIN, GROUP, set, EXISTS and ROW_NUMBER shapes is enforced by `tests/sql_tdg_dialect_laws.rs`, comparing normalized canonical outcomes for every dialect that parses each SQL form. Across all exposed dialects, the universally shared range SQL must
-  parse and produce feasible source-backed count proofs. Constructs with
-  genuinely different parser boundaries need the dedicated dialect-law
-  matrix in TASK-88; no dialect equivalence is silently inferred.
+```sh
+cargo test --test protocol_conformance_physical
+cargo test --test protocol_conformance_dialect_laws
+make dbt-e2e
+```
 
-## Executable gates
+`make dbt-e2e` seeds the complete source relations, runs the actual dbt
+project, generates manifest/catalog and executes
+`tests/protocol_conformance_dbt_e2e.rs`. The test compares each model to
+the **machine-readable suite expectations**, including counts, value
+snapshots, NULL rejection and UNION ALL multiplicities.
 
-Run `cargo test --test sql_tdg_physical` for the pinned raw SQL and
-`make dbt-e2e` for the actual committed dbt project, manifest,
-catalog and complete DuckDB DAG snapshots. The latter runs
-`tests/sql_tdg_pinned_dbt_e2e.rs` after dbt seed, run and docs generate.
-The normal `cargo test` does not invoke the ignored dbt integration test,
-which depends on the external dbt Core toolchain.
+For **sql-tdg or any other consumer**:
 
-Scripted write/DDL operator witnesses outside the one committed upstream
-`insert_workflow.sql` are governed by protocol tests
-`tests/physical_write_states.rs`,
-`tests/physical_write_adapter_parity.rs` and
-`tests/ddl_producers.rs`, with source-independent typed snapshots
-introduced in TASK-98. The original sql-tdg source revision does not
-contain committed standalone UPDATE/DELETE/MERGE/CTAS scripts.
-Their *generator* end-to-end acceptance therefore remains separately
-pending TASK-31/36: passing the protocol operator oracles cannot be
-reinterpreted as a passing generated multi-step workload.
+1. Pin `phdah/sql-semantic-protocol` by the same Git SHA as the protocol library
+   dependency, or a published version containing the suite.
+2. Read `tests/fixtures/conformance/v1/suite.json` and follow its relative SQL,
+   dbt model and seed paths; never treat a consumer-side copy as authoritative.
+3. Analyze each input with the protocol library (direct SQL or dbt artifacts);
+   consume its canonical outcome facts and typed `Feasible`, `Residual` or
+   `Impossible` physical plans. Do **not** reparse SQL to infer missing facts.
+4. Execute application-specific behavior against the listed physical-source
+   populations and independent DuckDB outcomes. For generated data, verify
+   actual presence, absence, counts and distributions per terminal.
+5. Fail closed on residual/unsupported construction. Successful parsing,
+   semantically correct lineage, or one executable example is **not** a
+   universal generator feasibility certificate.
 
-## Cross-repository ownership and release
+The suite is a **portable Git-versioned artifact**, not a consumer-code
+dependency, Git submodule or promise of a stable HTTP download endpoint.
+Changes to known cases, proof labels or expected outputs require review and
+passing protocol CI. New cases should extend the suite without weakening
+previously certified outcomes.
 
-TASK-99 checks protocol fixture interpretation and physical evidence;
-TASK-100 audits all TASK-68 child proofs; TASK-89 validates the broader
-cross-feature oracle; TASK-88 owns dialect variants; TASK-91 is the
-release gate. Downstream sql-tdg TASK-24..31/35/36 still needs generated
-physical-source files, randomized rejected alternatives and complete
-actual-run verification. `docs/coverage-manifest.json` retains the
-generator rows marked pending until those independent downstream oracles
-are green. Do not merge Release Please PR #79 on the strength of this
-protocol-side certification alone.
+## Exactness and release boundaries
+
+Only canonical `WitnessDirection::Feasible` or
+`PhysicalWriteStatePlan::Feasible` cases have certified complete physical
+source constructions. `Residual` requires the generator to fail closed;
+`Impossible` means a proven contradiction.
+
+Source-backed range counts, jointly empty multi-parent DAGs, source-state
+NULL/duplicates and the checked INSERT SELECT transition are exact. A
+positive joined/grouped aggregate, ranked/window distribution or correlated
+EXISTS can succeed on concrete DuckDB sources while the *general*
+constructive plan remains residual; do not upgrade examples to exact proofs.
+Other SQL dialect variants and UPDATE/DELETE/MERGE/CTAS operator-state tests
+live in focused protocol suites; generator execution of those workloads is
+separately unverified.
+
+TASK-100 audits TASK-68 proof closure; TASK-88/89 audit broader dialect and
+operator oracles; TASK-91 gates protocol 3.0.0. Downstream sql-tdg
+TASK-24..31/35/36 must independently pass randomized rejection, complete
+generated source bags and end-to-end scripted DML/DDL. None of this suite's
+protocol-side acceptance waives those release requirements.
