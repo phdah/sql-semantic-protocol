@@ -13,7 +13,7 @@ use sqlparser::dialect::PostgreSqlDialect;
 
 #[test]
 fn dbt_compiled_sql_and_direct_sql_share_canonical_write_states() {
-    const SQL: &str = "INSERT INTO warehouse.analytics.stg_orders (id,amount) SELECT id,amount FROM warehouse.raw.orders WHERE id = 2";
+    const SQL: &str = "CREATE TABLE warehouse.analytics.stg_orders AS SELECT id,amount FROM warehouse.raw.orders WHERE id = 2";
     let mut manifest: Value =
         serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
     manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
@@ -60,7 +60,6 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_write_states() {
     ];
     let initial = vec![
         PhysicalWriteState::new("warehouse.raw.orders", rows).unwrap(),
-        PhysicalWriteState::new("warehouse.analytics.stg_orders", vec![]).unwrap(),
     ];
     let plan = |bundle: &sql_semantic_protocol::AnalysisBundle| {
         physical_ordered_write_state_plan(bundle, &initial)
