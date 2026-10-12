@@ -1346,3 +1346,68 @@ fn filtered_copy_cannot_inherit_shared_except_cancellation_population() {
         .unwrap();
     assert_eq!(output, vec![0, 0]);
 }
+
+
+#[test]
+fn grouped_nonnull_count_key_proves_full_join_contributor_domains() {
+    let schema = |relation: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+        ).unwrap()
+    };
+    let schemas = [schema("l"), schema("r"), schema("joined")];
+    for &dialect in DIALECTS {
+        let b = bundle_with_schemas(
+            &[
+                "CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k",
+                "SELECT k, COUNT(k) AS n FROM joined GROUP BY k HAVING COUNT(k) >= 2",
+            ],
+            dialect, &schemas
+        );
+        let plan = physical_joint_source_plan(&b, &[(b.layers()[1].id(), 2)]);
+        let WitnessDirection::Feasible(cases) = plan.outcome() else {
+            panic!("{dialect}: COUNT(key) requires a nonnull contributor proof: {plan:?}");
+        };
+        assert!(cases.iter().any(|case| {
+            case.obligations().iter().any(|o| matches!(
+                o, WitnessObligation::JoinPopulation {
+                    pattern: JoinPopulationPattern::GroupedMatched { groups: 2 },
+                    output_rows: 4, ..
+                }
+            )) && case.obligations().iter().any(|o| matches!(
+                o, WitnessObligation::Group {
+                    aggregate: sql_semantic_protocol::GroupAggregate::CountValues,
+                    rows, non_null, ..
+                } if rows.minimum() == 2
+                    && non_null.minimum() == 2
+            ))
+        }), "{dialect}: group count must certify two nonnull contributors");
+    }
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(k INTEGER); CREATE TABLE r(k INTEGER);
+         INSERT INTO l VALUES (0),(0),(1),(1);
+         INSERT INTO r VALUES (0),(1);
+         CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k;"
+    ).unwrap();
+    let rows = db.prepare(
+        "SELECT k, COUNT(k) AS n FROM joined GROUP BY k HAVING COUNT(k) >= 2 ORDER BY k"
+    ).unwrap().query_map([], |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)))
+        .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    assert_eq!(rows, vec![(0, 2), (1, 2)]);
+
+    // COUNT(key) = 0 can be achieved by a NULL group, but it is not
+    // justified by the chosen non-NULL matched join population.
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE joined AS SELECT l.k AS k FROM l JOIN r ON l.k=r.k",
+            "SELECT k, COUNT(k) AS n FROM joined GROUP BY k HAVING COUNT(k) = 0",
+        ],
+        "postgresql", &schemas
+    );
+    assert!(matches!(
+        physical_joint_source_plan(&b, &[(b.layers()[1].id(), 1)]).outcome(),
+        WitnessDirection::Residual { .. }
+    ));
+}
