@@ -1,7 +1,5 @@
 //! Unsupported semantics and diagnostic metadata.
 
-use super::*;
-
 /// Semantic value whose precise meaning cannot currently be resolved.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnknownSemantic {

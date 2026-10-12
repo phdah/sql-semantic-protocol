@@ -4,9 +4,9 @@ use super::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct RowConditions {
-    predicates: Box<Predicates>,
-    column_domains: Vec<ColumnDomain>,
-    exactness: ConditionExactness,
+    pub(super) predicates: Box<Predicates>,
+    pub(super) column_domains: Vec<ColumnDomain>,
+    pub(super) exactness: ConditionExactness,
 }
 
 impl RowConditions {
@@ -15,7 +15,7 @@ impl RowConditions {
         mut column_domains: Vec<ColumnDomain>,
         exactness: ConditionExactness,
     ) -> Self {
-        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
+        column_domains.sort_by(|left, right| left.column().cmp(right.column()));
         Self {
             predicates: Box::new(predicates),
             column_domains,

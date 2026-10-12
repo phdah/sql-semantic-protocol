@@ -131,12 +131,12 @@ impl SetBranch {
     ) -> Self {
         Self {
             identity,
-            sources: query.sources.clone(),
-            predicates: (*query.row_conditions.predicates).clone(),
-            column_domains: query.row_conditions.column_domains.clone(),
+            sources: query.sources().to_vec(),
+            predicates: query.predicates().clone(),
+            column_domains: query.column_domains().to_vec(),
             output: query.output().clone(),
-            condition_exactness: query.row_conditions.exactness.clone(),
-            dependencies: query.dependencies.clone(),
+            condition_exactness: query.condition_exactness().clone(),
+            dependencies: query.dependencies().to_vec(),
             witness_boundary,
             empty_input_preserving: query.sources().len() == 1
                 && (query.row_preserving_projection() || query.filter_only_row_shape())

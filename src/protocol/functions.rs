@@ -159,7 +159,7 @@ pub struct CaseSourceDomainAlternative {
 
 impl CaseSourceDomainAlternative {
     pub(crate) fn new(mut column_domains: Vec<ColumnDomain>) -> Self {
-        column_domains.sort_by(|left, right| left.column.cmp(&right.column));
+        column_domains.sort_by(|left, right| left.column().cmp(right.column()));
         Self { column_domains }
     }
 
