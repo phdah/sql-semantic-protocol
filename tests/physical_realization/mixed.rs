@@ -704,7 +704,7 @@ fn nonempty_uncorrelated_exists_and_not_exists_prove_complete_physical_populatio
         schema("stage_orders", "id"),
         schema("stage_lines", "order_id"),
     ];
-    for dialect in ["generic", "postgresql", "duckdb"] {
+    for &dialect in DIALECTS {
         for (keyword, wanted) in [("EXISTS", 3_u64), ("NOT EXISTS", 0)] {
             let query = format!(
                 "SELECT o.id FROM stage_orders o WHERE {keyword} (SELECT 1 FROM stage_lines l)"
