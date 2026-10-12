@@ -151,10 +151,11 @@ fn conformance_boundary_fixture_retains_join_provenance_and_zero_rejection() {
     let enriched = layer_id(&bundle, "core_enriched");
     let plan = physical_source_plan(&bundle, enriched);
     assert!(matches!(plan.zero_output(), WitnessDirection::Feasible(_)));
-    assert!(matches!(
-        physical_row_count_plan(&bundle, enriched, 1),
-        WitnessDirection::Residual { .. }
-    ));
+    let positive = physical_row_count_plan(&bundle, enriched, 1);
+    assert!(
+        matches!(positive, WitnessDirection::Feasible(_)),
+        "filtered producer join must construct full physical sources: {positive:?}"
+    );
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
         "CREATE TABLE raw_orders(order_id INTEGER, customer_id INTEGER, amount INTEGER);
