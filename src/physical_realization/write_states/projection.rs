@@ -3,7 +3,7 @@
 use super::*;
 use super::evaluator::{eval, selected, Context};
 
-fn schema_for<'a>(bundle: &'a AnalysisBundle, relation: &str) -> StateResult<&'a RelationSchema> {
+pub(super) fn schema_for<'a>(bundle: &'a AnalysisBundle, relation: &str) -> StateResult<&'a RelationSchema> {
     bundle
         .source_schemas()
         .iter()
@@ -11,7 +11,7 @@ fn schema_for<'a>(bundle: &'a AnalysisBundle, relation: &str) -> StateResult<&'a
         .ok_or_else(|| residual_gap(PhysicalWriteStateGap::MissingSchema, format!("missing schema for {relation}")))
 }
 
-fn evaluate_simple_select(
+pub(super) fn evaluate_simple_select(
     _bundle: &AnalysisBundle,
     query: &QueryStatement,
     states: &BTreeMap<String, PhysicalWriteState>,
