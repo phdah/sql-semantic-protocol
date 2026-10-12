@@ -10,9 +10,9 @@ explicitly advanced and all output oracles are reviewed again.
 
 | Family | Committed upstream fixture | Protocol check |
 | --- | --- | --- |
-| Multi-parent joined GROUP/HAVING | `raw_sql/advanced_pipeline.sql` | `tests/sql_tdg_physical.rs`: zero DAG, positive/rejected DuckDB |
-| Joined boundary | `raw_sql/advanced_boundary.sql` | zero DAG, positive DuckDB |
-| UNION ALL, UNION, INTERSECT, EXCEPT, DISTINCT, LIMIT | `raw_sql/set_operations.sql` | zero membership and duplicate/NULL DuckDB |
+| Multi-parent joined GROUP/HAVING | `advanced_pipeline.sql` | `tests/sql_tdg_physical.rs`: zero DAG, positive/rejected DuckDB |
+| Joined boundary | `advanced_boundary.sql` | zero DAG, positive DuckDB |
+| UNION ALL, UNION, INTERSECT, EXCEPT, DISTINCT, LIMIT | `set_operations.sql` | zero membership and duplicate/NULL DuckDB |
 | Ranking/QUALIFY | `raw_sql/window_ranked.sql` | ranked physical DuckDB and NULL/duplicate exclusion |
 | Ordered INSERT SELECT | `raw_sql/insert_workflow.sql` | exact typed before/after row bag and DuckDB |
 | Correlated EXISTS | `raw_sql/unsupported_exists.sql` | physical dependency graph and DuckDB nonmembership |
@@ -20,6 +20,8 @@ explicitly advanced and all output oracles are reviewed again.
 | dbt source and producer DAG | `dbt_core_project/models/*.sql` | eleven committed models, direct parsing, canonical dbt graph, complete DuckDB output snapshots |
 | dbt source population | `dbt_core_project/seeds/*.csv` | complete four-table source initialization with duplicate output in union |
 | dbt catalog and declared model identity | `dbt_core_project/models/sources.yml` | compiled manifest and warehouse catalog metadata |
+
+The first three SQL snapshots predate TASK-99 and live directly under `tests/fixtures/sql_tdg/`. The other four raw SQL snapshots live under its `raw_sql/` subdirectory. All file paths are enforced by `tests/coverage_manifest.rs`.
 
 The dbt fixture has 11 exact models: `stg_orders`, `stg_customers`,
 `enriched_orders`, `aggregate_summary`, `ranked_orders`,
@@ -49,7 +51,7 @@ claim.
 - All terminal outputs and rejected/nonmember cases are independently
   observed in DuckDB, with source rows materialized first. This is an
   oracle comparison, not a substitute for a source-level proof.
-- Across all exposed dialects, the universally shared range SQL must
+- Cross-dialect equivalence for the shared range, INSERT, JOIN, GROUP, set, EXISTS and ROW_NUMBER shapes is enforced by `tests/sql_tdg_dialect_laws.rs`, comparing normalized canonical outcomes for every dialect that parses each SQL form. Across all exposed dialects, the universally shared range SQL must
   parse and produce feasible source-backed count proofs. Constructs with
   genuinely different parser boundaries need the dedicated dialect-law
   matrix in TASK-88; no dialect equivalence is silently inferred.
