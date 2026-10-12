@@ -60,12 +60,18 @@ pub(crate) fn domain_admits_constraint_value(
                     Some(false) => {}
                 }
             }
-            if unknown { None } else { Some(false) }
+            if unknown {
+                None
+            } else {
+                Some(false)
+            }
         }
         ValueDomain::Set(set) => {
             let mut unknown = false;
             let present = set.values().iter().any(|accepted| {
-                if accepted == &literal || compare_literals(&literal, accepted) == Some(Ordering::Equal) {
+                if accepted == &literal
+                    || compare_literals(&literal, accepted) == Some(Ordering::Equal)
+                {
                     true
                 } else {
                     if !matches!(
@@ -74,7 +80,8 @@ pub(crate) fn domain_admits_constraint_value(
                             | (LiteralValue::Text(_), LiteralValue::Text(_))
                             | (LiteralValue::Null, _)
                             | (_, LiteralValue::Null)
-                    ) && compare_literals(&literal, accepted).is_none() {
+                    ) && compare_literals(&literal, accepted).is_none()
+                    {
                         unknown = true;
                     }
                     false
@@ -90,8 +97,6 @@ pub(crate) fn domain_admits_constraint_value(
         }
     }
 }
-
-
 
 pub(crate) fn derive_column_domains(
     predicates: &Predicates,
@@ -1555,17 +1560,11 @@ mod constraint_frequency_membership_tests {
     #[test]
     fn integer_range_membership_observes_exact_bound_inclusivity() {
         let lower = Bound::new(
-            LiteralExpression::new(
-                LiteralType::Integer,
-                LiteralValue::Number("10".to_string()),
-            ),
+            LiteralExpression::new(LiteralType::Integer, LiteralValue::Number("10".to_string())),
             false,
         );
         let upper = Bound::new(
-            LiteralExpression::new(
-                LiteralType::Integer,
-                LiteralValue::Number("20".to_string()),
-            ),
+            LiteralExpression::new(LiteralType::Integer, LiteralValue::Number("20".to_string())),
             true,
         );
         let domain = ValueDomain::ranges(vec![ValueRange::new(Some(lower), Some(upper))]);
