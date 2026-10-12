@@ -806,3 +806,57 @@ fn nonempty_membership_with_correlations_key_comparisons_or_inner_filters_stays_
         );
     }
 }
+
+#[test]
+fn nonempty_exists_jointly_reconciles_outer_and_inner_source_goals() {
+    let schema = |relation: &str, column: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let schemas = [
+        schema("orders", "id"),
+        schema("lines", "order_id"),
+        schema("stage_orders", "id"),
+        schema("stage_lines", "order_id"),
+    ];
+    let b = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage_orders AS SELECT id FROM orders",
+            "CREATE TABLE stage_lines AS SELECT order_id FROM lines",
+            "SELECT o.id FROM stage_orders o WHERE EXISTS (SELECT 1 FROM stage_lines l)",
+            "SELECT id FROM orders",
+            "SELECT order_id FROM lines",
+        ],
+        "duckdb",
+        &schemas,
+    );
+    let ids = b.layers().iter().map(|layer| layer.id()).collect::<Vec<_>>();
+    let valid = physical_joint_source_plan(&b, &[(ids[2], 3), (ids[3], 3), (ids[4], 1)]);
+    assert!(
+        matches!(valid.outcome(), WitnessDirection::Feasible(_)),
+        "a complete membership population should satisfy transparent readers: {valid:?}"
+    );
+    let other_count = physical_joint_source_plan(&b, &[(ids[2], 3), (ids[3], 3), (ids[4], 2)]);
+    assert!(
+        matches!(other_count.outcome(), WitnessDirection::Residual { .. }),
+        "one sufficient nonempty inner example does not imply that every alternative is impossible"
+    );
+
+    let same_source = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage_orders AS SELECT id FROM orders",
+            "CREATE TABLE stage_lines AS SELECT id AS order_id FROM orders",
+            "SELECT o.id FROM stage_orders o WHERE EXISTS (SELECT 1 FROM stage_lines l)",
+        ],
+        "duckdb",
+        &schemas,
+    );
+    let repeated = physical_joint_source_plan(&same_source, &[(same_source.layers()[2].id(), 3)]);
+    assert!(
+        matches!(repeated.outcome(), WitnessDirection::Residual { .. }),
+        "two producer aliases of one physical population must not be counted independently"
+    );
+}
