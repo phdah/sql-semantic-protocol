@@ -34,11 +34,36 @@ impl WriteKind {
     }
 }
 
+/// Physical lifecycle operation associated with a complete relation definition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WriteDefinitionMode {
+    /// Create a new table from a query. Existing targets are an error.
+    CreateTable,
+    /// Replace an existing table with the query result.
+    ReplaceTable,
+    /// Define a logical view, without assuming physical storage.
+    CreateView,
+    /// Replace a logical view, without assuming physical storage.
+    ReplaceView,
+}
+
+impl WriteDefinitionMode {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::CreateTable => "create_table",
+            Self::ReplaceTable => "replace_table",
+            Self::CreateView => "create_view",
+            Self::ReplaceView => "replace_view",
+        }
+    }
+}
+
 /// Parser-independent semantics for a write into a named relation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WriteOperation {
     target: String,
     target_alias: Option<String>,
+    definition_mode: Option<WriteDefinitionMode>,
     kind: WriteKind,
     target_columns: Vec<String>,
     match_condition: Option<Predicate>,
@@ -49,10 +74,11 @@ pub struct WriteOperation {
 }
 
 impl WriteOperation {
-    pub(crate) fn definition(target: String) -> Self {
+    pub(crate) fn definition(target: String, mode: WriteDefinitionMode) -> Self {
         Self {
             target,
             target_alias: None,
+            definition_mode: Some(mode),
             kind: WriteKind::Definition,
             target_columns: Vec::new(),
             match_condition: None,
@@ -67,6 +93,7 @@ impl WriteOperation {
         Self {
             target,
             target_alias: None,
+            definition_mode: None,
             kind: WriteKind::Append,
             target_columns,
             match_condition: None,
@@ -86,6 +113,7 @@ impl WriteOperation {
         Self {
             target,
             target_alias,
+            definition_mode: None,
             kind: WriteKind::ConditionalMutation,
             target_columns: Vec::new(),
             match_condition: Some(match_condition),
@@ -106,6 +134,7 @@ impl WriteOperation {
         Self {
             target,
             target_alias,
+            definition_mode: None,
             kind: WriteKind::Update,
             target_columns: Vec::new(),
             match_condition: None,
@@ -125,6 +154,7 @@ impl WriteOperation {
         Self {
             target,
             target_alias,
+            definition_mode: None,
             kind: WriteKind::Delete,
             target_columns: Vec::new(),
             match_condition: None,
@@ -143,6 +173,11 @@ impl WriteOperation {
     /// SQL qualifier for the target when it was explicitly aliased.
     pub fn target_alias(&self) -> Option<&str> {
         self.target_alias.as_deref()
+    }
+
+    /// Exact DDL lifecycle kind, when represented.
+    pub fn definition_mode(&self) -> Option<WriteDefinitionMode> {
+        self.definition_mode
     }
 
     /// Return how the write changes the target relation.
