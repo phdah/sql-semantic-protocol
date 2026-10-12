@@ -15,23 +15,27 @@ fn exact_group_count_filter_truth(
     use crate::protocol::{AggregateArgument, ComparisonOperator, LiteralType, LiteralValue};
     match predicate {
         Predicate::And(and) => {
-            let truths = and.operands().iter()
-                .map(|item| exact_group_count_filter_truth(
-                    bundle, grouped, relation, item, count
-                ))
+            let truths = and
+                .operands()
+                .iter()
+                .map(|item| exact_group_count_filter_truth(bundle, grouped, relation, item, count))
                 .collect::<Option<Vec<_>>>()?;
             Some(truths.into_iter().all(|truth| truth))
         }
         Predicate::Or(or) => {
-            let truths = or.operands().iter()
-                .map(|item| exact_group_count_filter_truth(
-                    bundle, grouped, relation, item, count
-                ))
+            let truths = or
+                .operands()
+                .iter()
+                .map(|item| exact_group_count_filter_truth(bundle, grouped, relation, item, count))
                 .collect::<Option<Vec<_>>>()?;
             Some(truths.into_iter().any(|truth| truth))
         }
         Predicate::Not(not) => Some(!exact_group_count_filter_truth(
-            bundle, grouped, relation, not.operand(), count
+            bundle,
+            grouped,
+            relation,
+            not.operand(),
+            count,
         )?),
         Predicate::Comparison(comparison) => {
             let (column, literal, reversed) = match (comparison.left(), comparison.right()) {
@@ -52,7 +56,10 @@ fn exact_group_count_filter_truth(
                 return None;
             };
             let threshold = number.parse::<i128>().ok()?;
-            let mut projected = grouped.output().columns().iter()
+            let mut projected = grouped
+                .output()
+                .columns()
+                .iter()
                 .filter(|item| item.name() == column.name());
             let output = projected.next()?;
             if projected.next().is_some() {
@@ -67,9 +74,13 @@ fn exact_group_count_filter_truth(
                 return None;
             }
             let reference = crate::protocol::ColumnRef::new(
-                Some(relation.to_string()), column.name().to_string()
+                Some(relation.to_string()),
+                column.name().to_string(),
             );
-            let schema = bundle.source_schemas().iter().find(|s| s.relation() == relation)?;
+            let schema = bundle
+                .source_schemas()
+                .iter()
+                .find(|s| s.relation() == relation)?;
             let bounds = physical_integer_evidence(schema, &reference)?;
             let value = i128::from(count);
             if bounds.minimum > value || bounds.maximum < value {
@@ -159,9 +170,8 @@ pub(super) fn physical_group_aggregate_filter_count_plan(
     };
     if witnessed_groups != groups
         || counts.is_empty()
-        || exact_group_count_filter_truth(
-            bundle, grouped, relation, predicate, rows_per_group
-        )? != (wanted > 0)
+        || exact_group_count_filter_truth(bundle, grouped, relation, predicate, rows_per_group)?
+            != (wanted > 0)
     {
         return None;
     }
