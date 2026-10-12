@@ -33,6 +33,17 @@ impl OutputValueCount {
     }
 }
 
+/// Equality of complete histograms ignores zero-count bucket decorations.
+/// Both inputs are sorted by canonical scalar value.
+pub(crate) fn equivalent_frequencies(
+    left: &[OutputValueCount],
+    right: &[OutputValueCount],
+) -> bool {
+    left.iter()
+        .filter(|bucket| bucket.rows() > 0)
+        .eq(right.iter().filter(|bucket| bucket.rows() > 0))
+}
+
 /// A complete, typed frequency distribution for one projected output column.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct OutputDistribution {
@@ -339,6 +350,41 @@ fn assess_goal(
                     layer_id: goal.layer_id.clone(),
                     column: distribution.column().to_string(),
                 })
+            }
+        }
+    }
+
+    // Direct aliases of the same semantic input are equal on every output row,
+    // even for NULL. Distinct requested complete histograms cannot both hold.
+    if let Some(query) = query {
+        for (index, left) in goal.distributions().iter().enumerate() {
+            let Some(left_source) = query
+                .output()
+                .columns()
+                .iter()
+                .find(|column| column.name() == left.column())
+                .and_then(|column| column.plain_copy_source())
+            else {
+                continue;
+            };
+            for right in goal.distributions().iter().skip(index + 1) {
+                let right_source = query
+                    .output()
+                    .columns()
+                    .iter()
+                    .find(|column| column.name() == right.column())
+                    .and_then(|column| column.plain_copy_source());
+                if right_source == Some(left_source)
+                    && !equivalent_frequencies(left.values(), right.values())
+                {
+                    return Ok(assessed(
+                        goal,
+                        OutcomeGoalStatus::Unsatisfiable,
+                        "two aliases of one source column require identical complete histograms",
+                        0,
+                        None,
+                    ));
+                }
             }
         }
     }
