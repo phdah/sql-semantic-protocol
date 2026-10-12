@@ -95,16 +95,22 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
             .unwrap_or_else(|error| panic!("compiled {name} is invalid SQL: {error}"));
         let _ = layer_id(&bundle, name);
     }
-    let db_path =
-        std::env::var("DBT_E2E_DATABASE").expect("Makefile must select the conformance dbt database");
+    let db_path = std::env::var("DBT_E2E_DATABASE")
+        .expect("Makefile must select the conformance dbt database");
     let db = Connection::open(db_path).expect("dbt-generated DuckDB fixture");
     // Shared versioned suite expectations are the only output oracle source.
     for (index, expectation) in expectations.iter().enumerate() {
         let name = expectation["name"].as_str().expect("model name");
         assert_eq!(name, MODELS[index], "model inventory has drifted");
         let expected = expectation["row_count"].as_i64().expect("row count");
-        assert_eq!(count(&db, name), expected, "{name}: whole-project target changed");
-        let expression = expectation["snapshot_expression"].as_str().expect("snapshot projection");
+        assert_eq!(
+            count(&db, name),
+            expected,
+            "{name}: whole-project target changed"
+        );
+        let expression = expectation["snapshot_expression"]
+            .as_str()
+            .expect("snapshot projection");
         let query = format!("SELECT {expression} FROM raw_analytics.\"{name}\" ORDER BY 1");
         let mut statement = db.prepare(&query).expect("snapshot query");
         let observed = statement
@@ -118,12 +124,18 @@ fn conformance_conformance_dbt_project_certifies_all_models_and_fail_closed_plan
             .iter()
             .map(|row| row.as_str().expect("expected value").to_owned())
             .collect::<Vec<_>>();
-        assert_eq!(observed, expected_rows, "{name}: complete physical output changed");
+        assert_eq!(
+            observed, expected_rows,
+            "{name}: complete physical output changed"
+        );
     }
     for relation in ["orders", "customers", "legacy_orders", "returns"] {
         let query = format!("SELECT COUNT(*) FROM raw.{relation}");
         let rows: i64 = db.query_row(&query, [], |row| row.get(0)).unwrap();
-        assert_eq!(rows, 2, "{relation}: conformance source was not materialized");
+        assert_eq!(
+            rows, 2,
+            "{relation}: conformance source was not materialized"
+        );
     }
     let joined: (String, i64, i64) = db
         .query_row(

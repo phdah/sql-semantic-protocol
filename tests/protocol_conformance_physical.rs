@@ -71,7 +71,8 @@ fn fixture_bundle(sql: &str) -> AnalysisBundle {
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).expect("catalog");
     let input = SqlInput::inline(sql);
-    let configured = ConfiguredSqlInput::new("protocol-conformance", &input, dialect, parser.as_ref());
+    let configured =
+        ConfiguredSqlInput::new("protocol-conformance", &input, dialect, parser.as_ref());
     analyze_configured_inputs_with_catalog(&[configured], &catalog).expect("fixture analysis")
 }
 
@@ -277,7 +278,8 @@ fn conformance_set_oracles_preserve_duplicate_and_distinct_multiplicity() {
          INSERT INTO raw_c VALUES (30);",
     )
     .expect("controlled duplicate and NULL inputs");
-    conn.execute_batch(SETS).expect("protocol conformance set SQL");
+    conn.execute_batch(SETS)
+        .expect("protocol conformance set SQL");
     for (target, expected) in [
         ("set_a", 2_i64),
         ("set_b", 1),
@@ -328,12 +330,11 @@ fn source_free_set_leaf_cannot_be_erased_by_emptying_the_other_source() {
 
 #[test]
 fn conformance_corpus_has_all_seven_raw_and_eleven_dbt_model_shapes() {
-    let suite: serde_json::Value = serde_json::from_str(include_str!(
-        "fixtures/conformance/v1/suite.json"
-    ))
-    .expect("protocol-owned suite manifest");
-    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/conformance/v1");
+    let suite: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/conformance/v1/suite.json"))
+            .expect("protocol-owned suite manifest");
+    let root =
+        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/conformance/v1");
     let raw = suite["raw_sql"].as_array().expect("raw SQL cases");
     assert_eq!(raw.len(), 7);
     for case in raw {
@@ -352,7 +353,8 @@ fn conformance_corpus_has_all_seven_raw_and_eleven_dbt_model_shapes() {
     assert_eq!(seeds.len(), 4);
     for seed in seeds {
         let csv = std::fs::read_to_string(
-            root.join("dbt_core_project/seeds").join(seed.as_str().unwrap()),
+            root.join("dbt_core_project/seeds")
+                .join(seed.as_str().unwrap()),
         )
         .expect("protocol-owned seed");
         assert!(csv.lines().count() >= 3, "source has header and data");

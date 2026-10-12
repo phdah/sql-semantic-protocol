@@ -546,13 +546,19 @@ fn protocol_owned_conformance_manifest_is_portable_and_release_blocked() {
         assert!(!required_string(case, "expected_proof").is_empty());
         assert!(!required_string(case, "dialect").is_empty());
         expected_paths.insert(format!("tests/fixtures/conformance/v1/{path}"));
-        assert!(fixture_root.join(path).is_file(), "missing canonical SQL: {path}");
+        assert!(
+            fixture_root.join(path).is_file(),
+            "missing canonical SQL: {path}"
+        );
     }
     let paths: BTreeSet<_> = required_array(contract, "raw_sql")
         .iter()
         .map(|path| path.as_str().expect("SQL path").to_owned())
         .collect();
-    assert_eq!(paths, expected_paths, "suite and coverage manifest disagree");
+    assert_eq!(
+        paths, expected_paths,
+        "suite and coverage manifest disagree"
+    );
     let dbt = &suite["dbt"];
     assert_eq!(dbt["project"], "protocol_conformance");
     assert_eq!(dbt["source_row_count"], 2);
@@ -565,7 +571,10 @@ fn protocol_owned_conformance_manifest_is_portable_and_release_blocked() {
         assert!(ids.insert(name), "duplicate dbt model");
         let path = required_string(model, "path");
         assert_eq!(path, format!("dbt_core_project/models/{name}.sql"));
-        assert!(fixture_root.join(path).is_file(), "missing canonical model: {path}");
+        assert!(
+            fixture_root.join(path).is_file(),
+            "missing canonical model: {path}"
+        );
         let rows = required_array(model, "expected_rows");
         assert_eq!(rows.len(), model["row_count"].as_u64().unwrap() as usize);
         assert!(!required_string(model, "snapshot_expression").is_empty());
@@ -576,7 +585,10 @@ fn protocol_owned_conformance_manifest_is_portable_and_release_blocked() {
     for seed in seeds {
         let seed = seed.as_str().expect("seed name");
         assert!(
-            fixture_root.join("dbt_core_project/seeds").join(seed).is_file(),
+            fixture_root
+                .join("dbt_core_project/seeds")
+                .join(seed)
+                .is_file(),
             "missing canonical seed: {seed}"
         );
     }
