@@ -56,6 +56,8 @@ fn bundle_with_schemas(
     analyze_configured_inputs_with_catalog(&inputs, &catalog).expect("analysis")
 }
 
+#[path = "physical_realization/distributions.rs"]
+mod distributions;
 #[path = "physical_realization/filters.rs"]
 mod filters;
 #[path = "physical_realization/graph.rs"]
