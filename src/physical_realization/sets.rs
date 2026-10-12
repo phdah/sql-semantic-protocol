@@ -44,6 +44,14 @@ pub(super) fn physical_shared_set_cancellation_plan(
             return None;
         }
         let boundary = branch.witness_boundary()?;
+        // Column lineage alone is insufficient: a filtered named producer
+        // can drop only one arm's rows while preserving its column identity.
+        // Both full bags must read the identical lossless source population.
+        let physical_leaf =
+            physical_transparent_producer_leaf(bundle, &walker, boundary.relation())?;
+        if !walker.sources.contains(&physical_leaf) {
+            return None;
+        }
         let [column] = boundary.tuple_columns() else {
             return None;
         };
@@ -54,7 +62,7 @@ pub(super) fn physical_shared_set_cancellation_plan(
         let resolved = resolve_filter_column_with_evidence(
             bundle, &walker, target_layer_id, &input, 0, true
         )?;
-        (walker.sources.contains(resolved.relation()?)
+        (resolved.relation() == Some(physical_leaf.as_str())
             && resolved.relation() == walker.sources.iter().next().map(String::as_str))
             .then_some(resolved)
     };
