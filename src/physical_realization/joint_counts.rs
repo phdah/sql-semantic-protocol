@@ -259,8 +259,33 @@ pub(super) fn joint_nonempty_rejected_terminals(
             bounds: CountBounds::new(0, Some(0))?,
         });
     }
-    WitnessCase::new(obligations, ProofStrength::Sufficient)
-        .and_then(|case| WitnessDirection::feasible(vec![case]))
+    let populated = WitnessCase::new(obligations, ProofStrength::Sufficient)?;
+    // SQL row-preserving filters cannot synthesize rows from a wholly empty
+    // physical source. Retain this second sufficient case rather than hiding
+    // a valid zero-input construction behind the new nonempty witness.
+    let empty_boundary =
+        WitnessBoundary::new(&source, GroupBoundaryKind::Physical, targets[0].0)?;
+    let mut empty = vec![
+        WitnessObligation::Rows {
+            boundary: empty_boundary.clone(),
+            quantifier: RowQuantifier::ForAll,
+            bounds: CountBounds::new(0, Some(0))?,
+            predicate: count_tautology(),
+            closed_world: true,
+        },
+        WitnessObligation::ClosedWorld {
+            boundary: empty_boundary,
+            coverage: ClosedWorldCoverage::EntireRelation,
+        },
+    ];
+    for &(layer_id, _) in targets {
+        empty.push(WitnessObligation::OutputRows {
+            layer_id: layer_id.to_string(),
+            bounds: CountBounds::new(0, Some(0))?,
+        });
+    }
+    let empty = WitnessCase::new(empty, ProofStrength::Sufficient)?;
+    WitnessDirection::feasible(vec![populated, empty])
 }
 
 /// Evidence for direct physical signed integer comparisons. Kept identical
