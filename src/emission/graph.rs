@@ -113,4 +113,3 @@ pub(super) fn composition_diagnostic_to_value(diagnostic: &CompositionDiagnostic
 
     value
 }
-

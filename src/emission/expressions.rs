@@ -147,4 +147,3 @@ pub(super) fn residual_condition_to_value(residual: &crate::protocol::ResidualCo
 
     value
 }
-

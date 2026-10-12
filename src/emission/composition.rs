@@ -193,7 +193,9 @@ pub(super) fn composed_join_equality_to_value(equality: &crate::ComposedJoinEqua
     })
 }
 
-pub(super) fn unresolved_composed_semantics_to_value(semantics: &UnresolvedComposedSemantics) -> Value {
+pub(super) fn unresolved_composed_semantics_to_value(
+    semantics: &UnresolvedComposedSemantics,
+) -> Value {
     json!({
         "status": "unresolved",
         "reason": semantics.reason().as_str(),
@@ -204,4 +206,3 @@ pub(super) fn unresolved_composed_semantics_to_value(semantics: &UnresolvedCompo
             .collect::<Vec<_>>()
     })
 }
-

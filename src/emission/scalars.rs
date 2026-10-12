@@ -41,7 +41,9 @@ pub(super) fn function_expression_to_value(expression: &FunctionExpression) -> V
     })
 }
 
-pub(super) fn aggregate_function_expression_to_value(expression: &AggregateFunctionExpression) -> Value {
+pub(super) fn aggregate_function_expression_to_value(
+    expression: &AggregateFunctionExpression,
+) -> Value {
     json!({
         "kind": "aggregate_function",
         "name": expression.name(),
@@ -176,4 +178,3 @@ pub(super) fn diagnostic_to_value(diagnostic: &Diagnostic) -> Value {
         "message": diagnostic.message()
     })
 }
-

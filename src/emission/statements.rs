@@ -174,4 +174,3 @@ pub(super) fn write_value_to_value(value: &WriteValue) -> Value {
         "domain": value_domain_to_value(value.domain())
     })
 }
-

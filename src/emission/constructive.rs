@@ -343,4 +343,3 @@ pub(super) fn constructive_obligation_to_value(obligation: &crate::WitnessObliga
         }),
     }
 }
-

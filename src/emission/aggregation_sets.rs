@@ -32,7 +32,10 @@ pub(super) fn grouping_expression_to_value(expression: &GroupingExpression) -> V
     }
 }
 
-pub(super) fn grouping_sets_to_value(kind: &str, sets: &[Vec<crate::protocol::Expression>]) -> Value {
+pub(super) fn grouping_sets_to_value(
+    kind: &str,
+    sets: &[Vec<crate::protocol::Expression>],
+) -> Value {
     json!({
         "kind": kind,
         "sets": sets.iter()
@@ -66,7 +69,9 @@ pub(super) fn set_operation_to_value(operation: &SetOperation) -> Value {
     })
 }
 
-pub(super) fn set_witness_direction_to_value(direction: &crate::protocol::SetWitnessDirection) -> Value {
+pub(super) fn set_witness_direction_to_value(
+    direction: &crate::protocol::SetWitnessDirection,
+) -> Value {
     match direction {
         crate::protocol::SetWitnessDirection::Residual { reason, origin } => json!({
             "status": "residual",
@@ -105,4 +110,3 @@ pub(super) fn set_operand_to_value(operand: &SetOperand) -> Value {
         }
     }
 }
-

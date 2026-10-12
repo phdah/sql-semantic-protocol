@@ -71,4 +71,3 @@ pub(super) fn outcome_witness_to_value(witness: &crate::outcome_proofs::OutcomeW
         }),
     }
 }
-

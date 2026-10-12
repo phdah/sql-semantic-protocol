@@ -200,4 +200,3 @@ pub(super) fn data_type_to_value(data_type: &DataType) -> Value {
         }),
     }
 }
-

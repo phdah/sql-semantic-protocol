@@ -11,7 +11,9 @@ pub(super) fn boolean_witness_to_value(witness: &crate::BooleanWitness) -> Value
     })
 }
 
-pub(super) fn boolean_witness_direction_to_value(direction: &crate::BooleanWitnessDirection) -> Value {
+pub(super) fn boolean_witness_direction_to_value(
+    direction: &crate::BooleanWitnessDirection,
+) -> Value {
     match direction {
         crate::BooleanWitnessDirection::Exact(case) => json!({
             "status": "exact",
@@ -111,7 +113,9 @@ pub(super) fn window_witness_to_value(witness: &crate::window_witness::WindowWit
     })
 }
 
-pub(super) fn window_direction_to_value(direction: &crate::window_witness::WindowWitnessDirection) -> Value {
+pub(super) fn window_direction_to_value(
+    direction: &crate::window_witness::WindowWitnessDirection,
+) -> Value {
     match direction {
         crate::window_witness::WindowWitnessDirection::Residual { reason } => {
             json!({"status": "residual", "reason": reason})
@@ -164,4 +168,3 @@ pub(super) fn group_witness_direction_to_value(
         }),
     }
 }
-

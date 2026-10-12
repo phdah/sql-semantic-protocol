@@ -217,4 +217,3 @@ pub(super) fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
 
     value
 }
-

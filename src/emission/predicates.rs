@@ -114,4 +114,3 @@ pub(super) fn between_predicate_to_value(predicate: &BetweenPredicate) -> Value 
         "negated": predicate.negated()
     })
 }
-

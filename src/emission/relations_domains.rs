@@ -113,4 +113,3 @@ pub(super) fn relation_ref_to_value(relation: &RelationRef) -> Value {
         "alias": relation.alias()
     })
 }
-
