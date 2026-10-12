@@ -546,10 +546,17 @@ pub(super) fn physical_join_group_count_plan(
                 Some(source.name().to_string()),
                 group_key.name().to_string(),
             )],
-            aggregate: crate::group_witness::GroupAggregate::CountRows,
+            aggregate: local.aggregate()?,
             distinct: false,
-            argument: None,
+            argument: local.argument().map(|_| {
+                crate::protocol::ColumnRef::new(
+                    Some(source.name().to_string()),
+                    group_key.name().to_string(),
+                )
+            }),
             rows: bounds,
+            // All matched equijoin population keys are non-NULL, so
+            // COUNT(group_key) and COUNT(*) have equal contributors.
             non_null: bounds,
             tests: group_tests.clone(),
         });
