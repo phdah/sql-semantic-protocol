@@ -2,12 +2,11 @@
 
 use super::*;
 
-/// A complete empty inner source makes a locally exact correlated or
-/// uncorrelated EXISTS/IN membership predicate false for *every* outer row
-/// (and NOT EXISTS/NOT IN true). This is valid through transparent producer
-/// chains without pretending that a locally feasible candidate represents
-/// every row. Nonempty correlated matches require key-population proofs and
-/// retain typed residuals here.
+/// A complete empty inner source proves correlated or uncorrelated absence.
+/// One complete nonempty inner row also proves uncorrelated, unfiltered EXISTS
+/// true (and NOT EXISTS false) for all outer rows. Both constructions are
+/// valid through transparent producer chains. Nonempty correlated matches or
+/// IN key comparisons require joint key-population proofs and remain residual.
 pub(super) fn physical_empty_subquery_membership_plan(
     bundle: &AnalysisBundle,
     target_layer_id: &str,
@@ -43,20 +42,40 @@ pub(super) fn physical_empty_subquery_membership_plan(
     {
         return None;
     }
+    // The local membership direction is authoritative. An empty inner source
+    // proves every outer row's rejection/selection even for correlated IN.
+    // A *nonempty* inner source proves all-row truth only for EXISTS without
+    // correlations or nested filters. IN needs equal, non-NULL key evidence.
     let empty_selects = matches!(
         local.kind(),
         SubqueryMembershipKind::NotExists | SubqueryMembershipKind::NotIn
     );
-    if empty_selects != (wanted > 0) {
-        return None;
-    }
-    let direction = if empty_selects {
+    let (membership_case, inner_rows) = if empty_selects == (wanted > 0) {
+        (SubqueryMembershipCase::NoCandidates, 0)
+    } else {
+        if !matches!(
+            local.kind(),
+            SubqueryMembershipKind::Exists | SubqueryMembershipKind::NotExists
+        ) || local.correlations().len() != 0
+            || local.membership_key().is_some()
+            || !local.inner_column_domains().is_empty()
+            || !matches!(
+                query.predicates().where_predicate(),
+                Some(Predicate::Exists(exists))
+                    if exists.subquery().predicates().where_predicate().is_none()
+            )
+        {
+            return None;
+        }
+        (SubqueryMembershipCase::MatchingRow, 1)
+    };
+    let direction = if wanted > 0 {
         local.qualifying()
     } else {
         local.rejected()
     };
     if !matches!(direction, SubqueryMembershipDirection::Exact(cases)
-        if cases.contains(&SubqueryMembershipCase::NoCandidates))
+        if cases.contains(&membership_case))
     {
         return None;
     }
@@ -100,15 +119,15 @@ pub(super) fn physical_empty_subquery_membership_plan(
     let mut obligations = vec![WitnessObligation::Membership {
         outer: outer_row,
         inner: inner_boundary.clone(),
-        case: SubqueryMembershipCase::NoCandidates,
-        // Inner is physically empty, so no correlated key/value can
-        // be evaluated; all local domain tests are vacuous.
+        case: membership_case,
+        // Empty inner inputs make candidate conditions vacuous. Nonempty
+        // constructions are limited to unfiltered, uncorrelated EXISTS.
         correlations: Vec::new(),
         membership_key: None,
         inner_domains: Vec::new(),
         closed_world: true,
     }];
-    for (boundary, count) in [(outer_boundary, outer_rows), (inner_boundary, 0)] {
+    for (boundary, count) in [(outer_boundary, outer_rows), (inner_boundary, inner_rows)] {
         obligations.push(WitnessObligation::Rows {
             boundary: boundary.clone(),
             quantifier: RowQuantifier::ForAll,
