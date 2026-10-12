@@ -55,15 +55,16 @@ children establish the full proof obligations.
 
 **Next task after PR #92 merges: TASK-93.** When asked to work on the "next
 task", take the first unfinished, dependency-ready child in this queue **before
-unrelated backlog TASK-70..92**. Child PRs target `main` independently and are
-merged only after each child's own acceptance criteria and CI pass. The
-parent's dependencies on the children are for closure, **not** prerequisites
-of the children. Child tasks must never depend on TASK-68, which would create a
+unrelated backlog TASK-70..92**. Child PRs target `main` independently. A child may land multiple
+CI-verified, independently safe increments while remaining In Progress; the
+child is Done only after all of its own acceptance criteria pass. Such
+increments do **not** unblock the next child. The parent's dependencies on
+the children are for closure, **not** prerequisites of the children. Child tasks must never depend on TASK-68, which would create a
 cycle.
 
 - **[TASK-93](task-93%20-%20compose-joint-physical-source-dag-constraints.md)**: Compose jointly satisfiable physical-source DAG constraints
 - **[TASK-94](task-94%20-%20realize-multiparent-join-and-shared-source-dags.md)**: Realize multi-parent joins and repeated-source DAGs
-- **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs
+- **[TASK-95](task-95%20-%20compose-group-window-and-set-dags.md)**: Compose grouping, ranking and set operators across producer DAGs (PR #95 is a CI-verified landing increment; **still In Progress**; next agent starts a fresh TASK-95 PR against `main`)
 - **[TASK-96](task-96%20-%20resolve-projection-inversion-and-output-distributions.md)**: Prove safe projection inversion and complete output distributions
 - **[TASK-97](task-97%20-%20prove-complete-cardinality-and-negative-closed-world-outcomes.md)**: Prove complete cardinality and negative closed-world outcomes
 - **[TASK-98](task-98%20-%20realize-ordered-dml-before-after-source-states.md)**: Realize ordered DML and DDL before/after physical states
