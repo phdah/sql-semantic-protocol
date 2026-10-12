@@ -341,7 +341,7 @@ pub(crate) struct ComposedWitnessEvidence {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ComposedBooleanWitness {
     origin_layer_id: String,
-    witness: crate::boolean_witness::BooleanWitness,
+    pub(super) witness: crate::boolean_witness::BooleanWitness,
     boundary_kind: GroupBoundaryKind,
 }
 
