@@ -151,24 +151,6 @@ fn conformance_boundary_fixture_retains_join_provenance_and_zero_rejection() {
     let enriched = layer_id(&bundle, "core_enriched");
     let plan = physical_source_plan(&bundle, enriched);
     assert!(matches!(plan.zero_output(), WitnessDirection::Feasible(_)));
-    for (i, statement) in bundle.inputs()[0].statements().iter().enumerate() {
-        if let sql_semantic_protocol::ProtocolStatement::Query(query) = statement {
-            eprintln!(
-                "fixture layer {i}: plain={} filter={} groups={} joins={} diagnostics={:?} projections={:?} predicate={:?}",
-                query.plain_goal_output_shape(),
-                query.filter_only_row_shape(),
-                query.group_rows_match_surviving_groups(),
-                query.joins().len(),
-                query.diagnostics(),
-                query.output().columns(),
-                query.predicates().where_predicate()
-            );
-        }
-    }
-    eprintln!(
-        "physical target graph: {:?}",
-        physical_source_plan(&bundle, enriched)
-    );
     let positive = physical_row_count_plan(&bundle, enriched, 1);
     assert!(
         matches!(positive, WitnessDirection::Feasible(_)),
@@ -246,12 +228,22 @@ fn conformance_set_fixtures_prove_empty_closed_world_and_respect_multiplicities(
 fn conformance_advanced_pipeline_oracle_exercises_positive_and_rejected_rows() {
     let bundle = fixture_bundle(ADVANCED);
     let summary = layer_id(&bundle, "mart_customer_summary");
+    if let sql_semantic_protocol::ProtocolStatement::Query(grouped) =
+        &bundle.inputs()[0].statements()[3]
+    {
+        eprintln!(
+            "group physical diagnostics: shape={} group={} witness={:?} diagnostic={:?} where={:?}",
+            grouped.plain_goal_output_shape(),
+            grouped.group_rows_match_surviving_groups(),
+            grouped.group_witness(),
+            grouped.diagnostics(),
+            grouped.predicates().where_predicate()
+        );
+    }
+    let positive = physical_row_count_plan(&bundle, summary, 1);
     assert!(
-        matches!(
-            physical_row_count_plan(&bundle, summary, 1),
-            WitnessDirection::Residual { .. }
-        ),
-        "a positive joined/grouped construction is not yet supported"
+        matches!(positive, WitnessDirection::Feasible(_)),
+        "joined group must have a complete feasible source assignment: {positive:?}"
     );
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(

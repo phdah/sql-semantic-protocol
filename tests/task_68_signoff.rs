@@ -153,9 +153,9 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
         raw.len() >= 7,
         "canonical raw fixture inventory unexpectedly shrank"
     );
-    for (fixture_id, target) in [
-        ("multi_layer_join_group", "mart_customer_summary"),
-        ("joined_boundary", "core_enriched"),
+    for (fixture_id, target, expected) in [
+        ("multi_layer_join_group", "mart_customer_summary", "residual"),
+        ("joined_boundary", "core_enriched", "feasible"),
     ] {
         let fixture = raw
             .iter()
@@ -166,9 +166,9 @@ fn oracle_suite_and_release_limitations_remain_explicit() {
             .expect("fixture row goals");
         assert!(
             goals.iter().any(|goal| {
-                goal["target"] == target && goal["rows"] == 1 && goal["outcome"] == "residual"
+                goal["target"] == target && goal["rows"] == 1 && goal["outcome"] == expected
             }),
-            "open positive construction gap must remain visible for {fixture_id}"
+            "physical construction classification changed for {fixture_id}"
         );
     }
     for fixture in raw {

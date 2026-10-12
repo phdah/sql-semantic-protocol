@@ -29,7 +29,7 @@
       "path": "advanced_boundary.sql",
       "family": "join",
       "dialect": "postgresql",
-      "expected_proof": "zero_feasible_positive_residual",
+      "expected_proof": "zero_and_positive_filtered_join_feasible",
       "row_count_goals": [
         {
           "target": "core_enriched",
@@ -39,7 +39,7 @@
         {
           "target": "core_enriched",
           "rows": 1,
-          "outcome": "residual"
+          "outcome": "feasible"
         }
       ]
     },
