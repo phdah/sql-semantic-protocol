@@ -17,6 +17,82 @@ use crate::protocol::{
 
 type DomainMap = BTreeMap<ColumnRef, ValueDomain>;
 
+/// Check one requested scalar against a canonical outcome domain.
+///
+/// Only sound memberships are reported. Unrecognized scalar encodings or
+/// incomparable bounds return None so physical inversion remains residual
+/// rather than silently treating unknown comparisons as exclusions.
+pub(crate) fn domain_admits_constraint_value(
+    domain: &ValueDomain,
+    value: &crate::constraints::ConstraintValue,
+) -> Option<bool> {
+    use crate::constraints::ConstraintValue;
+    let literal = match value {
+        ConstraintValue::Null => LiteralExpression::new(LiteralType::Null, LiteralValue::Null),
+        ConstraintValue::Boolean(value) => {
+            LiteralExpression::new(LiteralType::Boolean, LiteralValue::Boolean(*value))
+        }
+        ConstraintValue::Integer(value) => LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(value.to_string()),
+        ),
+        ConstraintValue::UnsignedInteger(value) => LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(value.to_string()),
+        ),
+        ConstraintValue::Number(value) => {
+            LiteralExpression::new(LiteralType::Decimal, LiteralValue::Number(value.clone()))
+        }
+        ConstraintValue::String(value) => {
+            LiteralExpression::new(LiteralType::String, LiteralValue::Text(value.clone()))
+        }
+    };
+    match domain {
+        ValueDomain::Unbounded => Some(true),
+        ValueDomain::Unknown(_) => None,
+        ValueDomain::Empty => Some(false),
+        ValueDomain::Ranges(ranges) => {
+            let mut unknown = false;
+            for range in ranges.ranges() {
+                match literal_in_range(&literal, range) {
+                    Some(true) => return Some(true),
+                    None => unknown = true,
+                    Some(false) => {}
+                }
+            }
+            if unknown { None } else { Some(false) }
+        }
+        ValueDomain::Set(set) => {
+            let mut unknown = false;
+            let present = set.values().iter().any(|accepted| {
+                if accepted == &literal || compare_literals(&literal, accepted) == Some(Ordering::Equal) {
+                    true
+                } else {
+                    if !matches!(
+                        (literal.value(), accepted.value()),
+                        (LiteralValue::Boolean(_), LiteralValue::Boolean(_))
+                            | (LiteralValue::Text(_), LiteralValue::Text(_))
+                            | (LiteralValue::Null, _)
+                            | (_, LiteralValue::Null)
+                    ) && compare_literals(&literal, accepted).is_none() {
+                        unknown = true;
+                    }
+                    false
+                }
+            });
+            if present {
+                Some(set.mode() == SetMode::Include)
+            } else if unknown {
+                None
+            } else {
+                Some(set.mode() == SetMode::Exclude)
+            }
+        }
+    }
+}
+
+
+
 pub(crate) fn derive_column_domains(
     predicates: &Predicates,
     sources: &[SourceRelation],
