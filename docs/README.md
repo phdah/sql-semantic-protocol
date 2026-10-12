@@ -13,6 +13,7 @@ Start with the [project README](../README.md) for an overview and first commands
 | [Generator scope sign-off](coverage-signoff.md) | Four concrete maintainer decisions, with defaults and alternatives |
 | [Generator release coverage](coverage.md) | 13-dialect feature and syntax-variant matrix, test evidence and downstream sign-off gate |
 | [Machine-readable coverage manifest](coverage-manifest.json) | Release-scoped feature variants, per-dialect evidence and executable fixtures |
+| [Protocol conformance suite](tdg-certification.md) | Versioned fixtures, output oracles and consumer handoff |
 | [Versioning and releases](releasing.md) | Shared application/protocol version and release automation |
 
 ## Historical contracts

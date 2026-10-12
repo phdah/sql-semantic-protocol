@@ -1,4 +1,4 @@
-sql_tdg_e2e:
+protocol_conformance:
   target: ci
   outputs:
     ci:

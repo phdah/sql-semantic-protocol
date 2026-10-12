@@ -1,8 +1,8 @@
-name: sql_tdg_e2e
+name: protocol_conformance
 version: "1.0.0"
 config-version: 2
 
-profile: sql_tdg_e2e
+profile: protocol_conformance
 
 model-paths:
   - models
@@ -10,6 +10,6 @@ seed-paths:
   - seeds
 
 models:
-  sql_tdg_e2e:
+  protocol_conformance:
     +materialized: view
     +schema: analytics

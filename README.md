@@ -77,6 +77,7 @@ The library exposes analysis APIs separately from the CLI. See the [Rust API doc
 | [Protocol contract](docs/protocol.md) | Detailed current representation and guarantees |
 | [JSON schema](schema/protocol.schema.json) | Machine-readable active protocol contract |
 | [Examples](examples/protocol-simple.json) | An emitted protocol document |
+| [Conformance suite](docs/tdg-certification.md) | Protocol-owned SQL/dbt fixtures, expected outcomes and consumer integration |
 | [Versioning](docs/releasing.md) | SemVer compatibility policy and Release Please workflow |
 | [Documentation index](docs/README.md) | References and historical contracts |
 

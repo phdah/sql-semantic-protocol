@@ -56,6 +56,13 @@ Keep consumer-specific concerns such as data generation,
 optimization objectives, and SQL rendering outside the canonical
 semantic model.
 
+**Protocol-owned conformance suite** The protocol repository owns canonical SQL/dbt conformance
+fixtures, expected semantic outcomes and sound physical-proof classifications. Consumers
+(including sql-tdg) may pin a protocol commit or release and reuse the suite, but this
+repository must not depend on a consumer's Git SHA or treat a consumer's test corpus as
+authoritative. A parsing success is not by itself a source-level constructive proof;
+consumer-specific generation, scheduling and rendering oracles remain downstream.
+
 **Adapter parity for canonical semantics** Canonical protocol semantics are source-independent.
 Whenever a protocol capability is added or changed, evaluate every currently supported evidence
 source and adapter that can provide the same fact. If a source can provide equivalent evidence, the
