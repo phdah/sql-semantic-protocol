@@ -184,6 +184,91 @@ fn guarded_bijective_integer_projections_invert_complete_null_and_duplicate_bags
 }
 
 #[test]
+fn nested_materialized_arithmetic_inverts_complete_physical_bags() {
+    for &dialect in DIALECTS {
+        let schemas = [
+            schema("t", &[("a", "INTEGER")]),
+            schema("stage", &[("x", "INTEGER")]),
+            schema("mart", &[("y", "INTEGER")]),
+        ];
+        let mut b = bundle_with_schemas(
+            &[
+                "CREATE TABLE stage AS SELECT a + 1 AS x FROM t",
+                "CREATE TABLE mart AS SELECT x + 2 AS y FROM stage",
+                "SELECT y AS total FROM mart",
+            ],
+            dialect,
+            &schemas,
+        );
+        goal(
+            &mut b,
+            2,
+            3,
+            vec![histogram(
+                "total",
+                &[
+                    (ConstraintValue::Null, 1),
+                    (ConstraintValue::Integer(7), 2),
+                ],
+            )],
+        );
+        let Some(OutcomeWitness::SourceRows {
+            relation,
+            rows,
+            columns,
+        }) = b.outcome_goals()[0].witness() else {
+            panic!("{dialect}: transitive inverse must reach the true physical source: {:?}", b.outcome_goals());
+        };
+        assert_eq!((relation.as_str(), *rows), ("t", 3));
+        assert_eq!(columns.len(), 1);
+        assert_eq!(columns[0].column(), "a");
+        assert_eq!(
+            columns[0].values(),
+            &[
+                OutputValueCount::new(ConstraintValue::Null, 1),
+                OutputValueCount::new(ConstraintValue::Integer(4), 2),
+            ],
+        );
+    }
+    let conn = Connection::open_in_memory().expect("duckdb");
+    conn.execute_batch(
+        "CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (4), (NULL), (4);
+         CREATE TABLE stage AS SELECT a + 1 AS x FROM t;
+         CREATE TABLE mart AS SELECT x + 2 AS y FROM stage;",
+    ).expect("complete materialized arithmetic");
+    let actual: (i64, i64, i64) = conn.query_row(
+        "SELECT COUNT(*), COUNT(*) FILTER (WHERE total = 7),
+                COUNT(*) FILTER (WHERE total IS NULL)
+         FROM (SELECT y AS total FROM mart)",
+        [],
+        |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+    ).expect("full end-to-end output bag");
+    assert_eq!(actual, (3,2,1));
+}
+
+#[test]
+fn computed_producer_outputs_without_complete_assignments_remain_residual() {
+    let mut b = bundle_with_schemas(
+        &[
+            "CREATE TABLE stage AS SELECT a + 1 AS x, b + 1 AS y FROM t",
+            "SELECT x AS value FROM stage",
+        ],
+        "postgresql",
+        &[
+            schema("t", &[("a", "INTEGER"), ("b", "INTEGER")]),
+            schema("stage", &[("x", "INTEGER"), ("y", "INTEGER")]),
+        ],
+    );
+    goal(
+        &mut b,
+        1,
+        1,
+        vec![histogram("value", &[(ConstraintValue::Integer(5), 1)])],
+    );
+    assert_eq!(b.outcome_goals()[0].status(), OutcomeGoalStatus::Residual);
+}
+
+#[test]
 fn equal_source_aliases_with_different_histograms_are_impossible() {
     let mut bundle = bundle_with_schemas(
         &["SELECT a AS x, a AS y FROM t"],
