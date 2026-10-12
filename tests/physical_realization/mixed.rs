@@ -478,8 +478,12 @@ fn shared_union_all_producers_reuse_one_physical_bag_with_even_output_counts() {
         for rows in [2_u64, 4, 6] {
             b.set_outcome_goals(&[OutcomeGoal::new(&target, Some(rows), None, vec![]).unwrap()])
                 .unwrap();
-            let Some(OutcomeWitness::SetTuples { tuples, case, values, .. }) =
-                b.outcome_goals()[0].witness()
+            let Some(OutcomeWitness::SetTuples {
+                tuples,
+                case,
+                values,
+                ..
+            }) = b.outcome_goals()[0].witness()
             else {
                 panic!("{dialect} {rows}: missing constructive shared bag witness");
             };
@@ -497,35 +501,43 @@ fn shared_union_all_producers_reuse_one_physical_bag_with_even_output_counts() {
                 panic!("{dialect} {rows}: expected complete physical plan: {plan:?}");
             };
             assert!(cases.iter().any(|case| {
-                case.obligations().iter().filter(|o| {
-                    matches!(
-                        o,
-                        WitnessObligation::Rows {
-                            boundary,
-                            bounds,
-                            closed_world: true,
-                            ..
-                        } if boundary.relation() == "t"
-                            && bounds.minimum() == rows / 2
-                            && bounds.maximum() == Some(rows / 2)
-                    )
-                }).count() == 1
+                case.obligations()
+                    .iter()
+                    .filter(|o| {
+                        matches!(
+                            o,
+                            WitnessObligation::Rows {
+                                boundary,
+                                bounds,
+                                closed_world: true,
+                                ..
+                            } if boundary.relation() == "t"
+                                && bounds.minimum() == rows / 2
+                                && bounds.maximum() == Some(rows / 2)
+                        )
+                    })
+                    .count()
+                    == 1
             }));
             let db = Connection::open_in_memory().unwrap();
             db.execute_batch("CREATE TABLE t(a INTEGER);").unwrap();
             for key in 0..rows / 2 {
-                db.execute_batch(&format!("INSERT INTO t VALUES ({key});")).unwrap();
+                db.execute_batch(&format!("INSERT INTO t VALUES ({key});"))
+                    .unwrap();
             }
             db.execute_batch(
                 "CREATE TABLE left_stage AS SELECT a AS id FROM t;
                  CREATE TABLE right_stage AS SELECT a AS id FROM t;",
-            ).unwrap();
-            let (total, distinct): (i64, i64) = db.query_row(
-                "SELECT COUNT(*), COUNT(DISTINCT id) FROM
+            )
+            .unwrap();
+            let (total, distinct): (i64, i64) = db
+                .query_row(
+                    "SELECT COUNT(*), COUNT(DISTINCT id) FROM
                  (SELECT id FROM left_stage UNION ALL SELECT id FROM right_stage)",
-                [],
-                |row| Ok((row.get(0)?, row.get(1)?)),
-            ).unwrap();
+                    [],
+                    |row| Ok((row.get(0)?, row.get(1)?)),
+                )
+                .unwrap();
             assert_eq!((total, distinct), (rows as i64, (rows / 2) as i64));
         }
     }
@@ -550,7 +562,12 @@ fn shared_set_sources_with_different_columns_or_bag_laws_remain_residual() {
         schema("left_stage", &["id"]),
         schema("right_stage", &["id"]),
     ];
-    for (right_projection, operator, rows) in [("b", "INTERSECT", 2), ("a", "UNION ALL", 3), ("b", "UNION", 2), ("a", "EXCEPT ALL", 2)] {
+    for (right_projection, operator, rows) in [
+        ("b", "INTERSECT", 2),
+        ("a", "UNION ALL", 3),
+        ("b", "UNION", 2),
+        ("a", "EXCEPT ALL", 2),
+    ] {
         let statements = [
             "CREATE TABLE left_stage AS SELECT a AS id FROM t".to_string(),
             format!("CREATE TABLE right_stage AS SELECT {right_projection} AS id FROM t"),
