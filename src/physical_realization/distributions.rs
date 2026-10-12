@@ -255,9 +255,31 @@ pub(crate) fn physical_inverted_set_distribution_plan(
     if column.name() != output_name {
         return None;
     }
+    let output_type = expected_type?;
     let histogram = crate::outcome_goals::OutputDistribution::new(output_name, values).ok()?;
     let at_set = OutcomeGoal::new(set_layer.id(), Some(rows), None, vec![histogram]).ok()?;
-    physical_materialized_set_witness(bundle, set_layer.id(), &at_set)
+    let witness = physical_materialized_set_witness(bundle, set_layer.id(), &at_set)?;
+    // The set's own materialization may implicitly coerce a branch even
+    // when downstream inverse arithmetic and branch-local laws are exact.
+    // Every physical tuple column must have the attested set output type.
+    let crate::outcome_proofs::OutcomeWitness::SetTuples { case, .. } = &witness else {
+        return None;
+    };
+    for obligation in case.obligations() {
+        let boundary = obligation.boundary();
+        let [column] = boundary.tuple_columns() else {
+            return None;
+        };
+        let schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == boundary.relation())?;
+        let source_column = schema.columns().iter().find(|item| item.name() == column)?;
+        if source_column.data_type() != &output_type {
+            return None;
+        }
+    }
+    Some(witness)
 }
 
 /// Fail closed when any materialized producer carries unproved source
