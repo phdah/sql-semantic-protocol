@@ -400,9 +400,8 @@ fn construct_group_with_map(
     // exactly that value assignment, including across named producers.
     if query.output().columns().iter().any(|output| {
         if let Expression::AggregateFunction(function) = output.expression() {
-            if let [crate::protocol::AggregateArgument::Expression(
-                Expression::Column(column)
-            )] = function.arguments()
+            if let [crate::protocol::AggregateArgument::Expression(Expression::Column(column))] =
+                function.arguments()
             {
                 return column.name() != key.column()
                     || column.relation().is_some_and(|name| name != relation);
@@ -434,8 +433,7 @@ fn construct_group_with_map(
             || witness.group_keys().len() != 1
             || witness.group_keys()[0].name() != key.column()
             || witness.argument().is_some_and(|argument| {
-                argument.name() != key.column()
-                    || argument.relation() != Some(relation)
+                argument.name() != key.column() || argument.relation() != Some(relation)
             })
         {
             return None;
