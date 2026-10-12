@@ -349,7 +349,7 @@ pub fn physical_joint_row_count_plan(
         return witness;
     }
     if let [(layer_id, rows)] = ordered.as_slice() {
-        if let Some(witness) = physical_empty_subquery_membership_plan(bundle, layer_id, *rows) {
+        if let Some(witness) = physical_subquery_membership_plan(bundle, layer_id, *rows) {
             return witness;
         }
     }
