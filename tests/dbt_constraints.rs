@@ -985,3 +985,44 @@ fn dbt_conjunctive_checks_match_sql_semantics_without_partial_admission() {
         .iter()
         .any(|d| d.code() == "unsupported_check_constraint"));
 }
+
+#[test]
+fn dbt_same_column_or_check_becomes_atomic_accepted_values() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest");
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type": "check", "expression": "(amount = 1 OR amount = 2) AND id > 0"},
+        {"type": "check", "expression": "amount = 1 OR id = 2"},
+        {"type": "check", "expression": "amount = 1 OR amount = NULL"},
+        {"type": "check", "expression": "amount = 1 OR LOWER(amount) = 'x'"}
+    ]);
+    let parsed = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let set = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .unwrap();
+    let accepted = set.constraints().iter().find_map(|rule| match rule {
+        RelationConstraint::AcceptedValues(values) if values.column() == "amount" => Some(values),
+        _ => None,
+    }).expect("one fully proved equality disjunction");
+    assert_eq!(
+        accepted.values(),
+        &[ConstraintValue::Integer(1), ConstraintValue::Integer(2)]
+    );
+    assert!(accepted
+        .evidence()
+        .iter()
+        .any(|evidence| evidence.provenance().source_kind() == ConstraintSourceKind::DbtConstraint));
+    assert!(set.constraints().iter().any(|rule| matches!(
+        rule,
+        RelationConstraint::CheckComparison(check) if check.column() == "id"
+    )));
+    assert_eq!(
+        set.diagnostics()
+            .iter()
+            .filter(|diagnostic| diagnostic.code() == "unsupported_check_constraint")
+            .count(),
+        3
+    );
+}
