@@ -325,13 +325,25 @@ pub(super) fn validate_all_constraints_with_nested(
                             .and_then(|column| column.text_comparison_law())
                             == Some(crate::relation::TextComparisonLaw::Binary);
                         let mut found = false;
+                        let mut comparison_unknown = false;
                         for candidate in accepted.values() {
-                            if constraint_scalar_equal(value, candidate, binary_text)? {
-                                found = true;
-                                break;
+                            match constraint_scalar_equal(value, candidate, binary_text) {
+                                Ok(true) => {
+                                    found = true;
+                                    break;
+                                }
+                                Ok(false) => {}
+                                Err(StateFailure::Residual(_, _)) => comparison_unknown = true,
+                                Err(error) => return Err(error),
                             }
                         }
                         if !found {
+                            if comparison_unknown {
+                                return Err(residual_gap(
+                                    PhysicalWriteStateGap::UnprovedConstraint,
+                                    "accepted-values candidates include an unproved equality law",
+                                ));
+                            }
                             return Err(impossible("enforced accepted-values constraint violated"));
                         }
                     }
