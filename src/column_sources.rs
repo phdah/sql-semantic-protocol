@@ -61,7 +61,12 @@ impl ColumnValueSource {
         }
         evidence.sort();
         evidence.dedup();
-        Ok(Self { column, kind, value, evidence })
+        Ok(Self {
+            column,
+            kind,
+            value,
+            evidence,
+        })
     }
 
     /// Column to which this source belongs.
@@ -98,9 +103,7 @@ impl ColumnValueSource {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constraints::{
-        ConstraintEnforcement, ConstraintProvenance, ConstraintSourceKind,
-    };
+    use crate::constraints::{ConstraintEnforcement, ConstraintProvenance, ConstraintSourceKind};
 
     #[test]
     fn generated_expression_never_accepts_a_guessed_scalar() {
@@ -113,7 +116,8 @@ mod tests {
             ColumnValueKind::Generated,
             Some(ConstraintValue::Integer(1)),
             evidence.clone(),
-        ).is_err());
+        )
+        .is_err());
         assert!(ColumnValueSource::new("id", ColumnValueKind::Default, None, evidence).is_ok());
     }
 }
