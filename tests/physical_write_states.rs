@@ -1674,7 +1674,10 @@ fn nullable_unique_keys_only_need_dialect_law_for_potential_null_collisions() {
         vec![(Some(1), Some(3)), (Some(2), Some(4))],
     ] {
         let plan = physical_closed_world_schema_plan(&b, &[state("target", &rows)]);
-        assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{plan:?}");
+        assert!(
+            matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+            "{plan:?}"
+        );
     }
     for (rows, expected) in [
         (vec![(Some(1), None), (Some(2), None)], "residual"),
@@ -1693,8 +1696,7 @@ fn nullable_unique_keys_only_need_dialect_law_for_potential_null_collisions() {
     composite.enrich_relation_constraints(&[RelationConstraintSet::new(
         "target",
         vec![
-            RelationConstraint::unique_key(vec!["id".into(), "score".into()], evidence())
-                .unwrap(),
+            RelationConstraint::unique_key(vec!["id".into(), "score".into()], evidence()).unwrap(),
         ],
     )
     .unwrap()]);
@@ -1721,18 +1723,15 @@ fn nullable_unique_keys_only_need_dialect_law_for_potential_null_collisions() {
 
 #[test]
 fn update_and_merge_recompute_generated_values_against_duckdb() {
-    let generated = ColumnValueSource::new(
-        "score",
-        ColumnValueKind::Generated,
-        None,
-        evidence(),
-    )
-    .unwrap()
-    .with_generated_expression(GeneratedValueExpression::Add(
-        Box::new(GeneratedValueExpression::Column("id".into())),
-        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
-    ))
-    .unwrap();
+    let generated = ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
+        .unwrap()
+        .with_generated_expression(GeneratedValueExpression::Add(
+            Box::new(GeneratedValueExpression::Column("id".into())),
+            Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(
+                1,
+            ))),
+        ))
+        .unwrap();
     for sql in [
         "UPDATE target SET id=id+2 WHERE id=1",
         "MERGE INTO target USING source ON target.id=source.id WHEN MATCHED THEN UPDATE SET id=source.score",
@@ -1761,7 +1760,9 @@ fn update_and_merge_recompute_generated_values_against_duckdb() {
     )
     .unwrap();
     let observed: (i64, i64) = db
-        .query_row("SELECT id,score FROM target", [], |r| Ok((r.get(0)?, r.get(1)?)))
+        .query_row("SELECT id,score FROM target", [], |r| {
+            Ok((r.get(0)?, r.get(1)?))
+        })
         .unwrap();
     assert_eq!(observed, (3, 4));
 }
@@ -1769,19 +1770,20 @@ fn update_and_merge_recompute_generated_values_against_duckdb() {
 #[test]
 fn explicit_generated_column_updates_fail_closed_even_when_value_matches() {
     let mut b = bundle(&["UPDATE target SET score=score WHERE id=1"], "duckdb");
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![])
-            .unwrap()
-            .with_column_value_sources(vec![
-                ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
-                    .unwrap()
-                    .with_generated_expression(GeneratedValueExpression::Column("id".into()))
-                    .unwrap(),
-            ]),
-    ]);
-    let result = physical_ordered_write_state_plan(
-        &b,
-        &[state("target", &[(Some(1), Some(1))])],
+    b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_column_value_sources(vec![ColumnValueSource::new(
+            "score",
+            ColumnValueKind::Generated,
+            None,
+            evidence(),
+        )
+        .unwrap()
+        .with_generated_expression(GeneratedValueExpression::Column("id".into()))
+        .unwrap()])]);
+    let result = physical_ordered_write_state_plan(&b, &[state("target", &[(Some(1), Some(1))])]);
+    assert!(
+        matches!(result, PhysicalWriteStatePlan::Residual { .. }),
+        "{result:?}"
     );
-    assert!(matches!(result, PhysicalWriteStatePlan::Residual { .. }), "{result:?}");
 }
