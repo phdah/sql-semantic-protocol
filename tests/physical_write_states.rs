@@ -1475,3 +1475,52 @@ fn enforcement_states_distinguish_disabled_from_unknown_and_active_proofs() {
         assert_eq!(actual, expected, "{enforcement:?}");
     }
 }
+
+#[test]
+fn merge_insert_omitted_columns_obey_authoritative_target_defaults() {
+    let sql = "MERGE INTO target USING source ON target.id = source.id
+        WHEN NOT MATCHED THEN INSERT (id) VALUES (source.id)";
+    let mut b = bundle(&[sql], "duckdb");
+    b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_column_value_sources(vec![
+            ColumnValueSource::new(
+                "score",
+                ColumnValueKind::Default,
+                Some(ConstraintValue::Integer(7)),
+                evidence(),
+            )
+            .unwrap(),
+        ])]);
+    let plan = physical_ordered_write_state_plan(
+        &b,
+        &[
+            state("target", &[(Some(1), Some(5))]),
+            state("source", &[(Some(1), Some(9)), (Some(2), Some(8))]),
+        ],
+    );
+    let (_, states) = outcome(&plan);
+    assert_eq!(
+        states
+            .iter()
+            .find(|state| state.relation() == "target")
+            .unwrap()
+            .rows(),
+        &[row(Some(1), Some(5)), row(Some(2), Some(7))]
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER DEFAULT 7);
+         CREATE TABLE source(id INTEGER, score INTEGER);
+         INSERT INTO target VALUES (1,5);
+         INSERT INTO source VALUES (1,9),(2,8);
+         MERGE INTO target USING source ON target.id = source.id
+         WHEN NOT MATCHED THEN INSERT (id) VALUES (source.id);",
+    )
+    .unwrap();
+    let score: i64 = db
+        .query_row("SELECT score FROM target WHERE id=2", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(score, 7);
+}
