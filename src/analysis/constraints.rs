@@ -2,6 +2,7 @@
 
 use super::*;
 use crate::column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
+use crate::computed_boolean_checks::{ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate};
 use crate::computed_checks::ComputedCheckConstraint;
 use crate::computed_keys::ComputedKeyConstraint;
 
@@ -78,6 +79,7 @@ pub(super) fn analyze_create_table_constraints(
     let mut column_value_sources = Vec::new();
     let mut computed_keys = Vec::new();
     let mut computed_checks = Vec::new();
+    let mut computed_boolean_checks = Vec::new();
 
     for (index, constraint) in create_table.constraints.iter().enumerate() {
         match constraint {
@@ -220,6 +222,8 @@ pub(super) fn analyze_create_table_constraints(
                 if let Some((rules, checks)) = portable_check_constraints(expr, None, &evidence)? {
                     constraints.extend(rules);
                     computed_checks.extend(checks);
+                } else if let Some(predicate) = portable_boolean_check(expr, None, &evidence)? {
+                    computed_boolean_checks.push(predicate);
                 } else {
                     diagnostics.push(ConstraintDiagnostic::new(
                         "unsupported_check_constraint",
@@ -410,6 +414,12 @@ pub(super) fn analyze_create_table_constraints(
                     )? {
                         constraints.extend(rules);
                         computed_checks.extend(checks);
+                    } else if let Some(predicate) = portable_boolean_check(
+                        expr,
+                        Some(column.name.value.as_str()),
+                        &evidence,
+                    )? {
+                        computed_boolean_checks.push(predicate);
                     } else {
                         diagnostics.push(ConstraintDiagnostic::new(
                             "unsupported_check_constraint",
@@ -454,7 +464,8 @@ pub(super) fn analyze_create_table_constraints(
     let mut set = RelationConstraintSet::new(relation, constraints)?
         .with_column_value_sources(column_value_sources)
         .with_computed_keys(computed_keys)
-        .with_computed_checks(computed_checks);
+        .with_computed_checks(computed_checks)
+        .with_computed_boolean_checks(computed_boolean_checks);
     for diagnostic in diagnostics {
         set.add_diagnostic(diagnostic);
     }
@@ -478,6 +489,8 @@ pub(crate) enum PortableCheckExpression {
     ),
     /// A complete same-column equality disjunction, never a partial OR proof.
     AcceptedValues(String, Vec<ConstraintValue>, bool),
+    /// A complete portable SQL three-valued Boolean CHECK predicate.
+    Boolean(ComputedBooleanCheckPredicate),
 }
 
 /// Normalize metadata-authored CHECK SQL once at the producer boundary.
@@ -591,6 +604,57 @@ fn portable_equality_disjunction(
         entries.into_iter().map(|(_, value, _)| value).collect(),
         first_quote,
     ))
+}
+
+/// Normalize only source-independent Boolean logic over row-local scalar
+/// expressions. Unknown functions, subqueries, casts and dialect constructs
+/// abort the entire tree rather than being dropped as partial predicates.
+fn portable_boolean_predicate(expr: &Expr) -> Option<ComputedBooleanCheckPredicate> {
+    use ComputedBooleanCheckPredicate as P;
+    match unwrap_nested_expression(expr) {
+        Expr::BinaryOp { left, op: SqlBinaryOperator::And, right } => Some(P::And(vec![
+            portable_boolean_predicate(left)?,
+            portable_boolean_predicate(right)?,
+        ])),
+        Expr::BinaryOp { left, op: SqlBinaryOperator::Or, right } => Some(P::Or(vec![
+            portable_boolean_predicate(left)?,
+            portable_boolean_predicate(right)?,
+        ])),
+        Expr::UnaryOp { op: SqlUnaryOperator::Not, expr } => {
+            Some(P::Not(Box::new(portable_boolean_predicate(expr)?)))
+        }
+        Expr::IsNull(expr) => Some(P::IsNull {
+            expression: parse_generated_expression(expr)?,
+            negated: false,
+        }),
+        Expr::IsNotNull(expr) => Some(P::IsNull {
+            expression: parse_generated_expression(expr)?,
+            negated: true,
+        }),
+        expression => {
+            let (left, operator, right) = computed_check_from_expr(expression, None)?;
+            Some(P::Comparison { left, operator, right })
+        }
+    }
+}
+
+fn portable_boolean_check(
+    expr: &Expr,
+    expected_column: Option<&str>,
+    evidence: &[ConstraintEvidence],
+) -> Result<Option<ComputedBooleanCheckConstraint>, ConstraintMetadataError> {
+    let Some(predicate) = portable_boolean_predicate(expr) else {
+        return Ok(None);
+    };
+    if expected_column.is_some_and(|column| {
+        !predicate.referenced_columns().contains(&column)
+    }) {
+        return Ok(None);
+    }
+    Ok(Some(ComputedBooleanCheckConstraint::new(
+        predicate,
+        evidence.to_vec(),
+    )?))
 }
 
 type PortableCheckFacts = (Vec<RelationConstraint>, Vec<ComputedCheckConstraint>);
@@ -722,6 +786,8 @@ pub(crate) fn portable_check_expressions(expression: &str) -> Option<Vec<Portabl
             output.push(PortableCheckExpression::AcceptedValues(
                 column, values, quote,
             ));
+        } else if let Some(predicate) = portable_boolean_predicate(expr) {
+            output.push(PortableCheckExpression::Boolean(predicate));
         } else {
             output.push(portable_check_expression(&expr.to_string())?);
         }
