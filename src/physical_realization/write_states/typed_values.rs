@@ -46,7 +46,10 @@ fn typed_error(result: StateResult<()>) -> PhysicalTypeProof {
 /// This proves exact scalar, binary and nested shape laws. The API does not
 /// assume string key collation, JSON storage identity, float NaN encodings,
 /// nullable struct child defaults or automatic numeric widening.
-pub fn physical_typed_value_plan(value: &PhysicalTypedValue, data_type: &DataType) -> PhysicalTypeProof {
+pub fn physical_typed_value_plan(
+    value: &PhysicalTypedValue,
+    data_type: &DataType,
+) -> PhysicalTypeProof {
     match data_type {
         DataType::Nullable(inner) => {
             if matches!(value, PhysicalTypedValue::Scalar(LiteralValue::Null)) {
@@ -55,7 +58,10 @@ pub fn physical_typed_value_plan(value: &PhysicalTypedValue, data_type: &DataTyp
                 physical_typed_value_plan(value, inner)
             }
         }
-        DataType::Array { element: Some(element), length } => {
+        DataType::Array {
+            element: Some(element),
+            length,
+        } => {
             let PhysicalTypedValue::Array(values) = value else {
                 return PhysicalTypeProof::Residual {
                     reason: "array physical encoding is not attested".to_string(),
@@ -96,7 +102,10 @@ pub fn physical_typed_value_plan(value: &PhysicalTypedValue, data_type: &DataTyp
             }
             PhysicalTypeProof::Feasible
         }
-        DataType::Map { key, value: map_value } => {
+        DataType::Map {
+            key,
+            value: map_value,
+        } => {
             let PhysicalTypedValue::Map(entries) = value else {
                 return PhysicalTypeProof::Residual {
                     reason: "map physical representation is not attested".to_string(),
@@ -116,14 +125,12 @@ pub fn physical_typed_value_plan(value: &PhysicalTypedValue, data_type: &DataTyp
                 // Canonicalize integer keys before checking equality; 05 and 5 are
                 // the same key. Other numeric key types need exact comparison laws.
                 let identity = match key.as_ref() {
-                    DataType::SignedInteger { .. } => number
-                        .parse::<i128>()
-                        .ok()
-                        .map(|n| format!("signed:{n}")),
-                    DataType::UnsignedInteger { .. } => number
-                        .parse::<u128>()
-                        .ok()
-                        .map(|n| format!("unsigned:{n}")),
+                    DataType::SignedInteger { .. } => {
+                        number.parse::<i128>().ok().map(|n| format!("signed:{n}"))
+                    }
+                    DataType::UnsignedInteger { .. } => {
+                        number.parse::<u128>().ok().map(|n| format!("unsigned:{n}"))
+                    }
                     _ => None,
                 };
                 let Some(identity) = identity else {
@@ -180,11 +187,20 @@ mod tests {
     fn nested_struct_arrays_are_feasible_with_exact_scalar_bounds() {
         let kind = DataType::Struct {
             fields: vec![
-                DataTypeField::new(Some("id".into()), DataType::SignedInteger { bits: Some(32) }),
-                DataTypeField::new(Some("tags".into()), DataType::Array {
-                    element: Some(Box::new(DataType::String { length: Some(5), fixed: false })),
-                    length: Some(2),
-                }),
+                DataTypeField::new(
+                    Some("id".into()),
+                    DataType::SignedInteger { bits: Some(32) },
+                ),
+                DataTypeField::new(
+                    Some("tags".into()),
+                    DataType::Array {
+                        element: Some(Box::new(DataType::String {
+                            length: Some(5),
+                            fixed: false,
+                        })),
+                        length: Some(2),
+                    },
+                ),
             ],
         };
         let good = PhysicalTypedValue::Struct(vec![
@@ -194,11 +210,17 @@ mod tests {
                 PhysicalTypedValue::Scalar(LiteralValue::Text("bar".into())),
             ]),
         ]);
-        assert_eq!(physical_typed_value_plan(&good, &kind), PhysicalTypeProof::Feasible);
-        let bad = PhysicalTypedValue::Struct(vec![
-            PhysicalTypedValue::Scalar(LiteralValue::Number("7".into())),
-        ]);
-        assert!(matches!(physical_typed_value_plan(&bad, &kind), PhysicalTypeProof::Impossible { .. }));
+        assert_eq!(
+            physical_typed_value_plan(&good, &kind),
+            PhysicalTypeProof::Feasible
+        );
+        let bad = PhysicalTypedValue::Struct(vec![PhysicalTypedValue::Scalar(
+            LiteralValue::Number("7".into()),
+        )]);
+        assert!(matches!(
+            physical_typed_value_plan(&bad, &kind),
+            PhysicalTypeProof::Impossible { .. }
+        ));
     }
 
     #[test]
@@ -219,16 +241,22 @@ mod tests {
             physical_typed_value_plan(&PhysicalTypedValue::Map(vec![one.clone(), one]), &kind),
             PhysicalTypeProof::Impossible { .. }
         ));
-        let text_key = PhysicalTypedValue::Map(vec![
-            (PhysicalTypedValue::Scalar(LiteralValue::Text("A".into())),
-             PhysicalTypedValue::Scalar(LiteralValue::Boolean(true)))
-        ]);
-        assert!(matches!(physical_typed_value_plan(&text_key, &kind), PhysicalTypeProof::Residual { .. }));
+        let text_key = PhysicalTypedValue::Map(vec![(
+            PhysicalTypedValue::Scalar(LiteralValue::Text("A".into())),
+            PhysicalTypedValue::Scalar(LiteralValue::Boolean(true)),
+        )]);
+        assert!(matches!(
+            physical_typed_value_plan(&text_key, &kind),
+            PhysicalTypeProof::Residual { .. }
+        ));
     }
 
     #[test]
     fn exact_binary_is_possible_but_json_opaque_and_float_nan_residual() {
-        let kind = DataType::Binary { length: Some(4), fixed: false };
+        let kind = DataType::Binary {
+            length: Some(4),
+            fixed: false,
+        };
         assert_eq!(
             physical_typed_value_plan(&PhysicalTypedValue::Bytes(vec![0, 255]), &kind),
             PhysicalTypeProof::Feasible
@@ -239,7 +267,10 @@ mod tests {
         ));
         for (value, kind) in [
             (LiteralValue::Text("{\"a\":1}".into()), DataType::Json),
-            (LiteralValue::Number("NaN".into()), DataType::FloatingPoint { bits: Some(64) }),
+            (
+                LiteralValue::Number("NaN".into()),
+                DataType::FloatingPoint { bits: Some(64) },
+            ),
         ] {
             assert!(matches!(
                 physical_typed_value_plan(&PhysicalTypedValue::Scalar(value), &kind),
