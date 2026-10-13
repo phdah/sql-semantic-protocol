@@ -208,8 +208,7 @@ fn json_document_proof(document: &serde_json::Value) -> PhysicalTypeProof {
                 PhysicalTypeProof::Feasible
             } else {
                 PhysicalTypeProof::Residual {
-                    reason: "JSON floating or large-number storage law is not attested"
-                        .to_string(),
+                    reason: "JSON floating or large-number storage law is not attested".to_string(),
                 }
             }
         }
