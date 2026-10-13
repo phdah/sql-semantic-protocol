@@ -1680,6 +1680,7 @@ fn parse_manifest_relation_constraints(
         };
         let object = as_object(value, &path)?;
         let mut constraints = Vec::new();
+        let mut computed_checks = Vec::new();
         let mut relation_diagnostics = Vec::new();
 
         parse_dbt_constraint_array(
@@ -1690,6 +1691,7 @@ fn parse_manifest_relation_constraints(
             None,
             resources,
             &mut constraints,
+            &mut computed_checks,
             &mut relation_diagnostics,
         )?;
 
@@ -1707,18 +1709,20 @@ fn parse_manifest_relation_constraints(
                     Some(&column_name),
                     resources,
                     &mut constraints,
+                    &mut computed_checks,
                     &mut relation_diagnostics,
                 )?;
             }
         }
 
-        if !constraints.is_empty() || !relation_diagnostics.is_empty() {
+        if !constraints.is_empty() || !computed_checks.is_empty() || !relation_diagnostics.is_empty() {
             let mut set = RelationConstraintSet::new(relation, constraints).map_err(|error| {
                 DbtManifestError::RelationMetadata {
                     resource_id: resource_id.clone(),
                     message: error.to_string(),
                 }
             })?;
+            set = set.with_computed_checks(computed_checks);
             for diagnostic in relation_diagnostics {
                 set.add_diagnostic(diagnostic);
             }
@@ -2124,6 +2128,7 @@ fn parse_dbt_constraint_array(
     implied_column: Option<&str>,
     resources: &BTreeMap<String, DbtResource>,
     output: &mut Vec<RelationConstraint>,
+    computed_checks: &mut Vec<crate::computed_checks::ComputedCheckConstraint>,
     diagnostics: &mut Vec<ConstraintDiagnostic>,
 ) -> Result<(), DbtManifestError> {
     let Some(value) = value else {
@@ -2140,6 +2145,54 @@ fn parse_dbt_constraint_array(
         let constraint_path = format!("{path}[{index}]");
         let object = as_object(value, &constraint_path)?;
         let constraint_type = required_string(object, "type", &format!("{constraint_path}.type"))?;
+        if constraint_type == "check" {
+            let parsed = object
+                .get("expression")
+                .and_then(Value::as_str)
+                .and_then(crate::analysis::constraints::portable_check_expression);
+            let evidence = vec![dbt_constraint_evidence(
+                ConstraintSourceKind::DbtConstraint,
+                &format!("{resource_id}:{constraint_path}"),
+            )?];
+            let admitted = match parsed {
+                Some(crate::analysis::constraints::PortableCheckExpression::Scalar(
+                    column, op, value
+                )) if implied_column.is_none_or(|name| name == column) => {
+                    let rule = RelationConstraint::check_comparison(column, op, value, evidence)
+                        .map_err(|error| DbtManifestError::RelationMetadata {
+                            resource_id: resource_id.to_string(),
+                            message: format!("{relation}: {error}"),
+                        })?;
+                    output.push(rule);
+                    true
+                }
+                Some(crate::analysis::constraints::PortableCheckExpression::Computed(
+                    left, op, right
+                )) if implied_column.is_none_or(|name| {
+                    left.referenced_columns().contains(&name)
+                        || right.referenced_columns().contains(&name)
+                }) => {
+                    let rule = crate::computed_checks::ComputedCheckConstraint::new(
+                        left, op, right, evidence
+                    ).map_err(|error| DbtManifestError::RelationMetadata {
+                        resource_id: resource_id.to_string(),
+                        message: format!("{relation}: {error}"),
+                    })?;
+                    computed_checks.push(rule);
+                    true
+                }
+                _ => false,
+            };
+            if !admitted {
+                diagnostics.push(ConstraintDiagnostic::new(
+                    "unsupported_check_constraint",
+                    format!(
+                        "dbt CHECK '{resource_id}:{constraint_path}' requires one portable scalar comparison expression"
+                    ),
+                ));
+            }
+            continue;
+        }
         if !matches!(
             constraint_type,
             "primary_key" | "unique" | "foreign_key" | "not_null"
