@@ -476,6 +476,8 @@ pub(crate) enum PortableCheckExpression {
         crate::constraints::CheckCompareOperator,
         GeneratedValueExpression,
     ),
+    /// A complete same-column equality disjunction, never a partial OR proof.
+    AcceptedValues(String, Vec<ConstraintValue>, bool),
 }
 
 /// Normalize metadata-authored CHECK SQL once at the producer boundary.
@@ -525,6 +527,73 @@ fn portable_between_bounds(
     ])
 }
 
+/// Normalize a disjunction only when every alternative is a same-column
+/// equality with a known non-NULL literal. SQL CHECK admits UNKNOWN, so an
+/// explicit NULL alternative must never become a restrictive IN constraint.
+fn portable_equality_disjunction(
+    expr: &Expr,
+    expected_column: Option<&str>,
+) -> Option<(String, Vec<ConstraintValue>, bool)> {
+    fn collect(
+        expr: &Expr,
+        entries: &mut Vec<(String, ConstraintValue, bool)>,
+    ) -> Option<()> {
+        match unwrap_nested_expression(expr) {
+            Expr::BinaryOp {
+                left,
+                op: SqlBinaryOperator::Or,
+                right,
+            } => {
+                collect(left, entries)?;
+                collect(right, entries)
+            }
+            Expr::BinaryOp {
+                left,
+                op: SqlBinaryOperator::Eq,
+                right,
+            } => {
+                let (column, constant) = if let Some(column) = check_column_name(left) {
+                    (column, right.as_ref())
+                } else {
+                    (check_column_name(right)?, left.as_ref())
+                };
+                let (value, quote) = constraint_value_from_expression(constant)?;
+                if matches!(value, ConstraintValue::Null) {
+                    return None;
+                }
+                entries.push((column.to_string(), value, quote.unwrap_or(false)));
+                Some(())
+            }
+            _ => None,
+        }
+    }
+
+    if !matches!(
+        unwrap_nested_expression(expr),
+        Expr::BinaryOp {
+            op: SqlBinaryOperator::Or,
+            ..
+        }
+    ) {
+        return None;
+    }
+    let mut entries = Vec::new();
+    collect(expr, &mut entries)?;
+    let (first_column, _, first_quote) = entries.first()?;
+    if expected_column.is_some_and(|column| column != first_column)
+        || entries.iter().any(|(column, _, quote)| {
+            column != first_column || quote != first_quote
+        })
+    {
+        return None;
+    }
+    Some((
+        first_column.clone(),
+        entries.into_iter().map(|(_, value, _)| value).collect(),
+        *first_quote,
+    ))
+}
+
 type PortableCheckFacts = (Vec<RelationConstraint>, Vec<ComputedCheckConstraint>);
 
 fn portable_check_constraints(
@@ -560,6 +629,19 @@ fn portable_check_constraints(
             })
             .collect::<Result<Vec<_>, _>>()?;
         return Ok(Some((rules, Vec::new())));
+    }
+    if let Some((column, values, quote)) =
+        portable_equality_disjunction(expr, expected_column)
+    {
+        return Ok(Some((
+            vec![RelationConstraint::accepted_values(
+                column,
+                values,
+                quote,
+                evidence.to_vec(),
+            )?],
+            Vec::new(),
+        )));
     }
     if let Some((column, values, quote)) = accepted_values_from_check(expr, expected_column) {
         return Ok(Some((
@@ -637,6 +719,12 @@ pub(crate) fn portable_check_expressions(expression: &str) -> Option<Vec<Portabl
             for (column, operator, value) in bounds {
                 output.push(PortableCheckExpression::Scalar(column, operator, value));
             }
+        } else if let Some((column, values, quote)) =
+            portable_equality_disjunction(expr, None)
+        {
+            output.push(PortableCheckExpression::AcceptedValues(
+                column, values, quote,
+            ));
         } else {
             output.push(portable_check_expression(&expr.to_string())?);
         }
