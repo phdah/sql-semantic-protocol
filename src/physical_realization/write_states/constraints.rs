@@ -518,6 +518,45 @@ mod tests {
     use super::*;
 
     #[test]
+    fn composite_keys_defer_unproved_text_until_all_components_are_considered() {
+        let unknown = [
+            LiteralValue::Text("first".into()),
+            LiteralValue::Number("1".into()),
+        ];
+        let different = [
+            LiteralValue::Text("FIRST".into()),
+            LiteralValue::Number("2".into()),
+        ];
+        let same_numeric = [
+            LiteralValue::Text("FIRST".into()),
+            LiteralValue::Number("1".into()),
+        ];
+        assert_eq!(
+            unique_key_collision(&unknown, &different, &[false, false]).unwrap(),
+            Some(false),
+        );
+        assert!(matches!(
+            unique_key_collision(&unknown, &same_numeric, &[false, false]),
+            Err(StateFailure::Residual(_, _))
+        ));
+        assert_eq!(
+            unique_key_collision(&unknown, &same_numeric, &[true, false]).unwrap(),
+            Some(false),
+        );
+
+        let nullable = [LiteralValue::Null, LiteralValue::Number("7".into())];
+        let disjoint = [LiteralValue::Null, LiteralValue::Number("8".into())];
+        assert_eq!(
+            unique_key_collision(&nullable, &disjoint, &[false, false]).unwrap(),
+            Some(false),
+        );
+        assert_eq!(
+            unique_key_collision(&nullable, &nullable, &[false, false]).unwrap(),
+            None,
+        );
+    }
+
+    #[test]
     fn exact_accepted_value_comparison_normalizes_decimal_scale_and_signed_zero() {
         for (actual, expected) in [
             ("1.5000", ConstraintValue::Number("1.5".into())),
