@@ -38,6 +38,18 @@ pub(super) fn validate_all_constraints(
     bundle: &AnalysisBundle,
     states: &BTreeMap<String, PhysicalWriteState>,
 ) -> StateResult<()> {
+    validate_all_constraints_with_nested(bundle, states, &BTreeSet::new())
+}
+
+/// Non-scalar typed values have already been checked against their physical
+/// schema; the scalar projection uses NULL only as an internal placeholder.
+/// This exemption is deliberately limited to NOT NULL, never key equality,
+/// CHECK comparison, generated expressions or referential integrity.
+pub(super) fn validate_all_constraints_with_nested(
+    bundle: &AnalysisBundle,
+    states: &BTreeMap<String, PhysicalWriteState>,
+    non_null_nested: &BTreeSet<(String, String)>,
+) -> StateResult<()> {
     for set in bundle.relation_constraints() {
         let Some(state) = states.get(set.relation()) else {
             continue;
@@ -135,7 +147,10 @@ pub(super) fn validate_all_constraints(
             match constraint {
                 RelationConstraint::NotNull(rule) => {
                     for row in &state.rows {
-                        if matches!(row.values.get(rule.column()), Some(LiteralValue::Null)) {
+                        if !non_null_nested
+                            .contains(&(state.relation.clone(), rule.column().to_string()))
+                            && matches!(row.values.get(rule.column()), Some(LiteralValue::Null))
+                        {
                             return Err(impossible("enforced NOT NULL violated"));
                         }
                     }
