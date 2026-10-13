@@ -89,6 +89,7 @@ fn complete_insert_row(
     relation: &str,
     mut values: BTreeMap<String, LiteralValue>,
     schema: &RelationSchema,
+    identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
 ) -> StateResult<PhysicalWriteRow> {
     let sources = bundle
         .relation_constraints()
@@ -116,9 +117,22 @@ fn complete_insert_row(
         if source.kind() == crate::column_sources::ColumnValueKind::Generated {
             continue;
         }
+        if source.kind() == crate::column_sources::ColumnValueKind::Identity {
+            if !super::generated::authoritative(source) {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "identity allocation is not authoritatively declared",
+                ));
+            }
+            let sequence = identity_sequences
+                .get_mut(&(relation.to_string(), column.name().to_string()))
+                .ok_or_else(|| residual("identity INSERT requires an attested sequence state"))?;
+            values.insert(column.name().to_string(), sequence.allocate()?);
+            continue;
+        }
         if source.kind() != crate::column_sources::ColumnValueKind::Default {
             return Err(residual(
-                "identity INSERT requires an attested sequence state",
+                "unsupported generated column value source in INSERT",
             ));
         }
         if !super::generated::authoritative(source) {
@@ -148,6 +162,7 @@ pub(super) fn append_rows(
     states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
+    identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let Some(write) = query.write() else {
@@ -178,7 +193,13 @@ pub(super) fn append_rows(
         }
         let values = columns.iter().cloned().zip(output_row).collect();
         next.rows
-            .push(complete_insert_row(bundle, target, values, schema)?);
+            .push(complete_insert_row(
+                bundle,
+                target,
+                values,
+                schema,
+                identity_sequences,
+            )?);
     }
     let inserted = u64::try_from(next.rows.len() - before.rows.len())
         .map_err(|_| residual("inserted count overflow"))?;
@@ -308,6 +329,7 @@ pub(super) fn merge_rows(
     states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
+    identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let write = query
@@ -470,7 +492,13 @@ pub(super) fn merge_rows(
                             return Err(impossible("duplicate MERGE target column"));
                         }
                     }
-                    inserts.push(complete_insert_row(bundle, target, row_values, schema)?);
+                    inserts.push(complete_insert_row(
+                        bundle,
+                        target,
+                        row_values,
+                        schema,
+                        identity_sequences,
+                    )?);
                 }
                 _ => return Err(residual("unproved NOT MATCHED MERGE action")),
             }
