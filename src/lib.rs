@@ -95,7 +95,8 @@ pub use bundle::{
 };
 pub use column_sources::{ColumnValueKind, ColumnValueSource};
 pub use constraints::{
-    merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
+    merge_relation_constraint_sets, AcceptedValuesConstraint, CheckCompareOperator,
+    CheckComparisonConstraint, ConstraintDiagnostic,
     ConstraintEnforcement, ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance,
     ConstraintSourceKind, ConstraintValue, ForeignKeyConstraint, KeyConstraint, NotNullConstraint,
     RelationConstraint, RelationConstraintSet,
