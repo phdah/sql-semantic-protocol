@@ -123,6 +123,7 @@ pub struct AnalyzedInput {
     pub(super) relation_context: Option<RelationContext>,
     pub(super) statements: Vec<ProtocolStatement>,
     pub(super) relation_constraints: Vec<RelationConstraintSet>,
+    pub(super) source_schemas: Vec<RelationSchema>,
 }
 
 impl AnalyzedInput {
@@ -154,5 +155,10 @@ impl AnalyzedInput {
     /// Return relation constraints discovered in this input before bundle-level enrichment.
     pub fn relation_constraints(&self) -> &[RelationConstraintSet] {
         &self.relation_constraints
+    }
+
+    /// Typed CREATE TABLE source schemas declared by this SQL input.
+    pub fn source_schemas(&self) -> &[RelationSchema] {
+        &self.source_schemas
     }
 }
