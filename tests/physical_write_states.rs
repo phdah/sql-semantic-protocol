@@ -2010,3 +2010,57 @@ fn attested_binary_text_law_proves_accepted_values_without_guessing_collation() 
         .unwrap();
     assert!(distinct);
 }
+
+#[test]
+fn explicit_nullable_ddl_default_constructs_omitted_insert_sql_null() {
+    let ddl = bundle(
+        &["CREATE TABLE target (id INTEGER, score INTEGER NULL)"],
+        "duckdb",
+    );
+    let declared = ddl
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    let default = declared
+        .column_value_sources()
+        .iter()
+        .find(|source| source.column() == "score")
+        .unwrap()
+        .clone();
+    assert_eq!(default.kind(), ColumnValueKind::Default);
+    assert_eq!(default.value(), Some(&ConstraintValue::Null));
+
+    let mut writes = bundle(
+        &["INSERT INTO target (id) SELECT id FROM source WHERE id=2"],
+        "duckdb",
+    );
+    writes.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_column_value_sources(vec![default])]);
+    let plan = physical_ordered_write_state_plan(
+        &writes,
+        &[
+            state("target", &[]),
+            state("source", &[(Some(1), Some(5)), (Some(2), Some(8))]),
+        ],
+    );
+    let (_, states) = outcome(&plan);
+    let target = states.iter().find(|s| s.relation() == "target").unwrap();
+    assert_eq!(target.rows(), &[row(Some(2), None)]);
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target (id INTEGER, score INTEGER NULL);
+         CREATE TABLE source (id INTEGER, score INTEGER);
+         INSERT INTO source VALUES (1,5),(2,8);
+         INSERT INTO target(id) SELECT id FROM source WHERE id=2;",
+    )
+    .unwrap();
+    let result: (i32, bool) = db
+        .query_row("SELECT id, score IS NULL FROM target", [], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        })
+        .unwrap();
+    assert_eq!(result, (2, true));
+}
