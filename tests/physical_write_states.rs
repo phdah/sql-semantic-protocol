@@ -1456,15 +1456,13 @@ fn enforcement_states_distinguish_disabled_from_unknown_and_active_proofs() {
             declared.clone(),
         )
         .unwrap();
-        b.enrich_relation_constraints(&[
-            RelationConstraintSet::new(
-                "target",
-                vec![RelationConstraint::not_null("id", declared).unwrap()],
-            )
-            .unwrap()
-            .with_computed_checks(vec![computed])
-            .with_computed_keys(vec![functional_key]),
-        ]);
+        b.enrich_relation_constraints(&[RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::not_null("id", declared).unwrap()],
+        )
+        .unwrap()
+        .with_computed_checks(vec![computed])
+        .with_computed_keys(vec![functional_key])]);
         let result = physical_closed_world_schema_plan(
             &b,
             &[state("target", &[(None, Some(-1)), (None, Some(-2))])],
