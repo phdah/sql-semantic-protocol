@@ -278,7 +278,10 @@ pub fn physical_typed_append_schema_plan(
         PhysicalTypedPopulationPlan::Feasible { final_states } => final_states,
         other => return other,
     };
-    let Some(state) = final_states.iter_mut().find(|state| state.relation == target) else {
+    let Some(state) = final_states
+        .iter_mut()
+        .find(|state| state.relation == target)
+    else {
         return PhysicalTypedPopulationPlan::Residual {
             relation: Some(target.to_string()),
             reason: "missing complete prior typed target population".to_string(),
