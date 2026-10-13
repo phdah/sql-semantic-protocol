@@ -189,7 +189,10 @@ impl SchemaColumn {
     }
 
     /// Attach a column-specific physical collation identity without assuming its comparison laws.
-    pub fn with_collation(mut self, collation: impl Into<String>) -> Result<Self, RelationMetadataError> {
+    pub fn with_collation(
+        mut self,
+        collation: impl Into<String>,
+    ) -> Result<Self, RelationMetadataError> {
         let collation = collation.into();
         if collation.trim().is_empty() {
             return Err(RelationMetadataError::InvalidSchema {
