@@ -64,9 +64,11 @@ pub(super) fn validate_all_constraints_with_nested(
             ));
         }
         for check in set.computed_checks() {
-            if check.evidence().iter().all(|evidence| {
-                evidence.enforcement() == ConstraintEnforcement::NotEnforced
-            }) {
+            if check
+                .evidence()
+                .iter()
+                .all(|evidence| evidence.enforcement() == ConstraintEnforcement::NotEnforced)
+            {
                 continue;
             }
             if !check
@@ -92,9 +94,11 @@ pub(super) fn validate_all_constraints_with_nested(
             }
         }
         for key in set.computed_keys() {
-            if key.evidence().iter().all(|evidence| {
-                evidence.enforcement() == ConstraintEnforcement::NotEnforced
-            }) {
+            if key
+                .evidence()
+                .iter()
+                .all(|evidence| evidence.enforcement() == ConstraintEnforcement::NotEnforced)
+            {
                 continue;
             }
             if !key
@@ -144,9 +148,11 @@ pub(super) fn validate_all_constraints_with_nested(
             }
         }
         for constraint in set.constraints() {
-            if constraint.evidence().iter().all(|evidence| {
-                evidence.enforcement() == ConstraintEnforcement::NotEnforced
-            }) {
+            if constraint
+                .evidence()
+                .iter()
+                .all(|evidence| evidence.enforcement() == ConstraintEnforcement::NotEnforced)
+            {
                 continue;
             }
             if !constraint
