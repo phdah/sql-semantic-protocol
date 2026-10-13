@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
-    physical_ordered_write_state_plan, AnalysisBundle, ColumnValueKind, ColumnValueSource,
+    physical_ordered_write_state_plan, AnalysisBundle, CheckCompareOperator, ColumnValueKind, ColumnValueSource,
     ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
     ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
     PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
