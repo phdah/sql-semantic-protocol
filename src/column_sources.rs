@@ -27,7 +27,6 @@ impl ColumnValueKind {
     }
 }
 
-
 /// Canonical deterministic row-local expression for an attested generated column.
 ///
 /// Opaque functions, casts and dialect-specific numeric evaluation are not
@@ -150,7 +149,8 @@ impl ColumnValueSource {
     ) -> Result<Self, ConstraintMetadataError> {
         if self.kind != ColumnValueKind::Generated || !expression.valid() {
             return Err(ConstraintMetadataError::InvalidEvidence {
-                message: "only generated columns accept validated computation semantics".to_string(),
+                message: "only generated columns accept validated computation semantics"
+                    .to_string(),
             });
         }
         self.expression = Some(expression);
