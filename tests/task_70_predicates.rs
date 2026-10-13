@@ -90,6 +90,14 @@ fn null_safe_integer_comparison_is_two_valued() {
             BooleanRowConstraint::IntegerComparison { .. }
         ));
     }
+    for predicate in [
+        "a IS DISTINCT FROM NULL",
+        "a IS NOT DISTINCT FROM NULL",
+        "NOT (a IS DISTINCT FROM NULL)",
+    ] {
+        let witness = assert_both_directions_exact(predicate);
+        assert!(matches!(witness.condition(), BooleanRowConstraint::NullTest { .. }));
+    }
 }
 
 #[test]
@@ -148,6 +156,8 @@ fn duckdb_oracle_distinguishes_false_from_unknown_and_null_safe_equality() {
         ("a IS DISTINCT FROM 2", 3),
         ("a IS NOT DISTINCT FROM 2", 1),
         ("NOT (a IS DISTINCT FROM 2)", 1),
+        ("a IS DISTINCT FROM NULL", 3),
+        ("a IS NOT DISTINCT FROM NULL", 1),
     ] {
         let count: i64 = connection
             .query_row(&format!("SELECT COUNT(*) FROM t WHERE {predicate}"), [], |row| row.get(0))
