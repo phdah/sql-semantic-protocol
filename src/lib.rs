@@ -38,6 +38,7 @@
 //! - physical_typed_closed_world_schema_plan checks complete multi-source nested Arrow-style populations against the same canonical scalar and cross-relation constraints.
 //! - to_physical_typed_population_json exports validated nested physical populations as exact-bit witness sidecars.
 //! - physical_typed_append_schema_plan checks caller-supplied nested inserts against preexisting complete target and source snapshots.
+//! - physical_typed_ordered_insert_plan executes row-preserving direct-column SQL INSERT SELECT into validated nested typed states.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
 //!   multiplicities with NULL, duplicates and shared physical aliases.
 
@@ -148,7 +149,8 @@ pub use physical_realization::{
     physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_write_state_plan,
     physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
     physical_row_count_plan, physical_source_plan, physical_typed_append_schema_plan,
-    physical_typed_closed_world_schema_plan, physical_typed_value_plan,
+    physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
+    physical_typed_value_plan,
     physical_unconditional_delete_plan, PhysicalIdentitySequence, PhysicalJointSourcePlan,
     PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan,
     PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
