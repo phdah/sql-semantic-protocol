@@ -35,6 +35,11 @@ pub(super) fn evaluate_simple_select(
             "INSERT source is not a proven row-local, one-source SELECT",
         ));
     }
+    if query.filter_only_row_shape() && query.predicates().where_predicate().is_none() {
+        return Err(residual(
+            "filtered SELECT lacks a canonically normalized WHERE predicate",
+        ));
+    }
     let [source] = query.sources() else {
         return Err(residual("INSERT SELECT must read one physical relation"));
     };
