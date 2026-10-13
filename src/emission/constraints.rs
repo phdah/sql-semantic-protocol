@@ -76,6 +76,7 @@ pub(super) fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> V
                     "column": source.column(),
                     "kind": source.kind().as_str(),
                     "value": source.value().map(constraint_value_to_value),
+                    "expression": source.expression().map(generated_expression_to_value),
                     "evidence": source.evidence().iter().map(|evidence| json!({
                         "source_kind": evidence.provenance().source_kind().as_str(),
                         "source_id": evidence.provenance().source_id(),
@@ -100,6 +101,24 @@ pub(super) fn constraint_diagnostic_to_value(diagnostic: &ConstraintDiagnostic) 
         "code": diagnostic.code(),
         "message": diagnostic.message()
     })
+}
+
+
+fn generated_expression_to_value(expression: &crate::column_sources::GeneratedValueExpression) -> Value {
+    use crate::column_sources::GeneratedValueExpression as G;
+    match expression {
+        G::Column(column) => json!({"kind":"column","column":column}),
+        G::Literal(value) => json!({"kind":"literal","value":constraint_value_to_value(value)}),
+        G::Add(left, right) => json!({
+            "kind":"add","left":generated_expression_to_value(left),"right":generated_expression_to_value(right)
+        }),
+        G::Subtract(left, right) => json!({
+            "kind":"subtract","left":generated_expression_to_value(left),"right":generated_expression_to_value(right)
+        }),
+        G::Multiply(left, right) => json!({
+            "kind":"multiply","left":generated_expression_to_value(left),"right":generated_expression_to_value(right)
+        }),
+    }
 }
 
 pub(super) fn constraint_value_to_value(value: &ConstraintValue) -> Value {
