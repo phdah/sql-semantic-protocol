@@ -1381,7 +1381,7 @@ collisions. The ordered DML path checks both its prestate and each poststate.
 Portable scalar and deterministic row-local computed `CHECK` comparisons (`eq`, `not_eq`, `gt`, `gte`, `lt`, `lte`) emit typed facts and provenance. Portable `AND` conjuncts are normalized atomically for SQL DDL and dbt CHECK metadata: if any conjunct is unsupported, the entire rule is residual. The physical validator checks exact integers and base-ten decimals and admits SQL NULL as UNKNOWN. `NOT ENFORCED` rules are excluded from proof obligations, `Unknown` remains residual, and `Enforced` rules are evaluated. Complex functions and `OR`, unproved collation-sensitive comparisons, casts and enforcement timing remain residual.
 
 The independent `physical_typed_value_plan(value, data_type)` API accepts
-`PhysicalTypedValue` scalar, byte-buffer, JSON document, array, map and struct witnesses.
+`PhysicalTypedValue` scalar, exact finite IEEE754 binary32/binary64 bits, byte-buffer, JSON document, array, map and struct witnesses.
 It checks typed field arity, fixed array lengths, binary length bounds and
 recursively proven scalar elements. Map keys must have exact integer equality
 with canonicalized numeric identity (for example, `05` equals `5`); other
@@ -1392,7 +1392,7 @@ does not promote nested values to executable SQL expressions.
 
 Physical literals are conservatively validated against signed/unsigned
 integer bounds, exact decimal precision/scale, supported IEEE-safe integral
-float encodings, ASCII character lengths, Gregorian dates, ISO clock times,
+float encodings and finite typed Arrow float buffers, ASCII character lengths, Gregorian dates, ISO clock times,
 declared timestamp-zone syntax and canonical lowercase UUID forms. Time-zone
 offset conversion, non-binary string collation, NaN and signed-zero storage,
 JSON numeric rounding and nested Arrow array/map/struct ordered DML, unproved coercions or function
