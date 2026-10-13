@@ -85,6 +85,22 @@ pub(super) fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> V
             })
             .collect::<Vec<_>>());
     }
+    if !set.computed_boolean_checks().is_empty() {
+        value["computed_boolean_checks"] = json!(set
+            .computed_boolean_checks()
+            .iter()
+            .map(|check| {
+                json!({
+                    "predicate": computed_boolean_predicate_to_value(check.predicate()),
+                    "evidence": check.evidence().iter().map(|evidence| json!({
+                        "source_kind": evidence.provenance().source_kind().as_str(),
+                        "source_id": evidence.provenance().source_id(),
+                        "enforcement": evidence.enforcement().as_str(),
+                    })).collect::<Vec<_>>(),
+                })
+            })
+            .collect::<Vec<_>>());
+    }
     if !set.computed_keys().is_empty() {
         value["computed_keys"] = json!(set.computed_keys().iter().map(|key| {
             json!({
@@ -132,6 +148,37 @@ pub(super) fn constraint_diagnostic_to_value(diagnostic: &ConstraintDiagnostic) 
         "code": diagnostic.code(),
         "message": diagnostic.message()
     })
+}
+
+fn computed_boolean_predicate_to_value(
+    predicate: &crate::computed_boolean_checks::ComputedBooleanCheckPredicate,
+) -> Value {
+    use crate::computed_boolean_checks::ComputedBooleanCheckPredicate as P;
+    match predicate {
+        P::Comparison { left, operator, right } => json!({
+            "kind":"comparison",
+            "left":generated_expression_to_value(left),
+            "operator":operator.as_str(),
+            "right":generated_expression_to_value(right),
+        }),
+        P::IsNull { expression, negated } => json!({
+            "kind":"is_null",
+            "expression":generated_expression_to_value(expression),
+            "negated":negated,
+        }),
+        P::And(children) => json!({
+            "kind":"and",
+            "children":children.iter().map(computed_boolean_predicate_to_value).collect::<Vec<_>>(),
+        }),
+        P::Or(children) => json!({
+            "kind":"or",
+            "children":children.iter().map(computed_boolean_predicate_to_value).collect::<Vec<_>>(),
+        }),
+        P::Not(child) => json!({
+            "kind":"not",
+            "operand":computed_boolean_predicate_to_value(child),
+        }),
+    }
 }
 
 fn generated_expression_to_value(
