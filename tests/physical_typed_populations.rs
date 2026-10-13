@@ -355,7 +355,7 @@ fn typed_target_append_preserves_nested_payload_and_proves_existing_key_and_fk_l
     ];
     let inserted = typed_row(2, payload(3, 4));
     let result =
-        physical_typed_append_schema_plan(&bundle, &original, "target", &[inserted.clone()]);
+        physical_typed_append_schema_plan(&bundle, &original, "target", std::slice::from_ref(&inserted));
     let PhysicalTypedPopulationPlan::Feasible { final_states } = result else {
         panic!("expected feasible typed append: {result:?}");
     };
