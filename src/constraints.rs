@@ -607,6 +607,18 @@ impl RelationConstraintSet {
         self.column_value_sources.push(source);
     }
 
+    /// Whether an unconstrained synthetic physical population would omit required laws.
+    ///
+    /// Exact scalar defaults do not constrain already-materialized source rows.
+    /// Generated/identity values require additional evaluation evidence.
+    pub fn blocks_unconstrained_physical_plans(&self) -> bool {
+        !self.constraints.is_empty()
+            || !self.diagnostics.is_empty()
+            || self.column_value_sources.iter().any(|source| {
+                source.kind() != crate::column_sources::ColumnValueKind::Default
+            })
+    }
+
     /// Return explicit conflicts or unsupported metadata details.
     pub fn diagnostics(&self) -> &[ConstraintDiagnostic] {
         &self.diagnostics
