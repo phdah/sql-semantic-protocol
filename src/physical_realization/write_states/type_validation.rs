@@ -110,6 +110,9 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
         },
         DataType::FloatingPoint { bits } => match value {
             LiteralValue::Number(number) => {
+                if number == "-0" {
+                    return Err(residual("signed floating zero requires explicit storage law"));
+                }
                 let Some(value) = parse_integer(number) else {
                     return Err(residual(
                         "floating point rounding/NaN/signed-zero law is unproved",
@@ -366,4 +369,58 @@ mod tests {
             Err(StateFailure::Residual(..))
         ));
     }
+    #[test]
+    fn calendar_and_temporal_feasibility_respects_leap_days_and_precision() {
+        assert!(validate_value(&LiteralValue::Text("2024-02-29".into()), &DataType::Date).is_ok());
+        assert!(matches!(
+            validate_value(&LiteralValue::Text("2026-02-29".into()), &DataType::Date),
+            Err(StateFailure::Impossible(_))
+        ));
+        assert!(matches!(
+            validate_value(&LiteralValue::Text("02/29/2024".into()), &DataType::Date),
+            Err(StateFailure::Residual(..))
+        ));
+        assert!(validate_value(
+            &LiteralValue::Text("23:59:59.1200".into()),
+            &DataType::Time { precision: Some(2) },
+        ).is_ok());
+        assert!(matches!(
+            validate_value(
+                &LiteralValue::Text("23:59:59.123".into()),
+                &DataType::Time { precision: Some(2) },
+            ),
+            Err(StateFailure::Impossible(_))
+        ));
+        assert!(matches!(
+            validate_value(
+                &LiteralValue::Text("24:00:00".into()),
+                &DataType::Time { precision: Some(0) },
+            ),
+            Err(StateFailure::Impossible(_))
+        ));
+    }
+
+    #[test]
+    fn utc_timestamp_needs_zone_metadata_and_nested_json_remains_residual() {
+        use crate::relation::{SchemaColumn, TimestampZone};
+        let unknown = SchemaColumn::new("t", DataType::Timestamp { precision: Some(3) }).unwrap();
+        let instant = LiteralValue::Text("2026-10-13T08:05:00.123Z".into());
+        assert!(matches!(
+            validate_column_value(&instant, &unknown),
+            Err(StateFailure::Residual(..))
+        ));
+        let known = unknown.with_timestamp_zone(TimestampZone::WithTimeZone).unwrap();
+        assert!(validate_column_value(&instant, &known).is_ok());
+        let nested = DataType::Array {
+            element: Some(Box::new(DataType::SignedInteger { bits: Some(64) })),
+            length: None,
+        };
+        for kind in [&DataType::Json, &nested] {
+            assert!(matches!(
+                validate_value(&LiteralValue::Text("[1,2]".into()), kind),
+                Err(StateFailure::Residual(..))
+            ));
+        }
+    }
+
 }
