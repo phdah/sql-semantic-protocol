@@ -23,7 +23,8 @@
       "GeneratedValueExpression::Coalesce",
       "physical_typed_ordered_insert_plan",
       "ComputedBooleanCheckPredicate",
-      "ComputedBooleanCheckConstraint"
+      "ComputedBooleanCheckConstraint",
+      "physical_typed_ordered_write_plan"
     ],
     "verified_scope": [
       "SQL_DDL_source_schema_provenance",
@@ -74,7 +75,10 @@
       "Boolean_CHECK_decisive_branch_avoids_unsupported_comparison_guessing",
       "controlled_identity_generated_value_dependency_with_attested_sequence",
       "SQL_DDL_ODCS_default_parity_retains_unknown_enforcement_as_residual",
-      "portable_abs_generated_AST_cross_dialect_parser_boundary_classification"
+      "portable_abs_generated_AST_cross_dialect_parser_boundary_classification",
+      "complete_nested_typed_INSERT_SELECT_with_scalar_WHERE_three_valued_filter_proof",
+      "typed_scalar_UPDATE_DELETE_preserve_untouched_nested_Arrow_values_and_recheck_entire_FK_poststate",
+      "typed_nested_SQL_predicates_and_unnormalized_WHERE_fail_closed_without_fabricated_NULLs"
     ],
     "tests": [
       "tests/physical_write_states.rs",
@@ -93,7 +97,7 @@
       "opaque_computed_functions_and_identity_sequence_execution",
       "cross_adapter_default_parity_and_dbt_metadata",
       "full_cross_dialect_arrow_differential_generation",
-      "nested_typed_SQL_DML_beyond_direct_row_preserving_INSERT_SELECT",
+      "nested_typed_SQL_DML_expressions_MERGE_and_generated_omissions_beyond_scalar_row_local_mutations",
       "unbounded_UDF_subquery_CHECK_semantics_and_cross_dialect_transaction_timing"
     ],
     "release_limit": "Partial TASK-79 proofs are intentionally not generator completion or per-variant coverage signoff.",
