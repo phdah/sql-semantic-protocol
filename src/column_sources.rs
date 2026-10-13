@@ -56,9 +56,7 @@ impl GeneratedValueExpression {
             Self::Column(name) => !name.trim().is_empty(),
             Self::Literal(_) => true,
             Self::Abs(operand) => operand.valid(),
-            Self::Coalesce(arguments) => {
-                arguments.len() >= 2 && arguments.iter().all(Self::valid)
-            }
+            Self::Coalesce(arguments) => arguments.len() >= 2 && arguments.iter().all(Self::valid),
             Self::Add(left, right) | Self::Subtract(left, right) | Self::Multiply(left, right) => {
                 left.valid() && right.valid()
             }
