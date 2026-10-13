@@ -374,11 +374,11 @@ fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePla
 }
 
 mod constraints;
-mod type_validation;
 mod evaluator;
 mod operators;
 mod projection;
+mod type_validation;
 
 use constraints::{validate_all_constraints, validate_state};
-use type_validation::validate_value;
 use operators::{append_rows, define_rows, merge_rows, mutate_rows};
+use type_validation::validate_value;
