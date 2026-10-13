@@ -492,10 +492,7 @@ fn ddl_disjunction_normalizes_only_full_portable_same_column_equality() {
     let dialect = dialect_from_name("duckdb").unwrap();
     // These ORs do not collapse into accepted values. Their complete SQL
     // three-valued Boolean CHECK laws are still representable.
-    for supported_boolean in [
-        "CHECK (id = 1 OR score = 2)",
-        "CHECK (id = 1 OR id = NULL)",
-    ] {
+    for supported_boolean in ["CHECK (id = 1 OR score = 2)", "CHECK (id = 1 OR id = NULL)"] {
         let sql = SqlInput::inline(format!(
             "CREATE TABLE target (id INTEGER, score INTEGER, {supported_boolean})"
         ));
@@ -506,13 +503,20 @@ fn ddl_disjunction_normalizes_only_full_portable_same_column_equality() {
             .iter()
             .find(|set| set.relation() == "target")
             .unwrap();
-        assert_eq!(set.computed_boolean_checks().len(), 1, "{supported_boolean}");
+        assert_eq!(
+            set.computed_boolean_checks().len(),
+            1,
+            "{supported_boolean}"
+        );
         assert!(!set
             .constraints()
             .iter()
             .any(|rule| matches!(rule, RelationConstraint::AcceptedValues(_))));
     }
-    for unsupported in ["CHECK (id = 1 OR lower(score) = 2)"] {
+    for unsupported in [
+        "CHECK (id = 1 OR lower(score) = 2)",
+        "CHECK (id = 1 OR score / 2 = 2)",
+    ] {
         let sql = SqlInput::inline(format!(
             "CREATE TABLE target (id INTEGER, score INTEGER, {unsupported})"
         ));
