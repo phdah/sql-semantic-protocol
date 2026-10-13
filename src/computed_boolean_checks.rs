@@ -97,7 +97,10 @@ impl ComputedBooleanCheckConstraint {
         }
         evidence.sort();
         evidence.dedup();
-        Ok(Self { predicate, evidence })
+        Ok(Self {
+            predicate,
+            evidence,
+        })
     }
 
     /// Canonical predicate tree.
