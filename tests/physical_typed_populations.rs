@@ -7,8 +7,10 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_typed_append_schema_plan,
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
     CheckCompareOperator, ConfiguredSqlInput,
+    ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
-    DataType, DataTypeField, LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue,
+    DataType, DataTypeField, GeneratedValueExpression, LiteralValue,
+    PhysicalTypedPopulationPlan, PhysicalTypedValue,
     PhysicalTypedWriteRow, PhysicalTypedWriteState, RelationCatalog, RelationConstraint,
     RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
@@ -595,4 +597,29 @@ fn ordered_typed_insert_rejects_existing_key_collisions_and_unknown_sql() {
             "{sql}"
         );
     }
+}
+
+#[test]
+fn nested_boolean_check_must_not_evaluate_a_private_null_placeholder() {
+    let mut bundle = bundle();
+    bundle.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![]).unwrap()
+            .with_computed_boolean_checks(vec![
+                ComputedBooleanCheckConstraint::new(
+                    ComputedBooleanCheckPredicate::IsNull {
+                        expression: GeneratedValueExpression::Column("payload".into()),
+                        negated:false,
+                    },
+                    evidence(),
+                ).unwrap(),
+            ]),
+    ]);
+    let snapshots = [
+        typed_state("target", vec![typed_row(1,payload(2,3))]),
+        typed_state("source", vec![typed_row(1,payload(4,5))]),
+    ];
+    assert!(matches!(
+        physical_typed_closed_world_schema_plan(&bundle,&snapshots),
+        PhysicalTypedPopulationPlan::Residual { .. }
+    ));
 }
