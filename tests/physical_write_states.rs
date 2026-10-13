@@ -7,7 +7,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
     physical_ordered_write_state_plan, physical_ordered_write_state_plan_with_identities,
     physical_typed_value_plan, AnalysisBundle, CheckCompareOperator, ColumnValueKind,
-    ColumnValueSource, ComputedCheckConstraint, ComputedKeyConstraint, ConfiguredSqlInput,
+    ColumnValueSource, ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate,
+    ComputedCheckConstraint, ComputedKeyConstraint, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, DataType, DataTypeField, GeneratedValueExpression, LiteralValue,
     PhysicalIdentitySequence, PhysicalTypeProof, PhysicalTypedValue, PhysicalWriteRow,
@@ -2754,4 +2755,73 @@ fn controlled_identity_allocation_can_feed_portable_generated_dependencies() {
         physical_ordered_write_state_plan_with_identities(&bundle,&occupied,&[sequence]),
         PhysicalWriteStatePlan::Impossible { .. }
     ));
+}
+
+#[test]
+fn boolean_or_not_and_null_check_proofs_match_duckdb() {
+    use ComputedBooleanCheckPredicate as P;
+    let column = |name: &str| GeneratedValueExpression::Column(name.into());
+    let literal = |value| GeneratedValueExpression::Literal(ConstraintValue::Integer(value));
+    let predicate = P::Or(vec![
+        P::Comparison { left: column("id"), operator: CheckCompareOperator::Gt, right: literal(0) },
+        P::Comparison { left: column("score"), operator: CheckCompareOperator::Lt, right: literal(0) },
+    ]);
+    let mut b = bundle(&["SELECT id FROM target"],"duckdb");
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target",vec![]).unwrap()
+            .with_computed_boolean_checks(vec![
+                ComputedBooleanCheckConstraint::new(predicate,evidence()).unwrap(),
+            ]),
+    ]);
+    for rows in [
+        vec![(Some(2),Some(4))],
+        vec![(Some(-2),Some(-4))],
+        vec![(None,Some(4))],
+        vec![(None,None)],
+    ] {
+        assert!(matches!(
+            physical_closed_world_schema_plan(&b,&[state("target",&rows)]),
+            PhysicalWriteStatePlan::Feasible { .. }
+        ));
+    }
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b,&[state("target",&[(Some(-2),Some(4))])]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    let mut not = bundle(&["SELECT id FROM target"],"duckdb");
+    not.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target",vec![]).unwrap().with_computed_boolean_checks(
+            vec![ComputedBooleanCheckConstraint::new(P::Not(Box::new(P::IsNull {
+                expression: column("score"), negated:false,
+            })),evidence()).unwrap()],
+        ),
+    ]);
+    assert!(matches!(
+        physical_closed_world_schema_plan(&not,&[state("target",&[(None,Some(4))])]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&not,&[state("target",&[(None,None)])]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+
+    let ddl = bundle(
+        &["CREATE TABLE target(id INTEGER,score INTEGER,CHECK(id>0 OR score<0))"],
+        "duckdb",
+    );
+    let fact = ddl.relation_constraints().iter()
+        .find(|set|set.relation()=="target").unwrap();
+    assert_eq!(fact.computed_boolean_checks().len(),1);
+    let emitted:serde_json::Value =
+        serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&ddl)).unwrap();
+    assert_eq!(
+        emitted["relation_constraints"][0]["computed_boolean_checks"][0]["predicate"]["kind"],
+        "or"
+    );
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER,score INTEGER,CHECK(id>0 OR score<0));
+         INSERT INTO target VALUES(2,4),(-2,-4),(NULL,4),(NULL,NULL);",
+    ).unwrap();
+    assert!(db.execute_batch("INSERT INTO target VALUES(-2,4)").is_err());
 }
