@@ -990,12 +990,18 @@ impl RelationConstraintSet {
         }
         for check in &self.computed_boolean_checks {
             if let Some(schema) = local {
-                if check.predicate().referenced_columns().into_iter().any(|name| {
-                    !schema.columns().iter().any(|column| column.name() == name)
-                }) {
+                if check
+                    .predicate()
+                    .referenced_columns()
+                    .into_iter()
+                    .any(|name| !schema.columns().iter().any(|column| column.name() == name))
+                {
                     diagnostics.push(ConstraintDiagnostic::new(
                         "invalid_boolean_check_column",
-                        format!("Boolean CHECK on '{}' references an undeclared column", self.relation),
+                        format!(
+                            "Boolean CHECK on '{}' references an undeclared column",
+                            self.relation
+                        ),
                     ));
                     continue;
                 }
