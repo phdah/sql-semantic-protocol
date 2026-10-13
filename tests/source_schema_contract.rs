@@ -347,7 +347,7 @@ fn portable_abs_generated_ast_is_canonical_across_every_parsing_dialect() {
                     ))),
                     "{name}",
                 );
-                recognized.push(name);
+                recognized.push(*name);
             }
             Err(_) => parser_boundary.push(name),
         }
