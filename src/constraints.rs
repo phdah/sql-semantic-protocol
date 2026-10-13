@@ -7,8 +7,8 @@ use std::collections::BTreeSet;
 use std::fmt;
 
 use crate::column_sources::ColumnValueSource;
-use crate::computed_keys::ComputedKeyConstraint;
 use crate::computed_checks::ComputedCheckConstraint;
+use crate::computed_keys::ComputedKeyConstraint;
 
 /// Source category that supplied one piece of constraint evidence.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -695,7 +695,11 @@ impl RelationConstraintSet {
     }
 
     fn add_computed_check(&mut self, check: ComputedCheckConstraint) {
-        if let Some(existing) = self.computed_checks.iter_mut().find(|existing| existing.same_semantics(&check)) {
+        if let Some(existing) = self
+            .computed_checks
+            .iter_mut()
+            .find(|existing| existing.same_semantics(&check))
+        {
             existing.merge_evidence(&check);
         } else {
             self.computed_checks.push(check);
@@ -717,17 +721,30 @@ impl RelationConstraintSet {
     }
 
     fn add_computed_key(&mut self, key: ComputedKeyConstraint) {
-        if let Some(existing) = self.computed_keys.iter_mut().find(|existing| existing.same_semantics(&key)) {
+        if let Some(existing) = self
+            .computed_keys
+            .iter_mut()
+            .find(|existing| existing.same_semantics(&key))
+        {
             existing.merge_evidence(&key);
             return;
         }
         if key.primary()
-            && (self.constraints.iter().any(|constraint| matches!(constraint, RelationConstraint::PrimaryKey(_)))
-                || self.computed_keys.iter().any(ComputedKeyConstraint::primary))
+            && (self
+                .constraints
+                .iter()
+                .any(|constraint| matches!(constraint, RelationConstraint::PrimaryKey(_)))
+                || self
+                    .computed_keys
+                    .iter()
+                    .any(ComputedKeyConstraint::primary))
         {
             self.diagnostics.push(ConstraintDiagnostic::new(
                 "conflicting_primary_key",
-                format!("relation '{}' has conflicting primary key declarations", self.relation),
+                format!(
+                    "relation '{}' has conflicting primary key declarations",
+                    self.relation
+                ),
             ));
         }
         self.computed_keys.push(key);
@@ -919,12 +936,19 @@ impl RelationConstraintSet {
         }
         for check in &self.computed_checks {
             if let Some(schema) = local {
-                if check.left().referenced_columns().into_iter()
+                if check
+                    .left()
+                    .referenced_columns()
+                    .into_iter()
                     .chain(check.right().referenced_columns())
-                    .any(|name| !schema.columns().iter().any(|c| c.name() == name)) {
+                    .any(|name| !schema.columns().iter().any(|c| c.name() == name))
+                {
                     diagnostics.push(ConstraintDiagnostic::new(
                         "invalid_computed_check_column",
-                        format!("computed CHECK on '{}' references an undeclared column", self.relation),
+                        format!(
+                            "computed CHECK on '{}' references an undeclared column",
+                            self.relation
+                        ),
                     ));
                     continue;
                 }
@@ -933,10 +957,18 @@ impl RelationConstraintSet {
         }
         for key in &self.computed_keys {
             if let Some(schema) = local {
-                if key.expressions().iter().flat_map(|expr| expr.referenced_columns()).any(|name| !schema.columns().iter().any(|c| c.name() == name)) {
+                if key
+                    .expressions()
+                    .iter()
+                    .flat_map(|expr| expr.referenced_columns())
+                    .any(|name| !schema.columns().iter().any(|c| c.name() == name))
+                {
                     diagnostics.push(ConstraintDiagnostic::new(
                         "invalid_computed_key_column",
-                        format!("computed key on '{}' references an undeclared column", self.relation),
+                        format!(
+                            "computed key on '{}' references an undeclared column",
+                            self.relation
+                        ),
                     ));
                     continue;
                 }
