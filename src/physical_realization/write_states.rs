@@ -414,12 +414,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 .to_string(),
         };
     }
-    if let Err(error) = constraints::validate_all_constraints_with_identity(
-        bundle,
-        &states,
-        &BTreeSet::new(),
-        &identity_columns,
-    ) {
+    if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
         return failure(None, error);
     }
     let mut transitions = Vec::new();
@@ -511,12 +506,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
             rows: Vec::new(),
         });
         states.insert(target.to_string(), after.clone());
-        if let Err(error) = constraints::validate_all_constraints_with_identity(
-            bundle,
-            &states,
-            &BTreeSet::new(),
-            &identity_columns,
-        ) {
+        if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
             return failure(Some(layer.id()), error);
         }
         transitions.push(PhysicalWriteTransition {
@@ -530,6 +520,23 @@ pub fn physical_ordered_write_state_plan_with_identities(
     PhysicalWriteStatePlan::Feasible {
         transitions,
         final_states: states.into_values().collect(),
+    }
+}
+
+fn validate_ordered_constraints(
+    bundle: &AnalysisBundle,
+    states: &BTreeMap<String, PhysicalWriteState>,
+    identities: &BTreeSet<(String, String)>,
+) -> StateResult<()> {
+    if identities.is_empty() {
+        constraints::validate_all_constraints(bundle, states)
+    } else {
+        constraints::validate_all_constraints_with_identity(
+            bundle,
+            states,
+            &BTreeSet::new(),
+            identities,
+        )
     }
 }
 
