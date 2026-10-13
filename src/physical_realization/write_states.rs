@@ -236,7 +236,10 @@ pub fn physical_closed_world_schema_plan(
 ) -> PhysicalWriteStatePlan {
     let mut states = BTreeMap::<String, PhysicalWriteState>::new();
     for state in snapshots {
-        if states.insert(state.relation.clone(), state.clone()).is_some() {
+        if states
+            .insert(state.relation.clone(), state.clone())
+            .is_some()
+        {
             return PhysicalWriteStatePlan::Impossible {
                 layer_id: None,
                 reason: "duplicate complete physical source identity".to_string(),
