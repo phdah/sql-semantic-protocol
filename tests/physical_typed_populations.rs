@@ -4,9 +4,8 @@ use std::collections::BTreeMap;
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
-    CheckCompareOperator, ConfiguredSqlInput,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_typed_append_schema_plan,
+    physical_typed_closed_world_schema_plan, CheckCompareOperator, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     DataType, DataTypeField, LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue,
     PhysicalTypedWriteRow, PhysicalTypedWriteState, RelationCatalog, RelationConstraint,
@@ -355,12 +354,8 @@ fn typed_target_append_preserves_nested_payload_and_proves_existing_key_and_fk_l
         ),
     ];
     let inserted = typed_row(2, payload(3, 4));
-    let result = physical_typed_append_schema_plan(
-        &bundle,
-        &original,
-        "target",
-        &[inserted.clone()],
-    );
+    let result =
+        physical_typed_append_schema_plan(&bundle, &original, "target", &[inserted.clone()]);
     let PhysicalTypedPopulationPlan::Feasible { final_states } = result else {
         panic!("expected feasible typed append: {result:?}");
     };
@@ -483,7 +478,10 @@ fn ddl_disjunction_normalizes_only_full_portable_same_column_equality() {
             .iter()
             .any(|d| d.code() == "unsupported_check_constraint"));
     }
-    assert!(recognized > 0, "no dialect recognized the positive SQL DDL fixture");
+    assert!(
+        recognized > 0,
+        "no dialect recognized the positive SQL DDL fixture"
+    );
 
     let dialect = dialect_from_name("duckdb").unwrap();
     for unsupported in [
@@ -508,10 +506,9 @@ fn ddl_disjunction_normalizes_only_full_portable_same_column_equality() {
             "{unsupported}: {set:?}"
         );
         assert!(
-            !set.constraints().iter().any(|rule| matches!(
-                rule,
-                RelationConstraint::AcceptedValues(_)
-            )),
+            !set.constraints()
+                .iter()
+                .any(|rule| matches!(rule, RelationConstraint::AcceptedValues(_))),
             "{unsupported} silently dropped an unproved OR branch"
         );
     }
