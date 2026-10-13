@@ -149,6 +149,22 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
             )),
             _ => Err(residual("unproved physical string coercion")),
         },
+        DataType::Date => match value {
+            LiteralValue::Text(text) => validate_iso_date(text),
+            _ => Err(residual("date requires canonical ISO date representation")),
+        },
+        DataType::Time { precision } => match value {
+            LiteralValue::Text(text) => validate_iso_time(text, *precision),
+            _ => Err(residual("time requires canonical clock representation")),
+        },
+        DataType::Uuid => match value {
+            LiteralValue::Text(text) if text.len() == 36 && text.bytes().enumerate().all(|(i, c)| {
+                if matches!(i, 8 | 13 | 18 | 23) { c == b'-' } else { c.is_ascii_digit() || (b'a'..=b'f').contains(&c) }
+            }) => Ok(()),
+            LiteralValue::Text(text) if text.is_ascii() && text.len() == 36 =>
+                Err(impossible("canonical UUID has invalid separator or hex digit")),
+            _ => Err(residual("UUID requires lowercase canonical hyphenated text")),
+        },
         DataType::Enum { values } => match value {
             LiteralValue::Text(text)
                 if values
@@ -172,6 +188,62 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
             "physical datatype has no portable exact scalar witness law",
         )),
     }
+}
+
+fn validate_iso_date(text: &str) -> StateResult<()> {
+    let bytes = text.as_bytes();
+    if bytes.len() != 10 || bytes[4] != b'-' || bytes[7] != b'-'
+        || bytes.iter().enumerate().any(|(i, c)| i != 4 && i != 7 && !c.is_ascii_digit())
+    {
+        return Err(residual("date requires YYYY-MM-DD calendar syntax"));
+    }
+    let year = text[..4].parse::<u32>().unwrap_or(0);
+    let month = text[5..7].parse::<u32>().unwrap_or(0);
+    let day = text[8..10].parse::<u32>().unwrap_or(0);
+    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    let max_day = match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 if leap => 29,
+        2 => 28,
+        _ => 0,
+    };
+    if year == 0 || day == 0 || day > max_day {
+        Err(impossible("canonical date violates Gregorian calendar bounds"))
+    } else {
+        Ok(())
+    }
+}
+
+fn validate_iso_time(text: &str, precision: Option<u64>) -> StateResult<()> {
+    let (whole, fraction) = match text.split_once('.') {
+        Some((whole, fraction)) => (whole, Some(fraction)),
+        None => (text, None),
+    };
+    let bytes = whole.as_bytes();
+    if bytes.len() != 8 || bytes[2] != b':' || bytes[5] != b':'
+        || bytes.iter().enumerate().any(|(i, c)| i != 2 && i != 5 && !c.is_ascii_digit())
+        || fraction.is_some_and(|v| v.is_empty() || !v.bytes().all(|c| c.is_ascii_digit()))
+    {
+        return Err(residual("time requires HH:MM:SS with an optional decimal fraction"));
+    }
+    let hour = whole[..2].parse::<u32>().unwrap_or(99);
+    let minute = whole[3..5].parse::<u32>().unwrap_or(99);
+    let second = whole[6..8].parse::<u32>().unwrap_or(99);
+    if hour >= 24 || minute >= 60 || second >= 60 {
+        return Err(impossible("canonical physical time exceeds clock bounds"));
+    }
+    if let Some(fraction) = fraction {
+        let significant = fraction.trim_end_matches('0').len() as u64;
+        if let Some(max) = precision {
+            if significant > max {
+                return Err(impossible("fractional seconds exceed declared precision"));
+            }
+        } else if significant > 0 {
+            return Err(residual("fractional seconds precision not declared"));
+        }
+    }
+    Ok(())
 }
 
 fn parse_integer(text: &str) -> Option<i128> {
