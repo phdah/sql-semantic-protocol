@@ -123,6 +123,71 @@ impl PhysicalWriteState {
     }
 }
 
+/// Caller-attested exact next allocation state for one database identity column.
+///
+/// Identity allocation is not inferred from maximum existing row values.
+/// An application must supply the authoritative next value and step for the
+/// complete execution window. Sequence caching, cycling, triggers and
+/// transaction rollback are intentionally outside this exact contract.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalIdentitySequence {
+    relation: String,
+    column: String,
+    next_value: i128,
+    increment: i128,
+}
+
+impl PhysicalIdentitySequence {
+    /// A nonempty relation/column identity and nonzero exact step.
+    pub fn new(
+        relation: impl Into<String>,
+        column: impl Into<String>,
+        next_value: i128,
+        increment: i128,
+    ) -> Option<Self> {
+        let relation = relation.into();
+        let column = column.into();
+        if relation.trim().is_empty() || column.trim().is_empty() || increment == 0 {
+            return None;
+        }
+        Some(Self {
+            relation,
+            column,
+            next_value,
+            increment,
+        })
+    }
+
+    /// Canonical relation owning this database-managed column.
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
+
+    /// Canonical column identity.
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+
+    /// Next database-produced integer in the attested sequence.
+    pub fn next_value(&self) -> i128 {
+        self.next_value
+    }
+
+    /// Attested nonzero allocation step.
+    pub fn increment(&self) -> i128 {
+        self.increment
+    }
+
+    pub(super) fn allocate(&mut self) -> StateResult<LiteralValue> {
+        let emitted = self.next_value;
+        self.next_value = self
+            .next_value
+            .checked_add(self.increment)
+            .ok_or_else(|| residual("identity sequence next-value overflow"))?;
+        Ok(LiteralValue::Number(emitted.to_string()))
+    }
+}
+
 /// Exact target state on either side of one committed SQL write.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PhysicalWriteTransition {
