@@ -782,6 +782,12 @@ pub(super) fn accepted_values_from_check(
                 _ => {}
             }
         }
+        // CHECK (x IN (..., NULL)) admits UNKNOWN for an unmatched x.
+        // A strict accepted-values domain would incorrectly call that row
+        // impossible. Keep the entire CHECK residual instead.
+        if matches!(value, ConstraintValue::Null) {
+            return None;
+        }
         values.push(value);
     }
 
