@@ -160,36 +160,38 @@ pub fn physical_typed_value_plan(
             }
             PhysicalTypeProof::Feasible
         }
-        DataType::FloatingPoint { bits } => match (bits, value) {
-            (Some(32), PhysicalTypedValue::Float32Bits(raw)) => {
-                let float = f32::from_bits(*raw);
-                if float.is_finite() && *raw != (-0.0_f32).to_bits() {
-                    PhysicalTypeProof::Feasible
-                } else {
-                    PhysicalTypeProof::Residual {
-                        reason: "NaN, infinity and signed floating zero need attested SQL storage laws"
-                            .to_string(),
+        DataType::FloatingPoint { bits } => {
+            match (bits, value) {
+                (Some(32), PhysicalTypedValue::Float32Bits(raw)) => {
+                    let float = f32::from_bits(*raw);
+                    if float.is_finite() && *raw != (-0.0_f32).to_bits() {
+                        PhysicalTypeProof::Feasible
+                    } else {
+                        PhysicalTypeProof::Residual {
+                            reason: "NaN, infinity and signed floating zero need attested SQL storage laws"
+                                .to_string(),
+                        }
                     }
                 }
-            }
-            (Some(64), PhysicalTypedValue::Float64Bits(raw)) => {
-                let float = f64::from_bits(*raw);
-                if float.is_finite() && *raw != (-0.0_f64).to_bits() {
-                    PhysicalTypeProof::Feasible
-                } else {
-                    PhysicalTypeProof::Residual {
-                        reason: "NaN, infinity and signed floating zero need attested SQL storage laws"
-                            .to_string(),
+                (Some(64), PhysicalTypedValue::Float64Bits(raw)) => {
+                    let float = f64::from_bits(*raw);
+                    if float.is_finite() && *raw != (-0.0_f64).to_bits() {
+                        PhysicalTypeProof::Feasible
+                    } else {
+                        PhysicalTypeProof::Residual {
+                            reason: "NaN, infinity and signed floating zero need attested SQL storage laws"
+                                .to_string(),
+                        }
                     }
                 }
-            }
-            (_, PhysicalTypedValue::Float32Bits(_) | PhysicalTypedValue::Float64Bits(_)) => {
-                PhysicalTypeProof::Residual {
-                    reason: "float storage width/coercion is not attested".to_string(),
+                (_, PhysicalTypedValue::Float32Bits(_) | PhysicalTypedValue::Float64Bits(_)) => {
+                    PhysicalTypeProof::Residual {
+                        reason: "float storage width/coercion is not attested".to_string(),
+                    }
                 }
-            }
-            _ => typed_error(validate_value_as_float_scalar(value, data_type)),
-        },
+                _ => typed_error(validate_value_as_float_scalar(value, data_type)),
+                }
+        }
         DataType::Json => match value {
             PhysicalTypedValue::Json(document) => json_document_proof(document),
             PhysicalTypedValue::Scalar(LiteralValue::Null) => PhysicalTypeProof::Feasible,
@@ -232,7 +234,9 @@ fn validate_value_as_float_scalar(
 ) -> StateResult<()> {
     match value {
         PhysicalTypedValue::Scalar(literal) => validate_value(literal, data_type),
-        _ => Err(residual("non-scalar value is not a floating point encoding")),
+        _ => Err(residual(
+            "non-scalar value is not a floating point encoding",
+        )),
     }
 }
 
