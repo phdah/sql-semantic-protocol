@@ -8,6 +8,11 @@
     "rust_api": [
       "ColumnValueSource",
       "ColumnValueKind",
+      "GeneratedValueExpression",
+      "PhysicalTypedWriteRow",
+      "PhysicalTypedWriteState",
+      "PhysicalTypedPopulationPlan",
+      "physical_typed_closed_world_schema_plan",
       "SchemaColumn::with_collation",
       "physical_closed_world_schema_plan",
       "physical_ordered_write_state_plan"
@@ -21,19 +26,23 @@
       "schema_key_foreign_key_checks",
       "closed_world_cyclic_foreign_keys",
       "generated_identity_opaque_residual",
+      "generated_exact_row_local_integer_arithmetic_and_omitted_INSERT_values",
+      "complete_Arrow_style_nested_type_populations_cross_source_scalar_keys_FKs",
+      "exact_decimal_and_boolean_CHECK_comparators_and_reversed_SQL_comparisons",
       "Arrow_style_nested_array_map_struct_typed_value_bounds",
       "enforced_numeric_scalar_CHECK_and_SQL_NULL"
     ],
     "tests": [
       "tests/physical_write_states.rs",
+      "tests/physical_typed_populations.rs",
       "tests/source_schema_contract.rs",
       "tests/odcs.rs"
     ],
     "unproved": [
-      "Arrow_nested_struct_array_map_SQL_execution_and_serialization",
+      "Arrow_nested_struct_array_map_ordered_DML_execution_and_serialization",
       "NaN_signed_zero_and_decimal_implicit_rounding",
       "vendor_collation_and_timezone_execution_laws",
-      "computed_key_and_generated_identity_execution",
+      "computed_functional_keys_and_identity_sequence_execution",
       "cross_adapter_default_parity_and_dbt_metadata",
       "full_cross_dialect_arrow_differential_generation"
     ],
