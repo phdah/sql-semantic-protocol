@@ -1339,6 +1339,7 @@ impl SqlTruth {
 struct ColumnThresholds {
     integers: BTreeSet<i128>,
     prefixes: BTreeSet<String>,
+    strings: BTreeSet<String>,
     compared_columns: BTreeSet<ColumnRef>,
 }
 
@@ -1375,6 +1376,13 @@ fn collect_comparison_literals(
                 .or_default()
                 .compared_columns
                 .insert(left.clone());
+        }
+        BooleanRowConstraint::StringEquality { column, literal, .. } => {
+            thresholds
+                .entry(column.clone())
+                .or_default()
+                .strings
+                .insert(literal.clone());
         }
         BooleanRowConstraint::StringPrefix { column, prefix, .. } => {
             thresholds
@@ -1551,7 +1559,8 @@ fn possible_joint_truth_vectors(
         let string_bounds = string_evidence(&column);
         let integer_required =
             !literals.integers.is_empty() || !literals.compared_columns.is_empty();
-        if integer_required && !literals.prefixes.is_empty() {
+        let string_required = !literals.prefixes.is_empty() || !literals.strings.is_empty();
+        if integer_required && string_required {
             // A single source column cannot simultaneously be an integer and a
             // string under the scoped typed comparison semantics.
             return BTreeSet::new();
@@ -1562,14 +1571,14 @@ fn possible_joint_truth_vectors(
                 let fits = match value {
                     RowScalar::Integer(value) if integer_required => integer_bounds
                         .is_some_and(|bounds| bounds.minimum <= *value && *value <= bounds.maximum),
-                    RowScalar::String(value) if !literals.prefixes.is_empty() => string_bounds
+                    RowScalar::String(value) if string_required => string_bounds
                         .is_some_and(|bounds| {
                             bounds
                                 .max_chars
                                 .is_none_or(|max| value.chars().count() as u64 <= max)
                         }),
                     // A pure NULL test admits a source value of any scalar kind.
-                    _ if !integer_required && literals.prefixes.is_empty() => true,
+                    _ if !integer_required && !string_required => true,
                     _ => false,
                 };
                 if fits {
@@ -1609,21 +1618,28 @@ fn possible_joint_truth_vectors(
                     }
                 }
             }
-        } else if !literals.prefixes.is_empty() {
+        } else if string_required {
             let Some(bounds) = string_bounds else {
                 return BTreeSet::new();
             };
-            // Under attested binary/no-padding semantics, every ASCII prefix
-            // pattern changes truth only at its prefix. Each literal prefix
-            // and the empty string give representatives of the joint truth
-            // regions, including overlapping and negated prefixes.
-            values.insert(Some(RowScalar::String(String::new())));
+            let mut candidates = BTreeSet::from([
+                String::new(),
+                "!".to_string(),
+                "z".to_string(),
+                "0".to_string(),
+            ]);
+            candidates.extend(literals.strings);
             for prefix in literals.prefixes {
+                candidates.insert(prefix.clone());
+                candidates.insert(format!("{prefix}!"));
+                candidates.insert(format!("{prefix}0"));
+            }
+            for value in candidates {
                 if bounds
                     .max_chars
-                    .is_none_or(|max| prefix.chars().count() as u64 <= max)
+                    .is_none_or(|max| value.chars().count() as u64 <= max)
                 {
-                    values.insert(Some(RowScalar::String(prefix)));
+                    values.insert(Some(RowScalar::String(value)));
                 }
             }
         } else {
@@ -1752,6 +1768,35 @@ fn eval_joint_truth(
                         Op::IsDistinctFrom | Op::IsNotDistinctFrom => unreachable!("handled above"),
                     }
                 }
+            };
+            Some(if result {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            })
+        }
+        BooleanRowConstraint::StringEquality {
+            column,
+            operator,
+            literal,
+        } => {
+            use crate::protocol::ComparisonOperator as Op;
+            let value = match assignment.get(column)? {
+                Some(RowScalar::String(value)) => Some(value.as_str()),
+                None => None,
+                _ => return None,
+            };
+            let result = match operator {
+                Op::IsDistinctFrom => value != Some(literal.as_str()),
+                Op::IsNotDistinctFrom => value == Some(literal.as_str()),
+                Op::Eq | Op::Neq => {
+                    let Some(value) = value else {
+                        return Some(SqlTruth::Unknown);
+                    };
+                    let equal = value == literal;
+                    if *operator == Op::Eq { equal } else { !equal }
+                }
+                _ => return None,
             };
             Some(if result {
                 SqlTruth::True
