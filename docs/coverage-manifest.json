@@ -21,7 +21,9 @@
       "to_physical_typed_population_json",
       "GeneratedValueExpression::Abs",
       "GeneratedValueExpression::Coalesce",
-      "physical_typed_ordered_insert_plan"
+      "physical_typed_ordered_insert_plan",
+      "ComputedBooleanCheckPredicate",
+      "ComputedBooleanCheckConstraint"
     ],
     "verified_scope": [
       "SQL_DDL_source_schema_provenance",
@@ -66,7 +68,13 @@
       "lossless_typed_physical_witness_sidecar_only_after_closed_world_validation",
       "named_schema_generated_text_equality_without_unproved_collation_inequality",
       "lossless_nested_Arrow_struct_array_ordered_direct_SQL_INSERT_SELECT_with_full_poststate_checks",
-      "typed_nested_INSERT_existing_PK_collision_and_expression_filter_residual"
+      "typed_nested_INSERT_existing_PK_collision_and_expression_filter_residual",
+      "portable_computed_CHECK_boolean_AND_OR_NOT_IS_NULL_with_true_false_unknown",
+      "SQL_DDL_and_dbt_computed_boolean_CHECK_parity_with_provenance",
+      "Boolean_CHECK_decisive_branch_avoids_unsupported_comparison_guessing",
+      "controlled_identity_generated_value_dependency_with_attested_sequence",
+      "SQL_DDL_ODCS_default_parity_retains_unknown_enforcement_as_residual",
+      "portable_abs_generated_AST_cross_dialect_parser_boundary_classification"
     ],
     "tests": [
       "tests/physical_write_states.rs",
@@ -76,7 +84,8 @@
       "tests/odcs.rs",
       "tests/dbt_constraints.rs",
       "tests/physical_text_comparison_emission.rs",
-      "tests/physical_typed_serialization.rs"
+      "tests/physical_typed_serialization.rs",
+      "tests/physical_schema_adapter_parity.rs"
     ],
     "unproved": [
       "NaN_signed_zero_and_decimal_implicit_rounding",
@@ -84,8 +93,8 @@
       "opaque_computed_functions_and_identity_sequence_execution",
       "cross_adapter_default_parity_and_dbt_metadata",
       "full_cross_dialect_arrow_differential_generation",
-      "full_executable_semantics_for_unbounded_computed_functions_and_cross_dialect_transactions",
-      "nested_typed_SQL_DML_beyond_direct_row_preserving_INSERT_SELECT"
+      "nested_typed_SQL_DML_beyond_direct_row_preserving_INSERT_SELECT",
+      "unbounded_UDF_subquery_CHECK_semantics_and_cross_dialect_transaction_timing"
     ],
     "release_limit": "Partial TASK-79 proofs are intentionally not generator completion or per-variant coverage signoff.",
     "sidecar_schema": "schema/typed-physical-population.schema.json"
