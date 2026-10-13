@@ -184,12 +184,29 @@ pub(super) fn analyze_create_table_constraints(
                         )?],
                     )?);
                 }
-                None => diagnostics.push(ConstraintDiagnostic::new(
-                    "unsupported_check_constraint",
-                    format!(
-                        "check constraint on relation '{relation}' cannot be represented safely as a finite accepted-values constraint"
-                    ),
-                )),
+                None => {
+                    if let Some((column, operator, value)) = comparison_from_check(expr, None) {
+                        constraints.push(RelationConstraint::check_comparison(
+                            column,
+                            operator,
+                            value,
+                            vec![sql_constraint_evidence_with_enforcement(
+                                &relation,
+                                constraint_identity(
+                                    "check",
+                                    index,
+                                    name.as_ref().map(ToString::to_string),
+                                ),
+                                *enforced,
+                            )?],
+                        )?);
+                    } else {
+                        diagnostics.push(ConstraintDiagnostic::new(
+                            "unsupported_check_constraint",
+                            format!("check constraint on '{relation}' has unproved expression semantics"),
+                        ));
+                    }
+                },
             },
             _ => {}
         }
@@ -343,13 +360,28 @@ pub(super) fn analyze_create_table_constraints(
                                 )?],
                             )?);
                         }
-                        None => diagnostics.push(ConstraintDiagnostic::new(
-                            "unsupported_check_constraint",
-                            format!(
-                                "check constraint on '{}.{}' cannot be represented safely as a finite accepted-values constraint",
-                                relation, column.name
-                            ),
-                        )),
+                        None => {
+                            if let Some((name, operator, value)) = comparison_from_check(
+                                expr,
+                                Some(column.name.value.as_str()),
+                            ) {
+                                constraints.push(RelationConstraint::check_comparison(
+                                    name,
+                                    operator,
+                                    value,
+                                    vec![sql_constraint_evidence(
+                                        &relation,
+                                        format!("{}:column:{}:check:{}", relation, column.name, option_index),
+                                        None,
+                                    )?],
+                                )?);
+                            } else {
+                                diagnostics.push(ConstraintDiagnostic::new(
+                                    "unsupported_check_constraint",
+                                    format!("check constraint on '{}.{}' has unproved expression semantics", relation, column.name),
+                                ));
+                            }
+                        },
                     }
                 }
                 _ => {}
@@ -384,6 +416,32 @@ pub(super) fn analyze_create_table_constraints(
         set.add_diagnostic(diagnostic);
     }
     Ok(Some(set))
+}
+
+/// A portable scalar CHECK comparison, leaving expressions/functions residual.
+pub(super) fn comparison_from_check(
+    expression: &Expr,
+    expected_column: Option<&str>,
+) -> Option<(String, crate::constraints::CheckCompareOperator, ConstraintValue)> {
+    use crate::constraints::CheckCompareOperator;
+    let Expr::BinaryOp { left, op, right } = unwrap_nested_expression(expression) else {
+        return None;
+    };
+    let column = check_column_name(left)?;
+    if expected_column.is_some_and(|expected| expected != column) {
+        return None;
+    }
+    let operator = match op {
+        SqlBinaryOperator::Eq => CheckCompareOperator::Eq,
+        SqlBinaryOperator::NotEq => CheckCompareOperator::NotEq,
+        SqlBinaryOperator::Gt => CheckCompareOperator::Gt,
+        SqlBinaryOperator::GtEq => CheckCompareOperator::Gte,
+        SqlBinaryOperator::Lt => CheckCompareOperator::Lt,
+        SqlBinaryOperator::LtEq => CheckCompareOperator::Lte,
+        _ => return None,
+    };
+    let (literal, _) = constraint_value_from_expression(right)?;
+    Some((column.to_string(), operator, literal))
 }
 
 pub(super) fn accepted_values_from_check(
