@@ -249,3 +249,24 @@ Where a write and target evidence coexist in an analysis bundle, the
 `write_effects` contract binds that evidence to the normalized target.
 Missing metadata stays `null`: no adapter may invent the initial snapshot,
 mutation counts or conflict-freedom from a catalog.
+
+## Column value evidence and physical schema proof
+
+SQL `CREATE TABLE` supplies typed column declarations and portable constant
+DEFAULT literals to the canonical schema/constraint contract. Computed
+generated columns and identity sequences are recorded with their provenance
+but remain unconstructible without independently supplied execution laws.
+ODCS scalar `default` values use the same canonical declaration; because ODCS
+is lower-authority external metadata, its enforcement stays `unknown` and
+cannot itself certify an implicit INSERT default. Unknown-width ODCS logical
+integer/decimal/string types may coexist with more precise direct SQL or
+warehouse catalog declarations; true datatype disagreements remain errors.
+dbt manifest/catalog and named relation schemas still use the same
+`source_schemas` type contract and constraint-merging path.
+
+The `physical_closed_world_schema_plan` API is independent of adapters and
+takes complete physical bags, not isolated row samples. Only attested,
+portable primitive literals can be certified; missing source populations,
+generated expressions, vendor coercions and string collation laws remain
+typed residuals. No consumer should infer physical feasibility from the
+presence of a parsed type or column default alone.
