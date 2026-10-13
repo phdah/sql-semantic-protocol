@@ -14,6 +14,8 @@ pub enum PhysicalTypedValue {
     Scalar(LiteralValue),
     /// Exact bytes, with no implicit character encoding.
     Bytes(Vec<u8>),
+    /// Fully parsed JSON document, distinct from SQL NULL and textual casts.
+    Json(serde_json::Value),
     /// Ordered list of independently typed values.
     Array(Vec<Self>),
     /// Ordered key/value pairs. SQL map key equality needs a proven law.
@@ -154,6 +156,13 @@ pub fn physical_typed_value_plan(
             }
             PhysicalTypeProof::Feasible
         }
+        DataType::Json => match value {
+            PhysicalTypedValue::Json(document) => json_document_proof(document),
+            _ => PhysicalTypeProof::Residual {
+                reason: "JSON requires a typed document rather than an implicit SQL cast"
+                    .to_string(),
+            },
+        },
         DataType::Binary { length, fixed } => {
             let PhysicalTypedValue::Bytes(bytes) = value else {
                 return PhysicalTypeProof::Residual {
@@ -179,6 +188,63 @@ pub fn physical_typed_value_plan(
                 reason: "nested value has no matching canonical scalar type".to_string(),
             },
         },
+    }
+}
+
+/// Only engine-independent JSON scalars and containers are constructive.
+/// Fractional or oversized numbers require explicit decimal/floating storage
+/// laws, rather than inferring vendor JSON numeric representation.
+fn json_document_proof(document: &serde_json::Value) -> PhysicalTypeProof {
+    match document {
+        serde_json::Value::Null | serde_json::Value::Bool(_) => PhysicalTypeProof::Feasible,
+        serde_json::Value::Number(number) => {
+            let exactly_representable = number
+                .as_i64()
+                .map(|value| value.unsigned_abs() <= (1_u64 << 53))
+                .or_else(|| number.as_u64().map(|value| value <= (1_u64 << 53)))
+                .unwrap_or(false);
+            if exactly_representable {
+                PhysicalTypeProof::Feasible
+            } else {
+                PhysicalTypeProof::Residual {
+                    reason: "JSON floating or large-number storage law is not attested"
+                        .to_string(),
+                }
+            }
+        }
+        serde_json::Value::String(text) => {
+            if text.is_ascii() {
+                PhysicalTypeProof::Feasible
+            } else {
+                PhysicalTypeProof::Residual {
+                    reason: "JSON non-ASCII normalization is not attested".to_string(),
+                }
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for item in items {
+                let proof = json_document_proof(item);
+                if proof != PhysicalTypeProof::Feasible {
+                    return proof;
+                }
+            }
+            PhysicalTypeProof::Feasible
+        }
+        serde_json::Value::Object(fields) => {
+            for (name, item) in fields {
+                if !name.is_ascii() {
+                    return PhysicalTypeProof::Residual {
+                        reason: "JSON non-ASCII object-key normalization is not attested"
+                            .to_string(),
+                    };
+                }
+                let proof = json_document_proof(item);
+                if proof != PhysicalTypeProof::Feasible {
+                    return proof;
+                }
+            }
+            PhysicalTypeProof::Feasible
+        }
     }
 }
 
