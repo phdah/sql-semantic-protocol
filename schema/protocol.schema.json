@@ -5367,7 +5367,9 @@
                 "lt",
                 "lte",
                 "gt",
-                "gte"
+                "gte",
+                "is_distinct_from",
+                "is_not_distinct_from"
               ]
             },
             "literal": {
