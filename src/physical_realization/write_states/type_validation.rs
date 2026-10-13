@@ -5,6 +5,41 @@
 
 use super::*;
 
+pub(super) fn validate_column_value(
+    value: &LiteralValue,
+    column: &crate::relation::SchemaColumn,
+) -> StateResult<()> {
+    if matches!(value, LiteralValue::Null) {
+        return Ok(());
+    }
+    if let DataType::Timestamp { precision } = column.data_type() {
+        let LiteralValue::Text(text) = value else {
+            return Err(residual("timestamp requires a canonical textual instant"));
+        };
+        let zone = column.timestamp_zone().ok_or_else(|| {
+            residual("timestamp zone semantics have not been declared")
+        })?;
+        let (date, time) = text.split_once('T').or_else(|| text.split_once(' '))
+            .ok_or_else(|| residual("timestamp requires ISO date and time"))?;
+        validate_iso_date(date)?;
+        let instant = match zone {
+            crate::relation::TimestampZone::WithTimeZone => {
+                time.strip_suffix('Z').ok_or_else(|| {
+                    residual("timestamp-with-time-zone requires canonical UTC Z offset")
+                })?
+            }
+            crate::relation::TimestampZone::WithoutTimeZone => {
+                if time.contains('Z') || time.contains('+') {
+                    return Err(residual("wall-clock timestamp cannot contain an offset"));
+                }
+                time
+            }
+        };
+        return validate_iso_time(instant, *precision);
+    }
+    validate_value(value, column.data_type())
+}
+
 pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResult<()> {
     if matches!(value, LiteralValue::Null) {
         return Ok(());
