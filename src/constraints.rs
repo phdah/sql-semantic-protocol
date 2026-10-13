@@ -288,10 +288,18 @@ impl CheckComparisonConstraint {
         })
     }
 
-    pub fn column(&self) -> &str { &self.column }
-    pub fn operator(&self) -> CheckCompareOperator { self.operator }
-    pub fn value(&self) -> &ConstraintValue { &self.value }
-    pub fn evidence(&self) -> &[ConstraintEvidence] { &self.evidence }
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+    pub fn operator(&self) -> CheckCompareOperator {
+        self.operator
+    }
+    pub fn value(&self) -> &ConstraintValue {
+        &self.value
+    }
+    pub fn evidence(&self) -> &[ConstraintEvidence] {
+        &self.evidence
+    }
 }
 
 /// Ordered columns forming a primary or unique key.
@@ -474,7 +482,10 @@ impl RelationConstraint {
         evidence: Vec<ConstraintEvidence>,
     ) -> Result<Self, ConstraintMetadataError> {
         Ok(Self::CheckComparison(CheckComparisonConstraint::new(
-            column.into(), operator, value, evidence,
+            column.into(),
+            operator,
+            value,
+            evidence,
         )?))
     }
 
@@ -508,7 +519,10 @@ impl RelationConstraint {
     pub const fn admits_null(&self) -> bool {
         match self {
             Self::PrimaryKey(_) | Self::NotNull(_) => false,
-            Self::UniqueKey(_) | Self::ForeignKey(_) | Self::AcceptedValues(_) | Self::CheckComparison(_) => true,
+            Self::UniqueKey(_)
+            | Self::ForeignKey(_)
+            | Self::AcceptedValues(_)
+            | Self::CheckComparison(_) => true,
         }
     }
 
