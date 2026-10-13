@@ -1483,15 +1483,13 @@ fn merge_insert_omitted_columns_obey_authoritative_target_defaults() {
     let mut b = bundle(&[sql], "duckdb");
     b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
         .unwrap()
-        .with_column_value_sources(vec![
-            ColumnValueSource::new(
-                "score",
-                ColumnValueKind::Default,
-                Some(ConstraintValue::Integer(7)),
-                evidence(),
-            )
-            .unwrap(),
-        ])]);
+        .with_column_value_sources(vec![ColumnValueSource::new(
+            "score",
+            ColumnValueKind::Default,
+            Some(ConstraintValue::Integer(7)),
+            evidence(),
+        )
+        .unwrap()])]);
     let plan = physical_ordered_write_state_plan(
         &b,
         &[
