@@ -194,7 +194,6 @@ fn certified_computed_null_tests_have_exact_two_valued_outcomes() {
         "NULLIF(a, b) IS NULL",
         "NULLIF(a, b) IS NOT NULL",
         "CAST(a AS BIGINT) IS NULL",
-        "TRY_CAST(a AS SMALLINT) IS NULL",
         "(CAST(a AS BIGINT) + 1) IS NOT NULL",
         "CASE WHEN a IS NULL THEN b ELSE a END IS NULL",
         "CASE WHEN a IS NOT NULL THEN b ELSE a END IS NOT NULL",
@@ -216,6 +215,7 @@ fn opaque_or_mixed_type_computed_null_tests_fail_closed() {
         "COALESCE(a, ABS(b)) IS NULL",
         "COALESCE(a, 'text') IS NOT NULL",
         "NULLIF(a, a + 1) IS NULL",
+        "TRY_CAST(a AS SMALLINT) IS NULL",
         "CASE WHEN a > 1 THEN b ELSE a END IS NULL",
         "CASE WHEN a IS NULL THEN b END IS NULL",
     ] {
