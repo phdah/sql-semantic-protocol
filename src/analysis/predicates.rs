@@ -238,16 +238,11 @@ pub(super) fn safe_like_prefix(pattern: &Expr) -> Option<String> {
 // An explicit ESCAPE character is harmless for a safe trailing-wildcard
 // prefix only when it cannot escape any character in the pattern. In
 // particular ESCAPE '%' would turn the final wildcard into a literal.
-pub(super) fn safe_like_escape(
-    prefix: &str,
-    escape_char: Option<&sqlparser::ast::Value>,
-) -> bool {
+pub(super) fn safe_like_escape(prefix: &str, escape_char: Option<&sqlparser::ast::Value>) -> bool {
     match escape_char {
         None => true,
         Some(sqlparser::ast::Value::SingleQuotedString(character)) => {
-            character.chars().count() == 1
-                && character != "%"
-                && !prefix.contains(character)
+            character.chars().count() == 1 && character != "%" && !prefix.contains(character)
         }
         _ => false,
     }
