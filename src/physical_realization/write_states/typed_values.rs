@@ -158,6 +158,7 @@ pub fn physical_typed_value_plan(
         }
         DataType::Json => match value {
             PhysicalTypedValue::Json(document) => json_document_proof(document),
+            PhysicalTypedValue::Scalar(LiteralValue::Null) => PhysicalTypeProof::Feasible,
             _ => PhysicalTypeProof::Residual {
                 reason: "JSON requires a typed document rather than an implicit SQL cast"
                     .to_string(),
@@ -386,4 +387,35 @@ mod tests {
             PhysicalTypeProof::Impossible { .. }
         ));
     }
+    #[test]
+    fn typed_json_distinguishes_sql_null_from_document_null_and_fails_closed_on_float() {
+        let kind = DataType::Json;
+        for value in [
+            PhysicalTypedValue::Json(serde_json::json!({
+                "active": true,
+                "count": 7,
+                "items": [1, null, "ok"]
+            })),
+            PhysicalTypedValue::Json(serde_json::Value::Null),
+            PhysicalTypedValue::Json(serde_json::json!([])),
+            PhysicalTypedValue::Scalar(LiteralValue::Null),
+        ] {
+            assert_eq!(
+                physical_typed_value_plan(&value, &kind),
+                PhysicalTypeProof::Feasible
+            );
+        }
+        for value in [
+            PhysicalTypedValue::Json(serde_json::json!({"score": 0.1})),
+            PhysicalTypedValue::Json(serde_json::json!({"number": 9007199254740993_u64})),
+            PhysicalTypedValue::Json(serde_json::json!({"unicode": "ångström"})),
+            PhysicalTypedValue::Scalar(LiteralValue::Text("{\"active\":true}".into())),
+        ] {
+            assert!(matches!(
+                physical_typed_value_plan(&value, &kind),
+                PhysicalTypeProof::Residual { .. }
+            ));
+        }
+    }
+
 }
