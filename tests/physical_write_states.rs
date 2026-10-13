@@ -2118,3 +2118,36 @@ fn accepted_values_consider_all_candidates_before_an_unknown_collation() {
         PhysicalWriteStatePlan::Residual { .. }
     ));
 }
+
+#[test]
+fn sql_check_in_with_null_member_stays_residual_not_false_impossible() {
+    let b = bundle(
+        &["CREATE TABLE target(id INTEGER, score INTEGER CHECK (score IN (1, NULL)))"],
+        "duckdb",
+    );
+    let declared = b
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    assert!(declared
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
+    let result = physical_closed_world_schema_plan(
+        &b,
+        &[state("target", &[(Some(1), Some(2))])],
+    );
+    assert!(matches!(result, PhysicalWriteStatePlan::Residual { .. }), "{result:?}");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER CHECK (score IN (1, NULL)));
+         INSERT INTO target VALUES (1, 2), (2, 1), (3, NULL);",
+    )
+    .unwrap();
+    let count: i64 = db
+        .query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(count, 3);
+}
