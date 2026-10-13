@@ -3971,6 +3971,21 @@
         }
       }
     },
+    "computedCheckConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["left", "operator", "right", "evidence"],
+      "properties": {
+        "left": { "$ref": "#/$defs/generatedValueExpression" },
+        "operator": { "enum": ["eq", "not_eq", "gt", "gte", "lt", "lte"] },
+        "right": { "$ref": "#/$defs/generatedValueExpression" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/constraintEvidence" }
+        }
+      }
+    },
     "computedKeyConstraint": {
       "type": "object",
       "additionalProperties": false,
@@ -4023,6 +4038,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/computedKeyConstraint"
+          }
+        },
+        "computed_checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/computedCheckConstraint"
           }
         }
       }
