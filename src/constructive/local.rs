@@ -113,6 +113,7 @@ pub fn local_constructive_witnesses(
                 case.and_then(|c| WitnessDirection::feasible(vec![c]))
                     .unwrap_or_else(|| WitnessDirection::residual("invalid_boolean_case"))
             }
+            (_, BooleanWitnessDirection::Impossible, _) => WitnessDirection::Impossible,
             (_, BooleanWitnessDirection::Residual { reason }, _) => {
                 WitnessDirection::residual(reason)
             }
