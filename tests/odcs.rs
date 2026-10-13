@@ -2,7 +2,7 @@
 
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, parse_odcs_documents, parse_odcs_yaml,
-    select_targets, to_bundle_json, ConfiguredSqlInput, ConstraintEnforcement,
+    select_targets, to_bundle_json, ColumnValueKind, ConfiguredSqlInput, ConstraintEnforcement,
     ConstraintSourceKind, ConstraintValue, DataType, OdcsDocument, OdcsError, RelationCatalog,
     RelationConstraint, RelationSchema, SchemaColumn, SchemaSourceKind, SqlInput,
 };
@@ -415,4 +415,36 @@ fn odcs_enrichment_survives_target_selection_and_emits_deterministically() {
     let emitted = to_bundle_json(&selected);
     assert!(emitted.contains(r#""source_kind":"external_metadata""#));
     assert!(emitted.contains(r#""source_kind":"external_metadata""#));
+}
+
+#[test]
+fn odcs_default_values_preserve_source_provenance_without_inferred_enforcement() {
+    let yaml = r#"
+apiVersion: v3.2.0
+kind: DataContract
+id: default-contract
+name: Defaults
+version: 1.0.0
+status: active
+schema:
+  - name: orders
+    physicalName: analytics.orders
+    properties:
+      - name: id
+        physicalType: BIGINT
+      - name: score
+        physicalType: INTEGER
+        default: 7
+"#;
+    let catalog = RelationCatalog::new(&["analytics.orders"]).unwrap();
+    let parsed = parse_odcs_yaml(yaml, "postgresql", &catalog).unwrap();
+    let set = parsed.relation_constraints().iter()
+        .find(|set| set.relation() == "analytics.orders").unwrap();
+    let [default] = set.column_value_sources() else {
+        panic!("expected one canonical default");
+    };
+    assert_eq!(default.kind(), ColumnValueKind::Default);
+    assert_eq!(default.value(), Some(&ConstraintValue::Integer(7)));
+    assert_eq!(default.evidence()[0].enforcement(), ConstraintEnforcement::Unknown);
+    assert_eq!(default.evidence()[0].provenance().source_kind(), ConstraintSourceKind::ExternalMetadata);
 }
