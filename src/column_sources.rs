@@ -27,6 +27,58 @@ impl ColumnValueKind {
     }
 }
 
+
+/// Canonical deterministic row-local expression for an attested generated column.
+///
+/// Opaque functions, casts and dialect-specific numeric evaluation are not
+/// represented by this portable subset and remain explicitly unproved.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum GeneratedValueExpression {
+    /// Value read from one declared column in the same physical row.
+    Column(String),
+    /// Exact canonical scalar constant.
+    Literal(ConstraintValue),
+    /// Checked integer addition.
+    Add(Box<Self>, Box<Self>),
+    /// Checked integer subtraction.
+    Subtract(Box<Self>, Box<Self>),
+    /// Checked integer multiplication.
+    Multiply(Box<Self>, Box<Self>),
+}
+
+impl GeneratedValueExpression {
+    /// Check that all referenced columns have nonempty canonical identities.
+    pub fn valid(&self) -> bool {
+        match self {
+            Self::Column(name) => !name.trim().is_empty(),
+            Self::Literal(_) => true,
+            Self::Add(left, right) | Self::Subtract(left, right) | Self::Multiply(left, right) => {
+                left.valid() && right.valid()
+            }
+        }
+    }
+
+    /// Every column referenced by this expression, in deterministic order.
+    pub fn referenced_columns(&self) -> Vec<&str> {
+        let mut columns = Vec::new();
+        self.collect_references(&mut columns);
+        columns.sort_unstable();
+        columns.dedup();
+        columns
+    }
+
+    fn collect_references<'a>(&'a self, columns: &mut Vec<&'a str>) {
+        match self {
+            Self::Column(name) => columns.push(name),
+            Self::Literal(_) => {}
+            Self::Add(left, right) | Self::Subtract(left, right) | Self::Multiply(left, right) => {
+                left.collect_references(columns);
+                right.collect_references(columns);
+            }
+        }
+    }
+}
+
 /// A typed scalar default or an explicitly opaque generated value declaration.
 ///
 /// `None` means the expression is known to exist but has not been safely
@@ -36,6 +88,7 @@ pub struct ColumnValueSource {
     column: String,
     kind: ColumnValueKind,
     value: Option<ConstraintValue>,
+    expression: Option<GeneratedValueExpression>,
     evidence: Vec<ConstraintEvidence>,
 }
 
@@ -65,6 +118,7 @@ impl ColumnValueSource {
             column,
             kind,
             value,
+            expression: None,
             evidence,
         })
     }
@@ -84,6 +138,25 @@ impl ColumnValueSource {
         self.value.as_ref()
     }
 
+    /// Canonical portable generated expression when the DDL safely specifies one.
+    pub fn expression(&self) -> Option<&GeneratedValueExpression> {
+        self.expression.as_ref()
+    }
+
+    /// Attach a provable generated expression without replacing its provenance.
+    pub fn with_generated_expression(
+        mut self,
+        expression: GeneratedValueExpression,
+    ) -> Result<Self, ConstraintMetadataError> {
+        if self.kind != ColumnValueKind::Generated || !expression.valid() {
+            return Err(ConstraintMetadataError::InvalidEvidence {
+                message: "only generated columns accept validated computation semantics".to_string(),
+            });
+        }
+        self.expression = Some(expression);
+        Ok(self)
+    }
+
     /// All source and enforcement attestations.
     pub fn evidence(&self) -> &[ConstraintEvidence] {
         &self.evidence
@@ -96,7 +169,10 @@ impl ColumnValueSource {
     }
 
     pub(crate) fn same_semantics(&self, other: &Self) -> bool {
-        self.column == other.column && self.kind == other.kind && self.value == other.value
+        self.column == other.column
+            && self.kind == other.kind
+            && self.value == other.value
+            && self.expression == other.expression
     }
 }
 
