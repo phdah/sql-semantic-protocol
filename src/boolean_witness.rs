@@ -192,6 +192,22 @@ impl BooleanRowConstraint {
         }
     }
 
+    // For independent signed-integer and NULL tests, integer threshold
+    // representatives partition the complete three-valued truth regions.
+    // Correlated columns and string comparisons only provide existence samples,
+    // not complete absence proofs.
+    fn has_complete_scalar_regions(&self) -> bool {
+        match self {
+            Self::All(operands) | Self::Any(operands) => {
+                operands.iter().all(Self::has_complete_scalar_regions)
+            }
+            Self::NullTest { .. } | Self::IntegerComparison { .. } => true,
+            Self::IntegerColumnComparison { .. }
+            | Self::StringPrefix { .. }
+            | Self::Residual { .. } => false,
+        }
+    }
+
     fn contains_column_comparison(&self) -> bool {
         match self {
             Self::All(operands) | Self::Any(operands) => {
@@ -247,6 +263,8 @@ impl BooleanTruthCase {
 pub enum BooleanWitnessDirection {
     /// The complete typed boolean expression is a precise row obligation.
     Exact(BooleanTruthCase),
+    /// An exhaustive typed region proof excludes the requested truth outcome.
+    Impossible,
     /// Source-row constructibility cannot be proven.
     Residual {
         /// Explicit conservative diagnostic.
@@ -546,6 +564,11 @@ impl BooleanWitness {
         } else {
             BTreeSet::new()
         };
+        let complete_scalar_regions = candidate
+            && prefix_licensed
+            && restrictions.is_some()
+            && self.condition.has_complete_scalar_regions()
+            && !cases.is_empty();
         let reason = if columns.is_empty() {
             "predicate has no resolved source columns"
         } else if !resolved_source {
@@ -561,6 +584,8 @@ impl BooleanWitness {
         };
         self.qualifying = if cases.contains(&SqlTruth::True) {
             BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+        } else if complete_scalar_regions {
+            BooleanWitnessDirection::Impossible
         } else {
             BooleanWitnessDirection::Residual {
                 reason: reason.to_string(),
@@ -568,6 +593,8 @@ impl BooleanWitness {
         };
         self.rejected = if cases.contains(&SqlTruth::False) || cases.contains(&SqlTruth::Unknown) {
             BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        } else if complete_scalar_regions {
+            BooleanWitnessDirection::Impossible
         } else {
             BooleanWitnessDirection::Residual {
                 reason: reason.to_string(),
