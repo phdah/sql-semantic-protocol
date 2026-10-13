@@ -869,7 +869,9 @@ fn normalize(
                 let left = resolve_column(left, sources);
                 let right = resolve_column(right, sources);
                 if integer_evidence(&left).is_none() || integer_evidence(&right).is_none() {
-                    return residual("cross-column comparison requires signed integer type evidence");
+                    return residual(
+                        "cross-column comparison requires signed integer type evidence",
+                    );
                 }
                 return BooleanRowConstraint::IntegerColumnComparison {
                     left,
@@ -1388,7 +1390,11 @@ pub(crate) fn jointly_satisfiable_physical_truths(
                 BooleanTruthCase::NotTrue => *actual != SqlTruth::True,
             })
     });
-    if !satisfiable && conditions.iter().any(|condition| condition.contains_column_comparison()) {
+    if !satisfiable
+        && conditions
+            .iter()
+            .any(|condition| condition.contains_column_comparison())
+    {
         return None;
     }
     Some(satisfiable)
@@ -1445,7 +1451,8 @@ fn possible_joint_truth_vectors(
         let restriction = restrictions.and_then(|items| items.get(column.name()));
         let integer_bounds = integer_evidence(&column);
         let string_bounds = string_evidence(&column);
-        let integer_required = !literals.integers.is_empty() || !literals.compared_columns.is_empty();
+        let integer_required =
+            !literals.integers.is_empty() || !literals.compared_columns.is_empty();
         if integer_required && !literals.prefixes.is_empty() {
             // A single source column cannot simultaneously be an integer and a
             // string under the scoped typed comparison semantics.
@@ -1648,7 +1655,11 @@ fn eval_joint_truth(
                     }
                 }
             };
-            Some(if result { SqlTruth::True } else { SqlTruth::False })
+            Some(if result {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            })
         }
         BooleanRowConstraint::StringPrefix {
             column,
