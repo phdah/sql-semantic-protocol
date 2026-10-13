@@ -1794,3 +1794,35 @@ fn explicit_generated_column_updates_fail_closed_even_when_value_matches() {
         "{result:?}"
     );
 }
+
+#[test]
+fn empty_closed_world_population_proves_vacuous_constraints_without_enforcement_law() {
+    let mut b = bundle(&["SELECT id FROM target"], "duckdb");
+    let unknown = vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "unknown").unwrap(),
+        ConstraintEnforcement::Unknown,
+    )];
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![
+            RelationConstraint::not_null("id", unknown.clone()).unwrap(),
+            RelationConstraint::unique_key(vec!["score".into()], unknown.clone()).unwrap(),
+            RelationConstraint::foreign_key(
+                vec!["id".into()],
+                "source",
+                vec!["id".into()],
+                unknown,
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap()]);
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[state("target", &[])]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(2))])]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+}
