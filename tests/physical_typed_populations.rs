@@ -6,7 +6,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
     physical_typed_closed_world_schema_plan, ConfiguredSqlInput, ConstraintEnforcement,
-    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, DataType, DataTypeField,
+    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, CheckCompareOperator, DataType, DataTypeField,
     LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
     PhysicalTypedWriteState, RelationCatalog, RelationConstraint, RelationConstraintSet,
     RelationSchema, SchemaColumn, SqlInput,
@@ -176,4 +176,39 @@ fn physical_nested_population_duckdb_array_struct_differential() {
     assert!(db
         .execute_batch("INSERT INTO events VALUES (1, {'scores': [4,5], 'label': 'duplicate'});",)
         .is_err());
+}
+
+#[test]
+fn reversed_scalar_check_comparison_normalizes_across_parser_dialects() {
+    let schema = RelationSchema::new(
+        "target",
+        vec![SchemaColumn::new("id", DataType::SignedInteger { bits: Some(32) }).unwrap()],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    for name in [
+        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
+        "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    ] {
+        let dialect = dialect_from_name(name).unwrap();
+        let sql = SqlInput::inline("CREATE TABLE target(id INTEGER, CHECK (3 < id))");
+        let input = ConfiguredSqlInput::new("check", &sql, name, dialect.as_ref());
+        let Ok(bundle) = analyze_configured_inputs_with_catalog(&[input], &catalog) else {
+            // Explicit parser boundary for dialects rejecting the shared DDL.
+            continue;
+        };
+        let set = bundle
+            .relation_constraints()
+            .iter()
+            .find(|set| set.relation() == "target")
+            .expect("DDL CHECK relation constraints");
+        assert!(
+            set.constraints().iter().any(|rule| matches!(rule,
+                RelationConstraint::CheckComparison(c)
+                    if c.column() == "id"
+                       && c.operator() == CheckCompareOperator::Gt
+            )),
+            "{name}: {set:?}"
+        );
+    }
 }
