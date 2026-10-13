@@ -1390,6 +1390,16 @@ unknown collation, generated/identity expression, missing parent population
 or vendor-specific null semantics remain residual. Positive proof never
 constructs imaginary rows, grants an unproved default or bypasses source-key
 collisions. The ordered DML path checks both its prestate and each poststate.
+Deterministic row-local computed expression nodes include checked integer
+arithmetic, integer `ABS`, and same-type `COALESCE`. Implicit cross-type
+coercion, overflowing signed `ABS`, SQL functions with unproven semantics,
+and cyclic generated columns remain residual. Generated dependencies are
+evaluated in canonical topological order only with appropriate enforcement
+evidence; identity dependencies still require caller-attested sequence state.
+Explicit generated-column UPDATE and INSERT assignments are never treated
+as innocuous writes. MERGE BY SOURCE uses the same generated-column
+recomputation law as ordinary UPDATE.
+
 Portable scalar and deterministic row-local computed `CHECK` comparisons (`eq`, `not_eq`, `gt`, `gte`, `lt`, `lte`) emit typed facts and provenance. Portable `AND` conjuncts are normalized atomically for SQL DDL and dbt CHECK metadata: if any conjunct is unsupported, the entire rule is residual. Complete same-column equality `OR` disjunctions and non-NULL `IN` lists normalize to canonical accepted values, including dbt CHECK metadata; mixed-column/function `OR` and `IN (..., NULL)` remain residual. An explicitly attested binary text law supports byte-distinct equality/inequality for CHECK predicates as well as accepted values, keys and FKs. It does not establish text ordering. The physical validator checks exact integers and base-ten decimals and admits SQL NULL as UNKNOWN. `NOT ENFORCED` rules are excluded from proof obligations, `Unknown` remains residual, and `Enforced` rules are evaluated. Complex functions and `OR`, unproved collation-sensitive comparisons, casts and enforcement timing remain residual.
 
 The `to_physical_typed_population_json(bundle, snapshots)` API emits a deterministic,
