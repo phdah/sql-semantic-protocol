@@ -163,6 +163,7 @@ fn semantic_constraints(set: &RelationConstraintSet) -> BTreeSet<String> {
                     rule.value()
                 )
             }
+            other => panic!("new constraint kind needs an explicit parity contract: {other:?}"),
         })
         .collect()
 }
