@@ -425,3 +425,94 @@ fn typed_target_append_requires_a_complete_initial_target_and_reference_populati
         PhysicalTypedPopulationPlan::Residual { .. }
     ));
 }
+
+#[test]
+fn ddl_disjunction_normalizes_only_full_portable_same_column_equality() {
+    let names = [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
+    ];
+    let schema = RelationSchema::new(
+        "target",
+        vec![
+            SchemaColumn::new("id", DataType::SignedInteger { bits: Some(32) }).unwrap(),
+            SchemaColumn::new("score", DataType::SignedInteger { bits: Some(32) }).unwrap(),
+        ],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let mut recognized = 0_usize;
+    for name in names {
+        let dialect = dialect_from_name(name).unwrap();
+        let sql = SqlInput::inline(
+            "CREATE TABLE target (id INTEGER, score INTEGER, CHECK (id = 1 OR id = 2))",
+        );
+        let input = ConfiguredSqlInput::new("or_check", &sql, name, dialect.as_ref());
+        let Ok(bundle) = analyze_configured_inputs_with_catalog(&[input], &catalog) else {
+            // Parser-boundary rejection is not a successful semantic proof.
+            continue;
+        };
+        recognized += 1;
+        let set = bundle
+            .relation_constraints()
+            .iter()
+            .find(|set| set.relation() == "target")
+            .expect("analyzed DDL must carry constraint facts");
+        assert!(
+            set.constraints().iter().any(|rule| matches!(
+                rule,
+                RelationConstraint::AcceptedValues(values)
+                    if values.column() == "id"
+                        && values.values().len() == 2
+            )),
+            "{name}: {set:?}"
+        );
+        assert!(!set
+            .diagnostics()
+            .iter()
+            .any(|d| d.code() == "unsupported_check_constraint"));
+    }
+    assert!(recognized > 0, "no dialect recognized the positive SQL DDL fixture");
+
+    let dialect = dialect_from_name("duckdb").unwrap();
+    for unsupported in [
+        "CHECK (id = 1 OR score = 2)",
+        "CHECK (id = 1 OR id = NULL)",
+        "CHECK (id = 1 OR lower(score) = 2)",
+    ] {
+        let sql = SqlInput::inline(format!(
+            "CREATE TABLE target (id INTEGER, score INTEGER, {unsupported})"
+        ));
+        let input = ConfiguredSqlInput::new("unsupported_or", &sql, "duckdb", dialect.as_ref());
+        let bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+        let set = bundle
+            .relation_constraints()
+            .iter()
+            .find(|set| set.relation() == "target")
+            .unwrap();
+        assert!(
+            set.diagnostics()
+                .iter()
+                .any(|d| d.code() == "unsupported_check_constraint"),
+            "{unsupported}: {set:?}"
+        );
+        assert!(
+            !set.constraints().iter().any(|rule| matches!(
+                rule,
+                RelationConstraint::AcceptedValues(_)
+            )),
+            "{unsupported} silently dropped an unproved OR branch"
+        );
+    }
+}
