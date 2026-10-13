@@ -165,15 +165,23 @@ pub fn physical_typed_closed_world_schema_plan(
                 // A concrete nested value is not SQL NULL. Preserve NOT NULL
                 // independently from the scalar verifier, which cannot encode
                 // nested physical values and otherwise sees a private NULL.
-                let not_null_rules = bundle.relation_constraints().iter()
+                let not_null_rules = bundle
+                    .relation_constraints()
+                    .iter()
                     .filter(|set| set.relation() == state.relation)
                     .flat_map(|set| set.constraints())
-                    .filter(|constraint| matches!(constraint,
-                        RelationConstraint::NotNull(rule) if rule.column() == column.name()))
+                    .filter(|constraint| {
+                        matches!(constraint,
+                        RelationConstraint::NotNull(rule) if rule.column() == column.name())
+                    })
                     .collect::<Vec<_>>();
                 if matches!(value, PhysicalTypedValue::Scalar(LiteralValue::Null))
-                    && not_null_rules.iter().any(|constraint| constraint.evidence().iter()
-                        .any(|e| e.enforcement() == ConstraintEnforcement::Enforced))
+                    && not_null_rules.iter().any(|constraint| {
+                        constraint
+                            .evidence()
+                            .iter()
+                            .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
+                    })
                 {
                     return PhysicalTypedPopulationPlan::Impossible {
                         relation,
@@ -227,7 +235,8 @@ pub fn physical_typed_closed_world_schema_plan(
         });
     }
 
-    match physical_closed_world_schema_plan_with_nested(bundle, &scalar_snapshots, &non_null_nested) {
+    match physical_closed_world_schema_plan_with_nested(bundle, &scalar_snapshots, &non_null_nested)
+    {
         PhysicalWriteStatePlan::Feasible { .. } => PhysicalTypedPopulationPlan::Feasible {
             final_states: typed.into_values().collect(),
         },
