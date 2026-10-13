@@ -317,7 +317,10 @@ pub(super) fn validate_all_constraints_with_nested(
                             .iter()
                             .find(|schema| schema.relation() == state.relation)
                             .and_then(|schema| {
-                                schema.columns().iter().find(|column| column.name() == accepted.column())
+                                schema
+                                    .columns()
+                                    .iter()
+                                    .find(|column| column.name() == accepted.column())
                             })
                             .and_then(|column| column.text_comparison_law())
                             == Some(crate::relation::TextComparisonLaw::Binary);
@@ -433,7 +436,8 @@ mod tests {
             ),
         ] {
             assert!(
-                constraint_scalar_equal(&LiteralValue::Number(actual.into()), &expected, false).unwrap(),
+                constraint_scalar_equal(&LiteralValue::Number(actual.into()), &expected, false)
+                    .unwrap(),
                 "{actual}"
             );
         }
