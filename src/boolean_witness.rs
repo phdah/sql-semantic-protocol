@@ -240,9 +240,9 @@ impl BooleanRowConstraint {
             // A source value compared to itself has complete TRUE/FALSE/UNKNOWN
             // regions, unlike two independently ranged correlated columns.
             Self::IntegerColumnComparison { left, right, .. } => left == right,
-            Self::StringEquality { .. }
-            | Self::StringPrefix { .. }
-            | Self::Residual { .. } => false,
+            Self::StringEquality { .. } | Self::StringPrefix { .. } | Self::Residual { .. } => {
+                false
+            }
         }
     }
 

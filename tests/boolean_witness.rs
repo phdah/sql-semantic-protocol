@@ -138,7 +138,10 @@ fn escaped_like_prefix_requires_same_binary_attestations() {
         };
         assert!(
             semantics.boolean_witnesses().iter().all(|witness| {
-                !matches!(witness.witness().qualifying(), BooleanWitnessDirection::Exact(_))
+                !matches!(
+                    witness.witness().qualifying(),
+                    BooleanWitnessDirection::Exact(_)
+                )
             }),
             "{pattern}: unsafe escapes must never become exact"
         );

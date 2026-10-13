@@ -478,18 +478,19 @@ fn typed_cross_column_comparisons_prove_existence_without_independent_domains() 
 
 #[test]
 fn identical_source_column_comparison_regions_are_exhaustive() {
-    for predicate in [
-        "a <> a",
-        "a < a",
-        "a > a",
-        "a IS DISTINCT FROM a",
-    ] {
+    for predicate in ["a <> a", "a < a", "a > a", "a IS DISTINCT FROM a"] {
         let witness = typed_witness(predicate);
-        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Impossible), "{predicate}");
-        assert!(matches!(
-            witness.rejected(),
-            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
-        ), "{predicate}");
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Impossible),
+            "{predicate}"
+        );
+        assert!(
+            matches!(
+                witness.rejected(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+            ),
+            "{predicate}"
+        );
     }
     let same = assert_both_directions_exact("a = a");
     assert!(matches!(
