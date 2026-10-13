@@ -113,16 +113,13 @@ fn complete_insert_row(
             .iter()
             .find(|source| source.column() == column.name())
             .ok_or_else(|| residual("omitted INSERT column has no attested default"))?;
-        if source.kind() != crate::column_sources::ColumnValueKind::Default {
-            return Err(residual(
-                "generated or identity INSERT value has no constructive law",
-            ));
+        if source.kind() == crate::column_sources::ColumnValueKind::Generated {
+            continue;
         }
-        if !source.evidence().iter().any(|evidence| {
-            evidence.enforcement() == ConstraintEnforcement::Enforced
-                || evidence.provenance().source_kind()
-                    == crate::constraints::ConstraintSourceKind::SqlDdl
-        }) {
+        if source.kind() != crate::column_sources::ColumnValueKind::Default {
+            return Err(residual("identity INSERT requires an attested sequence state"));
+        }
+        if !super::generated::authoritative(source) {
             return Err(residual_gap(
                 PhysicalWriteStateGap::UnprovedConstraint,
                 "default metadata lacks authoritative execution evidence",
@@ -131,16 +128,9 @@ fn complete_insert_row(
         let literal = source
             .value()
             .ok_or_else(|| residual("opaque INSERT default expression cannot be evaluated"))?;
-        let value = match literal {
-            ConstraintValue::Null => LiteralValue::Null,
-            ConstraintValue::Boolean(value) => LiteralValue::Boolean(*value),
-            ConstraintValue::Integer(value) => LiteralValue::Number(value.to_string()),
-            ConstraintValue::UnsignedInteger(value) => LiteralValue::Number(value.to_string()),
-            ConstraintValue::Number(value) => LiteralValue::Number(value.clone()),
-            ConstraintValue::String(value) => LiteralValue::Text(value.clone()),
-        };
-        values.insert(column.name().to_string(), value);
+        values.insert(column.name().to_string(), super::generated::scalar_literal(literal));
     }
+    super::generated::complete_generated(sources, &mut values)?;
     if values.len() != schema.columns().len() {
         return Err(residual("INSERT row contains undeclared target columns"));
     }
