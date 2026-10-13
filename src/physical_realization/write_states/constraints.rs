@@ -385,20 +385,17 @@ fn constraint_scalar_equal(value: &LiteralValue, candidate: &ConstraintValue) ->
                 Err(residual("accepted string comparison needs collation proof"))
             }
         }
-        (LiteralValue::Number(a), ConstraintValue::Integer(b)) => a
-            .parse::<i128>()
-            .map(|a| a == i128::from(*b))
-            .map_err(|_| residual("unsupported numeric constraint comparison")),
-        (LiteralValue::Number(a), ConstraintValue::UnsignedInteger(b)) => a
-            .parse::<u128>()
-            .map(|a| a == u128::from(*b))
-            .map_err(|_| residual("unsupported unsigned constraint comparison")),
+        (LiteralValue::Number(a), ConstraintValue::Integer(b)) => {
+            super::check_comparisons::exact_numeric_equality(a, &b.to_string())
+                .ok_or_else(|| residual("accepted numeric equality requires finite exact decimals"))
+        }
+        (LiteralValue::Number(a), ConstraintValue::UnsignedInteger(b)) => {
+            super::check_comparisons::exact_numeric_equality(a, &b.to_string())
+                .ok_or_else(|| residual("accepted numeric equality requires finite exact decimals"))
+        }
         (LiteralValue::Number(a), ConstraintValue::Number(b)) => {
-            if a == b {
-                Ok(true)
-            } else {
-                Err(residual("unproved decimal accepted-value equality"))
-            }
+            super::check_comparisons::exact_numeric_equality(a, b)
+                .ok_or_else(|| residual("accepted numeric equality requires finite exact decimals"))
         }
         (LiteralValue::Null, ConstraintValue::Null) => Ok(true),
         _ => Err(residual("unproved accepted-value coercion")),
