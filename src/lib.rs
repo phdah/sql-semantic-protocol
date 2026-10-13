@@ -36,6 +36,7 @@
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
 //! - physical_ordered_write_state_plan constructs ordered complete DML snapshots from controlled physical rows and typed schemas, failing closed on unsupported laws.
 //! - physical_typed_closed_world_schema_plan checks complete multi-source nested Arrow-style populations against the same canonical scalar and cross-relation constraints.
+//! - to_physical_typed_population_json exports validated nested physical populations as exact-bit witness sidecars.
 //! - physical_typed_append_schema_plan checks caller-supplied nested inserts against preexisting complete target and source snapshots.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
 //!   multiplicities with NULL, duplicates and shared physical aliases.
@@ -119,7 +120,7 @@ pub use dbt::{
     parse_dbt_catalog, parse_dbt_manifest, DbtArtifactsError, DbtCatalog, DbtCatalogError,
     DbtManifest, DbtManifestError, SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
-pub use emission::{to_bundle_json, to_json};
+pub use emission::{to_bundle_json, to_json, to_physical_typed_population_json};
 pub use group_witness::{
     GroupAggregate, GroupValueTest, GroupWitness, GroupWitnessCase, GroupWitnessDirection,
 };
