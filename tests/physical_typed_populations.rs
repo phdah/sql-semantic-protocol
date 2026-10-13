@@ -582,8 +582,9 @@ fn ordered_typed_insert_rejects_existing_key_collisions_and_unknown_sql() {
         PhysicalTypedPopulationPlan::Impossible { .. }
     ));
     for sql in [
-        "INSERT INTO target(id,payload) SELECT id,payload FROM source WHERE id>0",
         "INSERT INTO target(id,payload) SELECT id+1,payload FROM source",
+        "INSERT INTO target(id,payload) SELECT id,payload FROM source WHERE payload IS NULL",
+        "INSERT INTO target(id,payload) SELECT id,payload FROM source WHERE payload IS NOT NULL",
     ] {
         let input = [
             typed_state("target",vec![]),
@@ -597,6 +598,54 @@ fn ordered_typed_insert_rejects_existing_key_collisions_and_unknown_sql() {
             "{sql}"
         );
     }
+}
+
+#[test]
+fn filtered_typed_insert_proves_scalar_truth_and_preserves_nested_arrow_values() {
+    let statement = "INSERT INTO target (id,payload) SELECT id,payload FROM source WHERE id >= 2";
+    let snapshots = [
+        typed_state("target", vec![]),
+        typed_state("source", vec![
+            typed_row(1, payload(2, 3)),
+            typed_row(2, payload(4, 5)),
+            typed_row(3, payload(6, 7)),
+        ]),
+    ];
+    let plan = physical_typed_ordered_insert_plan(&typed_insert_bundle(statement), &snapshots);
+    let PhysicalTypedPopulationPlan::Feasible { final_states } = plan else {
+        panic!("scalar WHERE must preserve exact nested rows: {plan:?}");
+    };
+    let target = final_states.iter().find(|s| s.relation() == "target").unwrap();
+    assert_eq!(
+        target.rows(),
+        &[typed_row(2, payload(4, 5)), typed_row(3, payload(6, 7))]
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE source(id INTEGER PRIMARY KEY, payload STRUCT(scores INTEGER[2], label VARCHAR));
+         CREATE TABLE target(id INTEGER PRIMARY KEY, payload STRUCT(scores INTEGER[2], label VARCHAR));
+         INSERT INTO source VALUES
+           (1, {'scores':[2,3], 'label':'ok'}),
+           (2, {'scores':[4,5], 'label':'ok'}),
+           (3, {'scores':[6,7], 'label':'ok'});
+         INSERT INTO target (id,payload) SELECT id,payload FROM source WHERE id >= 2;",
+    ).unwrap();
+    let ids = db.prepare("SELECT id FROM target ORDER BY id").unwrap()
+        .query_map([], |row| row.get::<_, i32>(0)).unwrap()
+        .collect::<Result<Vec<_>, _>>().unwrap();
+    assert_eq!(ids, vec![2, 3]);
+
+    let empty = physical_typed_ordered_insert_plan(
+        &typed_insert_bundle(
+            "INSERT INTO target (id,payload) SELECT id,payload FROM source WHERE id IS NULL",
+        ),
+        &snapshots,
+    );
+    let PhysicalTypedPopulationPlan::Feasible { final_states } = empty else {
+        panic!("SQL UNKNOWN/FALSE selection must produce an empty bag: {empty:?}");
+    };
+    assert!(final_states.iter().find(|s| s.relation() == "target").unwrap().rows().is_empty());
 }
 
 #[test]
