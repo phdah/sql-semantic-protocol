@@ -282,4 +282,43 @@ mod tests {
             ));
         }
     }
+    #[test]
+    fn high_precision_decimal_map_keys_use_numeric_not_lexical_identity() {
+        let kind = DataType::Map {
+            key: Box::new(DataType::Decimal {
+                precision: Some(38),
+                scale: Some(6),
+            }),
+            value: Box::new(DataType::Boolean),
+        };
+        let entry = |number: &str| {
+            (
+                PhysicalTypedValue::Scalar(LiteralValue::Number(number.to_string())),
+                PhysicalTypedValue::Scalar(LiteralValue::Boolean(true)),
+            )
+        };
+        let large = "999999999999999999999999999999.000001";
+        assert_eq!(
+            physical_typed_value_plan(
+                &PhysicalTypedValue::Map(vec![entry(large), entry("1.5")]),
+                &kind
+            ),
+            PhysicalTypeProof::Feasible
+        );
+        assert!(matches!(
+            physical_typed_value_plan(
+                &PhysicalTypedValue::Map(vec![entry("01.5000"), entry("+1.500000")]),
+                &kind
+            ),
+            PhysicalTypeProof::Impossible { .. }
+        ));
+        assert!(matches!(
+            physical_typed_value_plan(
+                &PhysicalTypedValue::Map(vec![entry("0.000000"), entry("-0.0")]),
+                &kind
+            ),
+            PhysicalTypeProof::Impossible { .. }
+        ));
+    }
+
 }
