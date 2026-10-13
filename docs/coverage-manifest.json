@@ -32,6 +32,7 @@
       "exact_decimal_and_boolean_CHECK_comparators_and_reversed_SQL_comparisons",
       "Arrow_style_nested_array_map_struct_typed_value_bounds",
       "exact_typed_JSON_ASCII_and_safe_integer_documents_SQL_NULL_distinction",
+      "finite_IEEE754_Arrow_float_bit_witnesses_with_special_values_residual",
       "enforced_numeric_scalar_CHECK_and_SQL_NULL",
       "nested_structural_values_under_enforced_NOT_NULL",
       "identical_text_key_equality_with_unproved_distinct_collation",
