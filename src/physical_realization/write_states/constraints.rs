@@ -312,9 +312,18 @@ pub(super) fn validate_all_constraints_with_nested(
                         if *value == LiteralValue::Null {
                             continue;
                         }
+                        let binary_text = bundle
+                            .source_schemas()
+                            .iter()
+                            .find(|schema| schema.relation() == state.relation)
+                            .and_then(|schema| {
+                                schema.columns().iter().find(|column| column.name() == accepted.column())
+                            })
+                            .and_then(|column| column.text_comparison_law())
+                            == Some(crate::relation::TextComparisonLaw::Binary);
                         let mut found = false;
                         for candidate in accepted.values() {
-                            if constraint_scalar_equal(value, candidate)? {
+                            if constraint_scalar_equal(value, candidate, binary_text)? {
                                 found = true;
                                 break;
                             }
@@ -375,12 +384,18 @@ fn equal_key_rows(
     Ok(true)
 }
 
-fn constraint_scalar_equal(value: &LiteralValue, candidate: &ConstraintValue) -> StateResult<bool> {
+fn constraint_scalar_equal(
+    value: &LiteralValue,
+    candidate: &ConstraintValue,
+    binary_text: bool,
+) -> StateResult<bool> {
     match (value, candidate) {
         (LiteralValue::Boolean(a), ConstraintValue::Boolean(b)) => Ok(a == b),
         (LiteralValue::Text(a), ConstraintValue::String(b)) => {
             if a == b {
                 Ok(true)
+            } else if binary_text {
+                Ok(false)
             } else {
                 Err(residual("accepted string comparison needs collation proof"))
             }
@@ -418,19 +433,21 @@ mod tests {
             ),
         ] {
             assert!(
-                constraint_scalar_equal(&LiteralValue::Number(actual.into()), &expected).unwrap(),
+                constraint_scalar_equal(&LiteralValue::Number(actual.into()), &expected, false).unwrap(),
                 "{actual}"
             );
         }
         assert!(!constraint_scalar_equal(
             &LiteralValue::Number("1.501".into()),
             &ConstraintValue::Number("1.5".into()),
+            false,
         )
         .unwrap());
         assert!(matches!(
             constraint_scalar_equal(
                 &LiteralValue::Number("NaN".into()),
                 &ConstraintValue::Number("1.5".into()),
+                false,
             ),
             Err(StateFailure::Residual(_, _))
         ));
