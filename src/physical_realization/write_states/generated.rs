@@ -73,15 +73,18 @@ pub(super) fn evaluate(
 pub(super) fn check_declared_sources(
     sources: &[ColumnValueSource],
     row: &PhysicalWriteRow,
+    controlled_identity_columns: &BTreeSet<String>,
 ) -> StateResult<()> {
     for source in sources {
         match source.kind() {
             ColumnValueKind::Default => {}
             ColumnValueKind::Identity => {
-                return Err(residual_gap(
-                    PhysicalWriteStateGap::UnprovedConstraint,
-                    "identity value needs an attested sequence and allocation-state law",
-                ))
+                if !controlled_identity_columns.contains(source.column()) {
+                    return Err(residual_gap(
+                        PhysicalWriteStateGap::UnprovedConstraint,
+                        "identity value needs an attested sequence and allocation-state law",
+                    ));
+                }
             }
             ColumnValueKind::Generated => {
                 if !authoritative(source) {
