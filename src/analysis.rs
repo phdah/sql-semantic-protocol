@@ -193,7 +193,10 @@ fn analyze_with_metadata(
             match analyze_create_table_schema(declared, dialect_name) {
                 Ok(Some(schema)) => {
                     if !invalid_schemas.contains(&relation) {
-                        if let Some(existing) = source_schemas.iter().find(|item| item.relation() == relation) {
+                        if let Some(existing) = source_schemas
+                            .iter()
+                            .find(|item| item.relation() == relation)
+                        {
                             if existing != &schema {
                                 source_schemas.retain(|item| item.relation() != relation);
                                 invalid_schemas.insert(relation.clone());
