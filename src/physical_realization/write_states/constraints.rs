@@ -52,9 +52,11 @@ pub(super) fn validate_all_constraints(
             ));
         }
         for check in set.computed_checks() {
-            if !check.evidence().iter().any(|evidence| {
-                evidence.enforcement() == ConstraintEnforcement::Enforced
-            }) {
+            if !check
+                .evidence()
+                .iter()
+                .any(|evidence| evidence.enforcement() == ConstraintEnforcement::Enforced)
+            {
                 return Err(residual_gap(
                     PhysicalWriteStateGap::UnprovedConstraint,
                     "computed CHECK enforcement not attested",
@@ -69,9 +71,7 @@ pub(super) fn validate_all_constraints(
                     LiteralValue::Number(value) => ConstraintValue::Number(value),
                     LiteralValue::Text(value) => ConstraintValue::String(value),
                 };
-                super::check_comparisons::validate_scalar_check(
-                    &left, check.operator(), &value
-                )?;
+                super::check_comparisons::validate_scalar_check(&left, check.operator(), &value)?;
             }
         }
         for key in set.computed_keys() {
@@ -92,7 +92,10 @@ pub(super) fn validate_all_constraints(
                     .iter()
                     .map(|expression| super::generated::evaluate(expression, &row.values))
                     .collect::<StateResult<Vec<_>>>()?;
-                if values.iter().any(|value| matches!(value, LiteralValue::Null)) {
+                if values
+                    .iter()
+                    .any(|value| matches!(value, LiteralValue::Null))
+                {
                     if key.primary() {
                         return Err(impossible("computed PRIMARY KEY cannot contain NULL"));
                     }
@@ -110,7 +113,9 @@ pub(super) fn validate_all_constraints(
                         }
                     }
                     if identical {
-                        return Err(impossible("enforced computed key has duplicate physical values"));
+                        return Err(impossible(
+                            "enforced computed key has duplicate physical values",
+                        ));
                     }
                 }
                 seen.push(values);
