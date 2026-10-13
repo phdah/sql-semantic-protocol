@@ -2,7 +2,8 @@ mod common;
 
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, parse_data_type,
-    to_bundle_json, ConfiguredSqlInput, DataType, DataTypeField, RelationCatalog, RelationSchema,
+    to_bundle_json, ColumnValueKind, ConfiguredSqlInput, DataType, DataTypeField,
+    GeneratedValueExpression, RelationCatalog, RelationSchema,
     SchemaColumn, SchemaSourceKind, SqlInput,
 };
 
@@ -305,4 +306,59 @@ fn explicit_nullable_ddl_proves_omitted_sql_null_without_overriding_real_default
         );
         assert_eq!(sources.len(), 2, "{dialect}");
     }
+}
+
+#[test]
+fn portable_abs_generated_ast_is_canonical_across_every_parsing_dialect() {
+    let schema = RelationSchema::new(
+        "target",
+        vec![
+            SchemaColumn::from_sql_type("id", "INTEGER", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("score", "INTEGER", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let sql = SqlInput::inline(
+        "CREATE TABLE target (id INTEGER, score INTEGER GENERATED ALWAYS AS (ABS(id)))",
+    );
+    let mut recognized = Vec::new();
+    let mut parser_boundary = Vec::new();
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).unwrap();
+        let input = ConfiguredSqlInput::new("generated", &sql, name, dialect.as_ref());
+        match analyze_configured_inputs_with_catalog(&[input], &catalog) {
+            Ok(bundle) => {
+                let set = bundle
+                    .relation_constraints()
+                    .iter()
+                    .find(|set| set.relation() == "target")
+                    .expect("accepted DDL exposes canonical constraints");
+                let column = set
+                    .column_value_sources()
+                    .iter()
+                    .find(|source| source.column() == "score")
+                    .expect("accepted DDL exposes generated source");
+                assert_eq!(column.kind(), ColumnValueKind::Generated, "{name}");
+                assert_eq!(
+                    column.expression(),
+                    Some(&GeneratedValueExpression::Abs(Box::new(
+                        GeneratedValueExpression::Column("id".into()),
+                    ))),
+                    "{name}",
+                );
+                recognized.push(name);
+            }
+            Err(_) => parser_boundary.push(name),
+        }
+    }
+    assert!(
+        recognized.contains(&"duckdb"),
+        "DuckDB must recognize the positive portable fixture; rejected: {parser_boundary:?}"
+    );
+    assert_eq!(
+        recognized.len() + parser_boundary.len(),
+        common::DIALECTS.len(),
+        "every exposed dialect must be classified",
+    );
 }
