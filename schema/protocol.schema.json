@@ -3994,6 +3994,137 @@
         }
       }
     },
+    "computedBooleanCheckPredicate": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "left",
+            "operator",
+            "right"
+          ],
+          "properties": {
+            "kind": {
+              "const": "comparison"
+            },
+            "left": {
+              "$ref": "#/$defs/generatedValueExpression"
+            },
+            "operator": {
+              "enum": [
+                "eq",
+                "not_eq",
+                "gt",
+                "gte",
+                "lt",
+                "lte"
+              ]
+            },
+            "right": {
+              "$ref": "#/$defs/generatedValueExpression"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "expression",
+            "negated"
+          ],
+          "properties": {
+            "kind": {
+              "const": "is_null"
+            },
+            "expression": {
+              "$ref": "#/$defs/generatedValueExpression"
+            },
+            "negated": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "and"
+            },
+            "children": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "$ref": "#/$defs/computedBooleanCheckPredicate"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "or"
+            },
+            "children": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "$ref": "#/$defs/computedBooleanCheckPredicate"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operand"
+          ],
+          "properties": {
+            "kind": {
+              "const": "not"
+            },
+            "operand": {
+              "$ref": "#/$defs/computedBooleanCheckPredicate"
+            }
+          }
+        }
+      ]
+    },
+    "computedBooleanCheckConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "predicate",
+        "evidence"
+      ],
+      "properties": {
+        "predicate": {
+          "$ref": "#/$defs/computedBooleanCheckPredicate"
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/constraintEvidence"
+          }
+        }
+      }
+    },
     "computedCheckConstraint": {
       "type": "object",
       "additionalProperties": false,
@@ -4067,6 +4198,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/computedCheckConstraint"
+          }
+        },
+        "computed_boolean_checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/computedBooleanCheckConstraint"
           }
         }
       }
