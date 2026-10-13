@@ -6,12 +6,12 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
     physical_ordered_write_state_plan, physical_typed_value_plan, AnalysisBundle,
-    CheckCompareOperator, ColumnValueKind, ColumnValueSource, ComputedCheckConstraint, ComputedKeyConstraint, ConfiguredSqlInput,
-    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
-    ConstraintValue, DataType, DataTypeField, GeneratedValueExpression, LiteralValue,
-    PhysicalTypeProof, PhysicalTypedValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput, WriteKind,
+    CheckCompareOperator, ColumnValueKind, ColumnValueSource, ComputedCheckConstraint,
+    ComputedKeyConstraint, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, DataType, DataTypeField,
+    GeneratedValueExpression, LiteralValue, PhysicalTypeProof, PhysicalTypedValue,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
@@ -1091,13 +1091,14 @@ fn exact_computed_unique_keys_reject_collisions_and_preserve_composites() {
         Box::new(GeneratedValueExpression::Column("id".into())),
         Box::new(GeneratedValueExpression::Column("score".into())),
     );
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![])
-            .unwrap()
-            .with_computed_keys(vec![
-                ComputedKeyConstraint::new(vec![expression], false, evidence()).unwrap(),
-            ]),
-    ]);
+    b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_computed_keys(vec![ComputedKeyConstraint::new(
+            vec![expression],
+            false,
+            evidence(),
+        )
+        .unwrap()])]);
     for good in [
         state("target", &[]),
         state("target", &[(Some(1), Some(2)), (Some(2), Some(2))]),
@@ -1126,7 +1127,8 @@ fn exact_computed_unique_keys_reject_collisions_and_preserve_composites() {
         "CREATE TABLE target(id INTEGER, score INTEGER);\n\
          CREATE UNIQUE INDEX uk_expression ON target ((id+score));\n\
          INSERT INTO target VALUES (1,2), (2,2);",
-    ).unwrap();
+    )
+    .unwrap();
     assert!(db.execute_batch("INSERT INTO target VALUES (2,1)").is_err());
 }
 
@@ -1136,17 +1138,18 @@ fn computed_check_cross_column_arithmetic_is_complete_and_duckdb_compatible() {
     let check = ComputedCheckConstraint::new(
         GeneratedValueExpression::Add(
             Box::new(GeneratedValueExpression::Column("id".into())),
-            Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+            Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(
+                1,
+            ))),
         ),
         CheckCompareOperator::Gte,
         GeneratedValueExpression::Column("score".into()),
         evidence(),
-    ).unwrap();
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![])
-            .unwrap()
-            .with_computed_checks(vec![check]),
-    ]);
+    )
+    .unwrap();
+    b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_computed_checks(vec![check])]);
     assert!(matches!(
         physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(2))])]),
         PhysicalWriteStatePlan::Feasible { .. }
@@ -1163,13 +1166,18 @@ fn computed_check_cross_column_arithmetic_is_complete_and_duckdb_compatible() {
         &["CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id + 1 >= score))"],
         "duckdb",
     );
-    let checks = ddl.relation_constraints().iter().find(|set| set.relation() == "target").unwrap();
+    let checks = ddl
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
     assert_eq!(checks.computed_checks().len(), 1);
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE target(id INTEGER, score INTEGER CHECK (id + 1 >= score));\n\
          INSERT INTO target VALUES (1,2), (2,NULL);",
-    ).unwrap();
+    )
+    .unwrap();
     assert!(db.execute_batch("INSERT INTO target VALUES (1,9)").is_err());
 }
