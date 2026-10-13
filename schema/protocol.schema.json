@@ -3928,6 +3928,23 @@
         }
       }
     },
+    "generatedValueExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["column", "literal", "add", "subtract", "multiply"] },
+        "column": { "$ref": "#/$defs/nonEmptyString" },
+        "value": { "$ref": "#/$defs/constraintValue" },
+        "left": { "$ref": "#/$defs/generatedValueExpression" },
+        "right": { "$ref": "#/$defs/generatedValueExpression" }
+      },
+      "oneOf": [
+        { "properties": { "kind": { "const": "column" } }, "required": ["column"] },
+        { "properties": { "kind": { "const": "literal" } }, "required": ["value"] },
+        { "properties": { "kind": { "enum": ["add", "subtract", "multiply"] } }, "required": ["left", "right"] }
+      ]
+    },
     "columnValueSource": {
       "type": "object",
       "additionalProperties": false,
@@ -3938,6 +3955,12 @@
         "value": {
           "oneOf": [
             { "$ref": "#/$defs/constraintValue" },
+            { "type": "null" }
+          ]
+        },
+        "expression": {
+          "oneOf": [
+            { "$ref": "#/$defs/generatedValueExpression" },
             { "type": "null" }
           ]
         },
