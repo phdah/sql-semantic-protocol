@@ -177,7 +177,7 @@ pub use protocol::{
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
-    RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TimestampZone,
+    RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TextComparisonLaw, TimestampZone,
 };
 pub use subquery_witness::{
     SubqueryCorrelation, SubqueryMembershipCase, SubqueryMembershipDirection,
