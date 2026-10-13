@@ -1368,7 +1368,7 @@ rather than an implicit SQL NULL; a typed `{"type":"null","value":null}` is a
 literal SQL NULL. Duplicate equal facts coalesce evidence. Inconsistent facts
 produce `conflicting_column_value_sources` diagnostics.
 
-`physical_closed_world_schema_plan(bundle, snapshots)` checks an entire
+`physical_typed_closed_world_schema_plan(bundle, snapshots)` checks complete source-backed, Arrow-like scalar, binary, array, map and struct populations. Each supplied nested value is validated against its canonical declared type; unconstrained nested columns retain their original materialized values while the existing scalar PK/FK/CHECK verifier checks other columns across shared relations. Nested values in keys, CHECK or accepted-values constraints remain residual until their exact collation/equality laws are known. This API validates snapshots but does not execute DML or independently prove terminal SQL output goals. Exact base-ten scalar CHECK comparisons and boolean equality/inequality are proved without floating-point conversions; unproved casts and collation-sensitive text comparisons remain residual.\n\n`physical_closed_world_schema_plan(bundle, snapshots)` checks an entire
 caller-attested collection of physical relations simultaneously without
 executing SQL. It returns `Feasible`, `Impossible` or `Residual`, reusing
 the ordered write state's gap categories. Complete snapshots can prove
