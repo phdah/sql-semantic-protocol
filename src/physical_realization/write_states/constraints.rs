@@ -176,7 +176,11 @@ pub(super) fn validate_all_constraints(
                         if matches!(value, LiteralValue::Null) {
                             continue; // SQL CHECK admits UNKNOWN.
                         }
-                        super::check_comparisons::validate_scalar_check(value, check.operator(), check.value())?;
+                        super::check_comparisons::validate_scalar_check(
+                            value,
+                            check.operator(),
+                            check.value(),
+                        )?;
                     }
                 }
                 RelationConstraint::AcceptedValues(accepted) => {
