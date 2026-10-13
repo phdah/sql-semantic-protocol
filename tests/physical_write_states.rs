@@ -6,12 +6,11 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
     physical_ordered_write_state_plan, physical_typed_value_plan, AnalysisBundle,
-    CheckCompareOperator, ColumnValueKind,
-    ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
-    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, WriteKind, DataType, DataTypeField,
-    PhysicalTypeProof, PhysicalTypedValue,
+    CheckCompareOperator, ColumnValueKind, ColumnValueSource, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    ConstraintValue, DataType, DataTypeField, LiteralValue, PhysicalTypeProof, PhysicalTypedValue,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
@@ -978,16 +977,27 @@ fn arrow_style_array_and_struct_shape_differential_duckdb() {
         PhysicalTypedValue::Scalar(LiteralValue::Number("2".into())),
         PhysicalTypedValue::Scalar(LiteralValue::Number("3".into())),
     ]);
-    assert_eq!(physical_typed_value_plan(&good, &array), PhysicalTypeProof::Feasible);
+    assert_eq!(
+        physical_typed_value_plan(&good, &array),
+        PhysicalTypeProof::Feasible
+    );
     assert!(matches!(
         physical_typed_value_plan(&extra, &array),
         PhysicalTypeProof::Impossible { .. }
     ));
 
-    let record = DataType::Struct { fields: vec![
-        DataTypeField::new(Some("a".into()), DataType::SignedInteger { bits: Some(32) }),
-        DataTypeField::new(Some("b".into()), DataType::String { length: None, fixed: false }),
-    ]};
+    let record = DataType::Struct {
+        fields: vec![
+            DataTypeField::new(Some("a".into()), DataType::SignedInteger { bits: Some(32) }),
+            DataTypeField::new(
+                Some("b".into()),
+                DataType::String {
+                    length: None,
+                    fixed: false,
+                },
+            ),
+        ],
+    };
     assert_eq!(
         physical_typed_value_plan(
             &PhysicalTypedValue::Struct(vec![
@@ -999,8 +1009,17 @@ fn arrow_style_array_and_struct_shape_differential_duckdb() {
         PhysicalTypeProof::Feasible
     );
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE typed (arr INTEGER[2], rec STRUCT(a INTEGER, b VARCHAR));
-        INSERT INTO typed VALUES ([1,2], {'a':3,'b':'ok'});").unwrap();
-    assert_eq!(db.query_row("SELECT count(*) FROM typed", [], |r| r.get::<_, i64>(0)).unwrap(), 1);
-    assert!(db.execute_batch("INSERT INTO typed VALUES ([1,2,3], {'a':3,'b':'ok'})").is_err());
+    db.execute_batch(
+        "CREATE TABLE typed (arr INTEGER[2], rec STRUCT(a INTEGER, b VARCHAR));
+        INSERT INTO typed VALUES ([1,2], {'a':3,'b':'ok'});",
+    )
+    .unwrap();
+    assert_eq!(
+        db.query_row("SELECT count(*) FROM typed", [], |r| r.get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+    assert!(db
+        .execute_batch("INSERT INTO typed VALUES ([1,2,3], {'a':3,'b':'ok'})")
+        .is_err());
 }
