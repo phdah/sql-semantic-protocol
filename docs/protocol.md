@@ -1392,6 +1392,17 @@ constructs imaginary rows, grants an unproved default or bypasses source-key
 collisions. The ordered DML path checks both its prestate and each poststate.
 Portable scalar and deterministic row-local computed `CHECK` comparisons (`eq`, `not_eq`, `gt`, `gte`, `lt`, `lte`) emit typed facts and provenance. Portable `AND` conjuncts are normalized atomically for SQL DDL and dbt CHECK metadata: if any conjunct is unsupported, the entire rule is residual. Complete same-column equality `OR` disjunctions and non-NULL `IN` lists normalize to canonical accepted values, including dbt CHECK metadata; mixed-column/function `OR` and `IN (..., NULL)` remain residual. An explicitly attested binary text law supports byte-distinct equality/inequality for CHECK predicates as well as accepted values, keys and FKs. It does not establish text ordering. The physical validator checks exact integers and base-ten decimals and admits SQL NULL as UNKNOWN. `NOT ENFORCED` rules are excluded from proof obligations, `Unknown` remains residual, and `Enforced` rules are evaluated. Complex functions and `OR`, unproved collation-sensitive comparisons, casts and enforcement timing remain residual.
 
+The `to_physical_typed_population_json(bundle, snapshots)` API emits a deterministic,
+separate **typed physical witness sidecar** only after checking the complete
+physical population. This export never modifies the canonical SQL protocol
+root or guesses unsupported SQL expressions. Its recursive wire schema is
+[`schema/typed-physical-population.schema.json`](../schema/typed-physical-population.schema.json).
+It retains byte buffers as unsigned byte arrays, floating-point values as
+exact IEEE754 bit words, scalar base-ten numbers as strings to avoid JSON
+rounding, struct/array/map order, and SQL NULL separately from JSON document
+null. An `Impossible` or `Residual` physical proof is returned as an error
+instead of serializing invented feasible rows.
+
 The `physical_typed_append_schema_plan(bundle, snapshots, target, inserted)` API validates
 caller-materialized Arrow-like nested rows appended to a complete prior target bag.
 It rechecks every supplied source and target relation before and after the append,
