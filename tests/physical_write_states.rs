@@ -1427,3 +1427,53 @@ fn exact_decimal_keys_and_cross_relation_foreign_keys_preserve_numeric_identity(
         .execute_batch("INSERT INTO target VALUES (1.5000)")
         .is_err());
 }
+
+#[test]
+fn enforcement_states_distinguish_disabled_from_unknown_and_active_proofs() {
+    for (enforcement, expected) in [
+        (ConstraintEnforcement::NotEnforced, "feasible"),
+        (ConstraintEnforcement::Unknown, "residual"),
+        (ConstraintEnforcement::Enforced, "impossible"),
+    ] {
+        let mut b = bundle(&["SELECT id FROM target"], "duckdb");
+        let declared = vec![ConstraintEvidence::new(
+            ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "status").unwrap(),
+            enforcement,
+        )];
+        let computed = ComputedCheckConstraint::new(
+            GeneratedValueExpression::Column("score".into()),
+            CheckCompareOperator::Gt,
+            GeneratedValueExpression::Literal(ConstraintValue::Integer(0)),
+            declared.clone(),
+        )
+        .unwrap();
+        let functional_key = ComputedKeyConstraint::new(
+            vec![GeneratedValueExpression::Add(
+                Box::new(GeneratedValueExpression::Column("id".into())),
+                Box::new(GeneratedValueExpression::Column("score".into())),
+            )],
+            false,
+            declared.clone(),
+        )
+        .unwrap();
+        b.enrich_relation_constraints(&[
+            RelationConstraintSet::new(
+                "target",
+                vec![RelationConstraint::not_null("id", declared).unwrap()],
+            )
+            .unwrap()
+            .with_computed_checks(vec![computed])
+            .with_computed_keys(vec![functional_key]),
+        ]);
+        let result = physical_closed_world_schema_plan(
+            &b,
+            &[state("target", &[(None, Some(-1)), (None, Some(-2))])],
+        );
+        let actual = match result {
+            PhysicalWriteStatePlan::Feasible { .. } => "feasible",
+            PhysicalWriteStatePlan::Residual { .. } => "residual",
+            PhysicalWriteStatePlan::Impossible { .. } => "impossible",
+        };
+        assert_eq!(actual, expected, "{enforcement:?}");
+    }
+}
