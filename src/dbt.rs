@@ -2192,9 +2192,11 @@ fn parse_dbt_constraint_array(
                             quote,
                             evidence.clone(),
                         )
-                        .map_err(|error| DbtManifestError::RelationMetadata {
-                            resource_id: resource_id.to_string(),
-                            message: format!("{relation}: {error}"),
+                        .map_err(|error| {
+                            DbtManifestError::RelationMetadata {
+                                resource_id: resource_id.to_string(),
+                                message: format!("{relation}: {error}"),
+                            }
                         })?;
                         accepted_rules.push(rule);
                     }
