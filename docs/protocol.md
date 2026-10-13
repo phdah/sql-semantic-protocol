@@ -1390,6 +1390,17 @@ unknown collation, generated/identity expression, missing parent population
 or vendor-specific null semantics remain residual. Positive proof never
 constructs imaginary rows, grants an unproved default or bypasses source-key
 collisions. The ordered DML path checks both its prestate and each poststate.
+Complete portable `CHECK` Boolean trees are represented by
+`relation_constraints[].computed_boolean_checks[]` with canonical
+`comparison`, `is_null`, `and`, `or`, and `not` nodes and explicit
+enforcement provenance. These are all-or-nothing constraints, never
+independent OR branches. Their physical evaluator retains SQL TRUE/FALSE/
+UNKNOWN, so UNKNOWN passes an enforced CHECK, FALSE is impossible, and
+an unproved comparison remains residual unless a decisive true OR or
+false AND branch determines the outcome. SQL DDL and dbt normalize to
+the same predicate structure; unsupported casts, UDFs and subqueries
+remain diagnostics instead of omitted terms.
+
 Deterministic row-local computed expression nodes include checked integer
 arithmetic, integer `ABS`, and same-type `COALESCE`. Implicit cross-type
 coercion, overflowing signed `ABS`, SQL functions with unproven semantics,
