@@ -1,10 +1,10 @@
 ---
 id: TASK-70
 title: Construct typed correlated predicate and expression outcomes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-13'
 labels: []
 milestone: m-3
 dependencies: 
@@ -39,3 +39,26 @@ Current boolean proof supports a restricted scalar subset. Expand safe, typed ex
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Implementation progress (2026-10-13)
+
+The first bounded canonical Boolean-predicate increment lives on
+`feat/task-70-typed-predicate-witnesses`:
+
+- Typed integer `BETWEEN` / `NOT BETWEEN` and finite `IN` / `NOT IN` reuse the existing scalar comparison witness IR.
+- `NOT` normalizes with De Morgan's laws while preserving SQL UNKNOWN;
+  catalog-typed `IS [NOT] DISTINCT FROM` integers and direct `NULL`
+  literals have exact positive and NOT TRUE witnesses.
+- Exact conjunctive NULL tests now refine source and projected domains.
+- SQL three-valued DuckDB oracles, parser-dialect coverage, and
+  unsupported NULL-membership/cross-column residual tests are added.
+- No consumer-specific semantics, parser AST in protocol types, or wire
+  format changes. The existing schema and adapter-translated SQL facts
+  remain authoritative.
+
+**Outstanding (do not sign off):** Full numeric arithmetic/overflow,
+general computed projections, noninteger coercions, CASE/COALESCE/NULLIF,
+typed casts/TRY_CAST, cross-column constraints, advanced pattern matching,
+dialect-sensitive functions and environments, comprehensive dbt/engine
+oracles, and all six acceptance criteria remain unverified in their full
+declared scope. Keep TASK-70 In Progress and TASK-91 release blocked.
