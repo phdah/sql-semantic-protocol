@@ -2182,7 +2182,7 @@ fn attested_identity_sequence_allocates_omitted_insert_values_in_row_order() {
     let sequence = PhysicalIdentitySequence::new("target", "id", 100, 5).unwrap();
     assert_eq!(sequence.next_value(), 100);
     assert_eq!(sequence.increment(), 5);
-    let plan = physical_ordered_write_state_plan_with_identities(&b, &initial, &[sequence.clone()]);
+    let plan = physical_ordered_write_state_plan_with_identities(&b, &initial, std::slice::from_ref(&sequence));
     let (_, states) = outcome(&plan);
     let target = states.iter().find(|s| s.relation() == "target").unwrap();
     assert_eq!(
