@@ -5,11 +5,11 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_typed_closed_world_schema_plan, ConfiguredSqlInput, ConstraintEnforcement,
-    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, CheckCompareOperator, DataType, DataTypeField,
-    LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput,
+    physical_typed_closed_world_schema_plan, CheckCompareOperator, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    DataType, DataTypeField, LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue,
+    PhysicalTypedWriteRow, PhysicalTypedWriteState, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn evidence() -> Vec<ConstraintEvidence> {
@@ -187,8 +187,19 @@ fn reversed_scalar_check_comparison_normalizes_across_parser_dialects() {
     .unwrap();
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     for name in [
-        "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-        "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks",
     ] {
         let dialect = dialect_from_name(name).unwrap();
         let sql = SqlInput::inline("CREATE TABLE target(id INTEGER, CHECK (3 < id))");
