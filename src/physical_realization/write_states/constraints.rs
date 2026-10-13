@@ -42,16 +42,8 @@ pub(super) fn validate_all_constraints(
         let Some(state) = states.get(set.relation()) else {
             continue;
         };
-        if !state.rows.is_empty()
-            && set
-                .column_value_sources()
-                .iter()
-                .any(|source| source.kind() != crate::column_sources::ColumnValueKind::Default)
-        {
-            return Err(residual_gap(
-                PhysicalWriteStateGap::UnprovedConstraint,
-                "generated or identity column population lacks a canonical evaluation law",
-            ));
+        for row in &state.rows {
+            super::generated::check_declared_sources(set.column_value_sources(), row)?;
         }
         if !set.diagnostics().is_empty() {
             return Err(residual_gap(
