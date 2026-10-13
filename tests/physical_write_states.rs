@@ -2622,3 +2622,70 @@ fn attested_generated_dependencies_are_topologically_resolved_in_ordered_updates
         PhysicalWriteStatePlan::Residual { .. }
     ));
 }
+
+#[test]
+fn composite_fk_considers_later_exact_match_after_unproved_collation_candidates() {
+    let schemas = ["target", "source"]
+        .into_iter()
+        .map(|relation| {
+            RelationSchema::new(
+                relation,
+                vec![
+                    SchemaColumn::from_sql_type("id", "VARCHAR(20)", "duckdb").unwrap(),
+                    SchemaColumn::from_sql_type("score", "INTEGER", "duckdb").unwrap(),
+                ],
+            )
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let sql = SqlInput::inline("SELECT id FROM target");
+    let input = ConfiguredSqlInput::new("fk", &sql, "duckdb", dialect.as_ref());
+    let mut bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+    bundle.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::foreign_key(
+                vec!["id".into(), "score".into()],
+                "source",
+                vec!["id".into(), "score".into()],
+                evidence(),
+            )
+            .unwrap()],
+        ).unwrap(),
+        RelationConstraintSet::new(
+            "source",
+            vec![RelationConstraint::primary_key(
+                vec!["id".into(), "score".into()],
+                evidence(),
+            )
+            .unwrap()],
+        ).unwrap(),
+    ]);
+    let row = |id: &str, score: i64| {
+        PhysicalWriteRow::new(BTreeMap::from([
+            ("id".into(), LiteralValue::Text(id.into())),
+            ("score".into(), LiteralValue::Number(score.to_string())),
+        ])).unwrap()
+    };
+    let states = [
+        PhysicalWriteState::new("target",vec![row("A", 1)]).unwrap(),
+        PhysicalWriteState::new(
+            "source",
+            vec![row("a", 2), row("A", 1)],
+        ).unwrap(),
+    ];
+    assert!(matches!(
+        physical_closed_world_schema_plan(&bundle, &states),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    let missing = [
+        PhysicalWriteState::new("target",vec![row("A", 1)]).unwrap(),
+        PhysicalWriteState::new("source",vec![row("a", 2)]).unwrap(),
+    ];
+    assert!(matches!(
+        physical_closed_world_schema_plan(&bundle, &missing),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+}
