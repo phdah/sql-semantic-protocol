@@ -292,6 +292,12 @@ modifiers.
 normalization through sqlparser. Consumers can alternatively construct the canonical `DataType`
 directly. Raw sqlparser AST types never appear in the protocol contract.
 
+Text comparison evidence is explicit: an optional `text_comparison_law: "binary"`
+comes with nonempty `comparison_evidence[]` carrying source identity and enforcement.
+A `collation` name without that evidence does not grant comparison semantics.
+These facts apply equally to constraints on text keys, foreign-key joins and accepted
+values. Distinct bytes under unproved comparison laws remain residual.
+
 This metadata exists so consumers such as test-data generators can interpret unbounded or
 literal-constrained source columns without maintaining a second SQL parser or private schema
 contract. When no typed schema metadata is supplied, `source_schemas` is omitted rather than
