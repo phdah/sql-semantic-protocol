@@ -462,6 +462,37 @@ pub(crate) enum PortableCheckExpression {
 ///
 /// No fragment of an unsupported AND/OR predicate may be certified in
 /// isolation, since that would discard a target-side obligation.
+/// A non-negated BETWEEN has two independent, simultaneous lower and upper
+/// scalar bounds. Negated BETWEEN is a disjunction and is not equivalent to
+/// their conjunction; never silently admit it.
+fn portable_between_bounds(
+    expr: &Expr,
+    expected_column: Option<&str>,
+) -> Option<[(String, crate::constraints::CheckCompareOperator, ConstraintValue); 2]> {
+    let Expr::Between {
+        expr: value,
+        negated: false,
+        low,
+        high,
+    } = unwrap_nested_expression(expr) else {
+        return None;
+    };
+    let lower = Expr::BinaryOp {
+        left: value.clone(),
+        op: SqlBinaryOperator::GtEq,
+        right: low.clone(),
+    };
+    let upper = Expr::BinaryOp {
+        left: value.clone(),
+        op: SqlBinaryOperator::LtEq,
+        right: high.clone(),
+    };
+    Some([
+        comparison_from_check(&lower, expected_column)?,
+        comparison_from_check(&upper, expected_column)?,
+    ])
+}
+
 type PortableCheckFacts = (Vec<RelationConstraint>, Vec<ComputedCheckConstraint>);
 
 fn portable_check_constraints(
@@ -488,6 +519,20 @@ fn portable_check_constraints(
         constraints.extend(right_constraints);
         computed.extend(right_computed);
         return Ok(Some((constraints, computed)));
+    }
+    if let Some(bounds) = portable_between_bounds(expr, expected_column) {
+        let rules = bounds
+            .into_iter()
+            .map(|(column, operator, value)| {
+                RelationConstraint::check_comparison(
+                    column,
+                    operator,
+                    value,
+                    evidence.to_vec(),
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        return Ok(Some((rules, Vec::new())));
     }
     if let Some((column, values, quote)) = accepted_values_from_check(expr, expected_column) {
         return Ok(Some((
@@ -561,6 +606,10 @@ pub(crate) fn portable_check_expressions(expression: &str) -> Option<Vec<Portabl
         {
             visit(left, output)?;
             visit(right, output)?;
+        } else if let Some(bounds) = portable_between_bounds(expr, None) {
+            for (column, operator, value) in bounds {
+                output.push(PortableCheckExpression::Scalar(column, operator, value));
+            }
         } else {
             output.push(portable_check_expression(&expr.to_string())?);
         }
