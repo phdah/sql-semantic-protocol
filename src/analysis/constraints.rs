@@ -1,7 +1,7 @@
 //! SQL DDL primary, foreign, uniqueness and check constraints.
 
 use super::*;
-use crate::column_sources::{ColumnValueKind, ColumnValueSource};
+use crate::column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
 
 /// Normalize a complete CREATE TABLE declaration into canonical typed schema evidence.
 /// Unknown/unsupported declarations must not produce a partial authoritative schema.
@@ -307,12 +307,17 @@ pub(super) fn analyze_create_table_constraints(
                         ),
                         None,
                     )?;
-                    column_value_sources.push(ColumnValueSource::new(
+                    let source = ColumnValueSource::new(
                         column.name.to_string(),
                         kind,
                         None,
                         vec![evidence],
-                    )?);
+                    )?;
+                    let source = match generation_expr.as_ref().and_then(parse_generated_expression) {
+                        Some(expression) => source.with_generated_expression(expression)?,
+                        None => source,
+                    };
+                    column_value_sources.push(source);
                 }
                 ColumnOption::Identity(_) => {
                     let evidence = sql_constraint_evidence(
@@ -421,7 +426,30 @@ pub(super) fn analyze_create_table_constraints(
 }
 
 /// A portable scalar CHECK comparison, leaving expressions/functions residual.
-pub(super) fn comparison_from_check(
+pub(super) /// Normalize only portable, deterministic generated integer arithmetic.
+fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
+    use GeneratedValueExpression as G;
+    match unwrap_nested_expression(expr) {
+        Expr::Identifier(identifier) => Some(G::Column(identifier.to_string())),
+        Expr::Value(_) | Expr::UnaryOp {
+            op: SqlUnaryOperator::Minus | SqlUnaryOperator::Plus,
+            ..
+        } => constraint_value_from_expression(expr).map(|(value, _)| G::Literal(value)),
+        Expr::BinaryOp { left, op, right } => {
+            let left = Box::new(parse_generated_expression(left)?);
+            let right = Box::new(parse_generated_expression(right)?);
+            match op {
+                SqlBinaryOperator::Plus => Some(G::Add(left, right)),
+                SqlBinaryOperator::Minus => Some(G::Subtract(left, right)),
+                SqlBinaryOperator::Multiply => Some(G::Multiply(left, right)),
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
+fn comparison_from_check(
     expression: &Expr,
     expected_column: Option<&str>,
 ) -> Option<(
