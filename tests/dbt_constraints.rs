@@ -1043,3 +1043,31 @@ fn dbt_same_column_or_check_becomes_atomic_accepted_values() {
         4
     );
 }
+
+#[test]
+fn dbt_boolean_check_trees_match_ddl_without_discarding_or_not_branches() {
+    let mut manifest: Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type":"check","expression":"id > 0 OR amount < 0"},
+        {"type":"check","expression":"NOT (id IS NULL) AND (amount > 0 OR id > 1)"},
+        {"type":"check","expression":"LOWER(amount) > 0 OR id > 1"}
+    ]);
+    let parsed = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let set = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation()=="warehouse.analytics.stg_orders")
+        .unwrap();
+    assert_eq!(set.computed_boolean_checks().len(),2);
+    assert!(set.computed_boolean_checks().iter().all(|check|
+        check.evidence().iter().any(|evidence|
+            evidence.provenance().source_kind()==ConstraintSourceKind::DbtConstraint
+        )
+    ));
+    assert_eq!(
+        set.diagnostics().iter()
+            .filter(|diagnostic|diagnostic.code()=="unsupported_check_constraint")
+            .count(),1
+    );
+}
