@@ -34,7 +34,8 @@
       "nested_structural_values_under_enforced_NOT_NULL",
       "identical_text_key_equality_with_unproved_distinct_collation",
       "negative_floating_zero_aliases_remain_residual",
-      "portable_conjunctive_CHECK_sql_ddl_and_dbt_atomic_normalization"
+      "portable_conjunctive_CHECK_sql_ddl_and_dbt_atomic_normalization",
+      "exact_decimal_composite_key_and_cross_relation_FK_equality"
     ],
     "tests": [
       "tests/physical_write_states.rs",
