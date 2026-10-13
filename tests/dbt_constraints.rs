@@ -964,6 +964,7 @@ fn dbt_conjunctive_checks_match_sql_semantics_without_partial_admission() {
     manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
         {"type": "check", "expression": "id > 0 AND amount < 100"},
         {"type": "check", "expression": "amount >= id + 1 AND id > 1"},
+        {"type": "check", "expression": "amount BETWEEN 2 AND 10"},
         {"type": "check", "expression": "id > 0 AND LOWER(amount) = 'x'"}
     ]);
     let parsed = parse_dbt_manifest(&manifest.to_string()).expect("dbt manifest");
@@ -977,7 +978,7 @@ fn dbt_conjunctive_checks_match_sql_semantics_without_partial_admission() {
         .iter()
         .filter(|rule| matches!(rule, RelationConstraint::CheckComparison(_)))
         .count();
-    assert_eq!(scalar, 3);
+    assert_eq!(scalar, 5);
     assert_eq!(set.computed_checks().len(), 1);
     assert!(set
         .diagnostics()
