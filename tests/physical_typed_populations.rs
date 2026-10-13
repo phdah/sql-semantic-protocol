@@ -490,11 +490,29 @@ fn ddl_disjunction_normalizes_only_full_portable_same_column_equality() {
     );
 
     let dialect = dialect_from_name("duckdb").unwrap();
-    for unsupported in [
+    // These ORs do not collapse into accepted values. Their complete SQL
+    // three-valued Boolean CHECK laws are still representable.
+    for supported_boolean in [
         "CHECK (id = 1 OR score = 2)",
         "CHECK (id = 1 OR id = NULL)",
-        "CHECK (id = 1 OR lower(score) = 2)",
     ] {
+        let sql = SqlInput::inline(format!(
+            "CREATE TABLE target (id INTEGER, score INTEGER, {supported_boolean})"
+        ));
+        let input = ConfiguredSqlInput::new("boolean_or", &sql, "duckdb", dialect.as_ref());
+        let parsed = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+        let set = parsed
+            .relation_constraints()
+            .iter()
+            .find(|set| set.relation() == "target")
+            .unwrap();
+        assert_eq!(set.computed_boolean_checks().len(), 1, "{supported_boolean}");
+        assert!(!set
+            .constraints()
+            .iter()
+            .any(|rule| matches!(rule, RelationConstraint::AcceptedValues(_))));
+    }
+    for unsupported in ["CHECK (id = 1 OR lower(score) = 2)"] {
         let sql = SqlInput::inline(format!(
             "CREATE TABLE target (id INTEGER, score INTEGER, {unsupported})"
         ));
@@ -751,8 +769,8 @@ fn typed_mutations_reject_nested_sql_evaluation_and_final_fk_contradictions() {
         &snapshots,
     );
     assert!(
-        matches!(plan, PhysicalTypedPopulationPlan::Impossible { .. }),
-        "a new scalar FK violation must be checked against the complete source: {plan:?}",
+        matches!(plan, PhysicalTypedPopulationPlan::Residual { .. }),
+        "a missing FK reference without an attested deferral law cannot be claimed impossible: {plan:?}",
     );
 }
 
