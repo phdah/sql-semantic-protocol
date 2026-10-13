@@ -1,13 +1,15 @@
 #![cfg(feature = "odcs")]
 //! Adapter parity means equal canonical facts, not fabricated enforcement.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
+use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, parse_odcs_yaml,
+    analyze_configured_inputs_with_catalog, dialect_from_name, parse_dbt_manifest, parse_odcs_yaml,
     physical_ordered_write_state_plan, ColumnValueKind, ConfiguredSqlInput, ConstraintEnforcement,
-    ConstraintValue, DataType, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ConstraintSourceKind, ConstraintValue, DataType, LiteralValue, PhysicalWriteRow,
+    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const ODCS: &str = r#"
@@ -114,4 +116,112 @@ fn ddl_odcs_named_schemas_share_typed_default_facts_but_not_execution_authority(
         physical_ordered_write_state_plan(&with_odcs, &initial),
         PhysicalWriteStatePlan::Residual { .. }
     ));
+}
+
+const CONSTRAINT_ODCS: &str = r#"
+apiVersion: v3.2.0
+kind: DataContract
+id: constraint-parity
+name: Constraint Parity
+version: 1.0.0
+status: active
+schema:
+  - name: target
+    properties:
+      - name: id
+        physicalType: INTEGER
+        logicalType: integer
+        primaryKey: true
+      - name: score
+        physicalType: INTEGER
+        logicalType: integer
+        required: true
+        enum: [7, 9]
+"#;
+
+fn semantic_constraints(set: &RelationConstraintSet) -> BTreeSet<String> {
+    set.constraints()
+        .iter()
+        .map(|constraint| match constraint {
+            RelationConstraint::PrimaryKey(key) => format!("pk:{}", key.columns().join(",")),
+            RelationConstraint::UniqueKey(key) => format!("unique:{}", key.columns().join(",")),
+            RelationConstraint::NotNull(rule) => format!("required:{}", rule.column()),
+            RelationConstraint::AcceptedValues(rule) => {
+                format!("accepted:{}:{:?}", rule.column(), rule.values())
+            }
+            RelationConstraint::ForeignKey(key) => format!(
+                "fk:{}:{}:{}",
+                key.columns().join(","),
+                key.referenced_relation(),
+                key.referenced_columns().join(","),
+            ),
+            RelationConstraint::CheckComparison(rule) => {
+                format!("check:{}:{:?}:{:?}", rule.column(), rule.operator(), rule.value())
+            }
+        })
+        .collect()
+}
+
+#[test]
+fn sql_dbt_odcs_and_named_schema_constraints_preserve_canonical_meaning() {
+    let catalog = RelationCatalog::from_schemas(&schemas()).unwrap();
+    let ddl = analyzed(
+        "CREATE TABLE target(id INTEGER PRIMARY KEY,score INTEGER NOT NULL CHECK(score IN (7,9)))",
+        &catalog,
+    );
+    let odcs = parse_odcs_yaml(CONSTRAINT_ODCS, "duckdb", &catalog).unwrap();
+
+    // dbt manifest owns declarations; catalog.json owns introspected types.
+    // Neither artifact licenses inferring that a dbt constraint is enforced.
+    let mut manifest: Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["sources"]["source.demo.orders"]["relation_name"] = json!("target");
+    manifest["sources"]["source.demo.orders"]["columns"] = json!({
+        "id": {"name":"id", "data_type":"INTEGER"},
+        "score": {"name":"score", "data_type":"INTEGER"}
+    });
+    manifest["sources"]["source.demo.orders"]["constraints"] = json!([
+        {"type":"primary_key", "columns":["id"]},
+        {"type":"not_null", "columns":["score"]},
+        {"type":"check", "expression":"score IN (7,9)"}
+    ]);
+    let dbt = parse_dbt_manifest(&manifest.to_string()).unwrap();
+
+    let sql_set = ddl
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    let odcs_set = odcs
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    let dbt_set = dbt
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    let expected = semantic_constraints(sql_set);
+    assert_eq!(semantic_constraints(odcs_set), expected);
+    assert_eq!(semantic_constraints(dbt_set), expected);
+    assert_eq!(expected.len(), 3);
+    for (set, provenance) in [
+        (odcs_set, ConstraintSourceKind::ExternalMetadata),
+        (dbt_set, ConstraintSourceKind::DbtConstraint),
+    ] {
+        for constraint in set.constraints() {
+            assert!(constraint.evidence().iter().any(|proof| {
+                proof.enforcement() == ConstraintEnforcement::Unknown
+                    && proof.provenance().source_kind() == provenance
+            }));
+        }
+    }
+
+    // Named schemas carry type facts, not invented PK/CHECK evidence.
+    assert_eq!(catalog.schemas()[0].columns()[0].data_type(), &DataType::SignedInteger { bits: Some(32) });
+    assert!(analyzed("SELECT id FROM target", &catalog)
+        .relation_constraints()
+        .iter()
+        .all(|set| set.constraints().is_empty()));
 }
