@@ -372,6 +372,12 @@ pub fn physical_typed_ordered_insert_plan(
         {
             return gap("typed INSERT source is not a provable one-source unfiltered projection");
         }
+        if query.filter_only_row_shape() && query.predicates().where_predicate().is_none() {
+            return PhysicalTypedPopulationPlan::Residual {
+                relation: None,
+                reason: "typed INSERT WHERE was not normalized into a canonical predicate".into(),
+            };
+        }
         let [source] = query.sources() else {
             return gap("typed INSERT requires exactly one physical source");
         };
