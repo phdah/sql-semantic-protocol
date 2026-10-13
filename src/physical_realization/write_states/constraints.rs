@@ -81,28 +81,6 @@ pub(super) fn validate_all_constraints_with_identity(
             }
         }
     }
-    // SQL reads and mutations require complete initial bags unless a
-    // preceding definition creates that relation within the same program.
-    // An unrelated catalog entry never makes a proof incomplete.
-    let mut defined_relations = BTreeSet::new();
-    for layer in bundle.layers() {
-        for source in layer.consumes() {
-            if !defined_relations.contains(source) {
-                required_relations.insert(source.clone());
-            }
-        }
-        if let Some(kind) = layer.write_kind() {
-            for output in layer.produces() {
-                if let Some(relation) = output.relation_name() {
-                    if kind == WriteKind::Definition {
-                        defined_relations.insert(relation.to_string());
-                    } else if !defined_relations.contains(relation) {
-                        required_relations.insert(relation.to_string());
-                    }
-                }
-            }
-        }
-    }
     for relation in &required_relations {
         if !states.contains_key(relation) {
             return Err(residual_gap(
