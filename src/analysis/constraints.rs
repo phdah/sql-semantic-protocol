@@ -234,6 +234,16 @@ pub(super) fn analyze_create_table_constraints(
     }
 
     for column in &create_table.columns {
+        // Explicit SQL NULL permits an omitted column to receive SQL NULL,
+        // unless a separate DEFAULT or database-generated source takes precedence.
+        let has_value_source = column.options.iter().any(|option| {
+            matches!(
+                option.option,
+                ColumnOption::Default(_)
+                    | ColumnOption::Generated { .. }
+                    | ColumnOption::Identity(_)
+            )
+        });
         for (option_index, option) in column.options.iter().enumerate() {
             match &option.option {
                 ColumnOption::Unique {
@@ -357,6 +367,21 @@ pub(super) fn analyze_create_table_constraints(
                         ColumnValueKind::Identity,
                         None,
                         vec![evidence],
+                    )?);
+                }
+                ColumnOption::Null if !has_value_source => {
+                    column_value_sources.push(ColumnValueSource::new(
+                        column.name.to_string(),
+                        ColumnValueKind::Default,
+                        Some(ConstraintValue::Null),
+                        vec![sql_constraint_evidence(
+                            &relation,
+                            format!(
+                                "{}:column:{}:explicit_nullable_null:{}",
+                                relation, column.name, option_index
+                            ),
+                            None,
+                        )?],
                     )?);
                 }
                 ColumnOption::NotNull => {
