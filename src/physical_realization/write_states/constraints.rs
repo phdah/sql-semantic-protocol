@@ -303,8 +303,7 @@ pub(super) fn validate_all_constraints_with_identity(
                                 other,
                                 key.columns(),
                                 key.referenced_columns(),
-                            )?
-                            {
+                            )? {
                                 found = true;
                                 break;
                             }
@@ -399,7 +398,7 @@ fn unique_key_collision(
             (LiteralValue::Null, _) | (_, LiteralValue::Null) => return Ok(Some(false)),
             _ if !key_scalar_equality(a, b, binary_text_columns.get(index) == Some(&true))? => {
                 return Ok(Some(false));
-            },
+            }
             _ => {}
         }
     }
