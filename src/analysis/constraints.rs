@@ -3,6 +3,7 @@
 use super::*;
 use crate::column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
 use crate::computed_keys::ComputedKeyConstraint;
+use crate::computed_checks::ComputedCheckConstraint;
 
 /// Normalize a complete CREATE TABLE declaration into canonical typed schema evidence.
 /// Unknown/unsupported declarations must not produce a partial authoritative schema.
@@ -76,6 +77,7 @@ pub(super) fn analyze_create_table_constraints(
     let mut diagnostics = Vec::new();
     let mut column_value_sources = Vec::new();
     let mut computed_keys = Vec::new();
+    let mut computed_checks = Vec::new();
 
     for (index, constraint) in create_table.constraints.iter().enumerate() {
         match constraint {
@@ -229,10 +231,21 @@ pub(super) fn analyze_create_table_constraints(
                             )?],
                         )?);
                     } else {
-                        diagnostics.push(ConstraintDiagnostic::new(
-                            "unsupported_check_constraint",
-                            format!("check constraint on '{relation}' has unproved expression semantics"),
-                        ));
+                        if let Some((left, operator, right)) = computed_check_from_expr(expr, None) {
+                            computed_checks.push(ComputedCheckConstraint::new(
+                                left, operator, right,
+                                vec![sql_constraint_evidence_with_enforcement(
+                                    &relation,
+                                    constraint_identity("check", index, name.as_ref().map(ToString::to_string)),
+                                    *enforced,
+                                )?],
+                            )?);
+                        } else {
+                            diagnostics.push(ConstraintDiagnostic::new(
+                                "unsupported_check_constraint",
+                                format!("check constraint on '{relation}' has unproved expression semantics"),
+                            ));
+                        }
                     }
                 },
             },
@@ -414,10 +427,21 @@ pub(super) fn analyze_create_table_constraints(
                                     )?],
                                 )?);
                             } else {
-                                diagnostics.push(ConstraintDiagnostic::new(
-                                    "unsupported_check_constraint",
-                                    format!("check constraint on '{}.{}' has unproved expression semantics", relation, column.name),
-                                ));
+                                if let Some((left, operator, right)) = computed_check_from_expr(expr, Some(column.name.value.as_str())) {
+                                    computed_checks.push(ComputedCheckConstraint::new(
+                                        left, operator, right,
+                                        vec![sql_constraint_evidence(
+                                            &relation,
+                                            format!("{}:column:{}:check:{}", relation, column.name, option_index),
+                                            None,
+                                        )?],
+                                    )?);
+                                } else {
+                                    diagnostics.push(ConstraintDiagnostic::new(
+                                        "unsupported_check_constraint",
+                                        format!("check constraint on '{}.{}' has unproved expression semantics", relation, column.name),
+                                    ));
+                                }
                             }
                         }
                     }
@@ -444,13 +468,14 @@ pub(super) fn analyze_create_table_constraints(
         }
     }
 
-    if constraints.is_empty() && computed_keys.is_empty() && diagnostics.is_empty() && column_value_sources.is_empty() {
+    if constraints.is_empty() && computed_keys.is_empty() && computed_checks.is_empty() && diagnostics.is_empty() && column_value_sources.is_empty() {
         return Ok(None);
     }
 
     let mut set = RelationConstraintSet::new(relation, constraints)?
         .with_column_value_sources(column_value_sources)
-        .with_computed_keys(computed_keys);
+        .with_computed_keys(computed_keys)
+        .with_computed_checks(computed_checks);
     for diagnostic in diagnostics {
         set.add_diagnostic(diagnostic);
     }
@@ -479,6 +504,32 @@ fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
         }
         _ => None,
     }
+}
+
+fn computed_check_from_expr(
+    expression: &Expr,
+    expected_column: Option<&str>,
+) -> Option<(GeneratedValueExpression, crate::constraints::CheckCompareOperator, GeneratedValueExpression)> {
+    use crate::constraints::CheckCompareOperator;
+    let Expr::BinaryOp { left, op, right } = unwrap_nested_expression(expression) else {
+        return None;
+    };
+    let operator = match op {
+        SqlBinaryOperator::Eq => CheckCompareOperator::Eq,
+        SqlBinaryOperator::NotEq => CheckCompareOperator::NotEq,
+        SqlBinaryOperator::Gt => CheckCompareOperator::Gt,
+        SqlBinaryOperator::GtEq => CheckCompareOperator::Gte,
+        SqlBinaryOperator::Lt => CheckCompareOperator::Lt,
+        SqlBinaryOperator::LtEq => CheckCompareOperator::Lte,
+        _ => return None,
+    };
+    let left = parse_generated_expression(left)?;
+    let right = parse_generated_expression(right)?;
+    if expected_column.is_some_and(|column| !left.referenced_columns().contains(&column)
+        && !right.referenced_columns().contains(&column)) {
+        return None;
+    }
+    Some((left, operator, right))
 }
 
 /// A portable scalar CHECK comparison, leaving expressions/functions residual.
