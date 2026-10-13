@@ -1,10 +1,10 @@
 ---
 id: TASK-79
 title: Prove schema, datatype and constraint-feasible source constructions
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-13'
 labels: []
 milestone: m-3
 dependencies: 
@@ -41,3 +41,7 @@ Logical witness feasibility can fail under physical types, keys, foreign keys, N
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Implementation progress (2026-10-13)
+
+Canonical write-state literal validation is being expanded to separate provable integer, decimal and ASCII length violations (Impossible) from unproved coercion, NaN, floating rounding and collation (Residual). This is an initial safe implementation increment, **not** completion of TASK-79. All six acceptance criteria remain unchecked pending schema-fact, constraint, multi-adapter, oracle and differential verification.
