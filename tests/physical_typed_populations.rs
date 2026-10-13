@@ -6,6 +6,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_typed_append_schema_plan,
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
+    physical_typed_ordered_write_plan,
     CheckCompareOperator, ConfiguredSqlInput,
     ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
@@ -646,6 +647,79 @@ fn filtered_typed_insert_proves_scalar_truth_and_preserves_nested_arrow_values()
         panic!("SQL UNKNOWN/FALSE selection must produce an empty bag: {empty:?}");
     };
     assert!(final_states.iter().find(|s| s.relation() == "target").unwrap().rows().is_empty());
+}
+
+#[test]
+fn ordered_typed_scalar_update_and_delete_preserve_nested_fields_and_foreign_keys() {
+    let snapshots = [
+        typed_state("target", vec![typed_row(1, payload(2, 3))]),
+        typed_state("source", vec![
+            typed_row(1, payload(4, 5)),
+            typed_row(11, payload(6, 7)),
+        ]),
+    ];
+    let update = typed_insert_bundle("UPDATE target SET id=id+10 WHERE id=1");
+    let first = physical_typed_ordered_write_plan(&update, &snapshots);
+    let PhysicalTypedPopulationPlan::Feasible { final_states } = first else {
+        panic!("scalar UPDATE should preserve untouched nested value: {first:?}");
+    };
+    let target = final_states.iter().find(|s| s.relation() == "target").unwrap();
+    assert_eq!(target.rows(), &[typed_row(11, payload(2, 3))]);
+
+    let combined = typed_insert_bundle(
+        "UPDATE target SET id=id+10 WHERE id=1; DELETE FROM target WHERE id=11",
+    );
+    let plan = physical_typed_ordered_write_plan(&combined, &snapshots);
+    let PhysicalTypedPopulationPlan::Feasible { final_states } = plan else {
+        panic!("ordered typed mutation proof failed: {plan:?}");
+    };
+    assert!(final_states.iter().find(|s| s.relation() == "target").unwrap().rows().is_empty());
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE source(id INTEGER PRIMARY KEY, payload STRUCT(scores INTEGER[2], label VARCHAR));
+         CREATE TABLE target(id INTEGER PRIMARY KEY, payload STRUCT(scores INTEGER[2], label VARCHAR));
+         INSERT INTO source VALUES
+            (1, {'scores':[4,5], 'label':'ok'}),
+            (11, {'scores':[6,7], 'label':'ok'});
+         INSERT INTO target VALUES (1, {'scores':[2,3], 'label':'ok'});
+         UPDATE target SET id=id+10 WHERE id=1;
+         DELETE FROM target WHERE id=11;",
+    ).unwrap();
+    let count: i64 = db.query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0)).unwrap();
+    assert_eq!(count, 0);
+
+    assert!(matches!(
+        physical_typed_ordered_insert_plan(&combined, &snapshots),
+        PhysicalTypedPopulationPlan::Residual { .. },
+    ));
+}
+
+#[test]
+fn typed_mutations_reject_nested_sql_evaluation_and_final_fk_contradictions() {
+    let snapshots = [
+        typed_state("target", vec![typed_row(1, payload(2, 3))]),
+        typed_state("source", vec![typed_row(1, payload(4, 5))]),
+    ];
+    for statement in [
+        "UPDATE target SET payload=NULL WHERE id=1",
+        "DELETE FROM target WHERE payload IS NOT NULL",
+        "UPDATE target SET id=2 WHERE payload IS NULL",
+    ] {
+        let plan = physical_typed_ordered_write_plan(&typed_insert_bundle(statement), &snapshots);
+        assert!(
+            matches!(plan, PhysicalTypedPopulationPlan::Residual { .. }),
+            "{statement} must not reinterpret an Arrow struct as scalar NULL: {plan:?}",
+        );
+    }
+    let plan = physical_typed_ordered_write_plan(
+        &typed_insert_bundle("UPDATE target SET id=100 WHERE id=1"),
+        &snapshots,
+    );
+    assert!(
+        matches!(plan, PhysicalTypedPopulationPlan::Impossible { .. }),
+        "a new scalar FK violation must be checked against the complete source: {plan:?}",
+    );
 }
 
 #[test]
