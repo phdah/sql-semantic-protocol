@@ -169,11 +169,13 @@ fn physical_collation_is_retained_as_identity_without_inferred_comparison_law() 
 #[test]
 fn direct_create_table_types_are_canonical_across_sql_dialects() {
     for dialect in ["postgresql", "duckdb", "mysql", "snowflake", "sqlite"] {
+        let parser = dialect_from_name(dialect).unwrap();
         let b = analyze_inputs(
             &[SqlInput::inline(
                 "CREATE TABLE t (id BIGINT, amount DECIMAL(7, 2), code VARCHAR(10))",
             )],
             dialect,
+            parser.as_ref(),
         )
         .unwrap();
         let [schema] = b.source_schemas() else {
@@ -196,6 +198,7 @@ fn contradictory_direct_ddl_schemas_lose_their_physical_authority() {
             SqlInput::inline("CREATE TABLE t (id VARCHAR(4))"),
         ],
         "postgresql",
+        &sqlparser::dialect::PostgreSqlDialect {},
     )
     .unwrap();
     assert!(b.source_schemas().is_empty());
