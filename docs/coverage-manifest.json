@@ -2,6 +2,33 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_70_predicate_evidence": {
+    "owner": "TASK-70",
+    "status": "bounded_boolean_witness_increment_release_blocked",
+    "evidence": [
+      "src/boolean_witness.rs",
+      "tests/task_70_predicates.rs",
+      "docs/semantics.md"
+    ],
+    "proven_local_variants": [
+      "signed_integer_between_and_not_between",
+      "finite_nonnull_integer_in_and_not_in",
+      "nested_three_valued_not_and_or",
+      "signed_integer_is_distinct_from",
+      "direct_is_distinct_from_null"
+    ],
+    "unproved_scope": [
+      "general_arithmetic_overflow",
+      "cross_column_comparisons",
+      "computed_case_coalesce_nullif_and_aliases",
+      "noninteger_casts_and_implicit_coercions",
+      "pattern_escape_regex_collations",
+      "date_time_json_vendor_udfs",
+      "complete_physical_source_proofs",
+      "full_dialect_and_dbt_execution_oracles"
+    ],
+    "release_approved": false
+  },
   "task_79_schema_evidence": {
     "owner": "TASK-79",
     "status": "verified_bounded_schema_contract_release_blocked",
