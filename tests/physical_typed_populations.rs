@@ -247,3 +247,77 @@ fn reversed_scalar_check_comparison_normalizes_across_parser_dialects() {
         );
     }
 }
+
+#[test]
+fn typed_json_populations_preserve_document_null_under_cross_source_constraints() {
+    let schemas = ["target", "source"]
+        .into_iter()
+        .map(|relation| {
+            RelationSchema::new(
+                relation,
+                vec![
+                    SchemaColumn::new("id", DataType::SignedInteger { bits: Some(32) }).unwrap(),
+                    SchemaColumn::new("payload", DataType::Json).unwrap(),
+                ],
+            )
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let sql = SqlInput::inline("SELECT id FROM target");
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let input = ConfiguredSqlInput::new("typed_json", &sql, "duckdb", dialect.as_ref());
+    let mut bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+    bundle.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![
+                RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
+                RelationConstraint::foreign_key(
+                    vec!["id".into()],
+                    "source",
+                    vec!["id".into()],
+                    evidence(),
+                )
+                .unwrap(),
+                RelationConstraint::not_null("payload", evidence()).unwrap(),
+            ],
+        )
+        .unwrap(),
+        RelationConstraintSet::new(
+            "source",
+            vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+        )
+        .unwrap(),
+    ]);
+    let target = typed_state(
+        "target",
+        vec![typed_row(
+            1,
+            PhysicalTypedValue::Json(serde_json::json!({"status": "ok", "items": [null, 3]})),
+        )],
+    );
+    let source = typed_state(
+        "source",
+        vec![typed_row(1, PhysicalTypedValue::Json(serde_json::Value::Null))],
+    );
+    let proof = physical_typed_closed_world_schema_plan(&bundle, &[target.clone(), source.clone()]);
+    assert!(matches!(proof, PhysicalTypedPopulationPlan::Feasible { .. }), "{proof:?}");
+
+    let invalid = typed_state("target", vec![typed_row(1, PhysicalTypedValue::Scalar(LiteralValue::Null))]);
+    assert!(matches!(
+        physical_typed_closed_world_schema_plan(&bundle, &[invalid, source]),
+        PhysicalTypedPopulationPlan::Impossible { .. }
+    ));
+    let fractional = typed_state(
+        "target",
+        vec![typed_row(1, PhysicalTypedValue::Json(serde_json::json!({"amount": 0.1})))],
+    );
+    assert!(matches!(
+        physical_typed_closed_world_schema_plan(
+            &bundle,
+            &[fractional, typed_state("source", vec![typed_row(1, PhysicalTypedValue::Json(serde_json::Value::Null))])]
+        ),
+        PhysicalTypedPopulationPlan::Residual { .. }
+    ));
+}
