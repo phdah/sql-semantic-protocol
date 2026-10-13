@@ -778,10 +778,10 @@ fn dbt_check_and_custom_constraints_are_reported() {
         .find(|metadata| metadata.relation() == "warehouse.analytics.stg_orders")
         .expect("stg_orders diagnostic metadata");
 
-    assert!(metadata
-        .diagnostics()
-        .iter()
-        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
+    assert!(metadata.constraints().iter().any(|constraint| {
+        matches!(constraint, RelationConstraint::CheckComparison(check)
+            if check.column() == "amount")
+    }));
     assert!(metadata
         .diagnostics()
         .iter()
