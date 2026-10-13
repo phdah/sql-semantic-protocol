@@ -258,12 +258,19 @@ pub(super) fn validate_all_constraints_with_nested(
                         residual("foreign-key target population is not controlled")
                     })?;
                     for row in &state.rows {
-                        if key
+                        let null_count = key
                             .columns()
                             .iter()
-                            .any(|col| matches!(row.values.get(col), Some(LiteralValue::Null)))
-                        {
-                            continue;
+                            .filter(|col| matches!(row.values.get(*col), Some(LiteralValue::Null)))
+                            .count();
+                        if null_count == key.columns().len() {
+                            continue; // All-NULL keys cannot identify a referenced tuple.
+                        }
+                        if null_count > 0 {
+                            return Err(residual_gap(
+                                PhysicalWriteStateGap::UnprovedConstraint,
+                                "partially NULL composite foreign key needs attested MATCH semantics",
+                            ));
                         }
                         let mut found = false;
                         for other in &referenced.rows {
