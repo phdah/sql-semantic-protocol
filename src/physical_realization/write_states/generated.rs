@@ -25,7 +25,6 @@ pub(super) fn authoritative(source: &ColumnValueSource) -> bool {
     })
 }
 
-
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum CoalesceKind {
     SignedInteger,
@@ -44,7 +43,10 @@ fn coalesce_kind(
     use GeneratedValueExpression as G;
     match expression {
         G::Column(name) => {
-            let column = schema.columns().iter().find(|column| column.name() == name)
+            let column = schema
+                .columns()
+                .iter()
+                .find(|column| column.name() == name)
                 .ok_or_else(|| residual("COALESCE references a column without declared type"))?;
             let mut kind = column.data_type();
             while let DataType::Nullable(inner) = kind {
@@ -55,7 +57,9 @@ fn coalesce_kind(
                 DataType::UnsignedInteger { .. } => Ok(Some(CoalesceKind::UnsignedInteger)),
                 DataType::Boolean => Ok(Some(CoalesceKind::Boolean)),
                 DataType::String { .. } => Ok(Some(CoalesceKind::Text)),
-                _ => Err(residual("COALESCE column has no attested portable type law")),
+                _ => Err(residual(
+                    "COALESCE column has no attested portable type law",
+                )),
             }
         }
         G::Literal(ConstraintValue::Null) => Ok(None),
@@ -82,7 +86,9 @@ fn coalesce_kind(
             {
                 Ok(Some(CoalesceKind::SignedInteger))
             } else {
-                Err(residual("COALESCE arithmetic lacks exact integer type evidence"))
+                Err(residual(
+                    "COALESCE arithmetic lacks exact integer type evidence",
+                ))
             }
         }
         G::Coalesce(arguments) => {
@@ -90,7 +96,9 @@ fn coalesce_kind(
             for argument in arguments {
                 if let Some(kind) = coalesce_kind(argument, schema)? {
                     if common.is_some_and(|existing| existing != kind) {
-                        return Err(residual("COALESCE arguments have incompatible declared types"));
+                        return Err(residual(
+                            "COALESCE arguments have incompatible declared types",
+                        ));
                     }
                     common = Some(kind);
                 }
