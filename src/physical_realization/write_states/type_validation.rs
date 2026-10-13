@@ -467,7 +467,10 @@ mod tests {
             DataType::SignedInteger { bits: None },
             DataType::UnsignedInteger { bits: None },
             DataType::FloatingPoint { bits: None },
-            DataType::Decimal { precision: None, scale: None },
+            DataType::Decimal {
+                precision: None,
+                scale: None,
+            },
         ] {
             assert!(matches!(
                 validate_value(&LiteralValue::Number("1".into()), &kind),
@@ -475,5 +478,4 @@ mod tests {
             ));
         }
     }
-
 }
