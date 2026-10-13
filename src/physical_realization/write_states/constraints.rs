@@ -119,7 +119,9 @@ pub(super) fn validate_all_constraints_with_nested(
                     .map(|expression| super::generated::evaluate(expression, &row.values))
                     .collect::<StateResult<Vec<_>>>()?;
                 if key.primary()
-                    && values.iter().any(|value| matches!(value, LiteralValue::Null))
+                    && values
+                        .iter()
+                        .any(|value| matches!(value, LiteralValue::Null))
                 {
                     return Err(impossible("computed PRIMARY KEY cannot contain NULL"));
                 }
@@ -185,12 +187,23 @@ pub(super) fn validate_all_constraints_with_nested(
                             let values = key
                                 .columns()
                                 .iter()
-                                .map(|col| row.values.get(col).cloned().ok_or_else(|| residual("key column missing")))
+                                .map(|col| {
+                                    row.values
+                                        .get(col)
+                                        .cloned()
+                                        .ok_or_else(|| residual("key column missing"))
+                                })
                                 .collect::<StateResult<Vec<_>>>()?;
                             let existing = key
                                 .columns()
                                 .iter()
-                                .map(|col| prior.values.get(col).cloned().ok_or_else(|| residual("key column missing")))
+                                .map(|col| {
+                                    prior
+                                        .values
+                                        .get(col)
+                                        .cloned()
+                                        .ok_or_else(|| residual("key column missing"))
+                                })
                                 .collect::<StateResult<Vec<_>>>()?;
                             match unique_key_collision(&values, &existing)? {
                                 Some(true) => {
