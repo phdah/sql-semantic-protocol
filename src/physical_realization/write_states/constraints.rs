@@ -85,7 +85,9 @@ pub(super) fn validate_all_constraints_with_identity(
         if !states.contains_key(relation) {
             return Err(residual_gap(
                 PhysicalWriteStateGap::MissingPopulation,
-                format!("missing complete constrained or referenced relation population: {relation}"),
+                format!(
+                    "missing complete constrained or referenced relation population: {relation}"
+                ),
             ));
         }
     }
@@ -98,17 +100,24 @@ pub(super) fn validate_all_constraints_with_identity(
             .source_schemas()
             .iter()
             .find(|schema| schema.relation() == set.relation())
-            .ok_or_else(|| residual_gap(
-                PhysicalWriteStateGap::MissingSchema,
-                format!("missing schema for constrained relation {}", set.relation()),
-            ))?;
+            .ok_or_else(|| {
+                residual_gap(
+                    PhysicalWriteStateGap::MissingSchema,
+                    format!("missing schema for constrained relation {}", set.relation()),
+                )
+            })?;
         let controlled = identity_columns
             .iter()
             .filter(|(relation, _)| relation == set.relation())
             .map(|(_, column)| column.clone())
             .collect::<BTreeSet<_>>();
         for row in &state.rows {
-            super::generated::check_declared_sources(set.column_value_sources(), row, &controlled, schema)?;
+            super::generated::check_declared_sources(
+                set.column_value_sources(),
+                row,
+                &controlled,
+                schema,
+            )?;
         }
         if !set.diagnostics().is_empty() {
             return Err(residual_gap(
