@@ -111,6 +111,15 @@ fn complete_insert_row(
         if source.kind() != crate::column_sources::ColumnValueKind::Default {
             return Err(residual("generated or identity INSERT value has no constructive law"));
         }
+        if !source.evidence().iter().any(|evidence| {
+            evidence.enforcement() == ConstraintEnforcement::Enforced
+                || evidence.provenance().source_kind() == crate::constraints::ConstraintSourceKind::SqlDdl
+        }) {
+            return Err(residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "default metadata lacks authoritative execution evidence",
+            ));
+        }
         let literal = source.value().ok_or_else(||
             residual("opaque INSERT default expression cannot be evaluated"))?;
         let value = match literal {
