@@ -41,7 +41,10 @@
       "generated_integer_recomputation_in_ordered_UPDATE_and_MERGE",
       "composite_foreign_key_partial_NULL_MATCH_conservative_residual",
       "exact_decimal_accepted_value_comparisons_at_full_precision",
-      "computed_composite_nullable_unique_key_collision_law"
+      "computed_composite_nullable_unique_key_collision_law",
+      "accepted_values_exact_numeric_equality_with_large_decimals",
+      "accepted_values_attested_binary_text_collation_and_multiple_candidates",
+      "sql_CHECK_IN_NULL_three_valued_unknown_remains_residual"
     ],
     "tests": [
       "tests/physical_write_states.rs",
