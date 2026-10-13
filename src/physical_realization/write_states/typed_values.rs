@@ -355,11 +355,17 @@ mod tests {
     fn tagged_union_and_explicit_bit_buffers_preserve_physical_shape() {
         let union = DataType::Union {
             fields: vec![
-                DataTypeField::new(Some("id".into()), DataType::SignedInteger { bits: Some(32) }),
-                DataTypeField::new(Some("name".into()), DataType::String {
-                    length: Some(10),
-                    fixed: false,
-                }),
+                DataTypeField::new(
+                    Some("id".into()),
+                    DataType::SignedInteger { bits: Some(32) },
+                ),
+                DataTypeField::new(
+                    Some("name".into()),
+                    DataType::String {
+                        length: Some(10),
+                        fixed: false,
+                    },
+                ),
             ],
         };
         let tag = |field_index, value| PhysicalTypedValue::Union {
@@ -368,21 +374,30 @@ mod tests {
         };
         assert_eq!(
             physical_typed_value_plan(
-                &tag(0, PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))),
+                &tag(
+                    0,
+                    PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))
+                ),
                 &union
             ),
             PhysicalTypeProof::Feasible
         );
         assert!(matches!(
             physical_typed_value_plan(
-                &tag(2, PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))),
+                &tag(
+                    2,
+                    PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))
+                ),
                 &union
             ),
             PhysicalTypeProof::Impossible { .. }
         ));
         assert!(matches!(
             physical_typed_value_plan(
-                &tag(1, PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))),
+                &tag(
+                    1,
+                    PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))
+                ),
                 &union
             ),
             PhysicalTypeProof::Residual { .. }
