@@ -2152,51 +2152,67 @@ fn parse_dbt_constraint_array(
             let parsed = object
                 .get("expression")
                 .and_then(Value::as_str)
-                .and_then(crate::analysis::constraints::portable_check_expression);
+                .and_then(crate::analysis::constraints::portable_check_expressions);
             let evidence = vec![dbt_constraint_evidence(
                 ConstraintSourceKind::DbtConstraint,
                 &format!("{resource_id}:{constraint_path}"),
             )?];
-            let admitted = match parsed {
-                Some(crate::analysis::constraints::PortableCheckExpression::Scalar(
-                    column,
-                    op,
-                    value,
-                )) if implied_column.is_none_or(|name| name == column) => {
-                    let rule = RelationConstraint::check_comparison(column, op, value, evidence)
+            let mut admitted = parsed.is_some();
+            let mut accepted_rules = Vec::new();
+            let mut accepted_computed = Vec::new();
+            for term in parsed.unwrap_or_default() {
+                match term {
+                    crate::analysis::constraints::PortableCheckExpression::Scalar(
+                        column,
+                        op,
+                        value,
+                    ) if implied_column.is_none_or(|name| name == column) => {
+                        let rule = RelationConstraint::check_comparison(
+                            column,
+                            op,
+                            value,
+                            evidence.clone(),
+                        )
                         .map_err(|error| DbtManifestError::RelationMetadata {
                             resource_id: resource_id.to_string(),
                             message: format!("{relation}: {error}"),
                         })?;
-                    output.push(rule);
-                    true
+                        accepted_rules.push(rule);
+                    }
+                    crate::analysis::constraints::PortableCheckExpression::Computed(
+                        left,
+                        op,
+                        right,
+                    ) if implied_column.is_none_or(|name| {
+                        left.referenced_columns().contains(&name)
+                            || right.referenced_columns().contains(&name)
+                    }) => {
+                        let rule = crate::computed_checks::ComputedCheckConstraint::new(
+                            left,
+                            op,
+                            right,
+                            evidence.clone(),
+                        )
+                        .map_err(|error| DbtManifestError::RelationMetadata {
+                            resource_id: resource_id.to_string(),
+                            message: format!("{relation}: {error}"),
+                        })?;
+                        accepted_computed.push(rule);
+                    }
+                    _ => {
+                        admitted = false;
+                        break;
+                    }
                 }
-                Some(crate::analysis::constraints::PortableCheckExpression::Computed(
-                    left,
-                    op,
-                    right,
-                )) if implied_column.is_none_or(|name| {
-                    left.referenced_columns().contains(&name)
-                        || right.referenced_columns().contains(&name)
-                }) =>
-                {
-                    let rule = crate::computed_checks::ComputedCheckConstraint::new(
-                        left, op, right, evidence,
-                    )
-                    .map_err(|error| DbtManifestError::RelationMetadata {
-                        resource_id: resource_id.to_string(),
-                        message: format!("{relation}: {error}"),
-                    })?;
-                    computed_checks.push(rule);
-                    true
-                }
-                _ => false,
-            };
-            if !admitted {
+            }
+            if admitted {
+                output.extend(accepted_rules);
+                computed_checks.extend(accepted_computed);
+            } else {
                 diagnostics.push(ConstraintDiagnostic::new(
                     "unsupported_check_constraint",
                     format!(
-                        "dbt CHECK '{resource_id}:{constraint_path}' requires one portable scalar comparison expression"
+                        "dbt CHECK '{resource_id}:{constraint_path}' has an unproved conjunct or expression"
                     ),
                 ));
             }
