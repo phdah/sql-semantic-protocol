@@ -925,3 +925,34 @@ fn relationless_unsupported_dbt_test_is_emitted_at_bundle_level() {
         "unsupported_dbt_test"
     );
 }
+
+#[test]
+fn manifest_check_constraints_normalize_scalar_and_computed_expressions() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest");
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type": "check", "expression": "amount > 0"},
+        {"type": "check", "expression": "amount >= id + 1"},
+        {"type": "check", "expression": "LOWER(amount) = 'x'"}
+    ]);
+    let parsed = parse_dbt_manifest(&manifest.to_string()).expect("dbt manifest");
+    let constraints = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .expect("dbt source constraint set");
+    assert!(constraints.constraints().iter().any(|rule| {
+        matches!(rule, RelationConstraint::CheckComparison(check)
+            if check.column() == "amount"
+        )
+    }));
+    assert_eq!(constraints.computed_checks().len(), 1);
+    assert!(constraints
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
+    assert!(constraints.computed_checks()[0]
+        .evidence()
+        .iter()
+        .any(|e| e.provenance().source_kind() == ConstraintSourceKind::DbtConstraint));
+}
