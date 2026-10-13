@@ -882,14 +882,12 @@ fn typed_closed_world_requires_all_constrained_relations_even_for_empty_bags() {
     let b = bundle();
     let partial = [typed_state("target", vec![])];
     let result = physical_typed_closed_world_schema_plan(&b, &partial);
-    assert!(matches!(
-        result, PhysicalTypedPopulationPlan::Residual { .. }
-    ), "omitted referenced typed source must not be certified: {result:?}");
+    assert!(
+        matches!(result, PhysicalTypedPopulationPlan::Residual { .. }),
+        "omitted referenced typed source must not be certified: {result:?}"
+    );
 
-    let complete = [
-        typed_state("target", vec![]),
-        typed_state("source", vec![]),
-    ];
+    let complete = [typed_state("target", vec![]), typed_state("source", vec![])];
     assert!(matches!(
         physical_typed_closed_world_schema_plan(&b, &complete),
         PhysicalTypedPopulationPlan::Feasible { .. }
