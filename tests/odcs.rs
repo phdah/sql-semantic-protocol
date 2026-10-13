@@ -457,3 +457,86 @@ schema:
         ConstraintSourceKind::ExternalMetadata
     );
 }
+
+#[test]
+fn odcs_schema_and_constraint_enforcement_drive_exact_closed_world_proofs() {
+    use std::collections::BTreeMap;
+    use sql_semantic_protocol::{
+        physical_closed_world_schema_plan, ConstraintEvidence, ConstraintProvenance, LiteralValue,
+        PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationConstraintSet,
+    };
+    let yaml = r#"
+apiVersion: v3.2.0
+kind: DataContract
+id: physical-contract
+name: Physical proof
+version: 1.0.0
+status: active
+schema:
+  - id: physical_orders
+    name: orders
+    physicalName: analytics.orders
+    properties:
+      - id: order_id
+        name: id
+        logicalType: integer
+        physicalType: INTEGER
+        primaryKey: true
+      - id: order_amount
+        name: amount
+        logicalType: integer
+        physicalType: INTEGER
+"#;
+    let catalog = RelationCatalog::new(&["analytics.orders"]).unwrap();
+    let metadata = parse_odcs_yaml(yaml, "postgresql", &catalog).unwrap();
+    let mut bundle = analyze_inputs(
+        &[SqlInput::inline("SELECT id FROM analytics.orders")],
+        "postgresql",
+        &PostgreSqlDialect {},
+    )
+    .unwrap();
+    metadata.enrich_bundle(&mut bundle).unwrap();
+    let row = |id: i64| {
+        PhysicalWriteRow::new(BTreeMap::from([
+            ("id".into(), LiteralValue::Number(id.to_string())),
+            ("amount".into(), LiteralValue::Number("5".into())),
+        ]))
+        .unwrap()
+    };
+    let state = |ids: &[i64]| {
+        PhysicalWriteState::new("analytics.orders", ids.iter().copied().map(row).collect()).unwrap()
+    };
+
+    // A metadata-declared PK is not proof of warehouse enforcement.
+    assert!(matches!(
+        physical_closed_world_schema_plan(&bundle, &[state(&[1, 1])]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "analytics.orders",
+        vec![
+            RelationConstraint::primary_key(
+                vec!["id".into()],
+                vec![ConstraintEvidence::new(
+                    ConstraintProvenance::new(
+                        ConstraintSourceKind::ExternalMetadata,
+                        "warehouse-enforced-primary-key",
+                    )
+                    .unwrap(),
+                    ConstraintEnforcement::Enforced,
+                )],
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap()]);
+    assert!(matches!(
+        physical_closed_world_schema_plan(&bundle, &[state(&[1, 2])]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&bundle, &[state(&[1, 1])]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+}
