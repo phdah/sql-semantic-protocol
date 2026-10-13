@@ -3971,6 +3971,24 @@
         }
       }
     },
+    "computedKeyConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "expressions", "evidence"],
+      "properties": {
+        "primary": { "type": "boolean" },
+        "expressions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/generatedValueExpression" }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/constraintEvidence" }
+        }
+      }
+    },
     "relationConstraintSet": {
       "type": "object",
       "additionalProperties": false,
@@ -3999,6 +4017,12 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/columnValueSource"
+          }
+        },
+        "computed_keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/computedKeyConstraint"
           }
         }
       }
