@@ -288,10 +288,10 @@ pub(crate) fn physical_inverted_set_distribution_plan(
 fn unconstrained_produced_relations(bundle: &AnalysisBundle, walker: &Walker<'_>) -> bool {
     walker.nodes.iter().all(|node| {
         node.produced_relations().iter().all(|relation| {
-            !bundle.relation_constraints().iter().any(|set| {
-                set.relation() == relation
-                    && set.blocks_unconstrained_physical_plans()
-            })
+            !bundle
+                .relation_constraints()
+                .iter()
+                .any(|set| set.relation() == relation && set.blocks_unconstrained_physical_plans())
         })
     })
 }
