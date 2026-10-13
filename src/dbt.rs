@@ -1681,6 +1681,7 @@ fn parse_manifest_relation_constraints(
         let object = as_object(value, &path)?;
         let mut constraints = Vec::new();
         let mut computed_checks = Vec::new();
+        let mut computed_boolean_checks = Vec::new();
         let mut relation_diagnostics = Vec::new();
 
         parse_dbt_constraint_array(
@@ -1692,6 +1693,7 @@ fn parse_manifest_relation_constraints(
             resources,
             &mut constraints,
             &mut computed_checks,
+            &mut computed_boolean_checks,
             &mut relation_diagnostics,
         )?;
 
@@ -1710,6 +1712,7 @@ fn parse_manifest_relation_constraints(
                     resources,
                     &mut constraints,
                     &mut computed_checks,
+                    &mut computed_boolean_checks,
                     &mut relation_diagnostics,
                 )?;
             }
@@ -1717,6 +1720,7 @@ fn parse_manifest_relation_constraints(
 
         if !constraints.is_empty()
             || !computed_checks.is_empty()
+            || !computed_boolean_checks.is_empty()
             || !relation_diagnostics.is_empty()
         {
             let mut set = RelationConstraintSet::new(relation, constraints).map_err(|error| {
@@ -1725,7 +1729,9 @@ fn parse_manifest_relation_constraints(
                     message: error.to_string(),
                 }
             })?;
-            set = set.with_computed_checks(computed_checks);
+            set = set
+                .with_computed_checks(computed_checks)
+                .with_computed_boolean_checks(computed_boolean_checks);
             for diagnostic in relation_diagnostics {
                 set.add_diagnostic(diagnostic);
             }
@@ -2132,6 +2138,7 @@ fn parse_dbt_constraint_array(
     resources: &BTreeMap<String, DbtResource>,
     output: &mut Vec<RelationConstraint>,
     computed_checks: &mut Vec<crate::computed_checks::ComputedCheckConstraint>,
+    computed_boolean_checks: &mut Vec<crate::computed_boolean_checks::ComputedBooleanCheckConstraint>,
     diagnostics: &mut Vec<ConstraintDiagnostic>,
 ) -> Result<(), DbtManifestError> {
     let Some(value) = value else {
@@ -2160,6 +2167,7 @@ fn parse_dbt_constraint_array(
             let mut admitted = parsed.is_some();
             let mut accepted_rules = Vec::new();
             let mut accepted_computed = Vec::new();
+            let mut accepted_boolean = Vec::new();
             for term in parsed.unwrap_or_default() {
                 match term {
                     crate::analysis::constraints::PortableCheckExpression::Scalar(
@@ -2200,6 +2208,22 @@ fn parse_dbt_constraint_array(
                         })?;
                         accepted_rules.push(rule);
                     }
+                    crate::analysis::constraints::PortableCheckExpression::Boolean(
+                        predicate,
+                    ) if implied_column.is_none_or(|name| {
+                        predicate.referenced_columns().contains(&name)
+                    }) => {
+                        accepted_boolean.push(
+                            crate::computed_boolean_checks::ComputedBooleanCheckConstraint::new(
+                                predicate,
+                                evidence.clone(),
+                            )
+                            .map_err(|error| DbtManifestError::RelationMetadata {
+                                resource_id: resource_id.to_string(),
+                                message: format!("{relation}: {error}"),
+                            })?,
+                        );
+                    }
                     crate::analysis::constraints::PortableCheckExpression::Computed(
                         left,
                         op,
@@ -2232,6 +2256,7 @@ fn parse_dbt_constraint_array(
             if admitted {
                 output.extend(accepted_rules);
                 computed_checks.extend(accepted_computed);
+                computed_boolean_checks.extend(accepted_boolean);
             } else {
                 diagnostics.push(ConstraintDiagnostic::new(
                     "unsupported_check_constraint",
