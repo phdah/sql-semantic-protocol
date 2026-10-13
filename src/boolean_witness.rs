@@ -77,6 +77,17 @@ pub enum BooleanRowConstraint {
         /// Integer literal, with source datatype verified separately.
         literal: i64,
     },
+    /// Compare two signed integer source columns on the same source row.
+    /// The two source datatypes must be independently certified and ordinary
+    /// NULL comparisons retain SQL UNKNOWN.
+    IntegerColumnComparison {
+        /// Resolved left source column.
+        left: ColumnRef,
+        /// SQL comparison operator.
+        operator: ComparisonOperator,
+        /// Resolved right source column.
+        right: ColumnRef,
+    },
     /// Test a string's binary prefix, or its SQL NOT LIKE complement.
     StringPrefix {
         /// Resolved string-typed source column.
@@ -100,9 +111,10 @@ impl BooleanRowConstraint {
             Self::All(children) | Self::Any(children) => {
                 !children.is_empty() && children.iter().all(Self::is_exact)
             }
-            Self::NullTest { .. } | Self::IntegerComparison { .. } | Self::StringPrefix { .. } => {
-                true
-            }
+            Self::NullTest { .. }
+            | Self::IntegerComparison { .. }
+            | Self::IntegerColumnComparison { .. }
+            | Self::StringPrefix { .. } => true,
             Self::Residual { .. } => false,
         }
     }
@@ -134,6 +146,15 @@ impl BooleanRowConstraint {
                 operator: *operator,
                 literal: *literal,
             }),
+            Self::IntegerColumnComparison {
+                left,
+                operator,
+                right,
+            } => Some(Self::IntegerColumnComparison {
+                left: mapped.get(left)?.clone(),
+                operator: *operator,
+                right: mapped.get(right)?.clone(),
+            }),
             Self::StringPrefix {
                 column,
                 prefix,
@@ -154,7 +175,9 @@ impl BooleanRowConstraint {
             Self::All(children) | Self::Any(children) => {
                 children.iter().any(Self::requires_source_type_evidence)
             }
-            Self::IntegerComparison { .. } | Self::StringPrefix { .. } => true,
+            Self::IntegerComparison { .. }
+            | Self::IntegerColumnComparison { .. }
+            | Self::StringPrefix { .. } => true,
             Self::NullTest { .. } | Self::Residual { .. } => false,
         }
     }
@@ -165,6 +188,16 @@ impl BooleanRowConstraint {
                 operands.iter().any(Self::contains_string_prefix)
             }
             Self::StringPrefix { .. } => true,
+            _ => false,
+        }
+    }
+
+    fn contains_column_comparison(&self) -> bool {
+        match self {
+            Self::All(operands) | Self::Any(operands) => {
+                operands.iter().any(Self::contains_column_comparison)
+            }
+            Self::IntegerColumnComparison { .. } => true,
             _ => false,
         }
     }
@@ -180,6 +213,10 @@ impl BooleanRowConstraint {
             | Self::IntegerComparison { column, .. }
             | Self::StringPrefix { column, .. } => {
                 output.push(column.clone());
+            }
+            Self::IntegerColumnComparison { left, right, .. } => {
+                output.push(left.clone());
+                output.push(right.clone());
             }
             Self::Residual { .. } => {}
         }
@@ -289,6 +326,9 @@ impl BooleanWitness {
                         .or_insert(derived);
                     true
                 }
+                // Coupled source-column comparisons are not independent scalar
+                // domains, even though they can be row-local exact witnesses.
+                BooleanRowConstraint::IntegerColumnComparison { .. } => true,
                 BooleanRowConstraint::NullTest { column, negated } => {
                     let mode = if *negated {
                         SetMode::Exclude
@@ -715,8 +755,14 @@ fn is_witness_candidate(predicate: &Predicate) -> bool {
             ) {
                 return true;
             }
-            // A lone direct column comparison already has a scalar domain;
-            // computed operands need a typed inversion witness.
+            // A lone direct column-to-literal comparison already has a scalar
+            // domain; correlated columns require a coupled typed witness.
+            if matches!(
+                (comparison.left(), comparison.right()),
+                (Expression::Column(_), Expression::Column(_))
+            ) {
+                return true;
+            }
             [comparison.left(), comparison.right()]
                 .iter()
                 .any(|expression| {
@@ -789,6 +835,20 @@ fn normalize(
                         negated: comparison.operator() == ComparisonOperator::IsDistinctFrom,
                     };
                 }
+            }
+            if let (Expression::Column(left), Expression::Column(right)) =
+                (comparison.left(), comparison.right())
+            {
+                let left = resolve_column(left, sources);
+                let right = resolve_column(right, sources);
+                if integer_evidence(&left).is_none() || integer_evidence(&right).is_none() {
+                    return residual("cross-column comparison requires signed integer type evidence");
+                }
+                return BooleanRowConstraint::IntegerColumnComparison {
+                    left,
+                    operator: comparison.operator(),
+                    right,
+                };
             }
             let (column, operator, literal, offset) = if let Some((column, offset)) =
                 affine_integer_operand(comparison.left(), sources, integer_evidence)
