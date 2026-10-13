@@ -1904,35 +1904,29 @@ fn accepted_decimal_constraints_use_exact_numeric_equality_in_closed_world_proof
     let dialect = dialect_from_name("duckdb").unwrap();
     let configured = ConfiguredSqlInput::new("accepted-decimal", &sql, "duckdb", dialect.as_ref());
     let mut b = analyze_configured_inputs_with_catalog(&[configured], &catalog).unwrap();
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new(
-            "target",
-            vec![
-                RelationConstraint::accepted_values(
-                    "id",
-                    vec![ConstraintValue::Number("1.50".into())],
-                    false,
-                    evidence(),
-                )
-                .unwrap(),
-            ],
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::accepted_values(
+            "id",
+            vec![ConstraintValue::Number("1.50".into())],
+            false,
+            evidence(),
         )
-        .unwrap(),
-    ]);
+        .unwrap()],
+    )
+    .unwrap()]);
     let snapshot = |id: &str| {
         PhysicalWriteState::new(
             "target",
-            vec![
-                PhysicalWriteRow::new(
-                    [
-                        ("id".to_string(), LiteralValue::Number(id.into())),
-                        ("score".to_string(), LiteralValue::Number("1".into())),
-                    ]
-                    .into_iter()
-                    .collect(),
-                )
-                .unwrap(),
-            ],
+            vec![PhysicalWriteRow::new(
+                [
+                    ("id".to_string(), LiteralValue::Number(id.into())),
+                    ("score".to_string(), LiteralValue::Number("1".into())),
+                ]
+                .into_iter()
+                .collect(),
+            )
+            .unwrap()],
         )
         .unwrap()
     };
