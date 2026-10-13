@@ -463,7 +463,7 @@ fn repeated_column_conditions_are_checked_jointly() {
     };
     assert!(matches!(
         semantics.boolean_witnesses()[0].witness().qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
 }
 
@@ -477,7 +477,7 @@ fn conjunctions_are_coupled_even_without_an_or() {
     assert!(matches!(witness.condition(), BooleanRowConstraint::All(_)));
     assert!(matches!(
         witness.qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
     assert!(matches!(
         witness.rejected(),
@@ -525,7 +525,7 @@ fn enforced_not_null_constraints_reject_impossible_positive_witness() {
     let witness = semantics.boolean_witnesses()[0].witness();
     assert!(matches!(
         witness.qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
     assert!(matches!(
         witness.rejected(),
@@ -560,7 +560,7 @@ fn enforced_accepted_values_restrict_joint_comparison_feasibility() {
     let witness = semantics.boolean_witnesses()[0].witness();
     assert!(matches!(
         witness.qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
     assert!(matches!(
         witness.rejected(),
@@ -975,7 +975,7 @@ fn dialects_preserve_the_same_null_sensitive_source_tree() {
 }
 
 #[test]
-fn impossible_positive_direction_is_residual_even_with_known_integer_types() {
+fn impossible_positive_direction_is_proven_with_known_integer_types() {
     let bundle = typed_bundle("SELECT a FROM t WHERE a > 2147483647 OR b > 2147483647");
     let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
         panic!("expected composition");
@@ -983,7 +983,7 @@ fn impossible_positive_direction_is_residual_even_with_known_integer_types() {
     let witness = semantics.boolean_witnesses()[0].witness();
     assert!(matches!(
         witness.qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
     assert!(matches!(
         witness.rejected(),
