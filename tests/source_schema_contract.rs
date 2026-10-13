@@ -267,3 +267,32 @@ fn catalog_overrides_conflicting_sql_schema_but_retains_proof_gap() {
                 .iter()
                 .any(|diag| diag.code() == "ddl_catalog_schema_conflict")));
 }
+
+#[test]
+fn explicit_nullable_ddl_proves_omitted_sql_null_without_overriding_real_default() {
+    use sql_semantic_protocol::{ColumnValueKind, ConstraintValue};
+
+    for dialect in ["duckdb", "postgresql", "mysql", "sqlite"] {
+        let parser = dialect_from_name(dialect).unwrap();
+        let bundle = analyze_inputs(
+            &[SqlInput::inline(
+                "CREATE TABLE t (id INTEGER, score INTEGER NULL, priority INTEGER NULL DEFAULT 7)",
+            )],
+            dialect,
+            parser.as_ref(),
+        )
+        .unwrap();
+        let set = bundle
+            .relation_constraints()
+            .iter()
+            .find(|set| set.relation() == "t")
+            .expect("typed DDL column sources");
+        let sources = set.column_value_sources();
+        let score = sources.iter().find(|source| source.column() == "score").unwrap();
+        assert_eq!(score.kind(), ColumnValueKind::Default, "{dialect}");
+        assert_eq!(score.value(), Some(&ConstraintValue::Null), "{dialect}");
+        let priority = sources.iter().find(|source| source.column() == "priority").unwrap();
+        assert_eq!(priority.value(), Some(&ConstraintValue::Integer(7)), "{dialect}");
+        assert_eq!(sources.len(), 2, "{dialect}");
+    }
+}
