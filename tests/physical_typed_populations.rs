@@ -84,12 +84,16 @@ fn bundle() -> sql_semantic_protocol::AnalysisBundle {
                     evidence(),
                 )
                 .unwrap(),
+                RelationConstraint::not_null("payload", evidence()).unwrap(),
             ],
         )
         .unwrap(),
         RelationConstraintSet::new(
             "source",
-            vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+            vec![
+                RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
+                RelationConstraint::not_null("payload", evidence()).unwrap(),
+            ],
         )
         .unwrap(),
     ]);
@@ -151,6 +155,18 @@ fn typed_population_nested_shape_out_of_range_and_unresolved_fk_fail_closed() {
     ];
     assert!(matches!(
         physical_typed_closed_world_schema_plan(&bundle, &overflow),
+        PhysicalTypedPopulationPlan::Impossible { .. }
+    ));
+
+    let null_nested = [
+        typed_state(
+            "target",
+            vec![typed_row(1, PhysicalTypedValue::Scalar(LiteralValue::Null))],
+        ),
+        typed_state("source", vec![typed_row(1, payload(1, 2))]),
+    ];
+    assert!(matches!(
+        physical_typed_closed_world_schema_plan(&bundle, &null_nested),
         PhysicalTypedPopulationPlan::Impossible { .. }
     ));
 
