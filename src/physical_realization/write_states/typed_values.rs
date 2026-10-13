@@ -16,6 +16,15 @@ pub enum PhysicalTypedValue {
     Bytes(Vec<u8>),
     /// Fully parsed JSON document, distinct from SQL NULL and textual casts.
     Json(serde_json::Value),
+    /// Exact packed-bit logical values with an explicit bit count, not text.
+    Bits(Vec<bool>),
+    /// One exact tagged variant and its value, preserving declaration order.
+    Union {
+        /// Zero-based active alternative in the canonical union declaration.
+        field_index: usize,
+        /// Exact active alternative value.
+        value: Box<Self>,
+    },
     /// Exact IEEE754 binary32 bits from an Arrow-style physical buffer.
     Float32Bits(u32),
     /// Exact IEEE754 binary64 bits from an Arrow-style physical buffer.
@@ -107,6 +116,47 @@ pub fn physical_typed_value_plan(
                 }
             }
             PhysicalTypeProof::Feasible
+        }
+        DataType::Union { fields } => {
+            let PhysicalTypedValue::Union { field_index, value } = value else {
+                return PhysicalTypeProof::Residual {
+                    reason: "union value requires an explicit active variant tag".to_string(),
+                };
+            };
+            let Some(field) = fields.get(*field_index) else {
+                return PhysicalTypeProof::Impossible {
+                    reason: "physical union tag is outside the declared alternatives".to_string(),
+                };
+            };
+            physical_typed_value_plan(value, field.data_type())
+        }
+        DataType::BitString { length } => {
+            let PhysicalTypedValue::Bits(bits) = value else {
+                return PhysicalTypeProof::Residual {
+                    reason: "bit-string requires an exact typed bit buffer".to_string(),
+                };
+            };
+            let Some(expected) = length else {
+                return PhysicalTypeProof::Residual {
+                    reason: "bit-string storage width is not attested".to_string(),
+                };
+            };
+            let Ok(actual) = u64::try_from(bits.len()) else {
+                return PhysicalTypeProof::Residual {
+                    reason: "bit-string physical length exceeds representable bounds".to_string(),
+                };
+            };
+            if actual > *expected {
+                PhysicalTypeProof::Impossible {
+                    reason: "physical bit-string exceeds declared width".to_string(),
+                }
+            } else if actual < *expected {
+                PhysicalTypeProof::Residual {
+                    reason: "short bit-string may need vendor-specific padding".to_string(),
+                }
+            } else {
+                PhysicalTypeProof::Feasible
+            }
         }
         DataType::Map {
             key,
@@ -300,6 +350,57 @@ fn json_document_proof(document: &serde_json::Value) -> PhysicalTypeProof {
 mod tests {
     use super::*;
     use crate::data_type::DataTypeField;
+
+    #[test]
+    fn tagged_union_and_explicit_bit_buffers_preserve_physical_shape() {
+        let union = DataType::Union {
+            fields: vec![
+                DataTypeField::new(Some("id".into()), DataType::SignedInteger { bits: Some(32) }),
+                DataTypeField::new(Some("name".into()), DataType::String {
+                    length: Some(10),
+                    fixed: false,
+                }),
+            ],
+        };
+        let tag = |field_index, value| PhysicalTypedValue::Union {
+            field_index,
+            value: Box::new(value),
+        };
+        assert_eq!(
+            physical_typed_value_plan(
+                &tag(0, PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))),
+                &union
+            ),
+            PhysicalTypeProof::Feasible
+        );
+        assert!(matches!(
+            physical_typed_value_plan(
+                &tag(2, PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))),
+                &union
+            ),
+            PhysicalTypeProof::Impossible { .. }
+        ));
+        assert!(matches!(
+            physical_typed_value_plan(
+                &tag(1, PhysicalTypedValue::Scalar(LiteralValue::Number("7".into()))),
+                &union
+            ),
+            PhysicalTypeProof::Residual { .. }
+        ));
+        let bits = DataType::BitString { length: Some(3) };
+        assert_eq!(
+            physical_typed_value_plan(&PhysicalTypedValue::Bits(vec![true, false, true]), &bits),
+            PhysicalTypeProof::Feasible
+        );
+        assert!(matches!(
+            physical_typed_value_plan(&PhysicalTypedValue::Bits(vec![true; 4]), &bits),
+            PhysicalTypeProof::Impossible { .. }
+        ));
+        assert!(matches!(
+            physical_typed_value_plan(&PhysicalTypedValue::Bits(vec![true; 2]), &bits),
+            PhysicalTypeProof::Residual { .. }
+        ));
+    }
 
     #[test]
     fn nested_struct_arrays_are_feasible_with_exact_scalar_bounds() {
