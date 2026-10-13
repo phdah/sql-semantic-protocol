@@ -63,6 +63,12 @@ pub(super) fn validate_all_constraints_with_nested(
                 "unresolved canonical constraint diagnostics",
             ));
         }
+        // A complete empty bag satisfies every row-level constraint regardless
+        // of unknown enforcement, collation, or nullable uniqueness semantics.
+        // Schema-level diagnostics above still prevent a false certification.
+        if state.rows.is_empty() {
+            continue;
+        }
         for check in set.computed_checks() {
             if check
                 .evidence()
