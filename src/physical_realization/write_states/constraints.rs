@@ -118,30 +118,25 @@ pub(super) fn validate_all_constraints_with_nested(
                     .iter()
                     .map(|expression| super::generated::evaluate(expression, &row.values))
                     .collect::<StateResult<Vec<_>>>()?;
-                if values
-                    .iter()
-                    .any(|value| matches!(value, LiteralValue::Null))
+                if key.primary()
+                    && values.iter().any(|value| matches!(value, LiteralValue::Null))
                 {
-                    if key.primary() {
-                        return Err(impossible("computed PRIMARY KEY cannot contain NULL"));
-                    }
-                    return Err(residual_gap(
-                        PhysicalWriteStateGap::UnprovedConstraint,
-                        "nullable functional UNIQUE key has an unknown NULL uniqueness law",
-                    ));
+                    return Err(impossible("computed PRIMARY KEY cannot contain NULL"));
                 }
                 for prior in &seen {
-                    let mut identical = true;
-                    for (left, right) in values.iter().zip(prior) {
-                        if !scalar_equality(left, right)? {
-                            identical = false;
-                            break;
+                    match unique_key_collision(&values, prior)? {
+                        Some(true) => {
+                            return Err(impossible(
+                                "enforced computed key has duplicate physical values",
+                            ));
                         }
-                    }
-                    if identical {
-                        return Err(impossible(
-                            "enforced computed key has duplicate physical values",
-                        ));
+                        None => {
+                            return Err(residual_gap(
+                                PhysicalWriteStateGap::UnprovedConstraint,
+                                "nullable functional UNIQUE key has an unknown NULL uniqueness law",
+                            ));
+                        }
+                        Some(false) => {}
                     }
                 }
                 seen.push(values);
@@ -186,29 +181,30 @@ pub(super) fn validate_all_constraints_with_nested(
                         {
                             return Err(impossible("enforced PRIMARY KEY cannot contain NULL"));
                         }
-                        if key
-                            .columns()
-                            .iter()
-                            .any(|col| matches!(row.values.get(col), Some(LiteralValue::Null)))
-                        {
-                            // Dialects differ on UNIQUE NULL equality (for
-                            // example, SQL Server versus PostgreSQL). A generic
-                            // uniqueness proof may not assume NULLS DISTINCT.
-                            return Err(residual_gap(
-                                PhysicalWriteStateGap::UnprovedConstraint,
-                                "nullable UNIQUE key requires dialect-specific NULL uniqueness law",
-                            ));
-                        }
                         for prior in &state.rows[..index] {
-                            if key.columns().iter().any(|col| {
-                                matches!(prior.values.get(col), Some(LiteralValue::Null))
-                            }) {
-                                continue;
-                            }
-                            if equal_key_rows(row, prior, key.columns(), key.columns())? {
-                                return Err(impossible(
-                                    "enforced key has duplicate physical values",
-                                ));
+                            let values = key
+                                .columns()
+                                .iter()
+                                .map(|col| row.values.get(col).cloned().ok_or_else(|| residual("key column missing")))
+                                .collect::<StateResult<Vec<_>>>()?;
+                            let existing = key
+                                .columns()
+                                .iter()
+                                .map(|col| prior.values.get(col).cloned().ok_or_else(|| residual("key column missing")))
+                                .collect::<StateResult<Vec<_>>>()?;
+                            match unique_key_collision(&values, &existing)? {
+                                Some(true) => {
+                                    return Err(impossible(
+                                        "enforced key has duplicate physical values",
+                                    ));
+                                }
+                                None => {
+                                    return Err(residual_gap(
+                                        PhysicalWriteStateGap::UnprovedConstraint,
+                                        "nullable UNIQUE key requires dialect-specific NULL uniqueness law",
+                                    ));
+                                }
+                                Some(false) => {}
                             }
                         }
                     }
@@ -306,6 +302,29 @@ pub(super) fn validate_all_constraints_with_nested(
         }
     }
     Ok(())
+}
+
+/// An attested unique key is violated only by definitely identical non-NULL
+/// components. One NULL-bearing row cannot collide on its own; two possibly
+/// equal NULL-bearing tuples require a dialect's NULLS DISTINCT law.
+fn unique_key_collision(
+    left: &[LiteralValue],
+    right: &[LiteralValue],
+) -> StateResult<Option<bool>> {
+    let mut unknown_null = false;
+    for (a, b) in left.iter().zip(right) {
+        match (a, b) {
+            (LiteralValue::Null, LiteralValue::Null) => unknown_null = true,
+            (LiteralValue::Null, _) | (_, LiteralValue::Null) => return Ok(Some(false)),
+            _ if !scalar_equality(a, b)? => return Ok(Some(false)),
+            _ => {}
+        }
+    }
+    if unknown_null {
+        Ok(None)
+    } else {
+        Ok(Some(true))
+    }
 }
 
 fn equal_key_rows(
