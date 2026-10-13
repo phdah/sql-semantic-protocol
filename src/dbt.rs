@@ -2181,6 +2181,23 @@ fn parse_dbt_constraint_array(
                         })?;
                         accepted_rules.push(rule);
                     }
+                    crate::analysis::constraints::PortableCheckExpression::AcceptedValues(
+                        column,
+                        values,
+                        quote,
+                    ) if implied_column.is_none_or(|name| name == column) => {
+                        let rule = RelationConstraint::accepted_values(
+                            column,
+                            values,
+                            quote,
+                            evidence.clone(),
+                        )
+                        .map_err(|error| DbtManifestError::RelationMetadata {
+                            resource_id: resource_id.to_string(),
+                            message: format!("{relation}: {error}"),
+                        })?;
+                        accepted_rules.push(rule);
+                    }
                     crate::analysis::constraints::PortableCheckExpression::Computed(
                         left,
                         op,
