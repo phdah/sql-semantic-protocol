@@ -299,24 +299,45 @@ fn typed_json_populations_preserve_document_null_under_cross_source_constraints(
     );
     let source = typed_state(
         "source",
-        vec![typed_row(1, PhysicalTypedValue::Json(serde_json::Value::Null))],
+        vec![typed_row(
+            1,
+            PhysicalTypedValue::Json(serde_json::Value::Null),
+        )],
     );
     let proof = physical_typed_closed_world_schema_plan(&bundle, &[target.clone(), source.clone()]);
-    assert!(matches!(proof, PhysicalTypedPopulationPlan::Feasible { .. }), "{proof:?}");
+    assert!(
+        matches!(proof, PhysicalTypedPopulationPlan::Feasible { .. }),
+        "{proof:?}"
+    );
 
-    let invalid = typed_state("target", vec![typed_row(1, PhysicalTypedValue::Scalar(LiteralValue::Null))]);
+    let invalid = typed_state(
+        "target",
+        vec![typed_row(1, PhysicalTypedValue::Scalar(LiteralValue::Null))],
+    );
     assert!(matches!(
         physical_typed_closed_world_schema_plan(&bundle, &[invalid, source]),
         PhysicalTypedPopulationPlan::Impossible { .. }
     ));
     let fractional = typed_state(
         "target",
-        vec![typed_row(1, PhysicalTypedValue::Json(serde_json::json!({"amount": 0.1})))],
+        vec![typed_row(
+            1,
+            PhysicalTypedValue::Json(serde_json::json!({"amount": 0.1})),
+        )],
     );
     assert!(matches!(
         physical_typed_closed_world_schema_plan(
             &bundle,
-            &[fractional, typed_state("source", vec![typed_row(1, PhysicalTypedValue::Json(serde_json::Value::Null))])]
+            &[
+                fractional,
+                typed_state(
+                    "source",
+                    vec![typed_row(
+                        1,
+                        PhysicalTypedValue::Json(serde_json::Value::Null)
+                    )]
+                )
+            ]
         ),
         PhysicalTypedPopulationPlan::Residual { .. }
     ));
