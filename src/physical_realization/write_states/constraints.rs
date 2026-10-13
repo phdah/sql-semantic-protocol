@@ -81,6 +81,26 @@ pub(super) fn validate_all_constraints_with_identity(
             }
         }
     }
+    // Only relations actually participating in the analyzed workload are
+    // required. An unrelated catalog entry does not make a proof incomplete,
+    // but an SQL-read source or an existing mutation target does.
+    for layer in bundle.layers() {
+        for source in layer.consumes() {
+            if let Some(relation) = source.relation_name() {
+                required_relations.insert(relation.to_string());
+            }
+        }
+        if layer
+            .write_kind()
+            .is_some_and(|kind| kind != WriteKind::Definition)
+        {
+            for output in layer.produces() {
+                if let Some(relation) = output.relation_name() {
+                    required_relations.insert(relation.to_string());
+                }
+            }
+        }
+    }
     for relation in &required_relations {
         if !states.contains_key(relation) {
             return Err(residual_gap(
