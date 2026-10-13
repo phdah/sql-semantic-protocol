@@ -2891,6 +2891,25 @@ fn closed_world_requires_missing_constrained_and_referenced_snapshots_even_if_em
 }
 
 #[test]
+fn closed_world_requires_sql_referenced_but_unconstrained_sources() {
+    let b = bundle(&["SELECT id FROM source"], "duckdb");
+    let result = physical_closed_world_schema_plan(
+        &b,
+        &[state("target", &[(Some(1), Some(2))])],
+    );
+    assert!(
+        matches!(
+            result,
+            PhysicalWriteStatePlan::Residual {
+                gap: sql_semantic_protocol::PhysicalWriteStateGap::MissingPopulation,
+                ..
+            }
+        ),
+        "a missing SQL-read source cannot be certified: {result:?}"
+    );
+}
+
+#[test]
 fn coalesce_rejects_mixed_declared_types_when_the_text_branch_is_null() {
     let schemas = vec![RelationSchema::new(
         "target",
