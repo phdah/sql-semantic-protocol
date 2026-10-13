@@ -5,11 +5,11 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
-    physical_ordered_write_state_plan, AnalysisBundle, CheckCompareOperator, ColumnValueKind, ColumnValueSource,
-    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-    ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput, WriteKind,
+    physical_ordered_write_state_plan, AnalysisBundle, CheckCompareOperator, ColumnValueKind,
+    ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow,
+    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
@@ -903,44 +903,60 @@ fn enforced_check_comparisons_prove_complete_physical_populations() {
             &["CREATE TABLE target(id INTEGER, score INTEGER CHECK(score > 0))"],
             dialect,
         );
-        let ddl = b.relation_constraints().iter()
-            .find(|set| set.relation() == "target").unwrap();
+        let ddl = b
+            .relation_constraints()
+            .iter()
+            .find(|set| set.relation() == "target")
+            .unwrap();
         assert!(ddl.constraints().iter().any(|rule| matches!(
             rule,
             RelationConstraint::CheckComparison(item)
                 if item.column() == "score" && item.operator() == CheckCompareOperator::Gt
                     && item.value() == &ConstraintValue::Integer(0)
         )));
-        assert!(matches!(
-            physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(2))])]),
-            PhysicalWriteStatePlan::Residual { .. }
-        ), "DDL enforcement not attested: {dialect}");
-        b.enrich_relation_constraints(&[
-            RelationConstraintSet::new(
-                "target",
-                vec![RelationConstraint::check_comparison(
-                    "score",
-                    CheckCompareOperator::Gt,
-                    ConstraintValue::Integer(0),
-                    evidence(),
-                ).unwrap()],
-            ).unwrap(),
-        ]);
+        assert!(
+            matches!(
+                physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(2))])]),
+                PhysicalWriteStatePlan::Residual { .. }
+            ),
+            "DDL enforcement not attested: {dialect}"
+        );
+        b.enrich_relation_constraints(&[RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::check_comparison(
+                "score",
+                CheckCompareOperator::Gt,
+                ConstraintValue::Integer(0),
+                evidence(),
+            )
+            .unwrap()],
+        )
+        .unwrap()]);
         for expected in [
             state("target", &[(Some(1), Some(2)), (Some(2), None)]),
             state("target", &[]),
         ] {
             let plan = physical_closed_world_schema_plan(&b, &[expected]);
-            assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{dialect}: {plan:?}");
+            assert!(
+                matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+                "{dialect}: {plan:?}"
+            );
         }
-        let invalid = physical_closed_world_schema_plan(
-            &b, &[state("target", &[(Some(1), Some(-1))])],
+        let invalid =
+            physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(-1))])]);
+        assert!(
+            matches!(invalid, PhysicalWriteStatePlan::Impossible { .. }),
+            "{dialect}: {invalid:?}"
         );
-        assert!(matches!(invalid, PhysicalWriteStatePlan::Impossible { .. }), "{dialect}: {invalid:?}");
     }
 
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE target (id INTEGER, score INTEGER CHECK(score > 0));
-        INSERT INTO target VALUES (1,2),(2,NULL);").unwrap();
-    assert!(db.execute_batch("INSERT INTO target VALUES (3,-1)").is_err());
+    db.execute_batch(
+        "CREATE TABLE target (id INTEGER, score INTEGER CHECK(score > 0));
+        INSERT INTO target VALUES (1,2),(2,NULL);",
+    )
+    .unwrap();
+    assert!(db
+        .execute_batch("INSERT INTO target VALUES (3,-1)")
+        .is_err());
 }
