@@ -490,9 +490,11 @@ pub(crate) use operators::{
 };
 pub use write_states::{
     physical_closed_world_schema_plan, physical_ordered_write_state_plan,
-    physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan, physical_typed_value_plan, PhysicalTypeProof,
-    PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState, PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState,
+    physical_ordered_write_state_plan_with_identities, physical_typed_append_schema_plan,
+    physical_typed_closed_world_schema_plan, physical_typed_value_plan,
+    PhysicalIdentitySequence, PhysicalTypeProof, PhysicalTypedPopulationPlan,
+    PhysicalTypedValue, PhysicalTypedWriteRow, PhysicalTypedWriteState,
+    PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState,
     PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 
