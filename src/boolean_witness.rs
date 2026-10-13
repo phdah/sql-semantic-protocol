@@ -682,8 +682,19 @@ fn analyze_candidate(
 
 fn is_witness_candidate(predicate: &Predicate) -> bool {
     match predicate {
-        Predicate::And(_) | Predicate::Or(_) | Predicate::LikePrefix(_) => true,
+        Predicate::And(_)
+        | Predicate::Or(_)
+        | Predicate::Not(_)
+        | Predicate::Between(_)
+        | Predicate::In(_)
+        | Predicate::LikePrefix(_) => true,
         Predicate::Comparison(comparison) => {
+            if matches!(
+                comparison.operator(),
+                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                return true;
+            }
             // A lone direct column comparison already has a scalar domain;
             // computed operands need a typed inversion witness.
             [comparison.left(), comparison.right()]
@@ -749,12 +760,6 @@ fn normalize(
             } else {
                 return residual("comparison is noninvertible or correlates two source values");
             };
-            if matches!(
-                operator,
-                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
-            ) {
-                return residual("null-safe comparison is not part of the integer witness subset");
-            }
             let Some(value) = signed_integer_literal(literal) else {
                 return residual("comparison literal is not a supported signed integer");
             };
@@ -774,6 +779,65 @@ fn normalize(
                 literal: value,
             }
         }
+        Predicate::Between(test) => {
+            let (lower, upper, connective) = if test.negated() {
+                (ComparisonOperator::Lt, ComparisonOperator::Gt, false)
+            } else {
+                (ComparisonOperator::Gte, ComparisonOperator::Lte, true)
+            };
+            let operands = vec![
+                normalize_integer_comparison(
+                    test.expression(), lower, test.lower(), sources, integer_evidence, string_evidence,
+                ),
+                normalize_integer_comparison(
+                    test.expression(), upper, test.upper(), sources, integer_evidence, string_evidence,
+                ),
+            ];
+            let Some(operands) = BooleanOperands::new(operands) else {
+                return residual("BETWEEN requires both comparison bounds");
+            };
+            if connective {
+                BooleanRowConstraint::All(operands)
+            } else {
+                BooleanRowConstraint::Any(operands)
+            }
+        }
+        Predicate::In(test) => {
+            // SQL IN is OR of equalities; NOT IN is AND of inequalities.
+            // A NULL member deliberately stays residual unless the solver can
+            // prove its UNKNOWN effect rather than silently removing it.
+            let operator = if test.negated() {
+                ComparisonOperator::Neq
+            } else {
+                ComparisonOperator::Eq
+            };
+            let mut operands = test.values().iter().map(|value| {
+                normalize_integer_comparison(
+                    test.expression(), operator, value, sources, integer_evidence, string_evidence,
+                )
+            });
+            let Some(first) = operands.next() else {
+                return residual("empty IN list has no proven row semantics");
+            };
+            let Some(second) = operands.next() else {
+                return first;
+            };
+            let mut children = vec![first, second];
+            children.extend(operands);
+            let Some(children) = BooleanOperands::new(children) else {
+                return residual("IN list requires at least one value");
+            };
+            if test.negated() {
+                BooleanRowConstraint::All(children)
+            } else {
+                BooleanRowConstraint::Any(children)
+            }
+        }
+        Predicate::Not(negation) => {
+            negate_constraint(normalize(
+                negation.expression(), sources, integer_evidence, string_evidence,
+            ))
+        }
         Predicate::LikePrefix(test) => {
             let Expression::Column(column) = test.expression() else {
                 return residual("LIKE prefix requires a direct source string column");
@@ -791,6 +855,58 @@ fn normalize(
         Predicate::Not(_) => residual("logical NOT needs explicit three-valued inversion"),
         _ => residual("computed, function, collation, cast or other predicate is not invertible"),
     }
+}
+
+// Negation is pushed to proven leaves. De Morgan's laws preserve SQL
+// UNKNOWN, while swapping comparison operators keeps NULL-sensitive
+// comparisons unknown and NULL-safe comparisons two-valued.
+fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
+    match condition {
+        BooleanRowConstraint::All(operands) => BooleanRowConstraint::Any(
+            BooleanOperands::new(operands.iter().cloned().map(negate_constraint).collect())
+                .expect("negation preserves the operand count"),
+        ),
+        BooleanRowConstraint::Any(operands) => BooleanRowConstraint::All(
+            BooleanOperands::new(operands.iter().cloned().map(negate_constraint).collect())
+                .expect("negation preserves the operand count"),
+        ),
+        BooleanRowConstraint::NullTest { column, negated } => {
+            BooleanRowConstraint::NullTest { column, negated: !negated }
+        }
+        BooleanRowConstraint::IntegerComparison { column, operator, literal } => {
+            let operator = match operator {
+                ComparisonOperator::Eq => ComparisonOperator::Neq,
+                ComparisonOperator::Neq => ComparisonOperator::Eq,
+                ComparisonOperator::Lt => ComparisonOperator::Gte,
+                ComparisonOperator::Lte => ComparisonOperator::Gt,
+                ComparisonOperator::Gt => ComparisonOperator::Lte,
+                ComparisonOperator::Gte => ComparisonOperator::Lt,
+                ComparisonOperator::IsDistinctFrom => ComparisonOperator::IsNotDistinctFrom,
+                ComparisonOperator::IsNotDistinctFrom => ComparisonOperator::IsDistinctFrom,
+            };
+            BooleanRowConstraint::IntegerComparison { column, operator, literal }
+        }
+        BooleanRowConstraint::StringPrefix { column, prefix, negated } => {
+            BooleanRowConstraint::StringPrefix { column, prefix, negated: !negated }
+        }
+        BooleanRowConstraint::Residual { reason } => BooleanRowConstraint::Residual { reason },
+    }
+}
+
+fn normalize_integer_comparison(
+    left: &Expression,
+    operator: ComparisonOperator,
+    right: &Expression,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+) -> BooleanRowConstraint {
+    normalize(
+        &Predicate::Comparison(crate::protocol::ComparisonPredicate::new(
+            left.clone(), operator, right.clone(),
+        )),
+        sources, integer_evidence, string_evidence,
+    )
 }
 
 fn residual(reason: &str) -> BooleanRowConstraint {
@@ -1232,19 +1348,28 @@ fn eval_joint_truth(
         } => {
             use crate::protocol::ComparisonOperator as Op;
             let value = match assignment.get(column)? {
-                Some(RowScalar::Integer(value)) => *value,
-                None => return Some(SqlTruth::Unknown),
+                Some(RowScalar::Integer(value)) => Some(*value),
+                None => None,
                 _ => return None,
             };
             let literal = i128::from(*literal);
             let result = match operator {
-                Op::Eq => value == literal,
-                Op::Neq => value != literal,
-                Op::Lt => value < literal,
-                Op::Lte => value <= literal,
-                Op::Gt => value > literal,
-                Op::Gte => value >= literal,
-                Op::IsDistinctFrom | Op::IsNotDistinctFrom => return None,
+                Op::IsDistinctFrom => value != Some(literal),
+                Op::IsNotDistinctFrom => value == Some(literal),
+                ordinary => {
+                    let Some(value) = value else {
+                        return Some(SqlTruth::Unknown);
+                    };
+                    match ordinary {
+                        Op::Eq => value == literal,
+                        Op::Neq => value != literal,
+                        Op::Lt => value < literal,
+                        Op::Lte => value <= literal,
+                        Op::Gt => value > literal,
+                        Op::Gte => value >= literal,
+                        Op::IsDistinctFrom | Op::IsNotDistinctFrom => unreachable!("handled above"),
+                    }
+                }
             };
             Some(if result {
                 SqlTruth::True
