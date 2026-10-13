@@ -101,9 +101,7 @@ pub use bundle::{
     UnresolvedComposedSemantics,
 };
 pub use column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
-pub use computed_boolean_checks::{
-    ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate,
-};
+pub use computed_boolean_checks::{ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate};
 pub use computed_checks::ComputedCheckConstraint;
 pub use computed_keys::ComputedKeyConstraint;
 pub use constraints::{
@@ -154,12 +152,12 @@ pub use physical_realization::{
     physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
     physical_row_count_plan, physical_source_plan, physical_typed_append_schema_plan,
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
-    physical_typed_value_plan,
-    physical_unconditional_delete_plan, PhysicalIdentitySequence, PhysicalJointSourcePlan,
-    PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan,
-    PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState, PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
+    physical_typed_value_plan, physical_unconditional_delete_plan, PhysicalIdentitySequence,
+    PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap,
+    PhysicalRowTarget, PhysicalSourcePlan, PhysicalTypeProof, PhysicalTypedPopulationPlan,
+    PhysicalTypedValue, PhysicalTypedWriteRow, PhysicalTypedWriteState, PhysicalWriteColumnDomain,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan,
+    PhysicalWriteTransition,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
