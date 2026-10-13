@@ -3,6 +3,46 @@
 use super::*;
 use crate::column_sources::{ColumnValueKind, ColumnValueSource};
 
+/// Normalize a complete CREATE TABLE declaration into canonical typed schema evidence.
+/// Unknown/unsupported declarations must not produce a partial authoritative schema.
+pub(super) fn analyze_create_table_schema(
+    create_table: &SqlCreateTable,
+    dialect_name: &str,
+) -> Result<Option<crate::relation::RelationSchema>, ConstraintDiagnostic> {
+    if create_table.columns.is_empty() {
+        return Ok(None);
+    }
+    let relation = create_table.name.to_string();
+    let mut columns = Vec::with_capacity(create_table.columns.len());
+    for declared in &create_table.columns {
+        let mut column = SchemaColumn::from_sql_type(
+            declared.name.to_string(),
+            &declared.data_type.to_string(),
+            dialect_name,
+        ).map_err(|error| ConstraintDiagnostic::new(
+            "unsupported_declared_type",
+            format!("SQL DDL '{}.{}' cannot normalize datatype: {error}", relation, declared.name),
+        ))?;
+        for option in &declared.options {
+            if let ColumnOption::Collation(collation) = &option.option {
+                column = column.with_collation(collation.to_string()).map_err(|error| {
+                    ConstraintDiagnostic::new(
+                        "unsupported_declared_collation",
+                        format!("SQL DDL '{}.{}' has invalid collation: {error}", relation, declared.name),
+                    )
+                })?;
+            }
+        }
+        columns.push(column);
+    }
+    let schema = crate::relation::RelationSchema::new(relation.clone(), columns)
+        .map_err(|error| ConstraintDiagnostic::new(
+            "invalid_ddl_schema",
+            format!("SQL DDL '{relation}' has invalid columns: {error}"),
+        ))?;
+    Ok(Some(schema.with_source_kind(crate::relation::SchemaSourceKind::SqlDdl)))
+}
+
 pub(super) fn analyze_relation_constraints(
     statement: &SqlStatement,
 ) -> Result<Option<RelationConstraintSet>, ConstraintMetadataError> {
