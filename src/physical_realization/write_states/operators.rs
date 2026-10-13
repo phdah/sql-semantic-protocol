@@ -82,6 +82,53 @@ pub(super) fn define_rows(
     ))
 }
 
+/// Fill only omitted columns with independently attested scalar defaults.
+/// Generated and identity expressions are not interchangeable with defaults.
+fn complete_insert_row(
+    bundle: &AnalysisBundle,
+    relation: &str,
+    mut values: BTreeMap<String, LiteralValue>,
+    schema: &RelationSchema,
+) -> StateResult<PhysicalWriteRow> {
+    let sources = bundle
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == relation)
+        .map(|set| set.column_value_sources())
+        .unwrap_or(&[]);
+    for column in schema.columns() {
+        if values.contains_key(column.name()) {
+            if sources.iter().any(|source| source.column() == column.name()
+                && source.kind() != crate::column_sources::ColumnValueKind::Default)
+            {
+                return Err(residual_gap(PhysicalWriteStateGap::UnprovedConstraint,
+                    "direct assignment to generated or identity column is unproved"));
+            }
+            continue;
+        }
+        let source = sources.iter().find(|source| source.column() == column.name())
+            .ok_or_else(|| residual("omitted INSERT column has no attested default"))?;
+        if source.kind() != crate::column_sources::ColumnValueKind::Default {
+            return Err(residual("generated or identity INSERT value has no constructive law"));
+        }
+        let literal = source.value().ok_or_else(||
+            residual("opaque INSERT default expression cannot be evaluated"))?;
+        let value = match literal {
+            ConstraintValue::Null => LiteralValue::Null,
+            ConstraintValue::Boolean(value) => LiteralValue::Boolean(*value),
+            ConstraintValue::Integer(value) => LiteralValue::Number(value.to_string()),
+            ConstraintValue::UnsignedInteger(value) => LiteralValue::Number(value.to_string()),
+            ConstraintValue::Number(value) => LiteralValue::Number(value.clone()),
+            ConstraintValue::String(value) => LiteralValue::Text(value.clone()),
+        };
+        values.insert(column.name().to_string(), value);
+    }
+    if values.len() != schema.columns().len() {
+        return Err(residual("INSERT row contains undeclared target columns"));
+    }
+    Ok(PhysicalWriteRow { values })
+}
+
 pub(super) fn append_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
@@ -103,17 +150,10 @@ pub(super) fn append_rows(
     } else {
         write.target_columns().to_vec()
     };
-    // Defaults and generated columns require independent canonical evidence.
-    if columns.len() != schema.columns().len()
-        || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
-        || schema
-            .columns()
-            .iter()
-            .any(|c| !columns.contains(&c.name().to_string()))
+    if columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
+        || columns.iter().any(|column| !schema.columns().iter().any(|c| c.name() == column))
     {
-        return Err(residual(
-            "implicit/default/partial INSERT target columns not proved",
-        ));
+        return Err(residual("INSERT targets duplicate or undeclared columns"));
     }
     let produced = evaluate_simple_select(bundle, query, states)?;
     let mut next = before.clone();
@@ -122,7 +162,7 @@ pub(super) fn append_rows(
             return Err(residual("INSERT SELECT projection arity is not proved"));
         }
         let values = columns.iter().cloned().zip(output_row).collect();
-        next.rows.push(PhysicalWriteRow { values });
+        next.rows.push(complete_insert_row(bundle, target, values, schema)?);
     }
     let inserted = u64::try_from(next.rows.len() - before.rows.len())
         .map_err(|_| residual("inserted count overflow"))?;
