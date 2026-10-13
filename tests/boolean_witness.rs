@@ -102,6 +102,50 @@ fn binary_attested_like_prefix_preserves_null_and_correlations() {
 }
 
 #[test]
+fn escaped_like_prefix_requires_same_binary_attestations() {
+    let mut bundle = text_bundle("SELECT a FROM t WHERE a LIKE 'ab%' ESCAPE '!'");
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().condition(),
+        BooleanRowConstraint::StringPrefix { prefix, .. } if prefix == "ab"
+    ));
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    bundle.declare_comparison_assumptions(&[
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]);
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+
+    for pattern in [
+        "a LIKE 'ab%' ESCAPE 'a'",
+        "a LIKE 'ab%' ESCAPE '%'",
+        "a LIKE 'ab!%' ESCAPE '!'",
+    ] {
+        let bundle = text_bundle(&format!("SELECT a FROM t WHERE {pattern}"));
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        assert!(
+            semantics.boolean_witnesses().iter().all(|witness| {
+                !matches!(witness.witness().qualifying(), BooleanWitnessDirection::Exact(_))
+            }),
+            "{pattern}: unsafe escapes must never become exact"
+        );
+    }
+}
+
+#[test]
 fn like_prefix_rechecks_enforced_string_constraints() {
     let mut bundle = text_bundle("SELECT a FROM t WHERE a LIKE 'ab%' OR b LIKE 'ab%'");
     bundle.declare_comparison_assumptions(&[

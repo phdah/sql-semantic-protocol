@@ -30,7 +30,7 @@ limited to proven widened signed casts/offsets; unsafe casts, cross-column
 comparisons, NULL-containing `IN` lists, computed `BETWEEN` operands and
 dialect-sensitive pattern/regex, collations, coercions or opaque functions
 remain explicit residuals. Prefix `LIKE` requires separate binary-collation
-and no-padding attestations. Operator-local witnesses do **not** establish a
+and no-padding attestations. An explicit single-character `ESCAPE` is supported only when it never appears in the safe prefix and is not the trailing `%` wildcard. Operator-local witnesses do **not** establish a
 complete physical-source realization across arbitrary producer DAGs. TASK-70
 and the protocol 3.0.0 release gate remain open for unproved expression families.
 

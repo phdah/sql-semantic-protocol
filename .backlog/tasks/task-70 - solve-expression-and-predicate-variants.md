@@ -58,6 +58,8 @@ The first bounded canonical Boolean-predicate increment lives on
   NULL tests now have canonical, two-valued row truth witnesses.
 - Searched CASE of total signed integer columns with two-valued guards now
   supports NULL-test outcome selection without collapsing SQL UNKNOWN.
+- Safe LIKE prefixes accept an inert explicit single-character ESCAPE only
+  under the existing binary-collation and no-padding proof requirements.
 - No consumer-specific semantics, parser AST in protocol types, or wire
   format changes. The existing schema and adapter-translated SQL facts
   remain authoritative.

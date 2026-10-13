@@ -91,8 +91,10 @@ pub(super) fn analyze_predicate_with_windows(
             any: false,
             expr,
             pattern,
-            escape_char: None,
-        } if safe_like_prefix(pattern).is_some() => {
+            escape_char,
+        } if safe_like_prefix(pattern)
+            .is_some_and(|prefix| safe_like_escape(&prefix, escape_char.as_deref())) =>
+        {
             Predicate::LikePrefix(LikePrefixPredicate::new(
                 analyze_predicate_expression(
                     expr,
@@ -231,6 +233,17 @@ pub(super) fn safe_like_prefix(pattern: &Expr) -> Option<String> {
     let prefix = text.strip_suffix('%')?;
     (!prefix.is_empty() && prefix.bytes().all(|byte| byte.is_ascii_alphanumeric()))
         .then(|| prefix.to_string())
+}
+
+// An explicit ESCAPE character is harmless for a safe trailing-wildcard
+// prefix only when it cannot escape any character in the pattern. In
+// particular ESCAPE '%' would turn the final wildcard into a literal.
+pub(super) fn safe_like_escape(prefix: &str, escape_char: Option<&str>) -> bool {
+    escape_char.is_none_or(|character| {
+        character.chars().count() == 1
+            && character != "%"
+            && !prefix.contains(character)
+    })
 }
 
 pub(super) fn is_plain_boolean_column(expression: &Expr) -> bool {
