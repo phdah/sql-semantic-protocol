@@ -1379,6 +1379,16 @@ or vendor-specific null semantics remain residual. Positive proof never
 constructs imaginary rows, grants an unproved default or bypasses source-key
 collisions. The ordered DML path checks both its prestate and each poststate.
 
+The independent `physical_typed_value_plan(value, data_type)` API accepts
+`PhysicalTypedValue` scalar, byte-buffer, array, map and struct witnesses.
+It checks typed field arity, fixed array lengths, binary length bounds and
+recursively proven scalar elements. Map keys must have exact integer equality
+with canonicalized numeric identity (for example, `05` equals `5`); other
+map key comparators remain residual. The result is
+`PhysicalTypeProof::{Feasible,Impossible,Residual}` and is not a warehouse
+write or Arrow serialization itself. The existing scalar DML state interpreter
+does not promote nested values to executable SQL expressions.
+
 Physical literals are conservatively validated against signed/unsigned
 integer bounds, exact decimal precision/scale, supported IEEE-safe integral
 float encodings, ASCII character lengths, Gregorian dates, ISO clock times,
