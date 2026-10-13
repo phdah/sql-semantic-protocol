@@ -320,5 +320,4 @@ mod tests {
             PhysicalTypeProof::Impossible { .. }
         ));
     }
-
 }
