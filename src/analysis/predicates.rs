@@ -332,11 +332,12 @@ pub(super) fn analyze_predicate_expression(
         }
     }
 
-    // Normalize only ordinary, formatting-free signed integer casts in
-    // predicates. TRY/SAFE_CAST, string/decimal casts, ambiguous targets and
-    // narrowing remain unsupported rather than gaining spurious exactness.
+    // Normalize formatting-free signed integer casts when source metadata
+    // can certify total, value-preserving conversion. For TRY/SAFE_CAST this
+    // rules out failure-to-NULL; any narrowing, string/decimal conversion or
+    // unresolved source datatype remains residual at the proof boundary.
     if let Expr::Cast {
-        kind: SqlCastKind::Cast,
+        kind: SqlCastKind::Cast | SqlCastKind::TryCast | SqlCastKind::SafeCast,
         expr,
         data_type,
         format: None,

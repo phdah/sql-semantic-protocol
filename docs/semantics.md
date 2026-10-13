@@ -24,7 +24,7 @@ evaluation language. It preserves SQL UNKNOWN for ordinary comparisons to NULL;
 NULL-safe equality is two-valued. Certified total integer CAST/offset NULL tests, COALESCE of signed integer columns and literal NULL, and NULLIF of two signed integer columns preserve precise NULL truth. Searched CASE with total signed integer result arms and two-valued guards also has exact branch-selecting NULL witnesses; nullable three-valued guards and implicit ELSE branches remain residual. Exact conjunctive NULL tests and numeric
 comparisons refine projected domains when source identity is proven.
 
-Exactness still requires authoritative source datatype evidence and a complete,
+Widening signed integer CAST, TRY_CAST and SAFE_CAST share one exact source identity only when all catalog-admissible values fit the target, so no failure-to-NULL or overflow is possible. Narrowing and noninteger conversions remain residual. Exactness still requires authoritative source datatype evidence and a complete,
 consistent assignment of all coupled source columns. Arithmetic inversion is
 limited to proven widened signed casts/offsets; unsafe casts, cross-column
 comparisons beyond identical-column exhaustive regions, NULL-containing `IN` lists, computed `BETWEEN` operands and

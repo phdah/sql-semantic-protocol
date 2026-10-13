@@ -62,6 +62,8 @@ The first bounded canonical Boolean-predicate increment lives on
   under the existing binary-collation and no-padding proof requirements.
 - Catalog-typed integer self-comparisons now prove impossible or tautological
   outcomes exhaustively, without extending that claim to unrelated columns.
+- Formatting-free total signed-integer TRY_CAST and SAFE_CAST share the existing
+  catalog-certified inverse path; narrowing and untyped conversions stay residual.
 - No consumer-specific semantics, parser AST in protocol types, or wire
   format changes. The existing schema and adapter-translated SQL facts
   remain authoritative.

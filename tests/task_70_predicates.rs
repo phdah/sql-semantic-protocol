@@ -124,6 +124,38 @@ fn unsupported_computed_membership_and_ranges_remain_residual() {
 }
 
 #[test]
+fn widening_try_and_safe_casts_keep_total_integer_truth() {
+    for (dialect_name, predicate) in [
+        ("generic", "TRY_CAST(a AS BIGINT) > 1"),
+        ("generic", "TRY_CAST(a AS BIGINT) IS NULL"),
+        ("bigquery", "SAFE_CAST(a AS INT64) IS NOT NULL"),
+        ("bigquery", "SAFE_CAST(a AS INT64) = 2"),
+    ] {
+        let dialect = dialect_from_name(dialect_name).unwrap();
+        let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+            "t",
+            vec![
+                SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap(),
+                SchemaColumn::from_sql_type("b", "INTEGER", "postgresql").unwrap(),
+            ],
+        ).unwrap()]).unwrap();
+        let sql = SqlInput::inline(format!("SELECT a FROM t WHERE {predicate}"));
+        let configured = [ConfiguredSqlInput::new("typed", &sql, dialect_name, dialect.as_ref())];
+        let result = analyze_configured_inputs_with_catalog(&configured, &catalog)
+            .unwrap_or_else(|error| panic!("{dialect_name}: {predicate}: {error}"));
+        let ComposedSemantics::Resolved(ref semantics) = result.layers()[0].composed_semantics() else {
+            panic!("resolved semantics required");
+        };
+        let witness = semantics.boolean_witnesses()[0].witness();
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Exact(BooleanTruthCase::True)),
+            "{dialect_name}: {predicate}: {:?}",
+            witness.qualifying()
+        );
+    }
+}
+
+#[test]
 fn null_membership_obligations_preserve_unknown_in_both_directions() {
     for predicate in ["a IN (1, NULL)", "NOT (a NOT IN (1, NULL))"] {
         assert_both_directions_exact(predicate);
@@ -162,6 +194,7 @@ fn certified_computed_null_tests_have_exact_two_valued_outcomes() {
         "NULLIF(a, b) IS NULL",
         "NULLIF(a, b) IS NOT NULL",
         "CAST(a AS BIGINT) IS NULL",
+        "TRY_CAST(a AS SMALLINT) IS NULL",
         "(CAST(a AS BIGINT) + 1) IS NOT NULL",
         "CASE WHEN a IS NULL THEN b ELSE a END IS NULL",
         "CASE WHEN a IS NOT NULL THEN b ELSE a END IS NOT NULL",
