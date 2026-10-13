@@ -88,6 +88,16 @@ pub enum BooleanRowConstraint {
         /// Resolved right source column.
         right: ColumnRef,
     },
+    /// Compare a string column against a literal under explicitly attested
+    /// binary collation and no-padding rules.
+    StringEquality {
+        /// Resolved string-typed source column.
+        column: ColumnRef,
+        /// Equals, not-equals or their two-valued NULL-safe counterparts.
+        operator: ComparisonOperator,
+        /// Literal string value.
+        literal: String,
+    },
     /// Test a string's binary prefix, or its SQL NOT LIKE complement.
     StringPrefix {
         /// Resolved string-typed source column.
@@ -114,6 +124,7 @@ impl BooleanRowConstraint {
             Self::NullTest { .. }
             | Self::IntegerComparison { .. }
             | Self::IntegerColumnComparison { .. }
+            | Self::StringEquality { .. }
             | Self::StringPrefix { .. } => true,
             Self::Residual { .. } => false,
         }
@@ -155,6 +166,15 @@ impl BooleanRowConstraint {
                 operator: *operator,
                 right: mapped.get(right)?.clone(),
             }),
+            Self::StringEquality {
+                column,
+                operator,
+                literal,
+            } => Some(Self::StringEquality {
+                column: mapped.get(column)?.clone(),
+                operator: *operator,
+                literal: literal.clone(),
+            }),
             Self::StringPrefix {
                 column,
                 prefix,
@@ -177,17 +197,18 @@ impl BooleanRowConstraint {
             }
             Self::IntegerComparison { .. }
             | Self::IntegerColumnComparison { .. }
+            | Self::StringEquality { .. }
             | Self::StringPrefix { .. } => true,
             Self::NullTest { .. } | Self::Residual { .. } => false,
         }
     }
 
-    fn contains_string_prefix(&self) -> bool {
+    fn requires_binary_string_assumptions(&self) -> bool {
         match self {
             Self::All(operands) | Self::Any(operands) => {
-                operands.iter().any(Self::contains_string_prefix)
+                operands.iter().any(Self::requires_binary_string_assumptions)
             }
-            Self::StringPrefix { .. } => true,
+            Self::StringEquality { .. } | Self::StringPrefix { .. } => true,
             _ => false,
         }
     }
@@ -203,6 +224,7 @@ impl BooleanRowConstraint {
             }
             Self::NullTest { .. } | Self::IntegerComparison { .. } => true,
             Self::IntegerColumnComparison { .. }
+            | Self::StringEquality { .. }
             | Self::StringPrefix { .. }
             | Self::Residual { .. } => false,
         }
@@ -227,6 +249,7 @@ impl BooleanRowConstraint {
             }
             Self::NullTest { column, .. }
             | Self::IntegerComparison { column, .. }
+            | Self::StringEquality { column, .. }
             | Self::StringPrefix { column, .. } => {
                 output.push(column.clone());
             }
@@ -347,6 +370,24 @@ impl BooleanWitness {
                 // Coupled source-column comparisons are not independent scalar
                 // domains, even though they can be row-local exact witnesses.
                 BooleanRowConstraint::IntegerColumnComparison { .. } => true,
+                BooleanRowConstraint::StringEquality {
+                    column,
+                    operator,
+                    literal,
+                } => {
+                    let derived = comparison_domain(
+                        *operator,
+                        &LiteralExpression::new(
+                            LiteralType::String,
+                            LiteralValue::Text(literal.clone()),
+                        ),
+                    );
+                    domains
+                        .entry(column.clone())
+                        .and_modify(|existing| *existing = intersect_domains(existing, &derived))
+                        .or_insert(derived);
+                    true
+                }
                 BooleanRowConstraint::NullTest { column, negated } => {
                     let mode = if *negated {
                         SetMode::Exclude
@@ -408,7 +449,7 @@ impl BooleanWitness {
     ) -> Option<Self> {
         // Equal datatypes do not attest the same collation or padding laws
         // across warehouse materialization boundaries.
-        if self.condition.contains_string_prefix() {
+        if self.condition.requires_binary_string_assumptions() {
             return None;
         }
         let mut columns = Vec::new();
@@ -543,7 +584,7 @@ impl BooleanWitness {
             .iter()
             .all(|column| column.relation() == Some(&self.source_relation));
         let candidate = self.condition.is_exact() && !columns.is_empty() && resolved_source;
-        let prefix_licensed = !self.condition.contains_string_prefix()
+        let prefix_licensed = !self.condition.requires_binary_string_assumptions()
             || (self
                 .comparison_assumptions
                 .contains(&ComparisonAssumption::BinaryCollation)
@@ -1314,7 +1355,7 @@ pub(crate) fn conjoin_physical_row_truths(
     if conditions.len() < 2
         || conditions
             .iter()
-            .any(|condition| !condition.is_exact() || condition.contains_string_prefix())
+            .any(|condition| !condition.is_exact() || condition.requires_binary_string_assumptions())
     {
         return None;
     }
@@ -1368,7 +1409,7 @@ pub(crate) fn jointly_satisfiable_physical_truths(
     if requirements.is_empty()
         || requirements
             .iter()
-            .any(|(condition, _)| !condition.is_exact() || condition.contains_string_prefix())
+            .any(|(condition, _)| !condition.is_exact() || condition.requires_binary_string_assumptions())
     {
         return None;
     }
