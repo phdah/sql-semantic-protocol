@@ -239,7 +239,7 @@ fn sql_ddl_check_in_emits_canonical_accepted_values() {
 }
 
 #[test]
-fn unsupported_sql_check_is_explicit() {
+fn scalar_sql_check_is_canonical_and_complex_check_stays_explicit() {
     let protocol = analyze_sql(
         "CREATE TABLE orders (amount BIGINT CHECK (amount > 0))",
         "postgresql",
@@ -248,7 +248,21 @@ fn unsupported_sql_check_is_explicit() {
     .expect("DDL should analyze");
     let metadata = &protocol.relation_constraints()[0];
 
-    assert!(metadata
+    assert!(metadata.constraints().iter().any(|rule| matches!(
+        rule,
+        RelationConstraint::CheckComparison(check)
+            if check.column() == "amount"
+                && check.operator() == sql_semantic_protocol::CheckCompareOperator::Gt
+                && check.value() == &ConstraintValue::Integer(0)
+    )));
+
+    let unsupported = analyze_sql(
+        "CREATE TABLE orders (amount BIGINT CHECK (abs(amount) > 0))",
+        "postgresql",
+        &PostgreSqlDialect {},
+    )
+    .expect("complex CHECK should be retained as diagnostic");
+    assert!(unsupported.relation_constraints()[0]
         .diagnostics()
         .iter()
         .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
