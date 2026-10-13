@@ -45,6 +45,7 @@ mod bag_semantics;
 mod boolean_witness;
 mod bundle;
 mod column_sources;
+mod computed_checks;
 mod computed_keys;
 mod composition;
 mod constraints;
@@ -96,6 +97,7 @@ pub use bundle::{
     UnresolvedComposedSemantics,
 };
 pub use column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
+pub use computed_checks::ComputedCheckConstraint;
 pub use computed_keys::ComputedKeyConstraint;
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, CheckCompareOperator,
