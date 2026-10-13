@@ -1316,9 +1316,20 @@ fn odcs_unqualified_type_compatible(existing: &DataType, declared: &DataType) ->
         (DataType::SignedInteger { .. }, DataType::SignedInteger { bits: None }) => true,
         (DataType::UnsignedInteger { .. }, DataType::UnsignedInteger { bits: None }) => true,
         (DataType::FloatingPoint { .. }, DataType::FloatingPoint { bits: None }) => true,
-        (DataType::Decimal { .. }, DataType::Decimal { precision: None, scale: None }) => true,
-        (DataType::String { fixed: f1, .. }, DataType::String { length: None, fixed: f2 })
-            if f1 == f2 => true,
+        (
+            DataType::Decimal { .. },
+            DataType::Decimal {
+                precision: None,
+                scale: None,
+            },
+        ) => true,
+        (
+            DataType::String { fixed: f1, .. },
+            DataType::String {
+                length: None,
+                fixed: f2,
+            },
+        ) if f1 == f2 => true,
         _ => false,
     }
 }
