@@ -20,6 +20,7 @@
     "verified_scope": [
       "SQL_DDL_source_schema_provenance",
       "canonical_literal_defaults",
+      "explicit_nullable_SQL_DDL_omitted_NULL_default_and_precedence",
       "ODCS_scalar_defaults",
       "exact_numeric_integer_and_decimal_bounds",
       "date_time_and_timestamp_timezone_guards",
