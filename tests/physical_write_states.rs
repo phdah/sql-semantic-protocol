@@ -1659,3 +1659,62 @@ fn merge_insert_generated_values_execute_only_attested_arithmetic() {
         .unwrap();
     assert_eq!(sum, 7);
 }
+
+#[test]
+fn nullable_unique_keys_only_need_dialect_law_for_potential_null_collisions() {
+    let mut b = bundle(&["SELECT id FROM target"], "duckdb");
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::unique_key(vec!["score".into()], evidence()).unwrap()],
+    )
+    .unwrap()]);
+    for rows in [
+        vec![(Some(1), None)],
+        vec![(Some(1), None), (Some(2), Some(3))],
+        vec![(Some(1), Some(3)), (Some(2), Some(4))],
+    ] {
+        let plan = physical_closed_world_schema_plan(&b, &[state("target", &rows)]);
+        assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{plan:?}");
+    }
+    for (rows, expected) in [
+        (vec![(Some(1), None), (Some(2), None)], "residual"),
+        (vec![(Some(1), Some(3)), (Some(2), Some(3))], "impossible"),
+    ] {
+        let plan = physical_closed_world_schema_plan(&b, &[state("target", &rows)]);
+        let actual = match plan {
+            PhysicalWriteStatePlan::Impossible { .. } => "impossible",
+            PhysicalWriteStatePlan::Residual { .. } => "residual",
+            PhysicalWriteStatePlan::Feasible { .. } => "feasible",
+        };
+        assert_eq!(actual, expected);
+    }
+
+    let mut composite = bundle(&["SELECT id FROM target"], "duckdb");
+    composite.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![
+            RelationConstraint::unique_key(vec!["id".into(), "score".into()], evidence())
+                .unwrap(),
+        ],
+    )
+    .unwrap()]);
+    let different_ids = state("target", &[(Some(1), None), (Some(2), None)]);
+    assert!(matches!(
+        physical_closed_world_schema_plan(&composite, &[different_ids]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    let potential_collision = state("target", &[(Some(1), None), (Some(1), None)]);
+    assert!(matches!(
+        physical_closed_world_schema_plan(&composite, &[potential_collision]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+
+    // The DuckDB oracle permits distinct populated values and a single NULL.
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER UNIQUE);
+         INSERT INTO target VALUES (1,NULL), (2,3), (3,4);",
+    )
+    .unwrap();
+    assert!(db.execute_batch("INSERT INTO target VALUES (4,3)").is_err());
+}
