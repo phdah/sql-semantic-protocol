@@ -1035,12 +1035,15 @@ fn dbt_same_column_or_check_becomes_atomic_accepted_values() {
             if values.column() == "id"
                 && values.values() == [ConstraintValue::Integer(1), ConstraintValue::Integer(2)]
     )));
+    // Mixed-column OR and equality-to-NULL retain their full SQL CHECK
+    // three-valued Boolean law rather than being incorrectly dropped.
+    assert_eq!(set.computed_boolean_checks().len(), 2);
     assert_eq!(
         set.diagnostics()
             .iter()
             .filter(|diagnostic| diagnostic.code() == "unsupported_check_constraint")
             .count(),
-        4
+        2
     );
 }
 
@@ -1059,7 +1062,9 @@ fn dbt_boolean_check_trees_match_ddl_without_discarding_or_not_branches() {
         .iter()
         .find(|set| set.relation() == "warehouse.analytics.stg_orders")
         .unwrap();
-    assert_eq!(set.computed_boolean_checks().len(), 2);
+    // The second CHECK is an AND, whose two complete conjuncts are
+    // independently normalized alongside the first OR CHECK.
+    assert_eq!(set.computed_boolean_checks().len(), 3);
     assert!(set
         .computed_boolean_checks()
         .iter()
