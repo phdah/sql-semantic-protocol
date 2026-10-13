@@ -262,13 +262,18 @@ impl AnalysisBundle {
                 if invalid_schemas.contains(&relation) {
                     continue;
                 }
-                if let Some(previous) = source_schemas.iter().find(|candidate| candidate.relation() == relation) {
+                if let Some(previous) = source_schemas
+                    .iter()
+                    .find(|candidate| candidate.relation() == relation)
+                {
                     if previous != &mapped {
                         source_schemas.retain(|candidate| candidate.relation() != relation);
                         invalid_schemas.insert(relation.clone());
                         schema_diagnostics.push(ConstraintDiagnostic::new(
                             "conflicting_ddl_schema",
-                            format!("SQL inputs declare inconsistent schemas for relation '{relation}'"),
+                            format!(
+                                "SQL inputs declare inconsistent schemas for relation '{relation}'"
+                            ),
                         ));
                     }
                 } else {
