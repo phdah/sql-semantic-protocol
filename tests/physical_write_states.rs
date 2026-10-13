@@ -1247,7 +1247,7 @@ fn exact_text_key_duplicates_are_impossible_but_distinct_collation_is_unproved()
 fn conjunctive_checks_validate_every_portable_clause_or_remain_wholly_residual() {
     let schema = "CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id > 0 AND score < id + 10))";
     for dialect in ["duckdb", "postgresql", "mysql", "generic", "snowflake"] {
-        let b = bundle(&[schema], dialect);
+        let mut b = bundle(&[schema], dialect);
         let set = b
             .relation_constraints()
             .iter()
@@ -1259,6 +1259,40 @@ fn conjunctive_checks_validate_every_portable_clause_or_remain_wholly_residual()
             .constraints()
             .iter()
             .any(|rule| matches!(rule, RelationConstraint::CheckComparison(_))));
+        // The DDL parser does not assert engine enforcement when ENFORCED is
+        // omitted. It must be residual until authoritative metadata is added.
+        assert!(matches!(
+            physical_closed_world_schema_plan(
+                &b,
+                &[state("target", &[(Some(1), Some(5))])]
+            ),
+            PhysicalWriteStatePlan::Residual { .. }
+        ));
+        let scalar = set.constraints().iter().find_map(|rule| {
+            if let RelationConstraint::CheckComparison(check) = rule {
+                Some(check)
+            } else {
+                None
+            }
+        }).unwrap();
+        let rule = RelationConstraint::check_comparison(
+            scalar.column().to_string(),
+            scalar.operator(),
+            scalar.value().clone(),
+            evidence(),
+        ).unwrap();
+        let computed = &set.computed_checks()[0];
+        let computed = ComputedCheckConstraint::new(
+            computed.left().clone(),
+            computed.operator(),
+            computed.right().clone(),
+            evidence(),
+        ).unwrap();
+        b.enrich_relation_constraints(&[
+            RelationConstraintSet::new("target", vec![rule])
+                .unwrap()
+                .with_computed_checks(vec![computed]),
+        ]);
         for rows in [
             vec![(Some(1), Some(5))],
             vec![(Some(1), None)],
