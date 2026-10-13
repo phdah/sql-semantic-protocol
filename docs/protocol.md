@@ -1435,9 +1435,12 @@ to SQL literals; portable scalar WHERE predicates use three-valued logic.
 Nested-valued comparisons, unnormalized filters and computed projections
 are residual, never evaluated against placeholder SQL NULLs. Each committed
 poststate is validated against complete source/target PK, FK and CHECK evidence.
-Joins, aggregates, target defaults/generated omissions, nested-valued
-UPDATE assignments, unknown SQL operations and transaction/deferral laws
-remain residual. The INSERT-only API rejects UPDATE/DELETE by design.
+Joins, aggregates, opaque defaults, generated/identity omissions,
+nested-valued UPDATE assignments, unknown SQL operations and transaction/
+deferral laws remain residual. Omitted INSERT columns with authoritative
+exact scalar defaults are materialized using the same canonical default facts
+as the scalar ordered-write interpreter; a declared nullable type alone is
+not permission to invent an omitted SQL NULL. The INSERT-only API rejects UPDATE/DELETE by design.
 The standalone typed append schema checker remains useful for
 user-materialized target rows.
 
