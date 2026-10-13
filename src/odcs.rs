@@ -1310,6 +1310,19 @@ fn evidence(
     ))
 }
 
+/// Missing ODCS precision/width is weaker evidence, not a concrete contradiction.
+fn odcs_unqualified_type_compatible(existing: &DataType, declared: &DataType) -> bool {
+    match (existing, declared) {
+        (DataType::SignedInteger { .. }, DataType::SignedInteger { bits: None }) => true,
+        (DataType::UnsignedInteger { .. }, DataType::UnsignedInteger { bits: None }) => true,
+        (DataType::FloatingPoint { .. }, DataType::FloatingPoint { bits: None }) => true,
+        (DataType::Decimal { .. }, DataType::Decimal { precision: None, scale: None }) => true,
+        (DataType::String { fixed: f1, .. }, DataType::String { length: None, fixed: f2 })
+            if f1 == f2 => true,
+        _ => false,
+    }
+}
+
 fn merge_source_schemas(
     existing: &[RelationSchema],
     odcs: &[RelationSchema],
@@ -1332,7 +1345,9 @@ fn merge_source_schemas(
             .collect::<BTreeMap<_, _>>();
         for column in incoming.columns() {
             if let Some(existing_type) = existing_columns.get(column.name()) {
-                if *existing_type != column.data_type() {
+                if *existing_type != column.data_type()
+                    && !odcs_unqualified_type_compatible(existing_type, column.data_type())
+                {
                     return Err(OdcsError::DatatypeConflict {
                         relation: incoming.relation().to_string(),
                         column: column.name().to_string(),
