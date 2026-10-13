@@ -5,8 +5,8 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    AnalysisBundle, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
+    AnalysisBundle, ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
     PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
     RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
@@ -723,4 +723,89 @@ fn a_missing_insert_default_remains_residual_without_materialized_value() {
         matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
         "{plan:?}"
     );
+}
+
+#[test]
+fn omitted_insert_column_uses_exact_canonical_default_not_an_intermediate_write() {
+    let mut b = bundle(
+        &["INSERT INTO target(id) SELECT id FROM source"],
+        "duckdb",
+    );
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![])
+            .unwrap()
+            .with_column_value_sources(vec![
+                ColumnValueSource::new(
+                    "score",
+                    ColumnValueKind::Default,
+                    Some(ConstraintValue::Integer(7)),
+                    evidence(),
+                )
+                .unwrap(),
+            ]),
+    ]);
+    let plan = physical_ordered_write_state_plan(
+        &b,
+        &[state("target", &[]), state("source", &[(Some(1), Some(9)), (Some(2), None)])],
+    );
+    let (_, states) = outcome(&plan);
+    assert_eq!(
+        states.iter().find(|state| state.relation() == "target").unwrap().rows(),
+        &[row(Some(1), Some(7)), row(Some(2), Some(7))]
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER DEFAULT 7);
+         CREATE TABLE source(id INTEGER, score INTEGER);
+         INSERT INTO source VALUES (1,9),(2,NULL);
+         INSERT INTO target(id) SELECT id FROM source;",
+    )
+    .unwrap();
+    assert_eq!(
+        db.query_row("SELECT SUM(score) FROM target", [], |r| r.get::<_, i64>(0))
+            .unwrap(),
+        14
+    );
+}
+
+#[test]
+fn an_opaque_or_generated_default_must_not_be_guessed() {
+    for (kind, value) in [
+        (ColumnValueKind::Default, None),
+        (ColumnValueKind::Generated, None),
+        (ColumnValueKind::Identity, None),
+    ] {
+        let mut b = bundle(&["INSERT INTO target(id) SELECT id FROM source"], "duckdb");
+        b.enrich_relation_constraints(&[
+            RelationConstraintSet::new("target", vec![])
+                .unwrap()
+                .with_column_value_sources(vec![
+                    ColumnValueSource::new("score", kind, value, evidence()).unwrap(),
+                ]),
+        ]);
+        let plan = physical_ordered_write_state_plan(
+            &b,
+            &[state("target", &[]), state("source", &[(Some(1), Some(3))])],
+        );
+        assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{kind:?}: {plan:?}");
+    }
+}
+
+#[test]
+fn direct_sql_ddl_retains_default_column_provenance_and_exact_literal() {
+    let b = bundle(
+        &["CREATE TABLE target(id INTEGER, score INTEGER DEFAULT 7)"],
+        "duckdb",
+    );
+    let set = b.relation_constraints().iter()
+        .find(|set| set.relation() == "target")
+        .expect("CREATE TABLE should expose column value evidence");
+    let [default] = set.column_value_sources() else {
+        panic!("expected one source, got {:?}", set.column_value_sources());
+    };
+    assert_eq!(default.column(), "score");
+    assert_eq!(default.kind(), ColumnValueKind::Default);
+    assert_eq!(default.value(), Some(&ConstraintValue::Integer(7)));
+    assert_eq!(default.evidence()[0].provenance().source_kind(), ConstraintSourceKind::SqlDdl);
 }
