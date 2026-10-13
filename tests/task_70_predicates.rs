@@ -138,17 +138,28 @@ fn widening_try_and_safe_casts_keep_total_integer_truth() {
                 SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap(),
                 SchemaColumn::from_sql_type("b", "INTEGER", "postgresql").unwrap(),
             ],
-        ).unwrap()]).unwrap();
+        )
+        .unwrap()])
+        .unwrap();
         let sql = SqlInput::inline(format!("SELECT a FROM t WHERE {predicate}"));
-        let configured = [ConfiguredSqlInput::new("typed", &sql, dialect_name, dialect.as_ref())];
+        let configured = [ConfiguredSqlInput::new(
+            "typed",
+            &sql,
+            dialect_name,
+            dialect.as_ref(),
+        )];
         let result = analyze_configured_inputs_with_catalog(&configured, &catalog)
             .unwrap_or_else(|error| panic!("{dialect_name}: {predicate}: {error}"));
-        let ComposedSemantics::Resolved(ref semantics) = result.layers()[0].composed_semantics() else {
+        let ComposedSemantics::Resolved(ref semantics) = result.layers()[0].composed_semantics()
+        else {
             panic!("resolved semantics required");
         };
         let witness = semantics.boolean_witnesses()[0].witness();
         assert!(
-            matches!(witness.qualifying(), BooleanWitnessDirection::Exact(BooleanTruthCase::True)),
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+            ),
             "{dialect_name}: {predicate}: {:?}",
             witness.qualifying()
         );
