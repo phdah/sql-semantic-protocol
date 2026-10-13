@@ -1070,8 +1070,8 @@ fn witness_truth(
                 other => panic!("unexpected source column {other}"),
             };
             match operator {
-                ComparisonOperator::IsDistinctFrom => Some(value != Some(*literal as i32)),
-                ComparisonOperator::IsNotDistinctFrom => Some(value == Some(*literal as i32)),
+                ComparisonOperator::IsDistinctFrom => Some(value.map(i64::from) != Some(*literal)),
+                ComparisonOperator::IsNotDistinctFrom => Some(value.map(i64::from) == Some(*literal)),
                 ordinary => value.map(|v| {
                     let v = i64::from(v);
                     match ordinary {
