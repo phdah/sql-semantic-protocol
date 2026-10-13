@@ -169,7 +169,9 @@ pub(super) fn validate_all_constraints(
                 }
                 RelationConstraint::CheckComparison(check) => {
                     for row in &state.rows {
-                        let value = row.values.get(check.column())
+                        let value = row
+                            .values
+                            .get(check.column())
                             .ok_or_else(|| residual("CHECK column missing from physical row"))?;
                         if matches!(value, LiteralValue::Null) {
                             continue; // SQL CHECK admits UNKNOWN.
@@ -212,14 +214,23 @@ fn validate_numeric_check(
 ) -> StateResult<()> {
     use crate::constraints::CheckCompareOperator;
     let left = match literal {
-        LiteralValue::Number(text) => text.parse::<i128>()
+        LiteralValue::Number(text) => text
+            .parse::<i128>()
             .map_err(|_| residual("CHECK requires exact integral physical storage"))?,
-        _ => return Err(residual("CHECK physical scalar has no attested comparison law")),
+        _ => {
+            return Err(residual(
+                "CHECK physical scalar has no attested comparison law",
+            ))
+        }
     };
     let right = match expected {
         ConstraintValue::Integer(number) => i128::from(*number),
         ConstraintValue::UnsignedInteger(number) => i128::from(*number),
-        _ => return Err(residual("CHECK constant has no portable integer comparison law")),
+        _ => {
+            return Err(residual(
+                "CHECK constant has no portable integer comparison law",
+            ))
+        }
     };
     let valid = match op {
         CheckCompareOperator::Eq => left == right,
