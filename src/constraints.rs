@@ -1051,6 +1051,7 @@ impl RelationConstraintSet {
     fn normalize(&mut self) {
         self.constraints.sort();
         self.column_value_sources.sort();
+        self.computed_keys.sort();
         self.diagnostics.sort();
         self.diagnostics.dedup();
     }
