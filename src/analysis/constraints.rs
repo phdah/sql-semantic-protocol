@@ -211,63 +211,22 @@ pub(super) fn analyze_create_table_constraints(
                 name,
                 expr,
                 enforced,
-            } => match accepted_values_from_check(expr, None) {
-                Some((column, values, quote)) => {
-                    constraints.push(RelationConstraint::accepted_values(
-                        column,
-                        values,
-                        quote,
-                        vec![sql_constraint_evidence_with_enforcement(
-                            &relation,
-                            constraint_identity(
-                                "check",
-                                index,
-                                name.as_ref().map(ToString::to_string),
-                            ),
-                            *enforced,
-                        )?],
-                    )?);
-                }
-                None => {
-                    if let Some((column, operator, value)) = comparison_from_check(expr, None) {
-                        constraints.push(RelationConstraint::check_comparison(
-                            column,
-                            operator,
-                            value,
-                            vec![sql_constraint_evidence_with_enforcement(
-                                &relation,
-                                constraint_identity(
-                                    "check",
-                                    index,
-                                    name.as_ref().map(ToString::to_string),
-                                ),
-                                *enforced,
-                            )?],
-                        )?);
-                    } else {
-                        if let Some((left, operator, right)) = computed_check_from_expr(expr, None)
-                        {
-                            computed_checks.push(ComputedCheckConstraint::new(
-                                left,
-                                operator,
-                                right,
-                                vec![sql_constraint_evidence_with_enforcement(
-                                    &relation,
-                                    constraint_identity(
-                                        "check",
-                                        index,
-                                        name.as_ref().map(ToString::to_string),
-                                    ),
-                                    *enforced,
-                                )?],
-                            )?);
-                        } else {
-                            diagnostics.push(ConstraintDiagnostic::new(
-                                "unsupported_check_constraint",
-                                format!("check constraint on '{relation}' has unproved expression semantics"),
-                            ));
-                        }
-                    }
+            } => {
+                let evidence = vec![sql_constraint_evidence_with_enforcement(
+                    &relation,
+                    constraint_identity("check", index, name.as_ref().map(ToString::to_string)),
+                    *enforced,
+                )?];
+                if let Some((rules, checks)) =
+                    portable_check_constraints(expr, None, &evidence)?
+                {
+                    constraints.extend(rules);
+                    computed_checks.extend(checks);
+                } else {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "unsupported_check_constraint",
+                        format!("check constraint on '{relation}' has unproved expression semantics"),
+                    ));
                 }
             },
             _ => {}
@@ -414,64 +373,23 @@ pub(super) fn analyze_create_table_constraints(
                     )?);
                 }
                 ColumnOption::Check(expr) => {
-                    match accepted_values_from_check(expr, Some(column.name.value.as_str())) {
-                        Some((column_name, values, quote)) => {
-                            constraints.push(RelationConstraint::accepted_values(
-                                column_name,
-                                values,
-                                quote,
-                                vec![sql_constraint_evidence(
-                                    &relation,
-                                    format!(
-                                        "{}:column:{}:check:{}",
-                                        relation, column.name, option_index
-                                    ),
-                                    None,
-                                )?],
-                            )?);
-                        }
-                        None => {
-                            if let Some((name, operator, value)) =
-                                comparison_from_check(expr, Some(column.name.value.as_str()))
-                            {
-                                constraints.push(RelationConstraint::check_comparison(
-                                    name,
-                                    operator,
-                                    value,
-                                    vec![sql_constraint_evidence(
-                                        &relation,
-                                        format!(
-                                            "{}:column:{}:check:{}",
-                                            relation, column.name, option_index
-                                        ),
-                                        None,
-                                    )?],
-                                )?);
-                            } else {
-                                if let Some((left, operator, right)) =
-                                    computed_check_from_expr(expr, Some(column.name.value.as_str()))
-                                {
-                                    computed_checks.push(ComputedCheckConstraint::new(
-                                        left,
-                                        operator,
-                                        right,
-                                        vec![sql_constraint_evidence(
-                                            &relation,
-                                            format!(
-                                                "{}:column:{}:check:{}",
-                                                relation, column.name, option_index
-                                            ),
-                                            None,
-                                        )?],
-                                    )?);
-                                } else {
-                                    diagnostics.push(ConstraintDiagnostic::new(
-                                        "unsupported_check_constraint",
-                                        format!("check constraint on '{}.{}' has unproved expression semantics", relation, column.name),
-                                    ));
-                                }
-                            }
-                        }
+                    let evidence = vec![sql_constraint_evidence(
+                        &relation,
+                        format!("{}:column:{}:check:{}", relation, column.name, option_index),
+                        None,
+                    )?];
+                    if let Some((rules, checks)) = portable_check_constraints(
+                        expr,
+                        Some(column.name.value.as_str()),
+                        &evidence,
+                    )? {
+                        constraints.extend(rules);
+                        computed_checks.extend(checks);
+                    } else {
+                        diagnostics.push(ConstraintDiagnostic::new(
+                            "unsupported_check_constraint",
+                            format!("check constraint on '{}.{}' has unproved expression semantics", relation, column.name),
+                        ));
                     }
                 }
                 _ => {}
@@ -537,6 +455,59 @@ pub(crate) enum PortableCheckExpression {
 /// This deliberately accepts only one simple predicate. Dialect functions,
 /// implicit casts, expressions with side effects, and Boolean combinations
 /// must remain residual, never be guessed from a string in a consumer.
+/// Normalize one CHECK into an all-or-nothing set of portable conjuncts.
+///
+/// No fragment of an unsupported AND/OR predicate may be certified in
+/// isolation, since that would discard a target-side obligation.
+fn portable_check_constraints(
+    expr: &Expr,
+    expected_column: Option<&str>,
+    evidence: &[ConstraintEvidence],
+) -> Result<Option<(Vec<RelationConstraint>, Vec<ComputedCheckConstraint>)>, ConstraintMetadataError> {
+    if let Expr::BinaryOp {
+        left,
+        op: SqlBinaryOperator::And,
+        right,
+    } = unwrap_nested_expression(expr) {
+        let Some((mut constraints, mut computed)) =
+            portable_check_constraints(left, expected_column, evidence)?
+        else {
+            return Ok(None);
+        };
+        let Some((right_constraints, right_computed)) =
+            portable_check_constraints(right, expected_column, evidence)?
+        else {
+            return Ok(None);
+        };
+        constraints.extend(right_constraints);
+        computed.extend(right_computed);
+        return Ok(Some((constraints, computed)));
+    }
+    if let Some((column, values, quote)) = accepted_values_from_check(expr, expected_column) {
+        return Ok(Some((
+            vec![RelationConstraint::accepted_values(
+                column, values, quote, evidence.to_vec(),
+            )?],
+            Vec::new(),
+        )));
+    }
+    if let Some((column, op, value)) = comparison_from_check(expr, expected_column) {
+        return Ok(Some((
+            vec![RelationConstraint::check_comparison(
+                column, op, value, evidence.to_vec(),
+            )?],
+            Vec::new(),
+        )));
+    }
+    if let Some((left, op, right)) = computed_check_from_expr(expr, expected_column) {
+        return Ok(Some((
+            Vec::new(),
+            vec![ComputedCheckConstraint::new(left, op, right, evidence.to_vec())?],
+        )));
+    }
+    Ok(None)
+}
+
 pub(crate) fn portable_check_expression(expression: &str) -> Option<PortableCheckExpression> {
     use sqlparser::dialect::GenericDialect;
     use sqlparser::parser::Parser;
