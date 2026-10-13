@@ -264,6 +264,13 @@ warehouse catalog declarations; true datatype disagreements remain errors.
 dbt manifest/catalog and named relation schemas still use the same
 `source_schemas` type contract and constraint-merging path.
 
+Portable multi-column Boolean CHECK `AND`/`OR`/`NOT` and
+`IS NULL` trees are normalized into the same `computed_boolean_checks`
+schema for direct SQL DDL and dbt manifest constraints. Complete atomic
+truth predicates preserve their original tree and enforcement
+provenance; UDFs, implicit casts and unsupported branches yield an
+explicit diagnostic rather than silently omitted constraints.
+
 Direct SQL DDL CHECKs, dbt manifest-declared CHECK expressions, and caller-owned
 canonical metadata converge on the same deterministic `ABS` and same-type
 `COALESCE` expression nodes. Whole-column equality OR terms and non-NULL
