@@ -1539,7 +1539,11 @@ fn between_check_emits_both_exact_bounds_and_negated_form_is_residual() {
         .iter()
         .filter_map(|rule| {
             if let RelationConstraint::CheckComparison(check) = rule {
-                Some((check.column().to_string(), check.operator(), check.value().clone()))
+                Some((
+                    check.column().to_string(),
+                    check.operator(),
+                    check.value().clone(),
+                ))
             } else {
                 None
             }
@@ -1548,40 +1552,35 @@ fn between_check_emits_both_exact_bounds_and_negated_form_is_residual() {
     assert_eq!(
         checks,
         vec![
-            ("score".into(), CheckCompareOperator::Gte, ConstraintValue::Integer(2)),
-            ("score".into(), CheckCompareOperator::Lte, ConstraintValue::Integer(8)),
+            (
+                "score".into(),
+                CheckCompareOperator::Gte,
+                ConstraintValue::Integer(2)
+            ),
+            (
+                "score".into(),
+                CheckCompareOperator::Lte,
+                ConstraintValue::Integer(8)
+            ),
         ]
     );
     let enforced = checks
         .iter()
         .map(|(column, op, value)| {
-            RelationConstraint::check_comparison(
-                column.clone(),
-                *op,
-                value.clone(),
-                evidence(),
-            )
-            .unwrap()
+            RelationConstraint::check_comparison(column.clone(), *op, value.clone(), evidence())
+                .unwrap()
         })
         .collect();
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", enforced).unwrap(),
-    ]);
+    b.enrich_relation_constraints(&[RelationConstraintSet::new("target", enforced).unwrap()]);
     for score in [2, 5, 8] {
         assert!(matches!(
-            physical_closed_world_schema_plan(
-                &b,
-                &[state("target", &[(Some(1), Some(score))])]
-            ),
+            physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(score))])]),
             PhysicalWriteStatePlan::Feasible { .. }
         ));
     }
     for score in [1, 9] {
         assert!(matches!(
-            physical_closed_world_schema_plan(
-                &b,
-                &[state("target", &[(Some(1), Some(score))])]
-            ),
+            physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(score))])]),
             PhysicalWriteStatePlan::Impossible { .. }
         ));
     }
