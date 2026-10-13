@@ -786,10 +786,12 @@ pub(crate) fn portable_check_expressions(expression: &str) -> Option<Vec<Portabl
             output.push(PortableCheckExpression::AcceptedValues(
                 column, values, quote,
             ));
+        } else if let Some(simple) = portable_check_expression(&expr.to_string()) {
+            output.push(simple);
         } else if let Some(predicate) = portable_boolean_predicate(expr) {
             output.push(PortableCheckExpression::Boolean(predicate));
         } else {
-            output.push(portable_check_expression(&expr.to_string())?);
+            return None;
         }
         Some(())
     }
