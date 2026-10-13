@@ -148,6 +148,9 @@ fn certified_computed_null_tests_have_exact_two_valued_outcomes() {
         "NULLIF(a, b) IS NOT NULL",
         "CAST(a AS BIGINT) IS NULL",
         "(CAST(a AS BIGINT) + 1) IS NOT NULL",
+        "CASE WHEN a IS NULL THEN b ELSE a END IS NULL",
+        "CASE WHEN a IS NOT NULL THEN b ELSE a END IS NOT NULL",
+        "CASE WHEN a IS NULL THEN b WHEN b IS NULL THEN a ELSE b END IS NULL",
     ] {
         assert_both_directions_exact(predicate);
     }
@@ -162,6 +165,8 @@ fn opaque_or_mixed_type_computed_null_tests_fail_closed() {
         "COALESCE(a, ABS(b)) IS NULL",
         "COALESCE(a, 'text') IS NOT NULL",
         "NULLIF(a, a + 1) IS NULL",
+        "CASE WHEN a > 1 THEN b ELSE a END IS NULL",
+        "CASE WHEN a IS NULL THEN b END IS NULL",
     ] {
         let witness = typed_witness(predicate);
         assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }), "{predicate}");
@@ -181,6 +186,8 @@ fn duckdb_oracle_certifies_coalesce_and_nullif_null_tests() {
         ("NULLIF(a, b) IS NULL", 3),
         ("NULLIF(a, b) IS NOT NULL", 3),
         ("CAST(a AS BIGINT) IS NULL", 2),
+        ("CASE WHEN a IS NULL THEN b ELSE a END IS NULL", 1),
+        ("CASE WHEN a IS NOT NULL THEN b ELSE a END IS NOT NULL", 3),
     ] {
         let actual: i64 = connection.query_row(
             &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),

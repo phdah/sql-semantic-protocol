@@ -890,7 +890,7 @@ fn normalize(
             }
         }
         Predicate::IsNull(test) => {
-            normalize_null_test(test.expression(), test.negated(), sources, integer_evidence)
+            normalize_null_test(test.expression(), test.negated(), sources, integer_evidence, string_evidence)
                 .unwrap_or_else(|| residual("NULL test involves an unproven computed expression"))
         }
         Predicate::Comparison(comparison) => {
@@ -1135,6 +1135,7 @@ fn normalize_null_test(
     negated: bool,
     sources: &[SourceRelation],
     integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
 ) -> Option<BooleanRowConstraint> {
     let test = |column: &crate::protocol::ColumnExpression, negated| {
         BooleanRowConstraint::NullTest {
@@ -1149,6 +1150,53 @@ fn normalize_null_test(
         if integer_evidence(&resolve_column(column, sources)).is_some() {
             return Some(test(column, negated));
         }
+    }
+    // Searched CASE chooses the first SQL TRUE arm. For the supported
+    // total integer result class, NULL tests of the selected value are exact.
+    // Restrict branch guards to two-valued predicates: SQL UNKNOWN must
+    // select the ELSE arm, whereas ordinary NOT UNKNOWN stays UNKNOWN.
+    if let Expression::Case(case) = expression {
+        if case.operand().is_some() || case.branches().is_empty() {
+            return None;
+        }
+        let else_result = case.else_result()?;
+        let mut prior_negated = Vec::new();
+        let mut alternatives = Vec::new();
+        for branch in case.branches() {
+            let Expression::BooleanPredicate(predicate) = branch.condition() else {
+                return None;
+            };
+            let guard = normalize(predicate, sources, integer_evidence, string_evidence);
+            if !is_two_valued_boolean(&guard)
+                || !is_total_integer_result(branch.result(), sources, integer_evidence)
+            {
+                return None;
+            }
+            let result = normalize_null_test(
+                branch.result(),
+                negated,
+                sources,
+                integer_evidence,
+                string_evidence,
+            )?;
+            let mut conjunction = prior_negated.clone();
+            conjunction.push(guard.clone());
+            conjunction.push(result);
+            alternatives.push(BooleanRowConstraint::All(BooleanOperands::new(conjunction)?));
+            prior_negated.push(negate_constraint(guard));
+        }
+        if !is_total_integer_result(else_result, sources, integer_evidence) {
+            return None;
+        }
+        prior_negated.push(normalize_null_test(
+            else_result,
+            negated,
+            sources,
+            integer_evidence,
+            string_evidence,
+        )?);
+        alternatives.push(BooleanRowConstraint::All(BooleanOperands::new(prior_negated)?));
+        return BooleanOperands::new(alternatives).map(BooleanRowConstraint::Any);
     }
     let Expression::Function(function) = expression else {
         return None;
@@ -1209,6 +1257,37 @@ fn normalize_null_test(
         });
     }
     None
+}
+
+// NOT is an exact logical complement only when the guard can never
+// evaluate to SQL UNKNOWN. This is required by searched CASE fallthrough.
+fn is_two_valued_boolean(condition: &BooleanRowConstraint) -> bool {
+    match condition {
+        BooleanRowConstraint::All(operands) | BooleanRowConstraint::Any(operands) => {
+            operands.iter().all(is_two_valued_boolean)
+        }
+        BooleanRowConstraint::NullTest { .. } => true,
+        BooleanRowConstraint::IntegerComparison { operator, .. }
+        | BooleanRowConstraint::IntegerColumnComparison { operator, .. }
+        | BooleanRowConstraint::StringEquality { operator, .. } => matches!(
+            operator,
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+        ),
+        BooleanRowConstraint::UnknownNullComparison { .. }
+        | BooleanRowConstraint::StringPrefix { .. }
+        | BooleanRowConstraint::Residual { .. } => false,
+    }
+}
+
+// CASE result selection must not trigger an opaque conversion, narrowing cast,
+// or arithmetic overflow before its NULL status can be observed.
+fn is_total_integer_result(
+    expression: &Expression,
+    sources: &[SourceRelation],
+    evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> bool {
+    affine_integer_operand(expression, sources, evidence)
+        .is_some_and(|(column, _)| evidence(&resolve_column(column, sources)).is_some())
 }
 
 // Negation is pushed to proven leaves. De Morgan's laws preserve SQL
