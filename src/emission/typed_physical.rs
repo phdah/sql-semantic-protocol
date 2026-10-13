@@ -7,8 +7,8 @@
 
 use super::*;
 use crate::physical_realization::{
-    physical_typed_closed_world_schema_plan, PhysicalTypedPopulationPlan,
-    PhysicalTypedValue, PhysicalTypedWriteState,
+    physical_typed_closed_world_schema_plan, PhysicalTypedPopulationPlan, PhysicalTypedValue,
+    PhysicalTypedWriteState,
 };
 
 /// Serialize only schema- and constraint-feasible complete typed populations.
@@ -25,23 +25,27 @@ pub fn to_physical_typed_population_json(
         PhysicalTypedPopulationPlan::Feasible { final_states } => final_states,
         other => return Err(other),
     };
-    let populations = final_states.iter().map(|state| {
-        json!({
-            "relation": state.relation(),
-            "rows": state.rows().iter().map(|row| {
-                json!({
-                    "values": row.values().iter().map(|(column, value)| {
-                        (column.clone(), typed_value_to_value(value))
-                    }).collect::<BTreeMap<_, _>>()
-                })
-            }).collect::<Vec<_>>()
+    let populations = final_states
+        .iter()
+        .map(|state| {
+            json!({
+                "relation": state.relation(),
+                "rows": state.rows().iter().map(|row| {
+                    json!({
+                        "values": row.values().iter().map(|(column, value)| {
+                            (column.clone(), typed_value_to_value(value))
+                        }).collect::<BTreeMap<_, _>>()
+                    })
+                }).collect::<Vec<_>>()
+            })
         })
-    }).collect::<Vec<_>>();
+        .collect::<Vec<_>>();
     Ok(json!({
         "protocol_version": bundle.protocol_version(),
         "kind": "typed_physical_population",
         "populations": populations
-    }).to_string())
+    })
+    .to_string())
 }
 
 fn typed_value_to_value(value: &PhysicalTypedValue) -> Value {
