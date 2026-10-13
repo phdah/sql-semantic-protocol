@@ -96,6 +96,7 @@ pub use bundle::{
     UnresolvedComposedSemantics,
 };
 pub use column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
+pub use computed_keys::ComputedKeyConstraint;
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, CheckCompareOperator,
     CheckComparisonConstraint, ConstraintDiagnostic, ConstraintEnforcement, ConstraintEvidence,
