@@ -181,3 +181,28 @@ fn duckdb_json_document_oracle_preserves_sql_null_distinction() {
     assert!(sql_is_null);
     assert!(valid);
 }
+
+#[test]
+fn duckdb_finite_binary_float_oracle_is_separate_from_nan_storage_claims() {
+    assert_eq!(
+        physical_typed_value_plan(
+            &PhysicalTypedValue::Float32Bits(1.5_f32.to_bits()),
+            &DataType::FloatingPoint { bits: Some(32) },
+        ),
+        PhysicalTypeProof::Feasible
+    );
+    assert!(matches!(
+        physical_typed_value_plan(
+            &PhysicalTypedValue::Float32Bits(f32::NAN.to_bits()),
+            &DataType::FloatingPoint { bits: Some(32) },
+        ),
+        PhysicalTypeProof::Residual { .. }
+    ));
+    let db = Connection::open_in_memory().unwrap();
+    let exact: bool = db
+        .query_row("SELECT CAST(1.5 AS FLOAT) = CAST(1.5 AS FLOAT)", [], |row| {
+            row.get(0)
+        })
+        .unwrap();
+    assert!(exact);
+}
