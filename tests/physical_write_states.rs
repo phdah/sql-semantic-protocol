@@ -1522,3 +1522,89 @@ fn merge_insert_omitted_columns_obey_authoritative_target_defaults() {
         .unwrap();
     assert_eq!(score, 7);
 }
+
+#[test]
+fn between_check_emits_both_exact_bounds_and_negated_form_is_residual() {
+    let mut b = bundle(
+        &["CREATE TABLE target(id INTEGER, score INTEGER, CHECK (score BETWEEN 2 AND 8))"],
+        "duckdb",
+    );
+    let set = b
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    let checks = set
+        .constraints()
+        .iter()
+        .filter_map(|rule| {
+            if let RelationConstraint::CheckComparison(check) = rule {
+                Some((check.column().to_string(), check.operator(), check.value().clone()))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        checks,
+        vec![
+            ("score".into(), CheckCompareOperator::Gte, ConstraintValue::Integer(2)),
+            ("score".into(), CheckCompareOperator::Lte, ConstraintValue::Integer(8)),
+        ]
+    );
+    let enforced = checks
+        .iter()
+        .map(|(column, op, value)| {
+            RelationConstraint::check_comparison(
+                column.clone(),
+                *op,
+                value.clone(),
+                evidence(),
+            )
+            .unwrap()
+        })
+        .collect();
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", enforced).unwrap(),
+    ]);
+    for score in [2, 5, 8] {
+        assert!(matches!(
+            physical_closed_world_schema_plan(
+                &b,
+                &[state("target", &[(Some(1), Some(score))])]
+            ),
+            PhysicalWriteStatePlan::Feasible { .. }
+        ));
+    }
+    for score in [1, 9] {
+        assert!(matches!(
+            physical_closed_world_schema_plan(
+                &b,
+                &[state("target", &[(Some(1), Some(score))])]
+            ),
+            PhysicalWriteStatePlan::Impossible { .. }
+        ));
+    }
+    let negated = bundle(
+        &["CREATE TABLE target(id INTEGER, score INTEGER, CHECK (score NOT BETWEEN 2 AND 8))"],
+        "duckdb",
+    );
+    let set = negated
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    assert!(set
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER CHECK (score BETWEEN 2 AND 8));\n\
+         INSERT INTO target VALUES (1,2), (2,8), (3,NULL);",
+    )
+    .unwrap();
+    assert!(db.execute_batch("INSERT INTO target VALUES (4,1)").is_err());
+    assert!(db.execute_batch("INSERT INTO target VALUES (5,9)").is_err());
+}
