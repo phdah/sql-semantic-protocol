@@ -178,7 +178,7 @@ impl PhysicalIdentitySequence {
         self.increment
     }
 
-    pub(super) fn allocate(&mut self) -> StateResult<LiteralValue> {
+    fn allocate(&mut self) -> StateResult<LiteralValue> {
         let emitted = self.next_value;
         self.next_value = self
             .next_value
