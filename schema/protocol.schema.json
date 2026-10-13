@@ -5382,6 +5382,83 @@
           "additionalProperties": false,
           "required": [
             "kind",
+            "left",
+            "operator",
+            "right"
+          ],
+          "properties": {
+            "kind": {
+              "const": "integer_column_comparison"
+            },
+            "left": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "relation",
+                "name"
+              ],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "operator": {
+              "enum": [
+                "eq",
+                "neq",
+                "lt",
+                "lte",
+                "gt",
+                "gte",
+                "is_distinct_from",
+                "is_not_distinct_from"
+              ]
+            },
+            "right": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "relation",
+                "name"
+              ],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
             "column",
             "prefix",
             "negated"
