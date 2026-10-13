@@ -1822,7 +1822,7 @@ fn empty_closed_world_population_proves_vacuous_constraints_without_enforcement_
     )
     .unwrap()]);
     assert!(matches!(
-        physical_closed_world_schema_plan(&b, &[state("target", &[])]),
+        physical_closed_world_schema_plan(&b, &[state("target", &[]), state("source", &[])]),
         PhysicalWriteStatePlan::Feasible { .. }
     ));
     assert!(matches!(
@@ -2828,3 +2828,96 @@ fn boolean_or_not_and_null_check_proofs_match_duckdb() {
     .unwrap();
     assert!(db.execute_batch("INSERT INTO target VALUES(-2,4)").is_err());
 }
+
+#[test]
+fn closed_world_requires_missing_constrained_and_referenced_snapshots_even_if_empty() {
+    let mut b = bundle(&["SELECT id FROM target"], "duckdb");
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::foreign_key(
+                vec!["id".into()], "source", vec!["id".into()], evidence(),
+            ).unwrap()],
+        ).unwrap(),
+        RelationConstraintSet::new(
+            "source",
+            vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+        ).unwrap(),
+    ]);
+    for rows in [&[][..], &[(Some(1), Some(2))][..]] {
+        let plan = physical_closed_world_schema_plan(&b, &[state("target", rows)]);
+        assert!(matches!(
+            plan,
+            PhysicalWriteStatePlan::Residual {
+                gap: sql_semantic_protocol::PhysicalWriteStateGap::MissingPopulation,
+                ..
+            }
+        ), "missing referenced relation must remain residual: {plan:?}");
+    }
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &b, &[state("target", &[]), state("source", &[])]
+        ),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+
+    // No FK is needed for this regression: an absent constrained relation
+    // must not be skipped by the relation-constraints iterator.
+    let mut standalone = bundle(&["SELECT id FROM target"], "duckdb");
+    standalone.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "source",
+        vec![RelationConstraint::not_null("id", evidence()).unwrap()],
+    ).unwrap()]);
+    let plan = physical_closed_world_schema_plan(
+        &standalone, &[state("target", &[(Some(1), Some(2))])]
+    );
+    assert!(matches!(
+        plan,
+        PhysicalWriteStatePlan::Residual {
+            gap: sql_semantic_protocol::PhysicalWriteStateGap::MissingPopulation,
+            ..
+        }
+    ), "omitted constrained source must not be certified: {plan:?}");
+}
+
+#[test]
+fn coalesce_rejects_mixed_declared_types_when_the_text_branch_is_null() {
+    let schemas = vec![RelationSchema::new(
+        "target",
+        vec![
+            SchemaColumn::new("id", DataType::SignedInteger { bits: Some(32) }).unwrap(),
+            SchemaColumn::new("label", DataType::String {
+                length: Some(8), fixed: false,
+            }).unwrap(),
+            SchemaColumn::new("score", DataType::SignedInteger { bits: Some(32) }).unwrap(),
+        ],
+    ).unwrap()];
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let sql = SqlInput::inline("SELECT id FROM target");
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let configured = [ConfiguredSqlInput::new(
+        "mixed-coalesce", &sql, "duckdb", dialect.as_ref(),
+    )];
+    let mut b = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    let generated = ColumnValueSource::new(
+        "score", ColumnValueKind::Generated, None, evidence(),
+    ).unwrap().with_generated_expression(GeneratedValueExpression::Coalesce(vec![
+        GeneratedValueExpression::Column("id".into()),
+        GeneratedValueExpression::Column("label".into()),
+    ])).unwrap();
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![]).unwrap()
+            .with_column_value_sources(vec![generated]),
+    ]);
+    let row = PhysicalWriteRow::new(BTreeMap::from([
+        ("id".into(), LiteralValue::Number("1".into())),
+        ("label".into(), LiteralValue::Null),
+        ("score".into(), LiteralValue::Number("1".into())),
+    ])).unwrap();
+    let snapshot = PhysicalWriteState::new("target", vec![row]).unwrap();
+    let plan = physical_closed_world_schema_plan(&b, &[snapshot]);
+    assert!(matches!(
+        plan, PhysicalWriteStatePlan::Residual { .. }
+    ), "COALESCE must type-check even a NULL text branch: {plan:?}");
+}
+
