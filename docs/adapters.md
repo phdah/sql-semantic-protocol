@@ -264,6 +264,19 @@ warehouse catalog declarations; true datatype disagreements remain errors.
 dbt manifest/catalog and named relation schemas still use the same
 `source_schemas` type contract and constraint-merging path.
 
+Direct SQL DDL CHECKs, dbt manifest-declared CHECK expressions, and caller-owned
+canonical metadata converge on the same deterministic `ABS` and same-type
+`COALESCE` expression nodes. Whole-column equality OR terms and non-NULL
+IN lists use canonical accepted-values facts in SQL DDL and dbt. Database
+catalog introspection supplies typed columns, not executable default,
+function or constraint-enforcement guarantees; the adapter does not infer
+these facts from data_type strings. ODCS `default`, `required`, keys and
+relationships retain their explicitly unknown enforcement status unless
+separate authoritative physical evidence is supplied. A collation name
+alone never proves binary comparison, and a physical type without a
+timezone qualifier does not infer one. Opaque or conflicting adapters
+therefore remain residual rather than silently strengthening the model.
+
 The `physical_closed_world_schema_plan` API is independent of adapters and
 takes complete physical bags, not isolated row samples. Only attested,
 portable primitive literals can be certified; missing source populations,
