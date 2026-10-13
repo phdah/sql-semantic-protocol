@@ -1317,8 +1317,10 @@ fn conjunctive_checks_validate_every_portable_clause_or_remain_wholly_residual()
             ));
         }
     }
+    // ABS is now a supported deterministic computed expression, but SQL
+    // integer division remains residual and must reject the entire conjunction.
     let incomplete = bundle(
-        &["CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id > 0 AND ABS(score) > 1))"],
+        &["CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id > 0 AND score / 2 > 1))"],
         "duckdb",
     );
     let set = incomplete
