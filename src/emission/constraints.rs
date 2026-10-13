@@ -155,13 +155,20 @@ fn computed_boolean_predicate_to_value(
 ) -> Value {
     use crate::computed_boolean_checks::ComputedBooleanCheckPredicate as P;
     match predicate {
-        P::Comparison { left, operator, right } => json!({
+        P::Comparison {
+            left,
+            operator,
+            right,
+        } => json!({
             "kind":"comparison",
             "left":generated_expression_to_value(left),
             "operator":operator.as_str(),
             "right":generated_expression_to_value(right),
         }),
-        P::IsNull { expression, negated } => json!({
+        P::IsNull {
+            expression,
+            negated,
+        } => json!({
             "kind":"is_null",
             "expression":generated_expression_to_value(expression),
             "negated":negated,
