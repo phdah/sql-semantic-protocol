@@ -468,13 +468,20 @@ pub(crate) enum PortableCheckExpression {
 fn portable_between_bounds(
     expr: &Expr,
     expected_column: Option<&str>,
-) -> Option<[(String, crate::constraints::CheckCompareOperator, ConstraintValue); 2]> {
+) -> Option<
+    [(
+        String,
+        crate::constraints::CheckCompareOperator,
+        ConstraintValue,
+    ); 2],
+> {
     let Expr::Between {
         expr: value,
         negated: false,
         low,
         high,
-    } = unwrap_nested_expression(expr) else {
+    } = unwrap_nested_expression(expr)
+    else {
         return None;
     };
     let lower = Expr::BinaryOp {
@@ -524,12 +531,7 @@ fn portable_check_constraints(
         let rules = bounds
             .into_iter()
             .map(|(column, operator, value)| {
-                RelationConstraint::check_comparison(
-                    column,
-                    operator,
-                    value,
-                    evidence.to_vec(),
-                )
+                RelationConstraint::check_comparison(column, operator, value, evidence.to_vec())
             })
             .collect::<Result<Vec<_>, _>>()?;
         return Ok(Some((rules, Vec::new())));
