@@ -10,10 +10,7 @@ enum Truth {
     Unknown,
 }
 
-pub(super) fn check(
-    predicate: &P,
-    values: &BTreeMap<String, LiteralValue>,
-) -> StateResult<()> {
+pub(super) fn check(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResult<()> {
     match evaluate(predicate, values)? {
         Truth::True | Truth::Unknown => Ok(()), // SQL CHECK admits UNKNOWN.
         Truth::False => Err(impossible("enforced Boolean CHECK evaluated to FALSE")),
@@ -22,7 +19,11 @@ pub(super) fn check(
 
 fn evaluate(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResult<Truth> {
     match predicate {
-        P::Comparison { left, operator, right } => {
+        P::Comparison {
+            left,
+            operator,
+            right,
+        } => {
             let lhs = super::generated::evaluate(left, values)?;
             let rhs = super::generated::evaluate(right, values)?;
             if lhs == LiteralValue::Null || rhs == LiteralValue::Null {
@@ -40,7 +41,10 @@ fn evaluate(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResu
                 Err(error) => Err(error),
             }
         }
-        P::IsNull { expression, negated } => {
+        P::IsNull {
+            expression,
+            negated,
+        } => {
             let value = super::generated::evaluate(expression, values)?;
             if (value == LiteralValue::Null) != *negated {
                 Ok(Truth::True)
