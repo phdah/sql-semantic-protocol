@@ -6,7 +6,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
     physical_ordered_write_state_plan, physical_typed_value_plan, AnalysisBundle,
-    CheckCompareOperator, ColumnValueKind, ColumnValueSource, ConfiguredSqlInput,
+    CheckCompareOperator, ColumnValueKind, ColumnValueSource, ComputedKeyConstraint, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, DataType, DataTypeField, GeneratedValueExpression, LiteralValue,
     PhysicalTypeProof, PhysicalTypedValue, PhysicalWriteRow, PhysicalWriteState,
@@ -1082,4 +1082,50 @@ fn generated_columns_compute_insert_values_and_validate_existing_rows() {
         .query_row("SELECT SUM(score) FROM target", [], |r| r.get(0))
         .unwrap();
     assert_eq!(sum, 5);
+}
+
+#[test]
+fn exact_computed_unique_keys_reject_collisions_and_preserve_composites() {
+    let mut b = bundle(&["SELECT id FROM target"], "duckdb");
+    let expression = GeneratedValueExpression::Add(
+        Box::new(GeneratedValueExpression::Column("id".into())),
+        Box::new(GeneratedValueExpression::Column("score".into())),
+    );
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![])
+            .unwrap()
+            .with_computed_keys(vec![
+                ComputedKeyConstraint::new(vec![expression], false, evidence()).unwrap(),
+            ]),
+    ]);
+    for good in [
+        state("target", &[]),
+        state("target", &[(Some(1), Some(2)), (Some(2), Some(2))]),
+    ] {
+        assert!(matches!(
+            physical_closed_world_schema_plan(&b, &[good]),
+            PhysicalWriteStatePlan::Feasible { .. }
+        ));
+    }
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &b,
+            &[state("target", &[(Some(1), Some(2)), (Some(2), Some(1))])],
+        ),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &b,
+            &[state("target", &[(Some(1), None), (Some(2), Some(1))])],
+        ),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER);\n\
+         CREATE UNIQUE INDEX uk_expression ON target ((id+score));\n\
+         INSERT INTO target VALUES (1,2), (2,2);",
+    ).unwrap();
+    assert!(db.execute_batch("INSERT INTO target VALUES (2,1)").is_err());
 }
