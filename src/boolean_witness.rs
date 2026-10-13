@@ -1000,22 +1000,22 @@ fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
             operator,
             literal,
         } => {
-            let operator = match operator {
-                ComparisonOperator::Eq => ComparisonOperator::Neq,
-                ComparisonOperator::Neq => ComparisonOperator::Eq,
-                ComparisonOperator::Lt => ComparisonOperator::Gte,
-                ComparisonOperator::Lte => ComparisonOperator::Gt,
-                ComparisonOperator::Gt => ComparisonOperator::Lte,
-                ComparisonOperator::Gte => ComparisonOperator::Lt,
-                ComparisonOperator::IsDistinctFrom => ComparisonOperator::IsNotDistinctFrom,
-                ComparisonOperator::IsNotDistinctFrom => ComparisonOperator::IsDistinctFrom,
-            };
+            let operator = negated_comparison_operator(operator);
             BooleanRowConstraint::IntegerComparison {
                 column,
                 operator,
                 literal,
             }
         }
+        BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator,
+            right,
+        } => BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator: negated_comparison_operator(operator),
+            right,
+        },
         BooleanRowConstraint::StringPrefix {
             column,
             prefix,
@@ -1026,6 +1026,19 @@ fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
             negated: !negated,
         },
         BooleanRowConstraint::Residual { reason } => BooleanRowConstraint::Residual { reason },
+    }
+}
+
+fn negated_comparison_operator(operator: ComparisonOperator) -> ComparisonOperator {
+    match operator {
+        ComparisonOperator::Eq => ComparisonOperator::Neq,
+        ComparisonOperator::Neq => ComparisonOperator::Eq,
+        ComparisonOperator::Lt => ComparisonOperator::Gte,
+        ComparisonOperator::Lte => ComparisonOperator::Gt,
+        ComparisonOperator::Gt => ComparisonOperator::Lte,
+        ComparisonOperator::Gte => ComparisonOperator::Lt,
+        ComparisonOperator::IsDistinctFrom => ComparisonOperator::IsNotDistinctFrom,
+        ComparisonOperator::IsNotDistinctFrom => ComparisonOperator::IsDistinctFrom,
     }
 }
 
