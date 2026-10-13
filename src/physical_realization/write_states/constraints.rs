@@ -325,10 +325,11 @@ pub(super) fn validate_all_constraints_with_identity(
                         if matches!(value, LiteralValue::Null) {
                             continue; // SQL CHECK admits UNKNOWN.
                         }
-                        super::check_comparisons::validate_scalar_check(
+                        super::check_comparisons::validate_scalar_check_with_binary_law(
                             value,
                             check.operator(),
                             check.value(),
+                            attested_binary_text_law(bundle, state.relation(), check.column()),
                         )?;
                     }
                 }
