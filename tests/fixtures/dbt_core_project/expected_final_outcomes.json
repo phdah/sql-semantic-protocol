@@ -104,23 +104,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -201,11 +211,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -347,23 +357,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -567,11 +587,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -2227,23 +2247,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -2456,11 +2486,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -4908,23 +4938,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5005,11 +5045,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -5118,23 +5158,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5215,11 +5265,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -5345,23 +5395,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5442,11 +5502,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -5674,23 +5734,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5903,11 +5973,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -8351,23 +8421,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8448,11 +8528,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -8573,23 +8653,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8670,11 +8760,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -8866,23 +8956,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8982,11 +9082,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -9224,23 +9324,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -9444,11 +9554,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -11137,23 +11247,33 @@
                   "kind": "any",
                   "operands": [
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
                     },
                     {
-                      "kind": "residual",
-                      "reason": "comparison literal is not a supported signed integer"
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
                     }
                   ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "a boolean branch lacks proven source datatype or supported semantics",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -11501,11 +11621,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "a boolean branch lacks proven source datatype or supported semantics",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
