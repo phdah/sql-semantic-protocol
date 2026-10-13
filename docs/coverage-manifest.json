@@ -10505,6 +10505,12 @@
   "cross_repo_dependencies": {
     "protocol_gate": "TASK-91",
     "tdg_release_gate": "TASK-36",
+    "schema_physical_proof_gate": "TASK-79",
+    "schema_tdg_consumers": [
+      "TASK-30",
+      "TASK-33",
+      "TASK-57"
+    ],
     "tdg_candidate_pin": "TASK-43",
     "tdg_generator_tasks": [
       "TASK-24",
