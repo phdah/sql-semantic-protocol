@@ -94,7 +94,7 @@ pub(super) fn physical_shared_set_cancellation_with_rows(
         || evidence.maximum < 0
         || bundle.relation_constraints().iter().any(|set| {
             set.relation() == relation
-                && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+                && set.blocks_unconstrained_physical_plans()
         })
     {
         return None;
