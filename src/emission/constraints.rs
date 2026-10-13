@@ -103,8 +103,9 @@ pub(super) fn constraint_diagnostic_to_value(diagnostic: &ConstraintDiagnostic) 
     })
 }
 
-
-fn generated_expression_to_value(expression: &crate::column_sources::GeneratedValueExpression) -> Value {
+fn generated_expression_to_value(
+    expression: &crate::column_sources::GeneratedValueExpression,
+) -> Value {
     use crate::column_sources::GeneratedValueExpression as G;
     match expression {
         G::Column(column) => json!({"kind":"column","column":column}),
