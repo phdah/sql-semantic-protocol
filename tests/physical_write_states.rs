@@ -2316,3 +2316,75 @@ fn attested_binary_text_law_proves_composite_key_distinctions_and_foreign_keys()
         .unwrap();
     assert!(distinct_binary);
 }
+
+#[test]
+fn binary_text_check_equality_and_inequality_use_only_attested_comparison_law() {
+    let make = |attested: bool, operator: CheckCompareOperator| {
+        let mut id = SchemaColumn::from_sql_type("id", "VARCHAR(16)", "duckdb")
+            .unwrap()
+            .with_collation("warehouse_binary")
+            .unwrap();
+        if attested {
+            id = id
+                .with_text_comparison_law(TextComparisonLaw::Binary, evidence())
+                .unwrap();
+        }
+        let schema = RelationSchema::new("target", vec![id]).unwrap();
+        let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+        let dialect = dialect_from_name("duckdb").unwrap();
+        let sql = SqlInput::inline("SELECT id FROM target");
+        let input = ConfiguredSqlInput::new("check", &sql, "duckdb", dialect.as_ref());
+        let mut bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::check_comparison(
+                "id",
+                operator,
+                ConstraintValue::String("A".into()),
+                evidence(),
+            )
+            .unwrap()],
+        )
+        .unwrap()]);
+        bundle
+    };
+    let row = |value: &str| {
+        PhysicalWriteState::new(
+            "target",
+            vec![PhysicalWriteRow::new(BTreeMap::from([(
+                "id".into(),
+                LiteralValue::Text(value.into()),
+            )]))
+            .unwrap()],
+        )
+        .unwrap()
+    };
+
+    let equal = make(true, CheckCompareOperator::Eq);
+    assert!(matches!(
+        physical_closed_world_schema_plan(&equal, &[row("A")]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&equal, &[row("a")]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&make(false, CheckCompareOperator::Eq), &[row("a")]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let not_equal = make(true, CheckCompareOperator::NotEq);
+    assert!(matches!(
+        physical_closed_world_schema_plan(&not_equal, &[row("a")]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&not_equal, &[row("A")]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    // Binary equality does not itself prove locale-independent ordering.
+    assert!(matches!(
+        physical_closed_world_schema_plan(&make(true, CheckCompareOperator::Lt), &[row("a")]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+}
