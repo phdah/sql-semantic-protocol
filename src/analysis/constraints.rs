@@ -2,8 +2,8 @@
 
 use super::*;
 use crate::column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
-use crate::computed_keys::ComputedKeyConstraint;
 use crate::computed_checks::ComputedCheckConstraint;
+use crate::computed_keys::ComputedKeyConstraint;
 
 /// Normalize a complete CREATE TABLE declaration into canonical typed schema evidence.
 /// Unknown/unsupported declarations must not produce a partial authoritative schema.
@@ -95,7 +95,8 @@ pub(super) fn analyze_create_table_constraints(
                         constraint_identity(
                             "primary_key",
                             index,
-                            name.as_ref().map(ToString::to_string)
+                            name.as_ref()
+                                .map(ToString::to_string)
                                 .or_else(|| index_name.as_ref().map(ToString::to_string)),
                         ),
                         characteristics.as_ref(),
@@ -108,8 +109,13 @@ pub(super) fn analyze_create_table_constraints(
                             true,
                             vec![sql_constraint_evidence(
                                 &relation,
-                                constraint_identity("primary_key", index, name.as_ref().map(ToString::to_string)
-                                    .or_else(|| index_name.as_ref().map(ToString::to_string))),
+                                constraint_identity(
+                                    "primary_key",
+                                    index,
+                                    name.as_ref()
+                                        .map(ToString::to_string)
+                                        .or_else(|| index_name.as_ref().map(ToString::to_string)),
+                                ),
                                 characteristics.as_ref(),
                             )?],
                         )?);
@@ -119,7 +125,7 @@ pub(super) fn analyze_create_table_constraints(
                             format!("primary_key on relation '{relation}' contains an unproved expression"),
                         ));
                     }
-                },
+                }
             },
             TableConstraint::Unique {
                 name,
@@ -127,40 +133,48 @@ pub(super) fn analyze_create_table_constraints(
                 columns,
                 characteristics,
                 ..
-            } => match index_column_names(columns) {
-                Some(columns) => constraints.push(RelationConstraint::unique_key(
-                    columns,
-                    vec![sql_constraint_evidence(
-                        &relation,
-                        constraint_identity(
-                            "unique",
-                            index,
-                            name.as_ref().map(ToString::to_string)
-                                .or_else(|| index_name.as_ref().map(ToString::to_string)),
-                        ),
-                        characteristics.as_ref(),
-                    )?],
-                )?),
-                None => {
-                    if let Some(expressions) = index_computed_key_exprs(columns) {
-                        computed_keys.push(ComputedKeyConstraint::new(
-                            expressions,
-                            false,
-                            vec![sql_constraint_evidence(
-                                &relation,
-                                constraint_identity("unique", index, name.as_ref().map(ToString::to_string)
-                                    .or_else(|| index_name.as_ref().map(ToString::to_string))),
-                                characteristics.as_ref(),
-                            )?],
-                        )?);
-                    } else {
-                        diagnostics.push(ConstraintDiagnostic::new(
+            } => {
+                match index_column_names(columns) {
+                    Some(columns) => constraints.push(RelationConstraint::unique_key(
+                        columns,
+                        vec![sql_constraint_evidence(
+                            &relation,
+                            constraint_identity(
+                                "unique",
+                                index,
+                                name.as_ref()
+                                    .map(ToString::to_string)
+                                    .or_else(|| index_name.as_ref().map(ToString::to_string)),
+                            ),
+                            characteristics.as_ref(),
+                        )?],
+                    )?),
+                    None => {
+                        if let Some(expressions) = index_computed_key_exprs(columns) {
+                            computed_keys.push(ComputedKeyConstraint::new(
+                                expressions,
+                                false,
+                                vec![sql_constraint_evidence(
+                                    &relation,
+                                    constraint_identity(
+                                        "unique",
+                                        index,
+                                        name.as_ref().map(ToString::to_string).or_else(|| {
+                                            index_name.as_ref().map(ToString::to_string)
+                                        }),
+                                    ),
+                                    characteristics.as_ref(),
+                                )?],
+                            )?);
+                        } else {
+                            diagnostics.push(ConstraintDiagnostic::new(
                             "unsupported_key_expression",
                             format!("unique on relation '{relation}' contains an unproved expression"),
                         ));
+                        }
                     }
-                },
-            },
+                }
+            }
             TableConstraint::ForeignKey {
                 name,
                 columns,
@@ -231,12 +245,19 @@ pub(super) fn analyze_create_table_constraints(
                             )?],
                         )?);
                     } else {
-                        if let Some((left, operator, right)) = computed_check_from_expr(expr, None) {
+                        if let Some((left, operator, right)) = computed_check_from_expr(expr, None)
+                        {
                             computed_checks.push(ComputedCheckConstraint::new(
-                                left, operator, right,
+                                left,
+                                operator,
+                                right,
                                 vec![sql_constraint_evidence_with_enforcement(
                                     &relation,
-                                    constraint_identity("check", index, name.as_ref().map(ToString::to_string)),
+                                    constraint_identity(
+                                        "check",
+                                        index,
+                                        name.as_ref().map(ToString::to_string),
+                                    ),
                                     *enforced,
                                 )?],
                             )?);
@@ -247,7 +268,7 @@ pub(super) fn analyze_create_table_constraints(
                             ));
                         }
                     }
-                },
+                }
             },
             _ => {}
         }
@@ -427,12 +448,19 @@ pub(super) fn analyze_create_table_constraints(
                                     )?],
                                 )?);
                             } else {
-                                if let Some((left, operator, right)) = computed_check_from_expr(expr, Some(column.name.value.as_str())) {
+                                if let Some((left, operator, right)) =
+                                    computed_check_from_expr(expr, Some(column.name.value.as_str()))
+                                {
                                     computed_checks.push(ComputedCheckConstraint::new(
-                                        left, operator, right,
+                                        left,
+                                        operator,
+                                        right,
                                         vec![sql_constraint_evidence(
                                             &relation,
-                                            format!("{}:column:{}:check:{}", relation, column.name, option_index),
+                                            format!(
+                                                "{}:column:{}:check:{}",
+                                                relation, column.name, option_index
+                                            ),
                                             None,
                                         )?],
                                     )?);
@@ -468,7 +496,12 @@ pub(super) fn analyze_create_table_constraints(
         }
     }
 
-    if constraints.is_empty() && computed_keys.is_empty() && computed_checks.is_empty() && diagnostics.is_empty() && column_value_sources.is_empty() {
+    if constraints.is_empty()
+        && computed_keys.is_empty()
+        && computed_checks.is_empty()
+        && diagnostics.is_empty()
+        && column_value_sources.is_empty()
+    {
         return Ok(None);
     }
 
@@ -486,7 +519,11 @@ pub(super) fn analyze_create_table_constraints(
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum PortableCheckExpression {
     /// A single canonical column compared against a typed scalar constant.
-    Scalar(String, crate::constraints::CheckCompareOperator, ConstraintValue),
+    Scalar(
+        String,
+        crate::constraints::CheckCompareOperator,
+        ConstraintValue,
+    ),
     /// A comparison of deterministic scalar expressions over the current row.
     Computed(
         GeneratedValueExpression,
@@ -503,10 +540,8 @@ pub(crate) enum PortableCheckExpression {
 pub(crate) fn portable_check_expression(expression: &str) -> Option<PortableCheckExpression> {
     use sqlparser::dialect::GenericDialect;
     use sqlparser::parser::Parser;
-    let statements = Parser::parse_sql(
-        &GenericDialect {},
-        &format!("SELECT 1 WHERE {expression}"),
-    ).ok()?;
+    let statements =
+        Parser::parse_sql(&GenericDialect {}, &format!("SELECT 1 WHERE {expression}")).ok()?;
     let [SqlStatement::Query(query)] = statements.as_slice() else {
         return None;
     };
@@ -548,7 +583,11 @@ fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
 fn computed_check_from_expr(
     expression: &Expr,
     expected_column: Option<&str>,
-) -> Option<(GeneratedValueExpression, crate::constraints::CheckCompareOperator, GeneratedValueExpression)> {
+) -> Option<(
+    GeneratedValueExpression,
+    crate::constraints::CheckCompareOperator,
+    GeneratedValueExpression,
+)> {
     use crate::constraints::CheckCompareOperator;
     let Expr::BinaryOp { left, op, right } = unwrap_nested_expression(expression) else {
         return None;
@@ -564,8 +603,10 @@ fn computed_check_from_expr(
     };
     let left = parse_generated_expression(left)?;
     let right = parse_generated_expression(right)?;
-    if expected_column.is_some_and(|column| !left.referenced_columns().contains(&column)
-        && !right.referenced_columns().contains(&column)) {
+    if expected_column.is_some_and(|column| {
+        !left.referenced_columns().contains(&column)
+            && !right.referenced_columns().contains(&column)
+    }) {
         return None;
     }
     Some((left, operator, right))
@@ -762,7 +803,10 @@ pub(super) fn constraint_identity(kind: &str, index: usize, name: Option<String>
 }
 
 fn index_computed_key_exprs(columns: &[IndexColumn]) -> Option<Vec<GeneratedValueExpression>> {
-    columns.iter().map(|column| parse_generated_expression(&column.column.expr)).collect()
+    columns
+        .iter()
+        .map(|column| parse_generated_expression(&column.column.expr))
+        .collect()
 }
 
 pub(super) fn index_column_names(columns: &[IndexColumn]) -> Option<Vec<String>> {
