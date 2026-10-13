@@ -2005,7 +2005,7 @@ fn attested_binary_text_law_proves_accepted_values_without_guessing_collation() 
 
     let db = Connection::open_in_memory().unwrap();
     let distinct: bool = db
-        .query_row("SELECT 'OK' != 'ok' COLLATE BINARY", [], |row| row.get(0))
+        .query_row("SELECT 'OK' != 'ok'", [], |row| row.get(0))
         .unwrap();
     assert!(distinct);
 }
