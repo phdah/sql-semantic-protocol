@@ -868,7 +868,12 @@ fn normalize(
             {
                 let left = resolve_column(left, sources);
                 let right = resolve_column(right, sources);
-                if left.relation().is_none() || left.relation() != right.relation() {
+                if sources.len() != 1
+                    || left.relation() != Some(sources[0].name())
+                    || right.relation() != Some(sources[0].name())
+                {
+                    // A self-join's two aliases refer to different row
+                    // variables even when they share one physical table.
                     return residual(
                         "cross-relation comparison requires a relational witness, not one source row",
                     );
