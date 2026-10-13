@@ -2078,7 +2078,8 @@ fn accepted_values_consider_all_candidates_before_an_unknown_collation() {
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let sql = SqlInput::inline("SELECT id FROM target");
     let dialect = dialect_from_name("duckdb").unwrap();
-    let configured = ConfiguredSqlInput::new("accepted-alternatives", &sql, "duckdb", dialect.as_ref());
+    let configured =
+        ConfiguredSqlInput::new("accepted-alternatives", &sql, "duckdb", dialect.as_ref());
     let mut b = analyze_configured_inputs_with_catalog(&[configured], &catalog).unwrap();
     b.enrich_relation_constraints(&[RelationConstraintSet::new(
         "target",
@@ -2134,11 +2135,11 @@ fn sql_check_in_with_null_member_stays_residual_not_false_impossible() {
         .diagnostics()
         .iter()
         .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
-    let result = physical_closed_world_schema_plan(
-        &b,
-        &[state("target", &[(Some(1), Some(2))])],
+    let result = physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(2))])]);
+    assert!(
+        matches!(result, PhysicalWriteStatePlan::Residual { .. }),
+        "{result:?}"
     );
-    assert!(matches!(result, PhysicalWriteStatePlan::Residual { .. }), "{result:?}");
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
