@@ -21,8 +21,8 @@
     ],
     "unproved_scope": [
       "general_arithmetic_overflow",
-      "cross_column_comparisons",
-      "computed_case_coalesce_nullif_and_aliases",
+      "cross_column_global_unsatisfiability_and_nonscalar_relations",
+      "computed_case_coalesce_nullif_beyond_proven_null_tests_and_aliases",
       "noninteger_casts_and_implicit_coercions",
       "pattern_escape_regex_collations",
       "date_time_json_vendor_udfs",

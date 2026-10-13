@@ -7,7 +7,7 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
     BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput, ProtocolStatement,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, to_json,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -189,6 +189,79 @@ fn duckdb_oracle_certifies_coalesce_and_nullif_null_tests() {
         ).unwrap();
         assert_eq!(actual, expected, "{predicate}");
     }
+}
+
+#[test]
+fn emitted_null_comparison_is_parser_independent_and_two_valued_at_filter_boundary() {
+    let protocol = analyze_sql(
+        "SELECT a FROM t WHERE a = NULL",
+        "postgresql",
+        &PostgreSqlDialect {},
+    ).unwrap();
+    let document: Value = serde_json::from_str(&to_json(&protocol)).unwrap();
+    let witness = &document["inputs"][0]["statements"][0]["boolean_witness"];
+    assert_eq!(witness["condition"]["kind"], "unknown_null_comparison");
+    assert_eq!(witness["condition"]["column"]["name"], "a");
+    assert_eq!(witness["qualifying"]["status"], "impossible");
+    assert_eq!(witness["rejected"]["truth"], "not_true");
+}
+
+#[test]
+fn all_registered_dialects_retain_computed_null_test_structure() {
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).expect("registered dialect");
+        let sql = "SELECT a FROM t WHERE COALESCE(a, b) IS NULL";
+        let protocol = analyze_sql(sql, name, dialect.as_ref())
+            .unwrap_or_else(|error| panic!("{name} parser: {error}"));
+        let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+            panic!("{name}: expected query");
+        };
+        let witness = query.boolean_witness().expect("computed null witness");
+        assert!(matches!(
+            witness.qualifying(),
+            BooleanWitnessDirection::Residual { .. }
+        ), "{name}: untyped integer COALESCE must not become exact");
+    }
+}
+
+#[test]
+fn dbt_compiled_nullable_expression_and_direct_sql_share_witnesses() {
+    const SQL: &str =
+        "SELECT id, amount FROM warehouse.raw.orders WHERE NULLIF(id, amount) IS NULL OR amount IN (3, NULL)";
+    let mut manifest: Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
+    let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
+    let dialect = PostgreSqlDialect {};
+    let dbt = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect).unwrap();
+    let schema = RelationSchema::new(
+        "warehouse.raw.orders",
+        vec![
+            SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
+        ],
+    ).unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let sql_input = SqlInput::inline(SQL);
+    let direct = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new("direct", &sql_input, "postgresql", &dialect)],
+        &catalog,
+    ).unwrap();
+    let find_witness = |bundle: &sql_semantic_protocol::AnalysisBundle| {
+        let layer = bundle.layers().iter().find(|layer| {
+            layer.consumes().iter().any(|relation| relation == "warehouse.raw.orders")
+        }).expect("source-consuming layer");
+        let ComposedSemantics::Resolved(ref semantics) = layer.composed_semantics() else {
+            panic!("resolved semantics required");
+        };
+        semantics.boolean_witnesses().first().expect("witness").witness().clone()
+    };
+    let a = find_witness(&dbt);
+    let b = find_witness(&direct);
+    assert_eq!(a.condition(), b.condition());
+    assert_eq!(a.qualifying(), b.qualifying());
+    assert_eq!(a.rejected(), b.rejected());
 }
 
 #[test]

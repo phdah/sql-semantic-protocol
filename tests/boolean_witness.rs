@@ -1059,6 +1059,7 @@ fn witness_truth(
             };
             Some(value.is_none() != *negated)
         }
+        BooleanRowConstraint::UnknownNullComparison { .. } => None,
         BooleanRowConstraint::IntegerComparison {
             column,
             operator,
@@ -1110,8 +1111,9 @@ fn witness_truth(
                 }),
             }
         }
-        BooleanRowConstraint::StringPrefix { .. } => {
-            panic!("integer differential fixture cannot evaluate string prefix")
+        BooleanRowConstraint::StringEquality { .. }
+        | BooleanRowConstraint::StringPrefix { .. } => {
+            panic!("integer differential fixture cannot evaluate string condition")
         }
         BooleanRowConstraint::Residual { reason } => {
             panic!("differential fixture cannot evaluate residual: {reason}")
