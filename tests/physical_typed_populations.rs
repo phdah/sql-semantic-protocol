@@ -78,7 +78,10 @@ fn bundle() -> sql_semantic_protocol::AnalysisBundle {
             vec![
                 RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
                 RelationConstraint::foreign_key(
-                    vec!["id".into()], "source", vec!["id".into()], evidence(),
+                    vec!["id".into()],
+                    "source",
+                    vec!["id".into()],
+                    evidence(),
                 )
                 .unwrap(),
             ],
@@ -115,7 +118,10 @@ fn typed_nesting_preserves_rows_and_checks_cross_source_fk() {
     assert_eq!(final_states[1].rows()[0].values()["payload"], payload(2, 3));
 
     let invalid = [
-        typed_state("target", vec![typed_row(1, payload(2, 3)), typed_row(1, payload(4, 5))]),
+        typed_state(
+            "target",
+            vec![typed_row(1, payload(2, 3)), typed_row(1, payload(4, 5))],
+        ),
         typed_state("source", vec![typed_row(1, payload(5, 6))]),
     ];
     assert!(matches!(
@@ -128,7 +134,10 @@ fn typed_nesting_preserves_rows_and_checks_cross_source_fk() {
 fn typed_population_nested_shape_out_of_range_and_unresolved_fk_fail_closed() {
     let bundle = bundle();
     let malformed = [
-        typed_state("target", vec![typed_row(1, PhysicalTypedValue::Struct(vec![value(1)]))]),
+        typed_state(
+            "target",
+            vec![typed_row(1, PhysicalTypedValue::Struct(vec![value(1)]))],
+        ),
         typed_state("source", vec![typed_row(1, payload(1, 2))]),
     ];
     assert!(matches!(
@@ -165,8 +174,6 @@ fn physical_nested_population_duckdb_array_struct_differential() {
         .unwrap();
     assert_eq!(first, 2);
     assert!(db
-        .execute_batch(
-            "INSERT INTO events VALUES (1, {'scores': [4,5], 'label': 'duplicate'});",
-        )
+        .execute_batch("INSERT INTO events VALUES (1, {'scores': [4,5], 'label': 'duplicate'});",)
         .is_err());
 }
