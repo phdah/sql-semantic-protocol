@@ -606,17 +606,23 @@ fn filtered_typed_insert_proves_scalar_truth_and_preserves_nested_arrow_values()
     let statement = "INSERT INTO target (id,payload) SELECT id,payload FROM source WHERE id >= 2";
     let snapshots = [
         typed_state("target", vec![]),
-        typed_state("source", vec![
-            typed_row(1, payload(2, 3)),
-            typed_row(2, payload(4, 5)),
-            typed_row(3, payload(6, 7)),
-        ]),
+        typed_state(
+            "source",
+            vec![
+                typed_row(1, payload(2, 3)),
+                typed_row(2, payload(4, 5)),
+                typed_row(3, payload(6, 7)),
+            ],
+        ),
     ];
     let plan = physical_typed_ordered_insert_plan(&typed_insert_bundle(statement), &snapshots);
     let PhysicalTypedPopulationPlan::Feasible { final_states } = plan else {
         panic!("scalar WHERE must preserve exact nested rows: {plan:?}");
     };
-    let target = final_states.iter().find(|s| s.relation() == "target").unwrap();
+    let target = final_states
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap();
     assert_eq!(
         target.rows(),
         &[typed_row(2, payload(4, 5)), typed_row(3, payload(6, 7))]
@@ -631,10 +637,14 @@ fn filtered_typed_insert_proves_scalar_truth_and_preserves_nested_arrow_values()
            (2, {'scores':[4,5], 'label':'ok'}),
            (3, {'scores':[6,7], 'label':'ok'});
          INSERT INTO target (id,payload) SELECT id,payload FROM source WHERE id >= 2;",
-    ).unwrap();
-    let ids = db.prepare("SELECT id FROM target ORDER BY id").unwrap()
-        .query_map([], |row| row.get::<_, i32>(0)).unwrap()
-        .collect::<Result<Vec<_>, _>>().unwrap();
+    )
+    .unwrap();
+    let mut statement = db.prepare("SELECT id FROM target ORDER BY id").unwrap();
+    let ids = statement
+        .query_map([], |row| row.get::<_, i32>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     assert_eq!(ids, vec![2, 3]);
 
     let empty = physical_typed_ordered_insert_plan(
@@ -646,29 +656,36 @@ fn filtered_typed_insert_proves_scalar_truth_and_preserves_nested_arrow_values()
     let PhysicalTypedPopulationPlan::Feasible { final_states } = empty else {
         panic!("SQL UNKNOWN/FALSE selection must produce an empty bag: {empty:?}");
     };
-    assert!(final_states.iter().find(|s| s.relation() == "target").unwrap().rows().is_empty());
+    assert!(final_states
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap()
+        .rows()
+        .is_empty());
 }
 
 #[test]
 fn ordered_typed_scalar_update_and_delete_preserve_nested_fields_and_foreign_keys() {
     let snapshots = [
         typed_state("target", vec![typed_row(1, payload(2, 3))]),
-        typed_state("source", vec![
-            typed_row(1, payload(4, 5)),
-            typed_row(11, payload(6, 7)),
-        ]),
+        typed_state(
+            "source",
+            vec![typed_row(1, payload(4, 5)), typed_row(11, payload(6, 7))],
+        ),
     ];
     let update = typed_insert_bundle("UPDATE target SET id=id+10 WHERE id=1");
     let first = physical_typed_ordered_write_plan(&update, &snapshots);
     let PhysicalTypedPopulationPlan::Feasible { final_states } = first else {
         panic!("scalar UPDATE should preserve untouched nested value: {first:?}");
     };
-    let target = final_states.iter().find(|s| s.relation() == "target").unwrap();
+    let target = final_states
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap();
     assert_eq!(target.rows(), &[typed_row(11, payload(2, 3))]);
 
-    let combined = typed_insert_bundle(
-        "UPDATE target SET id=id+10 WHERE id=1; DELETE FROM target WHERE id=11",
-    );
+    let combined =
+        typed_insert_bundle("UPDATE target SET id=id+10 WHERE id=1; DELETE FROM target WHERE id=11");
     let plan = physical_typed_ordered_write_plan(&combined, &snapshots);
     let PhysicalTypedPopulationPlan::Feasible { final_states } = plan else {
         panic!("ordered typed mutation proof failed: {plan:?}");
@@ -685,8 +702,11 @@ fn ordered_typed_scalar_update_and_delete_preserve_nested_fields_and_foreign_key
          INSERT INTO target VALUES (1, {'scores':[2,3], 'label':'ok'});
          UPDATE target SET id=id+10 WHERE id=1;
          DELETE FROM target WHERE id=11;",
-    ).unwrap();
-    let count: i64 = db.query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0)).unwrap();
+    )
+    .unwrap();
+    let count: i64 = db
+        .query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0))
+        .unwrap();
     assert_eq!(count, 0);
 
     assert!(matches!(
