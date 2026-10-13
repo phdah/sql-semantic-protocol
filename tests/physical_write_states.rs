@@ -4,7 +4,8 @@ use std::collections::BTreeMap;
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
+    physical_ordered_write_state_plan,
     AnalysisBundle, ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement,
     ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue,
     PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
@@ -818,4 +819,76 @@ fn direct_sql_ddl_retains_default_column_provenance_and_exact_literal() {
         default.evidence()[0].provenance().source_kind(),
         ConstraintSourceKind::SqlDdl
     );
+}
+
+#[test]
+fn cyclic_foreign_keys_need_a_joint_closed_world_proof() {
+    let mut b = bundle(&["SELECT id FROM target"], "duckdb");
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![
+                RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
+                RelationConstraint::foreign_key(
+                    vec!["id".into()],
+                    "source",
+                    vec!["id".into()],
+                    evidence(),
+                )
+                .unwrap(),
+            ],
+        )
+        .unwrap(),
+        RelationConstraintSet::new(
+            "source",
+            vec![
+                RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
+                RelationConstraint::foreign_key(
+                    vec!["id".into()],
+                    "target",
+                    vec!["id".into()],
+                    evidence(),
+                )
+                .unwrap(),
+            ],
+        )
+        .unwrap(),
+    ]);
+    let both = [
+        state("target", &[(Some(1), Some(3))]),
+        state("source", &[(Some(1), Some(6))]),
+    ];
+    let plan = physical_closed_world_schema_plan(&b, &both);
+    assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{plan:?}");
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &both[..1]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let broken = [
+        state("target", &[(Some(1), Some(3))]),
+        state("source", &[(Some(2), Some(6))]),
+    ];
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &broken),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let duplicate = [
+        state("target", &[(Some(1), Some(3)), (Some(1), Some(8))]),
+        state("source", &[(Some(1), Some(6))]),
+    ];
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &duplicate),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+
+    // Independent DuckDB oracle for the same joint FK/PK obligations.
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER PRIMARY KEY, score INTEGER);
+         CREATE TABLE source(id INTEGER PRIMARY KEY REFERENCES target(id), score INTEGER);
+         INSERT INTO target VALUES (1,3);
+         INSERT INTO source VALUES (1,6);",
+    )
+    .unwrap();
+    assert!(db.execute_batch("INSERT INTO source VALUES (2,6)").is_err());
 }
