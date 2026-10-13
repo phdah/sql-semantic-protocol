@@ -170,9 +170,9 @@ fn duckdb_json_document_oracle_preserves_sql_null_distinction() {
     let db = Connection::open_in_memory().unwrap();
     let (json_is_null, sql_is_null, valid): (bool, bool, bool) = db
         .query_row(
-            "SELECT JSON 'null' IS NULL,
+            r#"SELECT JSON 'null' IS NULL,
                     CAST(NULL AS JSON) IS NULL,
-                    json_valid('{\\"ok\\":true,\\"count\\":7,\\"items\\":[null,\\"x\\"]}')",
+                    json_valid('{"ok":true,"count":7,"items":[null,"x"]}')"#,
             [],
             |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
         )
