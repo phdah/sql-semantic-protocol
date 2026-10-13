@@ -15,6 +15,7 @@ pub(super) fn boolean_witness_direction_to_value(
     direction: &crate::BooleanWitnessDirection,
 ) -> Value {
     match direction {
+        crate::BooleanWitnessDirection::Impossible => json!({"status": "impossible"}),
         crate::BooleanWitnessDirection::Exact(case) => json!({
             "status": "exact",
             "truth": case.as_str()
