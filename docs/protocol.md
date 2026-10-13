@@ -1350,3 +1350,40 @@ Feasible results carry complete input and final physical rows and
 ordered transitions; residuals carry a typed `PhysicalWriteStateGap`
 and reason. See [semantics](semantics.md) for the exact allow-list and
 unproved physical lifecycle/transaction laws.
+
+## Physical schema and column value evidence (TASK-79)
+
+`source_schemas[]` can originate from caller-provided catalogs, dbt manifests/catalogs,
+ODCS contracts or complete SQL `CREATE TABLE` declarations. SQL DDL emits the
+`sql_ddl` provenance kind. A column may carry `timestamp_zone` and an explicit
+`collation` identity. A collation **name** alone does not establish its ordering
+or equality law. Contradictory schema declarations are diagnosed, not silently
+combined into an authoritative type.
+
+`relation_constraints[].column_value_sources[]` represents omitted-column
+defaults and generated/identity declarations with exact column identity,
+`default | generated | identity` kind, optional typed `value`, and complete
+provenance/enforcement evidence. `value: null` means the expression is opaque
+rather than an implicit SQL NULL; a typed `{"type":"null","value":null}` is a
+literal SQL NULL. Duplicate equal facts coalesce evidence. Inconsistent facts
+produce `conflicting_column_value_sources` diagnostics.
+
+`physical_closed_world_schema_plan(bundle, snapshots)` checks an entire
+caller-attested collection of physical relations simultaneously without
+executing SQL. It returns `Feasible`, `Impossible` or `Residual`, reusing
+the ordered write state's gap categories. Complete snapshots can prove
+enforced numeric keys, nullability, accepted values, foreign keys and even
+mutual foreign-key cycles. An absent referenced key, unverified enforcement,
+unknown collation, generated/identity expression, missing parent population
+or vendor-specific null semantics remain residual. Positive proof never
+constructs imaginary rows, grants an unproved default or bypasses source-key
+collisions. The ordered DML path checks both its prestate and each poststate.
+
+Physical literals are conservatively validated against signed/unsigned
+integer bounds, exact decimal precision/scale, supported IEEE-safe integral
+float encodings, ASCII character lengths, Gregorian dates, ISO clock times,
+declared timestamp-zone syntax and canonical lowercase UUID forms. Time-zone
+offset conversion, non-binary string collation, NaN and signed-zero storage,
+JSON and nested Arrow array/map/struct values, unproved coercions or function
+evaluation are deliberately **residual**. A parser accepting their syntax
+does not make their physical construction exact.
