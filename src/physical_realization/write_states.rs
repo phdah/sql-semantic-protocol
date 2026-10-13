@@ -413,14 +413,14 @@ mod evaluator;
 mod operators;
 mod projection;
 mod type_validation;
-mod typed_values;
 mod typed_populations;
+mod typed_values;
 
-pub use typed_values::{physical_typed_value_plan, PhysicalTypeProof, PhysicalTypedValue};
 pub use typed_populations::{
     physical_typed_closed_world_schema_plan, PhysicalTypedPopulationPlan, PhysicalTypedWriteRow,
     PhysicalTypedWriteState,
 };
+pub use typed_values::{physical_typed_value_plan, PhysicalTypeProof, PhysicalTypedValue};
 
 use constraints::{validate_all_constraints, validate_state};
 use operators::{append_rows, define_rows, merge_rows, mutate_rows};
