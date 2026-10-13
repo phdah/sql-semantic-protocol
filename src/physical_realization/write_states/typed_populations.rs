@@ -252,3 +252,39 @@ pub fn physical_typed_closed_world_schema_plan(
         },
     }
 }
+
+/// Validate caller-materialized nested target insertions against an already
+/// complete physical source/target population.
+///
+/// This is a schema-and-constraint proof for exact typed rows, not an SQL
+/// INSERT expression interpreter. Both the prior and combined populations
+/// must be feasible: new rows cannot evade existing UNIQUE/PK, NOT NULL,
+/// CHECK or FK obligations, nor fabricate referenced relations. The returned
+/// final states retain the actual nested Arrow-like values and multiplicity.
+pub fn physical_typed_append_schema_plan(
+    bundle: &AnalysisBundle,
+    snapshots: &[PhysicalTypedWriteState],
+    target: &str,
+    inserted: &[PhysicalTypedWriteRow],
+) -> PhysicalTypedPopulationPlan {
+    if target.trim().is_empty() {
+        return PhysicalTypedPopulationPlan::Residual {
+            relation: None,
+            reason: "target relation identity is empty".to_string(),
+        };
+    }
+
+    let PhysicalTypedPopulationPlan::Feasible { mut final_states } =
+        physical_typed_closed_world_schema_plan(bundle, snapshots)
+    else {
+        return physical_typed_closed_world_schema_plan(bundle, snapshots);
+    };
+    let Some(state) = final_states.iter_mut().find(|state| state.relation == target) else {
+        return PhysicalTypedPopulationPlan::Residual {
+            relation: Some(target.to_string()),
+            reason: "missing complete prior typed target population".to_string(),
+        };
+    };
+    state.rows.extend_from_slice(inserted);
+    physical_typed_closed_world_schema_plan(bundle, &final_states)
+}
