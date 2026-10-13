@@ -7,11 +7,10 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_typed_append_schema_plan,
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
     physical_typed_ordered_write_plan, CheckCompareOperator, ColumnValueKind, ColumnValueSource,
-    ComputedBooleanCheckConstraint,
-    ComputedBooleanCheckPredicate, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, DataType, DataTypeField,
-    GeneratedValueExpression,
-    LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
+    ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    ConstraintValue, DataType, DataTypeField, GeneratedValueExpression, LiteralValue,
+    PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
     PhysicalTypedWriteState, RelationCatalog, RelationConstraint, RelationConstraintSet,
     RelationSchema, SchemaColumn, SqlInput,
 };
@@ -686,15 +685,13 @@ fn typed_insert_uses_only_authoritative_omitted_defaults() {
     )];
     unknown.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
         .unwrap()
-        .with_column_value_sources(vec![
-            ColumnValueSource::new(
-                "id",
-                ColumnValueKind::Default,
-                Some(ConstraintValue::Integer(7)),
-                uncertain_evidence,
-            )
-            .unwrap(),
-        ])]);
+        .with_column_value_sources(vec![ColumnValueSource::new(
+            "id",
+            ColumnValueKind::Default,
+            Some(ConstraintValue::Integer(7)),
+            uncertain_evidence,
+        )
+        .unwrap()])]);
     assert!(matches!(
         physical_typed_ordered_insert_plan(&unknown, &snapshots),
         PhysicalTypedPopulationPlan::Residual { .. }

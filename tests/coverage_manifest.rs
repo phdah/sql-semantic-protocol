@@ -70,7 +70,10 @@ fn task_79_has_traceable_local_proofs_without_claiming_generator_release_signoff
             "AC {number} requires an explicit bounded soundness contract"
         );
         let tests = required_array(entry, "tests");
-        assert!(!tests.is_empty(), "AC {number} requires executable evidence");
+        assert!(
+            !tests.is_empty(),
+            "AC {number} requires executable evidence"
+        );
         for path in tests {
             let file = path.as_str().expect("test evidence path");
             assert!(file.starts_with("tests/"), "AC {number}: {file}");

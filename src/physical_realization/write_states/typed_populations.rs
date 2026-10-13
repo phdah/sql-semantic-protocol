@@ -324,22 +324,33 @@ fn complete_typed_insert_row(
         .map(|set| set.column_value_sources())
         .unwrap_or(&[]);
     for column in schema.columns() {
-        let source = sources.iter().find(|source| source.column() == column.name());
+        let source = sources
+            .iter()
+            .find(|source| source.column() == column.name());
         if row.values.contains_key(column.name()) {
             // Database-managed columns cannot be assigned explicitly even
             // when their supplied bytes happen to equal the produced value.
-            if source.is_some_and(|source| source.kind() != crate::column_sources::ColumnValueKind::Default) {
-                return Err("explicit assignment to a generated or identity column is unproved".into());
+            if source.is_some_and(|source| {
+                source.kind() != crate::column_sources::ColumnValueKind::Default
+            }) {
+                return Err(
+                    "explicit assignment to a generated or identity column is unproved".into(),
+                );
             }
             continue;
         }
         let Some(source) = source else {
-            return Err(format!("omitted typed column {} has no attested default", column.name()));
+            return Err(format!(
+                "omitted typed column {} has no attested default",
+                column.name()
+            ));
         };
         if source.kind() != crate::column_sources::ColumnValueKind::Default
             || !super::generated::authoritative(source)
         {
-            return Err("omitted generated, identity or unattested typed default is unproved".into());
+            return Err(
+                "omitted generated, identity or unattested typed default is unproved".into(),
+            );
         }
         let Some(value) = source.value() else {
             return Err("opaque typed default cannot be evaluated".into());
@@ -541,7 +552,9 @@ pub fn physical_typed_ordered_write_plan(
                 .any(|name| !schema.columns().iter().any(|column| column.name() == name))
             || columns.len() != query.output().columns().len()
         {
-            return gap("typed INSERT target columns must be declared, unique and match projection arity");
+            return gap(
+                "typed INSERT target columns must be declared, unique and match projection arity",
+            );
         }
         let aliases = [source.alias().unwrap_or(source.name()), source.name()];
         let mut inserted = Vec::new();

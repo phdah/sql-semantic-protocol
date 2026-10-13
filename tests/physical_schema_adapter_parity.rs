@@ -156,7 +156,12 @@ fn semantic_constraints(set: &RelationConstraintSet) -> BTreeSet<String> {
                 key.referenced_columns().join(","),
             ),
             RelationConstraint::CheckComparison(rule) => {
-                format!("check:{}:{:?}:{:?}", rule.column(), rule.operator(), rule.value())
+                format!(
+                    "check:{}:{:?}:{:?}",
+                    rule.column(),
+                    rule.operator(),
+                    rule.value()
+                )
             }
         })
         .collect()
@@ -219,7 +224,10 @@ fn sql_dbt_odcs_and_named_schema_constraints_preserve_canonical_meaning() {
     }
 
     // Named schemas carry type facts, not invented PK/CHECK evidence.
-    assert_eq!(catalog.schemas()[0].columns()[0].data_type(), &DataType::SignedInteger { bits: Some(32) });
+    assert_eq!(
+        catalog.schemas()[0].columns()[0].data_type(),
+        &DataType::SignedInteger { bits: Some(32) }
+    );
     assert!(analyzed("SELECT id FROM target", &catalog)
         .relation_constraints()
         .iter()
