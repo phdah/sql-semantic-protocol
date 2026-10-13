@@ -3,8 +3,8 @@ mod common;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, parse_data_type,
     to_bundle_json, ColumnValueKind, ConfiguredSqlInput, DataType, DataTypeField,
-    GeneratedValueExpression, RelationCatalog, RelationSchema,
-    SchemaColumn, SchemaSourceKind, SqlInput,
+    GeneratedValueExpression, RelationCatalog, RelationSchema, SchemaColumn, SchemaSourceKind,
+    SqlInput,
 };
 
 #[test]

@@ -6,14 +6,12 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_typed_append_schema_plan,
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
-    physical_typed_ordered_write_plan,
-    CheckCompareOperator, ConfiguredSqlInput,
-    ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate,
-    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
-    DataType, DataTypeField, GeneratedValueExpression, LiteralValue,
-    PhysicalTypedPopulationPlan, PhysicalTypedValue,
-    PhysicalTypedWriteRow, PhysicalTypedWriteState, RelationCatalog, RelationConstraint,
-    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
+    physical_typed_ordered_write_plan, CheckCompareOperator, ComputedBooleanCheckConstraint,
+    ComputedBooleanCheckPredicate, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintProvenance, ConstraintSourceKind, DataType, DataTypeField, GeneratedValueExpression,
+    LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
+    PhysicalTypedWriteState, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn evidence() -> Vec<ConstraintEvidence> {
@@ -539,19 +537,24 @@ fn ordered_typed_insert_select_preserves_exact_nested_values() {
     let bundle = typed_insert_bundle(sql);
     let snapshots = [
         typed_state("target", vec![]),
-        typed_state("source", vec![
-            typed_row(1, payload(2,3)), typed_row(2,payload(4,5))
-        ]),
+        typed_state(
+            "source",
+            vec![typed_row(1, payload(2, 3)), typed_row(2, payload(4, 5))],
+        ),
     ];
     let plan = physical_typed_ordered_insert_plan(&bundle, &snapshots);
     let PhysicalTypedPopulationPlan::Feasible { final_states } = plan else {
         panic!("expected typed INSERT proof: {plan:?}");
     };
-    let target = final_states.iter().find(|s| s.relation()=="target").unwrap();
+    let target = final_states
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap();
     assert_eq!(target.rows(), snapshots[1].rows());
 
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE source(
+    db.execute_batch(
+        "CREATE TABLE source(
          id INTEGER PRIMARY KEY,
          payload STRUCT(scores INTEGER[2], label VARCHAR));
          CREATE TABLE target(
@@ -560,26 +563,31 @@ fn ordered_typed_insert_select_preserves_exact_nested_values() {
          INSERT INTO source VALUES
          (1, {'scores':[2,3], 'label':'ok'}),
          (2, {'scores':[4,5], 'label':'ok'});
-         INSERT INTO target(id,payload) SELECT id,payload FROM source;").unwrap();
-    let count: i64 = db.query_row("SELECT COUNT(*) FROM target",[],|row| row.get(0)).unwrap();
-    assert_eq!(count,2);
-    let mut statement = db.prepare("SELECT payload FROM target ORDER BY id").unwrap();
+         INSERT INTO target(id,payload) SELECT id,payload FROM source;",
+    )
+    .unwrap();
+    let count: i64 = db
+        .query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(count, 2);
+    let mut statement = db
+        .prepare("SELECT payload FROM target ORDER BY id")
+        .unwrap();
     let mut batches = statement.query_arrow([]).unwrap();
     let batch = batches.next().unwrap();
-    assert!(format!("{:?}",batch.schema().field(0).data_type()).contains("Struct"));
+    assert!(format!("{:?}", batch.schema().field(0).data_type()).contains("Struct"));
 }
 
 #[test]
 fn ordered_typed_insert_rejects_existing_key_collisions_and_unknown_sql() {
-    let complete = typed_insert_bundle(
-        "INSERT INTO target (id,payload) SELECT id,payload FROM source",
-    );
+    let complete =
+        typed_insert_bundle("INSERT INTO target (id,payload) SELECT id,payload FROM source");
     let collisions = [
-        typed_state("target",vec![typed_row(1,payload(8,9))]),
-        typed_state("source",vec![typed_row(1,payload(2,3))]),
+        typed_state("target", vec![typed_row(1, payload(8, 9))]),
+        typed_state("source", vec![typed_row(1, payload(2, 3))]),
     ];
     assert!(matches!(
-        physical_typed_ordered_insert_plan(&complete,&collisions),
+        physical_typed_ordered_insert_plan(&complete, &collisions),
         PhysicalTypedPopulationPlan::Impossible { .. }
     ));
     for sql in [
@@ -588,12 +596,12 @@ fn ordered_typed_insert_rejects_existing_key_collisions_and_unknown_sql() {
         "INSERT INTO target(id,payload) SELECT id,payload FROM source WHERE payload IS NOT NULL",
     ] {
         let input = [
-            typed_state("target",vec![]),
-            typed_state("source",vec![typed_row(1,payload(2,3))]),
+            typed_state("target", vec![]),
+            typed_state("source", vec![typed_row(1, payload(2, 3))]),
         ];
         assert!(
             matches!(
-                physical_typed_ordered_insert_plan(&typed_insert_bundle(sql),&input),
+                physical_typed_ordered_insert_plan(&typed_insert_bundle(sql), &input),
                 PhysicalTypedPopulationPlan::Residual { .. }
             ),
             "{sql}"
@@ -684,13 +692,19 @@ fn ordered_typed_scalar_update_and_delete_preserve_nested_fields_and_foreign_key
         .unwrap();
     assert_eq!(target.rows(), &[typed_row(11, payload(2, 3))]);
 
-    let combined =
-        typed_insert_bundle("UPDATE target SET id=id+10 WHERE id=1; DELETE FROM target WHERE id=11");
+    let combined = typed_insert_bundle(
+        "UPDATE target SET id=id+10 WHERE id=1; DELETE FROM target WHERE id=11",
+    );
     let plan = physical_typed_ordered_write_plan(&combined, &snapshots);
     let PhysicalTypedPopulationPlan::Feasible { final_states } = plan else {
         panic!("ordered typed mutation proof failed: {plan:?}");
     };
-    assert!(final_states.iter().find(|s| s.relation() == "target").unwrap().rows().is_empty());
+    assert!(final_states
+        .iter()
+        .find(|s| s.relation() == "target")
+        .unwrap()
+        .rows()
+        .is_empty());
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -745,24 +759,22 @@ fn typed_mutations_reject_nested_sql_evaluation_and_final_fk_contradictions() {
 #[test]
 fn nested_boolean_check_must_not_evaluate_a_private_null_placeholder() {
     let mut bundle = bundle();
-    bundle.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![]).unwrap()
-            .with_computed_boolean_checks(vec![
-                ComputedBooleanCheckConstraint::new(
-                    ComputedBooleanCheckPredicate::IsNull {
-                        expression: GeneratedValueExpression::Column("payload".into()),
-                        negated:false,
-                    },
-                    evidence(),
-                ).unwrap(),
-            ]),
-    ]);
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_computed_boolean_checks(vec![ComputedBooleanCheckConstraint::new(
+            ComputedBooleanCheckPredicate::IsNull {
+                expression: GeneratedValueExpression::Column("payload".into()),
+                negated: false,
+            },
+            evidence(),
+        )
+        .unwrap()])]);
     let snapshots = [
-        typed_state("target", vec![typed_row(1,payload(2,3))]),
-        typed_state("source", vec![typed_row(1,payload(4,5))]),
+        typed_state("target", vec![typed_row(1, payload(2, 3))]),
+        typed_state("source", vec![typed_row(1, payload(4, 5))]),
     ];
     assert!(matches!(
-        physical_typed_closed_world_schema_plan(&bundle,&snapshots),
+        physical_typed_closed_world_schema_plan(&bundle, &snapshots),
         PhysicalTypedPopulationPlan::Residual { .. }
     ));
 }

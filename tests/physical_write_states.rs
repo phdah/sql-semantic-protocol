@@ -8,12 +8,12 @@ use sql_semantic_protocol::{
     physical_ordered_write_state_plan, physical_ordered_write_state_plan_with_identities,
     physical_typed_value_plan, AnalysisBundle, CheckCompareOperator, ColumnValueKind,
     ColumnValueSource, ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate,
-    ComputedCheckConstraint, ComputedKeyConstraint, ConfiguredSqlInput,
-    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
-    ConstraintValue, DataType, DataTypeField, GeneratedValueExpression, LiteralValue,
-    PhysicalIdentitySequence, PhysicalTypeProof, PhysicalTypedValue, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
-    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, TextComparisonLaw, WriteKind,
+    ComputedCheckConstraint, ComputedKeyConstraint, ConfiguredSqlInput, ConstraintEnforcement,
+    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue, DataType,
+    DataTypeField, GeneratedValueExpression, LiteralValue, PhysicalIdentitySequence,
+    PhysicalTypeProof, PhysicalTypedValue, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput, TextComparisonLaw, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
@@ -2413,10 +2413,7 @@ fn ddl_abs_and_coalesce_generated_columns_have_exact_null_and_overflow_proofs() 
         PhysicalWriteStatePlan::Feasible { .. }
     ));
     assert!(matches!(
-        physical_closed_world_schema_plan(
-            &ddl,
-            &[state("target", &[(Some(-3), Some(2))])],
-        ),
+        physical_closed_world_schema_plan(&ddl, &[state("target", &[(Some(-3), Some(2))])],),
         PhysicalWriteStatePlan::Impossible { .. }
     ));
 
@@ -2431,16 +2428,11 @@ fn ddl_abs_and_coalesce_generated_columns_have_exact_null_and_overflow_proofs() 
         )
         .unwrap()
         .with_generated_expression(GeneratedValueExpression::Abs(Box::new(
-            GeneratedValueExpression::Literal(ConstraintValue::Number(
-                i128::MIN.to_string(),
-            )),
+            GeneratedValueExpression::Literal(ConstraintValue::Number(i128::MIN.to_string())),
         )))
         .unwrap()])]);
     assert!(matches!(
-        physical_closed_world_schema_plan(
-            &overflow,
-            &[state("target", &[(Some(1), Some(0))])],
-        ),
+        physical_closed_world_schema_plan(&overflow, &[state("target", &[(Some(1), Some(0))])],),
         PhysicalWriteStatePlan::Residual { .. }
     ));
     let db = Connection::open_in_memory().unwrap();
@@ -2468,10 +2460,7 @@ fn unproved_computed_function_and_coalesce_coercion_are_residual() {
         "duckdb",
     );
     assert!(matches!(
-        physical_closed_world_schema_plan(
-            &unsupported,
-            &[state("target", &[(Some(1), Some(1))])],
-        ),
+        physical_closed_world_schema_plan(&unsupported, &[state("target", &[(Some(1), Some(1))])],),
         PhysicalWriteStatePlan::Residual { .. }
     ));
     let unsafe_coercion = bundle(
@@ -2505,20 +2494,16 @@ fn ddl_portable_abs_computed_check_proves_exact_outcomes() {
     // SQL DDL CHECK enforcement is dialect-specific when no explicit
     // enforcement assertion is present, so attach authoritative evidence.
     let check = ComputedCheckConstraint::new(
-        GeneratedValueExpression::Abs(Box::new(
-            GeneratedValueExpression::Column("id".into()),
-        )),
+        GeneratedValueExpression::Abs(Box::new(GeneratedValueExpression::Column("id".into()))),
         CheckCompareOperator::Lte,
         GeneratedValueExpression::Column("score".into()),
         evidence(),
     )
     .unwrap();
     let mut proved = bundle(&["SELECT id FROM target"], "duckdb");
-    proved.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![])
-            .unwrap()
-            .with_computed_checks(vec![check]),
-    ]);
+    proved.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_computed_checks(vec![check])]);
     assert!(matches!(
         physical_closed_world_schema_plan(
             &proved,
@@ -2527,10 +2512,7 @@ fn ddl_portable_abs_computed_check_proves_exact_outcomes() {
         PhysicalWriteStatePlan::Feasible { .. }
     ));
     assert!(matches!(
-        physical_closed_world_schema_plan(
-            &proved,
-            &[state("target", &[(Some(-3), Some(2))])],
-        ),
+        physical_closed_world_schema_plan(&proved, &[state("target", &[(Some(-3), Some(2))])],),
         PhysicalWriteStatePlan::Impossible { .. }
     ));
 }
@@ -2550,29 +2532,21 @@ fn attested_generated_dependencies_are_topologically_resolved_in_ordered_updates
     let sql = SqlInput::inline("UPDATE target SET id = id + 1 WHERE id=1");
     let input = ConfiguredSqlInput::new("chain", &sql, "duckdb", dialect.as_ref());
     let mut bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
-    let score = ColumnValueSource::new(
-        "score",
-        ColumnValueKind::Generated,
-        None,
-        evidence(),
-    )
-    .unwrap()
-    .with_generated_expression(GeneratedValueExpression::Abs(Box::new(
-        GeneratedValueExpression::Column("id".into()),
-    )))
-    .unwrap();
-    let total = ColumnValueSource::new(
-        "total",
-        ColumnValueKind::Generated,
-        None,
-        evidence(),
-    )
-    .unwrap()
-    .with_generated_expression(GeneratedValueExpression::Add(
-        Box::new(GeneratedValueExpression::Column("score".into())),
-        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
-    ))
-    .unwrap();
+    let score = ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
+        .unwrap()
+        .with_generated_expression(GeneratedValueExpression::Abs(Box::new(
+            GeneratedValueExpression::Column("id".into()),
+        )))
+        .unwrap();
+    let total = ColumnValueSource::new("total", ColumnValueKind::Generated, None, evidence())
+        .unwrap()
+        .with_generated_expression(GeneratedValueExpression::Add(
+            Box::new(GeneratedValueExpression::Column("score".into())),
+            Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(
+                1,
+            ))),
+        ))
+        .unwrap();
     let set = RelationConstraintSet::new("target", vec![])
         .unwrap()
         .with_column_value_sources(vec![total.clone(), score.clone()]);
@@ -2588,7 +2562,10 @@ fn attested_generated_dependencies_are_topologically_resolved_in_ordered_updates
     let initial = PhysicalWriteState::new("target", vec![row(1, 1, 2)]).unwrap();
     let plan = physical_ordered_write_state_plan(&bundle, &[initial]);
     let (_, post) = outcome(&plan);
-    let target = post.iter().find(|state| state.relation() == "target").unwrap();
+    let target = post
+        .iter()
+        .find(|state| state.relation() == "target")
+        .unwrap();
     assert_eq!(target.rows(), &[row(2, 2, 3)]);
 
     let inconsistent = PhysicalWriteState::new("target", vec![row(2, 2, 4)]).unwrap();
@@ -2597,24 +2574,23 @@ fn attested_generated_dependencies_are_topologically_resolved_in_ordered_updates
         PhysicalWriteStatePlan::Impossible { .. }
     ));
     let mut cycle = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("cycle", &sql, "duckdb", dialect.as_ref())],
+        &[ConfiguredSqlInput::new(
+            "cycle",
+            &sql,
+            "duckdb",
+            dialect.as_ref(),
+        )],
         &catalog,
     )
     .unwrap();
-    let cyclic_score = ColumnValueSource::new(
-        "score",
-        ColumnValueKind::Generated,
-        None,
-        evidence(),
-    )
-    .unwrap()
-    .with_generated_expression(GeneratedValueExpression::Column("total".into()))
-    .unwrap();
-    cycle.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target", vec![])
+    let cyclic_score =
+        ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
             .unwrap()
-            .with_column_value_sources(vec![cyclic_score, total]),
-    ]);
+            .with_generated_expression(GeneratedValueExpression::Column("total".into()))
+            .unwrap();
+    cycle.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_column_value_sources(vec![cyclic_score, total])]);
     assert!(matches!(
         physical_closed_world_schema_plan(
             &cycle,
@@ -2654,36 +2630,35 @@ fn composite_fk_considers_later_exact_match_after_unproved_collation_candidates(
                 evidence(),
             )
             .unwrap()],
-        ).unwrap(),
+        )
+        .unwrap(),
         RelationConstraintSet::new(
             "source",
-            vec![RelationConstraint::primary_key(
-                vec!["id".into(), "score".into()],
-                evidence(),
-            )
-            .unwrap()],
-        ).unwrap(),
+            vec![
+                RelationConstraint::primary_key(vec!["id".into(), "score".into()], evidence())
+                    .unwrap(),
+            ],
+        )
+        .unwrap(),
     ]);
     let row = |id: &str, score: i64| {
         PhysicalWriteRow::new(BTreeMap::from([
             ("id".into(), LiteralValue::Text(id.into())),
             ("score".into(), LiteralValue::Number(score.to_string())),
-        ])).unwrap()
+        ]))
+        .unwrap()
     };
     let states = [
-        PhysicalWriteState::new("target",vec![row("A", 1)]).unwrap(),
-        PhysicalWriteState::new(
-            "source",
-            vec![row("a", 2), row("A", 1)],
-        ).unwrap(),
+        PhysicalWriteState::new("target", vec![row("A", 1)]).unwrap(),
+        PhysicalWriteState::new("source", vec![row("a", 2), row("A", 1)]).unwrap(),
     ];
     assert!(matches!(
         physical_closed_world_schema_plan(&bundle, &states),
         PhysicalWriteStatePlan::Feasible { .. }
     ));
     let missing = [
-        PhysicalWriteState::new("target",vec![row("A", 1)]).unwrap(),
-        PhysicalWriteState::new("source",vec![row("a", 2)]).unwrap(),
+        PhysicalWriteState::new("target", vec![row("A", 1)]).unwrap(),
+        PhysicalWriteState::new("source", vec![row("a", 2)]).unwrap(),
     ];
     assert!(matches!(
         physical_closed_world_schema_plan(&bundle, &missing),
@@ -2698,61 +2673,71 @@ fn controlled_identity_allocation_can_feed_portable_generated_dependencies() {
         .map(|relation| {
             RelationSchema::new(
                 relation,
-                ["id","score","label"].into_iter().map(|name|
-                    SchemaColumn::from_sql_type(name,"INTEGER","duckdb").unwrap()
-                ).collect(),
-            ).unwrap()
+                ["id", "score", "label"]
+                    .into_iter()
+                    .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb").unwrap())
+                    .collect(),
+            )
+            .unwrap()
         })
         .collect::<Vec<_>>();
     let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
-    let sql = SqlInput::inline(
-        "INSERT INTO target(label) SELECT score FROM source",
-    );
-    let input = ConfiguredSqlInput::new("identity-generated",&sql,"duckdb",dialect.as_ref());
-    let mut bundle = analyze_configured_inputs_with_catalog(&[input],&catalog).unwrap();
+    let sql = SqlInput::inline("INSERT INTO target(label) SELECT score FROM source");
+    let input = ConfiguredSqlInput::new("identity-generated", &sql, "duckdb", dialect.as_ref());
+    let mut bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
     let generated = GeneratedValueExpression::Add(
         Box::new(GeneratedValueExpression::Column("id".into())),
-        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(
+            1,
+        ))),
     );
-    bundle.enrich_relation_constraints(&[
-        RelationConstraintSet::new(
-            "target",
-            vec![RelationConstraint::primary_key(vec!["id".into()],evidence()).unwrap()],
-        ).unwrap().with_column_value_sources(vec![
-            ColumnValueSource::new("id",ColumnValueKind::Identity,None,evidence()).unwrap(),
-            ColumnValueSource::new("score",ColumnValueKind::Generated,None,evidence())
-                .unwrap().with_generated_expression(generated).unwrap(),
-        ]),
-    ]);
-    let row = |id:i64,score:i64,label:i64| {
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+    )
+    .unwrap()
+    .with_column_value_sources(vec![
+        ColumnValueSource::new("id", ColumnValueKind::Identity, None, evidence()).unwrap(),
+        ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
+            .unwrap()
+            .with_generated_expression(generated)
+            .unwrap(),
+    ])]);
+    let row = |id: i64, score: i64, label: i64| {
         PhysicalWriteRow::new(BTreeMap::from([
             ("id".into(), LiteralValue::Number(id.to_string())),
             ("score".into(), LiteralValue::Number(score.to_string())),
             ("label".into(), LiteralValue::Number(label.to_string())),
-        ])).unwrap()
+        ]))
+        .unwrap()
     };
     let initial = [
-        PhysicalWriteState::new("target",vec![]).unwrap(),
-        PhysicalWriteState::new("source",vec![row(1,9,0)]).unwrap(),
+        PhysicalWriteState::new("target", vec![]).unwrap(),
+        PhysicalWriteState::new("source", vec![row(1, 9, 0)]).unwrap(),
     ];
-    let sequence = PhysicalIdentitySequence::new("target","id",100,1).unwrap();
+    let sequence = PhysicalIdentitySequence::new("target", "id", 100, 1).unwrap();
     assert!(matches!(
-        physical_ordered_write_state_plan(&bundle,&initial),
+        physical_ordered_write_state_plan(&bundle, &initial),
         PhysicalWriteStatePlan::Residual { .. }
     ));
     let plan = physical_ordered_write_state_plan_with_identities(
-        &bundle,&initial,std::slice::from_ref(&sequence),
+        &bundle,
+        &initial,
+        std::slice::from_ref(&sequence),
     );
-    let (_,states) = outcome(&plan);
-    let target = states.iter().find(|state| state.relation()=="target").unwrap();
-    assert_eq!(target.rows(),&[row(100,101,9)]);
+    let (_, states) = outcome(&plan);
+    let target = states
+        .iter()
+        .find(|state| state.relation() == "target")
+        .unwrap();
+    assert_eq!(target.rows(), &[row(100, 101, 9)]);
     let occupied = [
-        PhysicalWriteState::new("target",vec![row(100,101,0)]).unwrap(),
-        PhysicalWriteState::new("source",vec![row(1,9,0)]).unwrap(),
+        PhysicalWriteState::new("target", vec![row(100, 101, 0)]).unwrap(),
+        PhysicalWriteState::new("source", vec![row(1, 9, 0)]).unwrap(),
     ];
     assert!(matches!(
-        physical_ordered_write_state_plan_with_identities(&bundle,&occupied,&[sequence]),
+        physical_ordered_write_state_plan_with_identities(&bundle, &occupied, &[sequence]),
         PhysicalWriteStatePlan::Impossible { .. }
     ));
 }
@@ -2763,45 +2748,57 @@ fn boolean_or_not_and_null_check_proofs_match_duckdb() {
     let column = |name: &str| GeneratedValueExpression::Column(name.into());
     let literal = |value| GeneratedValueExpression::Literal(ConstraintValue::Integer(value));
     let predicate = P::Or(vec![
-        P::Comparison { left: column("id"), operator: CheckCompareOperator::Gt, right: literal(0) },
-        P::Comparison { left: column("score"), operator: CheckCompareOperator::Lt, right: literal(0) },
+        P::Comparison {
+            left: column("id"),
+            operator: CheckCompareOperator::Gt,
+            right: literal(0),
+        },
+        P::Comparison {
+            left: column("score"),
+            operator: CheckCompareOperator::Lt,
+            right: literal(0),
+        },
     ]);
-    let mut b = bundle(&["SELECT id FROM target"],"duckdb");
-    b.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target",vec![]).unwrap()
-            .with_computed_boolean_checks(vec![
-                ComputedBooleanCheckConstraint::new(predicate,evidence()).unwrap(),
-            ]),
-    ]);
+    let mut b = bundle(&["SELECT id FROM target"], "duckdb");
+    b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_computed_boolean_checks(vec![ComputedBooleanCheckConstraint::new(
+            predicate,
+            evidence(),
+        )
+        .unwrap()])]);
     for rows in [
-        vec![(Some(2),Some(4))],
-        vec![(Some(-2),Some(-4))],
-        vec![(None,Some(4))],
-        vec![(None,None)],
+        vec![(Some(2), Some(4))],
+        vec![(Some(-2), Some(-4))],
+        vec![(None, Some(4))],
+        vec![(None, None)],
     ] {
         assert!(matches!(
-            physical_closed_world_schema_plan(&b,&[state("target",&rows)]),
+            physical_closed_world_schema_plan(&b, &[state("target", &rows)]),
             PhysicalWriteStatePlan::Feasible { .. }
         ));
     }
     assert!(matches!(
-        physical_closed_world_schema_plan(&b,&[state("target",&[(Some(-2),Some(4))])]),
+        physical_closed_world_schema_plan(&b, &[state("target", &[(Some(-2), Some(4))])]),
         PhysicalWriteStatePlan::Impossible { .. }
     ));
-    let mut not = bundle(&["SELECT id FROM target"],"duckdb");
-    not.enrich_relation_constraints(&[
-        RelationConstraintSet::new("target",vec![]).unwrap().with_computed_boolean_checks(
-            vec![ComputedBooleanCheckConstraint::new(P::Not(Box::new(P::IsNull {
-                expression: column("score"), negated:false,
-            })),evidence()).unwrap()],
-        ),
-    ]);
+    let mut not = bundle(&["SELECT id FROM target"], "duckdb");
+    not.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_computed_boolean_checks(vec![ComputedBooleanCheckConstraint::new(
+            P::Not(Box::new(P::IsNull {
+                expression: column("score"),
+                negated: false,
+            })),
+            evidence(),
+        )
+        .unwrap()])]);
     assert!(matches!(
-        physical_closed_world_schema_plan(&not,&[state("target",&[(None,Some(4))])]),
+        physical_closed_world_schema_plan(&not, &[state("target", &[(None, Some(4))])]),
         PhysicalWriteStatePlan::Feasible { .. }
     ));
     assert!(matches!(
-        physical_closed_world_schema_plan(&not,&[state("target",&[(None,None)])]),
+        physical_closed_world_schema_plan(&not, &[state("target", &[(None, None)])]),
         PhysicalWriteStatePlan::Impossible { .. }
     ));
 
@@ -2809,10 +2806,13 @@ fn boolean_or_not_and_null_check_proofs_match_duckdb() {
         &["CREATE TABLE target(id INTEGER,score INTEGER,CHECK(id>0 OR score<0))"],
         "duckdb",
     );
-    let fact = ddl.relation_constraints().iter()
-        .find(|set|set.relation()=="target").unwrap();
-    assert_eq!(fact.computed_boolean_checks().len(),1);
-    let emitted:serde_json::Value =
+    let fact = ddl
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    assert_eq!(fact.computed_boolean_checks().len(), 1);
+    let emitted: serde_json::Value =
         serde_json::from_str(&sql_semantic_protocol::to_bundle_json(&ddl)).unwrap();
     assert_eq!(
         emitted["relation_constraints"][0]["computed_boolean_checks"][0]["predicate"]["kind"],
@@ -2822,6 +2822,7 @@ fn boolean_or_not_and_null_check_proofs_match_duckdb() {
     db.execute_batch(
         "CREATE TABLE target(id INTEGER,score INTEGER,CHECK(id>0 OR score<0));
          INSERT INTO target VALUES(2,4),(-2,-4),(NULL,4),(NULL,NULL);",
-    ).unwrap();
+    )
+    .unwrap();
     assert!(db.execute_batch("INSERT INTO target VALUES(-2,4)").is_err());
 }

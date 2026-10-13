@@ -319,7 +319,9 @@ fn mutate_typed_rows(
     before: &PhysicalTypedWriteState,
     delete: bool,
 ) -> Result<PhysicalTypedWriteState, String> {
-    let write = query.write().ok_or("missing canonical mutation operation")?;
+    let write = query
+        .write()
+        .ok_or("missing canonical mutation operation")?;
     // An unqualified, unconditional mutation can be proved by the scalar
     // interpreter, but that path must not be confused with an unparsed WHERE.
     // Only the explicitly normalized predicate subset is certified here.
@@ -357,7 +359,8 @@ fn mutate_typed_rows(
         .map_err(|_| "typed UPDATE assignment or generated expression is unproved")?;
         let mut next = row.clone();
         for (name, literal) in updated.values {
-            next.values.insert(name, PhysicalTypedValue::Scalar(literal));
+            next.values
+                .insert(name, PhysicalTypedValue::Scalar(literal));
         }
         retained.push(next);
     }
@@ -568,7 +571,9 @@ pub fn physical_typed_ordered_insert_plan(
     initial_states: &[PhysicalTypedWriteState],
 ) -> PhysicalTypedPopulationPlan {
     if bundle.layers().iter().any(|layer| {
-        layer.write_kind().is_some_and(|kind| kind != WriteKind::Append)
+        layer
+            .write_kind()
+            .is_some_and(|kind| kind != WriteKind::Append)
     }) {
         return PhysicalTypedPopulationPlan::Residual {
             relation: None,

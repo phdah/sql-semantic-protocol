@@ -1057,17 +1057,22 @@ fn dbt_boolean_check_trees_match_ddl_without_discarding_or_not_branches() {
     let set = parsed
         .relation_constraints()
         .iter()
-        .find(|set| set.relation()=="warehouse.analytics.stg_orders")
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
         .unwrap();
-    assert_eq!(set.computed_boolean_checks().len(),2);
-    assert!(set.computed_boolean_checks().iter().all(|check|
-        check.evidence().iter().any(|evidence|
-            evidence.provenance().source_kind()==ConstraintSourceKind::DbtConstraint
-        )
-    ));
+    assert_eq!(set.computed_boolean_checks().len(), 2);
+    assert!(set
+        .computed_boolean_checks()
+        .iter()
+        .all(|check| check
+            .evidence()
+            .iter()
+            .any(|evidence| evidence.provenance().source_kind()
+                == ConstraintSourceKind::DbtConstraint)));
     assert_eq!(
-        set.diagnostics().iter()
-            .filter(|diagnostic|diagnostic.code()=="unsupported_check_constraint")
-            .count(),1
+        set.diagnostics()
+            .iter()
+            .filter(|diagnostic| diagnostic.code() == "unsupported_check_constraint")
+            .count(),
+        1
     );
 }
