@@ -113,6 +113,17 @@ pub(super) fn validate_scalar_check(
     operator: CheckCompareOperator,
     constant: &ConstraintValue,
 ) -> StateResult<()> {
+    validate_scalar_check_with_binary_law(literal, operator, constant, false)
+}
+
+/// An attested binary equality law distinguishes bytes for equality/inequality,
+/// but does not establish SQL text ordering, padding or coercion semantics.
+pub(super) fn validate_scalar_check_with_binary_law(
+    literal: &LiteralValue,
+    operator: CheckCompareOperator,
+    constant: &ConstraintValue,
+    binary_text: bool,
+) -> StateResult<()> {
     if matches!(literal, LiteralValue::Null) || matches!(constant, ConstraintValue::Null) {
         return Ok(()); // Three-valued SQL CHECK admits UNKNOWN.
     }
@@ -137,15 +148,19 @@ pub(super) fn validate_scalar_check(
             Some(left.cmp(right))
         }
         (LiteralValue::Text(left), ConstraintValue::String(right))
-            if left == right
-                && matches!(
-                    operator,
-                    CheckCompareOperator::Eq | CheckCompareOperator::NotEq
-                ) =>
+            if matches!(
+                operator,
+                CheckCompareOperator::Eq | CheckCompareOperator::NotEq
+            ) && (left == right || binary_text) =>
         {
-            // Equality of byte-identical strings is reflexive regardless
-            // of the physical collation; distinct bytes need collation law.
-            Some(Ordering::Equal)
+            // Byte-identical values compare equal under every reflexive law.
+            // Unequal byte sequences compare unequal only with an attested
+            // binary comparison law on the canonical schema column.
+            Some(if left == right {
+                Ordering::Equal
+            } else {
+                Ordering::Less
+            })
         }
         _ => None,
     };
