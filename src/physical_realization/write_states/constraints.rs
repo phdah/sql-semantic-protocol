@@ -28,13 +28,7 @@ pub(super) fn validate_state(
                 .values
                 .get(column.name())
                 .ok_or_else(|| impossible("physical row omits a declared column"))?;
-            if !value_conforms(value, column.data_type()) {
-                return Err(residual(format!(
-                    "unproved physical value/type compatibility: {}.{}",
-                    state.relation,
-                    column.name()
-                )));
-            }
+            validate_value(value, column.data_type())?;
         }
     }
     Ok(())
@@ -241,46 +235,3 @@ fn constraint_scalar_equal(value: &LiteralValue, candidate: &ConstraintValue) ->
     }
 }
 
-fn value_conforms(value: &LiteralValue, kind: &DataType) -> bool {
-    match (value, kind) {
-        (LiteralValue::Null, _) => true,
-        (value, DataType::Nullable(inner)) => value_conforms(value, inner),
-        (LiteralValue::Boolean(_), DataType::Boolean) => true,
-        (LiteralValue::Number(number), DataType::SignedInteger { bits }) => {
-            let Ok(value) = number.parse::<i128>() else {
-                return false;
-            };
-            match bits {
-                Some(16) => i16::try_from(value).is_ok(),
-                Some(32) => i32::try_from(value).is_ok(),
-                Some(64) | None => i64::try_from(value).is_ok(),
-                _ => false,
-            }
-        }
-        (LiteralValue::Number(number), DataType::UnsignedInteger { bits }) => {
-            let Ok(value) = number.parse::<u128>() else {
-                return false;
-            };
-            match bits {
-                Some(16) => u16::try_from(value).is_ok(),
-                Some(32) => u32::try_from(value).is_ok(),
-                Some(64) | None => u64::try_from(value).is_ok(),
-                _ => false,
-            }
-        }
-        (
-            LiteralValue::Text(text),
-            DataType::String {
-                length,
-                fixed: false,
-            },
-        ) => {
-            // SQL's character-count semantics differ for non-ASCII strings
-            // across warehouses. Without an exact dialect-specific rule a
-            // non-ASCII length comparison cannot certify physical storage.
-            text.is_ascii()
-                && length.is_none_or(|max| u64::try_from(text.len()).is_ok_and(|n| n <= max))
-        }
-        _ => false,
-    }
-}
