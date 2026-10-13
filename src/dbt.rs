@@ -2173,9 +2173,11 @@ fn parse_dbt_constraint_array(
                             value,
                             evidence.clone(),
                         )
-                        .map_err(|error| DbtManifestError::RelationMetadata {
-                            resource_id: resource_id.to_string(),
-                            message: format!("{relation}: {error}"),
+                        .map_err(|error| {
+                            DbtManifestError::RelationMetadata {
+                                resource_id: resource_id.to_string(),
+                                message: format!("{relation}: {error}"),
+                            }
                         })?;
                         accepted_rules.push(rule);
                     }
@@ -2186,16 +2188,19 @@ fn parse_dbt_constraint_array(
                     ) if implied_column.is_none_or(|name| {
                         left.referenced_columns().contains(&name)
                             || right.referenced_columns().contains(&name)
-                    }) => {
+                    }) =>
+                    {
                         let rule = crate::computed_checks::ComputedCheckConstraint::new(
                             left,
                             op,
                             right,
                             evidence.clone(),
                         )
-                        .map_err(|error| DbtManifestError::RelationMetadata {
-                            resource_id: resource_id.to_string(),
-                            message: format!("{relation}: {error}"),
+                        .map_err(|error| {
+                            DbtManifestError::RelationMetadata {
+                                resource_id: resource_id.to_string(),
+                                message: format!("{relation}: {error}"),
+                            }
                         })?;
                         accepted_computed.push(rule);
                     }
