@@ -210,18 +210,38 @@ pub(super) fn analyze_create_table_constraints(
                         vec![evidence],
                     )?);
                 }
-                ColumnOption::Generated { .. } => {
-                    // A generated or sequence-backed expression cannot be fabricated from a
-                    // default scalar. Preserve declaration provenance and require a typed
-                    // expression/sequence law before claiming a physical assignment.
+                ColumnOption::Generated {
+                    generation_expr,
+                    ..
+                } => {
+                    // A sequence-backed GENERATED AS IDENTITY declaration is not a
+                    // computed column expression. Both require independent laws.
+                    let kind = if generation_expr.is_some() {
+                        ColumnValueKind::Generated
+                    } else {
+                        ColumnValueKind::Identity
+                    };
                     let evidence = sql_constraint_evidence(
                         &relation,
-                        format!("{}:column:{}:generated:{}", relation, column.name, option_index),
+                        format!("{}:column:{}:{}:{}", relation, column.name, kind.as_str(), option_index),
                         None,
                     )?;
                     column_value_sources.push(ColumnValueSource::new(
                         column.name.to_string(),
-                        ColumnValueKind::Generated,
+                        kind,
+                        None,
+                        vec![evidence],
+                    )?);
+                }
+                ColumnOption::Identity(_) => {
+                    let evidence = sql_constraint_evidence(
+                        &relation,
+                        format!("{}:column:{}:identity:{}", relation, column.name, option_index),
+                        None,
+                    )?;
+                    column_value_sources.push(ColumnValueSource::new(
+                        column.name.to_string(),
+                        ColumnValueKind::Identity,
                         None,
                         vec![evidence],
                     )?);
