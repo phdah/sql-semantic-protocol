@@ -1208,10 +1208,11 @@ impl SqlTruth {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct ColumnThresholds {
     integers: BTreeSet<i128>,
     prefixes: BTreeSet<String>,
+    compared_columns: BTreeSet<ColumnRef>,
 }
 
 fn collect_comparison_literals(
@@ -1235,6 +1236,18 @@ fn collect_comparison_literals(
                 .or_default()
                 .integers
                 .insert(i128::from(*literal));
+        }
+        BooleanRowConstraint::IntegerColumnComparison { left, right, .. } => {
+            thresholds
+                .entry(left.clone())
+                .or_default()
+                .compared_columns
+                .insert(right.clone());
+            thresholds
+                .entry(right.clone())
+                .or_default()
+                .compared_columns
+                .insert(left.clone());
         }
         BooleanRowConstraint::StringPrefix { column, prefix, .. } => {
             thresholds
@@ -1376,12 +1389,28 @@ fn possible_joint_truth_vectors(
     for condition in conditions {
         collect_comparison_literals(condition, &mut thresholds);
     }
+    // Candidate values for correlated comparisons must include thresholds
+    // referenced by the opposite column. This is a witness search, not an
+    // exhaustive proof of impossible correlated assignments.
+    let initial = thresholds.clone();
+    for (column, region) in &initial {
+        for other in &region.compared_columns {
+            if let Some(other_region) = initial.get(other) {
+                thresholds
+                    .get_mut(column)
+                    .expect("collected correlated column")
+                    .integers
+                    .extend(other_region.integers.iter().copied());
+            }
+        }
+    }
     let mut assignments = vec![BTreeMap::new()];
     for (column, literals) in thresholds {
         let restriction = restrictions.and_then(|items| items.get(column.name()));
         let integer_bounds = integer_evidence(&column);
         let string_bounds = string_evidence(&column);
-        if !literals.integers.is_empty() && !literals.prefixes.is_empty() {
+        let integer_required = !literals.integers.is_empty() || !literals.compared_columns.is_empty();
+        if integer_required && !literals.prefixes.is_empty() {
             // A single source column cannot simultaneously be an integer and a
             // string under the scoped typed comparison semantics.
             return BTreeSet::new();
@@ -1390,7 +1419,7 @@ fn possible_joint_truth_vectors(
         if let Some(allowed) = restriction.and_then(|item| item.accepted.as_ref()) {
             for value in allowed {
                 let fits = match value {
-                    RowScalar::Integer(value) if !literals.integers.is_empty() => integer_bounds
+                    RowScalar::Integer(value) if integer_required => integer_bounds
                         .is_some_and(|bounds| bounds.minimum <= *value && *value <= bounds.maximum),
                     RowScalar::String(value) if !literals.prefixes.is_empty() => string_bounds
                         .is_some_and(|bounds| {
@@ -1399,21 +1428,41 @@ fn possible_joint_truth_vectors(
                                 .is_none_or(|max| value.chars().count() as u64 <= max)
                         }),
                     // A pure NULL test admits a source value of any scalar kind.
-                    _ if literals.integers.is_empty() && literals.prefixes.is_empty() => true,
+                    _ if !integer_required && literals.prefixes.is_empty() => true,
                     _ => false,
                 };
                 if fits {
                     values.insert(Some(value.clone()));
                 }
             }
-        } else if !literals.integers.is_empty() {
+        } else if integer_required {
             let Some(bounds) = integer_bounds else {
                 return BTreeSet::new();
             };
-            values.insert(Some(RowScalar::Integer(bounds.minimum)));
-            values.insert(Some(RowScalar::Integer(bounds.maximum)));
-            for literal in literals.integers {
-                for value in [literal - 1, literal, literal + 1] {
+            let mut pivots = BTreeSet::from([bounds.minimum, bounds.maximum]);
+            pivots.extend(literals.integers);
+            for other in &literals.compared_columns {
+                let Some(other_bounds) = integer_evidence(other) else {
+                    return BTreeSet::new();
+                };
+                pivots.insert(other_bounds.minimum);
+                pivots.insert(other_bounds.maximum);
+                if let Some(allowed) = restrictions
+                    .and_then(|items| items.get(other.name()))
+                    .and_then(|item| item.accepted.as_ref())
+                {
+                    for value in allowed {
+                        if let RowScalar::Integer(value) = value {
+                            pivots.insert(*value);
+                        }
+                    }
+                }
+            }
+            for pivot in pivots {
+                for value in [pivot.checked_sub(1), Some(pivot), pivot.checked_add(1)]
+                    .into_iter()
+                    .flatten()
+                {
                     if bounds.minimum <= value && value <= bounds.maximum {
                         values.insert(Some(RowScalar::Integer(value)));
                     }
