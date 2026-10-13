@@ -425,8 +425,7 @@ pub(super) fn analyze_create_table_constraints(
     Ok(Some(set))
 }
 
-/// A portable scalar CHECK comparison, leaving expressions/functions residual.
-pub(super) /// Normalize only portable, deterministic generated integer arithmetic.
+/// Normalize only portable, deterministic generated integer arithmetic.
 fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
     use GeneratedValueExpression as G;
     match unwrap_nested_expression(expr) {
@@ -449,7 +448,8 @@ fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
     }
 }
 
-fn comparison_from_check(
+/// A portable scalar CHECK comparison, leaving expressions/functions residual.
+pub(super) fn comparison_from_check(
     expression: &Expr,
     expected_column: Option<&str>,
 ) -> Option<(
