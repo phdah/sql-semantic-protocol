@@ -49,8 +49,8 @@ dbt is a first-class protocol input. The complete adapter consumes `manifest.jso
 optionally `catalog.json`, using each artifact only for the evidence it authoritatively owns:
 
 - `manifest.json`: model unique IDs, canonical relation identities, compiled SQL, relation context,
-  declared dependency metadata, explicit model/column key constraints, and built-in `unique` /
-  `relationships` generic-test declarations.
+  declared dependency metadata, explicit model/column keys, portable `check` comparison expressions, and built-in `unique` /
+  `relationships` generic-test declarations. Scalar and computed row-local CHECK expressions are normalized once with a conservative generic SQL parser; unsupported functions, vendor casts, or Boolean combinations retain `unsupported_check_constraint` diagnostics. This input does not establish physical enforcement for every warehouse.
 - `catalog.json`: warehouse-introspected physical columns and database datatypes for models,
   seeds, snapshots, and sources.
 
