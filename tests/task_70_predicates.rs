@@ -253,3 +253,73 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_truth_obligations() {
         BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
     ));
 }
+
+#[test]
+fn typed_cross_column_comparisons_prove_existence_without_independent_domains() {
+    for predicate in [
+        "a = b",
+        "a <> b",
+        "a < b",
+        "a >= b",
+        "a IS DISTINCT FROM b",
+        "a IS NOT DISTINCT FROM b",
+        "NOT (a = b)",
+        "a = b AND a > 2 AND b < 5",
+    ] {
+        let witness = assert_both_directions_exact(predicate);
+        assert!(
+            witness.condition().is_exact(),
+            "{predicate}: typed coupled condition must remain exact"
+        );
+    }
+    let witness = assert_both_directions_exact("a = b");
+    assert!(matches!(
+        witness.condition(),
+        BooleanRowConstraint::IntegerColumnComparison { .. }
+    ));
+}
+
+#[test]
+fn mutually_exclusive_correlated_comparisons_never_claim_impossibility_from_samples() {
+    let witness = typed_witness("a > b AND b > a");
+    assert!(
+        matches!(
+            witness.qualifying(),
+            BooleanWitnessDirection::Residual { .. }
+        ),
+        "bounded representatives must not assert universal infeasibility"
+    );
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+}
+
+#[test]
+fn duckdb_oracle_confirms_nullable_correlated_integer_truths() {
+    let connection = Connection::open_in_memory().unwrap();
+    connection
+        .execute_batch(
+            "CREATE TABLE t(a INTEGER, b INTEGER);
+             INSERT INTO t VALUES (NULL, NULL), (NULL, 1), (1, NULL), (2, 2), (3, 4), (4, 3);",
+        )
+        .unwrap();
+    for (predicate, expected) in [
+        ("a = b", 1_i64),
+        ("a <> b", 2),
+        ("a < b", 1),
+        ("a >= b", 2),
+        ("a IS DISTINCT FROM b", 4),
+        ("a IS NOT DISTINCT FROM b", 2),
+        ("NOT (a = b)", 2),
+    ] {
+        let count: i64 = connection
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, expected, "{predicate}");
+    }
+}
