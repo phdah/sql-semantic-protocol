@@ -219,6 +219,7 @@ impl AnalysisBundle {
             relation_context: None,
             statements: protocol.statements().to_vec(),
             relation_constraints: protocol.relation_constraints().to_vec(),
+            source_schemas: protocol.source_schemas().to_vec(),
         }];
 
         let mut bundle = Self::from_inputs(inputs);
@@ -247,6 +248,36 @@ impl AnalysisBundle {
             }
         }
 
+        let mut source_schemas = Vec::<RelationSchema>::new();
+        let mut invalid_schemas = BTreeSet::<String>::new();
+        let mut schema_diagnostics = Vec::<ConstraintDiagnostic>::new();
+        for input in &inputs {
+            for schema in input.source_schemas() {
+                let relation = resolve_relation(resolver, input, schema.relation())?;
+                let mut mapped = RelationSchema::new(relation.clone(), schema.columns().to_vec())
+                    .expect("analyzed SQL schema is already validated");
+                if let Some(kind) = schema.source_kind() {
+                    mapped = mapped.with_source_kind(kind);
+                }
+                if invalid_schemas.contains(&relation) {
+                    continue;
+                }
+                if let Some(previous) = source_schemas.iter().find(|candidate| candidate.relation() == relation) {
+                    if previous != &mapped {
+                        source_schemas.retain(|candidate| candidate.relation() != relation);
+                        invalid_schemas.insert(relation.clone());
+                        schema_diagnostics.push(ConstraintDiagnostic::new(
+                            "conflicting_ddl_schema",
+                            format!("SQL inputs declare inconsistent schemas for relation '{relation}'"),
+                        ));
+                    }
+                } else {
+                    source_schemas.push(mapped);
+                }
+            }
+        }
+        source_schemas.sort_by(|a, b| a.relation().cmp(b.relation()));
+
         let mut layers = build_layers(&inputs, resolver)?;
         let graph = build_graph(&layers);
         let composed = crate::composition::compose_layers(&inputs, &layers, &graph);
@@ -259,9 +290,9 @@ impl AnalysisBundle {
             inputs,
             layers,
             graph,
-            source_schemas: Vec::new(),
+            source_schemas,
             relation_constraints,
-            constraint_diagnostics: Vec::new(),
+            constraint_diagnostics: schema_diagnostics,
             comparison_declarations: Vec::new(),
             outcome_goals: Vec::new(),
         };
