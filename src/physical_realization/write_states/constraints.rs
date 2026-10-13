@@ -417,9 +417,8 @@ mod tests {
                 ConstraintValue::Number("999999999999999999999999999999.0000010".into()),
             ),
         ] {
-            assert_eq!(
+            assert!(
                 constraint_scalar_equal(&LiteralValue::Number(actual.into()), &expected).unwrap(),
-                true,
                 "{actual}"
             );
         }
