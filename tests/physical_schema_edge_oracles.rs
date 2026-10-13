@@ -105,3 +105,43 @@ fn float_nan_json_and_timezone_require_explicit_engine_semantics() {
     // Proving a JSON parser or IEEE754 representation in one engine does not
     // establish the storage, ordering or coercion law for all SQL dialects.
 }
+
+#[test]
+fn duckdb_decimal_map_key_equality_matches_canonical_nested_proof() {
+    let kind = DataType::Map {
+        key: Box::new(DataType::Decimal {
+            precision: Some(18),
+            scale: Some(6),
+        }),
+        value: Box::new(DataType::Boolean),
+    };
+    let one = |number: &str| {
+        (
+            PhysicalTypedValue::Scalar(LiteralValue::Number(number.into())),
+            PhysicalTypedValue::Scalar(LiteralValue::Boolean(true)),
+        )
+    };
+    assert!(matches!(
+        physical_typed_value_plan(
+            &PhysicalTypedValue::Map(vec![one("1.5"), one("01.500000")]),
+            &kind
+        ),
+        PhysicalTypeProof::Impossible { .. }
+    ));
+    let db = Connection::open_in_memory().unwrap();
+    let present: bool = db
+        .query_row(
+            "SELECT map_extract_value(
+                MAP([CAST(1.500000 AS DECIMAL(18,6))], [true]),
+                CAST(1.5 AS DECIMAL(18,6)))",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert!(present);
+    assert!(db.execute_batch(
+        "SELECT MAP(
+            [CAST(1.5 AS DECIMAL(18,6)), CAST(1.500000 AS DECIMAL(18,6))],
+            [true, false])"
+    ).is_err());
+}
