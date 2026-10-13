@@ -3903,6 +3903,26 @@
         }
       }
     },
+    "columnValueSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["column", "kind", "value", "evidence"],
+      "properties": {
+        "column": { "$ref": "#/$defs/nonEmptyString" },
+        "kind": { "enum": ["default", "generated", "identity"] },
+        "value": {
+          "oneOf": [
+            { "$ref": "#/$defs/constraintValue" },
+            { "type": "null" }
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/constraintEvidence" }
+        }
+      }
+    },
     "relationConstraintSet": {
       "type": "object",
       "additionalProperties": false,
@@ -3925,6 +3945,12 @@
           "uniqueItems": true,
           "items": {
             "$ref": "#/$defs/constraintDiagnostic"
+          }
+        },
+        "column_value_sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/columnValueSource"
           }
         }
       }
