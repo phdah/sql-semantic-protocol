@@ -1715,7 +1715,10 @@ fn parse_manifest_relation_constraints(
             }
         }
 
-        if !constraints.is_empty() || !computed_checks.is_empty() || !relation_diagnostics.is_empty() {
+        if !constraints.is_empty()
+            || !computed_checks.is_empty()
+            || !relation_diagnostics.is_empty()
+        {
             let mut set = RelationConstraintSet::new(relation, constraints).map_err(|error| {
                 DbtManifestError::RelationMetadata {
                     resource_id: resource_id.clone(),
@@ -2156,7 +2159,9 @@ fn parse_dbt_constraint_array(
             )?];
             let admitted = match parsed {
                 Some(crate::analysis::constraints::PortableCheckExpression::Scalar(
-                    column, op, value
+                    column,
+                    op,
+                    value,
                 )) if implied_column.is_none_or(|name| name == column) => {
                     let rule = RelationConstraint::check_comparison(column, op, value, evidence)
                         .map_err(|error| DbtManifestError::RelationMetadata {
@@ -2167,14 +2172,18 @@ fn parse_dbt_constraint_array(
                     true
                 }
                 Some(crate::analysis::constraints::PortableCheckExpression::Computed(
-                    left, op, right
+                    left,
+                    op,
+                    right,
                 )) if implied_column.is_none_or(|name| {
                     left.referenced_columns().contains(&name)
                         || right.referenced_columns().contains(&name)
-                }) => {
+                }) =>
+                {
                     let rule = crate::computed_checks::ComputedCheckConstraint::new(
-                        left, op, right, evidence
-                    ).map_err(|error| DbtManifestError::RelationMetadata {
+                        left, op, right, evidence,
+                    )
+                    .map_err(|error| DbtManifestError::RelationMetadata {
                         resource_id: resource_id.to_string(),
                         message: format!("{relation}: {error}"),
                     })?;
