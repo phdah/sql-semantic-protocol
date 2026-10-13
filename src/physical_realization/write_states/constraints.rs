@@ -86,9 +86,7 @@ pub(super) fn validate_all_constraints_with_identity(
     // but an SQL-read source or an existing mutation target does.
     for layer in bundle.layers() {
         for source in layer.consumes() {
-            if let Some(relation) = source.relation_name() {
-                required_relations.insert(relation.to_string());
-            }
+            required_relations.insert(source.to_string());
         }
         if layer
             .write_kind()
