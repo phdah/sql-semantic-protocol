@@ -1871,6 +1871,22 @@ fn composite_foreign_keys_require_attested_partial_null_match_semantics() {
             );
         }
     }
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE source(id INTEGER, score INTEGER, PRIMARY KEY(id, score));
+         CREATE TABLE target(id INTEGER, score INTEGER,
+             FOREIGN KEY(id, score) REFERENCES source(id, score));
+         INSERT INTO source VALUES (1, 2);
+         INSERT INTO target VALUES (1, 2), (1, NULL), (NULL, 2), (NULL, NULL);",
+    )
+    .unwrap();
+    // DuckDB accepts MATCH SIMPLE's partial NULLs, but this engine-specific
+    // observation is not an attestation of every supported dialect's FK mode.
+    let count: i64 = db
+        .query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(count, 4);
 }
 
 #[test]
