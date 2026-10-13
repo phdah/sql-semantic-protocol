@@ -461,4 +461,19 @@ mod tests {
             ));
         }
     }
+    #[test]
+    fn unspecified_numeric_storage_remains_residual() {
+        for kind in [
+            DataType::SignedInteger { bits: None },
+            DataType::UnsignedInteger { bits: None },
+            DataType::FloatingPoint { bits: None },
+            DataType::Decimal { precision: None, scale: None },
+        ] {
+            assert!(matches!(
+                validate_value(&LiteralValue::Number("1".into()), &kind),
+                Err(StateFailure::Residual(..))
+            ));
+        }
+    }
+
 }
