@@ -592,16 +592,26 @@ impl RelationConstraintSet {
     }
 
     fn add_column_value_source(&mut self, source: ColumnValueSource) {
-        if let Some(existing) = self.column_value_sources.iter_mut()
+        if let Some(existing) = self
+            .column_value_sources
+            .iter_mut()
             .find(|existing| existing.same_semantics(&source))
         {
             existing.merge_evidence(&source);
             return;
         }
-        if self.column_value_sources.iter().any(|existing| existing.column() == source.column()) {
+        if self
+            .column_value_sources
+            .iter()
+            .any(|existing| existing.column() == source.column())
+        {
             self.diagnostics.push(ConstraintDiagnostic::new(
                 "conflicting_column_value_sources",
-                format!("relation '{}' has inconsistent value generation for column '{}'", self.relation, source.column()),
+                format!(
+                    "relation '{}' has inconsistent value generation for column '{}'",
+                    self.relation,
+                    source.column()
+                ),
             ));
         }
         self.column_value_sources.push(source);
@@ -614,9 +624,10 @@ impl RelationConstraintSet {
     pub fn blocks_unconstrained_physical_plans(&self) -> bool {
         !self.constraints.is_empty()
             || !self.diagnostics.is_empty()
-            || self.column_value_sources.iter().any(|source| {
-                source.kind() != crate::column_sources::ColumnValueKind::Default
-            })
+            || self
+                .column_value_sources
+                .iter()
+                .any(|source| source.kind() != crate::column_sources::ColumnValueKind::Default)
     }
 
     /// Return explicit conflicts or unsupported metadata details.
@@ -716,12 +727,20 @@ impl RelationConstraintSet {
         let mut result = Self::new(self.relation.clone(), valid)
             .expect("existing constraint relation has already been validated");
         for source in &self.column_value_sources {
-            let declared = local.and_then(|schema| schema.columns().iter()
-                .find(|column| column.name() == source.column()));
+            let declared = local.and_then(|schema| {
+                schema
+                    .columns()
+                    .iter()
+                    .find(|column| column.name() == source.column())
+            });
             if local.is_some() && declared.is_none() {
                 diagnostics.push(ConstraintDiagnostic::new(
                     "invalid_value_source_column",
-                    format!("relation '{}' value source references undeclared column '{}'", self.relation, source.column()),
+                    format!(
+                        "relation '{}' value source references undeclared column '{}'",
+                        self.relation,
+                        source.column()
+                    ),
                 ));
                 continue;
             }
@@ -729,7 +748,11 @@ impl RelationConstraintSet {
                 if !constraint_value_fits_type(value, column.data_type()) {
                     diagnostics.push(ConstraintDiagnostic::new(
                         "incompatible_column_default",
-                        format!("relation '{}.{}' has incompatible default literal", self.relation, source.column()),
+                        format!(
+                            "relation '{}.{}' has incompatible default literal",
+                            self.relation,
+                            source.column()
+                        ),
                     ));
                     continue;
                 }
