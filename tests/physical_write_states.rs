@@ -1423,5 +1423,7 @@ fn exact_decimal_keys_and_cross_relation_foreign_keys_preserve_numeric_identity(
          INSERT INTO target VALUES (1.50);",
     )
     .unwrap();
-    assert!(db.execute_batch("INSERT INTO target VALUES (1.5000)").is_err());
+    assert!(db
+        .execute_batch("INSERT INTO target VALUES (1.5000)")
+        .is_err());
 }
