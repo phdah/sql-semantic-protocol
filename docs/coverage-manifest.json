@@ -20,7 +20,8 @@
       "SchemaColumn::with_text_comparison_law",
       "to_physical_typed_population_json",
       "GeneratedValueExpression::Abs",
-      "GeneratedValueExpression::Coalesce"
+      "GeneratedValueExpression::Coalesce",
+      "physical_typed_ordered_insert_plan"
     ],
     "verified_scope": [
       "SQL_DDL_source_schema_provenance",
@@ -63,7 +64,9 @@
       "topological_generated_column_dependency_order_with_cycle_residual",
       "ordered_update_merge_by_source_generated_recomputation",
       "lossless_typed_physical_witness_sidecar_only_after_closed_world_validation",
-      "named_schema_generated_text_equality_without_unproved_collation_inequality"
+      "named_schema_generated_text_equality_without_unproved_collation_inequality",
+      "lossless_nested_Arrow_struct_array_ordered_direct_SQL_INSERT_SELECT_with_full_poststate_checks",
+      "typed_nested_INSERT_existing_PK_collision_and_expression_filter_residual"
     ],
     "tests": [
       "tests/physical_write_states.rs",
@@ -81,8 +84,8 @@
       "opaque_computed_functions_and_identity_sequence_execution",
       "cross_adapter_default_parity_and_dbt_metadata",
       "full_cross_dialect_arrow_differential_generation",
-      "Arrow_nested_struct_array_map_ordered_SQL_DML_execution_without_casts",
-      "full_executable_semantics_for_unbounded_computed_functions_and_cross_dialect_transactions"
+      "full_executable_semantics_for_unbounded_computed_functions_and_cross_dialect_transactions",
+      "nested_typed_SQL_DML_beyond_direct_row_preserving_INSERT_SELECT"
     ],
     "release_limit": "Partial TASK-79 proofs are intentionally not generator completion or per-variant coverage signoff.",
     "sidecar_schema": "schema/typed-physical-population.schema.json"
