@@ -1181,3 +1181,60 @@ fn computed_check_cross_column_arithmetic_is_complete_and_duckdb_compatible() {
     .unwrap();
     assert!(db.execute_batch("INSERT INTO target VALUES (1,9)").is_err());
 }
+
+#[test]
+fn exact_text_key_duplicates_are_impossible_but_distinct_collation_is_unproved() {
+    let schema = RelationSchema::new(
+        "target",
+        vec![SchemaColumn::new(
+            "id",
+            DataType::String {
+                length: Some(16),
+                fixed: false,
+            },
+        )
+        .unwrap()],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let sql = SqlInput::inline("SELECT id FROM target");
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let input = ConfiguredSqlInput::new("text", &sql, "duckdb", dialect.as_ref());
+    let mut b = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+    )
+    .unwrap()]);
+    let text_state = |ids: &[&str]| {
+        PhysicalWriteState::new(
+            "target",
+            ids.iter()
+                .map(|id| {
+                    PhysicalWriteRow::new(BTreeMap::from([(
+                        "id".into(),
+                        LiteralValue::Text((*id).into()),
+                    )]))
+                    .unwrap()
+                })
+                .collect(),
+        )
+        .unwrap()
+    };
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[text_state(&["same"])]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[text_state(&["same", "same"])]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[text_state(&["a", "A"])]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE target(id VARCHAR PRIMARY KEY); INSERT INTO target VALUES ('same');")
+        .unwrap();
+    assert!(db.execute_batch("INSERT INTO target VALUES ('same')").is_err());
+}
