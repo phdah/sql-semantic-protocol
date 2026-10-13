@@ -1386,6 +1386,15 @@ constructs imaginary rows, grants an unproved default or bypasses source-key
 collisions. The ordered DML path checks both its prestate and each poststate.
 Portable scalar and deterministic row-local computed `CHECK` comparisons (`eq`, `not_eq`, `gt`, `gte`, `lt`, `lte`) emit typed facts and provenance. Portable `AND` conjuncts are normalized atomically for SQL DDL and dbt CHECK metadata: if any conjunct is unsupported, the entire rule is residual. The physical validator checks exact integers and base-ten decimals and admits SQL NULL as UNKNOWN. `NOT ENFORCED` rules are excluded from proof obligations, `Unknown` remains residual, and `Enforced` rules are evaluated. Complex functions and `OR`, unproved collation-sensitive comparisons, casts and enforcement timing remain residual.
 
+The `physical_typed_append_schema_plan(bundle, snapshots, target, inserted)` API validates
+caller-materialized Arrow-like nested rows appended to a complete prior target bag.
+It rechecks every supplied source and target relation before and after the append,
+including existing primary/unique collisions, enforced constraints and cross-relation
+foreign keys, while preserving actual nested values in the returned poststate.
+It does **not** interpret SQL INSERT expressions, prove statement lifecycle/deferral
+timing or serialize Arrow buffers. Missing prior target/parent populations and
+unproved nested key comparisons are residual.
+
 The independent `physical_typed_value_plan(value, data_type)` API accepts
 `PhysicalTypedValue` scalar, exact finite IEEE754 binary32/binary64 bits, byte-buffer, JSON document, array, map and struct witnesses.
 It checks typed field arity, fixed array lengths, binary length bounds and
