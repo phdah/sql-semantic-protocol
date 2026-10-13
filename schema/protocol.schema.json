@@ -5545,6 +5545,18 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "const": "impossible"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
             "status",
             "reason"
           ],
