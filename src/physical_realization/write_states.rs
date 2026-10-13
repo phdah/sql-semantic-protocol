@@ -381,4 +381,4 @@ mod type_validation;
 
 use constraints::{validate_all_constraints, validate_state};
 use operators::{append_rows, define_rows, merge_rows, mutate_rows};
-use type_validation::validate_value;
+use type_validation::validate_column_value;
