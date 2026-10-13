@@ -81,20 +81,24 @@ pub(super) fn validate_all_constraints_with_identity(
             }
         }
     }
-    // Only relations actually participating in the analyzed workload are
-    // required. An unrelated catalog entry does not make a proof incomplete,
-    // but an SQL-read source or an existing mutation target does.
+    // SQL reads and mutations require complete initial bags unless a
+    // preceding definition creates that relation within the same program.
+    // An unrelated catalog entry never makes a proof incomplete.
+    let mut defined_relations = BTreeSet::new();
     for layer in bundle.layers() {
         for source in layer.consumes() {
-            required_relations.insert(source.to_string());
+            if !defined_relations.contains(source) {
+                required_relations.insert(source.clone());
+            }
         }
-        if layer
-            .write_kind()
-            .is_some_and(|kind| kind != WriteKind::Definition)
-        {
+        if let Some(kind) = layer.write_kind() {
             for output in layer.produces() {
                 if let Some(relation) = output.relation_name() {
-                    required_relations.insert(relation.to_string());
+                    if kind == WriteKind::Definition {
+                        defined_relations.insert(relation.to_string());
+                    } else if !defined_relations.contains(relation) {
+                        required_relations.insert(relation.to_string());
+                    }
                 }
             }
         }
