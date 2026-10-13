@@ -43,8 +43,10 @@ pub(super) fn validate_all_constraints(
             continue;
         };
         if !state.rows.is_empty()
-            && set.column_value_sources().iter().any(|source|
-                source.kind() != crate::column_sources::ColumnValueKind::Default)
+            && set
+                .column_value_sources()
+                .iter()
+                .any(|source| source.kind() != crate::column_sources::ColumnValueKind::Default)
         {
             return Err(residual_gap(
                 PhysicalWriteStateGap::UnprovedConstraint,
