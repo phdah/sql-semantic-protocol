@@ -38,6 +38,50 @@ pub(super) fn evaluate(
             )
         }),
         G::Literal(value) => Ok(scalar_literal(value)),
+        G::Abs(operand) => {
+            let value = evaluate(operand, values)?;
+            match value {
+                LiteralValue::Null => Ok(LiteralValue::Null),
+                LiteralValue::Number(value) => {
+                    let integer = value
+                        .parse::<i128>()
+                        .map_err(|_| residual("ABS requires exact integer semantics"))?;
+                    let positive = integer
+                        .checked_abs()
+                        .ok_or_else(|| residual("ABS overflows signed integer storage"))?;
+                    Ok(LiteralValue::Number(positive.to_string()))
+                }
+                _ => Err(residual("ABS requires an exact integer operand")),
+            }
+        }
+        G::Coalesce(arguments) => {
+            let values = arguments
+                .iter()
+                .map(|argument| evaluate(argument, values))
+                .collect::<StateResult<Vec<_>>>()?;
+            // SQL resolves COALESCE argument types across every branch, even
+            // branches not selected for this row. Never certify a mixed-type
+            // expression on the strength of a coincidental chosen value.
+            let mut chosen = LiteralValue::Null;
+            let mut category = None;
+            for value in values {
+                if value == LiteralValue::Null {
+                    continue;
+                }
+                if matches!(&value, LiteralValue::Number(number) if number.parse::<i128>().is_err()) {
+                    return Err(residual("COALESCE numeric coercion is not proved"));
+                }
+                let kind = std::mem::discriminant(&value);
+                if category.is_some_and(|prior| prior != kind) {
+                    return Err(residual("COALESCE argument types need a common attested law"));
+                }
+                category = Some(kind);
+                if chosen == LiteralValue::Null {
+                    chosen = value;
+                }
+            }
+            Ok(chosen)
+        }
         G::Add(left, right) | G::Subtract(left, right) | G::Multiply(left, right) => {
             let left = evaluate(left, values)?;
             let right = evaluate(right, values)?;
