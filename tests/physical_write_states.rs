@@ -2216,3 +2216,103 @@ fn attested_identity_sequence_allocates_omitted_insert_values_in_row_order() {
     ));
     assert!(PhysicalIdentitySequence::new("target", "id", 1, 0).is_none());
 }
+
+#[test]
+fn attested_binary_text_law_proves_composite_key_distinctions_and_foreign_keys() {
+    let build = |attested: bool| {
+        let schemas = ["target", "source"]
+            .into_iter()
+            .map(|relation| {
+                let mut id = SchemaColumn::from_sql_type("id", "VARCHAR(16)", "duckdb")
+                    .unwrap()
+                    .with_collation("binary_text")
+                    .unwrap();
+                if attested {
+                    id = id
+                        .with_text_comparison_law(TextComparisonLaw::Binary, evidence())
+                        .unwrap();
+                }
+                RelationSchema::new(
+                    relation,
+                    vec![
+                        id,
+                        SchemaColumn::from_sql_type("score", "INTEGER", "duckdb").unwrap(),
+                    ],
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+        let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+        let dialect = dialect_from_name("duckdb").unwrap();
+        let sql = SqlInput::inline("SELECT id FROM target");
+        let input = ConfiguredSqlInput::new("keys", &sql, "duckdb", dialect.as_ref());
+        let mut bundle = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+        bundle.enrich_relation_constraints(&[
+            RelationConstraintSet::new(
+                "target",
+                vec![
+                    RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap(),
+                    RelationConstraint::foreign_key(
+                        vec!["id".into()],
+                        "source",
+                        vec!["id".into()],
+                        evidence(),
+                    )
+                    .unwrap(),
+                ],
+            )
+            .unwrap(),
+            RelationConstraintSet::new(
+                "source",
+                vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+            )
+            .unwrap(),
+        ]);
+        bundle
+    };
+    let row = |id: &str| {
+        PhysicalWriteRow::new(BTreeMap::from([
+            ("id".into(), LiteralValue::Text(id.into())),
+            ("score".into(), LiteralValue::Number("1".into())),
+        ]))
+        .unwrap()
+    };
+    let state = |relation: &str, ids: &[&str]| {
+        PhysicalWriteState::new(relation, ids.iter().map(|id| row(id)).collect()).unwrap()
+    };
+    let distinct = [
+        state("target", &["A", "a"]),
+        state("source", &["A", "a"]),
+    ];
+    assert!(matches!(
+        physical_closed_world_schema_plan(&build(true), &distinct),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&build(false), &distinct),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+
+    let collision = [
+        state("target", &["A", "A"]),
+        state("source", &["A"]),
+    ];
+    assert!(matches!(
+        physical_closed_world_schema_plan(&build(true), &collision),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    let unproved_fk = [
+        state("target", &["a"]),
+        state("source", &["A"]),
+    ];
+    assert!(matches!(
+        physical_closed_world_schema_plan(&build(true), &unproved_fk),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+
+    let db = Connection::open_in_memory().unwrap();
+    let distinct_binary: bool = db
+        .query_row("SELECT 'A' != 'a'", [], |row| row.get(0))
+        .unwrap();
+    assert!(distinct_binary);
+}
