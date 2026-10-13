@@ -190,7 +190,7 @@ pub fn physical_typed_value_plan(
                     }
                 }
                 _ => typed_error(validate_value_as_float_scalar(value, data_type)),
-                }
+            }
         }
         DataType::Json => match value {
             PhysicalTypedValue::Json(document) => json_document_proof(document),
