@@ -407,6 +407,7 @@ fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePla
     }
 }
 
+mod check_comparisons;
 mod constraints;
 mod evaluator;
 mod operators;
