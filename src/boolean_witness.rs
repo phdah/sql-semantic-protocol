@@ -868,6 +868,11 @@ fn normalize(
             {
                 let left = resolve_column(left, sources);
                 let right = resolve_column(right, sources);
+                if left.relation().is_none() || left.relation() != right.relation() {
+                    return residual(
+                        "cross-relation comparison requires a relational witness, not one source row",
+                    );
+                }
                 if integer_evidence(&left).is_none() || integer_evidence(&right).is_none() {
                     return residual(
                         "cross-column comparison requires signed integer type evidence",
