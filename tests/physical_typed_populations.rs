@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_typed_append_schema_plan,
-    physical_typed_closed_world_schema_plan, CheckCompareOperator, ConfiguredSqlInput,
+    physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
+    CheckCompareOperator, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     DataType, DataTypeField, LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue,
     PhysicalTypedWriteRow, PhysicalTypedWriteState, RelationCatalog, RelationConstraint,
@@ -514,6 +515,84 @@ fn ddl_disjunction_normalizes_only_full_portable_same_column_equality() {
                 .iter()
                 .any(|rule| matches!(rule, RelationConstraint::AcceptedValues(_))),
             "{unsupported} silently dropped an unproved OR branch"
+        );
+    }
+}
+
+fn typed_insert_bundle(sql: &str) -> sql_semantic_protocol::AnalysisBundle {
+    let prior = bundle();
+    let catalog = RelationCatalog::from_schemas(prior.source_schemas()).unwrap();
+    let source = SqlInput::inline(sql);
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let input = ConfiguredSqlInput::new("typed-insert", &source, "duckdb", dialect.as_ref());
+    let mut result = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+    result.enrich_relation_constraints(prior.relation_constraints());
+    result
+}
+
+#[test]
+fn ordered_typed_insert_select_preserves_exact_nested_values() {
+    let sql = "INSERT INTO target (id,payload) SELECT id,payload FROM source";
+    let bundle = typed_insert_bundle(sql);
+    let snapshots = [
+        typed_state("target", vec![]),
+        typed_state("source", vec![
+            typed_row(1, payload(2,3)), typed_row(2,payload(4,5))
+        ]),
+    ];
+    let plan = physical_typed_ordered_insert_plan(&bundle, &snapshots);
+    let PhysicalTypedPopulationPlan::Feasible { final_states } = plan else {
+        panic!("expected typed INSERT proof: {plan:?}");
+    };
+    let target = final_states.iter().find(|s| s.relation()=="target").unwrap();
+    assert_eq!(target.rows(), snapshots[1].rows());
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE source(
+         id INTEGER PRIMARY KEY,
+         payload STRUCT(scores INTEGER[2], label VARCHAR));
+         CREATE TABLE target(
+         id INTEGER PRIMARY KEY,
+         payload STRUCT(scores INTEGER[2], label VARCHAR));
+         INSERT INTO source VALUES
+         (1, {'scores':[2,3], 'label':'ok'}),
+         (2, {'scores':[4,5], 'label':'ok'});
+         INSERT INTO target(id,payload) SELECT id,payload FROM source;").unwrap();
+    let count: i64 = db.query_row("SELECT COUNT(*) FROM target",[],|row| row.get(0)).unwrap();
+    assert_eq!(count,2);
+    let mut statement = db.prepare("SELECT payload FROM target ORDER BY id").unwrap();
+    let mut batches = statement.query_arrow([]).unwrap();
+    let batch = batches.next().unwrap();
+    assert!(format!("{:?}",batch.schema().field(0).data_type()).contains("Struct"));
+}
+
+#[test]
+fn ordered_typed_insert_rejects_existing_key_collisions_and_unknown_sql() {
+    let complete = typed_insert_bundle(
+        "INSERT INTO target (id,payload) SELECT id,payload FROM source",
+    );
+    let collisions = [
+        typed_state("target",vec![typed_row(1,payload(8,9))]),
+        typed_state("source",vec![typed_row(1,payload(2,3))]),
+    ];
+    assert!(matches!(
+        physical_typed_ordered_insert_plan(&complete,&collisions),
+        PhysicalTypedPopulationPlan::Impossible { .. }
+    ));
+    for sql in [
+        "INSERT INTO target(id,payload) SELECT id,payload FROM source WHERE id>0",
+        "INSERT INTO target(id,payload) SELECT id+1,payload FROM source",
+    ] {
+        let input = [
+            typed_state("target",vec![]),
+            typed_state("source",vec![typed_row(1,payload(2,3))]),
+        ];
+        assert!(
+            matches!(
+                physical_typed_ordered_insert_plan(&typed_insert_bundle(sql),&input),
+                PhysicalTypedPopulationPlan::Residual { .. }
+            ),
+            "{sql}"
         );
     }
 }
