@@ -5,9 +5,9 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
-    BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput, ProtocolStatement,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, to_json,
+    parse_dbt_catalog, parse_dbt_manifest, to_json, BooleanRowConstraint, BooleanTruthCase,
+    BooleanWitness, BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -107,13 +107,19 @@ fn null_safe_integer_comparison_is_two_valued() {
 
 #[test]
 fn unsupported_computed_membership_and_ranges_remain_residual() {
-    for predicate in [
-        "a IN (a * 2, 1)",
-        "a BETWEEN a + b AND 5",
-    ] {
+    for predicate in ["a IN (a * 2, 1)", "a BETWEEN a + b AND 5"] {
         let witness = typed_witness(predicate);
-        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }), "{predicate}");
-        assert!(matches!(witness.rejected(), BooleanWitnessDirection::Residual { .. }), "{predicate}");
+        assert!(
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
+            "{predicate}"
+        );
+        assert!(
+            matches!(witness.rejected(), BooleanWitnessDirection::Residual { .. }),
+            "{predicate}"
+        );
     }
 }
 
@@ -131,8 +137,17 @@ fn null_membership_obligations_preserve_unknown_in_both_directions() {
         "a BETWEEN NULL AND 3",
     ] {
         let witness = typed_witness(predicate);
-        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Impossible), "{predicate}: UNKNOWN cannot be SQL TRUE");
-        assert!(matches!(witness.rejected(), BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)), "{predicate}");
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Impossible),
+            "{predicate}: UNKNOWN cannot be SQL TRUE"
+        );
+        assert!(
+            matches!(
+                witness.rejected(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+            ),
+            "{predicate}"
+        );
     }
     let witness = typed_witness("a IN (1, NULL)");
     assert!(matches!(witness.condition(), BooleanRowConstraint::Any(_)));
@@ -156,7 +171,10 @@ fn certified_computed_null_tests_have_exact_two_valued_outcomes() {
     }
     let impossible = typed_witness("a IS NOT NULL AND COALESCE(a, b) IS NULL");
     // If b is NULL this can still be false, but never SQL TRUE:
-    assert!(matches!(impossible.qualifying(), BooleanWitnessDirection::Impossible));
+    assert!(matches!(
+        impossible.qualifying(),
+        BooleanWitnessDirection::Impossible
+    ));
 }
 
 #[test]
@@ -169,17 +187,25 @@ fn opaque_or_mixed_type_computed_null_tests_fail_closed() {
         "CASE WHEN a IS NULL THEN b END IS NULL",
     ] {
         let witness = typed_witness(predicate);
-        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }), "{predicate}");
+        assert!(
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
+            "{predicate}"
+        );
     }
 }
 
 #[test]
 fn duckdb_oracle_certifies_coalesce_and_nullif_null_tests() {
     let connection = Connection::open_in_memory().unwrap();
-    connection.execute_batch(
-        "CREATE TABLE t(a INTEGER, b INTEGER);
-         INSERT INTO t VALUES (NULL, NULL), (NULL, 1), (1, NULL), (2, 2), (3, 4), (4, 3);"
-    ).unwrap();
+    connection
+        .execute_batch(
+            "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (NULL, NULL), (NULL, 1), (1, NULL), (2, 2), (3, 4), (4, 3);",
+        )
+        .unwrap();
     for (predicate, expected) in [
         ("COALESCE(a, b) IS NULL", 1_i64),
         ("COALESCE(a, b) IS NOT NULL", 5),
@@ -189,11 +215,13 @@ fn duckdb_oracle_certifies_coalesce_and_nullif_null_tests() {
         ("CASE WHEN a IS NULL THEN b ELSE a END IS NULL", 1),
         ("CASE WHEN a IS NOT NULL THEN b ELSE a END IS NOT NULL", 3),
     ] {
-        let actual: i64 = connection.query_row(
-            &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
-            [],
-            |row| row.get(0),
-        ).unwrap();
+        let actual: i64 = connection
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
         assert_eq!(actual, expected, "{predicate}");
     }
 }
@@ -204,7 +232,8 @@ fn emitted_null_comparison_is_parser_independent_and_two_valued_at_filter_bounda
         "SELECT a FROM t WHERE a = NULL",
         "postgresql",
         &PostgreSqlDialect {},
-    ).unwrap();
+    )
+    .unwrap();
     let document: Value = serde_json::from_str(&to_json(&protocol)).unwrap();
     let witness = &document["inputs"][0]["statements"][0]["boolean_witness"];
     assert_eq!(witness["condition"]["kind"], "unknown_null_comparison");
@@ -224,10 +253,13 @@ fn all_registered_dialects_retain_computed_null_test_structure() {
             panic!("{name}: expected query");
         };
         let witness = query.boolean_witness().expect("computed null witness");
-        assert!(matches!(
-            witness.qualifying(),
-            BooleanWitnessDirection::Residual { .. }
-        ), "{name}: untyped integer COALESCE must not become exact");
+        assert!(
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
+            "{name}: untyped integer COALESCE must not become exact"
+        );
     }
 }
 
@@ -248,21 +280,40 @@ fn dbt_compiled_nullable_expression_and_direct_sql_share_witnesses() {
             SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
             SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
         ],
-    ).unwrap();
+    )
+    .unwrap();
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let sql_input = SqlInput::inline(SQL);
     let direct = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("direct", &sql_input, "postgresql", &dialect)],
+        &[ConfiguredSqlInput::new(
+            "direct",
+            &sql_input,
+            "postgresql",
+            &dialect,
+        )],
         &catalog,
-    ).unwrap();
+    )
+    .unwrap();
     let find_witness = |bundle: &sql_semantic_protocol::AnalysisBundle| {
-        let layer = bundle.layers().iter().find(|layer| {
-            layer.consumes().iter().any(|relation| relation == "warehouse.raw.orders")
-        }).expect("source-consuming layer");
+        let layer = bundle
+            .layers()
+            .iter()
+            .find(|layer| {
+                layer
+                    .consumes()
+                    .iter()
+                    .any(|relation| relation == "warehouse.raw.orders")
+            })
+            .expect("source-consuming layer");
         let ComposedSemantics::Resolved(ref semantics) = layer.composed_semantics() else {
             panic!("resolved semantics required");
         };
-        semantics.boolean_witnesses().first().expect("witness").witness().clone()
+        semantics
+            .boolean_witnesses()
+            .first()
+            .expect("witness")
+            .witness()
+            .clone()
     };
     let a = find_witness(&dbt);
     let b = find_witness(&direct);

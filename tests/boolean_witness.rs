@@ -1072,7 +1072,9 @@ fn witness_truth(
             };
             match operator {
                 ComparisonOperator::IsDistinctFrom => Some(value.map(i64::from) != Some(*literal)),
-                ComparisonOperator::IsNotDistinctFrom => Some(value.map(i64::from) == Some(*literal)),
+                ComparisonOperator::IsNotDistinctFrom => {
+                    Some(value.map(i64::from) == Some(*literal))
+                }
                 ordinary => value.map(|v| {
                     let v = i64::from(v);
                     match ordinary {
@@ -1082,13 +1084,17 @@ fn witness_truth(
                         ComparisonOperator::Lte => v <= *literal,
                         ComparisonOperator::Gt => v > *literal,
                         ComparisonOperator::Gte => v >= *literal,
-                        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom =>
-                            unreachable!("handled above"),
+                        ComparisonOperator::IsDistinctFrom
+                        | ComparisonOperator::IsNotDistinctFrom => unreachable!("handled above"),
                     }
                 }),
             }
         }
-        BooleanRowConstraint::IntegerColumnComparison { left, operator, right } => {
+        BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator,
+            right,
+        } => {
             let get = |column: &sql_semantic_protocol::ColumnRef| match column.name() {
                 "a" => a,
                 "b" => b,
@@ -1106,13 +1112,13 @@ fn witness_truth(
                     ComparisonOperator::Lte => lhs <= rhs,
                     ComparisonOperator::Gt => lhs > rhs,
                     ComparisonOperator::Gte => lhs >= rhs,
-                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom =>
-                        unreachable!("handled above"),
+                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
+                        unreachable!("handled above")
+                    }
                 }),
             }
         }
-        BooleanRowConstraint::StringEquality { .. }
-        | BooleanRowConstraint::StringPrefix { .. } => {
+        BooleanRowConstraint::StringEquality { .. } | BooleanRowConstraint::StringPrefix { .. } => {
             panic!("integer differential fixture cannot evaluate string condition")
         }
         BooleanRowConstraint::Residual { reason } => {
