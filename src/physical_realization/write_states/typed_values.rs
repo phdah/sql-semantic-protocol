@@ -122,8 +122,8 @@ pub fn physical_typed_value_plan(
                     PhysicalTypeProof::Feasible => {}
                     gap => return gap,
                 }
-                // Canonicalize integer keys before checking equality; 05 and 5 are
-                // the same key. Other numeric key types need exact comparison laws.
+                // Canonicalize exact integer and decimal keys before checking
+                // equality. 05, 5.0 and +5 are the same decimal key.
                 let identity = match key.as_ref() {
                     DataType::SignedInteger { .. } => {
                         number.parse::<i128>().ok().map(|n| format!("signed:{n}"))
@@ -131,11 +131,15 @@ pub fn physical_typed_value_plan(
                     DataType::UnsignedInteger { .. } => {
                         number.parse::<u128>().ok().map(|n| format!("unsigned:{n}"))
                     }
+                    DataType::Decimal { .. } => {
+                        super::check_comparisons::canonical_decimal_identity(number)
+                            .map(|n| format!("decimal:{n}"))
+                    }
                     _ => None,
                 };
                 let Some(identity) = identity else {
                     return PhysicalTypeProof::Residual {
-                        reason: "map key canonical numeric identity is not proven".to_string(),
+                        reason: "map key equality needs an exact numeric storage law".to_string(),
                     };
                 };
                 if !numeric_keys.insert(identity) {
