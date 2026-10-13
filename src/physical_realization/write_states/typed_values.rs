@@ -1,0 +1,232 @@
+//! Typed physical values for Arrow-style nested witness feasibility.
+//!
+//! Values here are caller-controlled materializations, not SQL parser literals.
+//! The scalar validator remains canonical; nested shapes add only structural
+//! obligations and never invent implicit casts or warehouse comparison laws.
+
+use super::type_validation::validate_value;
+use super::*;
+
+/// One physical scalar or nested value, preserving ordered Arrow-style fields.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PhysicalTypedValue {
+    /// Existing canonical SQL literal, including NULL.
+    Scalar(LiteralValue),
+    /// Exact bytes, with no implicit character encoding.
+    Bytes(Vec<u8>),
+    /// Ordered list of independently typed values.
+    Array(Vec<Self>),
+    /// Ordered key/value pairs. SQL map key equality needs a proven law.
+    Map(Vec<(Self, Self)>),
+    /// Struct fields in canonical declared order.
+    Struct(Vec<Self>),
+}
+
+/// A complete physical value proof, a contradiction, or a precise gap.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PhysicalTypeProof {
+    /// The canonical type admits this exact typed value.
+    Feasible,
+    /// Exact byte/shape/type evidence disproves this physical value.
+    Impossible { reason: String },
+    /// SQL or warehouse behavior is insufficiently attested.
+    Residual { reason: String },
+}
+
+fn typed_error(result: StateResult<()>) -> PhysicalTypeProof {
+    match result {
+        Ok(()) => PhysicalTypeProof::Feasible,
+        Err(StateFailure::Impossible(reason)) => PhysicalTypeProof::Impossible { reason },
+        Err(StateFailure::Residual(_, reason)) => PhysicalTypeProof::Residual { reason },
+    }
+}
+
+/// Check a complete Arrow-like physical value against the canonical datatype.
+///
+/// This proves exact scalar, binary and nested shape laws. The API does not
+/// assume string key collation, JSON storage identity, float NaN encodings,
+/// nullable struct child defaults or automatic numeric widening.
+pub fn physical_typed_value_plan(value: &PhysicalTypedValue, data_type: &DataType) -> PhysicalTypeProof {
+    match data_type {
+        DataType::Nullable(inner) => {
+            if matches!(value, PhysicalTypedValue::Scalar(LiteralValue::Null)) {
+                PhysicalTypeProof::Feasible
+            } else {
+                physical_typed_value_plan(value, inner)
+            }
+        }
+        DataType::Array { element: Some(element), length } => {
+            let PhysicalTypedValue::Array(values) = value else {
+                return PhysicalTypeProof::Residual {
+                    reason: "array physical encoding is not attested".to_string(),
+                };
+            };
+            if length.is_some_and(|max| u64::try_from(values.len()).ok() != Some(max)) {
+                return PhysicalTypeProof::Impossible {
+                    reason: "physical array length contradicts declared fixed length".to_string(),
+                };
+            }
+            for element_value in values {
+                let check = physical_typed_value_plan(element_value, element);
+                if check != PhysicalTypeProof::Feasible {
+                    return check;
+                }
+            }
+            PhysicalTypeProof::Feasible
+        }
+        DataType::Array { element: None, .. } => PhysicalTypeProof::Residual {
+            reason: "array element datatype is unknown".to_string(),
+        },
+        DataType::Struct { fields } => {
+            let PhysicalTypedValue::Struct(values) = value else {
+                return PhysicalTypeProof::Residual {
+                    reason: "struct field encoding is not attested".to_string(),
+                };
+            };
+            if fields.len() != values.len() {
+                return PhysicalTypeProof::Impossible {
+                    reason: "struct physical field arity differs from declared arity".to_string(),
+                };
+            }
+            for (item, field) in values.iter().zip(fields) {
+                let check = physical_typed_value_plan(item, field.data_type());
+                if check != PhysicalTypeProof::Feasible {
+                    return check;
+                }
+            }
+            PhysicalTypeProof::Feasible
+        }
+        DataType::Map { key, value: map_value } => {
+            let PhysicalTypedValue::Map(entries) = value else {
+                return PhysicalTypeProof::Residual {
+                    reason: "map physical representation is not attested".to_string(),
+                };
+            };
+            let mut numeric_keys = std::collections::BTreeSet::<String>::new();
+            for (entry_key, entry_value) in entries {
+                let PhysicalTypedValue::Scalar(LiteralValue::Number(number)) = entry_key else {
+                    return PhysicalTypeProof::Residual {
+                        reason: "map-key equality or null semantics are not attested".to_string(),
+                    };
+                };
+                match physical_typed_value_plan(entry_key, key) {
+                    PhysicalTypeProof::Feasible => {}
+                    gap => return gap,
+                }
+                if !numeric_keys.insert(number.clone()) {
+                    return PhysicalTypeProof::Impossible {
+                        reason: "duplicate exact numeric map key".to_string(),
+                    };
+                }
+                let check = physical_typed_value_plan(entry_value, map_value);
+                if check != PhysicalTypeProof::Feasible {
+                    return check;
+                }
+            }
+            PhysicalTypeProof::Feasible
+        }
+        DataType::Binary { length, fixed } => {
+            let PhysicalTypedValue::Bytes(bytes) = value else {
+                return PhysicalTypeProof::Residual {
+                    reason: "binary value requires exact bytes".to_string(),
+                };
+            };
+            let size = bytes.len() as u64;
+            if length.is_some_and(|max| size > max) {
+                PhysicalTypeProof::Impossible {
+                    reason: "binary value exceeds declared length".to_string(),
+                }
+            } else if *fixed && length.is_some_and(|size_required| size != size_required) {
+                PhysicalTypeProof::Residual {
+                    reason: "binary fixed-width padding needs an engine law".to_string(),
+                }
+            } else {
+                PhysicalTypeProof::Feasible
+            }
+        }
+        _ => match value {
+            PhysicalTypedValue::Scalar(literal) => typed_error(validate_value(literal, data_type)),
+            _ => PhysicalTypeProof::Residual {
+                reason: "nested value has no matching canonical scalar type".to_string(),
+            },
+        },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::data_type::DataTypeField;
+
+    #[test]
+    fn nested_struct_arrays_are_feasible_with_exact_scalar_bounds() {
+        let kind = DataType::Struct {
+            fields: vec![
+                DataTypeField::new(Some("id".into()), DataType::SignedInteger { bits: Some(32) }),
+                DataTypeField::new(Some("tags".into()), DataType::Array {
+                    element: Some(Box::new(DataType::String { length: Some(5), fixed: false })),
+                    length: Some(2),
+                }),
+            ],
+        };
+        let good = PhysicalTypedValue::Struct(vec![
+            PhysicalTypedValue::Scalar(LiteralValue::Number("7".into())),
+            PhysicalTypedValue::Array(vec![
+                PhysicalTypedValue::Scalar(LiteralValue::Text("foo".into())),
+                PhysicalTypedValue::Scalar(LiteralValue::Text("bar".into())),
+            ]),
+        ]);
+        assert_eq!(physical_typed_value_plan(&good, &kind), PhysicalTypeProof::Feasible);
+        let bad = PhysicalTypedValue::Struct(vec![
+            PhysicalTypedValue::Scalar(LiteralValue::Number("7".into())),
+        ]);
+        assert!(matches!(physical_typed_value_plan(&bad, &kind), PhysicalTypeProof::Impossible { .. }));
+    }
+
+    #[test]
+    fn map_duplicate_exact_keys_are_impossible_unverified_text_keys_residual() {
+        let kind = DataType::Map {
+            key: Box::new(DataType::SignedInteger { bits: Some(64) }),
+            value: Box::new(DataType::Boolean),
+        };
+        let one = (
+            PhysicalTypedValue::Scalar(LiteralValue::Number("5".into())),
+            PhysicalTypedValue::Scalar(LiteralValue::Boolean(true)),
+        );
+        assert_eq!(
+            physical_typed_value_plan(&PhysicalTypedValue::Map(vec![one.clone()]), &kind),
+            PhysicalTypeProof::Feasible
+        );
+        assert!(matches!(
+            physical_typed_value_plan(&PhysicalTypedValue::Map(vec![one.clone(), one]), &kind),
+            PhysicalTypeProof::Impossible { .. }
+        ));
+        let text_key = PhysicalTypedValue::Map(vec![
+            (PhysicalTypedValue::Scalar(LiteralValue::Text("A".into())),
+             PhysicalTypedValue::Scalar(LiteralValue::Boolean(true)))
+        ]);
+        assert!(matches!(physical_typed_value_plan(&text_key, &kind), PhysicalTypeProof::Residual { .. }));
+    }
+
+    #[test]
+    fn exact_binary_is_possible_but_json_opaque_and_float_nan_residual() {
+        let kind = DataType::Binary { length: Some(4), fixed: false };
+        assert_eq!(
+            physical_typed_value_plan(&PhysicalTypedValue::Bytes(vec![0, 255]), &kind),
+            PhysicalTypeProof::Feasible
+        );
+        assert!(matches!(
+            physical_typed_value_plan(&PhysicalTypedValue::Bytes(vec![0; 5]), &kind),
+            PhysicalTypeProof::Impossible { .. }
+        ));
+        for (value, kind) in [
+            (LiteralValue::Text("{\"a\":1}".into()), DataType::Json),
+            (LiteralValue::Number("NaN".into()), DataType::FloatingPoint { bits: Some(64) }),
+        ] {
+            assert!(matches!(
+                physical_typed_value_plan(&PhysicalTypedValue::Scalar(value), &kind),
+                PhysicalTypeProof::Residual { .. }
+            ));
+        }
+    }
+}
