@@ -113,7 +113,7 @@ pub(super) fn physical_rank_partition_count_plan(
         .iter()
         .find(|item| item.relation() == source)?;
     if bundle.relation_constraints().iter().any(|set| {
-        set.relation() == source && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+        set.relation() == source && set.blocks_unconstrained_physical_plans()
     }) {
         return None;
     }
