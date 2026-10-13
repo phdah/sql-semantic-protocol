@@ -121,6 +121,7 @@ pub struct SchemaColumn {
     name: String,
     data_type: DataType,
     timestamp_zone: Option<TimestampZone>,
+    collation: Option<String>,
 }
 
 impl SchemaColumn {
@@ -141,6 +142,7 @@ impl SchemaColumn {
             name,
             data_type,
             timestamp_zone: None,
+            collation: None,
         })
     }
 
@@ -181,6 +183,30 @@ impl SchemaColumn {
         }
         self.timestamp_zone = Some(zone);
         Ok(self)
+    }
+
+    /// Attach a column-specific physical collation identity without assuming its comparison laws.
+    pub fn with_collation(mut self, collation: impl Into<String>) -> Result<Self, RelationMetadataError> {
+        let collation = collation.into();
+        if collation.trim().is_empty() {
+            return Err(RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: "collation identity cannot be empty".to_string(),
+            });
+        }
+        if !matches!(self.data_type, DataType::String { .. } | DataType::Nullable(_)) {
+            return Err(RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: "collation identity requires a text-like column".to_string(),
+            });
+        }
+        self.collation = Some(collation);
+        Ok(self)
+    }
+
+    /// Physical collation identity, with no implicit binary or case-insensitive assumptions.
+    pub fn collation(&self) -> Option<&str> {
+        self.collation.as_deref()
     }
 
     /// Return physical time-zone awareness, or None when metadata cannot prove it.
