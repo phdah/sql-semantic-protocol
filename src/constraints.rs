@@ -7,6 +7,7 @@ use std::collections::BTreeSet;
 use std::fmt;
 
 use crate::column_sources::ColumnValueSource;
+use crate::computed_keys::ComputedKeyConstraint;
 
 /// Source category that supplied one piece of constraint evidence.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -634,6 +635,7 @@ pub struct RelationConstraintSet {
     relation: String,
     constraints: Vec<RelationConstraint>,
     column_value_sources: Vec<ColumnValueSource>,
+    computed_keys: Vec<ComputedKeyConstraint>,
     diagnostics: Vec<ConstraintDiagnostic>,
 }
 
@@ -655,6 +657,7 @@ impl RelationConstraintSet {
             relation,
             constraints: Vec::new(),
             column_value_sources: Vec::new(),
+            computed_keys: Vec::new(),
             diagnostics: Vec::new(),
         };
         for constraint in constraints {
@@ -672,6 +675,37 @@ impl RelationConstraintSet {
     /// Return canonical constraints in deterministic order.
     pub fn constraints(&self) -> &[RelationConstraint] {
         &self.constraints
+    }
+
+    /// Canonical computed functional keys declared on this relation.
+    pub fn computed_keys(&self) -> &[ComputedKeyConstraint] {
+        &self.computed_keys
+    }
+
+    /// Add portable functional keys, coalescing matching evidence.
+    pub fn with_computed_keys(mut self, keys: Vec<ComputedKeyConstraint>) -> Self {
+        for key in keys {
+            self.add_computed_key(key);
+        }
+        self.normalize();
+        self
+    }
+
+    fn add_computed_key(&mut self, key: ComputedKeyConstraint) {
+        if let Some(existing) = self.computed_keys.iter_mut().find(|existing| existing.same_semantics(&key)) {
+            existing.merge_evidence(&key);
+            return;
+        }
+        if key.primary()
+            && (self.constraints.iter().any(|constraint| matches!(constraint, RelationConstraint::PrimaryKey(_)))
+                || self.computed_keys.iter().any(ComputedKeyConstraint::primary))
+        {
+            self.diagnostics.push(ConstraintDiagnostic::new(
+                "conflicting_primary_key",
+                format!("relation '{}' has conflicting primary key declarations", self.relation),
+            ));
+        }
+        self.computed_keys.push(key);
     }
 
     /// Canonical sources of implicit default, generated and identity column values.
@@ -720,6 +754,7 @@ impl RelationConstraintSet {
     /// Generated/identity values require additional evaluation evidence.
     pub fn blocks_unconstrained_physical_plans(&self) -> bool {
         !self.constraints.is_empty()
+            || !self.computed_keys.is_empty()
             || !self.diagnostics.is_empty()
             || self
                 .column_value_sources
@@ -856,6 +891,18 @@ impl RelationConstraintSet {
             }
             result.add_column_value_source(source.clone());
         }
+        for key in &self.computed_keys {
+            if let Some(schema) = local {
+                if key.expressions().iter().flat_map(|expr| expr.referenced_columns()).any(|name| !schema.columns().iter().any(|c| c.name() == name)) {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "invalid_computed_key_column",
+                        format!("computed key on '{}' references an undeclared column", self.relation),
+                    ));
+                    continue;
+                }
+            }
+            result.add_computed_key(key.clone());
+        }
         for diagnostic in diagnostics {
             result.add_diagnostic(diagnostic);
         }
@@ -873,6 +920,9 @@ impl RelationConstraintSet {
         }
         for source in &other.column_value_sources {
             self.add_column_value_source(source.clone());
+        }
+        for key in &other.computed_keys {
+            self.add_computed_key(key.clone());
         }
         self.diagnostics.extend(other.diagnostics.iter().cloned());
         self.normalize();
@@ -902,6 +952,7 @@ impl RelationConstraintSet {
             relation,
             constraints,
             column_value_sources: self.column_value_sources.clone(),
+            computed_keys: self.computed_keys.clone(),
             diagnostics: self.diagnostics.clone(),
         })
     }
