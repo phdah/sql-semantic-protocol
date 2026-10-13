@@ -6,6 +6,8 @@
 use std::collections::BTreeSet;
 use std::fmt;
 
+use crate::column_sources::ColumnValueSource;
+
 /// Source category that supplied one piece of constraint evidence.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[non_exhaustive]
@@ -534,6 +536,7 @@ impl ConstraintDiagnostic {
 pub struct RelationConstraintSet {
     relation: String,
     constraints: Vec<RelationConstraint>,
+    column_value_sources: Vec<ColumnValueSource>,
     diagnostics: Vec<ConstraintDiagnostic>,
 }
 
@@ -554,6 +557,7 @@ impl RelationConstraintSet {
         let mut result = Self {
             relation,
             constraints: Vec::new(),
+            column_value_sources: Vec::new(),
             diagnostics: Vec::new(),
         };
         for constraint in constraints {
@@ -571,6 +575,36 @@ impl RelationConstraintSet {
     /// Return canonical constraints in deterministic order.
     pub fn constraints(&self) -> &[RelationConstraint] {
         &self.constraints
+    }
+
+    /// Canonical sources of implicit default, generated and identity column values.
+    pub fn column_value_sources(&self) -> &[ColumnValueSource] {
+        &self.column_value_sources
+    }
+
+    /// Attach value-production metadata, coalescing matching evidence and retaining conflicts.
+    pub fn with_column_value_sources(mut self, sources: Vec<ColumnValueSource>) -> Self {
+        for source in sources {
+            self.add_column_value_source(source);
+        }
+        self.normalize();
+        self
+    }
+
+    fn add_column_value_source(&mut self, source: ColumnValueSource) {
+        if let Some(existing) = self.column_value_sources.iter_mut()
+            .find(|existing| existing.same_semantics(&source))
+        {
+            existing.merge_evidence(&source);
+            return;
+        }
+        if self.column_value_sources.iter().any(|existing| existing.column() == source.column()) {
+            self.diagnostics.push(ConstraintDiagnostic::new(
+                "conflicting_column_value_sources",
+                format!("relation '{}' has inconsistent value generation for column '{}'", self.relation, source.column()),
+            ));
+        }
+        self.column_value_sources.push(source);
     }
 
     /// Return explicit conflicts or unsupported metadata details.
@@ -669,6 +703,27 @@ impl RelationConstraintSet {
 
         let mut result = Self::new(self.relation.clone(), valid)
             .expect("existing constraint relation has already been validated");
+        for source in &self.column_value_sources {
+            let declared = local.and_then(|schema| schema.columns().iter()
+                .find(|column| column.name() == source.column()));
+            if local.is_some() && declared.is_none() {
+                diagnostics.push(ConstraintDiagnostic::new(
+                    "invalid_value_source_column",
+                    format!("relation '{}' value source references undeclared column '{}'", self.relation, source.column()),
+                ));
+                continue;
+            }
+            if let (Some(column), Some(value)) = (declared, source.value()) {
+                if !constraint_value_fits_type(value, column.data_type()) {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "incompatible_column_default",
+                        format!("relation '{}.{}' has incompatible default literal", self.relation, source.column()),
+                    ));
+                    continue;
+                }
+            }
+            result.add_column_value_source(source.clone());
+        }
         for diagnostic in diagnostics {
             result.add_diagnostic(diagnostic);
         }
@@ -683,6 +738,9 @@ impl RelationConstraintSet {
     pub(crate) fn merge(&mut self, other: &Self) {
         for constraint in &other.constraints {
             self.add_constraint(constraint.clone());
+        }
+        for source in &other.column_value_sources {
+            self.add_column_value_source(source.clone());
         }
         self.diagnostics.extend(other.diagnostics.iter().cloned());
         self.normalize();
@@ -710,6 +768,7 @@ impl RelationConstraintSet {
         Ok(Self {
             relation,
             constraints,
+            column_value_sources: self.column_value_sources.clone(),
             diagnostics: self.diagnostics.clone(),
         })
     }
@@ -807,6 +866,7 @@ impl RelationConstraintSet {
 
     fn normalize(&mut self) {
         self.constraints.sort();
+        self.column_value_sources.sort();
         self.diagnostics.sort();
         self.diagnostics.dedup();
     }
