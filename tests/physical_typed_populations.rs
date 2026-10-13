@@ -661,6 +661,19 @@ fn typed_insert_uses_only_authoritative_omitted_defaults() {
         .unwrap();
     assert_eq!(target.rows(), &[typed_row(7, payload(2, 3))]);
 
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE source(id INTEGER PRIMARY KEY, payload STRUCT(scores INTEGER[2], label VARCHAR));
+         CREATE TABLE target(id INTEGER PRIMARY KEY DEFAULT 7, payload STRUCT(scores INTEGER[2], label VARCHAR));
+         INSERT INTO source VALUES (7, {'scores':[2,3], 'label':'ok'});
+         INSERT INTO target(payload) SELECT payload FROM source WHERE id=7;",
+    )
+    .unwrap();
+    let generated_id: i32 = db
+        .query_row("SELECT id FROM target", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(generated_id, 7);
+
     let without_default = typed_insert_bundle(sql);
     assert!(matches!(
         physical_typed_ordered_insert_plan(&without_default, &snapshots),
