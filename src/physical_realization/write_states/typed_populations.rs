@@ -290,3 +290,153 @@ pub fn physical_typed_append_schema_plan(
     state.rows.extend_from_slice(inserted);
     physical_typed_closed_world_schema_plan(bundle, &final_states)
 }
+
+/// Execute only lossless, row-preserving typed INSERT SELECT statements over
+/// complete physical populations, in canonical SQL statement order.
+///
+/// Each projected value must be a direct source-column reference or an exact
+/// literal. Nested Arrow values are copied without converting them to SQL
+/// scalar literals. WHERE, joins, grouping, functions, generated omissions,
+/// transaction/deferral effects and non-INSERT writes remain residual. Every
+/// poststate is checked against all attested target/source constraints, so
+/// duplicate rows and FK cycles are never certified by isolated row guesses.
+pub fn physical_typed_ordered_insert_plan(
+    bundle: &AnalysisBundle,
+    initial_states: &[PhysicalTypedWriteState],
+) -> PhysicalTypedPopulationPlan {
+    let final_states = match physical_typed_closed_world_schema_plan(bundle, initial_states) {
+        PhysicalTypedPopulationPlan::Feasible { final_states } => final_states,
+        other => return other,
+    };
+    let mut states = final_states
+        .into_iter()
+        .map(|state| (state.relation.clone(), state))
+        .collect::<BTreeMap<_, _>>();
+    if bundle.inputs().iter().any(|input| {
+        input.statements().iter().any(|statement| {
+            matches!(statement, ProtocolStatement::Unsupported(_))
+        })
+    }) {
+        return PhysicalTypedPopulationPlan::Residual {
+            relation: None,
+            reason: "unsupported SQL statement or transaction in typed write program".into(),
+        };
+    }
+
+    for layer in bundle.layers() {
+        let Some(kind) = layer.write_kind() else {
+            continue;
+        };
+        if kind != WriteKind::Append {
+            return PhysicalTypedPopulationPlan::Residual {
+                relation: None,
+                reason: "only direct typed INSERT SELECT is executable without SQL casts".into(),
+            };
+        }
+        let query = bundle
+            .inputs()
+            .iter()
+            .find(|input| input.id() == layer.input_id())
+            .and_then(|input| input.statements().get(layer.statement_index()))
+            .and_then(|statement| match statement {
+                ProtocolStatement::Query(query) => Some(query),
+                ProtocolStatement::Unsupported(_) => None,
+            });
+        let Some(query) = query else {
+            return PhysicalTypedPopulationPlan::Residual {
+                relation: None,
+                reason: "typed write layer has no canonical query".into(),
+            };
+        };
+        let Some(write) = query.write() else {
+            return PhysicalTypedPopulationPlan::Residual {
+                relation: None,
+                reason: "typed INSERT has no canonical target operation".into(),
+            };
+        };
+        let target = write.target();
+        let gap = |reason: &str| PhysicalTypedPopulationPlan::Residual {
+            relation: Some(target.to_string()),
+            reason: reason.to_string(),
+        };
+        if !(query.row_preserving_projection() || query.filter_only_row_shape())
+            || query.set_operation().is_some()
+            || query.aggregation().is_some()
+            || !query.joins().is_empty()
+            || query.predicates().where_predicate().is_some()
+            || query.predicates().having_predicate().is_some()
+            || query.predicates().qualify_predicate().is_some()
+        {
+            return gap("typed INSERT source is not a provable one-source unfiltered projection");
+        }
+        let [source] = query.sources() else {
+            return gap("typed INSERT requires exactly one physical source");
+        };
+        let Some(source_rows) = states.get(source.name()) else {
+            return gap("complete typed INSERT source population is missing");
+        };
+        let Some(schema) = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == target)
+        else {
+            return gap("typed INSERT target schema is missing");
+        };
+        let columns = if write.target_columns().is_empty() {
+            schema
+                .columns()
+                .iter()
+                .map(|column| column.name().to_string())
+                .collect::<Vec<_>>()
+        } else {
+            write.target_columns().to_vec()
+        };
+        if columns.len() != schema.columns().len()
+            || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
+            || schema
+                .columns()
+                .iter()
+                .any(|column| !columns.contains(&column.name().to_string()))
+            || columns.len() != query.output().columns().len()
+        {
+            return gap("typed INSERT must explicitly determine all unique target columns");
+        }
+        let mut inserted = Vec::new();
+        for row in &source_rows.rows {
+            let mut projected = BTreeMap::new();
+            for (target_column, output) in columns.iter().zip(query.output().columns()) {
+                let value = match output.expression() {
+                    Expression::Column(column)
+                        if column.relation().is_none()
+                            || column.relation() == Some(source.name())
+                            || column.relation() == source.alias() =>
+                    {
+                        row.values.get(column.name()).cloned()
+                    }
+                    Expression::Literal(literal) => {
+                        Some(PhysicalTypedValue::Scalar(literal.value().clone()))
+                    }
+                    _ => None,
+                };
+                let Some(value) = value else {
+                    return gap("typed INSERT projection needs an exact direct source-column or literal");
+                };
+                projected.insert(target_column.clone(), value);
+            }
+            inserted.push(PhysicalTypedWriteRow { values: projected });
+        }
+        let Some(state) = states.get_mut(target) else {
+            return gap("complete initial typed INSERT target population is missing");
+        };
+        state.rows.extend(inserted);
+        let snapshots = states.values().cloned().collect::<Vec<_>>();
+        let checked = physical_typed_closed_world_schema_plan(bundle, &snapshots);
+        match checked {
+            PhysicalTypedPopulationPlan::Feasible { .. } => {}
+            other => return other,
+        }
+    }
+    PhysicalTypedPopulationPlan::Feasible {
+        final_states: states.into_values().collect(),
+    }
+}
