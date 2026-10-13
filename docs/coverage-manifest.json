@@ -20,7 +20,9 @@
       "date_time_and_timestamp_timezone_guards",
       "schema_key_foreign_key_checks",
       "closed_world_cyclic_foreign_keys",
-      "generated_identity_opaque_residual"
+      "generated_identity_opaque_residual",
+      "Arrow_style_nested_array_map_struct_typed_value_bounds",
+      "enforced_numeric_scalar_CHECK_and_SQL_NULL"
     ],
     "tests": [
       "tests/physical_write_states.rs",
@@ -28,7 +30,7 @@
       "tests/odcs.rs"
     ],
     "unproved": [
-      "Arrow_nested_struct_array_map_physical_encoding",
+      "Arrow_nested_struct_array_map_SQL_execution_and_serialization",
       "NaN_signed_zero_and_decimal_implicit_rounding",
       "vendor_collation_and_timezone_execution_laws",
       "computed_key_and_generated_identity_execution",
