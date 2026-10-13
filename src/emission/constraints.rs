@@ -41,6 +41,13 @@ pub(super) fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> V
                     "column": constraint.column(),
                     "evidence": evidence
                 }),
+                RelationConstraint::CheckComparison(constraint) => json!({
+                    "kind": "check_comparison",
+                    "column": constraint.column(),
+                    "operator": constraint.operator().as_str(),
+                    "value": constraint_value_to_value(constraint.value()),
+                    "evidence": evidence
+                }),
                 RelationConstraint::AcceptedValues(constraint) => json!({
                     "kind": "accepted_values",
                     "column": constraint.column(),
