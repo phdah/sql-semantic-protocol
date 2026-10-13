@@ -290,7 +290,7 @@ fn unconstrained_produced_relations(bundle: &AnalysisBundle, walker: &Walker<'_>
         node.produced_relations().iter().all(|relation| {
             !bundle.relation_constraints().iter().any(|set| {
                 set.relation() == relation
-                    && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+                    && set.blocks_unconstrained_physical_plans()
             })
         })
     })
