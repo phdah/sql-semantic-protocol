@@ -68,12 +68,15 @@ pub(super) fn evaluate(
                 if value == LiteralValue::Null {
                     continue;
                 }
-                if matches!(&value, LiteralValue::Number(number) if number.parse::<i128>().is_err()) {
+                if matches!(&value, LiteralValue::Number(number) if number.parse::<i128>().is_err())
+                {
                     return Err(residual("COALESCE numeric coercion is not proved"));
                 }
                 let kind = std::mem::discriminant(&value);
                 if category.is_some_and(|prior| prior != kind) {
-                    return Err(residual("COALESCE argument types need a common attested law"));
+                    return Err(residual(
+                        "COALESCE argument types need a common attested law",
+                    ));
                 }
                 category = Some(kind);
                 if chosen == LiteralValue::Null {
@@ -142,9 +145,9 @@ fn ordered_generated_sources(
                 "generated expression lacks authoritative execution evidence",
             ));
         }
-        let expression = source.expression().ok_or_else(|| {
-            residual("generated column has no executable expression law")
-        })?;
+        let expression = source
+            .expression()
+            .ok_or_else(|| residual("generated column has no executable expression law"))?;
         for referenced in expression.referenced_columns() {
             let dependency = sources.iter().find(|other| {
                 other.column() == referenced && other.kind() == ColumnValueKind::Generated
@@ -153,9 +156,11 @@ fn ordered_generated_sources(
                 // Some dialects reject one generated column referring to
                 // another. Explicit enforced metadata is required to attest
                 // that this dependency is legal for the physical relation.
-                if !source.evidence().iter().any(|e| {
-                    e.enforcement() == ConstraintEnforcement::Enforced
-                }) {
+                if !source
+                    .evidence()
+                    .iter()
+                    .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
+                {
                     return Err(residual_gap(
                         PhysicalWriteStateGap::UnprovedConstraint,
                         "generated-to-generated dependency needs authoritative engine evidence",
@@ -200,9 +205,10 @@ pub(super) fn check_declared_sources(
         let expression = source
             .expression()
             .ok_or_else(|| residual("generated expression has no executable semantics"))?;
-        let actual = row.values.get(source.column()).ok_or_else(|| {
-            impossible("physical row is missing its declared generated column")
-        })?;
+        let actual = row
+            .values
+            .get(source.column())
+            .ok_or_else(|| impossible("physical row is missing its declared generated column"))?;
         let expected = evaluate(expression, &row.values)?;
         if !matches!(
             (&expected, actual),
@@ -231,8 +237,13 @@ pub(super) fn complete_generated(
     let ordered = ordered_generated_sources(sources)?;
     // Do not overwrite an explicitly supplied generated column, even when
     // the value happens to match its declared expression.
-    if ordered.iter().any(|source| values.contains_key(source.column())) {
-        return Err(residual("direct INSERT assignment to generated column is unproved"));
+    if ordered
+        .iter()
+        .any(|source| values.contains_key(source.column()))
+    {
+        return Err(residual(
+            "direct INSERT assignment to generated column is unproved",
+        ));
     }
     for source in ordered {
         let expression = source
