@@ -72,6 +72,10 @@ Implementation PR: https://github.com/phdah/sql-semantic-protocol/pull/88
 
 The four decisions in [docs/coverage-signoff.md](../../docs/coverage-signoff.md) are approved with addendums. This fixes the product contract but not the unverified executable evidence. TASK-66's inventory/handoff criteria are complete; the **TASK-88/89/91 and sql-tdg TASK-36/44** release criteria remain unchecked until each claimed supported variant/dialect has canonical and physical-source proof or a reviewed conditional deferral and exhaustive downstream E2E tests. A fixed random seed must reproduce rejecting-alternative selection, while multiple seeds prove every constructive predicate/column alternative can be selected. All thirteen dialects must show equality of canonical outputs for semantically equivalent SQL; DuckDB remains the actual executable full-pipeline oracle.
 
+## TASK-79 additional schema evidence handoff (2026-10-13)
+
+The `task_79_schema_evidence` inventory now records portable `ABS`/`COALESCE`, dependency-ordered generated columns and cycle residuals, composite key/FK comparison completeness, and the validated typed physical witness sidecar (`schema/typed-physical-population.schema.json`). These are scoped physical proofs, not automatic upgrades to all 13-dialect/251-variant certification. sql-tdg and other consumers use the canonical protocol for query semantics and may consume the sidecar only when a complete population is certified.
+
 ## TASK-79 schema capability handoff (2026-10-13)
 
 The authoritative TASK-79 physical-schema evidence inventory is `docs/coverage-manifest.json.task_79_schema_evidence`. PR #107 contributes typed SQL DDL, ODCS defaults, dbt CHECK expressions, portable compound AND/BETWEEN predicates, decimal/text key identity, nested typed source/target populations, and explicit enforcement status proofs. The inventory itself remains Done; these additions **do not** certify unverified per-dialect or downstream generator cells. sql-tdg TASK-31/35/36/43/44 consume the protocol's certified canonical facts and never derive missing defaults, constraints or datatype semantics from raw SQL.
