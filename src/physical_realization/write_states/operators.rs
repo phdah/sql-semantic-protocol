@@ -378,10 +378,11 @@ pub(super) fn merge_rows(
             match clause.action() {
                 MergeAction::Insert { columns, values } => {
                     let schema = schema_for(bundle, target)?;
-                    if columns.len() != schema.columns().len() || values.len() != 1 {
-                        return Err(residual(
-                            "MERGE INSERT requires complete target-column tuple",
-                        ));
+                    if values.len() != 1 {
+                        return Err(residual("MERGE INSERT requires one proven target row"));
+                    }
+                    if columns.len() != values[0].len() {
+                        return Err(residual("MERGE INSERT target/value arity is not proved"));
                     }
                     let mut row_values = BTreeMap::new();
                     for (column, value) in columns.iter().zip(&values[0]) {
@@ -395,7 +396,7 @@ pub(super) fn merge_rows(
                             return Err(impossible("duplicate MERGE target column"));
                         }
                     }
-                    inserts.push(PhysicalWriteRow { values: row_values });
+                    inserts.push(complete_insert_row(bundle, target, row_values, schema)?);
                 }
                 _ => return Err(residual("unproved NOT MATCHED MERGE action")),
             }
