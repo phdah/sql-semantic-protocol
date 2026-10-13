@@ -346,17 +346,26 @@ pub fn parse_odcs_documents(
 
             let mut constraints = property_constraints(contract, schema)?;
             constraints.extend(relationship_constraints(contract, schema, &parsed)?);
-            let defaults = schema.properties.iter().filter_map(|property| {
-                property.default_value.as_ref().map(|value| (property, value))
-            }).map(|(property, value)| {
-                let identity = property.id.as_deref().unwrap_or(&property.name);
-                ColumnValueSource::new(
-                    property.column.clone(),
-                    ColumnValueKind::Default,
-                    Some(value.clone()),
-                    vec![evidence(contract, schema, "default", identity)?],
-                ).map_err(|error| constraint_error(&contract.source, error))
-            }).collect::<Result<Vec<_>, _>>()?;
+            let defaults = schema
+                .properties
+                .iter()
+                .filter_map(|property| {
+                    property
+                        .default_value
+                        .as_ref()
+                        .map(|value| (property, value))
+                })
+                .map(|(property, value)| {
+                    let identity = property.id.as_deref().unwrap_or(&property.name);
+                    ColumnValueSource::new(
+                        property.column.clone(),
+                        ColumnValueKind::Default,
+                        Some(value.clone()),
+                        vec![evidence(contract, schema, "default", identity)?],
+                    )
+                    .map_err(|error| constraint_error(&contract.source, error))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
             if !constraints.is_empty() || !defaults.is_empty() {
                 let set = RelationConstraintSet::new(schema.relation.clone(), constraints)
                     .map_err(|error| constraint_error(&contract.source, error))?
@@ -632,7 +641,10 @@ fn parse_property(
     let unique =
         optional_bool(property, source, &format!("{path}.unique"), "unique")?.unwrap_or(false);
     let enum_values = parse_enum(property.get("enum"), source, &format!("{path}.enum"))?;
-    let default_value = property.get("default").map(|value| constraint_value(value, source, &format!("{path}.default"))).transpose()?;
+    let default_value = property
+        .get("default")
+        .map(|value| constraint_value(value, source, &format!("{path}.default")))
+        .transpose()?;
     let implicit_from = format!("{schema_name}.{name}");
     let relationships = parse_relationship_array(
         property.get("relationships"),
