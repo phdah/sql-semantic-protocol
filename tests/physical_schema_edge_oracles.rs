@@ -26,11 +26,17 @@ fn exact_decimal_precision_and_scale_match_duckdb_storage() {
         PhysicalTypeProof::Feasible,
     );
     assert!(matches!(
-        prove(LiteralValue::Number("12345678901234567890.1234567".into()), kind.clone()),
+        prove(
+            LiteralValue::Number("12345678901234567890.1234567".into()),
+            kind.clone()
+        ),
         PhysicalTypeProof::Impossible { .. },
     ));
     assert!(matches!(
-        prove(LiteralValue::Number("99999999999999999999999999999999999999999".into()), kind),
+        prove(
+            LiteralValue::Number("99999999999999999999999999999999999999999".into()),
+            kind
+        ),
         PhysicalTypeProof::Impossible { .. },
     ));
 
@@ -57,11 +63,9 @@ fn date_validation_and_oracle_respect_leap_days() {
     ));
     let db = Connection::open_in_memory().unwrap();
     let value: String = db
-        .query_row(
-            "SELECT CAST(DATE '2024-02-29' AS VARCHAR)",
-            [],
-            |row| row.get(0),
-        )
+        .query_row("SELECT CAST(DATE '2024-02-29' AS VARCHAR)", [], |row| {
+            row.get(0)
+        })
         .unwrap();
     assert_eq!(value, "2024-02-29");
     assert!(db
@@ -93,7 +97,9 @@ fn float_nan_json_and_timezone_require_explicit_engine_semantics() {
         .unwrap();
     assert!(is_nan);
     let json: String = db
-        .query_row("SELECT CAST(JSON '{\"k\":1}' AS VARCHAR)", [], |row| row.get(0))
+        .query_row("SELECT CAST(JSON '{\"k\":1}' AS VARCHAR)", [], |row| {
+            row.get(0)
+        })
         .unwrap();
     assert!(json.contains("\"k\""));
     // Proving a JSON parser or IEEE754 representation in one engine does not
