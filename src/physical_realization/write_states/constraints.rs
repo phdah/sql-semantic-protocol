@@ -51,6 +51,48 @@ pub(super) fn validate_all_constraints(
                 "unresolved canonical constraint diagnostics",
             ));
         }
+        for key in set.computed_keys() {
+            if !key
+                .evidence()
+                .iter()
+                .any(|evidence| evidence.enforcement() == ConstraintEnforcement::Enforced)
+            {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "computed key enforcement not attested",
+                ));
+            }
+            let mut seen: Vec<Vec<LiteralValue>> = Vec::new();
+            for row in &state.rows {
+                let values = key
+                    .expressions()
+                    .iter()
+                    .map(|expression| super::generated::evaluate(expression, &row.values))
+                    .collect::<StateResult<Vec<_>>>()?;
+                if values.iter().any(|value| matches!(value, LiteralValue::Null)) {
+                    if key.primary() {
+                        return Err(impossible("computed PRIMARY KEY cannot contain NULL"));
+                    }
+                    return Err(residual_gap(
+                        PhysicalWriteStateGap::UnprovedConstraint,
+                        "nullable functional UNIQUE key has an unknown NULL uniqueness law",
+                    ));
+                }
+                for prior in &seen {
+                    let mut identical = true;
+                    for (left, right) in values.iter().zip(prior) {
+                        if !scalar_equality(left, right)? {
+                            identical = false;
+                            break;
+                        }
+                    }
+                    if identical {
+                        return Err(impossible("enforced computed key has duplicate physical values"));
+                    }
+                }
+                seen.push(values);
+            }
+        }
         for constraint in set.constraints() {
             if !constraint
                 .evidence()
