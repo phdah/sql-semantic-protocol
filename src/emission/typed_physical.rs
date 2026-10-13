@@ -21,10 +21,9 @@ pub fn to_physical_typed_population_json(
     bundle: &AnalysisBundle,
     snapshots: &[PhysicalTypedWriteState],
 ) -> Result<String, PhysicalTypedPopulationPlan> {
-    let PhysicalTypedPopulationPlan::Feasible { final_states } =
-        physical_typed_closed_world_schema_plan(bundle, snapshots)
-    else {
-        return Err(physical_typed_closed_world_schema_plan(bundle, snapshots));
+    let final_states = match physical_typed_closed_world_schema_plan(bundle, snapshots) {
+        PhysicalTypedPopulationPlan::Feasible { final_states } => final_states,
+        other => return Err(other),
     };
     let populations = final_states.iter().map(|state| {
         json!({
