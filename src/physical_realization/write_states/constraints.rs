@@ -61,17 +61,54 @@ pub(super) fn validate_all_constraints_with_identity(
     non_null_nested: &BTreeSet<(String, String)>,
     identity_columns: &BTreeSet<(String, String)>,
 ) -> StateResult<()> {
+    // A closed-world proof cannot silently ignore a constrained relation or
+    // an FK target merely because the caller omitted its physical population.
+    // Unrelated unconstrained catalog entries do not require materialization.
+    let mut required_relations = BTreeSet::new();
+    for set in bundle.relation_constraints() {
+        if !set.constraints().is_empty()
+            || !set.computed_keys().is_empty()
+            || !set.computed_checks().is_empty()
+            || !set.computed_boolean_checks().is_empty()
+            || !set.column_value_sources().is_empty()
+            || !set.diagnostics().is_empty()
+        {
+            required_relations.insert(set.relation().to_string());
+        }
+        for constraint in set.constraints() {
+            if let RelationConstraint::ForeignKey(key) = constraint {
+                required_relations.insert(key.referenced_relation().to_string());
+            }
+        }
+    }
+    for relation in &required_relations {
+        if !states.contains_key(relation) {
+            return Err(residual_gap(
+                PhysicalWriteStateGap::MissingPopulation,
+                format!("missing complete constrained or referenced relation population: {relation}"),
+            ));
+        }
+    }
+
     for set in bundle.relation_constraints() {
         let Some(state) = states.get(set.relation()) else {
             continue;
         };
+        let schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == set.relation())
+            .ok_or_else(|| residual_gap(
+                PhysicalWriteStateGap::MissingSchema,
+                format!("missing schema for constrained relation {}", set.relation()),
+            ))?;
         let controlled = identity_columns
             .iter()
             .filter(|(relation, _)| relation == set.relation())
             .map(|(_, column)| column.clone())
             .collect::<BTreeSet<_>>();
         for row in &state.rows {
-            super::generated::check_declared_sources(set.column_value_sources(), row, &controlled)?;
+            super::generated::check_declared_sources(set.column_value_sources(), row, &controlled, schema)?;
         }
         if !set.diagnostics().is_empty() {
             return Err(residual_gap(
@@ -104,8 +141,8 @@ pub(super) fn validate_all_constraints_with_identity(
                 ));
             }
             for row in &state.rows {
-                let left = super::generated::evaluate(check.left(), &row.values)?;
-                let right = super::generated::evaluate(check.right(), &row.values)?;
+                let left = super::generated::evaluate(check.left(), &row.values, schema)?;
+                let right = super::generated::evaluate(check.right(), &row.values, schema)?;
                 let value = match right {
                     LiteralValue::Null => ConstraintValue::Null,
                     LiteralValue::Boolean(value) => ConstraintValue::Boolean(value),
@@ -134,7 +171,7 @@ pub(super) fn validate_all_constraints_with_identity(
                 ));
             }
             for row in &state.rows {
-                super::boolean_checks::check(check.predicate(), &row.values)?;
+                super::boolean_checks::check(check.predicate(), &row.values, schema)?;
             }
         }
         for key in set.computed_keys() {
@@ -160,7 +197,7 @@ pub(super) fn validate_all_constraints_with_identity(
                 let values = key
                     .expressions()
                     .iter()
-                    .map(|expression| super::generated::evaluate(expression, &row.values))
+                    .map(|expression| super::generated::evaluate(expression, &row.values, schema))
                     .collect::<StateResult<Vec<_>>>()?;
                 if key.primary()
                     && values
