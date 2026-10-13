@@ -438,13 +438,22 @@ schema:
 "#;
     let catalog = RelationCatalog::new(&["analytics.orders"]).unwrap();
     let parsed = parse_odcs_yaml(yaml, "postgresql", &catalog).unwrap();
-    let set = parsed.relation_constraints().iter()
-        .find(|set| set.relation() == "analytics.orders").unwrap();
+    let set = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "analytics.orders")
+        .unwrap();
     let [default] = set.column_value_sources() else {
         panic!("expected one canonical default");
     };
     assert_eq!(default.kind(), ColumnValueKind::Default);
     assert_eq!(default.value(), Some(&ConstraintValue::Integer(7)));
-    assert_eq!(default.evidence()[0].enforcement(), ConstraintEnforcement::Unknown);
-    assert_eq!(default.evidence()[0].provenance().source_kind(), ConstraintSourceKind::ExternalMetadata);
+    assert_eq!(
+        default.evidence()[0].enforcement(),
+        ConstraintEnforcement::Unknown
+    );
+    assert_eq!(
+        default.evidence()[0].provenance().source_kind(),
+        ConstraintSourceKind::ExternalMetadata
+    );
 }
