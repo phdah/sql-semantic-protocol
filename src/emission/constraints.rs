@@ -61,18 +61,22 @@ pub(super) fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> V
         "constraints": constraints
     });
     if !set.column_value_sources().is_empty() {
-        value["column_value_sources"] = json!(set.column_value_sources().iter().map(|source| {
-            json!({
-                "column": source.column(),
-                "kind": source.kind().as_str(),
-                "value": source.value().map(constraint_value_to_value),
-                "evidence": source.evidence().iter().map(|evidence| json!({
-                    "source_kind": evidence.provenance().source_kind().as_str(),
-                    "source_id": evidence.provenance().source_id(),
-                    "enforcement": evidence.enforcement().as_str()
-                })).collect::<Vec<_>>()
+        value["column_value_sources"] = json!(set
+            .column_value_sources()
+            .iter()
+            .map(|source| {
+                json!({
+                    "column": source.column(),
+                    "kind": source.kind().as_str(),
+                    "value": source.value().map(constraint_value_to_value),
+                    "evidence": source.evidence().iter().map(|evidence| json!({
+                        "source_kind": evidence.provenance().source_kind().as_str(),
+                        "source_id": evidence.provenance().source_id(),
+                        "enforcement": evidence.enforcement().as_str()
+                    })).collect::<Vec<_>>()
+                })
             })
-        }).collect::<Vec<_>>());
+            .collect::<Vec<_>>());
     }
     if !set.diagnostics().is_empty() {
         value["diagnostics"] = json!(set
