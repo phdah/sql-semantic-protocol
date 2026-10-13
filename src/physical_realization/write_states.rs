@@ -566,8 +566,8 @@ mod typed_values;
 
 pub use typed_populations::{
     physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
-    physical_typed_ordered_insert_plan,
-    PhysicalTypedPopulationPlan, PhysicalTypedWriteRow, PhysicalTypedWriteState,
+    physical_typed_ordered_insert_plan, PhysicalTypedPopulationPlan, PhysicalTypedWriteRow,
+    PhysicalTypedWriteState,
 };
 pub use typed_values::{physical_typed_value_plan, PhysicalTypeProof, PhysicalTypedValue};
 
