@@ -209,6 +209,7 @@ pub(super) fn check_declared_sources(
             (LiteralValue::Number(_), LiteralValue::Number(_))
                 | (LiteralValue::Null, LiteralValue::Null)
                 | (LiteralValue::Boolean(_), LiteralValue::Boolean(_))
+                | (LiteralValue::Text(_), LiteralValue::Text(_))
         ) {
             return Err(residual(
                 "generated value comparison lacks exact numeric or boolean law",
