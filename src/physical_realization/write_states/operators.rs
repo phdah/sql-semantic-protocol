@@ -82,12 +82,87 @@ pub(super) fn define_rows(
     ))
 }
 
+/// Fill only omitted columns with independently attested scalar defaults.
+/// Generated and identity expressions are not interchangeable with defaults.
+fn complete_insert_row(
+    bundle: &AnalysisBundle,
+    relation: &str,
+    mut values: BTreeMap<String, LiteralValue>,
+    schema: &RelationSchema,
+    identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
+) -> StateResult<PhysicalWriteRow> {
+    let sources = bundle
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == relation)
+        .map(|set| set.column_value_sources())
+        .unwrap_or(&[]);
+    for column in schema.columns() {
+        if values.contains_key(column.name()) {
+            if sources.iter().any(|source| {
+                source.column() == column.name()
+                    && source.kind() != crate::column_sources::ColumnValueKind::Default
+            }) {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "direct assignment to generated or identity column is unproved",
+                ));
+            }
+            continue;
+        }
+        let source = sources
+            .iter()
+            .find(|source| source.column() == column.name())
+            .ok_or_else(|| residual("omitted INSERT column has no attested default"))?;
+        if source.kind() == crate::column_sources::ColumnValueKind::Generated {
+            continue;
+        }
+        if source.kind() == crate::column_sources::ColumnValueKind::Identity {
+            if !super::generated::authoritative(source) {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "identity allocation is not authoritatively declared",
+                ));
+            }
+            let sequence = identity_sequences
+                .get_mut(&(relation.to_string(), column.name().to_string()))
+                .ok_or_else(|| residual("identity INSERT requires an attested sequence state"))?;
+            values.insert(column.name().to_string(), sequence.allocate()?);
+            continue;
+        }
+        if source.kind() != crate::column_sources::ColumnValueKind::Default {
+            return Err(residual(
+                "unsupported generated column value source in INSERT",
+            ));
+        }
+        if !super::generated::authoritative(source) {
+            return Err(residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "default metadata lacks authoritative execution evidence",
+            ));
+        }
+        let literal = source
+            .value()
+            .ok_or_else(|| residual("opaque INSERT default expression cannot be evaluated"))?;
+        values.insert(
+            column.name().to_string(),
+            super::generated::scalar_literal(literal),
+        );
+    }
+    super::generated::complete_generated(sources, &mut values, schema)?;
+    if values.len() != schema.columns().len() {
+        return Err(residual("INSERT row contains undeclared target columns"));
+    }
+    Ok(PhysicalWriteRow { values })
+}
+
 pub(super) fn append_rows(
     bundle: &AnalysisBundle,
     query: &QueryStatement,
     states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
+    identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let Some(write) = query.write() else {
@@ -103,17 +178,12 @@ pub(super) fn append_rows(
     } else {
         write.target_columns().to_vec()
     };
-    // Defaults and generated columns require independent canonical evidence.
-    if columns.len() != schema.columns().len()
-        || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
-        || schema
-            .columns()
+    if columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
+        || columns
             .iter()
-            .any(|c| !columns.contains(&c.name().to_string()))
+            .any(|column| !schema.columns().iter().any(|c| c.name() == column))
     {
-        return Err(residual(
-            "implicit/default/partial INSERT target columns not proved",
-        ));
+        return Err(residual("INSERT targets duplicate or undeclared columns"));
     }
     let produced = evaluate_simple_select(bundle, query, states)?;
     let mut next = before.clone();
@@ -122,15 +192,67 @@ pub(super) fn append_rows(
             return Err(residual("INSERT SELECT projection arity is not proved"));
         }
         let values = columns.iter().cloned().zip(output_row).collect();
-        next.rows.push(PhysicalWriteRow { values });
+        next.rows.push(complete_insert_row(
+            bundle,
+            target,
+            values,
+            schema,
+            identity_sequences,
+        )?);
     }
     let inserted = u64::try_from(next.rows.len() - before.rows.len())
         .map_err(|_| residual("inserted count overflow"))?;
     Ok((next, WriteRowCounts::new(inserted, 0, 0)))
 }
 
+/// Apply an UPDATE atomically, then recompute attested generated columns.
+///
+/// SQL does not permit assigning an ALWAYS-generated column directly. Preserve
+/// this distinction even when a direct assignment would equal the generated
+/// value, and recompute from the post-assignment base-column values.
+pub(super) fn apply_target_update(
+    bundle: &AnalysisBundle,
+    target: &str,
+    before: &PhysicalWriteRow,
+    assignments: &[crate::protocol::MergeAssignment],
+    context: &Context<'_>,
+    aliases: &[&str],
+) -> StateResult<PhysicalWriteRow> {
+    let sources = bundle
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == target)
+        .map(|set| set.column_value_sources())
+        .unwrap_or(&[]);
+    for assignment in assignments {
+        let column = assignment
+            .target()
+            .rsplit('.')
+            .next()
+            .unwrap_or(assignment.target());
+        if sources.iter().any(|source| {
+            source.column() == column
+                && source.kind() != crate::column_sources::ColumnValueKind::Default
+        }) {
+            return Err(residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "UPDATE explicitly assigns a generated or identity column",
+            ));
+        }
+    }
+    let schema = schema_for(bundle, target)?;
+    let mut next = apply_assignments(before, assignments, context, aliases)?;
+    for source in sources {
+        if source.kind() == crate::column_sources::ColumnValueKind::Generated {
+            next.values.remove(source.column());
+        }
+    }
+    super::generated::complete_generated(sources, &mut next.values, schema)?;
+    Ok(next)
+}
+
 pub(super) fn mutate_rows(
-    _bundle: &AnalysisBundle,
+    bundle: &AnalysisBundle,
     query: &QueryStatement,
     _states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
@@ -157,7 +279,14 @@ pub(super) fn mutate_rows(
             .checked_add(1)
             .ok_or_else(|| residual("affected count overflow"))?;
         if !delete {
-            kept.push(apply_assignments(row, write.assignments(), &context, &[])?);
+            kept.push(apply_target_update(
+                bundle,
+                target,
+                row,
+                write.assignments(),
+                &context,
+                &[],
+            )?);
         }
     }
     let counts = if delete {
@@ -180,6 +309,7 @@ pub(super) fn merge_rows(
     states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
     before: Option<&PhysicalWriteState>,
+    identity_sequences: &mut BTreeMap<(String, String), PhysicalIdentitySequence>,
 ) -> StateResult<(PhysicalWriteState, WriteRowCounts)> {
     let before = initial_target(target, before)?;
     let write = query
@@ -249,7 +379,9 @@ pub(super) fn merge_rows(
                 }
                 match clause.action() {
                     MergeAction::Update { assignments } => {
-                        result = Some(apply_assignments(
+                        result = Some(apply_target_update(
+                            bundle,
+                            target,
                             target_row,
                             assignments,
                             &context,
@@ -281,7 +413,9 @@ pub(super) fn merge_rows(
                 }
                 match clause.action() {
                     MergeAction::Update { assignments } => {
-                        result = Some(apply_assignments(
+                        result = Some(apply_target_update(
+                            bundle,
+                            target,
                             target_row,
                             assignments,
                             &context,
@@ -322,10 +456,11 @@ pub(super) fn merge_rows(
             match clause.action() {
                 MergeAction::Insert { columns, values } => {
                     let schema = schema_for(bundle, target)?;
-                    if columns.len() != schema.columns().len() || values.len() != 1 {
-                        return Err(residual(
-                            "MERGE INSERT requires complete target-column tuple",
-                        ));
+                    if values.len() != 1 {
+                        return Err(residual("MERGE INSERT requires one proven target row"));
+                    }
+                    if columns.len() != values[0].len() {
+                        return Err(residual("MERGE INSERT target/value arity is not proved"));
                     }
                     let mut row_values = BTreeMap::new();
                     for (column, value) in columns.iter().zip(&values[0]) {
@@ -339,7 +474,13 @@ pub(super) fn merge_rows(
                             return Err(impossible("duplicate MERGE target column"));
                         }
                     }
-                    inserts.push(PhysicalWriteRow { values: row_values });
+                    inserts.push(complete_insert_row(
+                        bundle,
+                        target,
+                        row_values,
+                        schema,
+                        identity_sequences,
+                    )?);
                 }
                 _ => return Err(residual("unproved NOT MATCHED MERGE action")),
             }

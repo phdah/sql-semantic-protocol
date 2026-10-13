@@ -2,6 +2,14 @@
 
 This map is a **navigation index**, not a second semantic specification. For a change, start with the narrowest owner below. Follow the interfaces to adjacent modules only when required, and run the focused test first. The canonical protocol is the Rust model in `src/protocol/`; its serialized contract is `schema/protocol.schema.json`. Do not duplicate a semantic rule in an adapter or emitter.
 
+Validated Arrow-like witness sidecar serialization: `src/emission/typed_physical.rs` owns deterministic physical value JSON; `schema/typed-physical-population.schema.json` documents its separate, non-protocol wire shape; `tests/physical_typed_serialization.rs` verifies exact bytes, bits, JSON NULL and failing proofs. Generated expression dependency ordering and portable function execution remain in `src/physical_realization/write_states/generated.rs`.
+
+Physical typed target append and ordered nested DML feasibility: `src/physical_realization/write_states/typed_populations.rs` checks before/after closed-world nested snapshots, scalar-filtered INSERTs, attested scalar-default omissions, scalar UPDATE/DELETE and preservation of untouched Arrow values; `src/physical_realization/write_states/evaluator.rs` owns shared three-valued scalar evaluation. Text-key/foreign-key binary comparison evidence: `src/relation.rs` owns source law attestation, `src/physical_realization/write_states/constraints.rs` applies it, and `src/emission/document.rs` emits the provenance.
+
+Portable Boolean CHECK AST and three-valued validator: `src/computed_boolean_checks.rs` owns canonical recursive predicate/evidence, `src/analysis/constraints.rs` normalizes SQL DDL and dbt expressions, `src/physical_realization/write_states/boolean_checks.rs` evaluates exact TRUE/FALSE/UNKNOWN, and `src/emission/constraints.rs` emits the JSON contract.
+
+Physical schema and default semantics: `src/relation.rs` owns typed columns, collation and timezone identity; `src/column_sources.rs` owns defaults and typed row-local generated-expression/opaque identity evidence; `src/computed_keys.rs` and `src/computed_checks.rs` own functional key and arithmetic CHECK facts; `src/constraints.rs` merges and validates constraints; `src/physical_realization/write_states/{constraints,check_comparisons,type_validation,operators,typed_values,typed_populations}.rs` owns closed-world physical feasibility, numeric CHECK validation and nested Arrow-like value proof. Adapter paths should only translate evidence, never implement independent proof laws.
+
 ## Starting points
 
 | Change or question | Read first | Follow only if needed | Focused tests |

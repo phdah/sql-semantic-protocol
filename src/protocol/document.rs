@@ -9,6 +9,7 @@ pub struct Protocol {
     source: ProtocolSource,
     statements: Vec<ProtocolStatement>,
     relation_constraints: Vec<RelationConstraintSet>,
+    source_schemas: Vec<crate::relation::RelationSchema>,
     comparison_declarations: Vec<ComparisonAssumption>,
 }
 
@@ -19,6 +20,7 @@ impl Protocol {
             source: ProtocolSource { dialect },
             statements,
             relation_constraints: Vec::new(),
+            source_schemas: Vec::new(),
             comparison_declarations: Vec::new(),
         }
     }
@@ -54,6 +56,19 @@ impl Protocol {
             }
         }
         self
+    }
+
+    pub(crate) fn with_source_schemas(
+        mut self,
+        schemas: Vec<crate::relation::RelationSchema>,
+    ) -> Self {
+        self.source_schemas = schemas;
+        self
+    }
+
+    /// Typed source schemas found in direct SQL declarations.
+    pub fn source_schemas(&self) -> &[crate::relation::RelationSchema] {
+        &self.source_schemas
     }
 
     /// Return the protocol contract version.

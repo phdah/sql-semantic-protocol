@@ -6,6 +6,7 @@
 //! - parse_dbt_manifest, parse_dbt_catalog, analyze_dbt_artifacts, and analyze_dbt_manifest_with_schemas adapt dbt artifacts, including canonical key and column constraints, into the same core analysis path.
 //! - With the `odcs` feature, parse_odcs_yaml and parse_odcs_documents adapt ODCS v3.2 YAML contracts into canonical schema and constraint evidence.
 //! - canonical constraint types expose primary, unique, foreign-key, not-null, and accepted-values metadata with provenance.
+//! - ColumnValueSource models exact defaults and opaque generated/identity declarations without invented values.
 //! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
 //! - parse_analysis_manifest validates the versioned declarative analysis-manifest contract.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
@@ -34,6 +35,11 @@
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
 //! - physical_unconditional_delete_plan proves a bounded before/after state for full-table DELETE.
 //! - physical_ordered_write_state_plan constructs ordered complete DML snapshots from controlled physical rows and typed schemas, failing closed on unsupported laws.
+//! - physical_typed_closed_world_schema_plan checks complete multi-source nested Arrow-style populations against the same canonical scalar and cross-relation constraints.
+//! - to_physical_typed_population_json exports validated nested physical populations as exact-bit witness sidecars.
+//! - physical_typed_append_schema_plan checks caller-supplied nested inserts against preexisting complete target and source snapshots.
+//! - physical_typed_ordered_insert_plan executes row-preserving direct-column SQL INSERT SELECT into validated nested typed states.
+//! - physical_typed_ordered_write_plan additionally supports attested scalar UPDATE/DELETE while retaining nested Arrow values.
 //! - BagKeyHistogram and equijoin_key_histogram prove fully controlled per-key
 //!   multiplicities with NULL, duplicates and shared physical aliases.
 
@@ -42,7 +48,11 @@ mod bag_histogram;
 mod bag_semantics;
 mod boolean_witness;
 mod bundle;
+mod column_sources;
 mod composition;
+mod computed_boolean_checks;
+mod computed_checks;
+mod computed_keys;
 mod constraints;
 mod constructive;
 mod data_type;
@@ -91,11 +101,16 @@ pub use bundle::{
     ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
     UnresolvedComposedSemantics,
 };
+pub use column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
+pub use computed_boolean_checks::{ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate};
+pub use computed_checks::ComputedCheckConstraint;
+pub use computed_keys::ComputedKeyConstraint;
 pub use constraints::{
-    merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
-    ConstraintEnforcement, ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance,
-    ConstraintSourceKind, ConstraintValue, ForeignKeyConstraint, KeyConstraint, NotNullConstraint,
-    RelationConstraint, RelationConstraintSet,
+    merge_relation_constraint_sets, AcceptedValuesConstraint, CheckCompareOperator,
+    CheckComparisonConstraint, ConstraintDiagnostic, ConstraintEnforcement, ConstraintEvidence,
+    ConstraintMetadataError, ConstraintProvenance, ConstraintSourceKind, ConstraintValue,
+    ForeignKeyConstraint, KeyConstraint, NotNullConstraint, RelationConstraint,
+    RelationConstraintSet,
 };
 pub use constructive::{
     local_constructive_witnesses, local_pending_producers, ClosedWorldCoverage,
@@ -109,7 +124,7 @@ pub use dbt::{
     parse_dbt_catalog, parse_dbt_manifest, DbtArtifactsError, DbtCatalog, DbtCatalogError,
     DbtManifest, DbtManifestError, SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
-pub use emission::{to_bundle_json, to_json};
+pub use emission::{to_bundle_json, to_json, to_physical_typed_population_json};
 pub use group_witness::{
     GroupAggregate, GroupValueTest, GroupWitness, GroupWitnessCase, GroupWitnessDirection,
 };
@@ -133,12 +148,17 @@ pub use outcome_goals::{
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
-    physical_joint_distribution_plan, physical_joint_row_count_plan, physical_joint_source_plan,
-    physical_ordered_write_state_plan, physical_rejected_row_count_plan, physical_row_count_plan,
-    physical_source_plan, physical_unconditional_delete_plan, PhysicalJointSourcePlan,
+    physical_closed_world_schema_plan, physical_joint_distribution_plan,
+    physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_write_state_plan,
+    physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
+    physical_row_count_plan, physical_source_plan, physical_typed_append_schema_plan,
+    physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
+    physical_typed_ordered_write_plan, physical_typed_value_plan,
+    physical_unconditional_delete_plan, PhysicalIdentitySequence, PhysicalJointSourcePlan,
     PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan,
-    PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap,
-    PhysicalWriteStatePlan, PhysicalWriteTransition,
+    PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
+    PhysicalTypedWriteState, PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
@@ -165,7 +185,8 @@ pub use protocol::{
 };
 pub use relation::{
     RelationCatalog, RelationContext, RelationMetadataError, RelationResolutionError,
-    RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TimestampZone,
+    RelationResolver, RelationSchema, SchemaColumn, SchemaSourceKind, TextComparisonLaw,
+    TimestampZone,
 };
 pub use subquery_witness::{
     SubqueryCorrelation, SubqueryMembershipCase, SubqueryMembershipDirection,

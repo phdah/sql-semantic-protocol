@@ -123,6 +123,71 @@ impl PhysicalWriteState {
     }
 }
 
+/// Caller-attested exact next allocation state for one database identity column.
+///
+/// Identity allocation is not inferred from maximum existing row values.
+/// An application must supply the authoritative next value and step for the
+/// complete execution window. Sequence caching, cycling, triggers and
+/// transaction rollback are intentionally outside this exact contract.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalIdentitySequence {
+    relation: String,
+    column: String,
+    next_value: i128,
+    increment: i128,
+}
+
+impl PhysicalIdentitySequence {
+    /// A nonempty relation/column identity and nonzero exact step.
+    pub fn new(
+        relation: impl Into<String>,
+        column: impl Into<String>,
+        next_value: i128,
+        increment: i128,
+    ) -> Option<Self> {
+        let relation = relation.into();
+        let column = column.into();
+        if relation.trim().is_empty() || column.trim().is_empty() || increment == 0 {
+            return None;
+        }
+        Some(Self {
+            relation,
+            column,
+            next_value,
+            increment,
+        })
+    }
+
+    /// Canonical relation owning this database-managed column.
+    pub fn relation(&self) -> &str {
+        &self.relation
+    }
+
+    /// Canonical column identity.
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+
+    /// Next database-produced integer in the attested sequence.
+    pub fn next_value(&self) -> i128 {
+        self.next_value
+    }
+
+    /// Attested nonzero allocation step.
+    pub fn increment(&self) -> i128 {
+        self.increment
+    }
+
+    fn allocate(&mut self) -> StateResult<LiteralValue> {
+        let emitted = self.next_value;
+        self.next_value = self
+            .next_value
+            .checked_add(self.increment)
+            .ok_or_else(|| residual("identity sequence next-value overflow"))?;
+        Ok(LiteralValue::Number(emitted.to_string()))
+    }
+}
+
 /// Exact target state on either side of one committed SQL write.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PhysicalWriteTransition {
@@ -224,6 +289,50 @@ fn impossible(reason: impl Into<String>) -> StateFailure {
     StateFailure::Impossible(reason.into())
 }
 
+/// Certify one entire physical source/target population without executing SQL.
+///
+/// This proof accepts closed-world snapshots from multiple physical relations
+/// simultaneously, allowing cyclic foreign keys to be verified against the
+/// same fixed population. It never infers rows that were not provided.
+/// Unknown type, collation, constraint-enforcement or default laws are residual.
+pub fn physical_closed_world_schema_plan(
+    bundle: &AnalysisBundle,
+    snapshots: &[PhysicalWriteState],
+) -> PhysicalWriteStatePlan {
+    physical_closed_world_schema_plan_with_nested(bundle, snapshots, &BTreeSet::new())
+}
+
+fn physical_closed_world_schema_plan_with_nested(
+    bundle: &AnalysisBundle,
+    snapshots: &[PhysicalWriteState],
+    non_null_nested: &BTreeSet<(String, String)>,
+) -> PhysicalWriteStatePlan {
+    let mut states = BTreeMap::<String, PhysicalWriteState>::new();
+    for state in snapshots {
+        if states
+            .insert(state.relation.clone(), state.clone())
+            .is_some()
+        {
+            return PhysicalWriteStatePlan::Impossible {
+                layer_id: None,
+                reason: "duplicate complete physical source identity".to_string(),
+            };
+        }
+        if let Err(error) = validate_state(bundle, state) {
+            return failure(None, error);
+        }
+    }
+    if let Err(error) =
+        constraints::validate_all_constraints_with_nested(bundle, &states, non_null_nested)
+    {
+        return failure(None, error);
+    }
+    PhysicalWriteStatePlan::Feasible {
+        transitions: Vec::new(),
+        final_states: states.into_values().collect(),
+    }
+}
+
 /// Execute supported, independently materialized writes against complete
 /// physical source and target snapshots. The returned rows are *constructed*
 /// from normalized protocol expressions without reparsing SQL.
@@ -236,6 +345,48 @@ pub fn physical_ordered_write_state_plan(
     bundle: &AnalysisBundle,
     initial_states: &[PhysicalWriteState],
 ) -> PhysicalWriteStatePlan {
+    physical_ordered_write_state_plan_with_identities(bundle, initial_states, &[])
+}
+
+/// Execute ordered SQL writes with exact, caller-attested identity sequence
+/// states. The supplied next value and increment are assumptions of this
+/// conditional proof, never inferred from existing rows or a SQL dialect name.
+///
+/// The ordinary write-state API remains residual for identity allocations.
+pub fn physical_ordered_write_state_plan_with_identities(
+    bundle: &AnalysisBundle,
+    initial_states: &[PhysicalWriteState],
+    sequences: &[PhysicalIdentitySequence],
+) -> PhysicalWriteStatePlan {
+    let mut identity_sequences = BTreeMap::<(String, String), PhysicalIdentitySequence>::new();
+    let mut identity_columns = BTreeSet::<(String, String)>::new();
+    for sequence in sequences {
+        let pair = (sequence.relation.clone(), sequence.column.clone());
+        if identity_sequences
+            .insert(pair.clone(), sequence.clone())
+            .is_some()
+        {
+            return failure(None, impossible("duplicate controlled identity sequence"));
+        }
+        let attested = bundle.relation_constraints().iter().any(|set| {
+            set.relation() == sequence.relation()
+                && set.column_value_sources().iter().any(|source| {
+                    source.column() == sequence.column()
+                        && source.kind() == crate::column_sources::ColumnValueKind::Identity
+                        && generated::authoritative(source)
+                })
+        });
+        if !attested {
+            return failure(
+                None,
+                residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "identity sequence has no authoritative canonical column declaration",
+                ),
+            );
+        }
+        identity_columns.insert(pair);
+    }
     let mut states = BTreeMap::<String, PhysicalWriteState>::new();
     for state in initial_states {
         if states
@@ -266,7 +417,7 @@ pub fn physical_ordered_write_state_plan(
                 .to_string(),
         };
     }
-    if let Err(error) = validate_all_constraints(bundle, &states) {
+    if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
         return failure(None, error);
     }
     let mut transitions = Vec::new();
@@ -299,14 +450,26 @@ pub fn physical_ordered_write_state_plan(
         let before = states.get(target).cloned();
         let result = match kind {
             WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
-            WriteKind::Append => append_rows(bundle, query, &states, target, before.as_ref()),
+            WriteKind::Append => append_rows(
+                bundle,
+                query,
+                &states,
+                target,
+                before.as_ref(),
+                &mut identity_sequences,
+            ),
             WriteKind::Update => {
                 mutate_rows(bundle, query, &states, target, before.as_ref(), false)
             }
             WriteKind::Delete => mutate_rows(bundle, query, &states, target, before.as_ref(), true),
-            WriteKind::ConditionalMutation => {
-                merge_rows(bundle, query, &states, target, before.as_ref())
-            }
+            WriteKind::ConditionalMutation => merge_rows(
+                bundle,
+                query,
+                &states,
+                target,
+                before.as_ref(),
+                &mut identity_sequences,
+            ),
         };
         let (after, counts) = match result {
             Ok(value) => value,
@@ -344,7 +507,7 @@ pub fn physical_ordered_write_state_plan(
             rows: Vec::new(),
         });
         states.insert(target.to_string(), after.clone());
-        if let Err(error) = validate_all_constraints(bundle, &states) {
+        if let Err(error) = validate_ordered_constraints(bundle, &states, &identity_columns) {
             return failure(Some(layer.id()), error);
         }
         transitions.push(PhysicalWriteTransition {
@@ -361,6 +524,23 @@ pub fn physical_ordered_write_state_plan(
     }
 }
 
+fn validate_ordered_constraints(
+    bundle: &AnalysisBundle,
+    states: &BTreeMap<String, PhysicalWriteState>,
+    identities: &BTreeSet<(String, String)>,
+) -> StateResult<()> {
+    if identities.is_empty() {
+        constraints::validate_all_constraints(bundle, states)
+    } else {
+        constraints::validate_all_constraints_with_identity(
+            bundle,
+            states,
+            &BTreeSet::new(),
+            identities,
+        )
+    }
+}
+
 fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePlan {
     let layer_id = layer_id.map(str::to_string);
     match error {
@@ -373,10 +553,24 @@ fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePla
     }
 }
 
+mod boolean_checks;
+mod check_comparisons;
 mod constraints;
 mod evaluator;
+mod generated;
 mod operators;
 mod projection;
+mod type_validation;
+mod typed_populations;
+mod typed_values;
 
-use constraints::{validate_all_constraints, validate_state};
+pub use typed_populations::{
+    physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
+    physical_typed_ordered_insert_plan, physical_typed_ordered_write_plan,
+    PhysicalTypedPopulationPlan, PhysicalTypedWriteRow, PhysicalTypedWriteState,
+};
+pub use typed_values::{physical_typed_value_plan, PhysicalTypeProof, PhysicalTypedValue};
+
+use constraints::validate_state;
 use operators::{append_rows, define_rows, merge_rows, mutate_rows};
+use type_validation::validate_column_value;

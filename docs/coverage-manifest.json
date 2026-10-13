@@ -2,6 +2,169 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_79_schema_evidence": {
+    "owner": "TASK-79",
+    "status": "verified_bounded_schema_contract_release_blocked",
+    "rust_api": [
+      "ColumnValueSource",
+      "ColumnValueKind",
+      "GeneratedValueExpression",
+      "PhysicalTypedWriteRow",
+      "PhysicalTypedWriteState",
+      "PhysicalTypedPopulationPlan",
+      "physical_typed_closed_world_schema_plan",
+      "SchemaColumn::with_collation",
+      "physical_closed_world_schema_plan",
+      "physical_ordered_write_state_plan",
+      "physical_typed_append_schema_plan",
+      "SchemaColumn::with_text_comparison_law",
+      "to_physical_typed_population_json",
+      "GeneratedValueExpression::Abs",
+      "GeneratedValueExpression::Coalesce",
+      "physical_typed_ordered_insert_plan",
+      "ComputedBooleanCheckPredicate",
+      "ComputedBooleanCheckConstraint",
+      "physical_typed_ordered_write_plan"
+    ],
+    "verified_scope": [
+      "SQL_DDL_source_schema_provenance",
+      "canonical_literal_defaults",
+      "explicit_nullable_SQL_DDL_omitted_NULL_default_and_precedence",
+      "ODCS_scalar_defaults",
+      "exact_numeric_integer_and_decimal_bounds",
+      "date_time_and_timestamp_timezone_guards",
+      "schema_key_foreign_key_checks",
+      "closed_world_cyclic_foreign_keys",
+      "generated_identity_opaque_residual",
+      "generated_exact_row_local_integer_arithmetic_and_omitted_INSERT_values",
+      "complete_Arrow_style_nested_type_populations_cross_source_scalar_keys_FKs",
+      "exact_decimal_and_boolean_CHECK_comparators_and_reversed_SQL_comparisons",
+      "Arrow_style_nested_array_map_struct_typed_value_bounds",
+      "exact_typed_JSON_ASCII_and_safe_integer_documents_SQL_NULL_distinction",
+      "finite_IEEE754_Arrow_float_bit_witnesses_with_special_values_residual",
+      "enforced_numeric_scalar_CHECK_and_SQL_NULL",
+      "nested_structural_values_under_enforced_NOT_NULL",
+      "identical_text_key_equality_with_unproved_distinct_collation",
+      "negative_floating_zero_aliases_remain_residual",
+      "portable_conjunctive_CHECK_sql_ddl_and_dbt_atomic_normalization",
+      "exact_decimal_composite_key_and_cross_relation_FK_equality",
+      "generated_integer_recomputation_in_ordered_UPDATE_and_MERGE",
+      "composite_foreign_key_partial_NULL_MATCH_conservative_residual",
+      "exact_decimal_accepted_value_comparisons_at_full_precision",
+      "computed_composite_nullable_unique_key_collision_law",
+      "accepted_values_exact_numeric_equality_with_large_decimals",
+      "accepted_values_attested_binary_text_collation_and_multiple_candidates",
+      "sql_CHECK_IN_NULL_three_valued_unknown_remains_residual",
+      "attested_binary_text_key_and_foreign_key_comparisons",
+      "attested_binary_text_comparison_provenance_protocol_serialization",
+      "typed_nested_target_appends_against_existing_rows_and_cross_relation_constraints",
+      "same_column_equality_OR_CHECK_sql_ddl_and_dbt_atomic_normalization",
+      "attested_binary_text_CHECK_eq_neq_without_ordering_assumptions",
+      "dbt_portable_CHECK_IN_list_null_safe_parity",
+      "composite_pk_unique_fk_comparison_proofs_consider_all_columns_before_residual",
+      "exact_full_tuple_fk_match_dominates_earlier_unproved_text_candidates",
+      "portable_abs_and_same_type_coalesce_sql_ddl_computed_generated_expressions",
+      "topological_generated_column_dependency_order_with_cycle_residual",
+      "ordered_update_merge_by_source_generated_recomputation",
+      "lossless_typed_physical_witness_sidecar_only_after_closed_world_validation",
+      "named_schema_generated_text_equality_without_unproved_collation_inequality",
+      "lossless_nested_Arrow_struct_array_ordered_direct_SQL_INSERT_SELECT_with_full_poststate_checks",
+      "typed_nested_INSERT_existing_PK_collision_and_expression_filter_residual",
+      "portable_computed_CHECK_boolean_AND_OR_NOT_IS_NULL_with_true_false_unknown",
+      "SQL_DDL_and_dbt_computed_boolean_CHECK_parity_with_provenance",
+      "Boolean_CHECK_decisive_branch_avoids_unsupported_comparison_guessing",
+      "controlled_identity_generated_value_dependency_with_attested_sequence",
+      "SQL_DDL_ODCS_default_parity_retains_unknown_enforcement_as_residual",
+      "portable_abs_generated_AST_cross_dialect_parser_boundary_classification",
+      "complete_nested_typed_INSERT_SELECT_with_scalar_WHERE_three_valued_filter_proof",
+      "typed_scalar_UPDATE_DELETE_preserve_untouched_nested_Arrow_values_and_recheck_entire_FK_poststate",
+      "typed_nested_SQL_predicates_and_unnormalized_WHERE_fail_closed_without_fabricated_NULLs",
+      "attested_typed_omitted_scalar_default_from_canonical_value_provenance_with_DuckDB_oracle",
+      "SQL_DDL_dbt_ODCS_named_schema_constraint_meaning_parity_without_enforcement_inference"
+    ],
+    "tests": [
+      "tests/physical_write_states.rs",
+      "tests/physical_typed_populations.rs",
+      "tests/physical_schema_edge_oracles.rs",
+      "tests/source_schema_contract.rs",
+      "tests/odcs.rs",
+      "tests/dbt_constraints.rs",
+      "tests/physical_text_comparison_emission.rs",
+      "tests/physical_typed_serialization.rs",
+      "tests/physical_schema_adapter_parity.rs"
+    ],
+    "unproved": [
+      "NaN_signed_zero_and_decimal_implicit_rounding",
+      "vendor_collation_and_timezone_execution_laws",
+      "opaque_computed_functions_and_unattested_identity_sequence_execution",
+      "dbt_catalog_and_manifest_default_execution_without_authoritative_warehouse_evidence",
+      "whole_workload_cross_dialect_Arrow_generator_and_vendor_engine_conformance",
+      "nested_typed_SQL_DML_expressions_MERGE_and_generated_omissions_beyond_scalar_row_local_mutations",
+      "unbounded_UDF_subquery_CHECK_semantics_and_cross_dialect_transaction_timing"
+    ],
+    "release_limit": "TASK-79's independent canonical schema/witness AC are verified. Whole-workload generation, vendor engine execution and per-variant 3.0 release signoff remain separate upstream/downstream gates.",
+    "sidecar_schema": "schema/typed-physical-population.schema.json",
+    "acceptance_criteria": {
+      "1": {
+        "scope": "verified_bounded_facts_with_explicit_residuals",
+        "tests": [
+          "tests/source_schema_contract.rs",
+          "tests/physical_schema_edge_oracles.rs",
+          "tests/physical_typed_populations.rs"
+        ]
+      },
+      "2": {
+        "scope": "verified_canonical_constraint_and_value_source_evidence",
+        "tests": [
+          "tests/relation_constraints.rs",
+          "tests/dbt_constraints.rs",
+          "tests/physical_write_states.rs"
+        ]
+      },
+      "3": {
+        "scope": "verified_closed_world_and_ordered_physical_proof_subset",
+        "tests": [
+          "tests/physical_write_states.rs",
+          "tests/physical_typed_populations.rs",
+          "tests/physical_schema_adapter_parity.rs"
+        ]
+      },
+      "4": {
+        "scope": "verified_equivalent_adapter_facts_with_unknown_enforcement_preserved",
+        "tests": [
+          "tests/physical_schema_adapter_parity.rs",
+          "tests/dbt_constraint_schemas.rs",
+          "tests/dbt_constraints.rs",
+          "tests/odcs.rs"
+        ]
+      },
+      "5": {
+        "scope": "verified_bounded_type_edges_and_differential_oracles_with_residuals",
+        "tests": [
+          "tests/physical_schema_edge_oracles.rs",
+          "tests/physical_typed_serialization.rs",
+          "tests/physical_typed_populations.rs"
+        ]
+      },
+      "6": {
+        "scope": "verified_protocol_contract_and_test_evidence_without_consumer_release_signoff",
+        "tests": [
+          "tests/coverage_manifest.rs",
+          "tests/physical_write_states.rs",
+          "tests/source_schema_contract.rs",
+          "tests/physical_typed_serialization.rs"
+        ]
+      }
+    },
+    "proof_scope_document": "docs/task-79-proof-scope.md",
+    "signoff": {
+      "date": "2026-10-13",
+      "scope": "bounded_local_physical_schema_proof",
+      "ci_run": "38452901670",
+      "ci_head": "5356b8fae56ba7057daa8c98bdd296c4c3ff9ae4",
+      "release_approved": false
+    }
+  },
   "task_68_physical_source_evidence": {
     "status": "verified_bounded_physical_source_contract_release_blocked",
     "owner": "TASK-68",
@@ -10470,6 +10633,12 @@
   "cross_repo_dependencies": {
     "protocol_gate": "TASK-91",
     "tdg_release_gate": "TASK-36",
+    "schema_physical_proof_gate": "TASK-79",
+    "schema_tdg_consumers": [
+      "TASK-30",
+      "TASK-33",
+      "TASK-57"
+    ],
     "tdg_candidate_pin": "TASK-43",
     "tdg_generator_tasks": [
       "TASK-24",

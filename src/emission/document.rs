@@ -138,6 +138,21 @@ pub(super) fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                         if let Some(zone) = column.timestamp_zone() {
                             column_value["timestamp_zone"] = json!(zone.as_str());
                         }
+                        if let Some(collation) = column.collation() {
+                            column_value["collation"] = json!(collation);
+                        }
+                        if let Some(law) = column.text_comparison_law() {
+                            column_value["text_comparison_law"] = json!(law.as_str());
+                            column_value["comparison_evidence"] = json!(column
+                                .comparison_evidence()
+                                .iter()
+                                .map(|evidence| json!({
+                                    "source_kind": evidence.provenance().source_kind().as_str(),
+                                    "source_id": evidence.provenance().source_id(),
+                                    "enforcement": evidence.enforcement().as_str(),
+                                }))
+                                .collect::<Vec<_>>());
+                        }
                         column_value
                     }).collect::<Vec<_>>()
                 });

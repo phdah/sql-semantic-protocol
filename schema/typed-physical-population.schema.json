@@ -1,0 +1,334 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/phdah/sql-semantic-protocol/blob/main/schema/typed-physical-population.schema.json",
+  "title": "SQL Semantic Protocol validated typed physical population witness",
+  "description": "A lossless, schema-validated physical witness sidecar. This does not replace the canonical SQL protocol JSON contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "kind",
+    "populations"
+  ],
+  "properties": {
+    "protocol_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "const": "typed_physical_population"
+    },
+    "populations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/population"
+      }
+    }
+  },
+  "$defs": {
+    "population": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "rows"
+      ],
+      "properties": {
+        "relation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        }
+      }
+    },
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "values"
+      ],
+      "properties": {
+        "values": {
+          "type": "object",
+          "propertyNames": {
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/value"
+          }
+        }
+      }
+    },
+    "value": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "scalar_kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "scalar"
+            },
+            "scalar_kind": {
+              "const": "null"
+            },
+            "value": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "scalar_kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "scalar"
+            },
+            "scalar_kind": {
+              "const": "boolean"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "scalar_kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "scalar"
+            },
+            "scalar_kind": {
+              "const": "number"
+            },
+            "value": {
+              "type": "string",
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]+)?|\\.[0-9]+)$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "scalar_kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "scalar"
+            },
+            "scalar_kind": {
+              "const": "text"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "values"
+          ],
+          "properties": {
+            "kind": {
+              "const": "bytes"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "values"
+          ],
+          "properties": {
+            "kind": {
+              "const": "bits"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "document"
+          ],
+          "properties": {
+            "kind": {
+              "const": "json_document"
+            },
+            "document": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bits"
+          ],
+          "properties": {
+            "kind": {
+              "const": "float32_bits"
+            },
+            "bits": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "bits"
+          ],
+          "properties": {
+            "kind": {
+              "const": "float64_bits"
+            },
+            "bits": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Exact unsigned IEEE754 64-bit word emitted by serde_json."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "field_index",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "union"
+            },
+            "field_index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "value": {
+              "$ref": "#/$defs/value"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "values"
+          ],
+          "properties": {
+            "kind": {
+              "const": "array"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/value"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "values"
+          ],
+          "properties": {
+            "kind": {
+              "const": "struct"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/value"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "entries"
+          ],
+          "properties": {
+            "kind": {
+              "const": "map"
+            },
+            "entries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "key",
+                  "value"
+                ],
+                "properties": {
+                  "key": {
+                    "$ref": "#/$defs/value"
+                  },
+                  "value": {
+                    "$ref": "#/$defs/value"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

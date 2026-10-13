@@ -1,10 +1,10 @@
 ---
 id: TASK-79
 title: Prove schema, datatype and constraint-feasible source constructions
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-10-13'
 labels: []
 milestone: m-3
 dependencies: 
@@ -30,14 +30,28 @@ Logical witness feasibility can fail under physical types, keys, foreign keys, N
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Expand canonical schema facts for type domains, nullability, precision/scale, collation, time zone, enums, arrays/maps/structs, and deterministic coercions.
-- [ ] #2 Represent PK/unique/FK/composite relationships, enforced CHECK and accepted values, defaults, generated/identity columns, computed keys and target-side constraints with provenance and enforcement status.
-- [ ] #3 Provide proof/unsatisfiable/residual for each physical witness under source and target constraints, including insertion against existing rows and FK cycles.
-- [ ] #4 Align direct SQL DDL, dbt manifest/catalog, ODCS and named schema inputs wherever equivalent evidence exists; unknown enforcement remains explicit.
-- [ ] #5 Cover Arrow-representable types, decimal/float/NaN/date/timestamp/JSON edge cases and cross-source constraints in differential fixtures.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Expand canonical schema facts for type domains, nullability, precision/scale, collation, time zone, enums, arrays/maps/structs, and deterministic coercions.
+- [x] #2 Represent PK/unique/FK/composite relationships, enforced CHECK and accepted values, defaults, generated/identity columns, computed keys and target-side constraints with provenance and enforcement status.
+- [x] #3 Provide proof/unsatisfiable/residual for each physical witness under source and target constraints, including insertion against existing rows and FK cycles.
+- [x] #4 Align direct SQL DDL, dbt manifest/catalog, ODCS and named schema inputs wherever equivalent evidence exists; unknown enforcement remains explicit.
+- [x] #5 Cover Arrow-representable types, decimal/float/NaN/date/timestamp/JSON edge cases and cross-source constraints in differential fixtures.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
+
+## Implementation progress (2026-10-13)
+
+PR #107 implements typed SQL DDL schemas with collation/time-zone identity, portable scalar defaults, generated/identity provenance, integer generated-column INSERT/UPDATE/MERGE execution, computed integer keys, deterministic computed CHECK and atomic AND clauses, plus dbt CHECK parity. Physical closed-world source/target proof covers exact typed scalar, JSON document and nested values, jointly attested FK cycles, explicit non-null nested occupancy, decimal/text key equality, integer/decimal/date/time edge conditions, explicitly nullable omitted INSERT columns, and enforcement distinctions (enforced, unknown, NOT ENFORCED). Rust APIs, canonical emission and JSON schema, cross-dialect/DuckDB differential tests, adapter documentation and the machine-readable coverage manifest are updated. Additional PR #107 changes preserve attested binary text comparison law and provenance in the protocol JSON (now used for PK/UNIQUE/FK comparisons), verify complete typed nested target appends against preexisting source and target populations without pretending to execute SQL INSERT, and normalize portable same-column CHECK equality disjunctions and non-NULL IN lists uniformly across SQL DDL and dbt metadata. Unknown collation, unproved CHECK OR expressions and nullable IN lists remain residual.
+
+Further progress on PR #107: composite PK/UNIQUE/FK checks now consider all tuple components and all candidate referenced rows before yielding residual for an unproved collation; deterministic `ABS` and same-type `COALESCE` expressions preserve their canonical AST, schema and output JSON; generated column DAGs use topological dependency execution with cycle and nonattested generated-to-generated rules kept residual, including UPDATE and MERGE BY SOURCE recomputation. The independent `to_physical_typed_population_json` sidecar serializes only feasible typed bags with exact decimal text, bytes, IEEE754 bits, nested order and SQL NULL/JSON document NULL distinction, accompanied by its own JSON schema and differential tests. This is not a claim that nested SQL expressions themselves are executable.
+
+The same PR also adds a normalized, provenance-bearing three-valued Boolean CHECK tree with SQL DDL/dbt adapter parity and exact physical TRUE/FALSE/UNKNOWN checks; unsupported UDF/cast/subquery branches remain residual. Nested Arrow-valued columns referenced by these checks explicitly fail closed instead of being evaluated against scalar NULL placeholders. Direct row-preserving nested `INSERT ... SELECT` is executable on complete typed populations with every committed poststate rechecked, while arbitrary nested UPDATE/DELETE/MERGE, dialect/session enforcement and unattested casts remain unproved.
+
+Additional #107 proof scope: complete nested Arrow INSERT SELECT now supports exact scalar WHERE selection using the canonical SQL three-valued evaluator, while nested predicates and unnormalized WHERE fail closed. A separate typed ordered-write entrypoint executes attested scalar UPDATE/DELETE against complete nested populations, preserving untouched Arrow values and checking cross-relation PK/FK/CHECK constraints after each statement. DuckDB comparison and contradiction/residual regression tests cover the new subset. This does not attest arbitrary nested SQL expressions, MERGE, transaction timing or identity rollback.
+
+**TASK-79 acceptance criteria verified for the bounded, source-independent physical schema proof contract.** The six criteria are discharged by the traced code, adapter parity, differential fixtures and explicit proof/residual behavior in [the TASK-79 evidence map](../../docs/task-79-proof-scope.md) and `docs/coverage-manifest.json`. The verified local gate passed Rust tests with and without default features, clippy, formatting, documentation and dbt Core E2E on PR #107 at commit `5356b8fae56ba7057daa8c98bdd296c4c3ff9ae4`.
+
+Unproved vendor/session-specific execution, general nested expressions/UDFs, Arrow IPC and consumer-generated source outcomes remain **documented residuals or downstream tasks**, not falsely claimed support. Completing TASK-79 does not authorize protocol 3.0.0, advance any unverified dialect/physical generation cell, or waive TASK-87/88/89/91 and sql-tdg integration signoff.

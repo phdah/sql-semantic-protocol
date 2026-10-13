@@ -1680,6 +1680,8 @@ fn parse_manifest_relation_constraints(
         };
         let object = as_object(value, &path)?;
         let mut constraints = Vec::new();
+        let mut computed_checks = Vec::new();
+        let mut computed_boolean_checks = Vec::new();
         let mut relation_diagnostics = Vec::new();
 
         parse_dbt_constraint_array(
@@ -1690,6 +1692,8 @@ fn parse_manifest_relation_constraints(
             None,
             resources,
             &mut constraints,
+            &mut computed_checks,
+            &mut computed_boolean_checks,
             &mut relation_diagnostics,
         )?;
 
@@ -1707,18 +1711,27 @@ fn parse_manifest_relation_constraints(
                     Some(&column_name),
                     resources,
                     &mut constraints,
+                    &mut computed_checks,
+                    &mut computed_boolean_checks,
                     &mut relation_diagnostics,
                 )?;
             }
         }
 
-        if !constraints.is_empty() || !relation_diagnostics.is_empty() {
+        if !constraints.is_empty()
+            || !computed_checks.is_empty()
+            || !computed_boolean_checks.is_empty()
+            || !relation_diagnostics.is_empty()
+        {
             let mut set = RelationConstraintSet::new(relation, constraints).map_err(|error| {
                 DbtManifestError::RelationMetadata {
                     resource_id: resource_id.clone(),
                     message: error.to_string(),
                 }
             })?;
+            set = set
+                .with_computed_checks(computed_checks)
+                .with_computed_boolean_checks(computed_boolean_checks);
             for diagnostic in relation_diagnostics {
                 set.add_diagnostic(diagnostic);
             }
@@ -2124,6 +2137,10 @@ fn parse_dbt_constraint_array(
     implied_column: Option<&str>,
     resources: &BTreeMap<String, DbtResource>,
     output: &mut Vec<RelationConstraint>,
+    computed_checks: &mut Vec<crate::computed_checks::ComputedCheckConstraint>,
+    computed_boolean_checks: &mut Vec<
+        crate::computed_boolean_checks::ComputedBooleanCheckConstraint,
+    >,
     diagnostics: &mut Vec<ConstraintDiagnostic>,
 ) -> Result<(), DbtManifestError> {
     let Some(value) = value else {
@@ -2140,6 +2157,119 @@ fn parse_dbt_constraint_array(
         let constraint_path = format!("{path}[{index}]");
         let object = as_object(value, &constraint_path)?;
         let constraint_type = required_string(object, "type", &format!("{constraint_path}.type"))?;
+        if constraint_type == "check" {
+            let parsed = object
+                .get("expression")
+                .and_then(Value::as_str)
+                .and_then(crate::analysis::constraints::portable_check_expressions);
+            let evidence = vec![dbt_constraint_evidence(
+                ConstraintSourceKind::DbtConstraint,
+                &format!("{resource_id}:{constraint_path}"),
+            )?];
+            let mut admitted = parsed.is_some();
+            let mut accepted_rules = Vec::new();
+            let mut accepted_computed = Vec::new();
+            let mut accepted_boolean = Vec::new();
+            for term in parsed.unwrap_or_default() {
+                match term {
+                    crate::analysis::constraints::PortableCheckExpression::Scalar(
+                        column,
+                        op,
+                        value,
+                    ) if implied_column.is_none_or(|name| name == column) => {
+                        let rule = RelationConstraint::check_comparison(
+                            column,
+                            op,
+                            value,
+                            evidence.clone(),
+                        )
+                        .map_err(|error| {
+                            DbtManifestError::RelationMetadata {
+                                resource_id: resource_id.to_string(),
+                                message: format!("{relation}: {error}"),
+                            }
+                        })?;
+                        accepted_rules.push(rule);
+                    }
+                    crate::analysis::constraints::PortableCheckExpression::AcceptedValues(
+                        column,
+                        values,
+                        quote,
+                    ) if implied_column.is_none_or(|name| name == column) => {
+                        let rule = RelationConstraint::accepted_values(
+                            column,
+                            values,
+                            quote,
+                            evidence.clone(),
+                        )
+                        .map_err(|error| {
+                            DbtManifestError::RelationMetadata {
+                                resource_id: resource_id.to_string(),
+                                message: format!("{relation}: {error}"),
+                            }
+                        })?;
+                        accepted_rules.push(rule);
+                    }
+                    crate::analysis::constraints::PortableCheckExpression::Boolean(predicate)
+                        if implied_column
+                            .is_none_or(|name| predicate.referenced_columns().contains(&name)) =>
+                    {
+                        accepted_boolean.push(
+                            crate::computed_boolean_checks::ComputedBooleanCheckConstraint::new(
+                                predicate,
+                                evidence.clone(),
+                            )
+                            .map_err(|error| {
+                                DbtManifestError::RelationMetadata {
+                                    resource_id: resource_id.to_string(),
+                                    message: format!("{relation}: {error}"),
+                                }
+                            })?,
+                        );
+                    }
+                    crate::analysis::constraints::PortableCheckExpression::Computed(
+                        left,
+                        op,
+                        right,
+                    ) if implied_column.is_none_or(|name| {
+                        left.referenced_columns().contains(&name)
+                            || right.referenced_columns().contains(&name)
+                    }) =>
+                    {
+                        let rule = crate::computed_checks::ComputedCheckConstraint::new(
+                            left,
+                            op,
+                            right,
+                            evidence.clone(),
+                        )
+                        .map_err(|error| {
+                            DbtManifestError::RelationMetadata {
+                                resource_id: resource_id.to_string(),
+                                message: format!("{relation}: {error}"),
+                            }
+                        })?;
+                        accepted_computed.push(rule);
+                    }
+                    _ => {
+                        admitted = false;
+                        break;
+                    }
+                }
+            }
+            if admitted {
+                output.extend(accepted_rules);
+                computed_checks.extend(accepted_computed);
+                computed_boolean_checks.extend(accepted_boolean);
+            } else {
+                diagnostics.push(ConstraintDiagnostic::new(
+                    "unsupported_check_constraint",
+                    format!(
+                        "dbt CHECK '{resource_id}:{constraint_path}' has an unproved conjunct or expression"
+                    ),
+                ));
+            }
+            continue;
+        }
         if !matches!(
             constraint_type,
             "primary_key" | "unique" | "foreign_key" | "not_null"

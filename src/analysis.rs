@@ -178,6 +178,8 @@ fn analyze_with_metadata(
         .collect();
 
     let mut relation_constraints = Vec::new();
+    let mut source_schemas = Vec::<crate::relation::RelationSchema>::new();
+    let mut invalid_schemas = BTreeSet::<String>::new();
     for statement in &parsed.statements {
         if let Some(constraints) = analyze_relation_constraints(statement).map_err(|error| {
             AnalysisError::ConstraintMetadata {
@@ -186,10 +188,50 @@ fn analyze_with_metadata(
         })? {
             merge_relation_constraint_sets(&mut relation_constraints, &[constraints]);
         }
+        if let SqlStatement::CreateTable(declared) = statement {
+            let relation = declared.name.to_string();
+            match analyze_create_table_schema(declared, dialect_name) {
+                Ok(Some(schema)) => {
+                    if !invalid_schemas.contains(&relation) {
+                        if let Some(existing) = source_schemas
+                            .iter()
+                            .find(|item| item.relation() == relation)
+                        {
+                            if existing != &schema {
+                                source_schemas.retain(|item| item.relation() != relation);
+                                invalid_schemas.insert(relation.clone());
+                            }
+                        } else {
+                            source_schemas.push(schema);
+                        }
+                    }
+                }
+                Ok(None) => {}
+                Err(diagnostic) => {
+                    let mut set = RelationConstraintSet::new(relation.clone(), vec![])
+                        .expect("parsed relation cannot be empty");
+                    set.add_diagnostic(diagnostic);
+                    merge_relation_constraint_sets(&mut relation_constraints, &[set]);
+                    invalid_schemas.insert(relation.clone());
+                    source_schemas.retain(|item| item.relation() != relation);
+                }
+            }
+        }
     }
+    for relation in invalid_schemas {
+        let mut set = RelationConstraintSet::new(relation.clone(), vec![])
+            .expect("parsed relation cannot be empty");
+        set.add_diagnostic(ConstraintDiagnostic::new(
+            "unproved_ddl_schema",
+            format!("SQL DDL '{relation}' has unprovable or conflicting schema facts"),
+        ));
+        merge_relation_constraint_sets(&mut relation_constraints, &[set]);
+    }
+    source_schemas.sort_by(|a, b| a.relation().cmp(b.relation()));
 
     Ok(Protocol::new(dialect_name.to_string(), statements)
-        .with_relation_constraints(relation_constraints))
+        .with_relation_constraints(relation_constraints)
+        .with_source_schemas(source_schemas))
 }
 
 fn analyze_statement(
@@ -266,7 +308,7 @@ fn analyze_statement(
 
 // SQL AST to canonical protocol conversion is split by semantic responsibility.
 mod aggregation;
-mod constraints;
+pub(crate) mod constraints;
 mod dependencies;
 mod diagnostics;
 mod domains;

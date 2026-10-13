@@ -353,8 +353,7 @@ pub fn physical_unconditional_delete_plan(
             .iter()
             .any(|schema| schema.relation() == write.target())
         || bundle.relation_constraints().iter().any(|set| {
-            set.relation() == write.target()
-                && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+            set.relation() == write.target() && set.blocks_unconstrained_physical_plans()
         })
         || effect.resulting_rows(
             initial_rows,

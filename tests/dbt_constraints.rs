@@ -778,10 +778,10 @@ fn dbt_check_and_custom_constraints_are_reported() {
         .find(|metadata| metadata.relation() == "warehouse.analytics.stg_orders")
         .expect("stg_orders diagnostic metadata");
 
-    assert!(metadata
-        .diagnostics()
-        .iter()
-        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
+    assert!(metadata.constraints().iter().any(|constraint| {
+        matches!(constraint, RelationConstraint::CheckComparison(check)
+            if check.column() == "amount")
+    }));
     assert!(metadata
         .diagnostics()
         .iter()
@@ -923,5 +923,161 @@ fn relationless_unsupported_dbt_test_is_emitted_at_bundle_level() {
     assert_eq!(
         emitted["constraint_diagnostics"][0]["code"],
         "unsupported_dbt_test"
+    );
+}
+
+#[test]
+fn manifest_check_constraints_normalize_scalar_and_computed_expressions() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest");
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type": "check", "expression": "amount > 0"},
+        {"type": "check", "expression": "amount >= id + 1"},
+        {"type": "check", "expression": "LOWER(amount) = 'x'"}
+    ]);
+    let parsed = parse_dbt_manifest(&manifest.to_string()).expect("dbt manifest");
+    let constraints = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .expect("dbt source constraint set");
+    assert!(constraints.constraints().iter().any(|rule| {
+        matches!(rule, RelationConstraint::CheckComparison(check)
+            if check.column() == "amount"
+        )
+    }));
+    assert_eq!(constraints.computed_checks().len(), 1);
+    assert!(constraints
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
+    assert!(constraints.computed_checks()[0]
+        .evidence()
+        .iter()
+        .any(|e| e.provenance().source_kind() == ConstraintSourceKind::DbtConstraint));
+}
+
+#[test]
+fn dbt_conjunctive_checks_match_sql_semantics_without_partial_admission() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest");
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type": "check", "expression": "id > 0 AND amount < 100"},
+        {"type": "check", "expression": "amount >= id + 1 AND id > 1"},
+        {"type": "check", "expression": "amount BETWEEN 2 AND 10"},
+        {"type": "check", "expression": "id > 0 AND LOWER(amount) = 'x'"}
+    ]);
+    let parsed = parse_dbt_manifest(&manifest.to_string()).expect("dbt manifest");
+    let set = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .unwrap();
+    let scalar = set
+        .constraints()
+        .iter()
+        .filter(|rule| matches!(rule, RelationConstraint::CheckComparison(_)))
+        .count();
+    assert_eq!(scalar, 5);
+    assert_eq!(set.computed_checks().len(), 1);
+    assert!(set
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "unsupported_check_constraint"));
+}
+
+#[test]
+fn dbt_same_column_or_check_becomes_atomic_accepted_values() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest");
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type": "check", "expression": "(amount = 1 OR amount = 2) AND id > 0"},
+        {"type": "check", "expression": "id IN (1, 2)"},
+        {"type": "check", "expression": "id IN (1, NULL)"},
+        {"type": "check", "expression": "amount = 1 OR id = 2"},
+        {"type": "check", "expression": "amount = 1 OR amount = NULL"},
+        {"type": "check", "expression": "amount = 1 OR LOWER(amount) = 'x'"}
+    ]);
+    let parsed = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let set = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .unwrap();
+    let accepted = set
+        .constraints()
+        .iter()
+        .find_map(|rule| match rule {
+            RelationConstraint::AcceptedValues(values) if values.column() == "amount" => {
+                Some(values)
+            }
+            _ => None,
+        })
+        .expect("one fully proved equality disjunction");
+    assert_eq!(
+        accepted.values(),
+        &[ConstraintValue::Integer(1), ConstraintValue::Integer(2)]
+    );
+    assert!(
+        accepted
+            .evidence()
+            .iter()
+            .any(|evidence| evidence.provenance().source_kind()
+                == ConstraintSourceKind::DbtConstraint)
+    );
+    assert!(set.constraints().iter().any(|rule| matches!(
+        rule,
+        RelationConstraint::CheckComparison(check) if check.column() == "id"
+    )));
+    assert!(set.constraints().iter().any(|rule| matches!(
+        rule,
+        RelationConstraint::AcceptedValues(values)
+            if values.column() == "id"
+                && values.values() == [ConstraintValue::Integer(1), ConstraintValue::Integer(2)]
+    )));
+    // Mixed-column OR and equality-to-NULL retain their full SQL CHECK
+    // three-valued Boolean law rather than being incorrectly dropped.
+    assert_eq!(set.computed_boolean_checks().len(), 2);
+    assert_eq!(
+        set.diagnostics()
+            .iter()
+            .filter(|diagnostic| diagnostic.code() == "unsupported_check_constraint")
+            .count(),
+        2
+    );
+}
+
+#[test]
+fn dbt_boolean_check_trees_match_ddl_without_discarding_or_not_branches() {
+    let mut manifest: Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type":"check","expression":"id > 0 OR amount < 0"},
+        {"type":"check","expression":"NOT (id IS NULL) AND (amount > 0 OR id > 1)"},
+        {"type":"check","expression":"LOWER(amount) > 0 OR id > 1"}
+    ]);
+    let parsed = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let set = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .unwrap();
+    // The second CHECK is an AND, whose two complete conjuncts are
+    // independently normalized alongside the first OR CHECK.
+    assert_eq!(set.computed_boolean_checks().len(), 3);
+    assert!(set
+        .computed_boolean_checks()
+        .iter()
+        .all(|check| check
+            .evidence()
+            .iter()
+            .any(|evidence| evidence.provenance().source_kind()
+                == ConstraintSourceKind::DbtConstraint)));
+    assert_eq!(
+        set.diagnostics()
+            .iter()
+            .filter(|diagnostic| diagnostic.code() == "unsupported_check_constraint")
+            .count(),
+        1
     );
 }

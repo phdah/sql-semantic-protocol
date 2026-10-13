@@ -41,6 +41,13 @@ pub(super) fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> V
                     "column": constraint.column(),
                     "evidence": evidence
                 }),
+                RelationConstraint::CheckComparison(constraint) => json!({
+                    "kind": "check_comparison",
+                    "column": constraint.column(),
+                    "operator": constraint.operator().as_str(),
+                    "value": constraint_value_to_value(constraint.value()),
+                    "evidence": evidence
+                }),
                 RelationConstraint::AcceptedValues(constraint) => json!({
                     "kind": "accepted_values",
                     "column": constraint.column(),
@@ -60,6 +67,72 @@ pub(super) fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> V
         "relation": set.relation(),
         "constraints": constraints
     });
+    if !set.computed_checks().is_empty() {
+        value["computed_checks"] = json!(set
+            .computed_checks()
+            .iter()
+            .map(|check| {
+                json!({
+                    "left": generated_expression_to_value(check.left()),
+                    "operator": check.operator().as_str(),
+                    "right": generated_expression_to_value(check.right()),
+                    "evidence": check.evidence().iter().map(|evidence| json!({
+                        "source_kind": evidence.provenance().source_kind().as_str(),
+                        "source_id": evidence.provenance().source_id(),
+                        "enforcement": evidence.enforcement().as_str(),
+                    })).collect::<Vec<_>>(),
+                })
+            })
+            .collect::<Vec<_>>());
+    }
+    if !set.computed_boolean_checks().is_empty() {
+        value["computed_boolean_checks"] = json!(set
+            .computed_boolean_checks()
+            .iter()
+            .map(|check| {
+                json!({
+                    "predicate": computed_boolean_predicate_to_value(check.predicate()),
+                    "evidence": check.evidence().iter().map(|evidence| json!({
+                        "source_kind": evidence.provenance().source_kind().as_str(),
+                        "source_id": evidence.provenance().source_id(),
+                        "enforcement": evidence.enforcement().as_str(),
+                    })).collect::<Vec<_>>(),
+                })
+            })
+            .collect::<Vec<_>>());
+    }
+    if !set.computed_keys().is_empty() {
+        value["computed_keys"] = json!(set.computed_keys().iter().map(|key| {
+            json!({
+                "primary": key.primary(),
+                "expressions": key.expressions().iter().map(generated_expression_to_value).collect::<Vec<_>>(),
+                "evidence": key.evidence().iter().map(|evidence| json!({
+                    "source_kind": evidence.provenance().source_kind().as_str(),
+                    "source_id": evidence.provenance().source_id(),
+                    "enforcement": evidence.enforcement().as_str(),
+                })).collect::<Vec<_>>(),
+            })
+        }).collect::<Vec<_>>());
+    }
+    if !set.column_value_sources().is_empty() {
+        value["column_value_sources"] = json!(set
+            .column_value_sources()
+            .iter()
+            .map(|source| {
+                json!({
+                    "column": source.column(),
+                    "kind": source.kind().as_str(),
+                    "value": source.value().map(constraint_value_to_value),
+                    "expression": source.expression().map(generated_expression_to_value),
+                    "evidence": source.evidence().iter().map(|evidence| json!({
+                        "source_kind": evidence.provenance().source_kind().as_str(),
+                        "source_id": evidence.provenance().source_id(),
+                        "enforcement": evidence.enforcement().as_str()
+                    })).collect::<Vec<_>>()
+                })
+            })
+            .collect::<Vec<_>>());
+    }
     if !set.diagnostics().is_empty() {
         value["diagnostics"] = json!(set
             .diagnostics()
@@ -75,6 +148,70 @@ pub(super) fn constraint_diagnostic_to_value(diagnostic: &ConstraintDiagnostic) 
         "code": diagnostic.code(),
         "message": diagnostic.message()
     })
+}
+
+fn computed_boolean_predicate_to_value(
+    predicate: &crate::computed_boolean_checks::ComputedBooleanCheckPredicate,
+) -> Value {
+    use crate::computed_boolean_checks::ComputedBooleanCheckPredicate as P;
+    match predicate {
+        P::Comparison {
+            left,
+            operator,
+            right,
+        } => json!({
+            "kind":"comparison",
+            "left":generated_expression_to_value(left),
+            "operator":operator.as_str(),
+            "right":generated_expression_to_value(right),
+        }),
+        P::IsNull {
+            expression,
+            negated,
+        } => json!({
+            "kind":"is_null",
+            "expression":generated_expression_to_value(expression),
+            "negated":negated,
+        }),
+        P::And(children) => json!({
+            "kind":"and",
+            "children":children.iter().map(computed_boolean_predicate_to_value).collect::<Vec<_>>(),
+        }),
+        P::Or(children) => json!({
+            "kind":"or",
+            "children":children.iter().map(computed_boolean_predicate_to_value).collect::<Vec<_>>(),
+        }),
+        P::Not(child) => json!({
+            "kind":"not",
+            "operand":computed_boolean_predicate_to_value(child),
+        }),
+    }
+}
+
+fn generated_expression_to_value(
+    expression: &crate::column_sources::GeneratedValueExpression,
+) -> Value {
+    use crate::column_sources::GeneratedValueExpression as G;
+    match expression {
+        G::Column(column) => json!({"kind":"column","column":column}),
+        G::Literal(value) => json!({"kind":"literal","value":constraint_value_to_value(value)}),
+        G::Add(left, right) => json!({
+            "kind":"add","left":generated_expression_to_value(left),"right":generated_expression_to_value(right)
+        }),
+        G::Subtract(left, right) => json!({
+            "kind":"subtract","left":generated_expression_to_value(left),"right":generated_expression_to_value(right)
+        }),
+        G::Multiply(left, right) => json!({
+            "kind":"multiply","left":generated_expression_to_value(left),"right":generated_expression_to_value(right)
+        }),
+        G::Abs(operand) => json!({
+            "kind":"abs","operand":generated_expression_to_value(operand)
+        }),
+        G::Coalesce(arguments) => json!({
+            "kind":"coalesce",
+            "arguments":arguments.iter().map(generated_expression_to_value).collect::<Vec<_>>()
+        }),
+    }
 }
 
 pub(super) fn constraint_value_to_value(value: &ConstraintValue) -> Value {

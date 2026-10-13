@@ -292,6 +292,12 @@ modifiers.
 normalization through sqlparser. Consumers can alternatively construct the canonical `DataType`
 directly. Raw sqlparser AST types never appear in the protocol contract.
 
+Text comparison evidence is explicit: an optional `text_comparison_law: "binary"`
+comes with nonempty `comparison_evidence[]` carrying source identity and enforcement.
+A `collation` name without that evidence does not grant comparison semantics.
+These facts apply equally to constraints on text keys, foreign-key joins and accepted
+values. Distinct bytes under unproved comparison laws remain residual.
+
 This metadata exists so consumers such as test-data generators can interpret unbounded or
 literal-constrained source columns without maintaining a second SQL parser or private schema
 contract. When no typed schema metadata is supplied, `source_schemas` is omitted rather than
@@ -1350,3 +1356,118 @@ Feasible results carry complete input and final physical rows and
 ordered transitions; residuals carry a typed `PhysicalWriteStateGap`
 and reason. See [semantics](semantics.md) for the exact allow-list and
 unproved physical lifecycle/transaction laws.
+
+## Physical schema and column value evidence (TASK-79)
+
+`source_schemas[]` can originate from caller-provided catalogs, dbt manifests/catalogs,
+ODCS contracts or complete SQL `CREATE TABLE` declarations. SQL DDL emits the
+`sql_ddl` provenance kind. A column may carry `timestamp_zone` and an explicit
+`collation` identity. A collation **name** alone does not establish its ordering
+or equality law. Contradictory schema declarations are diagnosed, not silently
+combined into an authoritative type.
+
+`relation_constraints[].column_value_sources[].expression` optionally preserves a parser-independent, deterministic generated-column expression tree (literal, column, checked integer addition/subtraction/multiplication). It is null for defaults, identity sequences, and unsupported generated expressions. A complete physical-state proof evaluates the supported subset against the real row, or constructs an omitted INSERT-generated value after ordinary defaults. Cross-generated references, opaque sequence state, unproved arithmetic coercions and direct generated-column assignment remain residual.
+
+`relation_constraints[].column_value_sources[]` represents omitted-column
+defaults and generated/identity declarations with exact column identity,
+`default | generated | identity` kind, optional typed `value`, and complete
+provenance/enforcement evidence. `value: null` means the expression is opaque
+rather than an implicit SQL NULL; a typed `{"type":"null","value":null}` is a
+literal SQL NULL. Duplicate equal facts coalesce evidence. Inconsistent facts
+produce `conflicting_column_value_sources` diagnostics.
+
+`relation_constraints[].computed_keys[]` preserves functional/composite-key terms and exact enforcement provenance. `relation_constraints[].computed_checks[]` contains portable row-local arithmetic/column comparisons with three-valued NULL semantics. An enforced computed key is verified from complete physical rows via exact ordered tuple comparison; a nonattested key, nullable vendor-specific UNIQUE rule, unsupported coercion or unproved functional expression remains residual.
+
+`physical_typed_closed_world_schema_plan(bundle, snapshots)` checks complete source-backed, Arrow-like scalar, binary, array, map and struct populations. Each supplied nested value is validated against its canonical declared type; an exact non-null nested value satisfies attested NOT NULL independently of the private scalar placeholder, while scalar PK/FK/CHECK obligations are verified across shared relations. Nested values in keys, CHECK or accepted-values constraints remain residual until their exact collation/equality laws are known. This API validates snapshots but does not execute DML or independently prove terminal SQL output goals. Exact base-ten scalar CHECK comparisons and boolean equality/inequality are proved without floating-point conversions; unproved casts and collation-sensitive text comparisons remain residual.
+
+`physical_closed_world_schema_plan(bundle, snapshots)` checks an entire
+caller-attested collection of physical relations simultaneously without
+executing SQL. It returns `Feasible`, `Impossible` or `Residual`, reusing
+the ordered write state's gap categories. Complete snapshots can prove
+enforced integer and exact-decimal keys, byte-identical text key equality, nullability, accepted values, foreign keys and even
+mutual foreign-key cycles. An absent referenced key, unverified enforcement,
+unknown collation, generated/identity expression, missing parent population
+or vendor-specific null semantics remain residual. Positive proof never
+constructs imaginary rows, grants an unproved default or bypasses source-key
+collisions. The ordered DML path checks both its prestate and each poststate.
+Complete portable `CHECK` Boolean trees are represented by
+`relation_constraints[].computed_boolean_checks[]` with canonical
+`comparison`, `is_null`, `and`, `or`, and `not` nodes and explicit
+enforcement provenance. These are all-or-nothing constraints, never
+independent OR branches. Their physical evaluator retains SQL TRUE/FALSE/
+UNKNOWN, so UNKNOWN passes an enforced CHECK, FALSE is impossible, and
+an unproved comparison remains residual unless a decisive true OR or
+false AND branch determines the outcome. SQL DDL and dbt normalize to
+the same predicate structure; unsupported casts, UDFs and subqueries
+remain diagnostics instead of omitted terms.
+
+Deterministic row-local computed expression nodes include checked integer
+arithmetic, integer `ABS`, and same-type `COALESCE`. Implicit cross-type
+coercion, overflowing signed `ABS`, SQL functions with unproven semantics,
+and cyclic generated columns remain residual. Generated dependencies are
+evaluated in canonical topological order only with appropriate enforcement
+evidence; identity dependencies still require caller-attested sequence state.
+Explicit generated-column UPDATE and INSERT assignments are never treated
+as innocuous writes. MERGE BY SOURCE uses the same generated-column
+recomputation law as ordinary UPDATE.
+
+Portable scalar and deterministic row-local computed `CHECK` comparisons (`eq`, `not_eq`, `gt`, `gte`, `lt`, `lte`) emit typed facts and provenance. Portable `AND` conjuncts are normalized atomically for SQL DDL and dbt CHECK metadata: if any conjunct is unsupported, the entire rule is residual. Complete same-column equality `OR` disjunctions and non-NULL `IN` lists normalize to canonical accepted values, including dbt CHECK metadata; mixed-column/function `OR` and `IN (..., NULL)` remain residual. An explicitly attested binary text law supports byte-distinct equality/inequality for CHECK predicates as well as accepted values, keys and FKs. It does not establish text ordering. The physical validator checks exact integers and base-ten decimals and admits SQL NULL as UNKNOWN. `NOT ENFORCED` rules are excluded from proof obligations, `Unknown` remains residual, and `Enforced` rules are evaluated. Opaque functions, unproved Boolean branches, collation-sensitive comparisons, casts and enforcement timing remain residual. Complete portable `AND`, `OR`, `NOT` and `IS NULL` trees retain SQL three-valued CHECK semantics as canonical Boolean evidence.
+
+The `to_physical_typed_population_json(bundle, snapshots)` API emits a deterministic,
+separate **typed physical witness sidecar** only after checking the complete
+physical population. This export never modifies the canonical SQL protocol
+root or guesses unsupported SQL expressions. Its recursive wire schema is
+[`schema/typed-physical-population.schema.json`](../schema/typed-physical-population.schema.json).
+It retains byte buffers as unsigned byte arrays, floating-point values as
+exact IEEE754 bit words, scalar base-ten numbers as strings to avoid JSON
+rounding, struct/array/map order, and SQL NULL separately from JSON document
+null. An `Impossible` or `Residual` physical proof is returned as an error
+instead of serializing invented feasible rows.
+
+The `physical_typed_ordered_insert_plan(bundle, initial_states)` API executes
+a bounded sequence of physical SQL `INSERT ... SELECT` statements using
+normalized write/query nodes and complete typed rows. The general
+`physical_typed_ordered_write_plan` also executes scalar-column UPDATE and
+DELETE predicates and assignments, preserving untouched nested values across
+ordered statements. Direct source column projections and exact scalar
+literals preserve nested Arrow-like values without casts or serialization
+to SQL literals; portable scalar WHERE predicates use three-valued logic.
+Nested-valued comparisons, unnormalized filters and computed projections
+are residual, never evaluated against placeholder SQL NULLs. Each committed
+poststate is validated against complete source/target PK, FK and CHECK evidence.
+Joins, aggregates, opaque defaults, generated/identity omissions,
+nested-valued UPDATE assignments, unknown SQL operations and transaction/
+deferral laws remain residual. Omitted INSERT columns with authoritative
+exact scalar defaults are materialized using the same canonical default facts
+as the scalar ordered-write interpreter; a declared nullable type alone is
+not permission to invent an omitted SQL NULL. The INSERT-only API rejects UPDATE/DELETE by design.
+The standalone typed append schema checker remains useful for
+user-materialized target rows.
+
+The `physical_typed_append_schema_plan(bundle, snapshots, target, inserted)` API validates
+caller-materialized Arrow-like nested rows appended to a complete prior target bag.
+It rechecks every supplied source and target relation before and after the append,
+including existing primary/unique collisions, enforced constraints and cross-relation
+foreign keys, while preserving actual nested values in the returned poststate.
+It does **not** interpret SQL INSERT expressions, prove statement lifecycle/deferral
+timing or serialize Arrow buffers. Missing prior target/parent populations and
+unproved nested key comparisons are residual.
+
+The independent `physical_typed_value_plan(value, data_type)` API accepts
+`PhysicalTypedValue` scalar, exact finite IEEE754 binary32/binary64 bits, byte-buffer, JSON document, array, map and struct witnesses.
+It checks typed field arity, fixed array lengths, binary length bounds and
+recursively proven scalar elements. Map keys must have exact integer equality
+with canonicalized numeric identity (for example, `05` equals `5`); other
+map key comparators remain residual. Typed JSON validates exact ASCII strings, booleans, null, arrays, objects and IEEE-safe integer documents; fractional numbers, oversized integers, non-ASCII normalization and textual JSON casts remain residual. SQL NULL is distinct from JSON document null. The result is
+`PhysicalTypeProof::{Feasible,Impossible,Residual}` and is not a warehouse
+write or Arrow serialization itself. The existing scalar DML state interpreter
+does not promote nested values to executable SQL expressions.
+
+Physical literals are conservatively validated against signed/unsigned
+integer bounds, exact decimal precision/scale, supported IEEE-safe integral
+float encodings and finite typed Arrow float buffers, ASCII character lengths, Gregorian dates, ISO clock times,
+declared timestamp-zone syntax and canonical lowercase UUID forms. Time-zone
+offset conversion, non-binary string collation, NaN and signed-zero storage,
+JSON numeric rounding and nested-valued DML assignments, unproved coercions or function
+evaluation are deliberately **residual**. A parser accepting their syntax
+does not make their physical construction exact.

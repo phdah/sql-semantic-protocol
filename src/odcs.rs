@@ -9,6 +9,7 @@ use std::fmt;
 use saphyr::{LoadableYamlNode, Yaml};
 use serde_json::{Map, Number, Value};
 
+use crate::column_sources::{ColumnValueKind, ColumnValueSource};
 use crate::constraints::{
     merge_relation_constraint_sets, ConstraintEnforcement, ConstraintEvidence,
     ConstraintMetadataError, ConstraintProvenance, ConstraintSourceKind, ConstraintValue,
@@ -345,9 +346,30 @@ pub fn parse_odcs_documents(
 
             let mut constraints = property_constraints(contract, schema)?;
             constraints.extend(relationship_constraints(contract, schema, &parsed)?);
-            if !constraints.is_empty() {
+            let defaults = schema
+                .properties
+                .iter()
+                .filter_map(|property| {
+                    property
+                        .default_value
+                        .as_ref()
+                        .map(|value| (property, value))
+                })
+                .map(|(property, value)| {
+                    let identity = property.id.as_deref().unwrap_or(&property.name);
+                    ColumnValueSource::new(
+                        property.column.clone(),
+                        ColumnValueKind::Default,
+                        Some(value.clone()),
+                        vec![evidence(contract, schema, "default", identity)?],
+                    )
+                    .map_err(|error| constraint_error(&contract.source, error))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            if !constraints.is_empty() || !defaults.is_empty() {
                 let set = RelationConstraintSet::new(schema.relation.clone(), constraints)
-                    .map_err(|error| constraint_error(&contract.source, error))?;
+                    .map_err(|error| constraint_error(&contract.source, error))?
+                    .with_column_value_sources(defaults);
                 merge_relation_constraint_sets(&mut relation_constraints, &[set]);
             }
         }
@@ -405,6 +427,7 @@ struct ParsedProperty {
     primary_key_position: Option<u64>,
     unique: bool,
     enum_values: Option<Vec<ConstraintValue>>,
+    default_value: Option<ConstraintValue>,
     relationships: Vec<RawRelationship>,
 }
 
@@ -618,6 +641,10 @@ fn parse_property(
     let unique =
         optional_bool(property, source, &format!("{path}.unique"), "unique")?.unwrap_or(false);
     let enum_values = parse_enum(property.get("enum"), source, &format!("{path}.enum"))?;
+    let default_value = property
+        .get("default")
+        .map(|value| constraint_value(value, source, &format!("{path}.default")))
+        .transpose()?;
     let implicit_from = format!("{schema_name}.{name}");
     let relationships = parse_relationship_array(
         property.get("relationships"),
@@ -636,6 +663,7 @@ fn parse_property(
             primary_key_position,
             unique,
             enum_values,
+            default_value,
             relationships,
         },
         data_type,
@@ -1282,6 +1310,30 @@ fn evidence(
     ))
 }
 
+/// Missing ODCS precision/width is weaker evidence, not a concrete contradiction.
+fn odcs_unqualified_type_compatible(existing: &DataType, declared: &DataType) -> bool {
+    match (existing, declared) {
+        (DataType::SignedInteger { .. }, DataType::SignedInteger { bits: None }) => true,
+        (DataType::UnsignedInteger { .. }, DataType::UnsignedInteger { bits: None }) => true,
+        (DataType::FloatingPoint { .. }, DataType::FloatingPoint { bits: None }) => true,
+        (
+            DataType::Decimal { .. },
+            DataType::Decimal {
+                precision: None,
+                scale: None,
+            },
+        ) => true,
+        (
+            DataType::String { fixed: f1, .. },
+            DataType::String {
+                length: None,
+                fixed: f2,
+            },
+        ) if f1 == f2 => true,
+        _ => false,
+    }
+}
+
 fn merge_source_schemas(
     existing: &[RelationSchema],
     odcs: &[RelationSchema],
@@ -1304,7 +1356,9 @@ fn merge_source_schemas(
             .collect::<BTreeMap<_, _>>();
         for column in incoming.columns() {
             if let Some(existing_type) = existing_columns.get(column.name()) {
-                if *existing_type != column.data_type() {
+                if *existing_type != column.data_type()
+                    && !odcs_unqualified_type_compatible(existing_type, column.data_type())
+                {
                     return Err(OdcsError::DatatypeConflict {
                         relation: incoming.relation().to_string(),
                         column: column.name().to_string(),

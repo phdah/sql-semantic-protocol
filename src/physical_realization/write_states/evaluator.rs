@@ -306,11 +306,20 @@ pub(super) fn scalar_equality(a: &LiteralValue, b: &LiteralValue) -> StateResult
     match (a, b) {
         (LiteralValue::Null, LiteralValue::Null) => Ok(true),
         (LiteralValue::Null, _) | (_, LiteralValue::Null) => Ok(false),
-        (LiteralValue::Text(_), LiteralValue::Text(_)) => {
-            Err(residual("unverified text collation"))
+        (LiteralValue::Text(left), LiteralValue::Text(right)) => {
+            if left == right {
+                // Identical bytes compare equal under every reflexive text
+                // equality law. Unequal bytes may still collate as equal.
+                Ok(true)
+            } else {
+                Err(residual("unverified text collation"))
+            }
         }
-        (LiteralValue::Number(_), LiteralValue::Number(_))
-        | (LiteralValue::Boolean(_), LiteralValue::Boolean(_)) => {
+        (LiteralValue::Number(left), LiteralValue::Number(right)) => {
+            super::check_comparisons::exact_numeric_equality(left, right)
+                .ok_or_else(|| residual("numeric equality needs exact finite decimal evidence"))
+        }
+        (LiteralValue::Boolean(_), LiteralValue::Boolean(_)) => {
             Ok(compare(a, ComparisonOperator::Eq, b)? == Truth::True)
         }
         _ => Err(residual("unproved coercion in distinct comparison")),

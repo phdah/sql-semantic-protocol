@@ -148,10 +148,10 @@ fn external_inputs(bundle: &AnalysisBundle, layer: &TransformationLayer) -> bool
 
 fn unconstrained(bundle: &AnalysisBundle, relations: &[&str]) -> bool {
     relations.iter().all(|relation| {
-        !bundle.relation_constraints().iter().any(|set| {
-            set.relation() == *relation
-                && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
-        })
+        !bundle
+            .relation_constraints()
+            .iter()
+            .any(|set| set.relation() == *relation && set.blocks_unconstrained_physical_plans())
     })
 }
 

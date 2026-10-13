@@ -49,8 +49,8 @@ dbt is a first-class protocol input. The complete adapter consumes `manifest.jso
 optionally `catalog.json`, using each artifact only for the evidence it authoritatively owns:
 
 - `manifest.json`: model unique IDs, canonical relation identities, compiled SQL, relation context,
-  declared dependency metadata, explicit model/column key constraints, and built-in `unique` /
-  `relationships` generic-test declarations.
+  declared dependency metadata, explicit model/column keys, portable `check` comparison expressions, and built-in `unique` /
+  `relationships` generic-test declarations. Scalar and computed row-local CHECK expressions are normalized once with a conservative generic SQL parser; unsupported functions, vendor casts, or Boolean combinations retain `unsupported_check_constraint` diagnostics. This input does not establish physical enforcement for every warehouse.
 - `catalog.json`: warehouse-introspected physical columns and database datatypes for models,
   seeds, snapshots, and sources.
 
@@ -249,3 +249,44 @@ Where a write and target evidence coexist in an analysis bundle, the
 `write_effects` contract binds that evidence to the normalized target.
 Missing metadata stays `null`: no adapter may invent the initial snapshot,
 mutation counts or conflict-freedom from a catalog.
+
+## Column value evidence and physical schema proof
+
+SQL `CREATE TABLE` supplies typed column declarations and portable constant
+DEFAULT literals to the canonical schema/constraint contract. Computed
+generated columns and identity sequences are recorded with their provenance
+but remain unconstructible without independently supplied execution laws.
+ODCS scalar `default` values use the same canonical declaration; because ODCS
+is lower-authority external metadata, its enforcement stays `unknown` and
+cannot itself certify an implicit INSERT default. Unknown-width ODCS logical
+integer/decimal/string types may coexist with more precise direct SQL or
+warehouse catalog declarations; true datatype disagreements remain errors.
+dbt manifest/catalog and named relation schemas still use the same
+`source_schemas` type contract and constraint-merging path.
+
+Portable multi-column Boolean CHECK `AND`/`OR`/`NOT` and
+`IS NULL` trees are normalized into the same `computed_boolean_checks`
+schema for direct SQL DDL and dbt manifest constraints. Complete atomic
+truth predicates preserve their original tree and enforcement
+provenance; UDFs, implicit casts and unsupported branches yield an
+explicit diagnostic rather than silently omitted constraints.
+
+Direct SQL DDL CHECKs, dbt manifest-declared CHECK expressions, and caller-owned
+canonical metadata converge on the same deterministic `ABS` and same-type
+`COALESCE` expression nodes. Whole-column equality OR terms and non-NULL
+IN lists use canonical accepted-values facts in SQL DDL and dbt. Database
+catalog introspection supplies typed columns, not executable default,
+function or constraint-enforcement guarantees; the adapter does not infer
+these facts from data_type strings. ODCS `default`, `required`, keys and
+relationships retain their explicitly unknown enforcement status unless
+separate authoritative physical evidence is supplied. A collation name
+alone never proves binary comparison, and a physical type without a
+timezone qualifier does not infer one. Opaque or conflicting adapters
+therefore remain residual rather than silently strengthening the model.
+
+The `physical_closed_world_schema_plan` API is independent of adapters and
+takes complete physical bags, not isolated row samples. Only attested,
+portable primitive literals can be certified; missing source populations,
+generated expressions, vendor coercions and string collation laws remain
+typed residuals. No consumer should infer physical feasibility from the
+presence of a parsed type or column default alone.

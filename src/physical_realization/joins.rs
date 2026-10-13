@@ -81,9 +81,11 @@ fn direct_filtered_source(
         }
         _ => return None,
     };
-    if bundle.relation_constraints().iter().any(|set| {
-        set.relation() == source && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
-    }) {
+    if bundle
+        .relation_constraints()
+        .iter()
+        .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
+    {
         return None;
     }
     let formula = WitnessFormula::Comparison {
@@ -320,10 +322,10 @@ pub(super) fn physical_join_population_with_source_counts(
         || left_bounds.maximum < 0
         || right_bounds.maximum < 0
         || [left_source, right_source].iter().any(|relation| {
-            bundle.relation_constraints().iter().any(|set| {
-                set.relation() == *relation
-                    && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
-            })
+            bundle
+                .relation_constraints()
+                .iter()
+                .any(|set| set.relation() == *relation && set.blocks_unconstrained_physical_plans())
         })
     {
         return None;

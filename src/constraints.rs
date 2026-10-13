@@ -6,6 +6,11 @@
 use std::collections::BTreeSet;
 use std::fmt;
 
+use crate::column_sources::ColumnValueSource;
+use crate::computed_boolean_checks::ComputedBooleanCheckConstraint;
+use crate::computed_checks::ComputedCheckConstraint;
+use crate::computed_keys::ComputedKeyConstraint;
+
 /// Source category that supplied one piece of constraint evidence.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[non_exhaustive]
@@ -236,6 +241,70 @@ impl AcceptedValuesConstraint {
     }
 }
 
+/// Portable comparison operations for a single-column CHECK predicate.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum CheckCompareOperator {
+    Eq,
+    NotEq,
+    Gt,
+    Gte,
+    Lt,
+    Lte,
+}
+
+impl CheckCompareOperator {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Eq => "eq",
+            Self::NotEq => "not_eq",
+            Self::Gt => "gt",
+            Self::Gte => "gte",
+            Self::Lt => "lt",
+            Self::Lte => "lte",
+        }
+    }
+}
+
+/// Canonical scalar CHECK comparison retaining enforcement and provenance.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct CheckComparisonConstraint {
+    column: String,
+    operator: CheckCompareOperator,
+    value: ConstraintValue,
+    evidence: Vec<ConstraintEvidence>,
+}
+
+impl CheckComparisonConstraint {
+    fn new(
+        column: String,
+        operator: CheckCompareOperator,
+        value: ConstraintValue,
+        evidence: Vec<ConstraintEvidence>,
+    ) -> Result<Self, ConstraintMetadataError> {
+        validate_column(&column)?;
+        validate_evidence(&evidence)?;
+        Ok(Self {
+            column,
+            operator,
+            value,
+            evidence: normalized_evidence(evidence),
+        })
+    }
+
+    pub fn column(&self) -> &str {
+        &self.column
+    }
+    pub fn operator(&self) -> CheckCompareOperator {
+        self.operator
+    }
+    pub fn value(&self) -> &ConstraintValue {
+        &self.value
+    }
+    pub fn evidence(&self) -> &[ConstraintEvidence] {
+        &self.evidence
+    }
+}
+
 /// Ordered columns forming a primary or unique key.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct KeyConstraint {
@@ -346,6 +415,8 @@ pub enum RelationConstraint {
     /// Declared finite accepted-values column constraint. SQL NULL is admitted unless a separate
     /// non-null constraint applies.
     AcceptedValues(AcceptedValuesConstraint),
+    /// Declared scalar CHECK, with NULL admitted under SQL three-valued logic.
+    CheckComparison(CheckComparisonConstraint),
 }
 
 impl RelationConstraint {
@@ -406,6 +477,21 @@ impl RelationConstraint {
         )?))
     }
 
+    /// Construct a simple scalar CHECK with typed comparator and evidence.
+    pub fn check_comparison(
+        column: impl Into<String>,
+        operator: CheckCompareOperator,
+        value: ConstraintValue,
+        evidence: Vec<ConstraintEvidence>,
+    ) -> Result<Self, ConstraintMetadataError> {
+        Ok(Self::CheckComparison(CheckComparisonConstraint::new(
+            column.into(),
+            operator,
+            value,
+            evidence,
+        )?))
+    }
+
     /// Return primary/unique key columns, local foreign-key columns, or the constrained column.
     pub fn columns(&self) -> &[String] {
         match self {
@@ -413,6 +499,7 @@ impl RelationConstraint {
             Self::ForeignKey(key) => key.columns(),
             Self::NotNull(constraint) => std::slice::from_ref(&constraint.column),
             Self::AcceptedValues(constraint) => std::slice::from_ref(&constraint.column),
+            Self::CheckComparison(constraint) => std::slice::from_ref(&constraint.column),
         }
     }
 
@@ -423,6 +510,7 @@ impl RelationConstraint {
             Self::ForeignKey(key) => key.evidence(),
             Self::NotNull(constraint) => constraint.evidence(),
             Self::AcceptedValues(constraint) => constraint.evidence(),
+            Self::CheckComparison(constraint) => constraint.evidence(),
         }
     }
 
@@ -434,7 +522,10 @@ impl RelationConstraint {
     pub const fn admits_null(&self) -> bool {
         match self {
             Self::PrimaryKey(_) | Self::NotNull(_) => false,
-            Self::UniqueKey(_) | Self::ForeignKey(_) | Self::AcceptedValues(_) => true,
+            Self::UniqueKey(_)
+            | Self::ForeignKey(_)
+            | Self::AcceptedValues(_)
+            | Self::CheckComparison(_) => true,
         }
     }
 
@@ -452,6 +543,11 @@ impl RelationConstraint {
                 left.column == right.column
                     && left.values == right.values
                     && left.quote == right.quote
+            }
+            (Self::CheckComparison(left), Self::CheckComparison(right)) => {
+                left.column == right.column
+                    && left.operator == right.operator
+                    && left.value == right.value
             }
             _ => false,
         }
@@ -480,6 +576,11 @@ impl RelationConstraint {
                 constraint.evidence.sort();
                 constraint.evidence.dedup();
             }
+            Self::CheckComparison(constraint) => {
+                constraint.evidence.extend(incoming);
+                constraint.evidence.sort();
+                constraint.evidence.dedup();
+            }
         }
     }
 
@@ -499,6 +600,7 @@ impl RelationConstraint {
             }),
             Self::NotNull(constraint) => Self::NotNull(constraint.clone()),
             Self::AcceptedValues(constraint) => Self::AcceptedValues(constraint.clone()),
+            Self::CheckComparison(constraint) => Self::CheckComparison(constraint.clone()),
         }
     }
 }
@@ -534,6 +636,10 @@ impl ConstraintDiagnostic {
 pub struct RelationConstraintSet {
     relation: String,
     constraints: Vec<RelationConstraint>,
+    column_value_sources: Vec<ColumnValueSource>,
+    computed_keys: Vec<ComputedKeyConstraint>,
+    computed_checks: Vec<ComputedCheckConstraint>,
+    computed_boolean_checks: Vec<ComputedBooleanCheckConstraint>,
     diagnostics: Vec<ConstraintDiagnostic>,
 }
 
@@ -554,6 +660,10 @@ impl RelationConstraintSet {
         let mut result = Self {
             relation,
             constraints: Vec::new(),
+            column_value_sources: Vec::new(),
+            computed_keys: Vec::new(),
+            computed_checks: Vec::new(),
+            computed_boolean_checks: Vec::new(),
             diagnostics: Vec::new(),
         };
         for constraint in constraints {
@@ -571,6 +681,161 @@ impl RelationConstraintSet {
     /// Return canonical constraints in deterministic order.
     pub fn constraints(&self) -> &[RelationConstraint] {
         &self.constraints
+    }
+
+    /// Canonical portable comparisons involving multiple expressions or columns.
+    pub fn computed_checks(&self) -> &[ComputedCheckConstraint] {
+        &self.computed_checks
+    }
+
+    /// Enrich row-local CHECK comparisons, retaining independent provenance.
+    pub fn with_computed_checks(mut self, checks: Vec<ComputedCheckConstraint>) -> Self {
+        for check in checks {
+            self.add_computed_check(check);
+        }
+        self.normalize();
+        self
+    }
+
+    fn add_computed_check(&mut self, check: ComputedCheckConstraint) {
+        if let Some(existing) = self
+            .computed_checks
+            .iter_mut()
+            .find(|existing| existing.same_semantics(&check))
+        {
+            existing.merge_evidence(&check);
+        } else {
+            self.computed_checks.push(check);
+        }
+    }
+
+    /// Portable all-or-nothing row-local Boolean CHECK predicates.
+    pub fn computed_boolean_checks(&self) -> &[ComputedBooleanCheckConstraint] {
+        &self.computed_boolean_checks
+    }
+
+    /// Add complete CHECK Boolean trees while preserving independent evidence.
+    pub fn with_computed_boolean_checks(
+        mut self,
+        checks: Vec<ComputedBooleanCheckConstraint>,
+    ) -> Self {
+        for check in checks {
+            self.add_computed_boolean_check(check);
+        }
+        self.normalize();
+        self
+    }
+
+    fn add_computed_boolean_check(&mut self, check: ComputedBooleanCheckConstraint) {
+        if let Some(existing) = self
+            .computed_boolean_checks
+            .iter_mut()
+            .find(|existing| existing.same_semantics(&check))
+        {
+            existing.merge_evidence(&check);
+        } else {
+            self.computed_boolean_checks.push(check);
+        }
+    }
+
+    /// Canonical computed functional keys declared on this relation.
+    pub fn computed_keys(&self) -> &[ComputedKeyConstraint] {
+        &self.computed_keys
+    }
+
+    /// Add portable functional keys, coalescing matching evidence.
+    pub fn with_computed_keys(mut self, keys: Vec<ComputedKeyConstraint>) -> Self {
+        for key in keys {
+            self.add_computed_key(key);
+        }
+        self.normalize();
+        self
+    }
+
+    fn add_computed_key(&mut self, key: ComputedKeyConstraint) {
+        if let Some(existing) = self
+            .computed_keys
+            .iter_mut()
+            .find(|existing| existing.same_semantics(&key))
+        {
+            existing.merge_evidence(&key);
+            return;
+        }
+        if key.primary()
+            && (self
+                .constraints
+                .iter()
+                .any(|constraint| matches!(constraint, RelationConstraint::PrimaryKey(_)))
+                || self
+                    .computed_keys
+                    .iter()
+                    .any(ComputedKeyConstraint::primary))
+        {
+            self.diagnostics.push(ConstraintDiagnostic::new(
+                "conflicting_primary_key",
+                format!(
+                    "relation '{}' has conflicting primary key declarations",
+                    self.relation
+                ),
+            ));
+        }
+        self.computed_keys.push(key);
+    }
+
+    /// Canonical sources of implicit default, generated and identity column values.
+    pub fn column_value_sources(&self) -> &[ColumnValueSource] {
+        &self.column_value_sources
+    }
+
+    /// Attach value-production metadata, coalescing matching evidence and retaining conflicts.
+    pub fn with_column_value_sources(mut self, sources: Vec<ColumnValueSource>) -> Self {
+        for source in sources {
+            self.add_column_value_source(source);
+        }
+        self.normalize();
+        self
+    }
+
+    fn add_column_value_source(&mut self, source: ColumnValueSource) {
+        if let Some(existing) = self
+            .column_value_sources
+            .iter_mut()
+            .find(|existing| existing.same_semantics(&source))
+        {
+            existing.merge_evidence(&source);
+            return;
+        }
+        if self
+            .column_value_sources
+            .iter()
+            .any(|existing| existing.column() == source.column())
+        {
+            self.diagnostics.push(ConstraintDiagnostic::new(
+                "conflicting_column_value_sources",
+                format!(
+                    "relation '{}' has inconsistent value generation for column '{}'",
+                    self.relation,
+                    source.column()
+                ),
+            ));
+        }
+        self.column_value_sources.push(source);
+    }
+
+    /// Whether an unconstrained synthetic physical population would omit required laws.
+    ///
+    /// Exact scalar defaults do not constrain already-materialized source rows.
+    /// Generated/identity values require additional evaluation evidence.
+    pub fn blocks_unconstrained_physical_plans(&self) -> bool {
+        !self.constraints.is_empty()
+            || !self.computed_keys.is_empty()
+            || !self.computed_checks.is_empty()
+            || !self.computed_boolean_checks.is_empty()
+            || !self.diagnostics.is_empty()
+            || self
+                .column_value_sources
+                .iter()
+                .any(|source| source.kind() != crate::column_sources::ColumnValueKind::Default)
     }
 
     /// Return explicit conflicts or unsupported metadata details.
@@ -669,6 +934,100 @@ impl RelationConstraintSet {
 
         let mut result = Self::new(self.relation.clone(), valid)
             .expect("existing constraint relation has already been validated");
+        for source in &self.column_value_sources {
+            let declared = local.and_then(|schema| {
+                schema
+                    .columns()
+                    .iter()
+                    .find(|column| column.name() == source.column())
+            });
+            if local.is_some() && declared.is_none() {
+                diagnostics.push(ConstraintDiagnostic::new(
+                    "invalid_value_source_column",
+                    format!(
+                        "relation '{}' value source references undeclared column '{}'",
+                        self.relation,
+                        source.column()
+                    ),
+                ));
+                continue;
+            }
+            if let (Some(column), Some(value)) = (declared, source.value()) {
+                if !constraint_value_fits_type(value, column.data_type()) {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "incompatible_column_default",
+                        format!(
+                            "relation '{}.{}' has incompatible default literal",
+                            self.relation,
+                            source.column()
+                        ),
+                    ));
+                    continue;
+                }
+            }
+            result.add_column_value_source(source.clone());
+        }
+        for check in &self.computed_checks {
+            if let Some(schema) = local {
+                if check
+                    .left()
+                    .referenced_columns()
+                    .into_iter()
+                    .chain(check.right().referenced_columns())
+                    .any(|name| !schema.columns().iter().any(|c| c.name() == name))
+                {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "invalid_computed_check_column",
+                        format!(
+                            "computed CHECK on '{}' references an undeclared column",
+                            self.relation
+                        ),
+                    ));
+                    continue;
+                }
+            }
+            result.add_computed_check(check.clone());
+        }
+        for check in &self.computed_boolean_checks {
+            if let Some(schema) = local {
+                if check
+                    .predicate()
+                    .referenced_columns()
+                    .into_iter()
+                    .any(|name| !schema.columns().iter().any(|column| column.name() == name))
+                {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "invalid_boolean_check_column",
+                        format!(
+                            "Boolean CHECK on '{}' references an undeclared column",
+                            self.relation
+                        ),
+                    ));
+                    continue;
+                }
+            }
+            result.add_computed_boolean_check(check.clone());
+        }
+        for key in &self.computed_keys {
+            if let Some(schema) = local {
+                if key
+                    .expressions()
+                    .iter()
+                    .flat_map(|expr| expr.referenced_columns())
+                    .any(|name| !schema.columns().iter().any(|c| c.name() == name))
+                {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "invalid_computed_key_column",
+                        format!(
+                            "computed key on '{}' references an undeclared column",
+                            self.relation
+                        ),
+                    ));
+                    continue;
+                }
+            }
+            result.add_computed_key(key.clone());
+        }
         for diagnostic in diagnostics {
             result.add_diagnostic(diagnostic);
         }
@@ -683,6 +1042,18 @@ impl RelationConstraintSet {
     pub(crate) fn merge(&mut self, other: &Self) {
         for constraint in &other.constraints {
             self.add_constraint(constraint.clone());
+        }
+        for source in &other.column_value_sources {
+            self.add_column_value_source(source.clone());
+        }
+        for key in &other.computed_keys {
+            self.add_computed_key(key.clone());
+        }
+        for check in &other.computed_checks {
+            self.add_computed_check(check.clone());
+        }
+        for check in &other.computed_boolean_checks {
+            self.add_computed_boolean_check(check.clone());
         }
         self.diagnostics.extend(other.diagnostics.iter().cloned());
         self.normalize();
@@ -702,7 +1073,8 @@ impl RelationConstraintSet {
                 RelationConstraint::PrimaryKey(_)
                 | RelationConstraint::UniqueKey(_)
                 | RelationConstraint::NotNull(_)
-                | RelationConstraint::AcceptedValues(_) => constraint.clone(),
+                | RelationConstraint::AcceptedValues(_)
+                | RelationConstraint::CheckComparison(_) => constraint.clone(),
             };
             constraints.push(mapped);
         }
@@ -710,6 +1082,10 @@ impl RelationConstraintSet {
         Ok(Self {
             relation,
             constraints,
+            column_value_sources: self.column_value_sources.clone(),
+            computed_keys: self.computed_keys.clone(),
+            computed_checks: self.computed_checks.clone(),
+            computed_boolean_checks: self.computed_boolean_checks.clone(),
             diagnostics: self.diagnostics.clone(),
         })
     }
@@ -807,6 +1183,10 @@ impl RelationConstraintSet {
 
     fn normalize(&mut self) {
         self.constraints.sort();
+        self.column_value_sources.sort();
+        self.computed_keys.sort();
+        self.computed_checks.sort();
+        self.computed_boolean_checks.sort();
         self.diagnostics.sort();
         self.diagnostics.dedup();
     }
