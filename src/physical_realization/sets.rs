@@ -92,10 +92,10 @@ pub(super) fn physical_shared_set_cancellation_with_rows(
     let evidence = physical_integer_evidence(schema, &left_key)?;
     if evidence.minimum > 0
         || evidence.maximum < 0
-        || bundle.relation_constraints().iter().any(|set| {
-            set.relation() == relation
-                && set.blocks_unconstrained_physical_plans()
-        })
+        || bundle
+            .relation_constraints()
+            .iter()
+            .any(|set| set.relation() == relation && set.blocks_unconstrained_physical_plans())
     {
         return None;
     }
