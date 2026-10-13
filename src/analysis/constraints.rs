@@ -482,6 +482,45 @@ pub(super) fn analyze_create_table_constraints(
     Ok(Some(set))
 }
 
+/// Canonical CHECK semantics that may be supplied by a metadata adapter.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum PortableCheckExpression {
+    /// A single canonical column compared against a typed scalar constant.
+    Scalar(String, crate::constraints::CheckCompareOperator, ConstraintValue),
+    /// A comparison of deterministic scalar expressions over the current row.
+    Computed(
+        GeneratedValueExpression,
+        crate::constraints::CheckCompareOperator,
+        GeneratedValueExpression,
+    ),
+}
+
+/// Normalize metadata-authored CHECK SQL once at the producer boundary.
+///
+/// This deliberately accepts only one simple predicate. Dialect functions,
+/// implicit casts, expressions with side effects, and Boolean combinations
+/// must remain residual, never be guessed from a string in a consumer.
+pub(crate) fn portable_check_expression(expression: &str) -> Option<PortableCheckExpression> {
+    use sqlparser::dialect::GenericDialect;
+    use sqlparser::parser::Parser;
+    let statements = Parser::parse_sql(
+        &GenericDialect {},
+        &format!("SELECT 1 WHERE {expression}"),
+    ).ok()?;
+    let [SqlStatement::Query(query)] = statements.as_slice() else {
+        return None;
+    };
+    let sqlparser::ast::SetExpr::Select(select) = query.body.as_ref() else {
+        return None;
+    };
+    let condition = select.selection.as_ref()?;
+    if let Some((column, op, value)) = comparison_from_check(condition, None) {
+        return Some(PortableCheckExpression::Scalar(column, op, value));
+    }
+    let (left, op, right) = computed_check_from_expr(condition, None)?;
+    Some(PortableCheckExpression::Computed(left, op, right))
+}
+
 /// Normalize only portable, deterministic generated integer arithmetic.
 fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
     use GeneratedValueExpression as G;
