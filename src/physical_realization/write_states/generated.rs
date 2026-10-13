@@ -49,12 +49,14 @@ pub(super) fn evaluate(
             };
             let left = left.parse::<i128>().map_err(|_| residual("unproved generated numeric coercion"))?;
             let right = right.parse::<i128>().map_err(|_| residual("unproved generated numeric coercion"))?;
-            let result = match expression {
-                G::Add(_, _) => left.checked_add(right),
-                G::Subtract(_, _) => left.checked_sub(right),
-                G::Multiply(_, _) => left.checked_mul(right),
-                G::Column(_) | G::Literal(_) => unreachable!("matched arithmetic above"),
-            }.ok_or_else(|| residual("generated integer arithmetic exceeds exact representable range"))?;
+            let result = if matches!(expression, G::Add(_, _)) {
+                left.checked_add(right)
+            } else if matches!(expression, G::Subtract(_, _)) {
+                left.checked_sub(right)
+            } else {
+                left.checked_mul(right)
+            }
+            .ok_or_else(|| residual("generated integer arithmetic exceeds exact representable range"))?;
             Ok(LiteralValue::Number(result.to_string()))
         }
     }
