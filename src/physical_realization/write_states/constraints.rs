@@ -50,12 +50,28 @@ pub(super) fn validate_all_constraints_with_nested(
     states: &BTreeMap<String, PhysicalWriteState>,
     non_null_nested: &BTreeSet<(String, String)>,
 ) -> StateResult<()> {
+    validate_all_constraints_with_identity(bundle, states, non_null_nested, &BTreeSet::new())
+}
+
+/// Certify row-level database identity values only when a caller has supplied
+/// the complete next-allocation state for the corresponding canonical source.
+pub(super) fn validate_all_constraints_with_identity(
+    bundle: &AnalysisBundle,
+    states: &BTreeMap<String, PhysicalWriteState>,
+    non_null_nested: &BTreeSet<(String, String)>,
+    identity_columns: &BTreeSet<(String, String)>,
+) -> StateResult<()> {
     for set in bundle.relation_constraints() {
         let Some(state) = states.get(set.relation()) else {
             continue;
         };
+        let controlled = identity_columns
+            .iter()
+            .filter(|(relation, _)| relation == set.relation())
+            .map(|(_, column)| column.clone())
+            .collect::<BTreeSet<_>>();
         for row in &state.rows {
-            super::generated::check_declared_sources(set.column_value_sources(), row)?;
+            super::generated::check_declared_sources(set.column_value_sources(), row, &controlled)?;
         }
         if !set.diagnostics().is_empty() {
             return Err(residual_gap(
