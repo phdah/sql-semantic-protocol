@@ -1360,7 +1360,7 @@ ODCS contracts or complete SQL `CREATE TABLE` declarations. SQL DDL emits the
 or equality law. Contradictory schema declarations are diagnosed, not silently
 combined into an authoritative type.
 
-`relation_constraints[].column_value_sources[]` represents omitted-column
+`relation_constraints[].column_value_sources[].expression` optionally preserves a parser-independent, deterministic generated-column expression tree (literal, column, checked integer addition/subtraction/multiplication). It is null for defaults, identity sequences, and unsupported generated expressions. A complete physical-state proof evaluates the supported subset against the real row, or constructs an omitted INSERT-generated value after ordinary defaults. Cross-generated references, opaque sequence state, unproved arithmetic coercions and direct generated-column assignment remain residual.\n\n`relation_constraints[].column_value_sources[]` represents omitted-column
 defaults and generated/identity declarations with exact column identity,
 `default | generated | identity` kind, optional typed `value`, and complete
 provenance/enforcement evidence. `value: null` means the expression is opaque
