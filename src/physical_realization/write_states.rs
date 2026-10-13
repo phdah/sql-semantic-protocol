@@ -257,7 +257,9 @@ fn physical_closed_world_schema_plan_with_nested(
             return failure(None, error);
         }
     }
-    if let Err(error) = constraints::validate_all_constraints_with_nested(bundle, &states, non_null_nested) {
+    if let Err(error) =
+        constraints::validate_all_constraints_with_nested(bundle, &states, non_null_nested)
+    {
         return failure(None, error);
     }
     PhysicalWriteStatePlan::Feasible {
