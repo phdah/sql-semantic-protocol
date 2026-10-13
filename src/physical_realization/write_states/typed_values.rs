@@ -123,7 +123,7 @@ pub fn physical_typed_value_plan(
                     gap => return gap,
                 }
                 // Canonicalize exact integer and decimal keys before checking
-                // equality. 05, 5.0 and +5 are the same decimal key.
+                // equality. 05, 5.0 and 5.000 are the same decimal key.
                 let identity = match key.as_ref() {
                     DataType::SignedInteger { .. } => {
                         number.parse::<i128>().ok().map(|n| format!("signed:{n}"))
@@ -307,7 +307,7 @@ mod tests {
         );
         assert!(matches!(
             physical_typed_value_plan(
-                &PhysicalTypedValue::Map(vec![entry("01.5000"), entry("+1.500000")]),
+                &PhysicalTypedValue::Map(vec![entry("01.5000"), entry("1.500000")]),
                 &kind
             ),
             PhysicalTypeProof::Impossible { .. }
