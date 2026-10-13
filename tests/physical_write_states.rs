@@ -6,7 +6,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
     physical_ordered_write_state_plan, physical_typed_value_plan, AnalysisBundle,
-    CheckCompareOperator, ColumnValueKind, ColumnValueSource, ConfiguredSqlInput,
+    CheckCompareOperator, ColumnValueKind, ColumnValueSource, GeneratedValueExpression, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     ConstraintValue, DataType, DataTypeField, LiteralValue, PhysicalTypeProof, PhysicalTypedValue,
     PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
@@ -1022,4 +1022,51 @@ fn arrow_style_array_and_struct_shape_differential_duckdb() {
     assert!(db
         .execute_batch("INSERT INTO typed VALUES ([1,2,3], {'a':3,'b':'ok'})")
         .is_err());
+}
+
+#[test]
+fn generated_columns_compute_insert_values_and_validate_existing_rows() {
+    let mut b = bundle(&["INSERT INTO target(id) SELECT id FROM source"], "duckdb");
+    let generated = GeneratedValueExpression::Add(
+        Box::new(GeneratedValueExpression::Column("id".into())),
+        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+    );
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![])
+            .unwrap()
+            .with_column_value_sources(vec![
+                ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
+                    .unwrap()
+                    .with_generated_expression(generated)
+                    .unwrap(),
+            ]),
+    ]);
+    let plan = physical_ordered_write_state_plan(
+        &b,
+        &[state("target", &[]), state("source", &[(Some(1), None), (Some(2), None)])],
+    );
+    let (_, states) = outcome(&plan);
+    let target = states.iter().find(|s| s.relation() == "target").unwrap();
+    assert_eq!(target.rows(), &[row(Some(1), Some(2)), row(Some(2), Some(3))]);
+
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(2))])]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(3))])]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), None)])]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER GENERATED ALWAYS AS (id+1));\n\
+         INSERT INTO target(id) VALUES (1), (2);",
+    ).unwrap();
+    let sum: i64 = db.query_row("SELECT SUM(score) FROM target", [], |r| r.get(0)).unwrap();
+    assert_eq!(sum, 5);
 }
