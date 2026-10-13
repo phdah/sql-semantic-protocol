@@ -455,6 +455,7 @@ pub(super) fn analyze_create_table_constraints(
     if constraints.is_empty()
         && computed_keys.is_empty()
         && computed_checks.is_empty()
+        && computed_boolean_checks.is_empty()
         && diagnostics.is_empty()
         && column_value_sources.is_empty()
     {
