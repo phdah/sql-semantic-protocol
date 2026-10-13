@@ -217,18 +217,18 @@ pub(super) fn analyze_create_table_constraints(
                     constraint_identity("check", index, name.as_ref().map(ToString::to_string)),
                     *enforced,
                 )?];
-                if let Some((rules, checks)) =
-                    portable_check_constraints(expr, None, &evidence)?
-                {
+                if let Some((rules, checks)) = portable_check_constraints(expr, None, &evidence)? {
                     constraints.extend(rules);
                     computed_checks.extend(checks);
                 } else {
                     diagnostics.push(ConstraintDiagnostic::new(
                         "unsupported_check_constraint",
-                        format!("check constraint on '{relation}' has unproved expression semantics"),
+                        format!(
+                            "check constraint on '{relation}' has unproved expression semantics"
+                        ),
                     ));
                 }
-            },
+            }
             _ => {}
         }
     }
@@ -388,7 +388,10 @@ pub(super) fn analyze_create_table_constraints(
                     } else {
                         diagnostics.push(ConstraintDiagnostic::new(
                             "unsupported_check_constraint",
-                            format!("check constraint on '{}.{}' has unproved expression semantics", relation, column.name),
+                            format!(
+                                "check constraint on '{}.{}' has unproved expression semantics",
+                                relation, column.name
+                            ),
                         ));
                     }
                 }
@@ -470,7 +473,8 @@ fn portable_check_constraints(
         left,
         op: SqlBinaryOperator::And,
         right,
-    } = unwrap_nested_expression(expr) {
+    } = unwrap_nested_expression(expr)
+    {
         let Some((mut constraints, mut computed)) =
             portable_check_constraints(left, expected_column, evidence)?
         else {
@@ -488,7 +492,10 @@ fn portable_check_constraints(
     if let Some((column, values, quote)) = accepted_values_from_check(expr, expected_column) {
         return Ok(Some((
             vec![RelationConstraint::accepted_values(
-                column, values, quote, evidence.to_vec(),
+                column,
+                values,
+                quote,
+                evidence.to_vec(),
             )?],
             Vec::new(),
         )));
@@ -496,7 +503,10 @@ fn portable_check_constraints(
     if let Some((column, op, value)) = comparison_from_check(expr, expected_column) {
         return Ok(Some((
             vec![RelationConstraint::check_comparison(
-                column, op, value, evidence.to_vec(),
+                column,
+                op,
+                value,
+                evidence.to_vec(),
             )?],
             Vec::new(),
         )));
@@ -504,7 +514,12 @@ fn portable_check_constraints(
     if let Some((left, op, right)) = computed_check_from_expr(expr, expected_column) {
         return Ok(Some((
             Vec::new(),
-            vec![ComputedCheckConstraint::new(left, op, right, evidence.to_vec())?],
+            vec![ComputedCheckConstraint::new(
+                left,
+                op,
+                right,
+                evidence.to_vec(),
+            )?],
         )));
     }
     Ok(None)
@@ -542,7 +557,8 @@ pub(crate) fn portable_check_expressions(expression: &str) -> Option<Vec<Portabl
             left,
             op: SqlBinaryOperator::And,
             right,
-        } = unwrap_nested_expression(expr) {
+        } = unwrap_nested_expression(expr)
+        {
             visit(left, output)?;
             visit(right, output)?;
         } else {
