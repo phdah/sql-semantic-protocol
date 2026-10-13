@@ -65,7 +65,8 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
                     Some(8) => i8::try_from(value).is_ok(),
                     Some(16) => i16::try_from(value).is_ok(),
                     Some(32) => i32::try_from(value).is_ok(),
-                    Some(64) | None => i64::try_from(value).is_ok(),
+                    Some(64) => i64::try_from(value).is_ok(),
+                    None => return Err(residual("signed integer width is not attested")),
                     Some(128) => true,
                     _ => return Err(residual("unknown signed integer storage width")),
                 };
@@ -90,7 +91,8 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
                     Some(8) => u8::try_from(value).is_ok(),
                     Some(16) => u16::try_from(value).is_ok(),
                     Some(32) => u32::try_from(value).is_ok(),
-                    Some(64) | None => u64::try_from(value).is_ok(),
+                    Some(64) => u64::try_from(value).is_ok(),
+                    None => return Err(residual("unsigned integer width is not attested")),
                     Some(128) => true,
                     _ => return Err(residual("unknown unsigned integer storage width")),
                 };
@@ -126,7 +128,8 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
                 // Larger values and decimal fractions need an explicit rounding law.
                 let exact = match bits {
                     Some(32) => value.unsigned_abs() <= (1_u128 << 24),
-                    Some(64) | None => value.unsigned_abs() <= (1_u128 << 53),
+                    Some(64) => value.unsigned_abs() <= (1_u128 << 53),
+                    None => return Err(residual("floating point width is not attested")),
                     _ => return Err(residual("unknown floating point format")),
                 };
                 if exact {
@@ -294,6 +297,9 @@ fn parse_unsigned(text: &str) -> Option<u128> {
 }
 
 fn validate_decimal(text: &str, precision: Option<u64>, scale: Option<u64>) -> StateResult<()> {
+    if precision.is_none() || scale.is_none() {
+        return Err(residual("decimal storage precision/scale are not attested"));
+    }
     let unsigned = text.strip_prefix('-').unwrap_or(text);
     let (whole, fractional) = unsigned.split_once('.').unwrap_or((unsigned, ""));
     if whole.is_empty()
