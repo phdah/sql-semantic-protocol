@@ -577,7 +577,7 @@ impl BooleanWitness {
                         });
                     }
                     RelationConstraint::UniqueKey(_) => {}
-                    RelationConstraint::ForeignKey(_) => return None,
+                    RelationConstraint::ForeignKey(_) | RelationConstraint::CheckComparison(_) => return None,
                 }
             }
         }
