@@ -16,10 +16,12 @@ pub(super) fn validate_column_value(
         let LiteralValue::Text(text) = value else {
             return Err(residual("timestamp requires a canonical textual instant"));
         };
-        let zone = column.timestamp_zone().ok_or_else(|| {
-            residual("timestamp zone semantics have not been declared")
-        })?;
-        let (date, time) = text.split_once('T').or_else(|| text.split_once(' '))
+        let zone = column
+            .timestamp_zone()
+            .ok_or_else(|| residual("timestamp zone semantics have not been declared"))?;
+        let (date, time) = text
+            .split_once('T')
+            .or_else(|| text.split_once(' '))
             .ok_or_else(|| residual("timestamp requires ISO date and time"))?;
         validate_iso_date(date)?;
         let instant = match zone {
@@ -111,7 +113,9 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
         DataType::FloatingPoint { bits } => match value {
             LiteralValue::Number(number) => {
                 if number == "-0" {
-                    return Err(residual("signed floating zero requires explicit storage law"));
+                    return Err(residual(
+                        "signed floating zero requires explicit storage law",
+                    ));
                 }
                 let Some(value) = parse_integer(number) else {
                     return Err(residual(
@@ -161,12 +165,24 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
             _ => Err(residual("time requires canonical clock representation")),
         },
         DataType::Uuid => match value {
-            LiteralValue::Text(text) if text.len() == 36 && text.bytes().enumerate().all(|(i, c)| {
-                if matches!(i, 8 | 13 | 18 | 23) { c == b'-' } else { c.is_ascii_digit() || (b'a'..=b'f').contains(&c) }
-            }) => Ok(()),
-            LiteralValue::Text(text) if text.is_ascii() && text.len() == 36 =>
-                Err(impossible("canonical UUID has invalid separator or hex digit")),
-            _ => Err(residual("UUID requires lowercase canonical hyphenated text")),
+            LiteralValue::Text(text)
+                if text.len() == 36
+                    && text.bytes().enumerate().all(|(i, c)| {
+                        if matches!(i, 8 | 13 | 18 | 23) {
+                            c == b'-'
+                        } else {
+                            c.is_ascii_digit() || (b'a'..=b'f').contains(&c)
+                        }
+                    }) =>
+            {
+                Ok(())
+            }
+            LiteralValue::Text(text) if text.is_ascii() && text.len() == 36 => Err(impossible(
+                "canonical UUID has invalid separator or hex digit",
+            )),
+            _ => Err(residual(
+                "UUID requires lowercase canonical hyphenated text",
+            )),
         },
         DataType::Enum { values } => match value {
             LiteralValue::Text(text)
@@ -195,8 +211,13 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
 
 fn validate_iso_date(text: &str) -> StateResult<()> {
     let bytes = text.as_bytes();
-    if bytes.len() != 10 || bytes[4] != b'-' || bytes[7] != b'-'
-        || bytes.iter().enumerate().any(|(i, c)| i != 4 && i != 7 && !c.is_ascii_digit())
+    if bytes.len() != 10
+        || bytes[4] != b'-'
+        || bytes[7] != b'-'
+        || bytes
+            .iter()
+            .enumerate()
+            .any(|(i, c)| i != 4 && i != 7 && !c.is_ascii_digit())
     {
         return Err(residual("date requires YYYY-MM-DD calendar syntax"));
     }
@@ -212,7 +233,9 @@ fn validate_iso_date(text: &str) -> StateResult<()> {
         _ => 0,
     };
     if year == 0 || day == 0 || day > max_day {
-        Err(impossible("canonical date violates Gregorian calendar bounds"))
+        Err(impossible(
+            "canonical date violates Gregorian calendar bounds",
+        ))
     } else {
         Ok(())
     }
@@ -224,11 +247,18 @@ fn validate_iso_time(text: &str, precision: Option<u64>) -> StateResult<()> {
         None => (text, None),
     };
     let bytes = whole.as_bytes();
-    if bytes.len() != 8 || bytes[2] != b':' || bytes[5] != b':'
-        || bytes.iter().enumerate().any(|(i, c)| i != 2 && i != 5 && !c.is_ascii_digit())
+    if bytes.len() != 8
+        || bytes[2] != b':'
+        || bytes[5] != b':'
+        || bytes
+            .iter()
+            .enumerate()
+            .any(|(i, c)| i != 2 && i != 5 && !c.is_ascii_digit())
         || fraction.is_some_and(|v| v.is_empty() || !v.bytes().all(|c| c.is_ascii_digit()))
     {
-        return Err(residual("time requires HH:MM:SS with an optional decimal fraction"));
+        return Err(residual(
+            "time requires HH:MM:SS with an optional decimal fraction",
+        ));
     }
     let hour = whole[..2].parse::<u32>().unwrap_or(99);
     let minute = whole[3..5].parse::<u32>().unwrap_or(99);
@@ -383,7 +413,8 @@ mod tests {
         assert!(validate_value(
             &LiteralValue::Text("23:59:59.1200".into()),
             &DataType::Time { precision: Some(2) },
-        ).is_ok());
+        )
+        .is_ok());
         assert!(matches!(
             validate_value(
                 &LiteralValue::Text("23:59:59.123".into()),
@@ -409,7 +440,9 @@ mod tests {
             validate_column_value(&instant, &unknown),
             Err(StateFailure::Residual(..))
         ));
-        let known = unknown.with_timestamp_zone(TimestampZone::WithTimeZone).unwrap();
+        let known = unknown
+            .with_timestamp_zone(TimestampZone::WithTimeZone)
+            .unwrap();
         assert!(validate_column_value(&instant, &known).is_ok());
         let nested = DataType::Array {
             element: Some(Box::new(DataType::SignedInteger { bits: Some(64) })),
@@ -422,5 +455,4 @@ mod tests {
             ));
         }
     }
-
 }
