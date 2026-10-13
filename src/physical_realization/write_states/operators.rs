@@ -192,14 +192,13 @@ pub(super) fn append_rows(
             return Err(residual("INSERT SELECT projection arity is not proved"));
         }
         let values = columns.iter().cloned().zip(output_row).collect();
-        next.rows
-            .push(complete_insert_row(
-                bundle,
-                target,
-                values,
-                schema,
-                identity_sequences,
-            )?);
+        next.rows.push(complete_insert_row(
+            bundle,
+            target,
+            values,
+            schema,
+            identity_sequences,
+        )?);
     }
     let inserted = u64::try_from(next.rows.len() - before.rows.len())
         .map_err(|_| residual("inserted count overflow"))?;
