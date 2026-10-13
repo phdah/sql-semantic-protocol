@@ -121,6 +121,10 @@ downstream generated source rows. The independent TASK-70..90
 dialect/feature matrix, consumer TASK-31/35/36/43 and TASK-91 release
 acceptance remain open. Release Please PR #79 must not be merged.
 
+## TASK-79 Boolean CHECK and typed INSERT progress (2026-10-13)
+
+PR #107 now models canonical SQL three-valued Boolean CHECK trees, shared by SQL DDL and dbt, and proves bounded nested typed `INSERT ... SELECT` using full physical source/target snapshots. These are not general function, coercion, transaction or arbitrary nested DML proofs. All remaining unverified dialect/engine/consumer cells and TASK-79 AC stay release-blocking until independently certified.
+
 ## TASK-79 physical-schema proof progress (2026-10-13)
 
 PR #107 additionally proves complete composite comparisons despite unknown earlier components, supports a bounded portable generated function/column dependency DAG, and exports exact typed physical populations as independently validated sidecars. The sidecar is not evidence that the SQL statements needed to produce those Arrow values execute under every target engine. TASK-79's remaining unproved typed SQL DML/operator laws, adapter enforcement laws and dialect-oracle cells stay release-blocking, without consumer-side reconstruction or waiver.
