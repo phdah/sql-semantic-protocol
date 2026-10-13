@@ -257,7 +257,7 @@ fn scalar_sql_check_is_canonical_and_complex_check_stays_explicit() {
     )));
 
     let unsupported = analyze_sql(
-        "CREATE TABLE orders (amount BIGINT CHECK (abs(amount) > 0))",
+        "CREATE TABLE orders (amount BIGINT CHECK (amount / 2 > 0))",
         "postgresql",
         &PostgreSqlDialect {},
     )
