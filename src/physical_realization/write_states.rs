@@ -224,6 +224,37 @@ fn impossible(reason: impl Into<String>) -> StateFailure {
     StateFailure::Impossible(reason.into())
 }
 
+/// Certify one entire physical source/target population without executing SQL.
+///
+/// This proof accepts closed-world snapshots from multiple physical relations
+/// simultaneously, allowing cyclic foreign keys to be verified against the
+/// same fixed population. It never infers rows that were not provided.
+/// Unknown type, collation, constraint-enforcement or default laws are residual.
+pub fn physical_closed_world_schema_plan(
+    bundle: &AnalysisBundle,
+    snapshots: &[PhysicalWriteState],
+) -> PhysicalWriteStatePlan {
+    let mut states = BTreeMap::<String, PhysicalWriteState>::new();
+    for state in snapshots {
+        if states.insert(state.relation.clone(), state.clone()).is_some() {
+            return PhysicalWriteStatePlan::Impossible {
+                layer_id: None,
+                reason: "duplicate complete physical source identity".to_string(),
+            };
+        }
+        if let Err(error) = validate_state(bundle, state) {
+            return failure(None, error);
+        }
+    }
+    if let Err(error) = validate_all_constraints(bundle, &states) {
+        return failure(None, error);
+    }
+    PhysicalWriteStatePlan::Feasible {
+        transitions: Vec::new(),
+        final_states: states.into_values().collect(),
+    }
+}
+
 /// Execute supported, independently materialized writes against complete
 /// physical source and target snapshots. The returned rows are *constructed*
 /// from normalized protocol expressions without reparsing SQL.
