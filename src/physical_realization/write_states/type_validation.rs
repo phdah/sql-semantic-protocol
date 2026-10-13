@@ -114,7 +114,7 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
         },
         DataType::FloatingPoint { bits } => match value {
             LiteralValue::Number(number) => {
-                if number == "-0" {
+                if number.starts_with('-') && parse_integer(number) == Some(0) {
                     return Err(residual(
                         "signed floating zero requires explicit storage law",
                     ));
@@ -382,6 +382,12 @@ mod tests {
             Err(StateFailure::Impossible(_))
         ));
         let float = DataType::FloatingPoint { bits: Some(32) };
+        for negative_zero in ["-0", "-00", "-000000"] {
+            assert!(matches!(
+                validate_value(&LiteralValue::Number(negative_zero.into()), &float),
+                Err(StateFailure::Residual(..))
+            ));
+        }
         assert!(validate_value(&LiteralValue::Number("16777216".into()), &float).is_ok());
         assert!(matches!(
             validate_value(&LiteralValue::Number("0.1".into()), &float),
