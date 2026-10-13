@@ -185,8 +185,69 @@ pub(super) fn append_rows(
     Ok((next, WriteRowCounts::new(inserted, 0, 0)))
 }
 
+/// Apply an UPDATE atomically, then recompute attested generated columns.
+///
+/// SQL does not permit assigning an ALWAYS-generated column directly. Preserve
+/// this distinction even when a direct assignment would equal the generated
+/// value, and recompute from the post-assignment base-column values.
+fn apply_target_update(
+    bundle: &AnalysisBundle,
+    target: &str,
+    before: &PhysicalWriteRow,
+    assignments: &[crate::protocol::MergeAssignment],
+    context: &Context<'_>,
+    aliases: &[&str],
+) -> StateResult<PhysicalWriteRow> {
+    let sources = bundle
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == target)
+        .map(|set| set.column_value_sources())
+        .unwrap_or(&[]);
+    for assignment in assignments {
+        let column = assignment.target().rsplit('.').next().unwrap_or(assignment.target());
+        if sources.iter().any(|source| {
+            source.column() == column
+                && source.kind() != crate::column_sources::ColumnValueKind::Default
+        }) {
+            return Err(residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "UPDATE explicitly assigns a generated or identity column",
+            ));
+        }
+    }
+    let mut next = apply_assignments(before, assignments, context, aliases)?;
+    for source in sources {
+        if source.kind() != crate::column_sources::ColumnValueKind::Generated {
+            continue;
+        }
+        if !super::generated::authoritative(source) {
+            return Err(residual_gap(
+                PhysicalWriteStateGap::UnprovedConstraint,
+                "generated UPDATE expression lacks authoritative execution evidence",
+            ));
+        }
+        let expression = source.expression().ok_or_else(|| {
+            residual("generated UPDATE expression has no executable semantics")
+        })?;
+        if expression.referenced_columns().iter().any(|name| {
+            sources.iter().any(|other| {
+                other.kind() != crate::column_sources::ColumnValueKind::Default
+                    && other.column() == *name
+            })
+        }) {
+            return Err(residual(
+                "generated UPDATE depends on another generated or identity column",
+            ));
+        }
+        let computed = super::generated::evaluate(expression, &next.values)?;
+        next.values.insert(source.column().to_string(), computed);
+    }
+    Ok(next)
+}
+
 pub(super) fn mutate_rows(
-    _bundle: &AnalysisBundle,
+    bundle: &AnalysisBundle,
     query: &QueryStatement,
     _states: &BTreeMap<String, PhysicalWriteState>,
     target: &str,
@@ -213,7 +274,7 @@ pub(super) fn mutate_rows(
             .checked_add(1)
             .ok_or_else(|| residual("affected count overflow"))?;
         if !delete {
-            kept.push(apply_assignments(row, write.assignments(), &context, &[])?);
+            kept.push(apply_target_update(bundle, target, row, write.assignments(), &context, &[])?);
         }
     }
     let counts = if delete {
@@ -305,7 +366,9 @@ pub(super) fn merge_rows(
                 }
                 match clause.action() {
                     MergeAction::Update { assignments } => {
-                        result = Some(apply_assignments(
+                        result = Some(apply_target_update(
+                            bundle,
+                            target,
                             target_row,
                             assignments,
                             &context,
