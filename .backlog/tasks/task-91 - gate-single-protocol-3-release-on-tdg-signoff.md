@@ -120,3 +120,7 @@ This **does not** certify arbitrary feature/operator combinations or
 downstream generated source rows. The independent TASK-70..90
 dialect/feature matrix, consumer TASK-31/35/36/43 and TASK-91 release
 acceptance remain open. Release Please PR #79 must not be merged.
+
+## TASK-79 schema proof gate (2026-10-13)
+
+TASK-79 implementation is under review in protocol PR #107, and remains a mandatory dependency for this release gate. Its canonical/schema facts, typed nested populations, generated/default subset, dbt and SQL CHECK parity, scalar equality and differential fixtures do **not** constitute final AC signoff. Identity-sequence allocation, deferred FK/transaction enforcement, fully proven coercion/collation/timezone/default adapters, nested Arrow ordered DML/serialization and the complete cross-engine/dialect matrix remain release blockers or require independently reviewed fail-closed certification. The manifest's `task_79_schema_evidence` scope is authoritative; sql-tdg may consume certified portable protocol facts but must not fill unknown protocol semantics with generator heuristics. Keep Release Please PR #79 and this TASK-91 gate closed.
