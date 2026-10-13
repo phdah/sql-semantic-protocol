@@ -147,6 +147,7 @@ pub(super) fn analyze_input(
         relation_context,
         statements: protocol.statements().to_vec(),
         relation_constraints: protocol.relation_constraints().to_vec(),
+        source_schemas: protocol.source_schemas().to_vec(),
     })
 }
 
