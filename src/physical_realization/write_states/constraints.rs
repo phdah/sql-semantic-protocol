@@ -115,6 +115,28 @@ pub(super) fn validate_all_constraints_with_identity(
                 super::check_comparisons::validate_scalar_check(&left, check.operator(), &value)?;
             }
         }
+        for check in set.computed_boolean_checks() {
+            if check
+                .evidence()
+                .iter()
+                .all(|e| e.enforcement() == ConstraintEnforcement::NotEnforced)
+            {
+                continue;
+            }
+            if !check
+                .evidence()
+                .iter()
+                .any(|e| e.enforcement() == ConstraintEnforcement::Enforced)
+            {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "Boolean CHECK enforcement is not attested",
+                ));
+            }
+            for row in &state.rows {
+                super::boolean_checks::check(check.predicate(), &row.values)?;
+            }
+        }
         for key in set.computed_keys() {
             if key
                 .evidence()
