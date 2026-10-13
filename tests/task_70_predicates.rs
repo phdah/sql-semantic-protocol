@@ -2,8 +2,10 @@
 mod common;
 
 use duckdb::Connection;
+use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name, BooleanRowConstraint,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
+    parse_dbt_catalog, parse_dbt_manifest, BooleanRowConstraint,
     BooleanTruthCase, BooleanWitness, BooleanWitnessDirection, ComposedSemantics,
     ConfiguredSqlInput, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
@@ -179,4 +181,60 @@ fn duckdb_oracle_distinguishes_false_from_unknown_and_null_safe_equality() {
             .unwrap();
         assert_eq!(count, expected, "{predicate}");
     }
+}
+
+#[test]
+fn dbt_compiled_sql_and_direct_sql_share_canonical_truth_obligations() {
+    const SQL: &str =
+        "SELECT id, amount FROM warehouse.raw.orders WHERE NOT (amount BETWEEN 2 AND 10 OR id IS NOT DISTINCT FROM NULL)";
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("dbt fixture manifest");
+    manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
+    let manifest = parse_dbt_manifest(&manifest.to_string()).expect("dbt manifest");
+    let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json"))
+        .expect("dbt catalog");
+    let dialect = PostgreSqlDialect {};
+    let dbt = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect)
+        .expect("dbt analysis");
+
+    let schema = RelationSchema::new(
+        "warehouse.raw.orders",
+        vec![
+            SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let input = SqlInput::inline(SQL);
+    let direct = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new("direct", &input, "postgresql", &dialect)],
+        &catalog,
+    )
+    .expect("direct analysis");
+
+    let witness = |bundle: &sql_semantic_protocol::AnalysisBundle| {
+        let layer = bundle
+            .layers()
+            .iter()
+            .find(|layer| layer.consumes().iter().any(|source| source == "warehouse.raw.orders"))
+            .expect("source-consuming layer");
+        let ComposedSemantics::Resolved(ref semantics) = layer.composed_semantics() else {
+            panic!("expected composed semantics");
+        };
+        semantics.boolean_witnesses().first().expect("boolean witness").witness().clone()
+    };
+    let from_dbt = witness(&dbt);
+    let from_sql = witness(&direct);
+    assert_eq!(from_dbt.condition(), from_sql.condition());
+    assert_eq!(from_dbt.qualifying(), from_sql.qualifying());
+    assert_eq!(from_dbt.rejected(), from_sql.rejected());
+    assert!(matches!(
+        from_dbt.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        from_dbt.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
 }
