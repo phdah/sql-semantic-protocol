@@ -49,6 +49,7 @@ mod boolean_witness;
 mod bundle;
 mod column_sources;
 mod composition;
+mod computed_boolean_checks;
 mod computed_checks;
 mod computed_keys;
 mod constraints;
@@ -100,6 +101,9 @@ pub use bundle::{
     UnresolvedComposedSemantics,
 };
 pub use column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
+pub use computed_boolean_checks::{
+    ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate,
+};
 pub use computed_checks::ComputedCheckConstraint;
 pub use computed_keys::ComputedKeyConstraint;
 pub use constraints::{
