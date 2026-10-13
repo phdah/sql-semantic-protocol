@@ -33,13 +33,15 @@
       "enforced_numeric_scalar_CHECK_and_SQL_NULL",
       "nested_structural_values_under_enforced_NOT_NULL",
       "identical_text_key_equality_with_unproved_distinct_collation",
-      "negative_floating_zero_aliases_remain_residual"
+      "negative_floating_zero_aliases_remain_residual",
+      "portable_conjunctive_CHECK_sql_ddl_and_dbt_atomic_normalization"
     ],
     "tests": [
       "tests/physical_write_states.rs",
       "tests/physical_typed_populations.rs",
       "tests/source_schema_contract.rs",
-      "tests/odcs.rs"
+      "tests/odcs.rs",
+      "tests/dbt_constraints.rs"
     ],
     "unproved": [
       "Arrow_nested_struct_array_map_ordered_DML_execution_and_serialization",
