@@ -96,7 +96,10 @@ fn null_safe_integer_comparison_is_two_valued() {
         "NOT (a IS DISTINCT FROM NULL)",
     ] {
         let witness = assert_both_directions_exact(predicate);
-        assert!(matches!(witness.condition(), BooleanRowConstraint::NullTest { .. }));
+        assert!(matches!(
+            witness.condition(),
+            BooleanRowConstraint::NullTest { .. }
+        ));
     }
 }
 
@@ -110,7 +113,10 @@ fn unsupported_null_membership_and_cross_column_comparisons_remain_residual() {
     ] {
         let witness = typed_witness(predicate);
         assert!(
-            matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }),
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
             "{predicate}: unproved semantics cannot be exact"
         );
         assert!(
@@ -135,17 +141,22 @@ fn dialect_shared_three_valued_negation_has_identical_protocol_shape() {
             panic!("{name}: NOT OR must normalize to AND");
         };
         assert_eq!(children.len(), 2, "{name}");
-        assert!(children.iter().all(BooleanRowConstraint::is_exact), "{name}");
+        assert!(
+            children.iter().all(BooleanRowConstraint::is_exact),
+            "{name}"
+        );
     }
 }
 
 #[test]
 fn duckdb_oracle_distinguishes_false_from_unknown_and_null_safe_equality() {
     let connection = Connection::open_in_memory().unwrap();
-    connection.execute_batch(
-        "CREATE TABLE t(a INTEGER, b INTEGER);
+    connection
+        .execute_batch(
+            "CREATE TABLE t(a INTEGER, b INTEGER);
          INSERT INTO t VALUES (NULL, 1), (2, NULL), (3, 3), (4, 1);",
-    ).unwrap();
+        )
+        .unwrap();
     for (predicate, expected) in [
         ("a BETWEEN 2 AND 3", 2_i64),
         ("a NOT BETWEEN 2 AND 3", 1),
@@ -160,7 +171,11 @@ fn duckdb_oracle_distinguishes_false_from_unknown_and_null_safe_equality() {
         ("a IS NOT DISTINCT FROM NULL", 1),
     ] {
         let count: i64 = connection
-            .query_row(&format!("SELECT COUNT(*) FROM t WHERE {predicate}"), [], |row| row.get(0))
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
             .unwrap();
         assert_eq!(count, expected, "{predicate}");
     }
