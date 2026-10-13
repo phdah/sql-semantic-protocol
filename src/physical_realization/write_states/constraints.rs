@@ -51,6 +51,29 @@ pub(super) fn validate_all_constraints(
                 "unresolved canonical constraint diagnostics",
             ));
         }
+        for check in set.computed_checks() {
+            if !check.evidence().iter().any(|evidence| {
+                evidence.enforcement() == ConstraintEnforcement::Enforced
+            }) {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "computed CHECK enforcement not attested",
+                ));
+            }
+            for row in &state.rows {
+                let left = super::generated::evaluate(check.left(), &row.values)?;
+                let right = super::generated::evaluate(check.right(), &row.values)?;
+                let value = match right {
+                    LiteralValue::Null => ConstraintValue::Null,
+                    LiteralValue::Boolean(value) => ConstraintValue::Boolean(value),
+                    LiteralValue::Number(value) => ConstraintValue::Number(value),
+                    LiteralValue::Text(value) => ConstraintValue::String(value),
+                };
+                super::check_comparisons::validate_scalar_check(
+                    &left, check.operator(), &value
+                )?;
+            }
+        }
         for key in set.computed_keys() {
             if !key
                 .evidence()
