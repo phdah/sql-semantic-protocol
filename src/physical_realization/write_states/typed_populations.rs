@@ -167,7 +167,9 @@ pub fn physical_typed_closed_world_schema_plan(
                         // A nested constrained key cannot masquerade as NULL in the
                         // existing scalar equality/ordering and FK verifier.
                         let constrained = bundle.relation_constraints().iter().any(|set| {
-                            set.constraints().iter().any(|constraint| {
+                            (set.relation() == state.relation && set.computed_keys().iter().any(|key| {
+                                key.expressions().iter().any(|expr| expr.referenced_columns().contains(&column.name()))
+                            })) || set.constraints().iter().any(|constraint| {
                                 (set.relation() == state.relation
                                     && constraint.columns().iter().any(|name| name == column.name()))
                                     || matches!(constraint, RelationConstraint::ForeignKey(fk)
