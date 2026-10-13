@@ -290,10 +290,17 @@ impl BooleanWitness {
                     true
                 }
                 BooleanRowConstraint::NullTest { column, negated } => {
-                    let mode = if *negated { SetMode::Exclude } else { SetMode::Include };
+                    let mode = if *negated {
+                        SetMode::Exclude
+                    } else {
+                        SetMode::Include
+                    };
                     let derived = ValueDomain::set(
                         mode,
-                        vec![LiteralExpression::new(LiteralType::Null, LiteralValue::Null)],
+                        vec![LiteralExpression::new(
+                            LiteralType::Null,
+                            LiteralValue::Null,
+                        )],
                     );
                     domains
                         .entry(column.clone())
@@ -765,9 +772,15 @@ fn normalize(
             ) {
                 let column = match (comparison.left(), comparison.right()) {
                     (Expression::Column(column), Expression::Literal(literal))
-                        if matches!(literal.value(), LiteralValue::Null) => Some(column),
+                        if matches!(literal.value(), LiteralValue::Null) =>
+                    {
+                        Some(column)
+                    }
                     (Expression::Literal(literal), Expression::Column(column))
-                        if matches!(literal.value(), LiteralValue::Null) => Some(column),
+                        if matches!(literal.value(), LiteralValue::Null) =>
+                    {
+                        Some(column)
+                    }
                     _ => None,
                 };
                 if let Some(column) = column {
@@ -820,10 +833,20 @@ fn normalize(
             };
             let operands = vec![
                 normalize_integer_comparison(
-                    test.expression(), lower, test.lower(), sources, integer_evidence, string_evidence,
+                    test.expression(),
+                    lower,
+                    test.lower(),
+                    sources,
+                    integer_evidence,
+                    string_evidence,
                 ),
                 normalize_integer_comparison(
-                    test.expression(), upper, test.upper(), sources, integer_evidence, string_evidence,
+                    test.expression(),
+                    upper,
+                    test.upper(),
+                    sources,
+                    integer_evidence,
+                    string_evidence,
                 ),
             ];
             let Some(operands) = BooleanOperands::new(operands) else {
@@ -846,7 +869,12 @@ fn normalize(
             };
             let mut operands = test.values().iter().map(|value| {
                 normalize_integer_comparison(
-                    test.expression(), operator, value, sources, integer_evidence, string_evidence,
+                    test.expression(),
+                    operator,
+                    value,
+                    sources,
+                    integer_evidence,
+                    string_evidence,
                 )
             });
             let Some(first) = operands.next() else {
@@ -866,11 +894,12 @@ fn normalize(
                 BooleanRowConstraint::Any(children)
             }
         }
-        Predicate::Not(negation) => {
-            negate_constraint(normalize(
-                negation.operand(), sources, integer_evidence, string_evidence,
-            ))
-        }
+        Predicate::Not(negation) => negate_constraint(normalize(
+            negation.operand(),
+            sources,
+            integer_evidence,
+            string_evidence,
+        )),
         Predicate::LikePrefix(test) => {
             let Expression::Column(column) = test.expression() else {
                 return residual("LIKE prefix requires a direct source string column");
@@ -885,7 +914,6 @@ fn normalize(
                 negated: test.negated(),
             }
         }
-        Predicate::Not(_) => residual("logical NOT needs explicit three-valued inversion"),
         _ => residual("computed, function, collation, cast or other predicate is not invertible"),
     }
 }
@@ -903,10 +931,15 @@ fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
             BooleanOperands::new(operands.iter().cloned().map(negate_constraint).collect())
                 .expect("negation preserves the operand count"),
         ),
-        BooleanRowConstraint::NullTest { column, negated } => {
-            BooleanRowConstraint::NullTest { column, negated: !negated }
-        }
-        BooleanRowConstraint::IntegerComparison { column, operator, literal } => {
+        BooleanRowConstraint::NullTest { column, negated } => BooleanRowConstraint::NullTest {
+            column,
+            negated: !negated,
+        },
+        BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal,
+        } => {
             let operator = match operator {
                 ComparisonOperator::Eq => ComparisonOperator::Neq,
                 ComparisonOperator::Neq => ComparisonOperator::Eq,
@@ -917,11 +950,21 @@ fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
                 ComparisonOperator::IsDistinctFrom => ComparisonOperator::IsNotDistinctFrom,
                 ComparisonOperator::IsNotDistinctFrom => ComparisonOperator::IsDistinctFrom,
             };
-            BooleanRowConstraint::IntegerComparison { column, operator, literal }
+            BooleanRowConstraint::IntegerComparison {
+                column,
+                operator,
+                literal,
+            }
         }
-        BooleanRowConstraint::StringPrefix { column, prefix, negated } => {
-            BooleanRowConstraint::StringPrefix { column, prefix, negated: !negated }
-        }
+        BooleanRowConstraint::StringPrefix {
+            column,
+            prefix,
+            negated,
+        } => BooleanRowConstraint::StringPrefix {
+            column,
+            prefix,
+            negated: !negated,
+        },
         BooleanRowConstraint::Residual { reason } => BooleanRowConstraint::Residual { reason },
     }
 }
@@ -936,9 +979,13 @@ fn normalize_integer_comparison(
 ) -> BooleanRowConstraint {
     normalize(
         &Predicate::Comparison(crate::protocol::ComparisonPredicate::new(
-            left.clone(), operator, right.clone(),
+            left.clone(),
+            operator,
+            right.clone(),
         )),
-        sources, integer_evidence, string_evidence,
+        sources,
+        integer_evidence,
+        string_evidence,
     )
 }
 
@@ -1490,7 +1537,9 @@ mod tests {
             ));
 
             let domains = witness.qualifying_conjunctive_domains();
-            let domain = domains.iter().find(|domain| domain.column() == &a)
+            let domain = domains
+                .iter()
+                .find(|domain| domain.column() == &a)
                 .expect("exact integer comparison must retain its domain");
             assert_eq!(
                 domain.domain(),
