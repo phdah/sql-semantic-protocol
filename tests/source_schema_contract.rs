@@ -144,3 +144,24 @@ fn dialect_selection_is_available_without_a_consumer_sqlparser_dependency() {
     assert!(dialect_from_name("SNOWFLAKE").is_some());
     assert!(dialect_from_name("not-a-dialect").is_none());
 }
+
+#[test]
+fn physical_collation_is_retained_as_identity_without_inferred_comparison_law() {
+    let column = SchemaColumn::from_sql_type("name", "VARCHAR(20)", "postgresql")
+        .unwrap()
+        .with_collation("sv_SE.utf8")
+        .unwrap();
+    assert_eq!(column.collation(), Some("sv_SE.utf8"));
+    assert!(SchemaColumn::from_sql_type("id", "BIGINT", "postgresql")
+        .unwrap()
+        .with_collation("sv_SE.utf8")
+        .is_err());
+    let schema = RelationSchema::new("raw.orders", vec![column]).unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let input = SqlInput::inline("SELECT name FROM raw.orders");
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let configured = [ConfiguredSqlInput::new("collation", &input, "postgresql", dialect.as_ref())];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
+    let emitted: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+    assert_eq!(emitted["source_schemas"][0]["columns"][0]["collation"], "sv_SE.utf8");
+}
