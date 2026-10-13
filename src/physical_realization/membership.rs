@@ -140,7 +140,7 @@ pub(super) fn physical_subquery_membership_plan(
             .find(|s| s.relation() == relation)?;
         if bundle.relation_constraints().iter().any(|set| {
             set.relation() == relation
-                && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+                && set.blocks_unconstrained_physical_plans()
         }) {
             return None;
         }
