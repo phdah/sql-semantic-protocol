@@ -13,7 +13,7 @@ use crate::constraints::{
 use crate::domain::{comparison_domain, intersect_domains, resolve_column};
 use crate::protocol::{
     ColumnDomain, ColumnRef, ComparisonAssumption, ComparisonOperator, Expression,
-    LiteralExpression, LiteralType, LiteralValue, Predicate, SourceRelation, ValueDomain,
+    LiteralExpression, LiteralType, LiteralValue, Predicate, SetMode, SourceRelation, ValueDomain,
 };
 
 /// A logical operand sequence with at least two children.
@@ -289,10 +289,23 @@ impl BooleanWitness {
                         .or_insert(derived);
                     true
                 }
-                // Other exact conjuncts do not invalidate independently proven
-                // integer bounds; they simply contribute no scalar bounds.
-                BooleanRowConstraint::NullTest { .. }
-                | BooleanRowConstraint::StringPrefix { .. } => true,
+                BooleanRowConstraint::NullTest { column, negated } => {
+                    let mode = if *negated { SetMode::Exclude } else { SetMode::Include };
+                    let derived = ValueDomain::set(
+                        mode,
+                        vec![LiteralExpression::new(LiteralType::Null, LiteralValue::Null)],
+                    );
+                    domains
+                        .entry(column.clone())
+                        .and_modify(|existing| {
+                            *existing = intersect_domains(existing, &derived);
+                        })
+                        .or_insert(derived);
+                    true
+                }
+                // Pattern constraints have comparison-environment preconditions,
+                // not a general independent scalar interval.
+                BooleanRowConstraint::StringPrefix { .. } => true,
                 BooleanRowConstraint::Any(_) | BooleanRowConstraint::Residual { .. } => false,
             }
         }
@@ -744,6 +757,26 @@ fn normalize(
             }
         }
         Predicate::Comparison(comparison) => {
+            // Null-safe comparison with a literal NULL is a two-valued NULL
+            // test for any datatype; ordinary = NULL must stay UNKNOWN.
+            if matches!(
+                comparison.operator(),
+                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                let column = match (comparison.left(), comparison.right()) {
+                    (Expression::Column(column), Expression::Literal(literal))
+                        if matches!(literal.value(), LiteralValue::Null) => Some(column),
+                    (Expression::Literal(literal), Expression::Column(column))
+                        if matches!(literal.value(), LiteralValue::Null) => Some(column),
+                    _ => None,
+                };
+                if let Some(column) = column {
+                    return BooleanRowConstraint::NullTest {
+                        column: resolve_column(column, sources),
+                        negated: comparison.operator() == ComparisonOperator::IsDistinctFrom,
+                    };
+                }
+            }
             let (column, operator, literal, offset) = if let Some((column, offset)) =
                 affine_integer_operand(comparison.left(), sources, integer_evidence)
             {
