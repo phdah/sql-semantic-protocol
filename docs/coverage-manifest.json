@@ -15,7 +15,9 @@
       "physical_typed_closed_world_schema_plan",
       "SchemaColumn::with_collation",
       "physical_closed_world_schema_plan",
-      "physical_ordered_write_state_plan"
+      "physical_ordered_write_state_plan",
+      "physical_typed_append_schema_plan",
+      "SchemaColumn::with_text_comparison_law"
     ],
     "verified_scope": [
       "SQL_DDL_source_schema_provenance",
@@ -45,7 +47,11 @@
       "computed_composite_nullable_unique_key_collision_law",
       "accepted_values_exact_numeric_equality_with_large_decimals",
       "accepted_values_attested_binary_text_collation_and_multiple_candidates",
-      "sql_CHECK_IN_NULL_three_valued_unknown_remains_residual"
+      "sql_CHECK_IN_NULL_three_valued_unknown_remains_residual",
+      "attested_binary_text_key_and_foreign_key_comparisons",
+      "attested_binary_text_comparison_provenance_protocol_serialization",
+      "typed_nested_target_appends_against_existing_rows_and_cross_relation_constraints",
+      "same_column_equality_OR_CHECK_sql_ddl_and_dbt_atomic_normalization"
     ],
     "tests": [
       "tests/physical_write_states.rs",
@@ -53,7 +59,8 @@
       "tests/physical_schema_edge_oracles.rs",
       "tests/source_schema_contract.rs",
       "tests/odcs.rs",
-      "tests/dbt_constraints.rs"
+      "tests/dbt_constraints.rs",
+      "tests/physical_text_comparison_emission.rs"
     ],
     "unproved": [
       "Arrow_nested_struct_array_map_ordered_DML_execution_and_serialization",
