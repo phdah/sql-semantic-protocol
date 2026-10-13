@@ -52,6 +52,11 @@ fn task_79_has_traceable_local_proofs_without_claiming_generator_release_signoff
     let schema_evidence = &manifest["task_79_schema_evidence"];
     assert_eq!(schema_evidence["owner"], "TASK-79");
     assert_eq!(
+        schema_evidence["status"],
+        "verified_bounded_schema_contract_release_blocked"
+    );
+    assert_eq!(schema_evidence["signoff"]["release_approved"], false);
+    assert_eq!(
         schema_evidence["proof_scope_document"],
         "docs/task-79-proof-scope.md"
     );
