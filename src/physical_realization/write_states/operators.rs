@@ -98,30 +98,39 @@ fn complete_insert_row(
         .unwrap_or(&[]);
     for column in schema.columns() {
         if values.contains_key(column.name()) {
-            if sources.iter().any(|source| source.column() == column.name()
-                && source.kind() != crate::column_sources::ColumnValueKind::Default)
-            {
-                return Err(residual_gap(PhysicalWriteStateGap::UnprovedConstraint,
-                    "direct assignment to generated or identity column is unproved"));
+            if sources.iter().any(|source| {
+                source.column() == column.name()
+                    && source.kind() != crate::column_sources::ColumnValueKind::Default
+            }) {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "direct assignment to generated or identity column is unproved",
+                ));
             }
             continue;
         }
-        let source = sources.iter().find(|source| source.column() == column.name())
+        let source = sources
+            .iter()
+            .find(|source| source.column() == column.name())
             .ok_or_else(|| residual("omitted INSERT column has no attested default"))?;
         if source.kind() != crate::column_sources::ColumnValueKind::Default {
-            return Err(residual("generated or identity INSERT value has no constructive law"));
+            return Err(residual(
+                "generated or identity INSERT value has no constructive law",
+            ));
         }
         if !source.evidence().iter().any(|evidence| {
             evidence.enforcement() == ConstraintEnforcement::Enforced
-                || evidence.provenance().source_kind() == crate::constraints::ConstraintSourceKind::SqlDdl
+                || evidence.provenance().source_kind()
+                    == crate::constraints::ConstraintSourceKind::SqlDdl
         }) {
             return Err(residual_gap(
                 PhysicalWriteStateGap::UnprovedConstraint,
                 "default metadata lacks authoritative execution evidence",
             ));
         }
-        let literal = source.value().ok_or_else(||
-            residual("opaque INSERT default expression cannot be evaluated"))?;
+        let literal = source
+            .value()
+            .ok_or_else(|| residual("opaque INSERT default expression cannot be evaluated"))?;
         let value = match literal {
             ConstraintValue::Null => LiteralValue::Null,
             ConstraintValue::Boolean(value) => LiteralValue::Boolean(*value),
@@ -160,7 +169,9 @@ pub(super) fn append_rows(
         write.target_columns().to_vec()
     };
     if columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
-        || columns.iter().any(|column| !schema.columns().iter().any(|c| c.name() == column))
+        || columns
+            .iter()
+            .any(|column| !schema.columns().iter().any(|c| c.name() == column))
     {
         return Err(residual("INSERT targets duplicate or undeclared columns"));
     }
@@ -171,7 +182,8 @@ pub(super) fn append_rows(
             return Err(residual("INSERT SELECT projection arity is not proved"));
         }
         let values = columns.iter().cloned().zip(output_row).collect();
-        next.rows.push(complete_insert_row(bundle, target, values, schema)?);
+        next.rows
+            .push(complete_insert_row(bundle, target, values, schema)?);
     }
     let inserted = u64::try_from(next.rows.len() - before.rows.len())
         .map_err(|_| residual("inserted count overflow"))?;
