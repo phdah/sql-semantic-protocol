@@ -45,10 +45,16 @@ pub(super) fn evaluate(
                 return Ok(LiteralValue::Null);
             }
             let (LiteralValue::Number(left), LiteralValue::Number(right)) = (left, right) else {
-                return Err(residual("generated arithmetic requires exact integer storage"));
+                return Err(residual(
+                    "generated arithmetic requires exact integer storage",
+                ));
             };
-            let left = left.parse::<i128>().map_err(|_| residual("unproved generated numeric coercion"))?;
-            let right = right.parse::<i128>().map_err(|_| residual("unproved generated numeric coercion"))?;
+            let left = left
+                .parse::<i128>()
+                .map_err(|_| residual("unproved generated numeric coercion"))?;
+            let right = right
+                .parse::<i128>()
+                .map_err(|_| residual("unproved generated numeric coercion"))?;
             let result = if matches!(expression, G::Add(_, _)) {
                 left.checked_add(right)
             } else if matches!(expression, G::Subtract(_, _)) {
@@ -56,7 +62,9 @@ pub(super) fn evaluate(
             } else {
                 left.checked_mul(right)
             }
-            .ok_or_else(|| residual("generated integer arithmetic exceeds exact representable range"))?;
+            .ok_or_else(|| {
+                residual("generated integer arithmetic exceeds exact representable range")
+            })?;
             Ok(LiteralValue::Number(result.to_string()))
         }
     }
@@ -69,10 +77,12 @@ pub(super) fn check_declared_sources(
     for source in sources {
         match source.kind() {
             ColumnValueKind::Default => {}
-            ColumnValueKind::Identity => return Err(residual_gap(
-                PhysicalWriteStateGap::UnprovedConstraint,
-                "identity value needs an attested sequence and allocation-state law",
-            )),
+            ColumnValueKind::Identity => {
+                return Err(residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "identity value needs an attested sequence and allocation-state law",
+                ))
+            }
             ColumnValueKind::Generated => {
                 if !authoritative(source) {
                     return Err(residual_gap(
@@ -80,29 +90,38 @@ pub(super) fn check_declared_sources(
                         "generated expression enforcement is not attested",
                     ));
                 }
-                let expression = source.expression().ok_or_else(|| residual(
-                    "generated expression has no canonical executable semantics"
-                ))?;
+                let expression = source.expression().ok_or_else(|| {
+                    residual("generated expression has no canonical executable semantics")
+                })?;
                 // SQL generated columns that depend on other generated columns,
                 // or on themselves, need a dependency/evaluation-order proof.
-                if expression.referenced_columns().iter().any(|name| sources.iter().any(
-                    |other| other.kind() != ColumnValueKind::Default && other.column() == *name
-                )) {
-                    return Err(residual("generated column depends on another generated or identity value"));
+                if expression.referenced_columns().iter().any(|name| {
+                    sources.iter().any(|other| {
+                        other.kind() != ColumnValueKind::Default && other.column() == *name
+                    })
+                }) {
+                    return Err(residual(
+                        "generated column depends on another generated or identity value",
+                    ));
                 }
-                let actual = row.values.get(source.column()).ok_or_else(|| impossible(
-                    "physical row is missing its declared generated column",
-                ))?;
+                let actual = row.values.get(source.column()).ok_or_else(|| {
+                    impossible("physical row is missing its declared generated column")
+                })?;
                 let expected = evaluate(expression, &row.values)?;
-                if !matches!((&expected, actual),
+                if !matches!(
+                    (&expected, actual),
                     (LiteralValue::Number(_), LiteralValue::Number(_))
-                    | (LiteralValue::Null, LiteralValue::Null)
-                    | (LiteralValue::Boolean(_), LiteralValue::Boolean(_))
+                        | (LiteralValue::Null, LiteralValue::Null)
+                        | (LiteralValue::Boolean(_), LiteralValue::Boolean(_))
                 ) {
-                    return Err(residual("generated value comparison lacks exact numeric or boolean law"));
+                    return Err(residual(
+                        "generated value comparison lacks exact numeric or boolean law",
+                    ));
                 }
                 if !super::evaluator::scalar_equality(&expected, actual)? {
-                    return Err(impossible("generated column contradicts its attested expression"));
+                    return Err(impossible(
+                        "generated column contradicts its attested expression",
+                    ));
                 }
             }
         }
@@ -119,18 +138,26 @@ pub(super) fn complete_generated(
             continue;
         }
         if values.contains_key(source.column()) {
-            return Err(residual("direct INSERT assignment to generated column is unproved"));
+            return Err(residual(
+                "direct INSERT assignment to generated column is unproved",
+            ));
         }
         if !authoritative(source) {
-            return Err(residual("generated expression lacks authoritative execution evidence"));
+            return Err(residual(
+                "generated expression lacks authoritative execution evidence",
+            ));
         }
-        let expression = source.expression().ok_or_else(|| residual(
-            "generated column has no executable expression law"
-        ))?;
-        if expression.referenced_columns().iter().any(|name| sources.iter().any(
-            |other| other.kind() != ColumnValueKind::Default && other.column() == *name
-        )) {
-            return Err(residual("generated expression references a generated or identity column"));
+        let expression = source
+            .expression()
+            .ok_or_else(|| residual("generated column has no executable expression law"))?;
+        if expression.referenced_columns().iter().any(|name| {
+            sources
+                .iter()
+                .any(|other| other.kind() != ColumnValueKind::Default && other.column() == *name)
+        }) {
+            return Err(residual(
+                "generated expression references a generated or identity column",
+            ));
         }
         let value = evaluate(expression, values)?;
         values.insert(source.column().to_string(), value);
