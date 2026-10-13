@@ -47,6 +47,55 @@ fn task_68_reports_only_proven_physical_source_scope() {
 }
 
 #[test]
+fn task_79_has_traceable_local_proofs_without_claiming_generator_release_signoff() {
+    let manifest = manifest();
+    let schema_evidence = &manifest["task_79_schema_evidence"];
+    assert_eq!(schema_evidence["owner"], "TASK-79");
+    assert_eq!(
+        schema_evidence["proof_scope_document"],
+        "docs/task-79-proof-scope.md"
+    );
+    assert!(PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join(required_string(schema_evidence, "proof_scope_document"))
+        .is_file());
+    let criteria = schema_evidence["acceptance_criteria"]
+        .as_object()
+        .expect("one evidence map for the six task acceptance criteria");
+    assert_eq!(criteria.len(), 6);
+    for number in 1..=6 {
+        let key = number.to_string();
+        let entry = &criteria[&key];
+        assert!(
+            required_string(entry, "scope").starts_with("verified_"),
+            "AC {number} requires an explicit bounded soundness contract"
+        );
+        let tests = required_array(entry, "tests");
+        assert!(!tests.is_empty(), "AC {number} requires executable evidence");
+        for path in tests {
+            let file = path.as_str().expect("test evidence path");
+            assert!(file.starts_with("tests/"), "AC {number}: {file}");
+            assert!(
+                PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                    .join(file)
+                    .is_file(),
+                "AC {number}: missing evidence {file}"
+            );
+        }
+    }
+    assert!(required_array(schema_evidence, "unproved").len() >= 5);
+    assert_eq!(manifest["scope_decisions"]["release_approved"], false);
+    for feature in required_array(&manifest, "features") {
+        if matches!(
+            feature["id"].as_str(),
+            Some("schema.constraints" | "schema.metadata_parity")
+        ) {
+            assert_eq!(feature["physical_source_positive"], "not_end_to_end_proven");
+            assert_eq!(feature["physical_source_negative"], "not_end_to_end_proven");
+        }
+    }
+}
+
+#[test]
 fn manifest_tracks_every_exposed_dialect_and_each_feature_cell() {
     let manifest = manifest();
     assert_eq!(manifest["schema_version"], 1);
