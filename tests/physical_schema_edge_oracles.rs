@@ -200,9 +200,11 @@ fn duckdb_finite_binary_float_oracle_is_separate_from_nan_storage_claims() {
     ));
     let db = Connection::open_in_memory().unwrap();
     let exact: bool = db
-        .query_row("SELECT CAST(1.5 AS FLOAT) = CAST(1.5 AS FLOAT)", [], |row| {
-            row.get(0)
-        })
+        .query_row(
+            "SELECT CAST(1.5 AS FLOAT) = CAST(1.5 AS FLOAT)",
+            [],
+            |row| row.get(0),
+        )
         .unwrap();
     assert!(exact);
 }
