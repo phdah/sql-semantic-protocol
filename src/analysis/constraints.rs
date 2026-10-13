@@ -482,9 +482,9 @@ pub(crate) enum PortableCheckExpression {
 
 /// Normalize metadata-authored CHECK SQL once at the producer boundary.
 ///
-/// This deliberately accepts only one simple predicate. Dialect functions,
-/// implicit casts, expressions with side effects, and Boolean combinations
-/// must remain residual, never be guessed from a string in a consumer.
+/// Only deterministic row-local comparisons, same-column equality disjunctions
+/// and non-NULL IN lists have canonical proof laws. Dialect functions, casts,
+/// side effects and arbitrary Boolean combinations remain explicit residuals.
 /// Normalize one CHECK into an all-or-nothing set of portable conjuncts.
 ///
 /// No fragment of an unsupported AND/OR predicate may be certified in
