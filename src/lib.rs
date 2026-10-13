@@ -94,7 +94,7 @@ pub use bundle::{
     ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
     UnresolvedComposedSemantics,
 };
-pub use column_sources::{ColumnValueKind, ColumnValueSource};
+pub use column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, CheckCompareOperator,
     CheckComparisonConstraint, ConstraintDiagnostic, ConstraintEnforcement, ConstraintEvidence,
