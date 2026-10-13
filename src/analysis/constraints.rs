@@ -1,6 +1,7 @@
 //! SQL DDL primary, foreign, uniqueness and check constraints.
 
 use super::*;
+use crate::column_sources::{ColumnValueKind, ColumnValueSource};
 
 pub(super) fn analyze_relation_constraints(
     statement: &SqlStatement,
@@ -17,6 +18,7 @@ pub(super) fn analyze_create_table_constraints(
     let relation = create_table.name.to_string();
     let mut constraints = Vec::new();
     let mut diagnostics = Vec::new();
+    let mut column_value_sources = Vec::new();
 
     for (index, constraint) in create_table.constraints.iter().enumerate() {
         match constraint {
@@ -194,6 +196,36 @@ pub(super) fn analyze_create_table_constraints(
                         )?],
                     )?);
                 }
+                ColumnOption::Default(expression) => {
+                    let value = constraint_value_from_expression(expression).map(|(value, _)| value);
+                    let evidence = sql_constraint_evidence(
+                        &relation,
+                        format!("{}:column:{}:default:{}", relation, column.name, option_index),
+                        None,
+                    )?;
+                    column_value_sources.push(ColumnValueSource::new(
+                        column.name.to_string(),
+                        ColumnValueKind::Default,
+                        value,
+                        vec![evidence],
+                    )?);
+                }
+                ColumnOption::Generated { .. } => {
+                    // A generated or sequence-backed expression cannot be fabricated from a
+                    // default scalar. Preserve declaration provenance and require a typed
+                    // expression/sequence law before claiming a physical assignment.
+                    let evidence = sql_constraint_evidence(
+                        &relation,
+                        format!("{}:column:{}:generated:{}", relation, column.name, option_index),
+                        None,
+                    )?;
+                    column_value_sources.push(ColumnValueSource::new(
+                        column.name.to_string(),
+                        ColumnValueKind::Generated,
+                        None,
+                        vec![evidence],
+                    )?);
+                }
                 ColumnOption::NotNull => {
                     constraints.push(RelationConstraint::not_null(
                         column.name.to_string(),
@@ -255,11 +287,12 @@ pub(super) fn analyze_create_table_constraints(
         }
     }
 
-    if constraints.is_empty() && diagnostics.is_empty() {
+    if constraints.is_empty() && diagnostics.is_empty() && column_value_sources.is_empty() {
         return Ok(None);
     }
 
-    let mut set = RelationConstraintSet::new(relation, constraints)?;
+    let mut set = RelationConstraintSet::new(relation, constraints)?
+        .with_column_value_sources(column_value_sources);
     for diagnostic in diagnostics {
         set.add_diagnostic(diagnostic);
     }
