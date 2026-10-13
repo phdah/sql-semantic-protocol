@@ -5327,6 +5327,44 @@
           "additionalProperties": false,
           "required": [
             "kind",
+            "column"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unknown_null_comparison"
+            },
+            "column": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "relation",
+                "name"
+              ],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
             "column",
             "operator",
             "literal"

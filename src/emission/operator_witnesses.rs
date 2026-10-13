@@ -38,6 +38,9 @@ pub(super) fn boolean_constraint_to_value(constraint: &crate::BooleanRowConstrai
         crate::BooleanRowConstraint::NullTest { column, negated } => json!({
             "kind": "null_test", "column": column_ref_to_value(column), "negated": negated
         }),
+        crate::BooleanRowConstraint::UnknownNullComparison { column } => json!({
+            "kind": "unknown_null_comparison", "column": column_ref_to_value(column)
+        }),
         crate::BooleanRowConstraint::IntegerComparison {
             column,
             operator,

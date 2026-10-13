@@ -68,6 +68,12 @@ pub enum BooleanRowConstraint {
         /// Whether the operand is IS NOT NULL.
         negated: bool,
     },
+    /// Ordinary comparison of a source column against literal SQL NULL.
+    /// Its truth is UNKNOWN for both NULL and non-NULL values.
+    UnknownNullComparison {
+        /// Resolved source column.
+        column: ColumnRef,
+    },
     /// Compare an integer source value against a signed integer literal.
     IntegerComparison {
         /// Resolved source column.
@@ -122,6 +128,7 @@ impl BooleanRowConstraint {
                 !children.is_empty() && children.iter().all(Self::is_exact)
             }
             Self::NullTest { .. }
+            | Self::UnknownNullComparison { .. }
             | Self::IntegerComparison { .. }
             | Self::IntegerColumnComparison { .. }
             | Self::StringEquality { .. }
@@ -147,6 +154,9 @@ impl BooleanRowConstraint {
             Self::NullTest { column, negated } => Some(Self::NullTest {
                 column: mapped.get(column)?.clone(),
                 negated: *negated,
+            }),
+            Self::UnknownNullComparison { column } => Some(Self::UnknownNullComparison {
+                column: mapped.get(column)?.clone(),
             }),
             Self::IntegerComparison {
                 column,
@@ -199,7 +209,7 @@ impl BooleanRowConstraint {
             | Self::IntegerColumnComparison { .. }
             | Self::StringEquality { .. }
             | Self::StringPrefix { .. } => true,
-            Self::NullTest { .. } | Self::Residual { .. } => false,
+            Self::NullTest { .. } | Self::UnknownNullComparison { .. } | Self::Residual { .. } => false,
         }
     }
 
@@ -222,7 +232,7 @@ impl BooleanRowConstraint {
             Self::All(operands) | Self::Any(operands) => {
                 operands.iter().all(Self::has_complete_scalar_regions)
             }
-            Self::NullTest { .. } | Self::IntegerComparison { .. } => true,
+            Self::NullTest { .. } | Self::UnknownNullComparison { .. } | Self::IntegerComparison { .. } => true,
             Self::IntegerColumnComparison { .. }
             | Self::StringEquality { .. }
             | Self::StringPrefix { .. }
@@ -248,6 +258,7 @@ impl BooleanRowConstraint {
                 }
             }
             Self::NullTest { column, .. }
+            | Self::UnknownNullComparison { column }
             | Self::IntegerComparison { column, .. }
             | Self::StringEquality { column, .. }
             | Self::StringPrefix { column, .. } => {
@@ -367,6 +378,9 @@ impl BooleanWitness {
                         .or_insert(derived);
                     true
                 }
+                // A comparison against SQL NULL cannot qualify a row, and
+                // contributes no independent value domain.
+                BooleanRowConstraint::UnknownNullComparison { .. } => true,
                 // Coupled source-column comparisons are not independent scalar
                 // domains, even though they can be row-local exact witnesses.
                 BooleanRowConstraint::IntegerColumnComparison { .. } => true,
@@ -820,7 +834,9 @@ fn is_witness_candidate(predicate: &Predicate) -> bool {
             if matches!(
                 comparison.operator(),
                 ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
-            ) {
+            ) || [comparison.left(), comparison.right()].iter().any(|expression| {
+                matches!(expression, Expression::Literal(literal) if matches!(literal.value(), LiteralValue::Null))
+            }) {
                 return true;
             }
             // A lone direct column-to-literal comparison already has a scalar
@@ -883,6 +899,25 @@ fn normalize(
             }
         }
         Predicate::Comparison(comparison) => {
+            // Ordinary SQL comparison with literal NULL yields UNKNOWN for
+            // every source value. Keep that truth leaf inside IN/BETWEEN/NOT
+            // instead of discarding an entire otherwise-proven predicate.
+            if !matches!(
+                comparison.operator(),
+                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                let column = match (comparison.left(), comparison.right()) {
+                    (Expression::Column(column), Expression::Literal(literal))
+                    | (Expression::Literal(literal), Expression::Column(column))
+                        if matches!(literal.value(), LiteralValue::Null) => Some(column),
+                    _ => None,
+                };
+                if let Some(column) = column {
+                    return BooleanRowConstraint::UnknownNullComparison {
+                        column: resolve_column(column, sources),
+                    };
+                }
+            }
             // Null-safe comparison with a literal NULL is a two-valued NULL
             // test for any datatype; ordinary = NULL must stay UNKNOWN.
             if matches!(
@@ -1112,6 +1147,10 @@ fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
         BooleanRowConstraint::NullTest { column, negated } => BooleanRowConstraint::NullTest {
             column,
             negated: !negated,
+        },
+        // SQL NOT UNKNOWN remains UNKNOWN.
+        BooleanRowConstraint::UnknownNullComparison { column } => {
+            BooleanRowConstraint::UnknownNullComparison { column }
         },
         BooleanRowConstraint::IntegerComparison {
             column,
@@ -1353,7 +1392,8 @@ fn collect_comparison_literals(
                 collect_comparison_literals(operand, thresholds);
             }
         }
-        BooleanRowConstraint::NullTest { column, .. } => {
+        BooleanRowConstraint::NullTest { column, .. }
+        | BooleanRowConstraint::UnknownNullComparison { column } => {
             thresholds.entry(column.clone()).or_default();
         }
         BooleanRowConstraint::IntegerComparison {
@@ -1691,6 +1731,10 @@ fn eval_joint_truth(
                 truth = truth.or(eval_joint_truth(operand, assignment)?);
             }
             Some(truth)
+        }
+        BooleanRowConstraint::UnknownNullComparison { column } => {
+            assignment.get(column)?;
+            Some(SqlTruth::Unknown)
         }
         BooleanRowConstraint::NullTest { column, negated } => {
             let is_null = assignment.get(column)?.is_none();

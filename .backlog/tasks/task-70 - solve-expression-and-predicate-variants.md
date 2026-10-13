@@ -51,7 +51,9 @@ The first bounded canonical Boolean-predicate increment lives on
   literals have exact positive and NOT TRUE witnesses.
 - Exact conjunctive NULL tests now refine source and projected domains.
 - SQL three-valued DuckDB oracles, parser-dialect coverage, and
-  unsupported NULL-membership/cross-column residual tests are added.
+  unsupported computed-expression residual tests are added.
+- Ordinary literal-NULL comparisons preserve UNKNOWN, including finite
+  NULL-bearing IN lists, with impossible TRUE classifications when proven.
 - No consumer-specific semantics, parser AST in protocol types, or wire
   format changes. The existing schema and adapter-translated SQL facts
   remain authoritative.

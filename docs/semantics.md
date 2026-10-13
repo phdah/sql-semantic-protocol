@@ -19,7 +19,7 @@ catalog-typed signed integer comparisons, `BETWEEN` / `NOT BETWEEN`, finite
 integer `IN` / `NOT IN` lists, nested `NOT` with `AND` / `OR`, and
 `IS [NOT] DISTINCT FROM` against an integer or literal NULL. The analyzer
 normalizes these into shared integer-comparison and NULL-test obligations,
-including De Morgan's laws, instead of introducing a consumer-specific SQL
+including De Morgan's laws and explicit UNKNOWN leaves for ordinary comparisons with literal NULL (including NULL-bearing IN lists), instead of introducing a consumer-specific SQL
 evaluation language. It preserves SQL UNKNOWN for ordinary comparisons to NULL;
 NULL-safe equality is two-valued. Exact conjunctive NULL tests and numeric
 comparisons refine projected domains when source identity is proven.

@@ -106,26 +106,36 @@ fn null_safe_integer_comparison_is_two_valued() {
 }
 
 #[test]
-fn unsupported_null_membership_and_cross_column_comparisons_remain_residual() {
+fn unsupported_computed_membership_and_ranges_remain_residual() {
     for predicate in [
-        "a NOT IN (1, NULL)",
-        "a IN (1, NULL)",
-        "NOT (a = b)",
-        "a BETWEEN b AND 5",
+        "a IN (a * 2, 1)",
+        "a BETWEEN a + b AND 5",
     ] {
         let witness = typed_witness(predicate);
-        assert!(
-            matches!(
-                witness.qualifying(),
-                BooleanWitnessDirection::Residual { .. }
-            ),
-            "{predicate}: unproved semantics cannot be exact"
-        );
-        assert!(
-            matches!(witness.rejected(), BooleanWitnessDirection::Residual { .. }),
-            "{predicate}: unproved negative semantics cannot be exact"
-        );
+        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }), "{predicate}");
+        assert!(matches!(witness.rejected(), BooleanWitnessDirection::Residual { .. }), "{predicate}");
     }
+}
+
+#[test]
+fn null_membership_obligations_preserve_unknown_in_both_directions() {
+    for predicate in ["a IN (1, NULL)", "NOT (a NOT IN (1, NULL))"] {
+        assert_both_directions_exact(predicate);
+    }
+    for predicate in [
+        "a NOT IN (1, NULL)",
+        "a IN (NULL)",
+        "a NOT IN (NULL)",
+        "a = NULL",
+        "NOT (a <> NULL)",
+        "a BETWEEN NULL AND 3",
+    ] {
+        let witness = typed_witness(predicate);
+        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Impossible), "{predicate}: UNKNOWN cannot be SQL TRUE");
+        assert!(matches!(witness.rejected(), BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)), "{predicate}");
+    }
+    let witness = typed_witness("a IN (1, NULL)");
+    assert!(matches!(witness.condition(), BooleanRowConstraint::Any(_)));
 }
 
 #[test]
@@ -165,6 +175,9 @@ fn duckdb_oracle_distinguishes_false_from_unknown_and_null_safe_equality() {
         ("a IN (2, 3)", 2),
         ("a NOT IN (2, 3)", 1),
         ("a NOT IN (2, NULL)", 0),
+        ("a IN (NULL)", 0),
+        ("a = NULL", 0),
+        ("a BETWEEN NULL AND 3", 0),
         ("NOT (a > 2 OR b IS NULL)", 0),
         ("a IS DISTINCT FROM 2", 3),
         ("a IS NOT DISTINCT FROM 2", 1),
