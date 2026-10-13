@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
-    physical_ordered_write_state_plan, physical_typed_value_plan, AnalysisBundle,
+    physical_ordered_write_state_plan, physical_ordered_write_state_plan_with_identities,
+    physical_typed_value_plan, AnalysisBundle, PhysicalIdentitySequence,
     CheckCompareOperator, ColumnValueKind, ColumnValueSource, ComputedCheckConstraint,
     ComputedKeyConstraint, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
     ConstraintProvenance, ConstraintSourceKind, ConstraintValue, DataType, DataTypeField,
@@ -2151,4 +2152,67 @@ fn sql_check_in_with_null_member_stays_residual_not_false_impossible() {
         .query_row("SELECT COUNT(*) FROM target", [], |row| row.get(0))
         .unwrap();
     assert_eq!(count, 3);
+}
+
+#[test]
+fn attested_identity_sequence_allocates_omitted_insert_values_in_row_order() {
+    let mut b = bundle(
+        &["INSERT INTO target (score) SELECT score FROM source WHERE id > 0"],
+        "duckdb",
+    );
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::primary_key(vec!["id".into()], evidence()).unwrap()],
+    )
+    .unwrap()
+    .with_column_value_sources(vec![ColumnValueSource::new(
+        "id",
+        ColumnValueKind::Identity,
+        None,
+        evidence(),
+    )
+    .unwrap()])]);
+    let initial = [
+        state("target", &[]),
+        state("source", &[(Some(1), Some(5)), (Some(2), Some(9))]),
+    ];
+    assert!(matches!(
+        physical_ordered_write_state_plan(&b, &initial),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let sequence = PhysicalIdentitySequence::new("target", "id", 100, 5).unwrap();
+    assert_eq!(sequence.next_value(), 100);
+    assert_eq!(sequence.increment(), 5);
+    let plan = physical_ordered_write_state_plan_with_identities(&b, &initial, &[sequence.clone()]);
+    let (_, states) = outcome(&plan);
+    let target = states.iter().find(|s| s.relation() == "target").unwrap();
+    assert_eq!(
+        target.rows(),
+        &[row(Some(100), Some(5)), row(Some(105), Some(9))]
+    );
+    assert!(matches!(
+        physical_ordered_write_state_plan_with_identities(
+            &b,
+            &initial,
+            &[sequence.clone(), sequence.clone()]
+        ),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    assert!(matches!(
+        physical_ordered_write_state_plan_with_identities(
+            &b,
+            &initial,
+            &[PhysicalIdentitySequence::new("source", "id", 100, 5).unwrap()]
+        ),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let occupied = [
+        state("target", &[(Some(100), Some(1))]),
+        state("source", &[(Some(1), Some(5))]),
+    ];
+    assert!(matches!(
+        physical_ordered_write_state_plan_with_identities(&b, &occupied, &[sequence]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+    assert!(PhysicalIdentitySequence::new("target", "id", 1, 0).is_none());
 }
