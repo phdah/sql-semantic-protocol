@@ -6,6 +6,7 @@
 //! - parse_dbt_manifest, parse_dbt_catalog, analyze_dbt_artifacts, and analyze_dbt_manifest_with_schemas adapt dbt artifacts, including canonical key and column constraints, into the same core analysis path.
 //! - With the `odcs` feature, parse_odcs_yaml and parse_odcs_documents adapt ODCS v3.2 YAML contracts into canonical schema and constraint evidence.
 //! - canonical constraint types expose primary, unique, foreign-key, not-null, and accepted-values metadata with provenance.
+//! - ColumnValueSource models exact defaults and opaque generated/identity declarations without invented values.
 //! - select_targets projects a completed bundle onto named outcomes and their in-bundle ancestors.
 //! - parse_analysis_manifest validates the versioned declarative analysis-manifest contract.
 //! - to_json and to_bundle_json serialize the one active protocol contract without exposing parser AST types.
@@ -44,6 +45,7 @@ mod boolean_witness;
 mod bundle;
 mod composition;
 mod constraints;
+mod column_sources;
 mod constructive;
 mod data_type;
 mod dbt;
@@ -91,6 +93,7 @@ pub use bundle::{
     ResolvedComposedSemantics, SqlInput, SqlInputSource, TargetSelectionError, TransformationLayer,
     UnresolvedComposedSemantics,
 };
+pub use column_sources::{ColumnValueKind, ColumnValueSource};
 pub use constraints::{
     merge_relation_constraint_sets, AcceptedValuesConstraint, ConstraintDiagnostic,
     ConstraintEnforcement, ConstraintEvidence, ConstraintMetadataError, ConstraintProvenance,
