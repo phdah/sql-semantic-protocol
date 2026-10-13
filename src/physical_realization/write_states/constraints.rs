@@ -148,7 +148,7 @@ pub(super) fn validate_all_constraints_with_identity(
                     return Err(impossible("computed PRIMARY KEY cannot contain NULL"));
                 }
                 for prior in &seen {
-                    match unique_key_collision(&values, prior)? {
+                    match unique_key_collision(&values, prior, &[])? {
                         Some(true) => {
                             return Err(impossible(
                                 "enforced computed key has duplicate physical values",
@@ -196,6 +196,11 @@ pub(super) fn validate_all_constraints_with_identity(
                     }
                 }
                 RelationConstraint::PrimaryKey(key) | RelationConstraint::UniqueKey(key) => {
+                    let binary_text_columns = key
+                        .columns()
+                        .iter()
+                        .map(|column| attested_binary_text_law(bundle, set.relation(), column))
+                        .collect::<Vec<_>>();
                     for (index, row) in state.rows.iter().enumerate() {
                         if matches!(constraint, RelationConstraint::PrimaryKey(_))
                             && key
@@ -227,7 +232,7 @@ pub(super) fn validate_all_constraints_with_identity(
                                         .ok_or_else(|| residual("key column missing"))
                                 })
                                 .collect::<StateResult<Vec<_>>>()?;
-                            match unique_key_collision(&values, &existing)? {
+                            match unique_key_collision(&values, &existing, &binary_text_columns)? {
                                 Some(true) => {
                                     return Err(impossible(
                                         "enforced key has duplicate physical values",
@@ -290,7 +295,15 @@ pub(super) fn validate_all_constraints_with_identity(
                         }
                         let mut found = false;
                         for other in &referenced.rows {
-                            if equal_key_rows(row, other, key.columns(), key.referenced_columns())?
+                            if equal_key_rows(
+                                bundle,
+                                set.relation(),
+                                row,
+                                key.referenced_relation(),
+                                other,
+                                key.columns(),
+                                key.referenced_columns(),
+                            )?
                             {
                                 found = true;
                                 break;
@@ -376,13 +389,16 @@ pub(super) fn validate_all_constraints_with_identity(
 fn unique_key_collision(
     left: &[LiteralValue],
     right: &[LiteralValue],
+    binary_text_columns: &[bool],
 ) -> StateResult<Option<bool>> {
     let mut unknown_null = false;
-    for (a, b) in left.iter().zip(right) {
+    for (index, (a, b)) in left.iter().zip(right).enumerate() {
         match (a, b) {
             (LiteralValue::Null, LiteralValue::Null) => unknown_null = true,
             (LiteralValue::Null, _) | (_, LiteralValue::Null) => return Ok(Some(false)),
-            _ if !scalar_equality(a, b)? => return Ok(Some(false)),
+            _ if !key_scalar_equality(a, b, binary_text_columns.get(index) == Some(&true))? => {
+                return Ok(Some(false));
+            },
             _ => {}
         }
     }
@@ -394,7 +410,10 @@ fn unique_key_collision(
 }
 
 fn equal_key_rows(
+    bundle: &AnalysisBundle,
+    left_relation: &str,
     left: &PhysicalWriteRow,
+    right_relation: &str,
     right: &PhysicalWriteRow,
     left_columns: &[String],
     right_columns: &[String],
@@ -408,11 +427,32 @@ fn equal_key_rows(
             .values
             .get(right_name)
             .ok_or_else(|| residual("referenced key column missing"))?;
-        if !scalar_equality(a, b)? {
+        let binary_text = attested_binary_text_law(bundle, left_relation, left_name)
+            && attested_binary_text_law(bundle, right_relation, right_name);
+        if !key_scalar_equality(a, b, binary_text)? {
             return Ok(false);
         }
     }
     Ok(true)
+}
+
+/// Binary comparison is a canonical column fact, never an inference from the
+/// collation name. Keys use the same attested law as accepted-values checking.
+fn attested_binary_text_law(bundle: &AnalysisBundle, relation: &str, column: &str) -> bool {
+    bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == relation)
+        .and_then(|schema| schema.columns().iter().find(|item| item.name() == column))
+        .and_then(|item| item.text_comparison_law())
+        == Some(crate::relation::TextComparisonLaw::Binary)
+}
+
+fn key_scalar_equality(a: &LiteralValue, b: &LiteralValue, binary_text: bool) -> StateResult<bool> {
+    match (a, b) {
+        (LiteralValue::Text(left), LiteralValue::Text(right)) if binary_text => Ok(left == right),
+        _ => scalar_equality(a, b),
+    }
 }
 
 fn constraint_scalar_equal(
