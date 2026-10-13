@@ -35,7 +35,12 @@ impl ComputedCheckConstraint {
         }
         evidence.sort();
         evidence.dedup();
-        Ok(Self { left, operator, right, evidence })
+        Ok(Self {
+            left,
+            operator,
+            right,
+            evidence,
+        })
     }
 
     /// Left-hand row-local scalar expression.
