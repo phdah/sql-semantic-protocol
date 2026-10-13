@@ -30,6 +30,7 @@
       "complete_Arrow_style_nested_type_populations_cross_source_scalar_keys_FKs",
       "exact_decimal_and_boolean_CHECK_comparators_and_reversed_SQL_comparisons",
       "Arrow_style_nested_array_map_struct_typed_value_bounds",
+      "exact_typed_JSON_ASCII_and_safe_integer_documents_SQL_NULL_distinction",
       "enforced_numeric_scalar_CHECK_and_SQL_NULL",
       "nested_structural_values_under_enforced_NOT_NULL",
       "identical_text_key_equality_with_unproved_distinct_collation",
@@ -44,6 +45,7 @@
     "tests": [
       "tests/physical_write_states.rs",
       "tests/physical_typed_populations.rs",
+      "tests/physical_schema_edge_oracles.rs",
       "tests/source_schema_contract.rs",
       "tests/odcs.rs",
       "tests/dbt_constraints.rs"
