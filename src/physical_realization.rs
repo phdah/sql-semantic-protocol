@@ -489,7 +489,7 @@ pub(crate) use operators::{
     physical_materialized_set_witness, physical_operator_count_witness,
 };
 pub use write_states::{
-    physical_ordered_write_state_plan, PhysicalWriteColumnDomain, PhysicalWriteRow,
+    physical_closed_world_schema_plan, physical_ordered_write_state_plan, PhysicalWriteColumnDomain, PhysicalWriteRow,
     PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 
