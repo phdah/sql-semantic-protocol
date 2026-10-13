@@ -132,3 +132,17 @@ PR #107 additionally proves complete composite comparisons despite unknown earli
 ## TASK-79 schema proof gate (2026-10-13)
 
 TASK-79 implementation is under review in protocol PR #107, and remains a mandatory dependency for this release gate. Its canonical/schema facts, typed nested populations, generated/default subset, dbt and SQL CHECK parity, scalar equality and differential fixtures do **not** constitute final AC signoff. Identity-sequence allocation, deferred FK/transaction enforcement, fully proven coercion/collation/timezone/default adapters, nested Arrow ordered DML/serialization and the complete cross-engine/dialect matrix remain release blockers or require independently reviewed fail-closed certification. The manifest's `task_79_schema_evidence` scope is authoritative; sql-tdg may consume certified portable protocol facts but must not fill unknown protocol semantics with generator heuristics. Keep Release Please PR #79 and this TASK-91 gate closed.
+
+## TASK-70 bounded expression evidence and remaining gates (2026-10-13)
+
+PR #108 contributes typed local source-row truth for NULL membership, exact
+signed integer predicates, certified total CAST/TRY_CAST/SAFE_CAST, selected
+COALESCE/NULLIF/CASE NULL tests, and binary-attested safe LIKE prefixes.
+The matrix under
+`docs/coverage-manifest.json.task_70_predicate_evidence.family_evidence`
+contains the exact proof preconditions and explicitly release-blocking residual
+families. It does **not** certify general arithmetic, dialect-sensitive
+coercions/collations/regex, date/time/JSON/vendor semantics, arbitrary
+computed joins/groupings/writes, or all physical positive/rejecting populations.
+TASK-88/TASK-89, sql-tdg TASK-24..36/43/44 and this TASK-91 gate remain open,
+and PR #79 must not be merged solely from this progress.

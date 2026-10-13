@@ -26,13 +26,21 @@ comparisons refine projected domains when source identity is proven.
 
 Widening signed integer CAST, TRY_CAST and SAFE_CAST share one exact source identity only when all catalog-admissible values fit the target, so no failure-to-NULL or overflow is possible. Narrowing and noninteger conversions remain residual. Exactness still requires authoritative source datatype evidence and a complete,
 consistent assignment of all coupled source columns. Arithmetic inversion is
-limited to proven widened signed casts/offsets; unsafe casts, cross-column
-comparisons beyond identical-column exhaustive regions, NULL-containing `IN` lists, computed `BETWEEN` operands and
+limited to proven widened signed casts/offsets, including total
+TRY_CAST/SAFE_CAST. NULL-containing finite integer IN/NOT IN lists retain
+SQL UNKNOWN, including impossible qualifying branches. Unsafe casts,
+noninvertible cross-column constraints, computed BETWEEN bounds and
 dialect-sensitive pattern/regex, collations, coercions or opaque functions
 remain explicit residuals. Prefix `LIKE` requires separate binary-collation
 and no-padding attestations. An explicit single-character `ESCAPE` is supported only when it never appears in the safe prefix and is not the trailing `%` wildcard. Operator-local witnesses do **not** establish a
 complete physical-source realization across arbitrary producer DAGs. TASK-70
 and the protocol 3.0.0 release gate remain open for unproved expression families.
+
+The audited `task_70_predicate_evidence.family_evidence` entries in
+`docs/coverage-manifest.json` distinguish locally certified subsets from
+release-blocking residual families. These are not cross-dialect physical-source
+oracles; the 13-dialect TASK-88/TASK-89 and final TASK-91 gates remain separate.
+
 
 ### Set operations
 

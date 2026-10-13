@@ -64,13 +64,16 @@ The first bounded canonical Boolean-predicate increment lives on
   outcomes exhaustively, without extending that claim to unrelated columns.
 - Formatting-free total signed-integer TRY_CAST and SAFE_CAST share the existing
   catalog-certified inverse path; narrowing and untyped conversions stay residual.
-- No consumer-specific semantics, parser AST in protocol types, or wire
-  format changes. The existing schema and adapter-translated SQL facts
-  remain authoritative.
+- No consumer-specific SQL semantics or parser AST in protocol types.
+  The protocol schema and emitted wire contract now include a canonical
+  `unknown_null_comparison` constraint, and dbt snapshots are refreshed.
 
-**Outstanding (do not sign off):** Full numeric arithmetic/overflow,
-general computed projections, noninteger coercions, CASE/COALESCE/NULLIF,
-typed casts/TRY_CAST, cross-column constraints, advanced pattern matching,
-dialect-sensitive functions and environments, comprehensive dbt/engine
-oracles, and all six acceptance criteria remain unverified in their full
-declared scope. Keep TASK-70 In Progress and TASK-91 release blocked.
+**Outstanding (do not sign off):** General arithmetic and overflow,
+computed projections/aliases and CASE/COALESCE/NULLIF beyond the certified
+NULL-test subset; noninteger conversions, narrowing and implicit coercion;
+nontrivial multi-column impossibility, advanced pattern matching,
+dialect-sensitive functions/session laws, general join/group/write computed
+expression proofs, complete physical populations, and exhaustive 13-dialect,
+dbt and engine oracles. The machine-readable per-family scope is now in
+`docs/coverage-manifest.json.task_70_predicate_evidence.family_evidence`.
+All six AC remain open in their full declared scope; TASK-91 stays blocked.

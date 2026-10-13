@@ -79,3 +79,16 @@ The `task_79_schema_evidence` inventory now records portable `ABS`/`COALESCE`, d
 ## TASK-79 schema capability handoff (2026-10-13)
 
 The authoritative TASK-79 physical-schema evidence inventory is `docs/coverage-manifest.json.task_79_schema_evidence`. PR #107 contributes typed SQL DDL, ODCS defaults, dbt CHECK expressions, portable compound AND/BETWEEN predicates, decimal/text key identity, nested typed source/target populations, and explicit enforcement status proofs. The inventory itself remains Done; these additions **do not** certify unverified per-dialect or downstream generator cells. sql-tdg TASK-31/35/36/43/44 consume the protocol's certified canonical facts and never derive missing defaults, constraints or datatype semantics from raw SQL.
+
+## TASK-70 expression family evidence handoff (2026-10-13)
+
+Protocol PR #108 extends the operator-local Boolean witness contract with
+SQL UNKNOWN-bearing IN/NOT IN and literal-NULL comparisons, catalog-certified
+COALESCE/NULLIF/CASE NULL tests, safe widened CAST/TRY_CAST/SAFE_CAST, safe
+binary LIKE prefix ESCAPE, signed cross-column comparison witnesses and
+integer self-comparison absence proofs. The
+`docs/coverage-manifest.json.task_70_predicate_evidence.family_evidence`
+inventory records exact conditions and unresolved dialect-sensitive families.
+All entries remain release-blocking: this is **bounded local evidence**, not
+TASK-88/89 exhaustive dialect/engine or generator validation. TASK-66 stays
+Done for the inventory, without waiving TASK-70 or TASK-91.

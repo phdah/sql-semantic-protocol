@@ -58,6 +58,36 @@ fn assert_both_directions_exact(predicate: &str) -> BooleanWitness {
 }
 
 #[test]
+fn expression_family_inventory_has_explicit_fail_closed_scope() {
+    let manifest: Value =
+        serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
+    let evidence = &manifest["task_70_predicate_evidence"];
+    assert_eq!(evidence["release_approved"], false);
+    let families = evidence["family_evidence"].as_array().unwrap();
+    let names: std::collections::BTreeSet<_> = families
+        .iter()
+        .map(|item| item["family"].as_str().unwrap())
+        .collect();
+    assert_eq!(names.len(), families.len());
+    for family in [
+        "numeric_general_arithmetic",
+        "regex_and_nonprefix_patterns",
+        "nonbinary_collations_and_padding",
+        "noninteger_casts_and_implicit_coercions",
+        "date_time_zone_and_calendar",
+        "json_array_struct_and_vendor_functions",
+        "dialect_specific_nullsafe_operators",
+        "computed_join_group_write_expressions",
+        "whole_graph_physical_realization",
+    ] {
+        let entry = families.iter().find(|item| item["family"] == family).unwrap();
+        assert_eq!(entry["status"], "unproved_residual", "{family}");
+        assert_eq!(entry["release_blocking"], true, "{family}");
+        assert!(entry["scope"].as_str().is_some_and(|value| !value.is_empty()));
+    }
+}
+
+#[test]
 fn finite_integer_membership_and_ranges_preserve_boolean_structure() {
     for (predicate, all) in [
         ("a BETWEEN 2 AND 5", true),
