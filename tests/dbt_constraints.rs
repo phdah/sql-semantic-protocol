@@ -956,3 +956,31 @@ fn manifest_check_constraints_normalize_scalar_and_computed_expressions() {
         .iter()
         .any(|e| e.provenance().source_kind() == ConstraintSourceKind::DbtConstraint));
 }
+
+#[test]
+fn dbt_conjunctive_checks_match_sql_semantics_without_partial_admission() {
+    let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
+        .expect("fixture manifest");
+    manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
+        {"type": "check", "expression": "id > 0 AND amount < 100"},
+        {"type": "check", "expression": "amount >= id + 1 AND id > 1"},
+        {"type": "check", "expression": "id > 0 AND LOWER(amount) = 'x'"}
+    ]);
+    let parsed = parse_dbt_manifest(&manifest.to_string()).expect("dbt manifest");
+    let set = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .unwrap();
+    let scalar = set
+        .constraints()
+        .iter()
+        .filter(|rule| matches!(rule, RelationConstraint::CheckComparison(_)))
+        .count();
+    assert_eq!(scalar, 3);
+    assert_eq!(set.computed_checks().len(), 1);
+    assert!(set
+        .diagnostics()
+        .iter()
+        .any(|d| d.code() == "unsupported_check_constraint"));
+}
