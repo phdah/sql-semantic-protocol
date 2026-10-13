@@ -1833,25 +1833,20 @@ fn composite_foreign_keys_require_attested_partial_null_match_semantics() {
     b.enrich_relation_constraints(&[
         RelationConstraintSet::new(
             "target",
-            vec![
-                RelationConstraint::foreign_key(
-                    vec!["id".into(), "score".into()],
-                    "source",
-                    vec!["id".into(), "score".into()],
-                    evidence(),
-                )
-                .unwrap(),
-            ],
+            vec![RelationConstraint::foreign_key(
+                vec!["id".into(), "score".into()],
+                "source",
+                vec!["id".into(), "score".into()],
+                evidence(),
+            )
+            .unwrap()],
         )
         .unwrap(),
         RelationConstraintSet::new(
             "source",
             vec![
-                RelationConstraint::primary_key(
-                    vec!["id".into(), "score".into()],
-                    evidence(),
-                )
-                .unwrap(),
+                RelationConstraint::primary_key(vec!["id".into(), "score".into()], evidence())
+                    .unwrap(),
             ],
         )
         .unwrap(),
@@ -1865,9 +1860,15 @@ fn composite_foreign_keys_require_attested_partial_null_match_semantics() {
     ] {
         let plan = physical_closed_world_schema_plan(&b, &[target, referenced.clone()]);
         if expected_residual {
-            assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+            assert!(
+                matches!(plan, PhysicalWriteStatePlan::Residual { .. }),
+                "{plan:?}"
+            );
         } else {
-            assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{plan:?}");
+            assert!(
+                matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+                "{plan:?}"
+            );
         }
     }
 }
