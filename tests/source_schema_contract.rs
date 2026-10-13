@@ -1,9 +1,9 @@
 mod common;
 
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, parse_data_type, to_bundle_json,
-    ConfiguredSqlInput, DataType, DataTypeField, RelationCatalog, RelationSchema, SchemaColumn,
-    SqlInput, SchemaSourceKind,
+    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, parse_data_type,
+    to_bundle_json, ConfiguredSqlInput, DataType, DataTypeField, RelationCatalog, RelationSchema,
+    SchemaColumn, SchemaSourceKind, SqlInput,
 };
 
 #[test]
@@ -160,10 +160,18 @@ fn physical_collation_is_retained_as_identity_without_inferred_comparison_law() 
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let input = SqlInput::inline("SELECT name FROM raw.orders");
     let dialect = dialect_from_name("postgresql").unwrap();
-    let configured = [ConfiguredSqlInput::new("collation", &input, "postgresql", dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "collation",
+        &input,
+        "postgresql",
+        dialect.as_ref(),
+    )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     let emitted: serde_json::Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
-    assert_eq!(emitted["source_schemas"][0]["columns"][0]["collation"], "sv_SE.utf8");
+    assert_eq!(
+        emitted["source_schemas"][0]["columns"][0]["collation"],
+        "sv_SE.utf8"
+    );
 }
 
 #[test]
@@ -179,12 +187,30 @@ fn direct_create_table_types_are_canonical_across_sql_dialects() {
         )
         .unwrap();
         let [schema] = b.source_schemas() else {
-            panic!("{dialect}: expected a direct DDL schema: {:?}", b.source_schemas());
+            panic!(
+                "{dialect}: expected a direct DDL schema: {:?}",
+                b.source_schemas()
+            );
         };
         assert_eq!(schema.source_kind(), Some(SchemaSourceKind::SqlDdl));
-        assert_eq!(schema.columns()[0].data_type(), &DataType::SignedInteger { bits: Some(64) });
-        assert_eq!(schema.columns()[1].data_type(), &DataType::Decimal { precision: Some(7), scale: Some(2) });
-        assert_eq!(schema.columns()[2].data_type(), &DataType::String { length: Some(10), fixed: false });
+        assert_eq!(
+            schema.columns()[0].data_type(),
+            &DataType::SignedInteger { bits: Some(64) }
+        );
+        assert_eq!(
+            schema.columns()[1].data_type(),
+            &DataType::Decimal {
+                precision: Some(7),
+                scale: Some(2)
+            }
+        );
+        assert_eq!(
+            schema.columns()[2].data_type(),
+            &DataType::String {
+                length: Some(10),
+                fixed: false
+            }
+        );
         let emitted: serde_json::Value = serde_json::from_str(&to_bundle_json(&b)).unwrap();
         assert_eq!(emitted["source_schemas"][0]["source_kind"], "sql_ddl");
     }
@@ -202,7 +228,9 @@ fn contradictory_direct_ddl_schemas_lose_their_physical_authority() {
     )
     .unwrap();
     assert!(b.source_schemas().is_empty());
-    assert!(b.constraint_diagnostics().iter()
+    assert!(b
+        .constraint_diagnostics()
+        .iter()
         .any(|diagnostic| diagnostic.code() == "conflicting_ddl_schema"));
 }
 
@@ -211,12 +239,31 @@ fn catalog_overrides_conflicting_sql_schema_but_retains_proof_gap() {
     let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
         "t",
         vec![SchemaColumn::from_sql_type("id", "TEXT", "postgresql").unwrap()],
-    ).unwrap()]).unwrap();
+    )
+    .unwrap()])
+    .unwrap();
     let input = SqlInput::inline("CREATE TABLE t (id INTEGER)");
     let dialect = dialect_from_name("postgresql").unwrap();
-    let cfg = [ConfiguredSqlInput::new("ddl", &input, "postgresql", dialect.as_ref())];
+    let cfg = [ConfiguredSqlInput::new(
+        "ddl",
+        &input,
+        "postgresql",
+        dialect.as_ref(),
+    )];
     let b = analyze_configured_inputs_with_catalog(&cfg, &catalog).unwrap();
-    assert_eq!(b.source_schemas()[0].columns()[0].data_type(), &DataType::String { length: None, fixed: false });
-    assert!(b.relation_constraints().iter().any(|set| set.relation() == "t"
-        && set.diagnostics().iter().any(|diag| diag.code() == "ddl_catalog_schema_conflict")));
+    assert_eq!(
+        b.source_schemas()[0].columns()[0].data_type(),
+        &DataType::String {
+            length: None,
+            fixed: false
+        }
+    );
+    assert!(b
+        .relation_constraints()
+        .iter()
+        .any(|set| set.relation() == "t"
+            && set
+                .diagnostics()
+                .iter()
+                .any(|diag| diag.code() == "ddl_catalog_schema_conflict")));
 }
