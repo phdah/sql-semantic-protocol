@@ -10,22 +10,30 @@ enum Truth {
     Unknown,
 }
 
-pub(super) fn check(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResult<()> {
-    match evaluate(predicate, values)? {
+pub(super) fn check(
+    predicate: &P,
+    values: &BTreeMap<String, LiteralValue>,
+    schema: &RelationSchema,
+) -> StateResult<()> {
+    match evaluate(predicate, values, schema)? {
         Truth::True | Truth::Unknown => Ok(()), // SQL CHECK admits UNKNOWN.
         Truth::False => Err(impossible("enforced Boolean CHECK evaluated to FALSE")),
     }
 }
 
-fn evaluate(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResult<Truth> {
+fn evaluate(
+    predicate: &P,
+    values: &BTreeMap<String, LiteralValue>,
+    schema: &RelationSchema,
+) -> StateResult<Truth> {
     match predicate {
         P::Comparison {
             left,
             operator,
             right,
         } => {
-            let lhs = super::generated::evaluate(left, values)?;
-            let rhs = super::generated::evaluate(right, values)?;
+            let lhs = super::generated::evaluate(left, values, schema)?;
+            let rhs = super::generated::evaluate(right, values, schema)?;
             if lhs == LiteralValue::Null || rhs == LiteralValue::Null {
                 return Ok(Truth::Unknown);
             }
@@ -45,7 +53,7 @@ fn evaluate(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResu
             expression,
             negated,
         } => {
-            let value = super::generated::evaluate(expression, values)?;
+            let value = super::generated::evaluate(expression, values, schema)?;
             if (value == LiteralValue::Null) != *negated {
                 Ok(Truth::True)
             } else {
@@ -56,7 +64,7 @@ fn evaluate(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResu
             let mut unknown = false;
             let mut residual = None;
             for child in children {
-                match evaluate(child, values) {
+                match evaluate(child, values, schema) {
                     Ok(Truth::False) => return Ok(Truth::False),
                     Ok(Truth::Unknown) => unknown = true,
                     Ok(Truth::True) => {}
@@ -78,7 +86,7 @@ fn evaluate(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResu
             let mut unknown = false;
             let mut residual = None;
             for child in children {
-                match evaluate(child, values) {
+                match evaluate(child, values, schema) {
                     Ok(Truth::True) => return Ok(Truth::True),
                     Ok(Truth::Unknown) => unknown = true,
                     Ok(Truth::False) => {}
@@ -96,7 +104,7 @@ fn evaluate(predicate: &P, values: &BTreeMap<String, LiteralValue>) -> StateResu
                 Ok(Truth::False)
             }
         }
-        P::Not(child) => match evaluate(child, values)? {
+        P::Not(child) => match evaluate(child, values, schema)? {
             Truth::True => Ok(Truth::False),
             Truth::False => Ok(Truth::True),
             Truth::Unknown => Ok(Truth::Unknown),
