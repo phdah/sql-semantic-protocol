@@ -1381,11 +1381,11 @@ collisions. The ordered DML path checks both its prestate and each poststate.
 Portable scalar and deterministic row-local computed `CHECK` comparisons (`eq`, `not_eq`, `gt`, `gte`, `lt`, `lte`) emit typed facts and provenance. Portable `AND` conjuncts are normalized atomically for SQL DDL and dbt CHECK metadata: if any conjunct is unsupported, the entire rule is residual. The physical validator checks exact integers and base-ten decimals and admits SQL NULL as UNKNOWN. `NOT ENFORCED` rules are excluded from proof obligations, `Unknown` remains residual, and `Enforced` rules are evaluated. Complex functions and `OR`, unproved collation-sensitive comparisons, casts and enforcement timing remain residual.
 
 The independent `physical_typed_value_plan(value, data_type)` API accepts
-`PhysicalTypedValue` scalar, byte-buffer, array, map and struct witnesses.
+`PhysicalTypedValue` scalar, byte-buffer, JSON document, array, map and struct witnesses.
 It checks typed field arity, fixed array lengths, binary length bounds and
 recursively proven scalar elements. Map keys must have exact integer equality
 with canonicalized numeric identity (for example, `05` equals `5`); other
-map key comparators remain residual. The result is
+map key comparators remain residual. Typed JSON validates exact ASCII strings, booleans, null, arrays, objects and IEEE-safe integer documents; fractional numbers, oversized integers, non-ASCII normalization and textual JSON casts remain residual. SQL NULL is distinct from JSON document null. The result is
 `PhysicalTypeProof::{Feasible,Impossible,Residual}` and is not a warehouse
 write or Arrow serialization itself. The existing scalar DML state interpreter
 does not promote nested values to executable SQL expressions.
@@ -1395,6 +1395,6 @@ integer bounds, exact decimal precision/scale, supported IEEE-safe integral
 float encodings, ASCII character lengths, Gregorian dates, ISO clock times,
 declared timestamp-zone syntax and canonical lowercase UUID forms. Time-zone
 offset conversion, non-binary string collation, NaN and signed-zero storage,
-JSON and nested Arrow array/map/struct values, unproved coercions or function
+JSON numeric rounding and nested Arrow array/map/struct ordered DML, unproved coercions or function
 evaluation are deliberately **residual**. A parser accepting their syntax
 does not make their physical construction exact.
