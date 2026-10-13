@@ -150,6 +150,13 @@ fn generated_expression_to_value(
         G::Multiply(left, right) => json!({
             "kind":"multiply","left":generated_expression_to_value(left),"right":generated_expression_to_value(right)
         }),
+        G::Abs(operand) => json!({
+            "kind":"abs","operand":generated_expression_to_value(operand)
+        }),
+        G::Coalesce(arguments) => json!({
+            "kind":"coalesce",
+            "arguments":arguments.iter().map(generated_expression_to_value).collect::<Vec<_>>()
+        }),
     }
 }
 
