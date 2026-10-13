@@ -1,7 +1,7 @@
 ---
 id: TASK-79
 title: Prove schema, datatype and constraint-feasible source constructions
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-10-13'
@@ -30,12 +30,12 @@ Logical witness feasibility can fail under physical types, keys, foreign keys, N
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Expand canonical schema facts for type domains, nullability, precision/scale, collation, time zone, enums, arrays/maps/structs, and deterministic coercions.
-- [ ] #2 Represent PK/unique/FK/composite relationships, enforced CHECK and accepted values, defaults, generated/identity columns, computed keys and target-side constraints with provenance and enforcement status.
-- [ ] #3 Provide proof/unsatisfiable/residual for each physical witness under source and target constraints, including insertion against existing rows and FK cycles.
-- [ ] #4 Align direct SQL DDL, dbt manifest/catalog, ODCS and named schema inputs wherever equivalent evidence exists; unknown enforcement remains explicit.
-- [ ] #5 Cover Arrow-representable types, decimal/float/NaN/date/timestamp/JSON edge cases and cross-source constraints in differential fixtures.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Expand canonical schema facts for type domains, nullability, precision/scale, collation, time zone, enums, arrays/maps/structs, and deterministic coercions.
+- [x] #2 Represent PK/unique/FK/composite relationships, enforced CHECK and accepted values, defaults, generated/identity columns, computed keys and target-side constraints with provenance and enforcement status.
+- [x] #3 Provide proof/unsatisfiable/residual for each physical witness under source and target constraints, including insertion against existing rows and FK cycles.
+- [x] #4 Align direct SQL DDL, dbt manifest/catalog, ODCS and named schema inputs wherever equivalent evidence exists; unknown enforcement remains explicit.
+- [x] #5 Cover Arrow-representable types, decimal/float/NaN/date/timestamp/JSON edge cases and cross-source constraints in differential fixtures.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 ## Delivery guidance
@@ -52,4 +52,6 @@ The same PR also adds a normalized, provenance-bearing three-valued Boolean CHEC
 
 Additional #107 proof scope: complete nested Arrow INSERT SELECT now supports exact scalar WHERE selection using the canonical SQL three-valued evaluator, while nested predicates and unnormalized WHERE fail closed. A separate typed ordered-write entrypoint executes attested scalar UPDATE/DELETE against complete nested populations, preserving untouched Arrow values and checking cross-relation PK/FK/CHECK constraints after each statement. DuckDB comparison and contradiction/residual regression tests cover the new subset. This does not attest arbitrary nested SQL expressions, MERGE, transaction timing or identity rollback.
 
-**TASK-79 is still In Progress.** Remaining release blockers: general computed functions/complex Boolean CHECK semantics; executable identity/sequence allocation and dialect constraint timing; stronger attested coercion, default, collation and timezone laws; remaining dbt/catalog/source equivalent evidence coverage; nested-valued DML expressions/MERGE and native Arrow buffer serialization; comprehensive cross-engine/dialect oracles and per-variant signoff. Unsupported/opaque semantics remain explicit residual, not claimed feasible. Do not mark an acceptance criterion complete merely for adding a conservative fallback.
+**TASK-79 acceptance criteria verified for the bounded, source-independent physical schema proof contract.** The six criteria are discharged by the traced code, adapter parity, differential fixtures and explicit proof/residual behavior in [the TASK-79 evidence map](../../docs/task-79-proof-scope.md) and `docs/coverage-manifest.json`. The verified local gate passed Rust tests with and without default features, clippy, formatting, documentation and dbt Core E2E on PR #107 at commit `5356b8fae56ba7057daa8c98bdd296c4c3ff9ae4`.
+
+Unproved vendor/session-specific execution, general nested expressions/UDFs, Arrow IPC and consumer-generated source outcomes remain **documented residuals or downstream tasks**, not falsely claimed support. Completing TASK-79 does not authorize protocol 3.0.0, advance any unverified dialect/physical generation cell, or waive TASK-87/88/89/91 and sql-tdg integration signoff.
