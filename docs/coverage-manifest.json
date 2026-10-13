@@ -2,6 +2,41 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_79_schema_evidence": {
+    "owner": "TASK-79",
+    "status": "partial_conservative_implementation_release_blocked",
+    "rust_api": [
+      "ColumnValueSource",
+      "ColumnValueKind",
+      "SchemaColumn::with_collation",
+      "physical_closed_world_schema_plan",
+      "physical_ordered_write_state_plan"
+    ],
+    "verified_scope": [
+      "SQL_DDL_source_schema_provenance",
+      "canonical_literal_defaults",
+      "ODCS_scalar_defaults",
+      "exact_numeric_integer_and_decimal_bounds",
+      "date_time_and_timestamp_timezone_guards",
+      "schema_key_foreign_key_checks",
+      "closed_world_cyclic_foreign_keys",
+      "generated_identity_opaque_residual"
+    ],
+    "tests": [
+      "tests/physical_write_states.rs",
+      "tests/source_schema_contract.rs",
+      "tests/odcs.rs"
+    ],
+    "unproved": [
+      "Arrow_nested_struct_array_map_physical_encoding",
+      "NaN_signed_zero_and_decimal_implicit_rounding",
+      "vendor_collation_and_timezone_execution_laws",
+      "computed_key_and_generated_identity_execution",
+      "cross_adapter_default_parity_and_dbt_metadata",
+      "full_cross_dialect_arrow_differential_generation"
+    ],
+    "release_limit": "Partial TASK-79 proofs are intentionally not generator completion or per-variant coverage signoff."
+  },
   "task_68_physical_source_evidence": {
     "status": "verified_bounded_physical_source_contract_release_blocked",
     "owner": "TASK-68",
