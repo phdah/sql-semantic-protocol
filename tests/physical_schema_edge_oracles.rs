@@ -139,9 +139,11 @@ fn duckdb_decimal_map_key_equality_matches_canonical_nested_proof() {
         )
         .unwrap();
     assert!(present);
-    assert!(db.execute_batch(
-        "SELECT MAP(
+    assert!(db
+        .execute_batch(
+            "SELECT MAP(
             [CAST(1.5 AS DECIMAL(18,6)), CAST(1.500000 AS DECIMAL(18,6))],
             [true, false])"
-    ).is_err());
+        )
+        .is_err());
 }
