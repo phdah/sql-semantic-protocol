@@ -17,7 +17,10 @@
       "physical_closed_world_schema_plan",
       "physical_ordered_write_state_plan",
       "physical_typed_append_schema_plan",
-      "SchemaColumn::with_text_comparison_law"
+      "SchemaColumn::with_text_comparison_law",
+      "to_physical_typed_population_json",
+      "GeneratedValueExpression::Abs",
+      "GeneratedValueExpression::Coalesce"
     ],
     "verified_scope": [
       "SQL_DDL_source_schema_provenance",
@@ -53,7 +56,14 @@
       "typed_nested_target_appends_against_existing_rows_and_cross_relation_constraints",
       "same_column_equality_OR_CHECK_sql_ddl_and_dbt_atomic_normalization",
       "attested_binary_text_CHECK_eq_neq_without_ordering_assumptions",
-      "dbt_portable_CHECK_IN_list_null_safe_parity"
+      "dbt_portable_CHECK_IN_list_null_safe_parity",
+      "composite_pk_unique_fk_comparison_proofs_consider_all_columns_before_residual",
+      "exact_full_tuple_fk_match_dominates_earlier_unproved_text_candidates",
+      "portable_abs_and_same_type_coalesce_sql_ddl_computed_generated_expressions",
+      "topological_generated_column_dependency_order_with_cycle_residual",
+      "ordered_update_merge_by_source_generated_recomputation",
+      "lossless_typed_physical_witness_sidecar_only_after_closed_world_validation",
+      "named_schema_generated_text_equality_without_unproved_collation_inequality"
     ],
     "tests": [
       "tests/physical_write_states.rs",
@@ -62,17 +72,20 @@
       "tests/source_schema_contract.rs",
       "tests/odcs.rs",
       "tests/dbt_constraints.rs",
-      "tests/physical_text_comparison_emission.rs"
+      "tests/physical_text_comparison_emission.rs",
+      "tests/physical_typed_serialization.rs"
     ],
     "unproved": [
-      "Arrow_nested_struct_array_map_ordered_DML_execution_and_serialization",
       "NaN_signed_zero_and_decimal_implicit_rounding",
       "vendor_collation_and_timezone_execution_laws",
       "opaque_computed_functions_and_identity_sequence_execution",
       "cross_adapter_default_parity_and_dbt_metadata",
-      "full_cross_dialect_arrow_differential_generation"
+      "full_cross_dialect_arrow_differential_generation",
+      "Arrow_nested_struct_array_map_ordered_SQL_DML_execution_without_casts",
+      "full_executable_semantics_for_unbounded_computed_functions_and_cross_dialect_transactions"
     ],
-    "release_limit": "Partial TASK-79 proofs are intentionally not generator completion or per-variant coverage signoff."
+    "release_limit": "Partial TASK-79 proofs are intentionally not generator completion or per-variant coverage signoff.",
+    "sidecar_schema": "schema/typed-physical-population.schema.json"
   },
   "task_68_physical_source_evidence": {
     "status": "verified_bounded_physical_source_contract_release_blocked",
