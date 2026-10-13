@@ -234,6 +234,14 @@ pub fn physical_closed_world_schema_plan(
     bundle: &AnalysisBundle,
     snapshots: &[PhysicalWriteState],
 ) -> PhysicalWriteStatePlan {
+    physical_closed_world_schema_plan_with_nested(bundle, snapshots, &BTreeSet::new())
+}
+
+fn physical_closed_world_schema_plan_with_nested(
+    bundle: &AnalysisBundle,
+    snapshots: &[PhysicalWriteState],
+    non_null_nested: &BTreeSet<(String, String)>,
+) -> PhysicalWriteStatePlan {
     let mut states = BTreeMap::<String, PhysicalWriteState>::new();
     for state in snapshots {
         if states
@@ -249,7 +257,7 @@ pub fn physical_closed_world_schema_plan(
             return failure(None, error);
         }
     }
-    if let Err(error) = validate_all_constraints(bundle, &states) {
+    if let Err(error) = constraints::validate_all_constraints_with_nested(bundle, &states, non_null_nested) {
         return failure(None, error);
     }
     PhysicalWriteStatePlan::Feasible {
