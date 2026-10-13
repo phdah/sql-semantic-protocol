@@ -1413,6 +1413,19 @@ rounding, struct/array/map order, and SQL NULL separately from JSON document
 null. An `Impossible` or `Residual` physical proof is returned as an error
 instead of serializing invented feasible rows.
 
+The `physical_typed_ordered_insert_plan(bundle, initial_states)` API executes
+a bounded sequence of physical SQL `INSERT ... SELECT` statements using the
+existing normalized write/query nodes and complete typed rows. Direct source
+column projections and exact scalar literals preserve nested Arrow-like
+values without casts or serialization to SQL literals; each committed
+poststate is validated against the complete source/target constraint set,
+including preexisting primary keys and foreign keys. SQL filters, joins,
+aggregates, computed projections, target defaults/generated omissions,
+unproved statement/transaction semantics and UPDATE/DELETE/MERGE stay
+residual instead of being guessed. This is narrower than arbitrary nested
+SQL DML execution, and the standalone typed append schema checker is
+still useful for user-materialized target rows.
+
 The `physical_typed_append_schema_plan(bundle, snapshots, target, inserted)` API validates
 caller-materialized Arrow-like nested rows appended to a complete prior target bag.
 It rechecks every supplied source and target relation before and after the append,
