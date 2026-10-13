@@ -1607,3 +1607,50 @@ fn between_check_emits_both_exact_bounds_and_negated_form_is_residual() {
     assert!(db.execute_batch("INSERT INTO target VALUES (4,1)").is_err());
     assert!(db.execute_batch("INSERT INTO target VALUES (5,9)").is_err());
 }
+
+#[test]
+fn merge_insert_generated_values_execute_only_attested_arithmetic() {
+    let sql = "MERGE INTO target USING source ON target.id = source.id
+        WHEN NOT MATCHED THEN INSERT (id) VALUES (source.id)";
+    let mut b = bundle(&[sql], "duckdb");
+    let expression = GeneratedValueExpression::Add(
+        Box::new(GeneratedValueExpression::Column("id".into())),
+        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+    );
+    b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_column_value_sources(vec![
+            ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
+                .unwrap()
+                .with_generated_expression(expression)
+                .unwrap(),
+        ])]);
+    let initial = [
+        state("target", &[]),
+        state("source", &[(Some(2), None), (Some(3), None)]),
+    ];
+    let plan = physical_ordered_write_state_plan(&b, &initial);
+    let (_, states) = outcome(&plan);
+    assert_eq!(
+        states
+            .iter()
+            .find(|state| state.relation() == "target")
+            .unwrap()
+            .rows(),
+        &[row(Some(2), Some(3)), row(Some(3), Some(4))]
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER GENERATED ALWAYS AS (id+1));
+         CREATE TABLE source(id INTEGER);
+         INSERT INTO source VALUES (2),(3);
+         MERGE INTO target USING source ON target.id = source.id
+         WHEN NOT MATCHED THEN INSERT (id) VALUES (source.id);",
+    )
+    .unwrap();
+    let sum: i64 = db
+        .query_row("SELECT SUM(score) FROM target", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(sum, 7);
+}
