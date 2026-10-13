@@ -459,11 +459,13 @@ pub(crate) enum PortableCheckExpression {
 ///
 /// No fragment of an unsupported AND/OR predicate may be certified in
 /// isolation, since that would discard a target-side obligation.
+type PortableCheckFacts = (Vec<RelationConstraint>, Vec<ComputedCheckConstraint>);
+
 fn portable_check_constraints(
     expr: &Expr,
     expected_column: Option<&str>,
     evidence: &[ConstraintEvidence],
-) -> Result<Option<(Vec<RelationConstraint>, Vec<ComputedCheckConstraint>)>, ConstraintMetadataError> {
+) -> Result<Option<PortableCheckFacts>, ConstraintMetadataError> {
     if let Expr::BinaryOp {
         left,
         op: SqlBinaryOperator::And,
