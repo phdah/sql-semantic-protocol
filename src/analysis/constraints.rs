@@ -723,6 +723,7 @@ pub(crate) fn portable_check_expressions(expression: &str) -> Option<Vec<Portabl
             }
         } else if let Some((column, values, quote)) =
             portable_equality_disjunction(expr, None)
+                .or_else(|| accepted_values_from_check(expr, None))
         {
             output.push(PortableCheckExpression::AcceptedValues(
                 column, values, quote,
