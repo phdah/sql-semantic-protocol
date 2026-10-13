@@ -77,6 +77,12 @@ impl ExactDecimal {
     }
 }
 
+/// Exact equality for finite base-ten physical numerics, without an
+/// i128 conversion or binary float rounding.
+pub(super) fn exact_numeric_equality(left: &str, right: &str) -> Option<bool> {
+    Some(ExactDecimal::parse(left)?.compare(&ExactDecimal::parse(right)?) == Ordering::Equal)
+}
+
 fn matches_comparison(order: Ordering, operator: CheckCompareOperator) -> bool {
     match operator {
         CheckCompareOperator::Eq => order == Ordering::Equal,
