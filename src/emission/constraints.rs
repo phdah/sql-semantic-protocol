@@ -67,6 +67,19 @@ pub(super) fn relation_constraint_set_to_value(set: &RelationConstraintSet) -> V
         "relation": set.relation(),
         "constraints": constraints
     });
+    if !set.computed_keys().is_empty() {
+        value["computed_keys"] = json!(set.computed_keys().iter().map(|key| {
+            json!({
+                "primary": key.primary(),
+                "expressions": key.expressions().iter().map(generated_expression_to_value).collect::<Vec<_>>(),
+                "evidence": key.evidence().iter().map(|evidence| json!({
+                    "source_kind": evidence.provenance().source_kind().as_str(),
+                    "source_id": evidence.provenance().source_id(),
+                    "enforcement": evidence.enforcement().as_str(),
+                })).collect::<Vec<_>>(),
+            })
+        }).collect::<Vec<_>>());
+    }
     if !set.column_value_sources().is_empty() {
         value["column_value_sources"] = json!(set
             .column_value_sources()
