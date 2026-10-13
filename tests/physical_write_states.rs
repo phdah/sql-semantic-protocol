@@ -6,14 +6,13 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
     physical_ordered_write_state_plan, physical_ordered_write_state_plan_with_identities,
-    physical_typed_value_plan, AnalysisBundle, PhysicalIdentitySequence,
-    CheckCompareOperator, ColumnValueKind, ColumnValueSource, ComputedCheckConstraint,
-    ComputedKeyConstraint, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, DataType, DataTypeField,
-    GeneratedValueExpression, LiteralValue, PhysicalTypeProof, PhysicalTypedValue,
-    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
-    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
-    TextComparisonLaw, WriteKind,
+    physical_typed_value_plan, AnalysisBundle, CheckCompareOperator, ColumnValueKind,
+    ColumnValueSource, ComputedCheckConstraint, ComputedKeyConstraint, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    ConstraintValue, DataType, DataTypeField, GeneratedValueExpression, LiteralValue,
+    PhysicalIdentitySequence, PhysicalTypeProof, PhysicalTypedValue, PhysicalWriteRow,
+    PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, TextComparisonLaw, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
@@ -2280,10 +2279,7 @@ fn attested_binary_text_law_proves_composite_key_distinctions_and_foreign_keys()
     let state = |relation: &str, ids: &[&str]| {
         PhysicalWriteState::new(relation, ids.iter().map(|id| row(id)).collect()).unwrap()
     };
-    let distinct = [
-        state("target", &["A", "a"]),
-        state("source", &["A", "a"]),
-    ];
+    let distinct = [state("target", &["A", "a"]), state("source", &["A", "a"])];
     assert!(matches!(
         physical_closed_world_schema_plan(&build(true), &distinct),
         PhysicalWriteStatePlan::Feasible { .. }
@@ -2293,18 +2289,12 @@ fn attested_binary_text_law_proves_composite_key_distinctions_and_foreign_keys()
         PhysicalWriteStatePlan::Residual { .. }
     ));
 
-    let collision = [
-        state("target", &["A", "A"]),
-        state("source", &["A"]),
-    ];
+    let collision = [state("target", &["A", "A"]), state("source", &["A"])];
     assert!(matches!(
         physical_closed_world_schema_plan(&build(true), &collision),
         PhysicalWriteStatePlan::Impossible { .. }
     ));
-    let unproved_fk = [
-        state("target", &["a"]),
-        state("source", &["A"]),
-    ];
+    let unproved_fk = [state("target", &["a"]), state("source", &["A"])];
     assert!(matches!(
         physical_closed_world_schema_plan(&build(true), &unproved_fk),
         PhysicalWriteStatePlan::Residual { .. }
