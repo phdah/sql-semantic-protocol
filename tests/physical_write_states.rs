@@ -1718,3 +1718,70 @@ fn nullable_unique_keys_only_need_dialect_law_for_potential_null_collisions() {
     .unwrap();
     assert!(db.execute_batch("INSERT INTO target VALUES (4,3)").is_err());
 }
+
+#[test]
+fn update_and_merge_recompute_generated_values_against_duckdb() {
+    let generated = ColumnValueSource::new(
+        "score",
+        ColumnValueKind::Generated,
+        None,
+        evidence(),
+    )
+    .unwrap()
+    .with_generated_expression(GeneratedValueExpression::Add(
+        Box::new(GeneratedValueExpression::Column("id".into())),
+        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+    ))
+    .unwrap();
+    for sql in [
+        "UPDATE target SET id=id+2 WHERE id=1",
+        "MERGE INTO target USING source ON target.id=source.id WHEN MATCHED THEN UPDATE SET id=source.score",
+    ] {
+        let mut b = bundle(&[sql], "duckdb");
+        b.enrich_relation_constraints(&[
+            RelationConstraintSet::new("target", vec![])
+                .unwrap()
+                .with_column_value_sources(vec![generated.clone()]),
+        ]);
+        let initial = [
+            state("target", &[(Some(1), Some(2))]),
+            state("source", &[(Some(1), Some(3))]),
+        ];
+        let plan = physical_ordered_write_state_plan(&b, &initial);
+        let (_, states) = outcome(&plan);
+        let target = states.iter().find(|state| state.relation() == "target").unwrap();
+        assert_eq!(target.rows(), &[row(Some(3), Some(4))], "{sql}");
+    }
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER GENERATED ALWAYS AS (id+1));
+         INSERT INTO target(id) VALUES (1);
+         UPDATE target SET id=id+2 WHERE id=1;",
+    )
+    .unwrap();
+    let observed: (i64, i64) = db
+        .query_row("SELECT id,score FROM target", [], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap();
+    assert_eq!(observed, (3, 4));
+}
+
+#[test]
+fn explicit_generated_column_updates_fail_closed_even_when_value_matches() {
+    let mut b = bundle(&["UPDATE target SET score=score WHERE id=1"], "duckdb");
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![])
+            .unwrap()
+            .with_column_value_sources(vec![
+                ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
+                    .unwrap()
+                    .with_generated_expression(GeneratedValueExpression::Column("id".into()))
+                    .unwrap(),
+            ]),
+    ]);
+    let result = physical_ordered_write_state_plan(
+        &b,
+        &[state("target", &[(Some(1), Some(1))])],
+    );
+    assert!(matches!(result, PhysicalWriteStatePlan::Residual { .. }), "{result:?}");
+}
