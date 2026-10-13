@@ -580,17 +580,19 @@ fn portable_equality_disjunction(
     let mut entries = Vec::new();
     collect(expr, &mut entries)?;
     let (first_column, _, first_quote) = entries.first()?;
+    let first_column = first_column.clone();
+    let first_quote = *first_quote;
     if expected_column.is_some_and(|column| column != first_column)
         || entries.iter().any(|(column, _, quote)| {
-            column != first_column || quote != first_quote
+            column != &first_column || *quote != first_quote
         })
     {
         return None;
     }
     Some((
-        first_column.clone(),
+        first_column,
         entries.into_iter().map(|(_, value, _)| value).collect(),
-        *first_quote,
+        first_quote,
     ))
 }
 
