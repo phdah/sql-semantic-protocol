@@ -313,7 +313,10 @@ pub(super) fn analyze_create_table_constraints(
                         None,
                         vec![evidence],
                     )?;
-                    let source = match generation_expr.as_ref().and_then(parse_generated_expression) {
+                    let source = match generation_expr
+                        .as_ref()
+                        .and_then(parse_generated_expression)
+                    {
                         Some(expression) => source.with_generated_expression(expression)?,
                         None => source,
                     };
@@ -430,7 +433,8 @@ fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
     use GeneratedValueExpression as G;
     match unwrap_nested_expression(expr) {
         Expr::Identifier(identifier) => Some(G::Column(identifier.to_string())),
-        Expr::Value(_) | Expr::UnaryOp {
+        Expr::Value(_)
+        | Expr::UnaryOp {
             op: SqlUnaryOperator::Minus | SqlUnaryOperator::Plus,
             ..
         } => constraint_value_from_expression(expr).map(|(value, _)| G::Literal(value)),
