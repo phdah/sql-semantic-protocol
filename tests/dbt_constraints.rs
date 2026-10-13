@@ -1004,18 +1004,27 @@ fn dbt_same_column_or_check_becomes_atomic_accepted_values() {
         .iter()
         .find(|set| set.relation() == "warehouse.analytics.stg_orders")
         .unwrap();
-    let accepted = set.constraints().iter().find_map(|rule| match rule {
-        RelationConstraint::AcceptedValues(values) if values.column() == "amount" => Some(values),
-        _ => None,
-    }).expect("one fully proved equality disjunction");
+    let accepted = set
+        .constraints()
+        .iter()
+        .find_map(|rule| match rule {
+            RelationConstraint::AcceptedValues(values) if values.column() == "amount" => {
+                Some(values)
+            }
+            _ => None,
+        })
+        .expect("one fully proved equality disjunction");
     assert_eq!(
         accepted.values(),
         &[ConstraintValue::Integer(1), ConstraintValue::Integer(2)]
     );
-    assert!(accepted
-        .evidence()
-        .iter()
-        .any(|evidence| evidence.provenance().source_kind() == ConstraintSourceKind::DbtConstraint));
+    assert!(
+        accepted
+            .evidence()
+            .iter()
+            .any(|evidence| evidence.provenance().source_kind()
+                == ConstraintSourceKind::DbtConstraint)
+    );
     assert!(set.constraints().iter().any(|rule| matches!(
         rule,
         RelationConstraint::CheckComparison(check) if check.column() == "id"
