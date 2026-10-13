@@ -4,7 +4,7 @@
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
   "task_79_schema_evidence": {
     "owner": "TASK-79",
-    "status": "partial_conservative_implementation_release_blocked",
+    "status": "verified_bounded_schema_contract_release_blocked",
     "rust_api": [
       "ColumnValueSource",
       "ColumnValueKind",
@@ -102,7 +102,7 @@
       "nested_typed_SQL_DML_expressions_MERGE_and_generated_omissions_beyond_scalar_row_local_mutations",
       "unbounded_UDF_subquery_CHECK_semantics_and_cross_dialect_transaction_timing"
     ],
-    "release_limit": "Partial TASK-79 proofs are intentionally not generator completion or per-variant coverage signoff.",
+    "release_limit": "TASK-79's independent canonical schema/witness AC are verified. Whole-workload generation, vendor engine execution and per-variant 3.0 release signoff remain separate upstream/downstream gates.",
     "sidecar_schema": "schema/typed-physical-population.schema.json",
     "acceptance_criteria": {
       "1": {
@@ -156,7 +156,14 @@
         ]
       }
     },
-    "proof_scope_document": "docs/task-79-proof-scope.md"
+    "proof_scope_document": "docs/task-79-proof-scope.md",
+    "signoff": {
+      "date": "2026-10-13",
+      "scope": "bounded_local_physical_schema_proof",
+      "ci_run": "38452901670",
+      "ci_head": "5356b8fae56ba7057daa8c98bdd296c4c3ff9ae4",
+      "release_approved": false
+    }
   },
   "task_68_physical_source_evidence": {
     "status": "verified_bounded_physical_source_contract_release_blocked",
