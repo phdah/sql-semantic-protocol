@@ -460,4 +460,54 @@ mod tests {
             ));
         }
     }
+    #[test]
+    fn finite_ieee_arrow_buffers_are_exact_without_guessing_special_sql_semantics() {
+        for (value, kind) in [
+            (
+                PhysicalTypedValue::Float32Bits(1.5_f32.to_bits()),
+                DataType::FloatingPoint { bits: Some(32) },
+            ),
+            (
+                PhysicalTypedValue::Float64Bits((-1.25_f64).to_bits()),
+                DataType::FloatingPoint { bits: Some(64) },
+            ),
+        ] {
+            assert_eq!(
+                physical_typed_value_plan(&value, &kind),
+                PhysicalTypeProof::Feasible
+            );
+        }
+        for (value, kind) in [
+            (
+                PhysicalTypedValue::Float32Bits(f32::NAN.to_bits()),
+                DataType::FloatingPoint { bits: Some(32) },
+            ),
+            (
+                PhysicalTypedValue::Float32Bits(f32::INFINITY.to_bits()),
+                DataType::FloatingPoint { bits: Some(32) },
+            ),
+            (
+                PhysicalTypedValue::Float32Bits((-0.0_f32).to_bits()),
+                DataType::FloatingPoint { bits: Some(32) },
+            ),
+            (
+                PhysicalTypedValue::Float64Bits(f64::NAN.to_bits()),
+                DataType::FloatingPoint { bits: Some(64) },
+            ),
+            (
+                PhysicalTypedValue::Float64Bits((-0.0_f64).to_bits()),
+                DataType::FloatingPoint { bits: Some(64) },
+            ),
+            (
+                PhysicalTypedValue::Float64Bits(1.5_f64.to_bits()),
+                DataType::FloatingPoint { bits: Some(32) },
+            ),
+        ] {
+            assert!(matches!(
+                physical_typed_value_plan(&value, &kind),
+                PhysicalTypeProof::Residual { .. }
+            ));
+        }
+    }
+
 }
