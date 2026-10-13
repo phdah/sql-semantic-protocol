@@ -308,6 +308,50 @@ fn scalar_shadow(row: &PhysicalTypedWriteRow) -> PhysicalWriteRow {
     }
 }
 
+/// Fill omitted typed INSERT columns only from canonical authoritative scalar
+/// defaults. Neither a nested placeholder nor an inferred nullable SQL NULL is
+/// a physical value-production proof.
+fn complete_typed_insert_row(
+    bundle: &AnalysisBundle,
+    target: &str,
+    schema: &RelationSchema,
+    mut row: PhysicalTypedWriteRow,
+) -> Result<PhysicalTypedWriteRow, String> {
+    let sources = bundle
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == target)
+        .map(|set| set.column_value_sources())
+        .unwrap_or(&[]);
+    for column in schema.columns() {
+        let source = sources.iter().find(|source| source.column() == column.name());
+        if row.values.contains_key(column.name()) {
+            // Database-managed columns cannot be assigned explicitly even
+            // when their supplied bytes happen to equal the produced value.
+            if source.is_some_and(|source| source.kind() != crate::column_sources::ColumnValueKind::Default) {
+                return Err("explicit assignment to a generated or identity column is unproved".into());
+            }
+            continue;
+        }
+        let Some(source) = source else {
+            return Err(format!("omitted typed column {} has no attested default", column.name()));
+        };
+        if source.kind() != crate::column_sources::ColumnValueKind::Default
+            || !super::generated::authoritative(source)
+        {
+            return Err("omitted generated, identity or unattested typed default is unproved".into());
+        }
+        let Some(value) = source.value() else {
+            return Err("opaque typed default cannot be evaluated".into());
+        };
+        row.values.insert(
+            column.name().to_string(),
+            PhysicalTypedValue::Scalar(super::generated::scalar_literal(value)),
+        );
+    }
+    Ok(row)
+}
+
 /// Apply scalar-only UPDATE or DELETE against a complete typed target population.
 ///
 /// The SQL evaluator cannot interpret Arrow-valued expressions. Nested columns
@@ -377,7 +421,8 @@ fn mutate_typed_rows(
 /// literal. Nested Arrow values are copied without converting them to SQL
 /// scalar literals. Portable WHERE predicates over complete scalar columns
 /// obey SQL three-valued logic; nested predicates, joins, grouping, functions,
-/// generated omissions, transaction effects and opaque writes remain residual.
+/// generated/identity omissions, opaque defaults, transaction effects and
+/// opaque writes remain residual. Exact attested scalar defaults are executed.
 /// Every poststate is checked against all attested target/source constraints, so
 /// duplicate rows and FK cycles are never certified by isolated row guesses.
 pub fn physical_typed_ordered_write_plan(
@@ -490,15 +535,13 @@ pub fn physical_typed_ordered_write_plan(
         } else {
             write.target_columns().to_vec()
         };
-        if columns.len() != schema.columns().len()
-            || columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
-            || schema
-                .columns()
+        if columns.iter().collect::<BTreeSet<_>>().len() != columns.len()
+            || columns
                 .iter()
-                .any(|column| !columns.contains(&column.name().to_string()))
+                .any(|name| !schema.columns().iter().any(|column| column.name() == name))
             || columns.len() != query.output().columns().len()
         {
-            return gap("typed INSERT must explicitly determine all unique target columns");
+            return gap("typed INSERT target columns must be declared, unique and match projection arity");
         }
         let aliases = [source.alias().unwrap_or(source.name()), source.name()];
         let mut inserted = Vec::new();
@@ -543,7 +586,16 @@ pub fn physical_typed_ordered_write_plan(
                 };
                 projected.insert(target_column.clone(), value);
             }
-            inserted.push(PhysicalTypedWriteRow { values: projected });
+            let completed = match complete_typed_insert_row(
+                bundle,
+                target,
+                schema,
+                PhysicalTypedWriteRow { values: projected },
+            ) {
+                Ok(row) => row,
+                Err(reason) => return gap(&reason),
+            };
+            inserted.push(completed);
         }
         let Some(state) = states.get_mut(target) else {
             return gap("complete initial typed INSERT target population is missing");
