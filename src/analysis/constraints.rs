@@ -582,7 +582,7 @@ fn portable_equality_disjunction(
     let (first_column, _, first_quote) = entries.first()?;
     let first_column = first_column.clone();
     let first_quote = *first_quote;
-    if expected_column.is_some_and(|column| column != first_column)
+    if expected_column.is_some_and(|column| column != first_column.as_str())
         || entries.iter().any(|(column, _, quote)| {
             column != &first_column || *quote != first_quote
         })
