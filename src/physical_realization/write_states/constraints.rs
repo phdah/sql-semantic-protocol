@@ -28,7 +28,7 @@ pub(super) fn validate_state(
                 .values
                 .get(column.name())
                 .ok_or_else(|| impossible("physical row omits a declared column"))?;
-            validate_value(value, column.data_type())?;
+            validate_column_value(value, column)?;
         }
     }
     Ok(())
