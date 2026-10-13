@@ -136,12 +136,13 @@ pub use outcome_goals::{
 pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
-    physical_joint_distribution_plan, physical_joint_row_count_plan, physical_joint_source_plan,
-    physical_closed_world_schema_plan, physical_ordered_write_state_plan, physical_rejected_row_count_plan, physical_row_count_plan,
-    physical_source_plan, physical_unconditional_delete_plan, PhysicalJointSourcePlan,
-    PhysicalPlanNode, PhysicalPlanRef, PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan,
-    PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap,
-    PhysicalWriteStatePlan, PhysicalWriteTransition,
+    physical_closed_world_schema_plan, physical_joint_distribution_plan,
+    physical_joint_row_count_plan, physical_joint_source_plan, physical_ordered_write_state_plan,
+    physical_rejected_row_count_plan, physical_row_count_plan, physical_source_plan,
+    physical_unconditional_delete_plan, PhysicalJointSourcePlan, PhysicalPlanNode, PhysicalPlanRef,
+    PhysicalProofGap, PhysicalRowTarget, PhysicalSourcePlan, PhysicalWriteColumnDomain,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan,
+    PhysicalWriteTransition,
 };
 pub use protocol::{
     AggregateArgument, AggregateFunctionExpression, Aggregation, BetweenPredicate,
