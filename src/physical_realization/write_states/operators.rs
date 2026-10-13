@@ -242,31 +242,11 @@ fn apply_target_update(
     }
     let mut next = apply_assignments(before, assignments, context, aliases)?;
     for source in sources {
-        if source.kind() != crate::column_sources::ColumnValueKind::Generated {
-            continue;
+        if source.kind() == crate::column_sources::ColumnValueKind::Generated {
+            next.values.remove(source.column());
         }
-        if !super::generated::authoritative(source) {
-            return Err(residual_gap(
-                PhysicalWriteStateGap::UnprovedConstraint,
-                "generated UPDATE expression lacks authoritative execution evidence",
-            ));
-        }
-        let expression = source
-            .expression()
-            .ok_or_else(|| residual("generated UPDATE expression has no executable semantics"))?;
-        if expression.referenced_columns().iter().any(|name| {
-            sources.iter().any(|other| {
-                other.kind() != crate::column_sources::ColumnValueKind::Default
-                    && other.column() == *name
-            })
-        }) {
-            return Err(residual(
-                "generated UPDATE depends on another generated or identity column",
-            ));
-        }
-        let computed = super::generated::evaluate(expression, &next.values)?;
-        next.values.insert(source.column().to_string(), computed);
     }
+    super::generated::complete_generated(sources, &mut next.values)?;
     Ok(next)
 }
 
@@ -432,7 +412,9 @@ pub(super) fn merge_rows(
                 }
                 match clause.action() {
                     MergeAction::Update { assignments } => {
-                        result = Some(apply_assignments(
+                        result = Some(apply_target_update(
+                            bundle,
+                            target,
                             target_row,
                             assignments,
                             &context,
