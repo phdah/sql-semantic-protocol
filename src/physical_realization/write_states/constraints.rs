@@ -295,7 +295,9 @@ pub(super) fn validate_all_constraints_with_identity(
                         }
                         let mut found = false;
                         for other in &referenced.rows {
-                            if equal_key_rows(
+                            // An ambiguous candidate does not invalidate a later
+                            // definitely matching tuple in the same complete bag.
+                            match equal_key_rows(
                                 bundle,
                                 set.relation(),
                                 row,
@@ -303,9 +305,13 @@ pub(super) fn validate_all_constraints_with_identity(
                                 other,
                                 key.columns(),
                                 key.referenced_columns(),
-                            )? {
-                                found = true;
-                                break;
+                            ) {
+                                Ok(true) => {
+                                    found = true;
+                                    break;
+                                }
+                                Ok(false) | Err(StateFailure::Residual(_, _)) => {}
+                                Err(error) => return Err(error),
                             }
                         }
                         if !found {
@@ -392,17 +398,25 @@ fn unique_key_collision(
     binary_text_columns: &[bool],
 ) -> StateResult<Option<bool>> {
     let mut unknown_null = false;
+    let mut unknown_equality = false;
     for (index, (a, b)) in left.iter().zip(right).enumerate() {
         match (a, b) {
             (LiteralValue::Null, LiteralValue::Null) => unknown_null = true,
             (LiteralValue::Null, _) | (_, LiteralValue::Null) => return Ok(Some(false)),
-            _ if !key_scalar_equality(a, b, binary_text_columns.get(index) == Some(&true))? => {
-                return Ok(Some(false));
-            }
-            _ => {}
+            _ => match key_scalar_equality(a, b, binary_text_columns.get(index) == Some(&true)) {
+                Ok(false) => return Ok(Some(false)),
+                Ok(true) => {}
+                Err(StateFailure::Residual(_, _)) => unknown_equality = true,
+                Err(error) => return Err(error),
+            },
         }
     }
-    if unknown_null {
+    if unknown_equality {
+        Err(residual_gap(
+            PhysicalWriteStateGap::UnprovedConstraint,
+            "composite key equality contains unproved comparisons",
+        ))
+    } else if unknown_null {
         Ok(None)
     } else {
         Ok(Some(true))
@@ -418,6 +432,7 @@ fn equal_key_rows(
     left_columns: &[String],
     right_columns: &[String],
 ) -> StateResult<bool> {
+    let mut unknown_equality = false;
     for (left_name, right_name) in left_columns.iter().zip(right_columns) {
         let a = left
             .values
@@ -429,11 +444,21 @@ fn equal_key_rows(
             .ok_or_else(|| residual("referenced key column missing"))?;
         let binary_text = attested_binary_text_law(bundle, left_relation, left_name)
             && attested_binary_text_law(bundle, right_relation, right_name);
-        if !key_scalar_equality(a, b, binary_text)? {
-            return Ok(false);
+        match key_scalar_equality(a, b, binary_text) {
+            Ok(false) => return Ok(false),
+            Ok(true) => {}
+            Err(StateFailure::Residual(_, _)) => unknown_equality = true,
+            Err(error) => return Err(error),
         }
     }
-    Ok(true)
+    if unknown_equality {
+        Err(residual_gap(
+            PhysicalWriteStateGap::UnprovedConstraint,
+            "foreign-key tuple equality contains unproved comparisons",
+        ))
+    } else {
+        Ok(true)
+    }
 }
 
 /// Binary comparison is a canonical column fact, never an inference from the
