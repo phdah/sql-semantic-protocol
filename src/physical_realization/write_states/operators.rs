@@ -117,7 +117,9 @@ fn complete_insert_row(
             continue;
         }
         if source.kind() != crate::column_sources::ColumnValueKind::Default {
-            return Err(residual("identity INSERT requires an attested sequence state"));
+            return Err(residual(
+                "identity INSERT requires an attested sequence state",
+            ));
         }
         if !super::generated::authoritative(source) {
             return Err(residual_gap(
@@ -128,7 +130,10 @@ fn complete_insert_row(
         let literal = source
             .value()
             .ok_or_else(|| residual("opaque INSERT default expression cannot be evaluated"))?;
-        values.insert(column.name().to_string(), super::generated::scalar_literal(literal));
+        values.insert(
+            column.name().to_string(),
+            super::generated::scalar_literal(literal),
+        );
     }
     super::generated::complete_generated(sources, &mut values)?;
     if values.len() != schema.columns().len() {
