@@ -6,9 +6,11 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_typed_append_schema_plan,
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
-    physical_typed_ordered_write_plan, CheckCompareOperator, ComputedBooleanCheckConstraint,
+    physical_typed_ordered_write_plan, CheckCompareOperator, ColumnValueKind, ColumnValueSource,
+    ComputedBooleanCheckConstraint,
     ComputedBooleanCheckPredicate, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence,
-    ConstraintProvenance, ConstraintSourceKind, DataType, DataTypeField, GeneratedValueExpression,
+    ConstraintProvenance, ConstraintSourceKind, ConstraintValue, DataType, DataTypeField,
+    GeneratedValueExpression,
     LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
     PhysicalTypedWriteState, RelationCatalog, RelationConstraint, RelationConstraintSet,
     RelationSchema, SchemaColumn, SqlInput,
@@ -629,6 +631,70 @@ fn ordered_typed_insert_rejects_existing_key_collisions_and_unknown_sql() {
             "{sql}"
         );
     }
+}
+
+#[test]
+fn typed_insert_uses_only_authoritative_omitted_defaults() {
+    let sql = "INSERT INTO target (payload) SELECT payload FROM source WHERE id=7";
+    let snapshots = [
+        typed_state("target", vec![]),
+        typed_state("source", vec![typed_row(7, payload(2, 3))]),
+    ];
+    let mut bundle = typed_insert_bundle(sql);
+    let default = ColumnValueSource::new(
+        "id",
+        ColumnValueKind::Default,
+        Some(ConstraintValue::Integer(7)),
+        evidence(),
+    )
+    .unwrap();
+    bundle.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_column_value_sources(vec![default])]);
+    let plan = physical_typed_ordered_insert_plan(&bundle, &snapshots);
+    let PhysicalTypedPopulationPlan::Feasible { final_states } = plan else {
+        panic!("authoritative typed default must preserve nested payload: {plan:?}");
+    };
+    let target = final_states
+        .iter()
+        .find(|state| state.relation() == "target")
+        .unwrap();
+    assert_eq!(target.rows(), &[typed_row(7, payload(2, 3))]);
+
+    let without_default = typed_insert_bundle(sql);
+    assert!(matches!(
+        physical_typed_ordered_insert_plan(&without_default, &snapshots),
+        PhysicalTypedPopulationPlan::Residual { .. }
+    ));
+    let mut unknown = typed_insert_bundle(sql);
+    let uncertain_evidence = vec![ConstraintEvidence::new(
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "declaration").unwrap(),
+        ConstraintEnforcement::Unknown,
+    )];
+    unknown.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_column_value_sources(vec![
+            ColumnValueSource::new(
+                "id",
+                ColumnValueKind::Default,
+                Some(ConstraintValue::Integer(7)),
+                uncertain_evidence,
+            )
+            .unwrap(),
+        ])]);
+    assert!(matches!(
+        physical_typed_ordered_insert_plan(&unknown, &snapshots),
+        PhysicalTypedPopulationPlan::Residual { .. }
+    ));
+
+    let conflicting = [
+        typed_state("target", vec![typed_row(7, payload(4, 5))]),
+        typed_state("source", vec![typed_row(7, payload(2, 3))]),
+    ];
+    assert!(matches!(
+        physical_typed_ordered_insert_plan(&bundle, &conflicting),
+        PhysicalTypedPopulationPlan::Impossible { .. }
+    ));
 }
 
 #[test]
