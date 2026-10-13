@@ -835,8 +835,11 @@ fn is_witness_candidate(predicate: &Predicate) -> bool {
         | Predicate::Not(_)
         | Predicate::Between(_)
         | Predicate::In(_)
-        | Predicate::LikePrefix(_)
-        | Predicate::IsNull(_) => true,
+        | Predicate::LikePrefix(_) => true,
+        // Plain column NULL tests already participate in the canonical
+        // scalar domain proof. Creating a second local witness can turn an
+        // exact transitive copy into a spurious composition-domain residual.
+        Predicate::IsNull(test) => !matches!(test.expression(), Expression::Column(_)),
         Predicate::Comparison(comparison) => {
             if matches!(
                 comparison.operator(),
