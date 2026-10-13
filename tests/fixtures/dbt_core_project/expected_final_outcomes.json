@@ -78,21 +78,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -173,11 +201,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         }
@@ -293,21 +321,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -511,11 +567,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         },
@@ -1433,6 +1489,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -1534,8 +1591,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -1574,6 +1630,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -1727,8 +1784,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -2145,21 +2201,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -2372,11 +2456,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         },
@@ -3761,6 +3845,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -3862,8 +3947,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -3902,6 +3986,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -4055,8 +4140,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -4409,6 +4493,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -4442,8 +4527,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [],
@@ -4452,6 +4536,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -4485,8 +4570,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"returns\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "except_distinct",
@@ -4798,21 +4882,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -4893,11 +5005,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         }
@@ -4980,21 +5092,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5075,11 +5215,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         }
@@ -5179,21 +5319,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5274,11 +5442,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         }
@@ -5480,21 +5648,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5707,11 +5903,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         },
@@ -7092,6 +7288,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -7193,8 +7390,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -7233,6 +7429,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -7386,8 +7583,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -7740,6 +7936,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -7773,8 +7970,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [],
@@ -7783,6 +7979,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -7816,8 +8013,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "intersect_distinct",
@@ -8129,21 +8325,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8224,11 +8448,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         },
@@ -8323,21 +8547,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8418,11 +8670,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         }
@@ -8588,21 +8840,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8702,11 +8982,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         },
@@ -8767,6 +9047,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -8800,8 +9081,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [],
@@ -8810,6 +9090,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -8843,8 +9124,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -8918,21 +9198,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -9136,11 +9444,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         },
@@ -10091,6 +10399,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -10192,8 +10501,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -10232,6 +10540,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -10385,8 +10694,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -10803,21 +11111,49 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    },
+                    {
+                      "kind": "residual",
+                      "reason": "comparison literal is not a supported signed integer"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "a boolean branch lacks proven source datatype or supported semantics",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -11165,11 +11501,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "a boolean branch lacks proven source datatype or supported semantics",
             "status": "residual"
           }
         },
@@ -12741,6 +13077,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -12842,8 +13179,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -12882,6 +13218,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -13035,8 +13372,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
