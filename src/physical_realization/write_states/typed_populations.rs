@@ -62,14 +62,25 @@ impl PhysicalTypedWriteState {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PhysicalTypedPopulationPlan {
     /// All supplied physical populations satisfy their provable schema laws.
-    Feasible { final_states: Vec<PhysicalTypedWriteState> },
+    Feasible {
+        final_states: Vec<PhysicalTypedWriteState>,
+    },
     /// A supplied physical row contradicts an attested necessary law.
-    Impossible { relation: Option<String>, reason: String },
+    Impossible {
+        relation: Option<String>,
+        reason: String,
+    },
     /// An unproved cast, comparison or schema obligation prevents certification.
-    Residual { relation: Option<String>, reason: String },
+    Residual {
+        relation: Option<String>,
+        reason: String,
+    },
 }
 
-fn classify(relation: Option<String>, proof: PhysicalTypeProof) -> Option<PhysicalTypedPopulationPlan> {
+fn classify(
+    relation: Option<String>,
+    proof: PhysicalTypeProof,
+) -> Option<PhysicalTypedPopulationPlan> {
     match proof {
         PhysicalTypeProof::Feasible => None,
         PhysicalTypeProof::Impossible { reason } => {
@@ -98,13 +109,20 @@ pub fn physical_typed_closed_world_schema_plan(
     let mut scalar_snapshots = Vec::new();
     for state in snapshots {
         let relation = Some(state.relation.clone());
-        if typed.insert(state.relation.clone(), state.clone()).is_some() {
+        if typed
+            .insert(state.relation.clone(), state.clone())
+            .is_some()
+        {
             return PhysicalTypedPopulationPlan::Impossible {
                 relation,
                 reason: "duplicate complete typed physical source identity".to_string(),
             };
         }
-        let Some(schema) = bundle.source_schemas().iter().find(|s| s.relation() == state.relation) else {
+        let Some(schema) = bundle
+            .source_schemas()
+            .iter()
+            .find(|s| s.relation() == state.relation)
+        else {
             return PhysicalTypedPopulationPlan::Residual {
                 relation,
                 reason: "missing canonical typed source schema".to_string(),
@@ -130,8 +148,12 @@ pub fn physical_typed_closed_world_schema_plan(
                     PhysicalTypedValue::Scalar(literal) => {
                         match super::type_validation::validate_column_value(literal, column) {
                             Ok(()) => PhysicalTypeProof::Feasible,
-                            Err(StateFailure::Impossible(reason)) => PhysicalTypeProof::Impossible { reason },
-                            Err(StateFailure::Residual(_, reason)) => PhysicalTypeProof::Residual { reason },
+                            Err(StateFailure::Impossible(reason)) => {
+                                PhysicalTypeProof::Impossible { reason }
+                            }
+                            Err(StateFailure::Residual(_, reason)) => {
+                                PhysicalTypeProof::Residual { reason }
+                            }
                         }
                     }
                     _ => physical_typed_value_plan(value, column.data_type()),
@@ -156,7 +178,10 @@ pub fn physical_typed_closed_world_schema_plan(
                         if constrained {
                             return PhysicalTypedPopulationPlan::Residual {
                                 relation,
-                                reason: format!("nested column {} has no canonical key or CHECK comparison law", column.name()),
+                                reason: format!(
+                                    "nested column {} has no canonical key or CHECK comparison law",
+                                    column.name()
+                                ),
                             };
                         }
                         LiteralValue::Null
@@ -164,7 +189,9 @@ pub fn physical_typed_closed_world_schema_plan(
                 };
                 scalar_values.insert(column.name().to_string(), scalar);
             }
-            projected.push(PhysicalWriteRow { values: scalar_values });
+            projected.push(PhysicalWriteRow {
+                values: scalar_values,
+            });
         }
         scalar_snapshots.push(PhysicalWriteState {
             relation: state.relation.clone(),
@@ -177,10 +204,14 @@ pub fn physical_typed_closed_world_schema_plan(
             final_states: typed.into_values().collect(),
         },
         PhysicalWriteStatePlan::Impossible { reason, .. } => {
-            PhysicalTypedPopulationPlan::Impossible { relation: None, reason }
+            PhysicalTypedPopulationPlan::Impossible {
+                relation: None,
+                reason,
+            }
         }
-        PhysicalWriteStatePlan::Residual { reason, .. } => {
-            PhysicalTypedPopulationPlan::Residual { relation: None, reason }
-        }
+        PhysicalWriteStatePlan::Residual { reason, .. } => PhysicalTypedPopulationPlan::Residual {
+            relation: None,
+            reason,
+        },
     }
 }
