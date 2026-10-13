@@ -2382,3 +2382,154 @@ fn binary_text_check_equality_and_inequality_use_only_attested_comparison_law() 
         PhysicalWriteStatePlan::Residual { .. }
     ));
 }
+
+#[test]
+fn ddl_abs_and_coalesce_generated_columns_have_exact_null_and_overflow_proofs() {
+    let ddl = bundle(
+        &["CREATE TABLE target (
+            id INTEGER,
+            score INTEGER GENERATED ALWAYS AS (ABS(COALESCE(id, 7)))
+        )"],
+        "duckdb",
+    );
+    let schema_facts = ddl
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    let [generated] = schema_facts.column_value_sources() else {
+        panic!("expected exactly one computed value source");
+    };
+    assert!(matches!(
+        generated.expression(),
+        Some(GeneratedValueExpression::Abs(_))
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &ddl,
+            &[state("target", &[(Some(-3), Some(3)), (None, Some(7))])],
+        ),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &ddl,
+            &[state("target", &[(Some(-3), Some(2))])],
+        ),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+
+    let mut overflow = bundle(&["SELECT id FROM target"], "duckdb");
+    overflow.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
+        .unwrap()
+        .with_column_value_sources(vec![ColumnValueSource::new(
+            "score",
+            ColumnValueKind::Generated,
+            None,
+            evidence(),
+        )
+        .unwrap()
+        .with_generated_expression(GeneratedValueExpression::Abs(Box::new(
+            GeneratedValueExpression::Literal(ConstraintValue::Number(
+                i128::MIN.to_string(),
+            )),
+        )))
+        .unwrap()])]);
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &overflow,
+            &[state("target", &[(Some(1), Some(0))])],
+        ),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target (
+           id INTEGER,
+           score INTEGER GENERATED ALWAYS AS (ABS(COALESCE(id,7)))
+         );
+         INSERT INTO target(id) VALUES (-3), (NULL);",
+    )
+    .unwrap();
+    let observed: i64 = db
+        .query_row("SELECT SUM(score) FROM target", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(observed, 10);
+}
+
+#[test]
+fn unproved_computed_function_and_coalesce_coercion_are_residual() {
+    let unsupported = bundle(
+        &["CREATE TABLE target (
+            id INTEGER,
+            score INTEGER GENERATED ALWAYS AS (ROUND(id))
+        )"],
+        "duckdb",
+    );
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &unsupported,
+            &[state("target", &[(Some(1), Some(1))])],
+        ),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let unsafe_coercion = bundle(
+        &["CREATE TABLE target (
+            id INTEGER,
+            score INTEGER GENERATED ALWAYS AS (COALESCE(id, '3'))
+        )"],
+        "duckdb",
+    );
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &unsafe_coercion,
+            &[state("target", &[(Some(1), Some(1))])],
+        ),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+}
+
+#[test]
+fn ddl_portable_abs_computed_check_proves_exact_outcomes() {
+    let ddl = bundle(
+        &["CREATE TABLE target (id INTEGER, score INTEGER, CHECK (ABS(id) <= score))"],
+        "duckdb",
+    );
+    let facts = ddl
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    assert_eq!(facts.computed_checks().len(), 1);
+    // SQL DDL CHECK enforcement is dialect-specific when no explicit
+    // enforcement assertion is present, so attach authoritative evidence.
+    let check = ComputedCheckConstraint::new(
+        GeneratedValueExpression::Abs(Box::new(
+            GeneratedValueExpression::Column("id".into()),
+        )),
+        CheckCompareOperator::Lte,
+        GeneratedValueExpression::Column("score".into()),
+        evidence(),
+    )
+    .unwrap();
+    let mut proved = bundle(&["SELECT id FROM target"], "duckdb");
+    proved.enrich_relation_constraints(&[
+        RelationConstraintSet::new("target", vec![])
+            .unwrap()
+            .with_computed_checks(vec![check]),
+    ]);
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &proved,
+            &[state("target", &[(Some(-3), Some(4)), (None, Some(0))])],
+        ),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &proved,
+            &[state("target", &[(Some(-3), Some(2))])],
+        ),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+}
