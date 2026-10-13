@@ -11,7 +11,7 @@ use sql_semantic_protocol::{
     ConstraintProvenance, ConstraintSourceKind, ConstraintValue, DataType, DataTypeField,
     GeneratedValueExpression, LiteralValue, PhysicalTypeProof, PhysicalTypedValue,
     PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
-    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, WriteKind,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, TextComparisonLaw, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
@@ -1948,4 +1948,64 @@ fn accepted_decimal_constraints_use_exact_numeric_equality_in_closed_world_proof
         )
         .unwrap();
     assert!(equal);
+}
+
+#[test]
+fn attested_binary_text_law_proves_accepted_values_without_guessing_collation() {
+    let schema = RelationSchema::new(
+        "target",
+        vec![
+            SchemaColumn::from_sql_type("id", "VARCHAR(20)", "duckdb")
+                .unwrap()
+                .with_text_comparison_law(TextComparisonLaw::Binary, evidence())
+                .unwrap(),
+            SchemaColumn::from_sql_type("score", "INTEGER", "duckdb").unwrap(),
+        ],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let sql = SqlInput::inline("SELECT id FROM target");
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let configured = ConfiguredSqlInput::new("accepted-text", &sql, "duckdb", dialect.as_ref());
+    let mut b = analyze_configured_inputs_with_catalog(&[configured], &catalog).unwrap();
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::accepted_values(
+            "id",
+            vec![ConstraintValue::String("OK".into())],
+            true,
+            evidence(),
+        )
+        .unwrap()],
+    )
+    .unwrap()]);
+    let snapshot = |id: &str| {
+        PhysicalWriteState::new(
+            "target",
+            vec![PhysicalWriteRow::new(
+                [
+                    ("id".to_string(), LiteralValue::Text(id.into())),
+                    ("score".to_string(), LiteralValue::Number("1".into())),
+                ]
+                .into_iter()
+                .collect(),
+            )
+            .unwrap()],
+        )
+        .unwrap()
+    };
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[snapshot("OK")]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[snapshot("ok")]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+
+    let db = Connection::open_in_memory().unwrap();
+    let distinct: bool = db
+        .query_row("SELECT 'OK' != 'ok' COLLATE BINARY", [], |row| row.get(0))
+        .unwrap();
+    assert!(distinct);
 }
