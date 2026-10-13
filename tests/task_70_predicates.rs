@@ -5,9 +5,9 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, BooleanRowConstraint,
-    BooleanTruthCase, BooleanWitness, BooleanWitnessDirection, ComposedSemantics,
-    ConfiguredSqlInput, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    parse_dbt_catalog, parse_dbt_manifest, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
+    BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput, ProtocolStatement,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -191,11 +191,11 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_truth_obligations() {
         .expect("dbt fixture manifest");
     manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
     let manifest = parse_dbt_manifest(&manifest.to_string()).expect("dbt manifest");
-    let catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json"))
-        .expect("dbt catalog");
+    let catalog =
+        parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).expect("dbt catalog");
     let dialect = PostgreSqlDialect {};
-    let dbt = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect)
-        .expect("dbt analysis");
+    let dbt =
+        analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect).expect("dbt analysis");
 
     let schema = RelationSchema::new(
         "warehouse.raw.orders",
@@ -208,7 +208,12 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_truth_obligations() {
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let input = SqlInput::inline(SQL);
     let direct = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("direct", &input, "postgresql", &dialect)],
+        &[ConfiguredSqlInput::new(
+            "direct",
+            &input,
+            "postgresql",
+            &dialect,
+        )],
         &catalog,
     )
     .expect("direct analysis");
@@ -217,12 +222,22 @@ fn dbt_compiled_sql_and_direct_sql_share_canonical_truth_obligations() {
         let layer = bundle
             .layers()
             .iter()
-            .find(|layer| layer.consumes().iter().any(|source| source == "warehouse.raw.orders"))
+            .find(|layer| {
+                layer
+                    .consumes()
+                    .iter()
+                    .any(|source| source == "warehouse.raw.orders")
+            })
             .expect("source-consuming layer");
         let ComposedSemantics::Resolved(ref semantics) = layer.composed_semantics() else {
             panic!("expected composed semantics");
         };
-        semantics.boolean_witnesses().first().expect("boolean witness").witness().clone()
+        semantics
+            .boolean_witnesses()
+            .first()
+            .expect("boolean witness")
+            .witness()
+            .clone()
     };
     let from_dbt = witness(&dbt);
     let from_sql = witness(&direct);
