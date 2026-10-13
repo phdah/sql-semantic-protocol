@@ -238,6 +238,62 @@ impl AcceptedValuesConstraint {
     }
 }
 
+/// Portable comparison operations for a single-column CHECK predicate.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum CheckCompareOperator {
+    Eq,
+    NotEq,
+    Gt,
+    Gte,
+    Lt,
+    Lte,
+}
+
+impl CheckCompareOperator {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Eq => "eq",
+            Self::NotEq => "not_eq",
+            Self::Gt => "gt",
+            Self::Gte => "gte",
+            Self::Lt => "lt",
+            Self::Lte => "lte",
+        }
+    }
+}
+
+/// Canonical scalar CHECK comparison retaining enforcement and provenance.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct CheckComparisonConstraint {
+    column: String,
+    operator: CheckCompareOperator,
+    value: ConstraintValue,
+    evidence: Vec<ConstraintEvidence>,
+}
+
+impl CheckComparisonConstraint {
+    fn new(
+        column: String,
+        operator: CheckCompareOperator,
+        value: ConstraintValue,
+        evidence: Vec<ConstraintEvidence>,
+    ) -> Result<Self, ConstraintMetadataError> {
+        validate_column(&column)?;
+        validate_evidence(&evidence)?;
+        Ok(Self {
+            column,
+            operator,
+            value,
+            evidence: normalized_evidence(evidence),
+        })
+    }
+
+    pub fn column(&self) -> &str { &self.column }
+    pub fn operator(&self) -> CheckCompareOperator { self.operator }
+    pub fn value(&self) -> &ConstraintValue { &self.value }
+    pub fn evidence(&self) -> &[ConstraintEvidence] { &self.evidence }
+}
+
 /// Ordered columns forming a primary or unique key.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct KeyConstraint {
@@ -348,6 +404,8 @@ pub enum RelationConstraint {
     /// Declared finite accepted-values column constraint. SQL NULL is admitted unless a separate
     /// non-null constraint applies.
     AcceptedValues(AcceptedValuesConstraint),
+    /// Declared scalar CHECK, with NULL admitted under SQL three-valued logic.
+    CheckComparison(CheckComparisonConstraint),
 }
 
 impl RelationConstraint {
@@ -408,6 +466,18 @@ impl RelationConstraint {
         )?))
     }
 
+    /// Construct a simple scalar CHECK with typed comparator and evidence.
+    pub fn check_comparison(
+        column: impl Into<String>,
+        operator: CheckCompareOperator,
+        value: ConstraintValue,
+        evidence: Vec<ConstraintEvidence>,
+    ) -> Result<Self, ConstraintMetadataError> {
+        Ok(Self::CheckComparison(CheckComparisonConstraint::new(
+            column.into(), operator, value, evidence,
+        )?))
+    }
+
     /// Return primary/unique key columns, local foreign-key columns, or the constrained column.
     pub fn columns(&self) -> &[String] {
         match self {
@@ -415,6 +485,7 @@ impl RelationConstraint {
             Self::ForeignKey(key) => key.columns(),
             Self::NotNull(constraint) => std::slice::from_ref(&constraint.column),
             Self::AcceptedValues(constraint) => std::slice::from_ref(&constraint.column),
+            Self::CheckComparison(constraint) => std::slice::from_ref(&constraint.column),
         }
     }
 
@@ -425,6 +496,7 @@ impl RelationConstraint {
             Self::ForeignKey(key) => key.evidence(),
             Self::NotNull(constraint) => constraint.evidence(),
             Self::AcceptedValues(constraint) => constraint.evidence(),
+            Self::CheckComparison(constraint) => constraint.evidence(),
         }
     }
 
@@ -436,7 +508,7 @@ impl RelationConstraint {
     pub const fn admits_null(&self) -> bool {
         match self {
             Self::PrimaryKey(_) | Self::NotNull(_) => false,
-            Self::UniqueKey(_) | Self::ForeignKey(_) | Self::AcceptedValues(_) => true,
+            Self::UniqueKey(_) | Self::ForeignKey(_) | Self::AcceptedValues(_) | Self::CheckComparison(_) => true,
         }
     }
 
@@ -454,6 +526,11 @@ impl RelationConstraint {
                 left.column == right.column
                     && left.values == right.values
                     && left.quote == right.quote
+            }
+            (Self::CheckComparison(left), Self::CheckComparison(right)) => {
+                left.column == right.column
+                    && left.operator == right.operator
+                    && left.value == right.value
             }
             _ => false,
         }
@@ -482,6 +559,11 @@ impl RelationConstraint {
                 constraint.evidence.sort();
                 constraint.evidence.dedup();
             }
+            Self::CheckComparison(constraint) => {
+                constraint.evidence.extend(incoming);
+                constraint.evidence.sort();
+                constraint.evidence.dedup();
+            }
         }
     }
 
@@ -501,6 +583,7 @@ impl RelationConstraint {
             }),
             Self::NotNull(constraint) => Self::NotNull(constraint.clone()),
             Self::AcceptedValues(constraint) => Self::AcceptedValues(constraint.clone()),
+            Self::CheckComparison(constraint) => Self::CheckComparison(constraint.clone()),
         }
     }
 }
@@ -795,7 +878,8 @@ impl RelationConstraintSet {
                 RelationConstraint::PrimaryKey(_)
                 | RelationConstraint::UniqueKey(_)
                 | RelationConstraint::NotNull(_)
-                | RelationConstraint::AcceptedValues(_) => constraint.clone(),
+                | RelationConstraint::AcceptedValues(_)
+                | RelationConstraint::CheckComparison(_) => constraint.clone(),
             };
             constraints.push(mapped);
         }
