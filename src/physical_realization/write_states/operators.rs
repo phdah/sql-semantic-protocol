@@ -205,7 +205,11 @@ fn apply_target_update(
         .map(|set| set.column_value_sources())
         .unwrap_or(&[]);
     for assignment in assignments {
-        let column = assignment.target().rsplit('.').next().unwrap_or(assignment.target());
+        let column = assignment
+            .target()
+            .rsplit('.')
+            .next()
+            .unwrap_or(assignment.target());
         if sources.iter().any(|source| {
             source.column() == column
                 && source.kind() != crate::column_sources::ColumnValueKind::Default
@@ -227,9 +231,9 @@ fn apply_target_update(
                 "generated UPDATE expression lacks authoritative execution evidence",
             ));
         }
-        let expression = source.expression().ok_or_else(|| {
-            residual("generated UPDATE expression has no executable semantics")
-        })?;
+        let expression = source
+            .expression()
+            .ok_or_else(|| residual("generated UPDATE expression has no executable semantics"))?;
         if expression.referenced_columns().iter().any(|name| {
             sources.iter().any(|other| {
                 other.kind() != crate::column_sources::ColumnValueKind::Default
@@ -274,7 +278,14 @@ pub(super) fn mutate_rows(
             .checked_add(1)
             .ok_or_else(|| residual("affected count overflow"))?;
         if !delete {
-            kept.push(apply_target_update(bundle, target, row, write.assignments(), &context, &[])?);
+            kept.push(apply_target_update(
+                bundle,
+                target,
+                row,
+                write.assignments(),
+                &context,
+                &[],
+            )?);
         }
     }
     let counts = if delete {
