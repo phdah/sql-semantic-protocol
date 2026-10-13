@@ -176,7 +176,7 @@ pub(super) fn repeatable_row_truth(
         .any(|schema| schema.relation() == source)
         || bundle.relation_constraints().iter().any(|set| {
             set.relation() == source
-                && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+                && set.blocks_unconstrained_physical_plans()
         })
     {
         return None;
@@ -272,7 +272,7 @@ pub(super) fn scalar_physical_row_truth(
         .iter()
         .find(|schema| schema.relation() == source)?;
     if bundle.relation_constraints().iter().any(|set| {
-        set.relation() == source && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+        set.relation() == source && set.blocks_unconstrained_physical_plans()
     }) {
         return None;
     }
@@ -322,7 +322,7 @@ pub(super) fn scalar_physical_row_truth(
         .find(|candidate| candidate.relation() == filter_source)?;
     if bundle.relation_constraints().iter().any(|set| {
         set.relation() == filter_source
-            && (!set.constraints().is_empty() || !set.diagnostics().is_empty())
+            && set.blocks_unconstrained_physical_plans()
     }) {
         return None;
     }
