@@ -43,6 +43,10 @@ pub enum GeneratedValueExpression {
     Subtract(Box<Self>, Box<Self>),
     /// Checked integer multiplication.
     Multiply(Box<Self>, Box<Self>),
+    /// Exact integer absolute value; minimum signed integer overflow is unproved.
+    Abs(Box<Self>),
+    /// First non-NULL portable value; implicit cross-type coercion is unproved.
+    Coalesce(Vec<Self>),
 }
 
 impl GeneratedValueExpression {
@@ -51,6 +55,10 @@ impl GeneratedValueExpression {
         match self {
             Self::Column(name) => !name.trim().is_empty(),
             Self::Literal(_) => true,
+            Self::Abs(operand) => operand.valid(),
+            Self::Coalesce(arguments) => {
+                arguments.len() >= 2 && arguments.iter().all(Self::valid)
+            }
             Self::Add(left, right) | Self::Subtract(left, right) | Self::Multiply(left, right) => {
                 left.valid() && right.valid()
             }
@@ -70,6 +78,12 @@ impl GeneratedValueExpression {
         match self {
             Self::Column(name) => columns.push(name),
             Self::Literal(_) => {}
+            Self::Abs(operand) => operand.collect_references(columns),
+            Self::Coalesce(arguments) => {
+                for argument in arguments {
+                    argument.collect_references(columns);
+                }
+            }
             Self::Add(left, right) | Self::Subtract(left, right) | Self::Multiply(left, right) => {
                 left.collect_references(columns);
                 right.collect_references(columns);
