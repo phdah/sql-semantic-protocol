@@ -1,16 +1,16 @@
 //! Physical comparison laws must survive the public protocol serialization boundary.
 
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json,
-    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-    ConstraintSourceKind, DataType, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    TextComparisonLaw,
+    analyze_configured_inputs_with_catalog, dialect_from_name, to_bundle_json, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+    DataType, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, TextComparisonLaw,
 };
 
 #[test]
 fn binary_text_law_and_its_authoritative_provenance_are_serialized() {
     let evidence = ConstraintEvidence::new(
-        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "warehouse:binary").unwrap(),
+        ConstraintProvenance::new(ConstraintSourceKind::ExternalMetadata, "warehouse:binary")
+            .unwrap(),
         ConstraintEnforcement::Enforced,
     );
     let attested = SchemaColumn::new(
@@ -61,7 +61,10 @@ fn binary_text_law_and_its_authoritative_provenance_are_serialized() {
     // A consumer must not have to infer the comparison law from the collation name.
     assert!(SchemaColumn::new(
         "id",
-        DataType::String { length: None, fixed: false },
+        DataType::String {
+            length: None,
+            fixed: false
+        },
     )
     .unwrap()
     .with_text_comparison_law(TextComparisonLaw::Binary, vec![])
