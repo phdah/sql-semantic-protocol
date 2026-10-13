@@ -25,9 +25,85 @@ pub(super) fn authoritative(source: &ColumnValueSource) -> bool {
     })
 }
 
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CoalesceKind {
+    SignedInteger,
+    UnsignedInteger,
+    Boolean,
+    Text,
+}
+
+/// SQL resolves COALESCE argument types before considering which branches
+/// happen to be NULL in a supplied physical row. Runtime literal categories
+/// alone cannot establish a safe common type.
+fn coalesce_kind(
+    expression: &GeneratedValueExpression,
+    schema: &RelationSchema,
+) -> StateResult<Option<CoalesceKind>> {
+    use GeneratedValueExpression as G;
+    match expression {
+        G::Column(name) => {
+            let column = schema.columns().iter().find(|column| column.name() == name)
+                .ok_or_else(|| residual("COALESCE references a column without declared type"))?;
+            let mut kind = column.data_type();
+            while let DataType::Nullable(inner) = kind {
+                kind = inner;
+            }
+            match kind {
+                DataType::SignedInteger { .. } => Ok(Some(CoalesceKind::SignedInteger)),
+                DataType::UnsignedInteger { .. } => Ok(Some(CoalesceKind::UnsignedInteger)),
+                DataType::Boolean => Ok(Some(CoalesceKind::Boolean)),
+                DataType::String { .. } => Ok(Some(CoalesceKind::Text)),
+                _ => Err(residual("COALESCE column has no attested portable type law")),
+            }
+        }
+        G::Literal(ConstraintValue::Null) => Ok(None),
+        G::Literal(ConstraintValue::Boolean(_)) => Ok(Some(CoalesceKind::Boolean)),
+        G::Literal(ConstraintValue::String(_)) => Ok(Some(CoalesceKind::Text)),
+        G::Literal(ConstraintValue::Integer(_)) => Ok(Some(CoalesceKind::SignedInteger)),
+        G::Literal(ConstraintValue::UnsignedInteger(_)) => Ok(Some(CoalesceKind::UnsignedInteger)),
+        G::Literal(ConstraintValue::Number(number)) if number.parse::<i128>().is_ok() => {
+            Ok(Some(CoalesceKind::SignedInteger))
+        }
+        G::Literal(ConstraintValue::Number(_)) => {
+            Err(residual("COALESCE numeric literal has unproved coercion"))
+        }
+        G::Abs(operand) => {
+            if coalesce_kind(operand, schema)? == Some(CoalesceKind::SignedInteger) {
+                Ok(Some(CoalesceKind::SignedInteger))
+            } else {
+                Err(residual("COALESCE ABS operand lacks an exact integer type"))
+            }
+        }
+        G::Add(left, right) | G::Subtract(left, right) | G::Multiply(left, right) => {
+            if coalesce_kind(left, schema)? == Some(CoalesceKind::SignedInteger)
+                && coalesce_kind(right, schema)? == Some(CoalesceKind::SignedInteger)
+            {
+                Ok(Some(CoalesceKind::SignedInteger))
+            } else {
+                Err(residual("COALESCE arithmetic lacks exact integer type evidence"))
+            }
+        }
+        G::Coalesce(arguments) => {
+            let mut common = None;
+            for argument in arguments {
+                if let Some(kind) = coalesce_kind(argument, schema)? {
+                    if common.is_some_and(|existing| existing != kind) {
+                        return Err(residual("COALESCE arguments have incompatible declared types"));
+                    }
+                    common = Some(kind);
+                }
+            }
+            Ok(common)
+        }
+    }
+}
+
 pub(super) fn evaluate(
     expression: &GeneratedValueExpression,
     values: &BTreeMap<String, LiteralValue>,
+    schema: &RelationSchema,
 ) -> StateResult<LiteralValue> {
     use GeneratedValueExpression as G;
     match expression {
@@ -39,7 +115,7 @@ pub(super) fn evaluate(
         }),
         G::Literal(value) => Ok(scalar_literal(value)),
         G::Abs(operand) => {
-            let value = evaluate(operand, values)?;
+            let value = evaluate(operand, values, schema)?;
             match value {
                 LiteralValue::Null => Ok(LiteralValue::Null),
                 LiteralValue::Number(value) => {
@@ -55,9 +131,12 @@ pub(super) fn evaluate(
             }
         }
         G::Coalesce(arguments) => {
+            // A NULL argument still has a declared type; do not infer SQL
+            // coercion from only those branches that produced non-NULL rows.
+            coalesce_kind(expression, schema)?;
             let values = arguments
                 .iter()
-                .map(|argument| evaluate(argument, values))
+                .map(|argument| evaluate(argument, values, schema))
                 .collect::<StateResult<Vec<_>>>()?;
             // SQL resolves COALESCE argument types across every branch, even
             // branches not selected for this row. Never certify a mixed-type
@@ -86,8 +165,8 @@ pub(super) fn evaluate(
             Ok(chosen)
         }
         G::Add(left, right) | G::Subtract(left, right) | G::Multiply(left, right) => {
-            let left = evaluate(left, values)?;
-            let right = evaluate(right, values)?;
+            let left = evaluate(left, values, schema)?;
+            let right = evaluate(right, values, schema)?;
             if left == LiteralValue::Null || right == LiteralValue::Null {
                 return Ok(LiteralValue::Null);
             }
@@ -190,6 +269,7 @@ pub(super) fn check_declared_sources(
     sources: &[ColumnValueSource],
     row: &PhysicalWriteRow,
     controlled_identity_columns: &BTreeSet<String>,
+    schema: &RelationSchema,
 ) -> StateResult<()> {
     for source in sources {
         if source.kind() == ColumnValueKind::Identity
@@ -209,7 +289,7 @@ pub(super) fn check_declared_sources(
             .values
             .get(source.column())
             .ok_or_else(|| impossible("physical row is missing its declared generated column"))?;
-        let expected = evaluate(expression, &row.values)?;
+        let expected = evaluate(expression, &row.values, schema)?;
         if !matches!(
             (&expected, actual),
             (LiteralValue::Number(_), LiteralValue::Number(_))
@@ -233,6 +313,7 @@ pub(super) fn check_declared_sources(
 pub(super) fn complete_generated(
     sources: &[ColumnValueSource],
     values: &mut BTreeMap<String, LiteralValue>,
+    schema: &RelationSchema,
 ) -> StateResult<()> {
     let ordered = ordered_generated_sources(sources)?;
     // Do not overwrite an explicitly supplied generated column, even when
@@ -249,7 +330,7 @@ pub(super) fn complete_generated(
         let expression = source
             .expression()
             .ok_or_else(|| residual("generated column has no executable expression law"))?;
-        let value = evaluate(expression, values)?;
+        let value = evaluate(expression, values, schema)?;
         values.insert(source.column().to_string(), value);
     }
     Ok(())
