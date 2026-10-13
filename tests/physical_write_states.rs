@@ -1337,3 +1337,91 @@ fn conjunctive_checks_validate_every_portable_clause_or_remain_wholly_residual()
         .execute_batch("INSERT INTO target VALUES (1,99)")
         .is_err());
 }
+
+#[test]
+fn exact_decimal_keys_and_cross_relation_foreign_keys_preserve_numeric_identity() {
+    let schemas = ["target", "source"]
+        .into_iter()
+        .map(|relation| {
+            RelationSchema::new(
+                relation,
+                vec![SchemaColumn::new(
+                    "amount",
+                    DataType::Decimal {
+                        precision: Some(18),
+                        scale: Some(6),
+                    },
+                )
+                .unwrap()],
+            )
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let sql = SqlInput::inline("SELECT amount FROM target");
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let input = ConfiguredSqlInput::new("decimal", &sql, "duckdb", dialect.as_ref());
+    let mut b = analyze_configured_inputs_with_catalog(&[input], &catalog).unwrap();
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![
+                RelationConstraint::primary_key(vec!["amount".into()], evidence()).unwrap(),
+                RelationConstraint::foreign_key(
+                    vec!["amount".into()],
+                    "source",
+                    vec!["amount".into()],
+                    evidence(),
+                )
+                .unwrap(),
+            ],
+        )
+        .unwrap(),
+        RelationConstraintSet::new(
+            "source",
+            vec![RelationConstraint::primary_key(vec!["amount".into()], evidence()).unwrap()],
+        )
+        .unwrap(),
+    ]);
+    let decimal_state = |relation: &str, values: &[&str]| {
+        PhysicalWriteState::new(
+            relation,
+            values
+                .iter()
+                .map(|number| {
+                    PhysicalWriteRow::new(BTreeMap::from([(
+                        "amount".into(),
+                        LiteralValue::Number((*number).into()),
+                    )]))
+                    .unwrap()
+                })
+                .collect(),
+        )
+        .unwrap()
+    };
+    let source = decimal_state("source", &["01.500000"]);
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &b,
+            &[decimal_state("target", &["1.50"]), source.clone()]
+        ),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &b,
+            &[decimal_state("target", &["1.50000", "01.5"]), source]
+        ),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE source(amount DECIMAL(18,6) PRIMARY KEY);\n\
+         CREATE TABLE target(amount DECIMAL(18,6) PRIMARY KEY REFERENCES source(amount));\n\
+         INSERT INTO source VALUES (1.500000);\n\
+         INSERT INTO target VALUES (1.50);",
+    )
+    .unwrap();
+    assert!(db.execute_batch("INSERT INTO target VALUES (1.5000)").is_err());
+}
