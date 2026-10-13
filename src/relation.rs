@@ -60,6 +60,8 @@ pub trait RelationResolver {
 /// Provenance is metadata evidence only. It does not change the canonical datatype semantics.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SchemaSourceKind {
+    /// Column types declared by a parsed SQL CREATE TABLE statement.
+    SqlDdl,
     /// Warehouse-introspected schema from a dbt `catalog.json` artifact.
     DbtCatalog,
     /// Declared schema from dbt manifest metadata, typically originating in project YAML.
@@ -72,6 +74,7 @@ impl SchemaSourceKind {
     /// Return the stable protocol representation of this provenance category.
     pub fn as_str(self) -> &'static str {
         match self {
+            Self::SqlDdl => "sql_ddl",
             Self::DbtCatalog => "dbt_catalog",
             Self::DbtManifest => "dbt_manifest",
             Self::ExternalMetadata => "external_metadata",
@@ -194,7 +197,11 @@ impl SchemaColumn {
                 message: "collation identity cannot be empty".to_string(),
             });
         }
-        if !matches!(self.data_type, DataType::String { .. } | DataType::Nullable(_)) {
+        let mut inner = &self.data_type;
+        while let DataType::Nullable(nested) = inner {
+            inner = nested.as_ref();
+        }
+        if !matches!(inner, DataType::String { .. }) {
             return Err(RelationMetadataError::InvalidSchema {
                 relation: String::new(),
                 message: "collation identity requires a text-like column".to_string(),
