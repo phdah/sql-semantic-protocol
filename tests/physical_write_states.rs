@@ -1826,3 +1826,48 @@ fn empty_closed_world_population_proves_vacuous_constraints_without_enforcement_
         PhysicalWriteStatePlan::Residual { .. }
     ));
 }
+
+#[test]
+fn composite_foreign_keys_require_attested_partial_null_match_semantics() {
+    let mut b = bundle(&["SELECT id FROM target"], "duckdb");
+    b.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![
+                RelationConstraint::foreign_key(
+                    vec!["id".into(), "score".into()],
+                    "source",
+                    vec!["id".into(), "score".into()],
+                    evidence(),
+                )
+                .unwrap(),
+            ],
+        )
+        .unwrap(),
+        RelationConstraintSet::new(
+            "source",
+            vec![
+                RelationConstraint::primary_key(
+                    vec!["id".into(), "score".into()],
+                    evidence(),
+                )
+                .unwrap(),
+            ],
+        )
+        .unwrap(),
+    ]);
+    let referenced = state("source", &[(Some(1), Some(2))]);
+    for (target, expected_residual) in [
+        (state("target", &[(Some(1), Some(2))]), false),
+        (state("target", &[(None, None)]), false),
+        (state("target", &[(Some(1), None)]), true),
+        (state("target", &[(None, Some(2))]), true),
+    ] {
+        let plan = physical_closed_world_schema_plan(&b, &[target, referenced.clone()]);
+        if expected_residual {
+            assert!(matches!(plan, PhysicalWriteStatePlan::Residual { .. }), "{plan:?}");
+        } else {
+            assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{plan:?}");
+        }
+    }
+}
