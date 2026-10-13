@@ -751,6 +751,42 @@ fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
             op: SqlUnaryOperator::Minus | SqlUnaryOperator::Plus,
             ..
         } => constraint_value_from_expression(expr).map(|(value, _)| G::Literal(value)),
+        Expr::Function(function) => {
+            if function.uses_odbc_syntax
+                || !matches!(&function.parameters, FunctionArguments::None)
+                || function.filter.is_some()
+                || function.null_treatment.is_some()
+                || function.over.is_some()
+                || !function.within_group.is_empty()
+            {
+                return None;
+            }
+            let FunctionArguments::List(arguments) = &function.args else {
+                return None;
+            };
+            if !arguments.clauses.is_empty() || arguments.duplicate_treatment.is_some() {
+                return None;
+            }
+            let parsed = arguments
+                .args
+                .iter()
+                .map(|argument| match argument {
+                    FunctionArg::Unnamed(FunctionArgExpr::Expr(expr)) => {
+                        parse_generated_expression(expr)
+                    }
+                    _ => None,
+                })
+                .collect::<Option<Vec<_>>>()?;
+            let name = function.name.to_string();
+            if name.eq_ignore_ascii_case("ABS") {
+                let [value] = <[G; 1]>::try_from(parsed).ok()?;
+                Some(G::Abs(Box::new(value)))
+            } else if name.eq_ignore_ascii_case("COALESCE") && parsed.len() >= 2 {
+                Some(G::Coalesce(parsed))
+            } else {
+                None
+            }
+        }
         Expr::BinaryOp { left, op, right } => {
             let left = Box::new(parse_generated_expression(left)?);
             let right = Box::new(parse_generated_expression(right)?);
