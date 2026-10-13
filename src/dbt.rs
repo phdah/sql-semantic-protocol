@@ -2138,7 +2138,9 @@ fn parse_dbt_constraint_array(
     resources: &BTreeMap<String, DbtResource>,
     output: &mut Vec<RelationConstraint>,
     computed_checks: &mut Vec<crate::computed_checks::ComputedCheckConstraint>,
-    computed_boolean_checks: &mut Vec<crate::computed_boolean_checks::ComputedBooleanCheckConstraint>,
+    computed_boolean_checks: &mut Vec<
+        crate::computed_boolean_checks::ComputedBooleanCheckConstraint,
+    >,
     diagnostics: &mut Vec<ConstraintDiagnostic>,
 ) -> Result<(), DbtManifestError> {
     let Some(value) = value else {
@@ -2208,19 +2210,20 @@ fn parse_dbt_constraint_array(
                         })?;
                         accepted_rules.push(rule);
                     }
-                    crate::analysis::constraints::PortableCheckExpression::Boolean(
-                        predicate,
-                    ) if implied_column.is_none_or(|name| {
-                        predicate.referenced_columns().contains(&name)
-                    }) => {
+                    crate::analysis::constraints::PortableCheckExpression::Boolean(predicate)
+                        if implied_column
+                            .is_none_or(|name| predicate.referenced_columns().contains(&name)) =>
+                    {
                         accepted_boolean.push(
                             crate::computed_boolean_checks::ComputedBooleanCheckConstraint::new(
                                 predicate,
                                 evidence.clone(),
                             )
-                            .map_err(|error| DbtManifestError::RelationMetadata {
-                                resource_id: resource_id.to_string(),
-                                message: format!("{relation}: {error}"),
+                            .map_err(|error| {
+                                DbtManifestError::RelationMetadata {
+                                    resource_id: resource_id.to_string(),
+                                    message: format!("{relation}: {error}"),
+                                }
                             })?,
                         );
                     }
