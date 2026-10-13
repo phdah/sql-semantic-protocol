@@ -138,6 +138,9 @@ pub(super) fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
                         if let Some(zone) = column.timestamp_zone() {
                             column_value["timestamp_zone"] = json!(zone.as_str());
                         }
+                        if let Some(collation) = column.collation() {
+                            column_value["collation"] = json!(collation);
+                        }
                         column_value
                     }).collect::<Vec<_>>()
                 });
