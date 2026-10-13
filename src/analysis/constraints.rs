@@ -238,7 +238,7 @@ pub(super) fn analyze_create_table_constraints(
         // unless a separate DEFAULT or database-generated source takes precedence.
         let has_value_source = column.options.iter().any(|option| {
             matches!(
-                option.option,
+                &option.option,
                 ColumnOption::Default(_)
                     | ColumnOption::Generated { .. }
                     | ColumnOption::Identity(_)
