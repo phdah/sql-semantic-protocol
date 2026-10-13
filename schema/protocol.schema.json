@@ -3873,6 +3873,23 @@
         }
       }
     },
+    "checkComparisonConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "column", "operator", "value", "evidence"],
+      "properties": {
+        "kind": { "const": "check_comparison" },
+        "column": { "$ref": "#/$defs/nonEmptyString" },
+        "operator": { "enum": ["eq", "not_eq", "gt", "gte", "lt", "lte"] },
+        "value": { "$ref": "#/$defs/constraintValue" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/constraintEvidence" }
+        }
+      }
+    },
     "relationConstraint": {
       "oneOf": [
         {
@@ -3889,6 +3906,9 @@
         },
         {
           "$ref": "#/$defs/acceptedValuesConstraint"
+        },
+        {
+          "$ref": "#/$defs/checkComparisonConstraint"
         }
       ]
     },
