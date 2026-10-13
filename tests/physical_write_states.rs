@@ -1234,7 +1234,11 @@ fn exact_text_key_duplicates_are_impossible_but_distinct_collation_is_unproved()
         PhysicalWriteStatePlan::Residual { .. }
     ));
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE target(id VARCHAR PRIMARY KEY); INSERT INTO target VALUES ('same');")
-        .unwrap();
-    assert!(db.execute_batch("INSERT INTO target VALUES ('same')").is_err());
+    db.execute_batch(
+        "CREATE TABLE target(id VARCHAR PRIMARY KEY); INSERT INTO target VALUES ('same');",
+    )
+    .unwrap();
+    assert!(db
+        .execute_batch("INSERT INTO target VALUES ('same')")
+        .is_err());
 }
