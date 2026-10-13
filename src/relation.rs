@@ -246,9 +246,11 @@ impl SchemaColumn {
         law: TextComparisonLaw,
         evidence: Vec<crate::constraints::ConstraintEvidence>,
     ) -> Result<Self, RelationMetadataError> {
-        if evidence.is_empty() || !evidence.iter().any(|source| {
-            source.enforcement() == crate::constraints::ConstraintEnforcement::Enforced
-        }) {
+        if evidence.is_empty()
+            || !evidence.iter().any(|source| {
+                source.enforcement() == crate::constraints::ConstraintEnforcement::Enforced
+            })
+        {
             return Err(RelationMetadataError::InvalidSchema {
                 relation: String::new(),
                 message: "text comparison law requires attested enforcement evidence".to_string(),
