@@ -835,7 +835,7 @@ fn normalize(
         }
         Predicate::Not(negation) => {
             negate_constraint(normalize(
-                negation.expression(), sources, integer_evidence, string_evidence,
+                negation.operand(), sources, integer_evidence, string_evidence,
             ))
         }
         Predicate::LikePrefix(test) => {
