@@ -8,6 +8,7 @@ use std::fmt;
 
 use crate::column_sources::ColumnValueSource;
 use crate::computed_keys::ComputedKeyConstraint;
+use crate::computed_checks::ComputedCheckConstraint;
 
 /// Source category that supplied one piece of constraint evidence.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -636,6 +637,7 @@ pub struct RelationConstraintSet {
     constraints: Vec<RelationConstraint>,
     column_value_sources: Vec<ColumnValueSource>,
     computed_keys: Vec<ComputedKeyConstraint>,
+    computed_checks: Vec<ComputedCheckConstraint>,
     diagnostics: Vec<ConstraintDiagnostic>,
 }
 
@@ -658,6 +660,7 @@ impl RelationConstraintSet {
             constraints: Vec::new(),
             column_value_sources: Vec::new(),
             computed_keys: Vec::new(),
+            computed_checks: Vec::new(),
             diagnostics: Vec::new(),
         };
         for constraint in constraints {
@@ -675,6 +678,28 @@ impl RelationConstraintSet {
     /// Return canonical constraints in deterministic order.
     pub fn constraints(&self) -> &[RelationConstraint] {
         &self.constraints
+    }
+
+    /// Canonical portable comparisons involving multiple expressions or columns.
+    pub fn computed_checks(&self) -> &[ComputedCheckConstraint] {
+        &self.computed_checks
+    }
+
+    /// Enrich row-local CHECK comparisons, retaining independent provenance.
+    pub fn with_computed_checks(mut self, checks: Vec<ComputedCheckConstraint>) -> Self {
+        for check in checks {
+            self.add_computed_check(check);
+        }
+        self.normalize();
+        self
+    }
+
+    fn add_computed_check(&mut self, check: ComputedCheckConstraint) {
+        if let Some(existing) = self.computed_checks.iter_mut().find(|existing| existing.same_semantics(&check)) {
+            existing.merge_evidence(&check);
+        } else {
+            self.computed_checks.push(check);
+        }
     }
 
     /// Canonical computed functional keys declared on this relation.
@@ -755,6 +780,7 @@ impl RelationConstraintSet {
     pub fn blocks_unconstrained_physical_plans(&self) -> bool {
         !self.constraints.is_empty()
             || !self.computed_keys.is_empty()
+            || !self.computed_checks.is_empty()
             || !self.diagnostics.is_empty()
             || self
                 .column_value_sources
@@ -891,6 +917,20 @@ impl RelationConstraintSet {
             }
             result.add_column_value_source(source.clone());
         }
+        for check in &self.computed_checks {
+            if let Some(schema) = local {
+                if check.left().referenced_columns().into_iter()
+                    .chain(check.right().referenced_columns())
+                    .any(|name| !schema.columns().iter().any(|c| c.name() == name)) {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "invalid_computed_check_column",
+                        format!("computed CHECK on '{}' references an undeclared column", self.relation),
+                    ));
+                    continue;
+                }
+            }
+            result.add_computed_check(check.clone());
+        }
         for key in &self.computed_keys {
             if let Some(schema) = local {
                 if key.expressions().iter().flat_map(|expr| expr.referenced_columns()).any(|name| !schema.columns().iter().any(|c| c.name() == name)) {
@@ -924,6 +964,9 @@ impl RelationConstraintSet {
         for key in &other.computed_keys {
             self.add_computed_key(key.clone());
         }
+        for check in &other.computed_checks {
+            self.add_computed_check(check.clone());
+        }
         self.diagnostics.extend(other.diagnostics.iter().cloned());
         self.normalize();
     }
@@ -953,6 +996,7 @@ impl RelationConstraintSet {
             constraints,
             column_value_sources: self.column_value_sources.clone(),
             computed_keys: self.computed_keys.clone(),
+            computed_checks: self.computed_checks.clone(),
             diagnostics: self.diagnostics.clone(),
         })
     }
@@ -1052,6 +1096,7 @@ impl RelationConstraintSet {
         self.constraints.sort();
         self.column_value_sources.sort();
         self.computed_keys.sort();
+        self.computed_checks.sort();
         self.diagnostics.sort();
         self.diagnostics.dedup();
     }
