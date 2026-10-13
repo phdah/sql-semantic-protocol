@@ -2984,6 +2984,7 @@
         "source_kind": {
           "type": "string",
           "enum": [
+            "sql_ddl",
             "dbt_catalog",
             "dbt_manifest",
             "external_metadata"
