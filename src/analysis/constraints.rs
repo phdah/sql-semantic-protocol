@@ -527,6 +527,41 @@ pub(crate) fn portable_check_expression(expression: &str) -> Option<PortableChec
     Some(PortableCheckExpression::Computed(left, op, right))
 }
 
+/// Parse every conjunct of a portable CHECK without discarding unknown terms.
+///
+/// The scalar parser remains the single authoritative AST normalization for
+/// leaves. A nonportable OR, function or implicit cast aborts the entire list.
+pub(crate) fn portable_check_expressions(expression: &str) -> Option<Vec<PortableCheckExpression>> {
+    use sqlparser::dialect::GenericDialect;
+    use sqlparser::parser::Parser;
+
+    fn visit(expr: &Expr, output: &mut Vec<PortableCheckExpression>) -> Option<()> {
+        if let Expr::BinaryOp {
+            left,
+            op: SqlBinaryOperator::And,
+            right,
+        } = unwrap_nested_expression(expr) {
+            visit(left, output)?;
+            visit(right, output)?;
+        } else {
+            output.push(portable_check_expression(&expr.to_string())?);
+        }
+        Some(())
+    }
+
+    let statements =
+        Parser::parse_sql(&GenericDialect {}, &format!("SELECT 1 WHERE {expression}")).ok()?;
+    let [SqlStatement::Query(query)] = statements.as_slice() else {
+        return None;
+    };
+    let sqlparser::ast::SetExpr::Select(select) = query.body.as_ref() else {
+        return None;
+    };
+    let mut output = Vec::new();
+    visit(select.selection.as_ref()?, &mut output)?;
+    Some(output)
+}
+
 /// Normalize only portable, deterministic generated integer arithmetic.
 fn parse_generated_expression(expr: &Expr) -> Option<GeneratedValueExpression> {
     use GeneratedValueExpression as G;
