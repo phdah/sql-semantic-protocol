@@ -1615,16 +1615,21 @@ fn merge_insert_generated_values_execute_only_attested_arithmetic() {
     let mut b = bundle(&[sql], "duckdb");
     let expression = GeneratedValueExpression::Add(
         Box::new(GeneratedValueExpression::Column("id".into())),
-        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(
+            1,
+        ))),
     );
     b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![])
         .unwrap()
-        .with_column_value_sources(vec![
-            ColumnValueSource::new("score", ColumnValueKind::Generated, None, evidence())
-                .unwrap()
-                .with_generated_expression(expression)
-                .unwrap(),
-        ])]);
+        .with_column_value_sources(vec![ColumnValueSource::new(
+            "score",
+            ColumnValueKind::Generated,
+            None,
+            evidence(),
+        )
+        .unwrap()
+        .with_generated_expression(expression)
+        .unwrap()])]);
     let initial = [
         state("target", &[]),
         state("source", &[(Some(2), None), (Some(3), None)]),
