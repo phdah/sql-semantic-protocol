@@ -139,6 +139,59 @@ fn null_membership_obligations_preserve_unknown_in_both_directions() {
 }
 
 #[test]
+fn certified_computed_null_tests_have_exact_two_valued_outcomes() {
+    for predicate in [
+        "COALESCE(a, b) IS NULL",
+        "COALESCE(a, b) IS NOT NULL",
+        "COALESCE(a, NULL, b) IS NOT NULL",
+        "NULLIF(a, b) IS NULL",
+        "NULLIF(a, b) IS NOT NULL",
+        "CAST(a AS BIGINT) IS NULL",
+        "(CAST(a AS BIGINT) + 1) IS NOT NULL",
+    ] {
+        assert_both_directions_exact(predicate);
+    }
+    let impossible = typed_witness("a IS NOT NULL AND COALESCE(a, b) IS NULL");
+    // If b is NULL this can still be false, but never SQL TRUE:
+    assert!(matches!(impossible.qualifying(), BooleanWitnessDirection::Impossible));
+}
+
+#[test]
+fn opaque_or_mixed_type_computed_null_tests_fail_closed() {
+    for predicate in [
+        "COALESCE(a, ABS(b)) IS NULL",
+        "COALESCE(a, 'text') IS NOT NULL",
+        "NULLIF(a, a + 1) IS NULL",
+    ] {
+        let witness = typed_witness(predicate);
+        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }), "{predicate}");
+    }
+}
+
+#[test]
+fn duckdb_oracle_certifies_coalesce_and_nullif_null_tests() {
+    let connection = Connection::open_in_memory().unwrap();
+    connection.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (NULL, NULL), (NULL, 1), (1, NULL), (2, 2), (3, 4), (4, 3);"
+    ).unwrap();
+    for (predicate, expected) in [
+        ("COALESCE(a, b) IS NULL", 1_i64),
+        ("COALESCE(a, b) IS NOT NULL", 5),
+        ("NULLIF(a, b) IS NULL", 3),
+        ("NULLIF(a, b) IS NOT NULL", 3),
+        ("CAST(a AS BIGINT) IS NULL", 2),
+    ] {
+        let actual: i64 = connection.query_row(
+            &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+            [],
+            |row| row.get(0),
+        ).unwrap();
+        assert_eq!(actual, expected, "{predicate}");
+    }
+}
+
+#[test]
 fn dialect_shared_three_valued_negation_has_identical_protocol_shape() {
     let sql = "SELECT a FROM t WHERE NOT (a IS NULL OR b IS NOT NULL)";
     for name in common::DIALECTS {

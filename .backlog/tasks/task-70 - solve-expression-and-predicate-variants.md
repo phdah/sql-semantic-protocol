@@ -54,6 +54,8 @@ The first bounded canonical Boolean-predicate increment lives on
   unsupported computed-expression residual tests are added.
 - Ordinary literal-NULL comparisons preserve UNKNOWN, including finite
   NULL-bearing IN lists, with impossible TRUE classifications when proven.
+- Total signed integer identity casts/offsets and catalog-typed COALESCE/NULLIF
+  NULL tests now have canonical, two-valued row truth witnesses.
 - No consumer-specific semantics, parser AST in protocol types, or wire
   format changes. The existing schema and adapter-translated SQL facts
   remain authoritative.

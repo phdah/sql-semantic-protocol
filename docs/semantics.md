@@ -21,7 +21,7 @@ integer `IN` / `NOT IN` lists, nested `NOT` with `AND` / `OR`, and
 normalizes these into shared integer-comparison and NULL-test obligations,
 including De Morgan's laws and explicit UNKNOWN leaves for ordinary comparisons with literal NULL (including NULL-bearing IN lists), instead of introducing a consumer-specific SQL
 evaluation language. It preserves SQL UNKNOWN for ordinary comparisons to NULL;
-NULL-safe equality is two-valued. Exact conjunctive NULL tests and numeric
+NULL-safe equality is two-valued. Certified total integer CAST/offset NULL tests, COALESCE of signed integer columns and literal NULL, and NULLIF of two signed integer columns preserve precise NULL truth. Exact conjunctive NULL tests and numeric
 comparisons refine projected domains when source identity is proven.
 
 Exactness still requires authoritative source datatype evidence and a complete,

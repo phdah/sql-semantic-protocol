@@ -14,6 +14,7 @@
       "signed_integer_between_and_not_between",
       "finite_nonnull_integer_in_and_not_in",
       "nullable_integer_in_lists_three_valued_unknown",
+      "total_integer_cast_coalesce_nullif_null_tests",
       "nested_three_valued_not_and_or",
       "signed_integer_is_distinct_from",
       "direct_is_distinct_from_null"

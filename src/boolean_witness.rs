@@ -829,7 +829,8 @@ fn is_witness_candidate(predicate: &Predicate) -> bool {
         | Predicate::Not(_)
         | Predicate::Between(_)
         | Predicate::In(_)
-        | Predicate::LikePrefix(_) => true,
+        | Predicate::LikePrefix(_)
+        | Predicate::IsNull(_) => true,
         Predicate::Comparison(comparison) => {
             if matches!(
                 comparison.operator(),
@@ -889,14 +890,8 @@ fn normalize(
             }
         }
         Predicate::IsNull(test) => {
-            if let Expression::Column(column) = test.expression() {
-                BooleanRowConstraint::NullTest {
-                    column: resolve_column(column, sources),
-                    negated: test.negated(),
-                }
-            } else {
-                residual("NULL test involves a computed expression")
-            }
+            normalize_null_test(test.expression(), test.negated(), sources, integer_evidence)
+                .unwrap_or_else(|| residual("NULL test involves an unproven computed expression"))
         }
         Predicate::Comparison(comparison) => {
             // Ordinary SQL comparison with literal NULL yields UNKNOWN for
@@ -1129,6 +1124,91 @@ fn normalize(
         }
         _ => residual("computed, function, collation, cast or other predicate is not invertible"),
     }
+}
+
+// A NULL test is two-valued even when its input is nullable. Only
+// independently certified, total integer expressions may be reduced to
+// source-column NULL tests. Ordinary TRY_CAST or opaque function calls can
+// fail or change NULL behavior and deliberately do not enter this proof.
+fn normalize_null_test(
+    expression: &Expression,
+    negated: bool,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<BooleanRowConstraint> {
+    let test = |column: &crate::protocol::ColumnExpression, negated| {
+        BooleanRowConstraint::NullTest {
+            column: resolve_column(column, sources),
+            negated,
+        }
+    };
+    if let Expression::Column(column) = expression {
+        return Some(test(column, negated));
+    }
+    if let Some((column, _)) = affine_integer_operand(expression, sources, integer_evidence) {
+        if integer_evidence(&resolve_column(column, sources)).is_some() {
+            return Some(test(column, negated));
+        }
+    }
+    let Expression::Function(function) = expression else {
+        return None;
+    };
+    if function.distinct() {
+        return None;
+    }
+    if function.name().eq_ignore_ascii_case("COALESCE")
+        && function.arguments().len() >= 2
+    {
+        let mut columns = Vec::new();
+        for argument in function.arguments() {
+            match argument {
+                Expression::Literal(literal)
+                    if matches!(literal.value(), LiteralValue::Null) => {}
+                Expression::Column(column)
+                    if integer_evidence(&resolve_column(column, sources)).is_some() =>
+                {
+                    columns.push(test(column, negated));
+                }
+                _ => return None,
+            }
+        }
+        return match columns.len() {
+            0 => None,
+            1 => columns.pop(),
+            _ => BooleanOperands::new(columns).map(|operands| {
+                if negated {
+                    BooleanRowConstraint::Any(operands)
+                } else {
+                    BooleanRowConstraint::All(operands)
+                }
+            }),
+        };
+    }
+    if function.name().eq_ignore_ascii_case("NULLIF") {
+        let [Expression::Column(left), Expression::Column(right)] = function.arguments() else {
+            return None;
+        };
+        let left_column = resolve_column(left, sources);
+        let right_column = resolve_column(right, sources);
+        integer_evidence(&left_column)?;
+        integer_evidence(&right_column)?;
+        let comparison = BooleanRowConstraint::IntegerColumnComparison {
+            left: left_column,
+            right: right_column,
+            operator: if negated {
+                ComparisonOperator::IsDistinctFrom
+            } else {
+                ComparisonOperator::IsNotDistinctFrom
+            },
+        };
+        let operands = BooleanOperands::new(vec![test(left, negated), comparison])?;
+        return Some(if negated {
+            BooleanRowConstraint::All(operands)
+        } else {
+            BooleanRowConstraint::Any(operands)
+        });
+    }
+    None
 }
 
 // Negation is pushed to proven leaves. De Morgan's laws preserve SQL
