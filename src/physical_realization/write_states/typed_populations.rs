@@ -274,10 +274,9 @@ pub fn physical_typed_append_schema_plan(
         };
     }
 
-    let PhysicalTypedPopulationPlan::Feasible { mut final_states } =
-        physical_typed_closed_world_schema_plan(bundle, snapshots)
-    else {
-        return physical_typed_closed_world_schema_plan(bundle, snapshots);
+    let mut final_states = match physical_typed_closed_world_schema_plan(bundle, snapshots) {
+        PhysicalTypedPopulationPlan::Feasible { final_states } => final_states,
+        other => return other,
     };
     let Some(state) = final_states.iter_mut().find(|state| state.relation == target) else {
         return PhysicalTypedPopulationPlan::Residual {
