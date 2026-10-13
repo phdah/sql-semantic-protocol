@@ -30,7 +30,11 @@ impl ComputedKeyConstraint {
         }
         evidence.sort();
         evidence.dedup();
-        Ok(Self { expressions, primary, evidence })
+        Ok(Self {
+            expressions,
+            primary,
+            evidence,
+        })
     }
 
     /// Ordered computed and column terms jointly defining this key.
