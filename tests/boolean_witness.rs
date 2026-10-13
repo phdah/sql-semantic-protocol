@@ -1069,20 +1069,46 @@ fn witness_truth(
                 "b" => b,
                 other => panic!("unexpected source column {other}"),
             };
-            value.map(|v| {
-                let v = i64::from(v);
-                match operator {
-                    ComparisonOperator::Eq => v == *literal,
-                    ComparisonOperator::Neq => v != *literal,
-                    ComparisonOperator::Lt => v < *literal,
-                    ComparisonOperator::Lte => v <= *literal,
-                    ComparisonOperator::Gt => v > *literal,
-                    ComparisonOperator::Gte => v >= *literal,
-                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
-                        panic!("null-safe comparisons must remain residual")
+            match operator {
+                ComparisonOperator::IsDistinctFrom => Some(value != Some(*literal as i32)),
+                ComparisonOperator::IsNotDistinctFrom => Some(value == Some(*literal as i32)),
+                ordinary => value.map(|v| {
+                    let v = i64::from(v);
+                    match ordinary {
+                        ComparisonOperator::Eq => v == *literal,
+                        ComparisonOperator::Neq => v != *literal,
+                        ComparisonOperator::Lt => v < *literal,
+                        ComparisonOperator::Lte => v <= *literal,
+                        ComparisonOperator::Gt => v > *literal,
+                        ComparisonOperator::Gte => v >= *literal,
+                        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom =>
+                            unreachable!("handled above"),
                     }
-                }
-            })
+                }),
+            }
+        }
+        BooleanRowConstraint::IntegerColumnComparison { left, operator, right } => {
+            let get = |column: &sql_semantic_protocol::ColumnRef| match column.name() {
+                "a" => a,
+                "b" => b,
+                other => panic!("unexpected source column {other}"),
+            };
+            let lhs = get(left);
+            let rhs = get(right);
+            match operator {
+                ComparisonOperator::IsDistinctFrom => Some(lhs != rhs),
+                ComparisonOperator::IsNotDistinctFrom => Some(lhs == rhs),
+                ordinary => lhs.zip(rhs).map(|(lhs, rhs)| match ordinary {
+                    ComparisonOperator::Eq => lhs == rhs,
+                    ComparisonOperator::Neq => lhs != rhs,
+                    ComparisonOperator::Lt => lhs < rhs,
+                    ComparisonOperator::Lte => lhs <= rhs,
+                    ComparisonOperator::Gt => lhs > rhs,
+                    ComparisonOperator::Gte => lhs >= rhs,
+                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom =>
+                        unreachable!("handled above"),
+                }),
+            }
         }
         BooleanRowConstraint::StringPrefix { .. } => {
             panic!("integer differential fixture cannot evaluate string prefix")
