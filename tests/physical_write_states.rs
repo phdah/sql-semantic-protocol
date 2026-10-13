@@ -11,7 +11,8 @@ use sql_semantic_protocol::{
     ConstraintProvenance, ConstraintSourceKind, ConstraintValue, DataType, DataTypeField,
     GeneratedValueExpression, LiteralValue, PhysicalTypeProof, PhysicalTypedValue,
     PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
-    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, TextComparisonLaw, WriteKind,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
+    TextComparisonLaw, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
