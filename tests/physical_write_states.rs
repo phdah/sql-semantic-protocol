@@ -895,3 +895,52 @@ fn cyclic_foreign_keys_need_a_joint_closed_world_proof() {
     .unwrap();
     assert!(db.execute_batch("INSERT INTO source VALUES (2,6)").is_err());
 }
+
+#[test]
+fn enforced_check_comparisons_prove_complete_physical_populations() {
+    for dialect in ["duckdb", "postgresql"] {
+        let mut b = bundle(
+            &["CREATE TABLE target(id INTEGER, score INTEGER CHECK(score > 0))"],
+            dialect,
+        );
+        let ddl = b.relation_constraints().iter()
+            .find(|set| set.relation() == "target").unwrap();
+        assert!(ddl.constraints().iter().any(|rule| matches!(
+            rule,
+            RelationConstraint::CheckComparison(item)
+                if item.column() == "score" && item.operator() == CheckCompareOperator::Gt
+                    && item.value() == &ConstraintValue::Integer(0)
+        )));
+        assert!(matches!(
+            physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(2))])]),
+            PhysicalWriteStatePlan::Residual { .. }
+        ), "DDL enforcement not attested: {dialect}");
+        b.enrich_relation_constraints(&[
+            RelationConstraintSet::new(
+                "target",
+                vec![RelationConstraint::check_comparison(
+                    "score",
+                    CheckCompareOperator::Gt,
+                    ConstraintValue::Integer(0),
+                    evidence(),
+                ).unwrap()],
+            ).unwrap(),
+        ]);
+        for expected in [
+            state("target", &[(Some(1), Some(2)), (Some(2), None)]),
+            state("target", &[]),
+        ] {
+            let plan = physical_closed_world_schema_plan(&b, &[expected]);
+            assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{dialect}: {plan:?}");
+        }
+        let invalid = physical_closed_world_schema_plan(
+            &b, &[state("target", &[(Some(1), Some(-1))])],
+        );
+        assert!(matches!(invalid, PhysicalWriteStatePlan::Impossible { .. }), "{dialect}: {invalid:?}");
+    }
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch("CREATE TABLE target (id INTEGER, score INTEGER CHECK(score > 0));
+        INSERT INTO target VALUES (1,2),(2,NULL);").unwrap();
+    assert!(db.execute_batch("INSERT INTO target VALUES (3,-1)").is_err());
+}
