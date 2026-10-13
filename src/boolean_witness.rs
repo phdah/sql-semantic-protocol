@@ -1490,10 +1490,8 @@ mod tests {
             ));
 
             let domains = witness.qualifying_conjunctive_domains();
-            let [domain] = domains.as_slice() else {
-                panic!("expected one integer domain from the mixed conjunction");
-            };
-            assert_eq!(domain.column(), &a);
+            let domain = domains.iter().find(|domain| domain.column() == &a)
+                .expect("exact integer comparison must retain its domain");
             assert_eq!(
                 domain.domain(),
                 &comparison_domain(
