@@ -149,7 +149,7 @@ fn complete_insert_row(
             super::generated::scalar_literal(literal),
         );
     }
-    super::generated::complete_generated(sources, &mut values)?;
+    super::generated::complete_generated(sources, &mut values, schema)?;
     if values.len() != schema.columns().len() {
         return Err(residual("INSERT row contains undeclared target columns"));
     }
@@ -240,13 +240,14 @@ pub(super) fn apply_target_update(
             ));
         }
     }
+    let schema = schema_for(bundle, target)?;
     let mut next = apply_assignments(before, assignments, context, aliases)?;
     for source in sources {
         if source.kind() == crate::column_sources::ColumnValueKind::Generated {
             next.values.remove(source.column());
         }
     }
-    super::generated::complete_generated(sources, &mut next.values)?;
+    super::generated::complete_generated(sources, &mut next.values, schema)?;
     Ok(next)
 }
 
