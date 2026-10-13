@@ -12,6 +12,28 @@ Versioned protocol artifacts such as `protocol-v0.1*` and `protocol-v0.2*` remai
 
 The analyzer resolves transformation layers into a deterministic relation dependency graph. It composes semantics through that graph: final outputs expose transitive physical lineage, value domains propagate through safe direct projections and renames, and ambiguous, cyclic, or non-invertible paths remain explicit instead of being guessed. Disconnected pipelines compose independently.
 
+### Bounded source-row Boolean witnesses
+
+The canonical Boolean witness can prove SQL TRUE and NOT TRUE independently for
+catalog-typed signed integer comparisons, `BETWEEN` / `NOT BETWEEN`, finite
+integer `IN` / `NOT IN` lists, nested `NOT` with `AND` / `OR`, and
+`IS [NOT] DISTINCT FROM` against an integer or literal NULL. The analyzer
+normalizes these into shared integer-comparison and NULL-test obligations,
+including De Morgan's laws, instead of introducing a consumer-specific SQL
+evaluation language. It preserves SQL UNKNOWN for ordinary comparisons to NULL;
+NULL-safe equality is two-valued. Exact conjunctive NULL tests and numeric
+comparisons refine projected domains when source identity is proven.
+
+Exactness still requires authoritative source datatype evidence and a complete,
+consistent assignment of all coupled source columns. Arithmetic inversion is
+limited to proven widened signed casts/offsets; unsafe casts, cross-column
+comparisons, NULL-containing `IN` lists, computed `BETWEEN` operands and
+dialect-sensitive pattern/regex, collations, coercions or opaque functions
+remain explicit residuals. Prefix `LIKE` requires separate binary-collation
+and no-padding attestations. Operator-local witnesses do **not** establish a
+complete physical-source realization across arbitrary producer DAGs. TASK-70
+and the protocol 3.0.0 release gate remain open for unproved expression families.
+
 ### Set operations
 
 The branch-aware contract preserves each SELECT operand's row predicates, source domains and positional output evidence independently. Duplicate counts follow one typed operator rule per node, with NULL-safe equality for entire aligned tuples. A separate `membership` proof emits qualifying and non-qualifying witness directions, each exact only when the full branch-count combination is proven. The direct supported class is a row-preserving, one-relation SELECT of plain input columns without correlated or unknown filters, joins, aggregation, DISTINCT or row limits, with disjoint physical source dependencies across branches. The proof enumerates small source tuple counts (0, 1, and 2) to cover duplicate semantics and zero-result cancellation. More complex branches, shared physical inputs, unresolved positional alignment and unsupported tree shapes remain residual with explicit reasons.
