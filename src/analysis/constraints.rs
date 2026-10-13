@@ -2,7 +2,9 @@
 
 use super::*;
 use crate::column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
-use crate::computed_boolean_checks::{ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate};
+use crate::computed_boolean_checks::{
+    ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate,
+};
 use crate::computed_checks::ComputedCheckConstraint;
 use crate::computed_keys::ComputedKeyConstraint;
 
@@ -414,11 +416,9 @@ pub(super) fn analyze_create_table_constraints(
                     )? {
                         constraints.extend(rules);
                         computed_checks.extend(checks);
-                    } else if let Some(predicate) = portable_boolean_check(
-                        expr,
-                        Some(column.name.value.as_str()),
-                        &evidence,
-                    )? {
+                    } else if let Some(predicate) =
+                        portable_boolean_check(expr, Some(column.name.value.as_str()), &evidence)?
+                    {
                         computed_boolean_checks.push(predicate);
                     } else {
                         diagnostics.push(ConstraintDiagnostic::new(
@@ -613,17 +613,26 @@ fn portable_equality_disjunction(
 fn portable_boolean_predicate(expr: &Expr) -> Option<ComputedBooleanCheckPredicate> {
     use ComputedBooleanCheckPredicate as P;
     match unwrap_nested_expression(expr) {
-        Expr::BinaryOp { left, op: SqlBinaryOperator::And, right } => Some(P::And(vec![
+        Expr::BinaryOp {
+            left,
+            op: SqlBinaryOperator::And,
+            right,
+        } => Some(P::And(vec![
             portable_boolean_predicate(left)?,
             portable_boolean_predicate(right)?,
         ])),
-        Expr::BinaryOp { left, op: SqlBinaryOperator::Or, right } => Some(P::Or(vec![
+        Expr::BinaryOp {
+            left,
+            op: SqlBinaryOperator::Or,
+            right,
+        } => Some(P::Or(vec![
             portable_boolean_predicate(left)?,
             portable_boolean_predicate(right)?,
         ])),
-        Expr::UnaryOp { op: SqlUnaryOperator::Not, expr } => {
-            Some(P::Not(Box::new(portable_boolean_predicate(expr)?)))
-        }
+        Expr::UnaryOp {
+            op: SqlUnaryOperator::Not,
+            expr,
+        } => Some(P::Not(Box::new(portable_boolean_predicate(expr)?))),
         Expr::IsNull(expr) => Some(P::IsNull {
             expression: parse_generated_expression(expr)?,
             negated: false,
@@ -634,7 +643,11 @@ fn portable_boolean_predicate(expr: &Expr) -> Option<ComputedBooleanCheckPredica
         }),
         expression => {
             let (left, operator, right) = computed_check_from_expr(expression, None)?;
-            Some(P::Comparison { left, operator, right })
+            Some(P::Comparison {
+                left,
+                operator,
+                right,
+            })
         }
     }
 }
@@ -647,9 +660,7 @@ fn portable_boolean_check(
     let Some(predicate) = portable_boolean_predicate(expr) else {
         return Ok(None);
     };
-    if expected_column.is_some_and(|column| {
-        !predicate.referenced_columns().contains(&column)
-    }) {
+    if expected_column.is_some_and(|column| !predicate.referenced_columns().contains(&column)) {
         return Ok(None);
     }
     Ok(Some(ComputedBooleanCheckConstraint::new(
