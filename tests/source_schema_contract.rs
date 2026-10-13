@@ -288,11 +288,21 @@ fn explicit_nullable_ddl_proves_omitted_sql_null_without_overriding_real_default
             .find(|set| set.relation() == "t")
             .expect("typed DDL column sources");
         let sources = set.column_value_sources();
-        let score = sources.iter().find(|source| source.column() == "score").unwrap();
+        let score = sources
+            .iter()
+            .find(|source| source.column() == "score")
+            .unwrap();
         assert_eq!(score.kind(), ColumnValueKind::Default, "{dialect}");
         assert_eq!(score.value(), Some(&ConstraintValue::Null), "{dialect}");
-        let priority = sources.iter().find(|source| source.column() == "priority").unwrap();
-        assert_eq!(priority.value(), Some(&ConstraintValue::Integer(7)), "{dialect}");
+        let priority = sources
+            .iter()
+            .find(|source| source.column() == "priority")
+            .unwrap();
+        assert_eq!(
+            priority.value(),
+            Some(&ConstraintValue::Integer(7)),
+            "{dialect}"
+        );
         assert_eq!(sources.len(), 2, "{dialect}");
     }
 }
