@@ -233,13 +233,19 @@ pub fn analyze_configured_inputs_with_catalog(
         })?;
     let mut schemas = bundle.source_schemas().to_vec();
     for declared in catalog.schemas() {
-        if let Some(position) = schemas.iter().position(|schema| schema.relation() == declared.relation()) {
+        if let Some(position) = schemas
+            .iter()
+            .position(|schema| schema.relation() == declared.relation())
+        {
             if schemas[position].columns() != declared.columns() {
                 let mut diagnostic = RelationConstraintSet::new(declared.relation(), vec![])
                     .expect("catalog relation is validated");
                 diagnostic.add_diagnostic(ConstraintDiagnostic::new(
                     "ddl_catalog_schema_conflict",
-                    format!("SQL DDL and caller catalog disagree on typed schema for '{}'", declared.relation()),
+                    format!(
+                        "SQL DDL and caller catalog disagree on typed schema for '{}'",
+                        declared.relation()
+                    ),
                 ));
                 bundle.enrich_relation_constraints(&[diagnostic]);
             }
