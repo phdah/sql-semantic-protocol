@@ -35,7 +35,11 @@
       "identical_text_key_equality_with_unproved_distinct_collation",
       "negative_floating_zero_aliases_remain_residual",
       "portable_conjunctive_CHECK_sql_ddl_and_dbt_atomic_normalization",
-      "exact_decimal_composite_key_and_cross_relation_FK_equality"
+      "exact_decimal_composite_key_and_cross_relation_FK_equality",
+      "generated_integer_recomputation_in_ordered_UPDATE_and_MERGE",
+      "composite_foreign_key_partial_NULL_MATCH_conservative_residual",
+      "exact_decimal_accepted_value_comparisons_at_full_precision",
+      "computed_composite_nullable_unique_key_collision_law"
     ],
     "tests": [
       "tests/physical_write_states.rs",
@@ -48,7 +52,7 @@
       "Arrow_nested_struct_array_map_ordered_DML_execution_and_serialization",
       "NaN_signed_zero_and_decimal_implicit_rounding",
       "vendor_collation_and_timezone_execution_laws",
-      "computed_functional_keys_and_identity_sequence_execution",
+      "opaque_computed_functions_and_identity_sequence_execution",
       "cross_adapter_default_parity_and_dbt_metadata",
       "full_cross_dialect_arrow_differential_generation"
     ],
