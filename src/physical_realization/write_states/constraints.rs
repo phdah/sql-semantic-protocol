@@ -401,3 +401,39 @@ fn constraint_scalar_equal(value: &LiteralValue, candidate: &ConstraintValue) ->
         _ => Err(residual("unproved accepted-value coercion")),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn exact_accepted_value_comparison_normalizes_decimal_scale_and_signed_zero() {
+        for (actual, expected) in [
+            ("1.5000", ConstraintValue::Number("1.5".into())),
+            ("0005.0", ConstraintValue::Integer(5)),
+            ("-0.000", ConstraintValue::UnsignedInteger(0)),
+            (
+                "999999999999999999999999999999.000001",
+                ConstraintValue::Number("999999999999999999999999999999.0000010".into()),
+            ),
+        ] {
+            assert_eq!(
+                constraint_scalar_equal(&LiteralValue::Number(actual.into()), &expected).unwrap(),
+                true,
+                "{actual}"
+            );
+        }
+        assert!(!constraint_scalar_equal(
+            &LiteralValue::Number("1.501".into()),
+            &ConstraintValue::Number("1.5".into()),
+        )
+        .unwrap());
+        assert!(matches!(
+            constraint_scalar_equal(
+                &LiteralValue::Number("NaN".into()),
+                &ConstraintValue::Number("1.5".into()),
+            ),
+            Err(StateFailure::Residual(_, _))
+        ));
+    }
+}
