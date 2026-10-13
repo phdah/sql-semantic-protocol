@@ -1242,3 +1242,64 @@ fn exact_text_key_duplicates_are_impossible_but_distinct_collation_is_unproved()
         .execute_batch("INSERT INTO target VALUES ('same')")
         .is_err());
 }
+
+#[test]
+fn conjunctive_checks_validate_every_portable_clause_or_remain_wholly_residual() {
+    let schema = "CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id > 0 AND score < id + 10))";
+    for dialect in ["duckdb", "postgresql", "mysql", "generic", "snowflake"] {
+        let b = bundle(&[schema], dialect);
+        let set = b
+            .relation_constraints()
+            .iter()
+            .find(|set| set.relation() == "target")
+            .unwrap();
+        assert!(set.diagnostics().is_empty(), "{dialect}: {set:?}");
+        assert_eq!(set.computed_checks().len(), 1, "{dialect}");
+        assert!(set
+            .constraints()
+            .iter()
+            .any(|rule| matches!(rule, RelationConstraint::CheckComparison(_))));
+        for rows in [
+            vec![(Some(1), Some(5))],
+            vec![(Some(1), None)],
+        ] {
+            assert!(matches!(
+                physical_closed_world_schema_plan(&b, &[state("target", &rows)]),
+                PhysicalWriteStatePlan::Feasible { .. }
+            ));
+        }
+        for rows in [
+            vec![(Some(-1), Some(0))],
+            vec![(Some(1), Some(99))],
+        ] {
+            assert!(matches!(
+                physical_closed_world_schema_plan(&b, &[state("target", &rows)]),
+                PhysicalWriteStatePlan::Impossible { .. }
+            ));
+        }
+    }
+    let incomplete = bundle(
+        &["CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id > 0 AND ABS(score) > 1))"],
+        "duckdb",
+    );
+    let set = incomplete
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "target")
+        .unwrap();
+    assert!(set.constraints().is_empty());
+    assert!(set.computed_checks().is_empty());
+    assert!(set
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unsupported_check_constraint"));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id > 0 AND score < id + 10));\n\
+         INSERT INTO target VALUES (1,5), (2,NULL);",
+    )
+    .unwrap();
+    assert!(db.execute_batch("INSERT INTO target VALUES (-1,0)").is_err());
+    assert!(db.execute_batch("INSERT INTO target VALUES (1,99)").is_err());
+}
