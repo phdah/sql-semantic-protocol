@@ -828,7 +828,12 @@ fn is_witness_candidate(predicate: &Predicate) -> bool {
             if matches!(
                 (comparison.left(), comparison.right()),
                 (Expression::Column(_), Expression::Column(_))
-            ) {
+            ) || [comparison.left(), comparison.right()].iter().any(|expression| {
+                matches!(
+                    expression,
+                    Expression::Literal(value) if value.literal_type() == LiteralType::String
+                )
+            }) {
                 return true;
             }
             [comparison.left(), comparison.right()]
@@ -901,6 +906,39 @@ fn normalize(
                     return BooleanRowConstraint::NullTest {
                         column: resolve_column(column, sources),
                         negated: comparison.operator() == ComparisonOperator::IsDistinctFrom,
+                    };
+                }
+            }
+            // String comparisons are exact only for catalog-backed variable
+            // strings and attested binary/no-padding comparison settings.
+            if matches!(
+                comparison.operator(),
+                ComparisonOperator::Eq
+                    | ComparisonOperator::Neq
+                    | ComparisonOperator::IsDistinctFrom
+                    | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                let string_pair = match (comparison.left(), comparison.right()) {
+                    (Expression::Column(column), Expression::Literal(literal))
+                    | (Expression::Literal(literal), Expression::Column(column))
+                        if literal.literal_type() == LiteralType::String =>
+                    {
+                        Some((column, literal))
+                    }
+                    _ => None,
+                };
+                if let Some((column, literal)) = string_pair {
+                    let resolved = resolve_column(column, sources);
+                    let LiteralValue::Text(value) = literal.value() else {
+                        return residual("string comparison is not a canonical text literal");
+                    };
+                    if string_evidence(&resolved).is_none() {
+                        return residual("string comparison requires variable-length string type");
+                    }
+                    return BooleanRowConstraint::StringEquality {
+                        column: resolved,
+                        operator: comparison.operator(),
+                        literal: value.clone(),
                     };
                 }
             }
@@ -1095,6 +1133,15 @@ fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
             left,
             operator: negated_comparison_operator(operator),
             right,
+        },
+        BooleanRowConstraint::StringEquality {
+            column,
+            operator,
+            literal,
+        } => BooleanRowConstraint::StringEquality {
+            column,
+            operator: negated_comparison_operator(operator),
+            literal,
         },
         BooleanRowConstraint::StringPrefix {
             column,
