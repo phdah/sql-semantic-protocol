@@ -2064,3 +2064,57 @@ fn explicit_nullable_ddl_default_constructs_omitted_insert_sql_null() {
         .unwrap();
     assert_eq!(result, (2, true));
 }
+
+#[test]
+fn accepted_values_consider_all_candidates_before_an_unknown_collation() {
+    let schema = RelationSchema::new(
+        "target",
+        vec![
+            SchemaColumn::from_sql_type("id", "VARCHAR(20)", "duckdb").unwrap(),
+            SchemaColumn::from_sql_type("score", "INTEGER", "duckdb").unwrap(),
+        ],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let sql = SqlInput::inline("SELECT id FROM target");
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let configured = ConfiguredSqlInput::new("accepted-alternatives", &sql, "duckdb", dialect.as_ref());
+    let mut b = analyze_configured_inputs_with_catalog(&[configured], &catalog).unwrap();
+    b.enrich_relation_constraints(&[RelationConstraintSet::new(
+        "target",
+        vec![RelationConstraint::accepted_values(
+            "id",
+            vec![
+                ConstraintValue::String("first".into()),
+                ConstraintValue::String("second".into()),
+            ],
+            true,
+            evidence(),
+        )
+        .unwrap()],
+    )
+    .unwrap()]);
+    let snapshot = |id: &str| {
+        PhysicalWriteState::new(
+            "target",
+            vec![PhysicalWriteRow::new(
+                [
+                    ("id".to_string(), LiteralValue::Text(id.into())),
+                    ("score".to_string(), LiteralValue::Number("1".into())),
+                ]
+                .into_iter()
+                .collect(),
+            )
+            .unwrap()],
+        )
+        .unwrap()
+    };
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[snapshot("second")]),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(&b, &[snapshot("SECOND")]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+}
