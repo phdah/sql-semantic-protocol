@@ -176,7 +176,7 @@ pub(super) fn validate_all_constraints(
                         if matches!(value, LiteralValue::Null) {
                             continue; // SQL CHECK admits UNKNOWN.
                         }
-                        validate_numeric_check(value, check.operator(), check.value())?;
+                        super::check_comparisons::validate_scalar_check(value, check.operator(), check.value())?;
                     }
                 }
                 RelationConstraint::AcceptedValues(accepted) => {
@@ -204,47 +204,6 @@ pub(super) fn validate_all_constraints(
         }
     }
     Ok(())
-}
-
-/// Compare exact integer CHECK operands without implicit decimal or string casts.
-fn validate_numeric_check(
-    literal: &LiteralValue,
-    op: crate::constraints::CheckCompareOperator,
-    expected: &ConstraintValue,
-) -> StateResult<()> {
-    use crate::constraints::CheckCompareOperator;
-    let left = match literal {
-        LiteralValue::Number(text) => text
-            .parse::<i128>()
-            .map_err(|_| residual("CHECK requires exact integral physical storage"))?,
-        _ => {
-            return Err(residual(
-                "CHECK physical scalar has no attested comparison law",
-            ))
-        }
-    };
-    let right = match expected {
-        ConstraintValue::Integer(number) => i128::from(*number),
-        ConstraintValue::UnsignedInteger(number) => i128::from(*number),
-        _ => {
-            return Err(residual(
-                "CHECK constant has no portable integer comparison law",
-            ))
-        }
-    };
-    let valid = match op {
-        CheckCompareOperator::Eq => left == right,
-        CheckCompareOperator::NotEq => left != right,
-        CheckCompareOperator::Gt => left > right,
-        CheckCompareOperator::Gte => left >= right,
-        CheckCompareOperator::Lt => left < right,
-        CheckCompareOperator::Lte => left <= right,
-    };
-    if valid {
-        Ok(())
-    } else {
-        Err(impossible("enforced scalar CHECK comparison violated"))
-    }
 }
 
 fn equal_key_rows(
