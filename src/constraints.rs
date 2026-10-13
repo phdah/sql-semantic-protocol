@@ -7,6 +7,7 @@ use std::collections::BTreeSet;
 use std::fmt;
 
 use crate::column_sources::ColumnValueSource;
+use crate::computed_boolean_checks::ComputedBooleanCheckConstraint;
 use crate::computed_checks::ComputedCheckConstraint;
 use crate::computed_keys::ComputedKeyConstraint;
 
@@ -638,6 +639,7 @@ pub struct RelationConstraintSet {
     column_value_sources: Vec<ColumnValueSource>,
     computed_keys: Vec<ComputedKeyConstraint>,
     computed_checks: Vec<ComputedCheckConstraint>,
+    computed_boolean_checks: Vec<ComputedBooleanCheckConstraint>,
     diagnostics: Vec<ConstraintDiagnostic>,
 }
 
@@ -661,6 +663,7 @@ impl RelationConstraintSet {
             column_value_sources: Vec::new(),
             computed_keys: Vec::new(),
             computed_checks: Vec::new(),
+            computed_boolean_checks: Vec::new(),
             diagnostics: Vec::new(),
         };
         for constraint in constraints {
@@ -703,6 +706,35 @@ impl RelationConstraintSet {
             existing.merge_evidence(&check);
         } else {
             self.computed_checks.push(check);
+        }
+    }
+
+    /// Portable all-or-nothing row-local Boolean CHECK predicates.
+    pub fn computed_boolean_checks(&self) -> &[ComputedBooleanCheckConstraint] {
+        &self.computed_boolean_checks
+    }
+
+    /// Add complete CHECK Boolean trees while preserving independent evidence.
+    pub fn with_computed_boolean_checks(
+        mut self,
+        checks: Vec<ComputedBooleanCheckConstraint>,
+    ) -> Self {
+        for check in checks {
+            self.add_computed_boolean_check(check);
+        }
+        self.normalize();
+        self
+    }
+
+    fn add_computed_boolean_check(&mut self, check: ComputedBooleanCheckConstraint) {
+        if let Some(existing) = self
+            .computed_boolean_checks
+            .iter_mut()
+            .find(|existing| existing.same_semantics(&check))
+        {
+            existing.merge_evidence(&check);
+        } else {
+            self.computed_boolean_checks.push(check);
         }
     }
 
@@ -798,6 +830,7 @@ impl RelationConstraintSet {
         !self.constraints.is_empty()
             || !self.computed_keys.is_empty()
             || !self.computed_checks.is_empty()
+            || !self.computed_boolean_checks.is_empty()
             || !self.diagnostics.is_empty()
             || self
                 .column_value_sources
@@ -955,6 +988,20 @@ impl RelationConstraintSet {
             }
             result.add_computed_check(check.clone());
         }
+        for check in &self.computed_boolean_checks {
+            if let Some(schema) = local {
+                if check.predicate().referenced_columns().into_iter().any(|name| {
+                    !schema.columns().iter().any(|column| column.name() == name)
+                }) {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "invalid_boolean_check_column",
+                        format!("Boolean CHECK on '{}' references an undeclared column", self.relation),
+                    ));
+                    continue;
+                }
+            }
+            result.add_computed_boolean_check(check.clone());
+        }
         for key in &self.computed_keys {
             if let Some(schema) = local {
                 if key
@@ -999,6 +1046,9 @@ impl RelationConstraintSet {
         for check in &other.computed_checks {
             self.add_computed_check(check.clone());
         }
+        for check in &other.computed_boolean_checks {
+            self.add_computed_boolean_check(check.clone());
+        }
         self.diagnostics.extend(other.diagnostics.iter().cloned());
         self.normalize();
     }
@@ -1029,6 +1079,7 @@ impl RelationConstraintSet {
             column_value_sources: self.column_value_sources.clone(),
             computed_keys: self.computed_keys.clone(),
             computed_checks: self.computed_checks.clone(),
+            computed_boolean_checks: self.computed_boolean_checks.clone(),
             diagnostics: self.diagnostics.clone(),
         })
     }
@@ -1129,6 +1180,7 @@ impl RelationConstraintSet {
         self.column_value_sources.sort();
         self.computed_keys.sort();
         self.computed_checks.sort();
+        self.computed_boolean_checks.sort();
         self.diagnostics.sort();
         self.diagnostics.dedup();
     }
