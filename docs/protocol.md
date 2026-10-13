@@ -1378,6 +1378,7 @@ unknown collation, generated/identity expression, missing parent population
 or vendor-specific null semantics remain residual. Positive proof never
 constructs imaginary rows, grants an unproved default or bypasses source-key
 collisions. The ordered DML path checks both its prestate and each poststate.
+Portable single-column `CHECK` comparisons (`eq`, `not_eq`, `gt`, `gte`, `lt`, `lte`) emit typed `check_comparison` metadata and their own provenance. The physical validator checks exact integer operands when enforcement is attested and admits SQL NULL as UNKNOWN. Complex CHECK functions, decimal/string casts and enforcement timing without evidence remain residual.
 
 The independent `physical_typed_value_plan(value, data_type)` API accepts
 `PhysicalTypedValue` scalar, byte-buffer, array, map and struct witnesses.
