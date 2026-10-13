@@ -297,10 +297,14 @@ pub fn physical_typed_append_schema_plan(
 /// temporary row for the existing canonical scalar predicate interpreter.
 fn scalar_shadow(row: &PhysicalTypedWriteRow) -> PhysicalWriteRow {
     PhysicalWriteRow {
-        values: row.values.iter().filter_map(|(name, value)| match value {
-            PhysicalTypedValue::Scalar(literal) => Some((name.clone(), literal.clone())),
-            _ => None,
-        }).collect(),
+        values: row
+            .values
+            .iter()
+            .filter_map(|(name, value)| match value {
+                PhysicalTypedValue::Scalar(literal) => Some((name.clone(), literal.clone())),
+                _ => None,
+            })
+            .collect(),
     }
 }
 
@@ -319,7 +323,9 @@ fn mutate_typed_rows(
     // An unqualified, unconditional mutation can be proved by the scalar
     // interpreter, but that path must not be confused with an unparsed WHERE.
     // Only the explicitly normalized predicate subset is certified here.
-    let predicate = write.selection().ok_or("typed mutation needs a normalized WHERE predicate")?;
+    let predicate = write
+        .selection()
+        .ok_or("typed mutation needs a normalized WHERE predicate")?;
     if !query.sources().is_empty() {
         return Err("typed mutation unexpectedly has independent source relations".into());
     }
@@ -347,7 +353,8 @@ fn mutate_typed_rows(
             write.assignments(),
             &context,
             &[],
-        ).map_err(|_| "typed UPDATE assignment or generated expression is unproved")?;
+        )
+        .map_err(|_| "typed UPDATE assignment or generated expression is unproved")?;
         let mut next = row.clone();
         for (name, literal) in updated.values {
             next.values.insert(name, PhysicalTypedValue::Scalar(literal));
@@ -367,8 +374,8 @@ fn mutate_typed_rows(
 /// literal. Nested Arrow values are copied without converting them to SQL
 /// scalar literals. Portable WHERE predicates over complete scalar columns
 /// obey SQL three-valued logic; nested predicates, joins, grouping, functions,
-/// generated omissions, transaction effects and opaque writes remain residual. Every
-/// poststate is checked against all attested target/source constraints, so
+/// generated omissions, transaction effects and opaque writes remain residual.
+/// Every poststate is checked against all attested target/source constraints, so
 /// duplicate rows and FK cycles are never certified by isolated row guesses.
 pub fn physical_typed_ordered_write_plan(
     bundle: &AnalysisBundle,
@@ -428,9 +435,7 @@ pub fn physical_typed_ordered_write_plan(
             let Some(before) = states.get(target).cloned() else {
                 return gap("typed mutation requires a complete target population");
             };
-            let after = match mutate_typed_rows(
-                bundle, query, &before, kind == WriteKind::Delete,
-            ) {
+            let after = match mutate_typed_rows(bundle, query, &before, kind == WriteKind::Delete) {
                 Ok(after) => after,
                 Err(reason) => return gap(&reason),
             };
@@ -452,7 +457,7 @@ pub fn physical_typed_ordered_write_plan(
             || query.predicates().having_predicate().is_some()
             || query.predicates().qualify_predicate().is_some()
         {
-            return gap("typed INSERT source is not a provable one-source unfiltered projection");
+            return gap("typed INSERT source is not a provable one-source projection/filter");
         }
         if query.filter_only_row_shape() && query.predicates().where_predicate().is_none() {
             return PhysicalTypedPopulationPlan::Residual {
@@ -505,7 +510,9 @@ pub fn physical_typed_ordered_write_plan(
                 source: Some((source.name(), &scalar_row)),
             };
             match super::evaluator::selected(
-                query.predicates().where_predicate(), &context, &aliases,
+                query.predicates().where_predicate(),
+                &context,
+                &aliases,
             ) {
                 Ok(false) => continue,
                 Ok(true) => {}
