@@ -19,28 +19,43 @@ pub(super) fn analyze_create_table_schema(
             declared.name.to_string(),
             &declared.data_type.to_string(),
             dialect_name,
-        ).map_err(|error| ConstraintDiagnostic::new(
-            "unsupported_declared_type",
-            format!("SQL DDL '{}.{}' cannot normalize datatype: {error}", relation, declared.name),
-        ))?;
+        )
+        .map_err(|error| {
+            ConstraintDiagnostic::new(
+                "unsupported_declared_type",
+                format!(
+                    "SQL DDL '{}.{}' cannot normalize datatype: {error}",
+                    relation, declared.name
+                ),
+            )
+        })?;
         for option in &declared.options {
             if let ColumnOption::Collation(collation) = &option.option {
-                column = column.with_collation(collation.to_string()).map_err(|error| {
-                    ConstraintDiagnostic::new(
-                        "unsupported_declared_collation",
-                        format!("SQL DDL '{}.{}' has invalid collation: {error}", relation, declared.name),
-                    )
-                })?;
+                column = column
+                    .with_collation(collation.to_string())
+                    .map_err(|error| {
+                        ConstraintDiagnostic::new(
+                            "unsupported_declared_collation",
+                            format!(
+                                "SQL DDL '{}.{}' has invalid collation: {error}",
+                                relation, declared.name
+                            ),
+                        )
+                    })?;
             }
         }
         columns.push(column);
     }
-    let schema = crate::relation::RelationSchema::new(relation.clone(), columns)
-        .map_err(|error| ConstraintDiagnostic::new(
-            "invalid_ddl_schema",
-            format!("SQL DDL '{relation}' has invalid columns: {error}"),
-        ))?;
-    Ok(Some(schema.with_source_kind(crate::relation::SchemaSourceKind::SqlDdl)))
+    let schema =
+        crate::relation::RelationSchema::new(relation.clone(), columns).map_err(|error| {
+            ConstraintDiagnostic::new(
+                "invalid_ddl_schema",
+                format!("SQL DDL '{relation}' has invalid columns: {error}"),
+            )
+        })?;
+    Ok(Some(schema.with_source_kind(
+        crate::relation::SchemaSourceKind::SqlDdl,
+    )))
 }
 
 pub(super) fn analyze_relation_constraints(
@@ -237,10 +252,14 @@ pub(super) fn analyze_create_table_constraints(
                     )?);
                 }
                 ColumnOption::Default(expression) => {
-                    let value = constraint_value_from_expression(expression).map(|(value, _)| value);
+                    let value =
+                        constraint_value_from_expression(expression).map(|(value, _)| value);
                     let evidence = sql_constraint_evidence(
                         &relation,
-                        format!("{}:column:{}:default:{}", relation, column.name, option_index),
+                        format!(
+                            "{}:column:{}:default:{}",
+                            relation, column.name, option_index
+                        ),
                         None,
                     )?;
                     column_value_sources.push(ColumnValueSource::new(
@@ -251,8 +270,7 @@ pub(super) fn analyze_create_table_constraints(
                     )?);
                 }
                 ColumnOption::Generated {
-                    generation_expr,
-                    ..
+                    generation_expr, ..
                 } => {
                     // A sequence-backed GENERATED AS IDENTITY declaration is not a
                     // computed column expression. Both require independent laws.
@@ -263,7 +281,13 @@ pub(super) fn analyze_create_table_constraints(
                     };
                     let evidence = sql_constraint_evidence(
                         &relation,
-                        format!("{}:column:{}:{}:{}", relation, column.name, kind.as_str(), option_index),
+                        format!(
+                            "{}:column:{}:{}:{}",
+                            relation,
+                            column.name,
+                            kind.as_str(),
+                            option_index
+                        ),
                         None,
                     )?;
                     column_value_sources.push(ColumnValueSource::new(
@@ -276,7 +300,10 @@ pub(super) fn analyze_create_table_constraints(
                 ColumnOption::Identity(_) => {
                     let evidence = sql_constraint_evidence(
                         &relation,
-                        format!("{}:column:{}:identity:{}", relation, column.name, option_index),
+                        format!(
+                            "{}:column:{}:identity:{}",
+                            relation, column.name, option_index
+                        ),
                         None,
                     )?;
                     column_value_sources.push(ColumnValueSource::new(
