@@ -2967,7 +2967,22 @@
         "collation": {
           "$ref": "#/$defs/nonEmptyString",
           "description": "Physical collation identity only; comparison semantics require separately established laws."
+        },
+        "text_comparison_law": {
+          "type": "string",
+          "enum": ["binary"],
+          "description": "Authoritatively attested comparison law, not inferred from collation identity."
+        },
+        "comparison_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/constraintEvidence" }
         }
+      },
+      "dependentRequired": {
+        "text_comparison_law": ["comparison_evidence"],
+        "comparison_evidence": ["text_comparison_law"]
       }
     },
     "sourceSchema": {
