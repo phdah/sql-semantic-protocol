@@ -58,7 +58,10 @@ impl Protocol {
         self
     }
 
-    pub(crate) fn with_source_schemas(mut self, schemas: Vec<crate::relation::RelationSchema>) -> Self {
+    pub(crate) fn with_source_schemas(
+        mut self,
+        schemas: Vec<crate::relation::RelationSchema>,
+    ) -> Self {
         self.source_schemas = schemas;
         self
     }
