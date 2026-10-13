@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_typed_closed_world_schema_plan, CheckCompareOperator, ConfiguredSqlInput,
+    physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
+    CheckCompareOperator, ConfiguredSqlInput,
     ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     DataType, DataTypeField, LiteralValue, PhysicalTypedPopulationPlan, PhysicalTypedValue,
     PhysicalTypedWriteRow, PhysicalTypedWriteState, RelationCatalog, RelationConstraint,
@@ -338,6 +339,88 @@ fn typed_json_populations_preserve_document_null_under_cross_source_constraints(
                     )]
                 )
             ]
+        ),
+        PhysicalTypedPopulationPlan::Residual { .. }
+    ));
+}
+
+#[test]
+fn typed_target_append_preserves_nested_payload_and_proves_existing_key_and_fk_laws() {
+    let bundle = bundle();
+    let original = [
+        typed_state("target", vec![typed_row(1, payload(2, 3))]),
+        typed_state(
+            "source",
+            vec![typed_row(1, payload(5, 6)), typed_row(2, payload(7, 8))],
+        ),
+    ];
+    let inserted = typed_row(2, payload(3, 4));
+    let result = physical_typed_append_schema_plan(
+        &bundle,
+        &original,
+        "target",
+        &[inserted.clone()],
+    );
+    let PhysicalTypedPopulationPlan::Feasible { final_states } = result else {
+        panic!("expected feasible typed append: {result:?}");
+    };
+    let target = final_states
+        .iter()
+        .find(|state| state.relation() == "target")
+        .unwrap();
+    assert_eq!(target.rows().len(), 2);
+    assert_eq!(target.rows()[0].values()["payload"], payload(2, 3));
+    assert_eq!(target.rows()[1], inserted);
+
+    assert!(matches!(
+        physical_typed_append_schema_plan(
+            &bundle,
+            &original,
+            "target",
+            &[typed_row(1, payload(9, 10))],
+        ),
+        PhysicalTypedPopulationPlan::Impossible { .. }
+    ));
+    assert!(matches!(
+        physical_typed_append_schema_plan(
+            &bundle,
+            &original,
+            "target",
+            &[typed_row(3, payload(9, 10))],
+        ),
+        PhysicalTypedPopulationPlan::Residual { .. }
+    ));
+    assert!(matches!(
+        physical_typed_append_schema_plan(
+            &bundle,
+            &original,
+            "target",
+            &[typed_row(2, PhysicalTypedValue::Scalar(LiteralValue::Null))],
+        ),
+        PhysicalTypedPopulationPlan::Impossible { .. }
+    ));
+}
+
+#[test]
+fn typed_target_append_requires_a_complete_initial_target_and_reference_population() {
+    let bundle = bundle();
+    let missing_target = [typed_state("source", vec![typed_row(2, payload(3, 4))])];
+    assert!(matches!(
+        physical_typed_append_schema_plan(
+            &bundle,
+            &missing_target,
+            "target",
+            &[typed_row(2, payload(3, 4))],
+        ),
+        PhysicalTypedPopulationPlan::Residual { .. }
+    ));
+    let missing_parent = [typed_state("target", vec![typed_row(1, payload(2, 3))])];
+    assert!(matches!(
+        physical_typed_append_schema_plan(
+            &bundle,
+            &missing_parent,
+            "target",
+            &[typed_row(2, payload(3, 4))],
         ),
         PhysicalTypedPopulationPlan::Residual { .. }
     ));
