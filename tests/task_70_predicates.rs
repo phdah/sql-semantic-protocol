@@ -80,10 +80,15 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
         "computed_join_group_write_expressions",
         "whole_graph_physical_realization",
     ] {
-        let entry = families.iter().find(|item| item["family"] == family).unwrap();
+        let entry = families
+            .iter()
+            .find(|item| item["family"] == family)
+            .unwrap();
         assert_eq!(entry["status"], "unproved_residual", "{family}");
         assert_eq!(entry["release_blocking"], true, "{family}");
-        assert!(entry["scope"].as_str().is_some_and(|value| !value.is_empty()));
+        assert!(entry["scope"]
+            .as_str()
+            .is_some_and(|value| !value.is_empty()));
     }
 }
 
