@@ -1120,6 +1120,13 @@ fn exact_computed_unique_keys_reject_collisions_and_preserve_composites() {
             &b,
             &[state("target", &[(Some(1), None), (Some(2), Some(1))])],
         ),
+        PhysicalWriteStatePlan::Feasible { .. }
+    ));
+    assert!(matches!(
+        physical_closed_world_schema_plan(
+            &b,
+            &[state("target", &[(Some(1), None), (Some(2), None)])],
+        ),
         PhysicalWriteStatePlan::Residual { .. }
     ));
     let db = Connection::open_in_memory().unwrap();
