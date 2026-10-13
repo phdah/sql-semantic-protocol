@@ -5,11 +5,11 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_closed_world_schema_plan,
-    physical_ordered_write_state_plan,
-    AnalysisBundle, ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement,
-    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue,
-    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
-    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, WriteKind,
+    physical_ordered_write_state_plan, AnalysisBundle, ColumnValueKind, ColumnValueSource,
+    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
+    ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
+    RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 fn bundle(sql: &[&str], dialect: &str) -> AnalysisBundle {
@@ -859,7 +859,10 @@ fn cyclic_foreign_keys_need_a_joint_closed_world_proof() {
         state("source", &[(Some(1), Some(6))]),
     ];
     let plan = physical_closed_world_schema_plan(&b, &both);
-    assert!(matches!(plan, PhysicalWriteStatePlan::Feasible { .. }), "{plan:?}");
+    assert!(
+        matches!(plan, PhysicalWriteStatePlan::Feasible { .. }),
+        "{plan:?}"
+    );
     assert!(matches!(
         physical_closed_world_schema_plan(&b, &both[..1]),
         PhysicalWriteStatePlan::Residual { .. }
