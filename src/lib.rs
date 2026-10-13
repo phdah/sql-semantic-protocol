@@ -45,6 +45,7 @@ mod bag_semantics;
 mod boolean_witness;
 mod bundle;
 mod column_sources;
+mod computed_keys;
 mod composition;
 mod constraints;
 mod constructive;
