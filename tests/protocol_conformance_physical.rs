@@ -22,7 +22,10 @@ const EXISTS: &str = include_str!("fixtures/conformance/v1/raw_sql/unsupported_e
 const RANGE: &str = include_str!("fixtures/conformance/v1/raw_sql/range_sampling.sql");
 
 fn fixture_bundle(sql: &str) -> AnalysisBundle {
-    let dialect = "postgresql";
+    fixture_bundle_for_dialect(sql, "postgresql")
+}
+
+fn fixture_bundle_for_dialect(sql: &str, dialect: &str) -> AnalysisBundle {
     let parser = dialect_from_name(dialect).expect("dialect");
     let columns = [
         (
@@ -151,10 +154,11 @@ fn conformance_boundary_fixture_retains_join_provenance_and_zero_rejection() {
     let enriched = layer_id(&bundle, "core_enriched");
     let plan = physical_source_plan(&bundle, enriched);
     assert!(matches!(plan.zero_output(), WitnessDirection::Feasible(_)));
-    assert!(matches!(
-        physical_row_count_plan(&bundle, enriched, 1),
-        WitnessDirection::Residual { .. }
-    ));
+    let positive = physical_row_count_plan(&bundle, enriched, 1);
+    assert!(
+        matches!(positive, WitnessDirection::Feasible(_)),
+        "filtered producer join must construct full physical sources: {positive:?}"
+    );
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
         "CREATE TABLE raw_orders(order_id INTEGER, customer_id INTEGER, amount INTEGER);
@@ -227,12 +231,10 @@ fn conformance_set_fixtures_prove_empty_closed_world_and_respect_multiplicities(
 fn conformance_advanced_pipeline_oracle_exercises_positive_and_rejected_rows() {
     let bundle = fixture_bundle(ADVANCED);
     let summary = layer_id(&bundle, "mart_customer_summary");
+    let positive = physical_row_count_plan(&bundle, summary, 1);
     assert!(
-        matches!(
-            physical_row_count_plan(&bundle, summary, 1),
-            WitnessDirection::Residual { .. }
-        ),
-        "a positive joined/grouped construction is not yet supported"
+        matches!(positive, WitnessDirection::Feasible(_)),
+        "joined group must have a complete feasible source assignment: {positive:?}"
     );
     let conn = Connection::open_in_memory().expect("duckdb");
     conn.execute_batch(
@@ -264,6 +266,146 @@ fn conformance_advanced_pipeline_oracle_exercises_positive_and_rejected_rows() {
         )
         .expect("summarized row");
     assert_eq!((category.as_str(), orders, maximum), ("high", 1, 100));
+}
+
+#[test]
+fn filtered_join_and_group_share_a_complete_positive_source_population() {
+    let bundle = fixture_bundle(ADVANCED);
+    let joined = layer_id(&bundle, "core_enriched");
+    let summary = layer_id(&bundle, "mart_customer_summary");
+    let plan = physical_joint_row_count_plan(&bundle, &[(joined, 1), (summary, 1)]);
+    let WitnessDirection::Feasible(cases) = plan else {
+        panic!("joint join/group terminals must share one source assignment: {plan:?}");
+    };
+    assert!(
+        cases.iter().any(|case| {
+            let obligations = case.obligations();
+            obligations.iter().any(|item| {
+                matches!(
+                    item,
+                    WitnessObligation::JoinPopulation { output_rows: 1, .. }
+                )
+            }) && obligations
+                .iter()
+                .any(|item| matches!(item, WitnessObligation::Group { .. }))
+                && obligations
+                    .iter()
+                    .filter(|item| matches!(item, WitnessObligation::ClosedWorld { .. }))
+                    .count()
+                    == 2
+        }),
+        "joint physical plan must control both source bags and both operators"
+    );
+
+    let conn = Connection::open_in_memory().expect("DuckDB");
+    conn.execute_batch(
+        "CREATE TABLE raw_orders(order_id INTEGER, customer_id INTEGER, amount INTEGER);
+         CREATE TABLE raw_customers(customer_id INTEGER, active BOOLEAN);
+         INSERT INTO raw_orders VALUES (1, 0, 100);
+         INSERT INTO raw_customers VALUES (0, TRUE);",
+    )
+    .expect("complete physical source bags");
+    conn.execute_batch(ADVANCED)
+        .expect("materialize dependent producer graph");
+    for relation in [
+        "stage_orders",
+        "stage_customers",
+        "core_enriched",
+        "mart_customer_summary",
+    ] {
+        let rows: i64 = conn
+            .query_row(&format!("SELECT COUNT(*) FROM {relation}"), [], |row| {
+                row.get(0)
+            })
+            .expect("terminal count");
+        assert_eq!(rows, 1, "{relation}");
+    }
+    let bucket: String = conn
+        .query_row(
+            "SELECT amount_bucket FROM mart_customer_summary",
+            [],
+            |row| row.get(0),
+        )
+        .expect("computed group key");
+    assert_eq!(bucket, "high");
+}
+
+#[test]
+fn filtered_join_group_cannot_ignore_conflicting_downstream_predicate() {
+    let conflicting = ADVANCED.replace("WHERE enriched.amount = 100", "WHERE enriched.amount = 90");
+    let bundle = fixture_bundle(&conflicting);
+    let summary = layer_id(&bundle, "mart_customer_summary");
+    let result = physical_row_count_plan(&bundle, summary, 1);
+    assert!(
+        !matches!(result, WitnessDirection::Feasible(_)),
+        "upstream amount=100 and downstream amount=90 must not yield a feasible group: {result:?}"
+    );
+}
+
+#[test]
+fn filtered_join_source_proof_is_identical_across_parsing_dialects() {
+    let mut equivalent = 0;
+    let mut parser_differences = 0;
+    for &dialect in DIALECTS {
+        let parser = dialect_from_name(dialect).expect("exposed dialect");
+        if sqlparser::parser::Parser::parse_sql(parser.as_ref(), BOUNDARY).is_err() {
+            parser_differences += 1;
+            continue;
+        }
+        let bundle = fixture_bundle_for_dialect(BOUNDARY, dialect);
+        let joined = layer_id(&bundle, "core_enriched");
+        let proof = physical_row_count_plan(&bundle, joined, 1);
+        let canonical_boolean = matches!(
+            &bundle.inputs()[0].statements()[1],
+            sql_semantic_protocol::ProtocolStatement::Query(query)
+                if matches!(
+                    query.predicates().where_predicate(),
+                    Some(sql_semantic_protocol::Predicate::Comparison(comparison))
+                        if matches!(
+                            comparison.right(),
+                            sql_semantic_protocol::Expression::Literal(literal)
+                                if literal.value() == &LiteralValue::Boolean(true)
+                        )
+                )
+        );
+        if canonical_boolean {
+            assert!(
+                matches!(proof, WitnessDirection::Feasible(_)),
+                "dialect {dialect}: equivalent typed Boolean filter lost physical proof: {proof:?}"
+            );
+            equivalent += 1;
+        } else {
+            // A parser may accept TRUE as an identifier instead of a typed
+            // SQL Boolean (notably dialects without Boolean literals).
+            // Never treat that different meaning as a certified equivalent.
+            assert!(
+                matches!(proof, WitnessDirection::Residual { .. }),
+                "dialect {dialect}: untyped Boolean syntax must fail closed: {proof:?}"
+            );
+            parser_differences += 1;
+        }
+    }
+    assert!(
+        equivalent >= 3,
+        "expected several canonical Boolean dialects"
+    );
+    assert_eq!(
+        equivalent + parser_differences,
+        DIALECTS.len(),
+        "each dialect needs canonical equivalence or an explicit limitation"
+    );
+}
+
+#[test]
+fn join_filter_on_an_unreconciled_key_remains_residual() {
+    let sql = BOUNDARY.replace("WHERE amount = 100", "WHERE customer_id = 100");
+    let bundle = fixture_bundle(&sql);
+    let joined = layer_id(&bundle, "core_enriched");
+    let proof = physical_row_count_plan(&bundle, joined, 1);
+    assert!(
+        !matches!(proof, WitnessDirection::Feasible(_)),
+        "the join-key filter must be reconciled with the physical key histogram: {proof:?}"
+    );
 }
 
 #[test]

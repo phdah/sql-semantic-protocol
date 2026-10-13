@@ -63,6 +63,7 @@ pub(super) fn constructive_term_to_value(term: &crate::WitnessTerm) -> Value {
             "column": column_ref_to_value(column)
         }),
         crate::WitnessTerm::Integer(value) => json!({ "kind": "integer", "value": value }),
+        crate::WitnessTerm::Boolean(value) => json!({ "kind": "boolean", "value": value }),
         crate::WitnessTerm::Null => json!({ "kind": "null" }),
     }
 }

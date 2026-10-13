@@ -18,8 +18,8 @@ reviewed here, with ordinary protocol Git history.
 
 | Suite asset | What is certified |
 | --- | --- |
-| `v1/advanced_pipeline.sql` | Multi-parent joined GROUP/HAVING, jointly empty physical sources and a concrete positive/rejected DuckDB example |
-| `v1/advanced_boundary.sql` | Joined boundaries and typed positive residual |
+| `v1/advanced_pipeline.sql` | Multi-parent joined GROUP/HAVING, jointly empty and one-row positive constructive physical populations, joint terminal proofs and DuckDB oracles |
+| `v1/advanced_boundary.sql` | Exact closed-world positive filtered equijoin population and empty-source negative boundary |
 | `v1/set_operations.sql` | UNION ALL, UNION, INTERSECT, EXCEPT, DISTINCT, LIMIT, NULLs and duplicate multiplicity |
 | `v1/raw_sql/window_ranked.sql` | Ranking/QUALIFY with excluded NULL/duplicate sources |
 | `v1/raw_sql/insert_workflow.sql` | Ordered INSERT SELECT, exact typed before/after source-row state |
@@ -88,10 +88,15 @@ source constructions. `Residual` requires the generator to fail closed;
 `Impossible` means a proven contradiction.
 
 Source-backed range counts, jointly empty multi-parent DAGs, source-state
-NULL/duplicates and the checked INSERT SELECT transition are exact. A
-positive joined/grouped aggregate, ranked/window distribution or correlated
-EXISTS can succeed on concrete DuckDB sources while the *general*
-constructive plan remains residual; do not upgrade examples to exact proofs.
+NULL/duplicates and the checked INSERT SELECT transition are exact.
+The in-scope `advanced_boundary.sql` filtered equijoin and
+`advanced_pipeline.sql` singleton GROUP/HAVING have **complete positive
+closed-world physical-source proofs**, including one common assignment for
+their joined and grouped terminals. They are checked independently against
+DuckDB. More general joined/grouped populations, ranked/window
+distributions or correlated EXISTS can succeed on concrete DuckDB sources
+while their constructive plans remain residual; do not upgrade those cases
+from oracle execution alone.
 Other SQL dialect variants and UPDATE/DELETE/MERGE/CTAS operator-state tests
 live in focused protocol suites; generator execution of those workloads is
 separately unverified.

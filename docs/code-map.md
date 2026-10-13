@@ -6,11 +6,11 @@ This map is a **navigation index**, not a second semantic specification. For a c
 
 | Change or question | Read first | Follow only if needed | Focused tests |
 |---|---|---|---|
-| SQL `JOIN`, ON, equality or join kind | `src/analysis/joins.rs` | `src/analysis/relations.rs`, `src/join_witness.rs`, `src/physical_realization/joins.rs` | `tests/differential_conformance.rs`, `tests/physical_realization/joins.rs` |
+| SQL `JOIN`, ON, equality or join kind | `src/analysis/joins.rs` | `src/analysis/relations.rs`, `src/join_witness.rs`, `src/physical_realization/joins.rs` | `tests/differential_conformance.rs`, `tests/physical_realization/joins.rs`, `tests/protocol_conformance_physical.rs` |
 | CTE, derived table, source alias, table scope | `src/analysis/relations.rs` | `src/analysis/lineage.rs`, `src/composition.rs` | `tests/local_relations.rs` |
 | `WHERE`, `HAVING`, `QUALIFY`, SQL truth | `src/analysis/predicates.rs` | `src/analysis/exactness.rs`, `src/boolean_witness.rs`, `src/domain.rs` | `tests/differential_conformance.rs`, `tests/boolean_witness.rs` |
 | Numeric bounds, scalar domains or comparisons | `src/domain.rs` | `src/analysis/domains.rs`, `src/analysis/typing.rs`, `src/protocol/values.rs` | `tests/typed_domains.rs`, `tests/output_domains.rs` |
-| `GROUP BY`, aggregation or grouped physical rows | `src/analysis/aggregation.rs` | `src/group_witness.rs`, `src/physical_realization/grouping.rs`, `src/protocol/aggregation.rs` | `tests/group_witness.rs`, `tests/physical_realization/group_rank_set.rs` |
+| `GROUP BY`, aggregation or grouped physical rows | `src/analysis/aggregation.rs` | `src/group_witness.rs`, `src/physical_realization/grouping.rs`, `src/protocol/aggregation.rs` | `tests/group_witness.rs`, `tests/physical_realization/group_rank_set.rs`, `tests/protocol_conformance_physical.rs` |
 | Window/ranking functions | `src/analysis/functions.rs` | `src/window_witness.rs`, `src/physical_realization/ranking.rs`, `src/physical_realization/grouping.rs` | `tests/physical_realization/mixed.rs`, `tests/physical_realization/group_rank_set.rs` |
 | `UNION`, `INTERSECT`, `EXCEPT` | `src/analysis/sets.rs` | `src/protocol/sets.rs`, `src/physical_realization/operators.rs`, `src/physical_realization/sets.rs` | `tests/set_operations.rs`, `tests/physical_realization/nested_sets.rs` |
 | `INSERT`, `UPDATE`, `DELETE`, `MERGE` | `src/analysis/writes.rs` | `src/protocol/writes.rs`, `src/bundle/layers.rs`, `src/emission/statements.rs` | `tests/dml_transformations.rs` |

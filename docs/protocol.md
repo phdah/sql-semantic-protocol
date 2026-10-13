@@ -1147,10 +1147,53 @@ proving unmatched and NULL-extended rows as well as semi/anti absence laws.
 One physical population is shared by repeated source references, with
 conflicting cardinalities rejected from the construction.
 
-Only type-attested integer equality columns, exact local join witnesses,
-identity-only complete producer chains, and explicit source populations are
-certified. Unsupported CROSS or multi-join local semantics, implicit
-coercion, unknown schema evidence and partial writes stay typed residual.
+The original exact local join-witness path certifies type-attested integer
+equality columns through identity-only complete producer chains.
+An additional narrowly specified filtered-producer path is described below.
+Unsupported CROSS or multi-join local semantics, implicit coercion,
+unknown schema evidence and partial writes stay typed residual.
+
+### Complete filtered join and singleton GROUP/HAVING populations
+
+A distinct positive proof path applies to a **single INNER equijoin** over
+two independently controlled physical source bags. Each named input producer
+must be a complete single-source definition whose `WHERE` is one typed
+`source.column = literal` equality on a **non-join-key** column. Physical
+source schemas must attest signed integer or Boolean values, and no
+unproved source constraints or competing writers may be present.
+The producer projection may compute a total scalar `CASE` or plain column
+copy, but cannot change row multiplicity. The `JoinPopulation` assignment
+controls matching non-NULL integer keys and exact bag counts, while every
+physical row satisfies its producer's predicate. `Rows` and `ClosedWorld`
+cover the *entire* source, never isolated samples or independently writable
+intermediate views. Query-local aliases are resolved from canonical typed
+source references, not from consumer-side SQL reparsing.
+
+For **one matching joined row**, a downstream GROUP BY over one total
+scalar key has exactly one group. A grouped `WHERE` is admitted only
+when it is an identical, plain-copy transport of a predicate already
+proved SQL-TRUE for every contributing source row. A typed
+`HAVING COUNT(*)` comparison must evaluate TRUE for the singleton
+count (one) before a `Group` and exact `OutputRows` obligation are
+issued. Full source assignments may carry `OutputRows` for both the join
+and grouped terminal: the joint count planner reuses that **same
+sufficient case**, not independent locally feasible examples. This path
+preserves joined zero-row proofs and negative closed-world composition.
+
+The typed `WitnessTerm` representation includes Boolean constants in
+addition to integer and NULL constants. The JSON term
+`{"kind":"boolean","value":true}` occurs only when the canonical Boolean
+type and literal are proved. Dialects that parse `TRUE` as an identifier
+rather than a Boolean literal remain `Residual`; acceptance of token
+syntax alone does not establish semantic equivalence.
+
+This is deliberately not a general constraint solver. Non-equijoins,
+join-key filters requiring correlated key histograms, non-total projections,
+partial/ambiguous producers, multi-join and correlated operators,
+arbitrary HAVING expressions, outer-join singleton grouping, and
+unreconciled or unknown source domains remain typed residual unless a
+separate proof discharges them. A concrete DuckDB success alone cannot
+turn any of those cases into a feasible construction.
 
 ### Canonical joint physical-source DAG count plans
 

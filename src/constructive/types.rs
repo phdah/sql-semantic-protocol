@@ -44,6 +44,8 @@ pub enum WitnessTerm {
     Column { row: RowVariable, column: ColumnRef },
     /// Literal integer, whose source datatype must be verified separately.
     Integer(i64),
+    /// Typed SQL boolean constant.
+    Boolean(bool),
     /// SQL NULL, never equal under ordinary SQL equality.
     Null,
 }

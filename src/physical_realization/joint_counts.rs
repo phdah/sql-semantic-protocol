@@ -441,6 +441,40 @@ pub fn physical_joint_row_count_plan(
         return WitnessDirection::Impossible;
     }
     ordered.dedup();
+    // A single constructive source assignment may already carry exact
+    // OutputRows for several terminals in the same producer graph. Reuse
+    // that entire sufficient case rather than intersecting independent
+    // locally-feasible populations that might disagree on shared sources.
+    if ordered.len() > 1 {
+        for &(candidate, rows) in &ordered {
+            let WitnessDirection::Feasible(cases) =
+                physical_row_count_plan(bundle, candidate, rows)
+            else {
+                continue;
+            };
+            let jointly_complete = cases
+                .into_iter()
+                .filter(|case| {
+                    ordered.iter().all(|(layer_id, requested)| {
+                        case.obligations().iter().any(|obligation| {
+                            matches!(
+                                obligation,
+                                WitnessObligation::OutputRows {
+                                    layer_id: proved,
+                                    bounds,
+                                } if proved == layer_id
+                                    && bounds.minimum() == *requested
+                                    && bounds.maximum() == Some(*requested)
+                            )
+                        })
+                    })
+                })
+                .collect::<Vec<_>>();
+            if let Some(proof) = WitnessDirection::feasible(jointly_complete) {
+                return proof;
+            }
+        }
+    }
     if let Some(plan) = joint_nonempty_rejected_terminals(bundle, &ordered) {
         return plan;
     }
@@ -549,11 +583,18 @@ pub fn physical_joint_row_count_plan(
                 Some(WitnessFormula::RowTruth { .. })
             )
         });
-        let requires_exact_count =
-            !has_filter && matches!(one_row_plan, WitnessDirection::Feasible(_));
-        if requires_exact_count && physical.sources().len() != 1 {
+        let has_positive_plan = matches!(one_row_plan, WitnessDirection::Feasible(_));
+        // A constructive joined population can use two physical sources;
+        // its terminal count is not an exact count requirement on each
+        // source. Keep positive multi-source combinations residual unless
+        // one complete case already proved every goal above. For requested
+        // zero outputs, the separate zero plan may still prove both sources
+        // empty and must not be invalidated by a positive join capability.
+        if !has_filter && has_positive_plan && physical.sources().len() != 1 && rows > 0 {
             return residual(PhysicalProofGap::UnboundPhysicalSource);
         }
+        let requires_exact_count =
+            physical.sources().len() == 1 && !has_filter && has_positive_plan;
 
         for relation in physical.sources() {
             let Some(predicate) = count_predicate_for_source(&row_plan, relation, rows) else {

@@ -356,6 +356,263 @@ pub(super) fn physical_group_rank_count_plan(
     WitnessDirection::feasible(composed)
 }
 
+/// Prove the smallest nonempty GROUP/HAVING construction over a filtered
+/// two-parent join. One *complete* matching join pair produces exactly one
+/// group for any total scalar group key. A downstream WHERE is admitted only
+/// when its equality was already enforced on every row by the matching
+/// upstream source producer. No intermediate relation is independently seeded.
+fn physical_filtered_join_single_group(
+    bundle: &AnalysisBundle,
+    target_layer_id: &str,
+    wanted: u64,
+) -> Option<WitnessDirection> {
+    use crate::protocol::{AggregateArgument, ComparisonOperator, LiteralType, LiteralValue};
+
+    if wanted != 1 {
+        return None;
+    }
+    let mut walker = Walker::new(bundle);
+    walker.visit(target_layer_id).ok()?;
+    let target = walker.layers.get(target_layer_id).copied()?;
+    let group_query = query_for(bundle, target)?;
+    let group_node = walker
+        .nodes
+        .iter()
+        .find(|node| node.id() == &PhysicalPlanRef::Layer(target_layer_id.to_string()))?;
+    let [PhysicalPlanRef::Layer(join_id)] = group_node.inputs() else {
+        return None;
+    };
+    let join_layer = walker.layers.get(join_id.as_str()).copied()?;
+    let join_query = query_for(bundle, join_layer)?;
+    let [source] = group_query.sources() else {
+        return None;
+    };
+    if !group_node
+        .inputs()
+        .iter()
+        .all(|input| matches!(input, PhysicalPlanRef::Layer(_)))
+        || !matches!(group_node.write_kind(), None | Some(WriteKind::Definition))
+        || !group_query.group_rows_match_surviving_groups()
+        || !group_query.joins().is_empty()
+        || group_query.window_witness().is_some()
+        || group_query.set_operation().is_some()
+        || !group_query.subquery_witnesses().is_empty()
+        || !group_query
+            .diagnostics()
+            .iter()
+            .all(|item| item.code() == "unsupported_order_by")
+        || join_query.joins().len() != 1
+        || join_query.joins()[0].kind() != crate::protocol::JoinKind::Inner
+        || !walker
+            .nodes
+            .iter()
+            .find(|node| node.id() == &PhysicalPlanRef::Layer(join_id.clone()))?
+            .produced_relations()
+            .contains(&source.name().to_string())
+    {
+        return None;
+    }
+    let key = match group_query.aggregation()?.group_by()? {
+        GroupBy::Expressions(keys) if keys.len() == 1 => match &keys[0] {
+            GroupingExpression::Expression(Expression::Column(key)) => key,
+            _ => return None,
+        },
+        _ => return None,
+    };
+    if key
+        .relation()
+        .is_some_and(|relation| relation != source.name() && source.alias() != Some(relation))
+    {
+        return None;
+    }
+    // The group key is a deterministic per-row value projected by the join.
+    // Its upstream projection may be CASE, but its expression must be total:
+    // one joined row then has exactly one (possibly NULL) grouping key.
+    let key_output = join_query
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == key.name())?;
+    let key_origin = key_output.plain_copy_source()?;
+    // Query source aliases are scoped to this SELECT; a layer-level producer
+    // identity alone does not necessarily contain its local SQL alias.
+    let unique_join_source = |name: &str| {
+        let mut matches = join_query
+            .sources()
+            .iter()
+            .filter(|input| input.name() == name || input.alias() == Some(name));
+        let first = matches.next()?;
+        matches.next().is_none().then_some(first.name())
+    };
+    let key_stage_name = unique_join_source(key_origin.relation())?.to_string();
+    let stage_node = walker.nodes.iter().find(|node| {
+        node.produced_relations()
+            .contains(&key_stage_name.to_string())
+    })?;
+    let PhysicalPlanRef::Layer(stage_id) = stage_node.id() else {
+        return None;
+    };
+    let stage_query = query_for(bundle, walker.layers.get(stage_id.as_str()).copied()?)?;
+    let key_stage = stage_query
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == key_origin.column())?;
+    if !total_scalar_projection(key_stage.expression()) {
+        return None;
+    }
+
+    // WHERE on the grouped input may never be assumed TRUE merely because
+    // a concrete DuckDB example passed. It must be the exact same equality
+    // as a complete upstream source filter, transported through plain copies.
+    if let Some(predicate) = group_query.predicates().where_predicate() {
+        let Predicate::Comparison(comparison) = predicate else {
+            return None;
+        };
+        if comparison.operator() != ComparisonOperator::Eq {
+            return None;
+        }
+        let (Expression::Column(column), Expression::Literal(value)) =
+            (comparison.left(), comparison.right())
+        else {
+            return None;
+        };
+        if column
+            .relation()
+            .is_some_and(|name| name != source.name() && source.alias() != Some(name))
+        {
+            return None;
+        }
+        let origin = join_query
+            .output()
+            .columns()
+            .iter()
+            .find(|output| output.name() == column.name())?
+            .plain_copy_source()?;
+        let stage_name = unique_join_source(origin.relation())?.to_string();
+        let stage_node = walker
+            .nodes
+            .iter()
+            .find(|node| node.produced_relations().contains(&stage_name.to_string()))?;
+        let PhysicalPlanRef::Layer(stage_id) = stage_node.id() else {
+            return None;
+        };
+        let stage_layer = walker.layers.get(stage_id.as_str()).copied()?;
+        let stage_query = query_for(bundle, stage_layer)?;
+        let copy = stage_query
+            .output()
+            .columns()
+            .iter()
+            .find(|output| output.name() == origin.column())?
+            .plain_copy_source()?;
+        let Predicate::Comparison(filter) = stage_query.predicates().where_predicate()? else {
+            return None;
+        };
+        let (Expression::Column(filter_column), Expression::Literal(filter_value)) =
+            (filter.left(), filter.right())
+        else {
+            return None;
+        };
+        if filter.operator() != ComparisonOperator::Eq
+            || filter_value != value
+            || filter_column.name() != copy.column()
+            || filter_column.relation().is_some_and(|name| {
+                stage_query.sources()[0].name() != name
+                    && stage_query.sources()[0].alias() != Some(name)
+            })
+            || stage_query.sources()[0].name() != copy.relation()
+            || !matches!(
+                value.value(),
+                LiteralValue::Number(_) | LiteralValue::Boolean(_)
+            )
+        {
+            return None;
+        }
+    }
+
+    // Count(*) from a one-row complete join bag is exactly one, including
+    // when the grouping key is NULL. The existing local HAVING witness is
+    // conservatively residual for a preceding WHERE; independently prove
+    // this precise typed law only after the WHERE has been linked to the
+    // complete upstream source filter above.
+    let Predicate::Comparison(having) = group_query.predicates().having_predicate()? else {
+        return None;
+    };
+    let (function, operator, literal) = match (having.left(), having.right()) {
+        (Expression::AggregateFunction(function), Expression::Literal(literal)) => {
+            (function, having.operator(), literal)
+        }
+        (Expression::Literal(literal), Expression::AggregateFunction(function)) => {
+            (function, having.operator().reversed(), literal)
+        }
+        _ => return None,
+    };
+    if !function.name().eq_ignore_ascii_case("count")
+        || !matches!(function.arguments(), [AggregateArgument::Wildcard])
+        || function.distinct()
+        || function.filter().is_some()
+        || literal.literal_type() != LiteralType::Integer
+    {
+        return None;
+    }
+    let LiteralValue::Number(threshold) = literal.value() else {
+        return None;
+    };
+    let value = threshold.parse::<i128>().ok()?;
+    let survives = match operator {
+        ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => 1 == value,
+        ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => 1 != value,
+        ComparisonOperator::Lt => 1 < value,
+        ComparisonOperator::Lte => 1 <= value,
+        ComparisonOperator::Gt => 1 > value,
+        ComparisonOperator::Gte => 1 >= value,
+    };
+    if !survives {
+        return None;
+    }
+    let WitnessDirection::Feasible(join_cases) =
+        physical_join_population_count_plan(bundle, join_id, 1)?
+    else {
+        return None;
+    };
+
+    let group_boundary = WitnessBoundary::new(
+        source.name(),
+        GroupBoundaryKind::Intermediate,
+        target_layer_id,
+    )?;
+    let bounds = CountBounds::new(1, Some(1))?;
+    let mut proven = Vec::new();
+    for join_case in join_cases {
+        let mut obligations = join_case.obligations().to_vec();
+        obligations.push(WitnessObligation::Producer {
+            boundary: group_boundary.clone(),
+            physical_sources: walker.sources.iter().cloned().collect(),
+        });
+        obligations.push(WitnessObligation::Group {
+            boundary: group_boundary.clone(),
+            key: vec![crate::protocol::ColumnRef::new(
+                Some(source.name().to_string()),
+                key.name().to_string(),
+            )],
+            aggregate: crate::group_witness::GroupAggregate::CountRows,
+            distinct: false,
+            argument: None,
+            rows: bounds,
+            non_null: bounds,
+            tests: Vec::new(),
+        });
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id: target_layer_id.to_string(),
+            bounds,
+        });
+        if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+            proven.push(case);
+        }
+    }
+    WitnessDirection::feasible(proven)
+}
+
 /// Lift a complete equijoin population into a grouped output using the same
 /// physical key distribution. The distinct, common and homogeneous grouped
 /// patterns certify one, many-in-one and multiple multi-contributor groups.
@@ -369,6 +626,9 @@ pub(super) fn physical_join_group_count_plan(
     use crate::outcome_proofs::OutcomeWitness;
     if rows == 0 {
         return None;
+    }
+    if let Some(plan) = physical_filtered_join_single_group(bundle, target_layer_id, rows) {
+        return Some(plan);
     }
     let mut walker = Walker::new(bundle);
     walker.visit(target_layer_id).ok()?;
