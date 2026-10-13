@@ -992,6 +992,8 @@ fn dbt_same_column_or_check_becomes_atomic_accepted_values() {
         .expect("fixture manifest");
     manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([
         {"type": "check", "expression": "(amount = 1 OR amount = 2) AND id > 0"},
+        {"type": "check", "expression": "id IN (1, 2)"},
+        {"type": "check", "expression": "id IN (1, NULL)"},
         {"type": "check", "expression": "amount = 1 OR id = 2"},
         {"type": "check", "expression": "amount = 1 OR amount = NULL"},
         {"type": "check", "expression": "amount = 1 OR LOWER(amount) = 'x'"}
@@ -1018,11 +1020,17 @@ fn dbt_same_column_or_check_becomes_atomic_accepted_values() {
         rule,
         RelationConstraint::CheckComparison(check) if check.column() == "id"
     )));
+    assert!(set.constraints().iter().any(|rule| matches!(
+        rule,
+        RelationConstraint::AcceptedValues(values)
+            if values.column() == "id"
+                && values.values() == [ConstraintValue::Integer(1), ConstraintValue::Integer(2)]
+    )));
     assert_eq!(
         set.diagnostics()
             .iter()
             .filter(|diagnostic| diagnostic.code() == "unsupported_check_constraint")
             .count(),
-        3
+        4
     );
 }
