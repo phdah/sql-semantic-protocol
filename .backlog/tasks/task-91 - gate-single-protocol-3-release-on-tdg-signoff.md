@@ -65,6 +65,10 @@ One consolidated 3.0.0 release is requested. The existing Release Please PR #79 
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
 
+## TASK-70 parent decomposition and protocol release gate (2026-10-13)
+
+PR #108 is a mergeable **bounded foundation** only. TASK-70 remains In Progress with its six original AC unchecked. Its dependency-ordered implementation children **TASK-101 → TASK-102 → TASK-103 → TASK-104 → TASK-105 → TASK-106 → TASK-107 → TASK-108** own arithmetic/conversions, computed branches/aliases, correlated Boolean proofs, dialect-sensitive text, temporal/JSON/vendor residual laws, relational/physical composition, expression-specific oracles, and final parent signoff. See the queue in [TASK-70](task-70%20-%20solve-expression-and-predicate-variants.md). The existing TASK-91 dependency on **TASK-70** indirectly gates all eight children. Do not add child prerequisites on TASK-70 (cycle), merge Release Please PR #79, or approve protocol 3.0.0 until TASK-108 verifies the original six parent criteria **and** all independent TASK-88/89/90, sql-tdg and release AC are satisfied.
+
 ## TASK-68 parent decomposition (2026-10-10)
 
 TASK-68 remains In Progress after foundational PR #92 is merged. Its child

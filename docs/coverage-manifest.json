@@ -40,100 +40,126 @@
         "status": "bounded_local_exact",
         "scope": "catalog-typed signed integer comparisons, BETWEEN/IN including NULL members, NOT/AND/OR",
         "evidence": "tests/task_70_predicates.rs",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-107"
       },
       {
         "family": "signed_integer_affine_casts",
         "status": "bounded_local_exact",
         "scope": "widened CAST/TRY_CAST/SAFE_CAST and overflow-checked signed offsets; narrowing residual",
         "evidence": "tests/boolean_witness.rs",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-101"
       },
       {
         "family": "computed_null_tests",
         "status": "bounded_local_exact",
         "scope": "typed COALESCE/NULLIF NULL tests and searched CASE total integer arms with two-valued guards",
         "evidence": "tests/task_70_predicates.rs",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-102"
       },
       {
         "family": "signed_integer_cross_column",
         "status": "bounded_existence_only",
         "scope": "source-row signed cross-column comparisons; only identical-column absence is exhaustive",
         "evidence": "tests/task_70_predicates.rs",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-103"
       },
       {
         "family": "string_binary_equality_and_like_prefix",
         "status": "conditional_local_exact",
         "scope": "variable-length strings; binary collation, no CHAR padding; safe nonescaping ASCII LIKE prefix",
         "evidence": "tests/boolean_witness.rs",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-104"
       },
       {
         "family": "numeric_general_arithmetic",
         "status": "unproved_residual",
         "scope": "multiplication/division/modulo, general multi-column arithmetic, overflow and underflow",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-101"
       },
       {
         "family": "noninteger_casts_and_implicit_coercions",
         "status": "unproved_residual",
         "scope": "decimal/string/timestamp conversions, non-total narrowing and engine coercion laws",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-101"
       },
       {
         "family": "regex_and_nonprefix_patterns",
         "status": "unproved_residual",
         "scope": "regex flags, backtracking, ILIKE, unsafe LIKE ESCAPE, Unicode and vendor pattern laws",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-104"
       },
       {
         "family": "nonbinary_collations_and_padding",
         "status": "unproved_residual",
         "scope": "locale comparison and trailing-space semantics without explicit binary/no-pad proof",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-104"
       },
       {
         "family": "date_time_zone_and_calendar",
         "status": "unproved_residual",
         "scope": "date/time casts, intervals, timezone and DST/session-dependent predicates",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-105"
       },
       {
         "family": "json_array_struct_and_vendor_functions",
         "status": "unproved_residual",
         "scope": "JSON paths, nested coercion, vendor operators and opaque or user-defined functions",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-105"
       },
       {
         "family": "dialect_specific_nullsafe_operators",
         "status": "unproved_residual",
         "scope": "MySQL <=> and other dialect-specific nullsafe spellings without scoped dialect evidence",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-104"
       },
       {
         "family": "computed_join_group_write_expressions",
         "status": "unproved_residual",
         "scope": "general expression projections/aliases across joins, grouped aggregates, inserts and merges",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-106"
       },
       {
         "family": "whole_graph_physical_realization",
         "status": "unproved_residual",
         "scope": "joint physical-source construction and negative output evidence across general DAGs",
         "evidence": "docs/semantics.md",
-        "release_blocking": true
+        "release_blocking": true,
+        "implementation_task": "TASK-106"
       }
-    ]
+    ],
+    "child_execution_queue": [
+      "TASK-101",
+      "TASK-102",
+      "TASK-103",
+      "TASK-104",
+      "TASK-105",
+      "TASK-106",
+      "TASK-107",
+      "TASK-108"
+    ],
+    "closure_owner": "TASK-108",
+    "parent_status": "In Progress"
   },
   "task_79_schema_evidence": {
     "owner": "TASK-79",
