@@ -83,6 +83,19 @@ pub(super) fn exact_numeric_equality(left: &str, right: &str) -> Option<bool> {
     Some(ExactDecimal::parse(left)?.compare(&ExactDecimal::parse(right)?) == Ordering::Equal)
 }
 
+/// Stable base-ten representation for exact typed decimal map-key identity.
+/// This preserves arbitrary precision while collapsing leading/trailing zeros
+/// and signed zero into the same physical numeric equivalence class.
+pub(super) fn canonical_decimal_identity(value: &str) -> Option<String> {
+    let decimal = ExactDecimal::parse(value)?;
+    let sign = if decimal.negative { "-" } else { "" };
+    if decimal.fraction.is_empty() {
+        Some(format!("{sign}{}", decimal.integer))
+    } else {
+        Some(format!("{sign}{}.{}", decimal.integer, decimal.fraction))
+    }
+}
+
 fn matches_comparison(order: Ordering, operator: CheckCompareOperator) -> bool {
     match operator {
         CheckCompareOperator::Eq => order == Ordering::Equal,
