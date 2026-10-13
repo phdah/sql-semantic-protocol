@@ -1308,6 +1308,11 @@ pub(crate) fn conjoin_physical_row_truths(
             possible.contains(&SqlTruth::False) || possible.contains(&SqlTruth::Unknown)
         }
     };
+    if !satisfiable && joint.contains_column_comparison() {
+        // Region representatives establish concrete existence, but cannot
+        // establish universal absence for correlated source columns.
+        return None;
+    }
     Some((joint, satisfiable))
 }
 
@@ -1347,7 +1352,7 @@ pub(crate) fn jointly_satisfiable_physical_truths(
     if truths.is_empty() {
         return None;
     }
-    Some(truths.iter().any(|row_truths| {
+    let satisfiable = truths.iter().any(|row_truths| {
         row_truths
             .iter()
             .zip(requirements)
@@ -1355,7 +1360,11 @@ pub(crate) fn jointly_satisfiable_physical_truths(
                 BooleanTruthCase::True => *actual == SqlTruth::True,
                 BooleanTruthCase::NotTrue => *actual != SqlTruth::True,
             })
-    }))
+    });
+    if !satisfiable && conditions.iter().any(|condition| condition.contains_column_comparison()) {
+        return None;
+    }
+    Some(satisfiable)
 }
 
 fn possible_joint_truths(
@@ -1578,6 +1587,41 @@ fn eval_joint_truth(
             } else {
                 SqlTruth::False
             })
+        }
+        BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator,
+            right,
+        } => {
+            use crate::protocol::ComparisonOperator as Op;
+            let read = |column: &ColumnRef| -> Option<Option<i128>> {
+                match assignment.get(column)? {
+                    Some(RowScalar::Integer(value)) => Some(Some(*value)),
+                    None => Some(None),
+                    _ => None,
+                }
+            };
+            let lhs = read(left)?;
+            let rhs = read(right)?;
+            let result = match operator {
+                Op::IsDistinctFrom => lhs != rhs,
+                Op::IsNotDistinctFrom => lhs == rhs,
+                ordinary => {
+                    let (Some(lhs), Some(rhs)) = (lhs, rhs) else {
+                        return Some(SqlTruth::Unknown);
+                    };
+                    match ordinary {
+                        Op::Eq => lhs == rhs,
+                        Op::Neq => lhs != rhs,
+                        Op::Lt => lhs < rhs,
+                        Op::Lte => lhs <= rhs,
+                        Op::Gt => lhs > rhs,
+                        Op::Gte => lhs >= rhs,
+                        Op::IsDistinctFrom | Op::IsNotDistinctFrom => unreachable!("handled above"),
+                    }
+                }
+            };
+            Some(if result { SqlTruth::True } else { SqlTruth::False })
         }
         BooleanRowConstraint::StringPrefix {
             column,
