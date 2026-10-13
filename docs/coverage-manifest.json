@@ -51,7 +51,9 @@
       "attested_binary_text_key_and_foreign_key_comparisons",
       "attested_binary_text_comparison_provenance_protocol_serialization",
       "typed_nested_target_appends_against_existing_rows_and_cross_relation_constraints",
-      "same_column_equality_OR_CHECK_sql_ddl_and_dbt_atomic_normalization"
+      "same_column_equality_OR_CHECK_sql_ddl_and_dbt_atomic_normalization",
+      "attested_binary_text_CHECK_eq_neq_without_ordering_assumptions",
+      "dbt_portable_CHECK_IN_list_null_safe_parity"
     ],
     "tests": [
       "tests/physical_write_states.rs",
