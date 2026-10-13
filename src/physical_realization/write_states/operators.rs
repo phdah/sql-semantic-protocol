@@ -210,7 +210,7 @@ pub(super) fn append_rows(
 /// SQL does not permit assigning an ALWAYS-generated column directly. Preserve
 /// this distinction even when a direct assignment would equal the generated
 /// value, and recompute from the post-assignment base-column values.
-fn apply_target_update(
+pub(super) fn apply_target_update(
     bundle: &AnalysisBundle,
     target: &str,
     before: &PhysicalWriteRow,
