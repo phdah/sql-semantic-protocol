@@ -361,17 +361,19 @@ pub(super) fn analyze_create_table_constraints(
                             )?);
                         }
                         None => {
-                            if let Some((name, operator, value)) = comparison_from_check(
-                                expr,
-                                Some(column.name.value.as_str()),
-                            ) {
+                            if let Some((name, operator, value)) =
+                                comparison_from_check(expr, Some(column.name.value.as_str()))
+                            {
                                 constraints.push(RelationConstraint::check_comparison(
                                     name,
                                     operator,
                                     value,
                                     vec![sql_constraint_evidence(
                                         &relation,
-                                        format!("{}:column:{}:check:{}", relation, column.name, option_index),
+                                        format!(
+                                            "{}:column:{}:check:{}",
+                                            relation, column.name, option_index
+                                        ),
                                         None,
                                     )?],
                                 )?);
@@ -381,7 +383,7 @@ pub(super) fn analyze_create_table_constraints(
                                     format!("check constraint on '{}.{}' has unproved expression semantics", relation, column.name),
                                 ));
                             }
-                        },
+                        }
                     }
                 }
                 _ => {}
@@ -422,7 +424,11 @@ pub(super) fn analyze_create_table_constraints(
 pub(super) fn comparison_from_check(
     expression: &Expr,
     expected_column: Option<&str>,
-) -> Option<(String, crate::constraints::CheckCompareOperator, ConstraintValue)> {
+) -> Option<(
+    String,
+    crate::constraints::CheckCompareOperator,
+    ConstraintValue,
+)> {
     use crate::constraints::CheckCompareOperator;
     let Expr::BinaryOp { left, op, right } = unwrap_nested_expression(expression) else {
         return None;
