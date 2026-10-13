@@ -1245,7 +1245,8 @@ fn exact_text_key_duplicates_are_impossible_but_distinct_collation_is_unproved()
 
 #[test]
 fn conjunctive_checks_validate_every_portable_clause_or_remain_wholly_residual() {
-    let schema = "CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id > 0 AND score < id + 10))";
+    let schema =
+        "CREATE TABLE target(id INTEGER, score INTEGER, CHECK (id > 0 AND score < id + 10))";
     for dialect in ["duckdb", "postgresql", "mysql", "generic", "snowflake"] {
         let mut b = bundle(&[schema], dialect);
         let set = b
@@ -1262,50 +1263,45 @@ fn conjunctive_checks_validate_every_portable_clause_or_remain_wholly_residual()
         // The DDL parser does not assert engine enforcement when ENFORCED is
         // omitted. It must be residual until authoritative metadata is added.
         assert!(matches!(
-            physical_closed_world_schema_plan(
-                &b,
-                &[state("target", &[(Some(1), Some(5))])]
-            ),
+            physical_closed_world_schema_plan(&b, &[state("target", &[(Some(1), Some(5))])]),
             PhysicalWriteStatePlan::Residual { .. }
         ));
-        let scalar = set.constraints().iter().find_map(|rule| {
-            if let RelationConstraint::CheckComparison(check) = rule {
-                Some(check)
-            } else {
-                None
-            }
-        }).unwrap();
+        let scalar = set
+            .constraints()
+            .iter()
+            .find_map(|rule| {
+                if let RelationConstraint::CheckComparison(check) = rule {
+                    Some(check)
+                } else {
+                    None
+                }
+            })
+            .unwrap();
         let rule = RelationConstraint::check_comparison(
             scalar.column().to_string(),
             scalar.operator(),
             scalar.value().clone(),
             evidence(),
-        ).unwrap();
+        )
+        .unwrap();
         let computed = &set.computed_checks()[0];
         let computed = ComputedCheckConstraint::new(
             computed.left().clone(),
             computed.operator(),
             computed.right().clone(),
             evidence(),
-        ).unwrap();
-        b.enrich_relation_constraints(&[
-            RelationConstraintSet::new("target", vec![rule])
-                .unwrap()
-                .with_computed_checks(vec![computed]),
-        ]);
-        for rows in [
-            vec![(Some(1), Some(5))],
-            vec![(Some(1), None)],
-        ] {
+        )
+        .unwrap();
+        b.enrich_relation_constraints(&[RelationConstraintSet::new("target", vec![rule])
+            .unwrap()
+            .with_computed_checks(vec![computed])]);
+        for rows in [vec![(Some(1), Some(5))], vec![(Some(1), None)]] {
             assert!(matches!(
                 physical_closed_world_schema_plan(&b, &[state("target", &rows)]),
                 PhysicalWriteStatePlan::Feasible { .. }
             ));
         }
-        for rows in [
-            vec![(Some(-1), Some(0))],
-            vec![(Some(1), Some(99))],
-        ] {
+        for rows in [vec![(Some(-1), Some(0))], vec![(Some(1), Some(99))]] {
             assert!(matches!(
                 physical_closed_world_schema_plan(&b, &[state("target", &rows)]),
                 PhysicalWriteStatePlan::Impossible { .. }
@@ -1334,6 +1330,10 @@ fn conjunctive_checks_validate_every_portable_clause_or_remain_wholly_residual()
          INSERT INTO target VALUES (1,5), (2,NULL);",
     )
     .unwrap();
-    assert!(db.execute_batch("INSERT INTO target VALUES (-1,0)").is_err());
-    assert!(db.execute_batch("INSERT INTO target VALUES (1,99)").is_err());
+    assert!(db
+        .execute_batch("INSERT INTO target VALUES (-1,0)")
+        .is_err());
+    assert!(db
+        .execute_batch("INSERT INTO target VALUES (1,99)")
+        .is_err());
 }
