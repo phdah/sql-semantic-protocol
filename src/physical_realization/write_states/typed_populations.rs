@@ -298,8 +298,9 @@ pub fn physical_typed_append_schema_plan(
 ///
 /// Each projected value must be a direct source-column reference or an exact
 /// literal. Nested Arrow values are copied without converting them to SQL
-/// scalar literals. WHERE, joins, grouping, functions, generated omissions,
-/// transaction/deferral effects and non-INSERT writes remain residual. Every
+/// scalar literals. Portable WHERE predicates over complete scalar columns
+/// obey SQL three-valued logic; nested predicates, joins, grouping, functions,
+/// generated omissions, transaction effects and non-INSERT writes remain residual. Every
 /// poststate is checked against all attested target/source constraints, so
 /// duplicate rows and FK cycles are never certified by isolated row guesses.
 pub fn physical_typed_ordered_insert_plan(
@@ -366,7 +367,6 @@ pub fn physical_typed_ordered_insert_plan(
             || query.set_operation().is_some()
             || query.aggregation().is_some()
             || !query.joins().is_empty()
-            || query.predicates().where_predicate().is_some()
             || query.predicates().having_predicate().is_some()
             || query.predicates().qualify_predicate().is_some()
         {
@@ -404,8 +404,30 @@ pub fn physical_typed_ordered_insert_plan(
         {
             return gap("typed INSERT must explicitly determine all unique target columns");
         }
+        let aliases = [source.alias().unwrap_or(source.name()), source.name()];
         let mut inserted = Vec::new();
         for row in &source_rows.rows {
+            // WHERE can inspect scalar source columns only. Do not expose
+            // fabricated scalar NULLs for nested Arrow values to the SQL
+            // predicate evaluator, which would turn IS NULL into a false proof.
+            let scalar_row = PhysicalWriteRow {
+                values: row.values.iter().filter_map(|(name, value)| match value {
+                    PhysicalTypedValue::Scalar(literal) => Some((name.clone(), literal.clone())),
+                    _ => None,
+                }).collect(),
+            };
+            let context = super::evaluator::Context {
+                target: None,
+                target_alias: None,
+                source: Some((source.name(), &scalar_row)),
+            };
+            match super::evaluator::selected(
+                query.predicates().where_predicate(), &context, &aliases,
+            ) {
+                Ok(false) => continue,
+                Ok(true) => {}
+                Err(_) => return gap("typed INSERT filter has no exact scalar predicate proof"),
+            }
             let mut projected = BTreeMap::new();
             for (target_column, output) in columns.iter().zip(query.output().columns()) {
                 let value = match output.expression() {
