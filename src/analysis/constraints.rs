@@ -2,6 +2,7 @@
 
 use super::*;
 use crate::column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
+use crate::computed_keys::ComputedKeyConstraint;
 
 /// Normalize a complete CREATE TABLE declaration into canonical typed schema evidence.
 /// Unknown/unsupported declarations must not produce a partial authoritative schema.
@@ -74,6 +75,7 @@ pub(super) fn analyze_create_table_constraints(
     let mut constraints = Vec::new();
     let mut diagnostics = Vec::new();
     let mut column_value_sources = Vec::new();
+    let mut computed_keys = Vec::new();
 
     for (index, constraint) in create_table.constraints.iter().enumerate() {
         match constraint {
@@ -97,12 +99,25 @@ pub(super) fn analyze_create_table_constraints(
                         characteristics.as_ref(),
                     )?],
                 )?),
-                None => diagnostics.push(ConstraintDiagnostic::new(
-                    "unsupported_key_expression",
-                    format!(
-                        "primary key on relation '{relation}' contains a non-column expression"
-                    ),
-                )),
+                None => {
+                    if let Some(expressions) = index_computed_key_exprs(columns) {
+                        computed_keys.push(ComputedKeyConstraint::new(
+                            expressions,
+                            true,
+                            vec![sql_constraint_evidence(
+                                &relation,
+                                constraint_identity("primary_key", index, name.as_ref().map(ToString::to_string)
+                                    .or_else(|| index_name.as_ref().map(ToString::to_string))),
+                                characteristics.as_ref(),
+                            )?],
+                        )?);
+                    } else {
+                        diagnostics.push(ConstraintDiagnostic::new(
+                            "unsupported_key_expression",
+                            format!("primary_key on relation '{relation}' contains an unproved expression"),
+                        ));
+                    }
+                },
             },
             TableConstraint::Unique {
                 name,
@@ -124,12 +139,25 @@ pub(super) fn analyze_create_table_constraints(
                         characteristics.as_ref(),
                     )?],
                 )?),
-                None => diagnostics.push(ConstraintDiagnostic::new(
-                    "unsupported_key_expression",
-                    format!(
-                        "unique constraint on relation '{relation}' contains a non-column expression"
-                    ),
-                )),
+                None => {
+                    if let Some(expressions) = index_computed_key_exprs(columns) {
+                        computed_keys.push(ComputedKeyConstraint::new(
+                            expressions,
+                            false,
+                            vec![sql_constraint_evidence(
+                                &relation,
+                                constraint_identity("unique", index, name.as_ref().map(ToString::to_string)
+                                    .or_else(|| index_name.as_ref().map(ToString::to_string))),
+                                characteristics.as_ref(),
+                            )?],
+                        )?);
+                    } else {
+                        diagnostics.push(ConstraintDiagnostic::new(
+                            "unsupported_key_expression",
+                            format!("unique on relation '{relation}' contains an unproved expression"),
+                        ));
+                    }
+                },
             },
             TableConstraint::ForeignKey {
                 name,
@@ -416,12 +444,13 @@ pub(super) fn analyze_create_table_constraints(
         }
     }
 
-    if constraints.is_empty() && diagnostics.is_empty() && column_value_sources.is_empty() {
+    if constraints.is_empty() && computed_keys.is_empty() && diagnostics.is_empty() && column_value_sources.is_empty() {
         return Ok(None);
     }
 
     let mut set = RelationConstraintSet::new(relation, constraints)?
-        .with_column_value_sources(column_value_sources);
+        .with_column_value_sources(column_value_sources)
+        .with_computed_keys(computed_keys);
     for diagnostic in diagnostics {
         set.add_diagnostic(diagnostic);
     }
@@ -640,6 +669,10 @@ pub(super) fn constraint_identity(kind: &str, index: usize, name: Option<String>
         Some(name) => format!("{kind}:{name}"),
         None => format!("{kind}:{}", index + 1),
     }
+}
+
+fn index_computed_key_exprs(columns: &[IndexColumn]) -> Option<Vec<GeneratedValueExpression>> {
+    columns.iter().map(|column| parse_generated_expression(&column.column.expr)).collect()
 }
 
 pub(super) fn index_column_names(columns: &[IndexColumn]) -> Option<Vec<String>> {
