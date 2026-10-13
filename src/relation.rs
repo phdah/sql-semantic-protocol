@@ -9,6 +9,22 @@ use std::fmt;
 
 use crate::data_type::{parse_data_type, DataType};
 
+/// Explicit physical string-comparison law, never inferred from a collation name.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum TextComparisonLaw {
+    /// Unequal exact byte sequences compare unequal without normalization.
+    Binary,
+}
+
+impl TextComparisonLaw {
+    /// Stable protocol spelling.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Binary => "binary",
+        }
+    }
+}
+
 /// Default catalog and schema context applied to one configured SQL input.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct RelationContext {
@@ -125,6 +141,8 @@ pub struct SchemaColumn {
     data_type: DataType,
     timestamp_zone: Option<TimestampZone>,
     collation: Option<String>,
+    text_comparison_law: Option<TextComparisonLaw>,
+    comparison_evidence: Vec<crate::constraints::ConstraintEvidence>,
 }
 
 impl SchemaColumn {
@@ -146,6 +164,8 @@ impl SchemaColumn {
             data_type,
             timestamp_zone: None,
             collation: None,
+            text_comparison_law: None,
+            comparison_evidence: Vec::new(),
         })
     }
 
@@ -217,6 +237,48 @@ impl SchemaColumn {
     /// Physical collation identity, with no implicit binary or case-insensitive assumptions.
     pub fn collation(&self) -> Option<&str> {
         self.collation.as_deref()
+    }
+
+    /// Attach a portable text law only alongside nonempty, authoritative evidence.
+    /// A collation's name alone is never trusted as execution semantics.
+    pub fn with_text_comparison_law(
+        mut self,
+        law: TextComparisonLaw,
+        evidence: Vec<crate::constraints::ConstraintEvidence>,
+    ) -> Result<Self, RelationMetadataError> {
+        if evidence.is_empty() || !evidence.iter().any(|source| {
+            source.enforcement() == crate::constraints::ConstraintEnforcement::Enforced
+        }) {
+            return Err(RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: "text comparison law requires attested enforcement evidence".to_string(),
+            });
+        }
+        let mut inner = &self.data_type;
+        while let DataType::Nullable(nested) = inner {
+            inner = nested.as_ref();
+        }
+        if !matches!(inner, DataType::String { .. }) {
+            return Err(RelationMetadataError::InvalidSchema {
+                relation: String::new(),
+                message: "text comparison law requires a string datatype".to_string(),
+            });
+        }
+        self.text_comparison_law = Some(law);
+        self.comparison_evidence = evidence;
+        self.comparison_evidence.sort();
+        self.comparison_evidence.dedup();
+        Ok(self)
+    }
+
+    /// Comparison law with an authoritative metadata attestation.
+    pub fn text_comparison_law(&self) -> Option<TextComparisonLaw> {
+        self.text_comparison_law
+    }
+
+    /// Typed provenance for physical string comparison semantics.
+    pub fn comparison_evidence(&self) -> &[crate::constraints::ConstraintEvidence] {
+        &self.comparison_evidence
     }
 
     /// Return physical time-zone awareness, or None when metadata cannot prove it.
