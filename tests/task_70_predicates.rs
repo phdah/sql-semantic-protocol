@@ -323,3 +323,31 @@ fn duckdb_oracle_confirms_nullable_correlated_integer_truths() {
         assert_eq!(count, expected, "{predicate}");
     }
 }
+
+#[test]
+fn exhaustive_scalar_regions_distinguish_impossible_from_unproved() {
+    for predicate in [
+        "a > 3 AND a <= 3",
+        "a IN (1, 2) AND a NOT IN (1, 2)",
+        "a IS NULL AND a IS NOT NULL",
+    ] {
+        let witness = typed_witness(predicate);
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Impossible),
+            "{predicate}: contradiction must be provably impossible"
+        );
+        assert!(matches!(
+            witness.rejected(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        ));
+    }
+    let tautology = typed_witness("a IS NULL OR a IS NOT NULL");
+    assert!(matches!(
+        tautology.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        tautology.rejected(),
+        BooleanWitnessDirection::Impossible
+    ));
+}
