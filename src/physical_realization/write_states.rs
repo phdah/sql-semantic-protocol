@@ -362,7 +362,10 @@ pub fn physical_ordered_write_state_plan_with_identities(
     let mut identity_columns = BTreeSet::<(String, String)>::new();
     for sequence in sequences {
         let pair = (sequence.relation.clone(), sequence.column.clone());
-        if identity_sequences.insert(pair.clone(), sequence.clone()).is_some() {
+        if identity_sequences
+            .insert(pair.clone(), sequence.clone())
+            .is_some()
+        {
             return failure(None, impossible("duplicate controlled identity sequence"));
         }
         let attested = bundle.relation_constraints().iter().any(|set| {
@@ -459,16 +462,14 @@ pub fn physical_ordered_write_state_plan_with_identities(
                 mutate_rows(bundle, query, &states, target, before.as_ref(), false)
             }
             WriteKind::Delete => mutate_rows(bundle, query, &states, target, before.as_ref(), true),
-            WriteKind::ConditionalMutation => {
-                merge_rows(
-                    bundle,
-                    query,
-                    &states,
-                    target,
-                    before.as_ref(),
-                    &mut identity_sequences,
-                )
-            }
+            WriteKind::ConditionalMutation => merge_rows(
+                bundle,
+                query,
+                &states,
+                target,
+                before.as_ref(),
+                &mut identity_sequences,
+            ),
         };
         let (after, counts) = match result {
             Ok(value) => value,
@@ -564,8 +565,7 @@ mod typed_values;
 
 pub use typed_populations::{
     physical_typed_append_schema_plan, physical_typed_closed_world_schema_plan,
-    PhysicalTypedPopulationPlan, PhysicalTypedWriteRow,
-    PhysicalTypedWriteState,
+    PhysicalTypedPopulationPlan, PhysicalTypedWriteRow, PhysicalTypedWriteState,
 };
 pub use typed_values::{physical_typed_value_plan, PhysicalTypeProof, PhysicalTypedValue};
 
