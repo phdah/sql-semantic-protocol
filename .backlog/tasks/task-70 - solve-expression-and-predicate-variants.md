@@ -60,6 +60,8 @@ The first bounded canonical Boolean-predicate increment lives on
   supports NULL-test outcome selection without collapsing SQL UNKNOWN.
 - Safe LIKE prefixes accept an inert explicit single-character ESCAPE only
   under the existing binary-collation and no-padding proof requirements.
+- Catalog-typed integer self-comparisons now prove impossible or tautological
+  outcomes exhaustively, without extending that claim to unrelated columns.
 - No consumer-specific semantics, parser AST in protocol types, or wire
   format changes. The existing schema and adapter-translated SQL facts
   remain authoritative.

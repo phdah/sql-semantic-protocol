@@ -27,7 +27,7 @@ comparisons refine projected domains when source identity is proven.
 Exactness still requires authoritative source datatype evidence and a complete,
 consistent assignment of all coupled source columns. Arithmetic inversion is
 limited to proven widened signed casts/offsets; unsafe casts, cross-column
-comparisons, NULL-containing `IN` lists, computed `BETWEEN` operands and
+comparisons beyond identical-column exhaustive regions, NULL-containing `IN` lists, computed `BETWEEN` operands and
 dialect-sensitive pattern/regex, collations, coercions or opaque functions
 remain explicit residuals. Prefix `LIKE` requires separate binary-collation
 and no-padding attestations. An explicit single-character `ESCAPE` is supported only when it never appears in the safe prefix and is not the trailing `%` wildcard. Operator-local witnesses do **not** establish a

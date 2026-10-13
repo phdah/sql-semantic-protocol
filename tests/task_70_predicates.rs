@@ -477,6 +477,37 @@ fn typed_cross_column_comparisons_prove_existence_without_independent_domains() 
 }
 
 #[test]
+fn identical_source_column_comparison_regions_are_exhaustive() {
+    for predicate in [
+        "a <> a",
+        "a < a",
+        "a > a",
+        "a IS DISTINCT FROM a",
+    ] {
+        let witness = typed_witness(predicate);
+        assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Impossible), "{predicate}");
+        assert!(matches!(
+            witness.rejected(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        ), "{predicate}");
+    }
+    let same = assert_both_directions_exact("a = a");
+    assert!(matches!(
+        same.condition(),
+        BooleanRowConstraint::IntegerColumnComparison { .. }
+    ));
+    let tautology = typed_witness("a IS NOT DISTINCT FROM a");
+    assert!(matches!(
+        tautology.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        tautology.rejected(),
+        BooleanWitnessDirection::Impossible
+    ));
+}
+
+#[test]
 fn mutually_exclusive_correlated_comparisons_never_claim_impossibility_from_samples() {
     let witness = typed_witness("a > b AND b > a");
     assert!(

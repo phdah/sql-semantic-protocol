@@ -17,6 +17,7 @@
       "total_integer_cast_coalesce_nullif_null_tests",
       "searched_case_integer_null_tests_with_two_valued_guards",
       "unambiguous_like_prefix_with_inert_escape_attestations",
+      "identical_integer_column_exhaustive_truth_regions",
       "nested_three_valued_not_and_or",
       "signed_integer_is_distinct_from",
       "direct_is_distinct_from_null"

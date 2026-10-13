@@ -237,8 +237,10 @@ impl BooleanRowConstraint {
             Self::NullTest { .. }
             | Self::UnknownNullComparison { .. }
             | Self::IntegerComparison { .. } => true,
-            Self::IntegerColumnComparison { .. }
-            | Self::StringEquality { .. }
+            // A source value compared to itself has complete TRUE/FALSE/UNKNOWN
+            // regions, unlike two independently ranged correlated columns.
+            Self::IntegerColumnComparison { left, right, .. } => left == right,
+            Self::StringEquality { .. }
             | Self::StringPrefix { .. }
             | Self::Residual { .. } => false,
         }
@@ -249,7 +251,7 @@ impl BooleanRowConstraint {
             Self::All(operands) | Self::Any(operands) => {
                 operands.iter().any(Self::contains_column_comparison)
             }
-            Self::IntegerColumnComparison { .. } => true,
+            Self::IntegerColumnComparison { left, right, .. } => left != right,
             _ => false,
         }
     }
