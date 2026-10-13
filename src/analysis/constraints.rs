@@ -534,10 +534,7 @@ fn portable_equality_disjunction(
     expr: &Expr,
     expected_column: Option<&str>,
 ) -> Option<(String, Vec<ConstraintValue>, bool)> {
-    fn collect(
-        expr: &Expr,
-        entries: &mut Vec<(String, ConstraintValue, bool)>,
-    ) -> Option<()> {
+    fn collect(expr: &Expr, entries: &mut Vec<(String, ConstraintValue, bool)>) -> Option<()> {
         match unwrap_nested_expression(expr) {
             Expr::BinaryOp {
                 left,
@@ -583,9 +580,9 @@ fn portable_equality_disjunction(
     let first_column = first_column.clone();
     let first_quote = *first_quote;
     if expected_column.is_some_and(|column| column != first_column.as_str())
-        || entries.iter().any(|(column, _, quote)| {
-            column != &first_column || *quote != first_quote
-        })
+        || entries
+            .iter()
+            .any(|(column, _, quote)| column != &first_column || *quote != first_quote)
     {
         return None;
     }
@@ -632,9 +629,7 @@ fn portable_check_constraints(
             .collect::<Result<Vec<_>, _>>()?;
         return Ok(Some((rules, Vec::new())));
     }
-    if let Some((column, values, quote)) =
-        portable_equality_disjunction(expr, expected_column)
-    {
+    if let Some((column, values, quote)) = portable_equality_disjunction(expr, expected_column) {
         return Ok(Some((
             vec![RelationConstraint::accepted_values(
                 column,
@@ -721,9 +716,8 @@ pub(crate) fn portable_check_expressions(expression: &str) -> Option<Vec<Portabl
             for (column, operator, value) in bounds {
                 output.push(PortableCheckExpression::Scalar(column, operator, value));
             }
-        } else if let Some((column, values, quote)) =
-            portable_equality_disjunction(expr, None)
-                .or_else(|| accepted_values_from_check(expr, None))
+        } else if let Some((column, values, quote)) = portable_equality_disjunction(expr, None)
+            .or_else(|| accepted_values_from_check(expr, None))
         {
             output.push(PortableCheckExpression::AcceptedValues(
                 column, values, quote,
