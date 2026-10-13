@@ -3948,16 +3948,24 @@
       "additionalProperties": false,
       "required": ["kind"],
       "properties": {
-        "kind": { "enum": ["column", "literal", "add", "subtract", "multiply"] },
+        "kind": { "enum": ["column", "literal", "add", "subtract", "multiply", "abs", "coalesce"] },
         "column": { "$ref": "#/$defs/nonEmptyString" },
         "value": { "$ref": "#/$defs/constraintValue" },
         "left": { "$ref": "#/$defs/generatedValueExpression" },
-        "right": { "$ref": "#/$defs/generatedValueExpression" }
+        "right": { "$ref": "#/$defs/generatedValueExpression" },
+        "operand": { "$ref": "#/$defs/generatedValueExpression" },
+        "arguments": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/generatedValueExpression" }
+        }
       },
       "oneOf": [
         { "properties": { "kind": { "const": "column" } }, "required": ["column"] },
         { "properties": { "kind": { "const": "literal" } }, "required": ["value"] },
-        { "properties": { "kind": { "enum": ["add", "subtract", "multiply"] } }, "required": ["left", "right"] }
+        { "properties": { "kind": { "enum": ["add", "subtract", "multiply"] } }, "required": ["left", "right"] },
+        { "properties": { "kind": { "const": "abs" } }, "required": ["operand"] },
+        { "properties": { "kind": { "const": "coalesce" } }, "required": ["arguments"] }
       ]
     },
     "columnValueSource": {
