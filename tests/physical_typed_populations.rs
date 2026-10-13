@@ -176,6 +176,14 @@ fn physical_nested_population_duckdb_array_struct_differential() {
     assert!(db
         .execute_batch("INSERT INTO events VALUES (1, {'scores': [4,5], 'label': 'duplicate'});",)
         .is_err());
+    // The same structured value is returned as an actual Arrow StructArray,
+    // not a serialized SQL text representation.
+    let mut arrow_statement = db.prepare("SELECT payload FROM events").unwrap();
+    let mut batches = arrow_statement.query_arrow([]).unwrap();
+    let arrow_batch = batches.next().unwrap();
+    assert_eq!(arrow_batch.num_rows(), 1);
+    assert_eq!(arrow_batch.num_columns(), 1);
+    assert!(format!("{:?}", arrow_batch.schema().field(0).data_type()).contains("Struct"));
 }
 
 #[test]
