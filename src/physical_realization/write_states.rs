@@ -345,6 +345,45 @@ pub fn physical_ordered_write_state_plan(
     bundle: &AnalysisBundle,
     initial_states: &[PhysicalWriteState],
 ) -> PhysicalWriteStatePlan {
+    physical_ordered_write_state_plan_with_identities(bundle, initial_states, &[])
+}
+
+/// Execute ordered SQL writes with exact, caller-attested identity sequence
+/// states. The supplied next value and increment are assumptions of this
+/// conditional proof, never inferred from existing rows or a SQL dialect name.
+///
+/// The ordinary write-state API remains residual for identity allocations.
+pub fn physical_ordered_write_state_plan_with_identities(
+    bundle: &AnalysisBundle,
+    initial_states: &[PhysicalWriteState],
+    sequences: &[PhysicalIdentitySequence],
+) -> PhysicalWriteStatePlan {
+    let mut identity_sequences = BTreeMap::<(String, String), PhysicalIdentitySequence>::new();
+    let mut identity_columns = BTreeSet::<(String, String)>::new();
+    for sequence in sequences {
+        let pair = (sequence.relation.clone(), sequence.column.clone());
+        if identity_sequences.insert(pair.clone(), sequence.clone()).is_some() {
+            return failure(None, impossible("duplicate controlled identity sequence"));
+        }
+        let attested = bundle.relation_constraints().iter().any(|set| {
+            set.relation() == sequence.relation()
+                && set.column_value_sources().iter().any(|source| {
+                    source.column() == sequence.column()
+                        && source.kind() == crate::column_sources::ColumnValueKind::Identity
+                        && generated::authoritative(source)
+                })
+        });
+        if !attested {
+            return failure(
+                None,
+                residual_gap(
+                    PhysicalWriteStateGap::UnprovedConstraint,
+                    "identity sequence has no authoritative canonical column declaration",
+                ),
+            );
+        }
+        identity_columns.insert(pair);
+    }
     let mut states = BTreeMap::<String, PhysicalWriteState>::new();
     for state in initial_states {
         if states
@@ -375,7 +414,12 @@ pub fn physical_ordered_write_state_plan(
                 .to_string(),
         };
     }
-    if let Err(error) = validate_all_constraints(bundle, &states) {
+    if let Err(error) = constraints::validate_all_constraints_with_identity(
+        bundle,
+        &states,
+        &BTreeSet::new(),
+        &identity_columns,
+    ) {
         return failure(None, error);
     }
     let mut transitions = Vec::new();
@@ -408,13 +452,27 @@ pub fn physical_ordered_write_state_plan(
         let before = states.get(target).cloned();
         let result = match kind {
             WriteKind::Definition => define_rows(bundle, query, &states, target, before.as_ref()),
-            WriteKind::Append => append_rows(bundle, query, &states, target, before.as_ref()),
+            WriteKind::Append => append_rows(
+                bundle,
+                query,
+                &states,
+                target,
+                before.as_ref(),
+                &mut identity_sequences,
+            ),
             WriteKind::Update => {
                 mutate_rows(bundle, query, &states, target, before.as_ref(), false)
             }
             WriteKind::Delete => mutate_rows(bundle, query, &states, target, before.as_ref(), true),
             WriteKind::ConditionalMutation => {
-                merge_rows(bundle, query, &states, target, before.as_ref())
+                merge_rows(
+                    bundle,
+                    query,
+                    &states,
+                    target,
+                    before.as_ref(),
+                    &mut identity_sequences,
+                )
             }
         };
         let (after, counts) = match result {
@@ -453,7 +511,12 @@ pub fn physical_ordered_write_state_plan(
             rows: Vec::new(),
         });
         states.insert(target.to_string(), after.clone());
-        if let Err(error) = validate_all_constraints(bundle, &states) {
+        if let Err(error) = constraints::validate_all_constraints_with_identity(
+            bundle,
+            &states,
+            &BTreeSet::new(),
+            &identity_columns,
+        ) {
             return failure(Some(layer.id()), error);
         }
         transitions.push(PhysicalWriteTransition {
@@ -498,6 +561,6 @@ pub use typed_populations::{
 };
 pub use typed_values::{physical_typed_value_plan, PhysicalTypeProof, PhysicalTypedValue};
 
-use constraints::{validate_all_constraints, validate_state};
+use constraints::validate_state;
 use operators::{append_rows, define_rows, merge_rows, mutate_rows};
 use type_validation::validate_column_value;
