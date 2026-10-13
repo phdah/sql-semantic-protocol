@@ -234,4 +234,3 @@ fn constraint_scalar_equal(value: &LiteralValue, candidate: &ConstraintValue) ->
         _ => Err(residual("unproved accepted-value coercion")),
     }
 }
-
