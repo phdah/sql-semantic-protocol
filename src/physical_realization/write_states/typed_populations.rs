@@ -293,17 +293,84 @@ pub fn physical_typed_append_schema_plan(
     physical_typed_closed_world_schema_plan(bundle, &final_states)
 }
 
-/// Execute only lossless, row-preserving typed INSERT SELECT statements over
-/// complete physical populations, in canonical SQL statement order.
+/// Convert only attested scalar values, never nested Arrow values, to a
+/// temporary row for the existing canonical scalar predicate interpreter.
+fn scalar_shadow(row: &PhysicalTypedWriteRow) -> PhysicalWriteRow {
+    PhysicalWriteRow {
+        values: row.values.iter().filter_map(|(name, value)| match value {
+            PhysicalTypedValue::Scalar(literal) => Some((name.clone(), literal.clone())),
+            _ => None,
+        }).collect(),
+    }
+}
+
+/// Apply scalar-only UPDATE or DELETE against a complete typed target population.
+///
+/// The SQL evaluator cannot interpret Arrow-valued expressions. Nested columns
+/// remain byte-for-byte unchanged and are never exposed as fabricated NULLs.
+/// Each poststate is independently validated after the caller's SQL step.
+fn mutate_typed_rows(
+    bundle: &AnalysisBundle,
+    query: &QueryStatement,
+    before: &PhysicalTypedWriteState,
+    delete: bool,
+) -> Result<PhysicalTypedWriteState, String> {
+    let write = query.write().ok_or("missing canonical mutation operation")?;
+    // An unqualified, unconditional mutation can be proved by the scalar
+    // interpreter, but that path must not be confused with an unparsed WHERE.
+    // Only the explicitly normalized predicate subset is certified here.
+    let predicate = write.selection().ok_or("typed mutation needs a normalized WHERE predicate")?;
+    if !query.sources().is_empty() {
+        return Err("typed mutation unexpectedly has independent source relations".into());
+    }
+    let mut retained = Vec::new();
+    for row in &before.rows {
+        let scalar = scalar_shadow(row);
+        let context = super::evaluator::Context {
+            target: Some((before.relation(), &scalar)),
+            target_alias: write.target_alias(),
+            source: None,
+        };
+        let selected = super::evaluator::selected(Some(predicate), &context, &[])
+            .map_err(|_| "typed mutation WHERE lacks exact scalar semantics")?;
+        if !selected {
+            retained.push(row.clone());
+            continue;
+        }
+        if delete {
+            continue;
+        }
+        let updated = super::operators::apply_target_update(
+            bundle,
+            before.relation(),
+            &scalar,
+            write.assignments(),
+            &context,
+            &[],
+        ).map_err(|_| "typed UPDATE assignment or generated expression is unproved")?;
+        let mut next = row.clone();
+        for (name, literal) in updated.values {
+            next.values.insert(name, PhysicalTypedValue::Scalar(literal));
+        }
+        retained.push(next);
+    }
+    Ok(PhysicalTypedWriteState {
+        relation: before.relation.clone(),
+        rows: retained,
+    })
+}
+
+/// Execute provable nested INSERT SELECT, scalar UPDATE and scalar DELETE
+/// against complete typed snapshots, in canonical SQL statement order.
 ///
 /// Each projected value must be a direct source-column reference or an exact
 /// literal. Nested Arrow values are copied without converting them to SQL
 /// scalar literals. Portable WHERE predicates over complete scalar columns
 /// obey SQL three-valued logic; nested predicates, joins, grouping, functions,
-/// generated omissions, transaction effects and non-INSERT writes remain residual. Every
+/// generated omissions, transaction effects and opaque writes remain residual. Every
 /// poststate is checked against all attested target/source constraints, so
 /// duplicate rows and FK cycles are never certified by isolated row guesses.
-pub fn physical_typed_ordered_insert_plan(
+pub fn physical_typed_ordered_write_plan(
     bundle: &AnalysisBundle,
     initial_states: &[PhysicalTypedWriteState],
 ) -> PhysicalTypedPopulationPlan {
@@ -331,12 +398,6 @@ pub fn physical_typed_ordered_insert_plan(
         let Some(kind) = layer.write_kind() else {
             continue;
         };
-        if kind != WriteKind::Append {
-            return PhysicalTypedPopulationPlan::Residual {
-                relation: None,
-                reason: "only direct typed INSERT SELECT is executable without SQL casts".into(),
-            };
-        }
         let query = bundle
             .inputs()
             .iter()
@@ -363,6 +424,27 @@ pub fn physical_typed_ordered_insert_plan(
             relation: Some(target.to_string()),
             reason: reason.to_string(),
         };
+        if matches!(kind, WriteKind::Update | WriteKind::Delete) {
+            let Some(before) = states.get(target).cloned() else {
+                return gap("typed mutation requires a complete target population");
+            };
+            let after = match mutate_typed_rows(
+                bundle, query, &before, kind == WriteKind::Delete,
+            ) {
+                Ok(after) => after,
+                Err(reason) => return gap(&reason),
+            };
+            states.insert(target.to_string(), after);
+            let snapshots = states.values().cloned().collect::<Vec<_>>();
+            match physical_typed_closed_world_schema_plan(bundle, &snapshots) {
+                PhysicalTypedPopulationPlan::Feasible { .. } => {}
+                other => return other,
+            }
+            continue;
+        }
+        if kind != WriteKind::Append {
+            return gap("typed write operation needs additional SQL execution evidence");
+        }
         if !(query.row_preserving_projection() || query.filter_only_row_shape())
             || query.set_operation().is_some()
             || query.aggregation().is_some()
@@ -416,12 +498,7 @@ pub fn physical_typed_ordered_insert_plan(
             // WHERE can inspect scalar source columns only. Do not expose
             // fabricated scalar NULLs for nested Arrow values to the SQL
             // predicate evaluator, which would turn IS NULL into a false proof.
-            let scalar_row = PhysicalWriteRow {
-                values: row.values.iter().filter_map(|(name, value)| match value {
-                    PhysicalTypedValue::Scalar(literal) => Some((name.clone(), literal.clone())),
-                    _ => None,
-                }).collect(),
-            };
+            let scalar_row = scalar_shadow(row);
             let context = super::evaluator::Context {
                 target: None,
                 target_alias: None,
@@ -472,4 +549,24 @@ pub fn physical_typed_ordered_insert_plan(
     PhysicalTypedPopulationPlan::Feasible {
         final_states: states.into_values().collect(),
     }
+}
+
+/// Execute only lossless, row-preserving typed INSERT SELECT statements.
+///
+/// This narrower compatibility API intentionally rejects UPDATE/DELETE. Use
+/// `physical_typed_ordered_write_plan` for attested scalar mutations preserving
+/// nested columns.
+pub fn physical_typed_ordered_insert_plan(
+    bundle: &AnalysisBundle,
+    initial_states: &[PhysicalTypedWriteState],
+) -> PhysicalTypedPopulationPlan {
+    if bundle.layers().iter().any(|layer| {
+        layer.write_kind().is_some_and(|kind| kind != WriteKind::Append)
+    }) {
+        return PhysicalTypedPopulationPlan::Residual {
+            relation: None,
+            reason: "typed INSERT-only plan cannot execute other DML statements".into(),
+        };
+    }
+    physical_typed_ordered_write_plan(bundle, initial_states)
 }
