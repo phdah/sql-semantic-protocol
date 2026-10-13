@@ -460,11 +460,11 @@ schema:
 
 #[test]
 fn odcs_schema_and_constraint_enforcement_drive_exact_closed_world_proofs() {
-    use std::collections::BTreeMap;
     use sql_semantic_protocol::{
         physical_closed_world_schema_plan, ConstraintEvidence, ConstraintProvenance, LiteralValue,
         PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationConstraintSet,
     };
+    use std::collections::BTreeMap;
     let yaml = r#"
 apiVersion: v3.2.0
 kind: DataContract
@@ -515,20 +515,18 @@ schema:
 
     bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
         "analytics.orders",
-        vec![
-            RelationConstraint::primary_key(
-                vec!["id".into()],
-                vec![ConstraintEvidence::new(
-                    ConstraintProvenance::new(
-                        ConstraintSourceKind::ExternalMetadata,
-                        "warehouse-enforced-primary-key",
-                    )
-                    .unwrap(),
-                    ConstraintEnforcement::Enforced,
-                )],
-            )
-            .unwrap(),
-        ],
+        vec![RelationConstraint::primary_key(
+            vec!["id".into()],
+            vec![ConstraintEvidence::new(
+                ConstraintProvenance::new(
+                    ConstraintSourceKind::ExternalMetadata,
+                    "warehouse-enforced-primary-key",
+                )
+                .unwrap(),
+                ConstraintEnforcement::Enforced,
+            )],
+        )
+        .unwrap()],
     )
     .unwrap()]);
     assert!(matches!(
