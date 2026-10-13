@@ -2689,3 +2689,69 @@ fn composite_fk_considers_later_exact_match_after_unproved_collation_candidates(
         PhysicalWriteStatePlan::Residual { .. }
     ));
 }
+
+#[test]
+fn controlled_identity_allocation_can_feed_portable_generated_dependencies() {
+    let schemas = ["target", "source"]
+        .into_iter()
+        .map(|relation| {
+            RelationSchema::new(
+                relation,
+                ["id","score","label"].into_iter().map(|name|
+                    SchemaColumn::from_sql_type(name,"INTEGER","duckdb").unwrap()
+                ).collect(),
+            ).unwrap()
+        })
+        .collect::<Vec<_>>();
+    let catalog = RelationCatalog::from_schemas(&schemas).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let sql = SqlInput::inline(
+        "INSERT INTO target(label) SELECT score FROM source",
+    );
+    let input = ConfiguredSqlInput::new("identity-generated",&sql,"duckdb",dialect.as_ref());
+    let mut bundle = analyze_configured_inputs_with_catalog(&[input],&catalog).unwrap();
+    let generated = GeneratedValueExpression::Add(
+        Box::new(GeneratedValueExpression::Column("id".into())),
+        Box::new(GeneratedValueExpression::Literal(ConstraintValue::Integer(1))),
+    );
+    bundle.enrich_relation_constraints(&[
+        RelationConstraintSet::new(
+            "target",
+            vec![RelationConstraint::primary_key(vec!["id".into()],evidence()).unwrap()],
+        ).unwrap().with_column_value_sources(vec![
+            ColumnValueSource::new("id",ColumnValueKind::Identity,None,evidence()).unwrap(),
+            ColumnValueSource::new("score",ColumnValueKind::Generated,None,evidence())
+                .unwrap().with_generated_expression(generated).unwrap(),
+        ]),
+    ]);
+    let row = |id:i64,score:i64,label:i64| {
+        PhysicalWriteRow::new(BTreeMap::from([
+            ("id".into(), LiteralValue::Number(id.to_string())),
+            ("score".into(), LiteralValue::Number(score.to_string())),
+            ("label".into(), LiteralValue::Number(label.to_string())),
+        ])).unwrap()
+    };
+    let initial = [
+        PhysicalWriteState::new("target",vec![]).unwrap(),
+        PhysicalWriteState::new("source",vec![row(1,9,0)]).unwrap(),
+    ];
+    let sequence = PhysicalIdentitySequence::new("target","id",100,1).unwrap();
+    assert!(matches!(
+        physical_ordered_write_state_plan(&bundle,&initial),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
+    let plan = physical_ordered_write_state_plan_with_identities(
+        &bundle,&initial,std::slice::from_ref(&sequence),
+    );
+    let (_,states) = outcome(&plan);
+    let target = states.iter().find(|state| state.relation()=="target").unwrap();
+    assert_eq!(target.rows(),&[row(100,101,9)]);
+    let occupied = [
+        PhysicalWriteState::new("target",vec![row(100,101,0)]).unwrap(),
+        PhysicalWriteState::new("source",vec![row(1,9,0)]).unwrap(),
+    ];
+    assert!(matches!(
+        physical_ordered_write_state_plan_with_identities(&bundle,&occupied,&[sequence]),
+        PhysicalWriteStatePlan::Impossible { .. }
+    ));
+}
