@@ -113,7 +113,25 @@ pub fn physical_typed_value_plan(value: &PhysicalTypedValue, data_type: &DataTyp
                     PhysicalTypeProof::Feasible => {}
                     gap => return gap,
                 }
-                if !numeric_keys.insert(number.clone()) {
+                // Canonicalize integer keys before checking equality; 05 and 5 are
+                // the same key. Other numeric key types need exact comparison laws.
+                let identity = match key.as_ref() {
+                    DataType::SignedInteger { .. } => number
+                        .parse::<i128>()
+                        .ok()
+                        .map(|n| format!("signed:{n}")),
+                    DataType::UnsignedInteger { .. } => number
+                        .parse::<u128>()
+                        .ok()
+                        .map(|n| format!("unsigned:{n}")),
+                    _ => None,
+                };
+                let Some(identity) = identity else {
+                    return PhysicalTypeProof::Residual {
+                        reason: "map key canonical numeric identity is not proven".to_string(),
+                    };
+                };
+                if !numeric_keys.insert(identity) {
                     return PhysicalTypeProof::Impossible {
                         reason: "duplicate exact numeric map key".to_string(),
                     };
