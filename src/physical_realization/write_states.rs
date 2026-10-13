@@ -553,6 +553,7 @@ fn failure(layer_id: Option<&str>, error: StateFailure) -> PhysicalWriteStatePla
     }
 }
 
+mod boolean_checks;
 mod check_comparisons;
 mod constraints;
 mod evaluator;
