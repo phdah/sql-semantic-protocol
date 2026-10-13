@@ -433,20 +433,23 @@ pub(super) fn comparison_from_check(
     let Expr::BinaryOp { left, op, right } = unwrap_nested_expression(expression) else {
         return None;
     };
-    let column = check_column_name(left)?;
+    let (column, literal, reversed) = if let Some(column) = check_column_name(left) {
+        (column, constraint_value_from_expression(right)?.0, false)
+    } else {
+        (check_column_name(right)?, constraint_value_from_expression(left)?.0, true)
+    };
     if expected_column.is_some_and(|expected| expected != column) {
         return None;
     }
-    let operator = match op {
-        SqlBinaryOperator::Eq => CheckCompareOperator::Eq,
-        SqlBinaryOperator::NotEq => CheckCompareOperator::NotEq,
-        SqlBinaryOperator::Gt => CheckCompareOperator::Gt,
-        SqlBinaryOperator::GtEq => CheckCompareOperator::Gte,
-        SqlBinaryOperator::Lt => CheckCompareOperator::Lt,
-        SqlBinaryOperator::LtEq => CheckCompareOperator::Lte,
+    let operator = match (op, reversed) {
+        (SqlBinaryOperator::Eq, _) => CheckCompareOperator::Eq,
+        (SqlBinaryOperator::NotEq, _) => CheckCompareOperator::NotEq,
+        (SqlBinaryOperator::Gt, false) | (SqlBinaryOperator::Lt, true) => CheckCompareOperator::Gt,
+        (SqlBinaryOperator::GtEq, false) | (SqlBinaryOperator::LtEq, true) => CheckCompareOperator::Gte,
+        (SqlBinaryOperator::Lt, false) | (SqlBinaryOperator::Gt, true) => CheckCompareOperator::Lt,
+        (SqlBinaryOperator::LtEq, false) | (SqlBinaryOperator::GtEq, true) => CheckCompareOperator::Lte,
         _ => return None,
     };
-    let (literal, _) = constraint_value_from_expression(right)?;
     Some((column.to_string(), operator, literal))
 }
 
