@@ -315,9 +315,10 @@ pub fn physical_typed_ordered_insert_plan(
         .map(|state| (state.relation.clone(), state))
         .collect::<BTreeMap<_, _>>();
     if bundle.inputs().iter().any(|input| {
-        input.statements().iter().any(|statement| {
-            matches!(statement, ProtocolStatement::Unsupported(_))
-        })
+        input
+            .statements()
+            .iter()
+            .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_)))
     }) {
         return PhysicalTypedPopulationPlan::Residual {
             relation: None,
@@ -421,7 +422,9 @@ pub fn physical_typed_ordered_insert_plan(
                     _ => None,
                 };
                 let Some(value) = value else {
-                    return gap("typed INSERT projection needs an exact direct source-column or literal");
+                    return gap(
+                        "typed INSERT projection needs an exact direct source-column or literal",
+                    );
                 };
                 projected.insert(target_column.clone(), value);
             }
