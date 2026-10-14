@@ -168,8 +168,7 @@ fn arithmetic_literal_domains_fail_closed_on_dialect_dependent_division() {
         "SELECT NULL * 3 AS value",
     ] {
         let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
-        let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain()
-        else {
+        let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
             panic!("{sql}: total NULL arithmetic must yield singleton SQL NULL");
         };
         assert_eq!(values.values()[0].value(), &LiteralValue::Null);
@@ -178,7 +177,10 @@ fn arithmetic_literal_domains_fail_closed_on_dialect_dependent_division() {
     let ValueDomain::Set(values) = first_query(&safe).output().columns()[0].domain() else {
         panic!("modulo-one has a safe integer value domain");
     };
-    assert_eq!(values.values()[0].value(), &LiteralValue::Number("0".into()));
+    assert_eq!(
+        values.values()[0].value(),
+        &LiteralValue::Number("0".into())
+    );
 }
 
 #[test]
