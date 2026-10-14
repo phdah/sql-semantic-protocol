@@ -454,8 +454,15 @@ fn injective_affine(
                     (_, Some(source), Some(constant), _) => (source, constant, 0),
                     _ => return None,
                 },
-                BinaryOperator::Divide
-                | BinaryOperator::Modulo
+                // Identity and sign inversion are the only portable
+                // injective division families. A full-source totality
+                // check below still guards binary64 and signed overflow.
+                BinaryOperator::Divide => match (left, right_literal) {
+                    (Some(source), Some(1)) => (source, 1, 0),
+                    (Some(source), Some(-1)) => (source, -1, 0),
+                    _ => return None,
+                },
+                BinaryOperator::Modulo
                 | BinaryOperator::StringConcat
                 | BinaryOperator::BitwiseAnd
                 | BinaryOperator::BitwiseOr
