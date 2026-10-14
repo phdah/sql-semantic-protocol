@@ -1044,7 +1044,10 @@ fn normalize(
                     offset,
                 )
             } else {
-                return residual("comparison is noninvertible or correlates two source values");
+                return residual(&numeric::unresolved_arithmetic_reason(
+                    comparison.left(),
+                    comparison.right(),
+                ));
             };
             let Some(value) = signed_integer_literal(literal) else {
                 return residual("comparison literal is not a supported signed integer");
