@@ -301,12 +301,16 @@ fn binary_string_equality_requires_attestation_and_has_a_schema_backed_wire_shap
         let input = SqlInput::inline(format!("SELECT a FROM t WHERE {predicate}"));
         let dialect = PostgreSqlDialect {};
         let mut bundle = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("text", &input, "postgresql", &dialect)],
+            &[ConfiguredSqlInput::new(
+                "text",
+                &input,
+                "postgresql",
+                &dialect,
+            )],
             &catalog,
         )
         .unwrap();
-        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics()
-        else {
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
             panic!("resolved text semantics required");
         };
         assert!(
@@ -320,17 +324,22 @@ fn binary_string_equality_requires_attestation_and_has_a_schema_backed_wire_shap
             ComparisonAssumption::BinaryCollation,
             ComparisonAssumption::NoCharPadding,
         ]);
-        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics()
-        else {
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
             panic!("resolved text semantics required");
         };
         let witness = semantics.boolean_witnesses()[0].witness();
         assert!(
-            matches!(witness.qualifying(), BooleanWitnessDirection::Exact(BooleanTruthCase::True)),
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+            ),
             "{predicate}: certified positive witness"
         );
         assert!(
-            matches!(witness.rejected(), BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)),
+            matches!(
+                witness.rejected(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+            ),
             "{predicate}: certified negative witness"
         );
         let output: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
