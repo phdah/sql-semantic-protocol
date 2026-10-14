@@ -6,6 +6,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+mod numeric;
+
+use numeric::{normalize_affine_comparison, total_integer_column};
+
 use crate::constraints::{
     ConstraintEnforcement, ConstraintValue, RelationConstraint, RelationConstraintSet,
 };
@@ -1017,6 +1021,15 @@ fn normalize(
                     right,
                 };
             }
+            if let Some(inverted) = normalize_affine_comparison(
+                comparison.left(),
+                comparison.operator(),
+                comparison.right(),
+                sources,
+                integer_evidence,
+            ) {
+                return inverted;
+            }
             let (column, operator, literal, offset) = if let Some((column, offset)) =
                 affine_integer_operand(comparison.left(), sources, integer_evidence)
             {
@@ -1164,10 +1177,8 @@ fn normalize_null_test(
     if let Expression::Column(column) = expression {
         return Some(test(column, negated));
     }
-    if let Some((column, _)) = affine_integer_operand(expression, sources, integer_evidence) {
-        if integer_evidence(&resolve_column(column, sources)).is_some() {
-            return Some(test(column, negated));
-        }
+    if let Some(column) = total_integer_column(expression, sources, integer_evidence) {
+        return Some(test(column, negated));
     }
     // Searched CASE chooses the first SQL TRUE arm. For the supported
     // total integer result class, NULL tests of the selected value are exact.
@@ -1305,8 +1316,7 @@ fn is_total_integer_result(
     sources: &[SourceRelation],
     evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
 ) -> bool {
-    affine_integer_operand(expression, sources, evidence)
-        .is_some_and(|(column, _)| evidence(&resolve_column(column, sources)).is_some())
+    total_integer_column(expression, sources, evidence).is_some()
 }
 
 // Negation is pushed to proven leaves. De Morgan's laws preserve SQL
