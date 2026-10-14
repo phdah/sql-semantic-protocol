@@ -855,3 +855,112 @@ fn correlated_subtraction_proves_sql_true_and_not_true() {
         assert_eq!(count, expected, "{predicate}");
     }
 }
+
+#[test]
+fn finite_decimal_catalog_has_direct_sql_and_dbt_adapter_parity() {
+    const SQL: &str =
+        "SELECT amount + 0.5 AS calculated FROM warehouse.raw.orders WHERE amount IN (1.25, 2.25)";
+    let mut manifest: Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
+    let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
+
+    let mut catalog_json: Value =
+        serde_json::from_str(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
+    catalog_json["sources"]["source.demo.orders"]["columns"]["amount"]["type"] =
+        "DECIMAL(8, 2)".into();
+    let catalog = parse_dbt_catalog(&catalog_json.to_string()).unwrap();
+    let dialect = PostgreSqlDialect {};
+    let dbt_bundle = analyze_dbt_artifacts(&manifest, &catalog, "postgresql", &dialect).unwrap();
+
+    let physical = RelationSchema::new(
+        "warehouse.raw.orders",
+        vec![
+            SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("amount", "DECIMAL(8, 2)", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap();
+    let sql_catalog = RelationCatalog::from_schemas(&[physical]).unwrap();
+    let input = SqlInput::inline(SQL);
+    let sql_bundle = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new("decimal_direct", &input, "postgresql", &dialect)],
+        &sql_catalog,
+    )
+    .unwrap();
+    let output = |bundle: &sql_semantic_protocol::AnalysisBundle| {
+        let layer = bundle
+            .layers()
+            .iter()
+            .find(|layer| {
+                layer
+                    .consumes()
+                    .iter()
+                    .any(|source| source == "warehouse.raw.orders")
+            })
+            .expect("source-consuming arithmetic layer");
+        let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
+            panic!("decimal source should have composed semantics");
+        };
+        semantics.output().columns()[0].domain().clone()
+    };
+    let dbt_domain = output(&dbt_bundle);
+    let sql_domain = output(&sql_bundle);
+    assert_eq!(dbt_domain, sql_domain);
+    let ValueDomain::Set(set) = dbt_domain else {
+        panic!("source-attested decimal result must be finite: {dbt_domain:?}");
+    };
+    assert_eq!(set.values().len(), 2);
+}
+
+#[test]
+fn portable_decimal_literal_outcomes_match_parser_capable_dialects() {
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).unwrap();
+        for (sql, expected) in [
+            ("SELECT 1.25 + 0.5 AS result", "1.75"),
+            ("SELECT 1.5 / 0.5 AS result", "3.0"),
+        ] {
+            let Ok(protocol) = analyze_sql(sql, name, dialect.as_ref()) else {
+                continue;
+            };
+            let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+                panic!("{name}: expected SELECT");
+            };
+            let ValueDomain::Set(values) = query.output().columns()[0].domain() else {
+                panic!("{name}: finite portable decimal literal must be exact");
+            };
+            assert_eq!(
+                values.values()[0].value(),
+                &LiteralValue::Number(expected.into()),
+                "{name}: {sql}"
+            );
+        }
+    }
+}
+
+#[test]
+fn duckdb_fixed_decimal_catalog_oracles_cover_nulls_and_conversion_failures() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(d DECIMAL(8, 2));
+         INSERT INTO t VALUES (NULL), (1.25), (2.25), (40000.00);",
+    )
+    .unwrap();
+    for (predicate, expected) in [
+        ("d IN (1.25, 2.25) AND d + 0.5 IN (1.75, 2.75)", 2_i64),
+        ("d = 1.25 AND d * 2 = 2.5", 1),
+        ("d = 1.25 AND d % 0.5 = 0.25", 1),
+        ("d = 40000.00 AND TRY_CAST(d AS SMALLINT) IS NULL", 1),
+        ("d IS NULL AND TRY_CAST(d AS SMALLINT) IS NULL", 1),
+    ] {
+        let count: i64 = db
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, expected, "{predicate}");
+    }
+}
