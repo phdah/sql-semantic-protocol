@@ -34,6 +34,35 @@ pub enum Expression {
     Unsupported(UnsupportedSemantic),
 }
 
+/// Canonical structural operand class for explicit arithmetic residuals.
+///
+/// This is a diagnostic label, not a claim that a source column's physical
+/// datatype is attested. The caller must still establish type and width laws.
+pub(crate) fn arithmetic_operand_kind(expression: &Expression) -> &'static str {
+    match expression {
+        Expression::Column(_) => "source-column",
+        Expression::SignedIntegerCast(_) => "signed-integer-cast",
+        Expression::Literal(literal) => match literal.literal_type() {
+            LiteralType::Integer => "integer-literal",
+            LiteralType::Decimal => "decimal-literal",
+            LiteralType::String => "string-literal",
+            LiteralType::Boolean => "boolean-literal",
+            LiteralType::Null => "sql-null",
+            _ => "other-literal",
+        },
+        Expression::Binary(_) => "computed-binary-expression",
+        Expression::Unary(_) => "computed-unary-expression",
+        Expression::Function(_)
+        | Expression::AggregateFunction(_)
+        | Expression::WindowFunction(_)
+        | Expression::Case(_)
+        | Expression::BooleanPredicate(_)
+        | Expression::ScalarSubquery(_)
+        | Expression::Unknown(_)
+        | Expression::Unsupported(_) => "unsupported-expression",
+    }
+}
+
 /// Query semantics retained when a subquery appears inside an expression or predicate.
 ///
 /// The summary is intentionally parser-independent and local to the nested query. Physical
