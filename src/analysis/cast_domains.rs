@@ -60,7 +60,10 @@ pub(super) fn derive_signed_integer_cast_output_domain(
     let mut result = Vec::new();
     for literal in values.values() {
         if literal.literal_type() == LiteralType::Null {
-            result.push(LiteralExpression::new(LiteralType::Null, LiteralValue::Null));
+            result.push(LiteralExpression::new(
+                LiteralType::Null,
+                LiteralValue::Null,
+            ));
             continue;
         }
         let Some(integer) = exact_integral_literal(literal) else {
@@ -78,7 +81,10 @@ pub(super) fn derive_signed_integer_cast_output_domain(
                     );
                 }
                 SignedIntegerCastKind::TryCast | SignedIntegerCastKind::SafeCast => {
-                    result.push(LiteralExpression::new(LiteralType::Null, LiteralValue::Null));
+                    result.push(LiteralExpression::new(
+                        LiteralType::Null,
+                        LiteralValue::Null,
+                    ));
                 }
             }
         }

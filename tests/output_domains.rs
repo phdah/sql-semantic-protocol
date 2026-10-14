@@ -726,9 +726,17 @@ fn finite_signed_casts_preserve_total_values_and_failure_modes() {
         let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
             panic!("{sql}: expected finite total cast");
         };
-        assert_eq!(values.values()[0].value(), &LiteralValue::Number(expected.into()));
+        assert_eq!(
+            values.values()[0].value(),
+            &LiteralValue::Number(expected.into())
+        );
     }
-    let protocol = analyze_sql("SELECT TRY_CAST(40000 AS SMALLINT) AS value", "generic", &dialect).unwrap();
+    let protocol = analyze_sql(
+        "SELECT TRY_CAST(40000 AS SMALLINT) AS value",
+        "generic",
+        &dialect,
+    )
+    .unwrap();
     let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
         panic!("TRY_CAST of an out-of-range exact integer should yield NULL");
     };
@@ -738,9 +746,12 @@ fn finite_signed_casts_preserve_total_values_and_failure_modes() {
         "SELECT CAST('1.5' AS INTEGER) AS value",
     ] {
         let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
-        assert!(matches!(
-            first_query(&protocol).output().columns()[0].domain(),
-            ValueDomain::Unknown(_)
-        ), "{sql}: unproved or exceptional cast must not be exact");
+        assert!(
+            matches!(
+                first_query(&protocol).output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
+            "{sql}: unproved or exceptional cast must not be exact"
+        );
     }
 }
