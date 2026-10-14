@@ -369,25 +369,19 @@ fn catalog_integer_projection_preserves_exact_finite_sets() {
 }
 
 #[test]
-fn catalog_integer_projection_emits_signed_interval_bounds() {
+fn catalog_integer_projection_retains_exact_signed_finite_values() {
     let domain =
         projected_domain("SELECT CAST(a AS SMALLINT) * -2 AS v FROM t WHERE a BETWEEN 0 AND 10");
-    let ValueDomain::Ranges(ranges) = domain else {
-        panic!("expected bounded interval, got {domain:?}");
+    let ValueDomain::Set(values) = domain else {
+        panic!("expected exhaustive finite arithmetic domain, got {domain:?}");
     };
-    let [range] = ranges.ranges() else {
-        panic!("one interval required");
-    };
-    assert_eq!(
-        range.lower().unwrap().value().value(),
-        &LiteralValue::Number("-20".into())
-    );
-    assert_eq!(
-        range.upper().unwrap().value().value(),
-        &LiteralValue::Number("0".into())
-    );
-    assert!(range.lower().unwrap().inclusive());
-    assert!(range.upper().unwrap().inclusive());
+    assert_eq!(values.mode(), SetMode::Include);
+    assert_eq!(values.values().len(), 11);
+    for source in 0..=10 {
+        assert!(values.values().iter().any(|value| {
+            value.value() == &LiteralValue::Number((-2 * source).to_string())
+        }));
+    }
 }
 
 #[test]
