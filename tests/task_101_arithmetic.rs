@@ -148,6 +148,15 @@ fn width_guards_and_unsupported_operators_remain_residual() {
             "{sql}: unexpected exact proof {:?}",
             proof.qualifying()
         );
+        if sql.contains(" / ") || sql.contains(" % ") {
+            let BooleanRowConstraint::Residual { reason } = proof.condition() else {
+                panic!("{sql}: expected canonical operator-specific residual");
+            };
+            assert!(
+                reason.contains("divide") || reason.contains("modulo"),
+                "{sql}: residual must identify unproven numeric operator: {reason}"
+            );
+        }
     }
 }
 
