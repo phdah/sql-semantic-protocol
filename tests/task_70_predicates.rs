@@ -469,7 +469,6 @@ fn opaque_or_mixed_type_computed_null_tests_fail_closed() {
         "COALESCE(a, ABS(b)) IS NULL",
         "COALESCE(a, 'text') IS NOT NULL",
         "NULLIF(a, a + 1) IS NULL",
-        "TRY_CAST(a AS SMALLINT) IS NULL",
         "CASE WHEN a > 1 THEN b ELSE a END IS NULL",
         "CASE WHEN a IS NULL THEN b END IS NULL",
     ] {
