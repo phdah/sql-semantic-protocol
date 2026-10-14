@@ -143,6 +143,33 @@ fn count_and_constant_arithmetic_have_safe_intrinsic_domains() {
 }
 
 #[test]
+fn arithmetic_literal_domains_fail_closed_on_dialect_dependent_division() {
+    let dialect = GenericDialect {};
+    for sql in [
+        "SELECT 3 / 2 AS value",
+        "SELECT 7 % 3 AS value",
+        "SELECT 9223372036854775807 + 1 AS value",
+        "SELECT 9 / 0 AS value",
+        "SELECT 0 % 0 AS value",
+        "SELECT 1.2 + 0.3 AS value",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        assert!(
+            matches!(
+                first_query(&protocol).output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
+            "{sql}: implicit arithmetic must not claim a portable exact value"
+        );
+    }
+    let safe = analyze_sql("SELECT 7 % 1 AS value", "generic", &dialect).unwrap();
+    let ValueDomain::Set(values) = first_query(&safe).output().columns()[0].domain() else {
+        panic!("modulo-one has a safe integer value domain");
+    };
+    assert_eq!(values.values()[0].value(), &LiteralValue::Number("0".into()));
+}
+
+#[test]
 fn derived_output_domain_survives_multi_layer_composition() {
     let dialect = GenericDialect {};
     let bundle = analyze_inputs(
