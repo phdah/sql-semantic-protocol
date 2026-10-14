@@ -64,6 +64,11 @@ impl ExactDecimal {
         numerator.unsigned_abs() <= (1_u128 << 53)
     }
 
+    pub(super) fn exact_integer(self) -> Option<i128> {
+        let divisor = 10_i128.checked_pow(self.scale)?;
+        (self.units.checked_rem(divisor)? == 0).then(|| self.units / divisor)
+    }
+
     // A source's declared decimal(P, S) is authoritative. A finite
     // candidate must fit the declaration without rounding or overflow.
     pub(super) fn fits_declared(self, precision: u64, scale: u64) -> bool {
