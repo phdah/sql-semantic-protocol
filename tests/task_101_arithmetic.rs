@@ -209,6 +209,29 @@ fn parser_capable_dialects_preserve_the_canonical_arithmetic_boundary() {
                     matches!(proof.qualifying(), BooleanWitnessDirection::Residual { .. }),
                     "{name}: no catalog type must remain residual"
                 );
+                let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+                    "t",
+                    vec![SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap()],
+                )
+                .unwrap()])
+                .unwrap();
+                let input = SqlInput::inline(sql);
+                let configured = [ConfiguredSqlInput::new("typed", &input, name, dialect.as_ref())];
+                let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+                    .unwrap_or_else(|error| panic!("{name}: {error}"));
+                let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics()
+                else {
+                    panic!("{name}: expected resolved typed source");
+                };
+                let typed = composed.boolean_witnesses()[0].witness();
+                assert!(matches!(
+                    typed.qualifying(),
+                    BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+                ), "{name}: {:?}", typed.qualifying());
+                assert!(matches!(
+                    typed.condition(),
+                    BooleanRowConstraint::IntegerComparison { literal: 4, .. }
+                ), "{name}: {:?}", typed.condition());
             }
             Err(_) => {
                 // Parser rejection is a documented boundary, not a semantic proof.
