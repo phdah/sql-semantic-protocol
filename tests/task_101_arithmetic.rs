@@ -128,7 +128,15 @@ fn zero_arithmetic_preserves_sql_nullsafe_truth() {
         distinct.condition(),
         BooleanRowConstraint::NullTest { negated: false, .. }
     ));
-    exact("CAST(a AS BIGINT) % 1 = 0 OR a IS NULL");
+    let tautology = witness("CAST(a AS BIGINT) % 1 = 0 OR a IS NULL");
+    assert!(matches!(
+        tautology.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        tautology.rejected(),
+        BooleanWitnessDirection::Impossible
+    ));
 }
 
 #[test]
