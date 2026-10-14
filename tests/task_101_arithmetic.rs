@@ -1324,3 +1324,29 @@ fn parser_supported_safe_cast_preserves_null_on_failure() {
         "at least one parser dialect must recognize SAFE_CAST"
     );
 }
+
+#[test]
+fn unsupported_operator_type_pairs_emit_specific_residual_reasons() {
+    for (predicate, operator, left, right) in [
+        ("a + 1 > 0", "add", "source-column", "integer-literal"),
+        ("a - 1 > 0", "subtract", "source-column", "integer-literal"),
+        ("a * 3 > 0", "multiply", "source-column", "integer-literal"),
+        ("a / 2 > 0", "divide", "source-column", "integer-literal"),
+        ("a % 2 = 1", "modulo", "source-column", "integer-literal"),
+        ("a + b > 0", "add", "source-column", "source-column"),
+        ("a + 0.25 > 1", "add", "source-column", "decimal-literal"),
+    ] {
+        let proof = witness(predicate);
+        let BooleanRowConstraint::Residual { reason } = proof.condition() else {
+            panic!("{predicate}: unsupported/unbounded type pair needs typed residual: {:?}", proof.condition());
+        };
+        assert!(
+            reason.contains(operator) && reason.contains(left) && reason.contains(right),
+            "{predicate}: expected {operator}({left},{right}) residual, got {reason}"
+        );
+        assert!(
+            matches!(proof.qualifying(), BooleanWitnessDirection::Residual { .. }),
+            "{predicate}: unchecked arithmetic must not claim universal exactness"
+        );
+    }
+}
