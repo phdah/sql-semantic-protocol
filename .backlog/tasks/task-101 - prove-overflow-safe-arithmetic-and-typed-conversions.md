@@ -4,7 +4,7 @@ title: Prove typed arithmetic, overflow and conversion outcomes
 status: In Progress
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-13'
+updated_date: '2026-10-14'
 labels: []
 milestone: m-3
 dependencies:
