@@ -216,7 +216,12 @@ fn parser_capable_dialects_preserve_the_canonical_arithmetic_boundary() {
                 .unwrap()])
                 .unwrap();
                 let input = SqlInput::inline(sql);
-                let configured = [ConfiguredSqlInput::new("typed", &input, name, dialect.as_ref())];
+                let configured = [ConfiguredSqlInput::new(
+                    "typed",
+                    &input,
+                    name,
+                    dialect.as_ref(),
+                )];
                 let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
                     .unwrap_or_else(|error| panic!("{name}: {error}"));
                 let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics()
@@ -224,14 +229,22 @@ fn parser_capable_dialects_preserve_the_canonical_arithmetic_boundary() {
                     panic!("{name}: expected resolved typed source");
                 };
                 let typed = composed.boolean_witnesses()[0].witness();
-                assert!(matches!(
-                    typed.qualifying(),
-                    BooleanWitnessDirection::Exact(BooleanTruthCase::True)
-                ), "{name}: {:?}", typed.qualifying());
-                assert!(matches!(
-                    typed.condition(),
-                    BooleanRowConstraint::IntegerComparison { literal: 4, .. }
-                ), "{name}: {:?}", typed.condition());
+                assert!(
+                    matches!(
+                        typed.qualifying(),
+                        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+                    ),
+                    "{name}: {:?}",
+                    typed.qualifying()
+                );
+                assert!(
+                    matches!(
+                        typed.condition(),
+                        BooleanRowConstraint::IntegerComparison { literal: 4, .. }
+                    ),
+                    "{name}: {:?}",
+                    typed.condition()
+                );
             }
             Err(_) => {
                 // Parser rejection is a documented boundary, not a semantic proof.
