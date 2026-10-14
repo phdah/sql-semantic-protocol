@@ -360,6 +360,123 @@ fn to_domain(values: IntegerValues) -> ValueDomain {
     }
 }
 
+#[derive(Clone)]
+struct InjectiveAffine {
+    column: ColumnRef,
+    factor: i128,
+    offset: i128,
+}
+
+fn injective_affine(expression: &Expression, sources: &[SourceRelation]) -> Option<InjectiveAffine> {
+    match expression {
+        Expression::Column(column) => Some(InjectiveAffine {
+            column: resolve_column(column, sources),
+            factor: 1,
+            offset: 0,
+        }),
+        Expression::SignedIntegerCast(cast) => injective_affine(cast.expression(), sources),
+        Expression::Unary(unary) => {
+            let mut result = injective_affine(unary.operand(), sources)?;
+            match unary.operator() {
+                UnaryOperator::Plus => {}
+                UnaryOperator::Minus => {
+                    result.factor = result.factor.checked_neg()?;
+                    result.offset = result.offset.checked_neg()?;
+                }
+                UnaryOperator::BitwiseNot => return None,
+            }
+            Some(result)
+        }
+        Expression::Binary(binary) => {
+            let left = injective_affine(binary.left(), sources);
+            let right = injective_affine(binary.right(), sources);
+            let left_literal = singleton_integer(&derive_output_domain(binary.left()));
+            let right_literal = singleton_integer(&derive_output_domain(binary.right()));
+            let (mut result, factor, offset) = match binary.operator() {
+                BinaryOperator::Add => match (left, right, left_literal, right_literal) {
+                    (Some(source), _, _, Some(constant)) => (source, 1, constant),
+                    (_, Some(source), Some(constant), _) => (source, 1, constant),
+                    _ => return None,
+                },
+                BinaryOperator::Subtract => match (left, right, left_literal, right_literal) {
+                    (Some(source), _, _, Some(constant)) => {
+                        (source, 1, constant.checked_neg()?)
+                    }
+                    (_, Some(source), Some(constant), _) => (source, -1, constant),
+                    _ => return None,
+                },
+                BinaryOperator::Multiply => match (left, right, left_literal, right_literal) {
+                    (Some(source), _, _, Some(constant)) => (source, constant, 0),
+                    (_, Some(source), Some(constant), _) => (source, constant, 0),
+                    _ => return None,
+                },
+                BinaryOperator::Divide
+                | BinaryOperator::Modulo
+                | BinaryOperator::StringConcat
+                | BinaryOperator::BitwiseAnd
+                | BinaryOperator::BitwiseOr
+                | BinaryOperator::BitwiseXor => return None,
+            };
+            if factor == 0 {
+                return None;
+            }
+            result.factor = result.factor.checked_mul(factor)?;
+            result.offset = result.offset.checked_mul(factor)?.checked_add(offset)?;
+            Some(result)
+        }
+        _ => None,
+    }
+}
+
+fn affine_excluded_domain(
+    expression: &Expression,
+    domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<ValueDomain> {
+    let affine = injective_affine(expression, sources)?;
+    if affine.factor == 0 {
+        return None;
+    }
+    let column_domain = domains.iter().find(|item| item.column() == &affine.column)?;
+    let ValueDomain::Set(excluded) = column_domain.domain() else {
+        return None;
+    };
+    if excluded.mode() != SetMode::Exclude {
+        return None;
+    }
+    let declared = metadata.column_data_type(&affine.column)?;
+    let declared = match declared {
+        DataType::Nullable(inner) => inner.as_ref(),
+        other => other,
+    };
+    let DataType::SignedInteger { bits: Some(bits) } = declared else {
+        return None;
+    };
+    let (min, max) = signed_limits(*bits)?;
+    // Check *all* admissible values across all intermediate operations.
+    // A finite sample cannot prove that inversion avoids overflow.
+    let full_domain = [ColumnDomain::new(
+        affine.column.clone(),
+        ValueDomain::ranges(vec![ValueRange::new(
+            Some(Bound::new(integer_literal(min), true)),
+            Some(Bound::new(integer_literal(max), true)),
+        )]),
+    )];
+    typed_expression(expression, &full_domain, sources, metadata)?;
+    let mut values = Vec::new();
+    for literal in excluded.values() {
+        if literal.literal_type() == LiteralType::Null {
+            values.push(literal.clone());
+        } else {
+            let scalar = integer_value(literal)?;
+            let value = affine.factor.checked_mul(scalar)?.checked_add(affine.offset)?;
+            values.push(integer_literal(value));
+        }
+    }
+    Some(ValueDomain::set(SetMode::Exclude, values))
+}
+
 /// Refine computed projection domains only with catalog-backed, total arithmetic.
 pub(super) fn refine_catalog_arithmetic_output_domains(
     output: Output,
@@ -376,6 +493,11 @@ pub(super) fn refine_catalog_arithmetic_output_domains(
                 // Preserve exact open and closed bounds for plain projections.
                 if matches!(column.expression(), Expression::Column(_)) {
                     return column;
+                }
+                if let Some(excluded) =
+                    affine_excluded_domain(column.expression(), domains, sources, metadata)
+                {
+                    return column.with_domain(excluded);
                 }
                 let Some(typed) = typed_expression(column.expression(), domains, sources, metadata)
                 else {
