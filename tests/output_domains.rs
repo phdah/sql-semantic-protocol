@@ -173,8 +173,7 @@ fn arithmetic_literal_domains_fail_closed_on_dialect_dependent_division() {
         assert_eq!(values.values()[0].value(), &LiteralValue::Null);
     }
     let positive = analyze_sql("SELECT 7 % 3 AS value", "generic", &dialect).unwrap();
-    let ValueDomain::Set(positive_values) =
-        first_query(&positive).output().columns()[0].domain()
+    let ValueDomain::Set(positive_values) = first_query(&positive).output().columns()[0].domain()
     else {
         panic!("positive integer remainder is portable and exact");
     };
