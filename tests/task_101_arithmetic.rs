@@ -1036,3 +1036,43 @@ fn attested_binary_text_casts_preserve_finite_ascii_and_failure_semantics() {
         );
     }
 }
+
+#[test]
+fn narrowing_try_cast_null_tests_have_both_exact_truth_directions() {
+    for predicate in [
+        "TRY_CAST(a AS SMALLINT) IS NULL",
+        "TRY_CAST(a AS SMALLINT) IS NOT NULL",
+        "TRY_CAST(a AS SMALLINT) IS NULL OR a = 0",
+    ] {
+        exact(predicate);
+    }
+    let ordinary = witness("CAST(a AS SMALLINT) IS NULL");
+    assert!(
+        matches!(
+            ordinary.qualifying(),
+            BooleanWitnessDirection::Residual { .. }
+        ),
+        "throwing CAST with out-of-range sources must not claim a total witness"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (NULL), (-2147483648), (-32768), (0), (32767), (2147483647);",
+    )
+    .unwrap();
+    for (predicate, expected) in [
+        ("TRY_CAST(a AS SMALLINT) IS NULL", 3_i64),
+        ("TRY_CAST(a AS SMALLINT) IS NOT NULL", 3),
+        ("TRY_CAST(a AS SMALLINT) IS NULL OR a = 0", 4),
+    ] {
+        let actual: i64 = db
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(actual, expected, "{predicate}");
+    }
+}
