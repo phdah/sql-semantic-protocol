@@ -222,6 +222,53 @@ fn compare(left: i128, operator: ComparisonOperator, right: i128) -> bool {
     }
 }
 
+fn operand_kind(expression: &Expression) -> &'static str {
+    match expression {
+        Expression::Column(_) => "source-column",
+        Expression::SignedIntegerCast(_) => "signed-integer-cast",
+        Expression::Literal(literal) => match literal.literal_type() {
+            crate::protocol::LiteralType::Integer => "integer-literal",
+            crate::protocol::LiteralType::Decimal => "decimal-literal",
+            crate::protocol::LiteralType::String => "string-literal",
+            crate::protocol::LiteralType::Boolean => "boolean-literal",
+            crate::protocol::LiteralType::Null => "sql-null",
+            _ => "other-literal",
+        },
+        Expression::Binary(_) => "computed-binary-expression",
+        Expression::Unary(_) => "computed-unary-expression",
+        _ => "unsupported-expression",
+    }
+}
+
+/// Surface the unsupported operator/type pair in the canonical residual.
+/// Do not conflate overflow, dynamic widening and dialect-sensitive casts
+/// with proofs of impossible source rows.
+pub(super) fn unresolved_arithmetic_reason(left: &Expression, right: &Expression) -> String {
+    let computed = [left, right]
+        .into_iter()
+        .find(|value| matches!(value, Expression::Binary(_) | Expression::Unary(_)));
+    if let Some(Expression::Binary(binary)) = computed {
+        return format!(
+            "arithmetic {} on {} and {} requires type/width/overflow/rounding evidence",
+            binary.operator().as_str(),
+            operand_kind(binary.left()),
+            operand_kind(binary.right())
+        );
+    }
+    if let Some(Expression::Unary(unary)) = computed {
+        return format!(
+            "arithmetic unary {} on {} requires total signed range evidence",
+            unary.operator().as_str(),
+            operand_kind(unary.operand())
+        );
+    }
+    format!(
+        "comparison on {} and {} has no certified typed inversion",
+        operand_kind(left),
+        operand_kind(right)
+    )
+}
+
 /// Invert only algebraically exact, width-checked affine expressions. The
 /// returned predicate retains SQL UNKNOWN when the physical column is NULL.
 pub(super) fn normalize_affine_comparison(
