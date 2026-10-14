@@ -25,9 +25,9 @@ pub(super) fn normalize_signed_integer_cast(
         SqlCastKind::SafeCast => SignedIntegerCastKind::SafeCast,
         _ => return None,
     };
-    Some(Expression::SignedIntegerCast(SignedIntegerCastExpression::new(
-        operand, bits, cast_kind,
-    )))
+    Some(Expression::SignedIntegerCast(
+        SignedIntegerCastExpression::new(operand, bits, cast_kind),
+    ))
 }
 
 pub(super) fn analyze_expression_with_scope(
@@ -320,12 +320,7 @@ pub(super) fn analyze_expression_with_windows(
             analyze_expression_with_windows(expr, named_windows, diagnostics),
         )
         .unwrap_or_else(|| {
-            unsupported_expression(
-                "cast",
-                expression,
-                DiagnosticArea::Expression,
-                diagnostics,
-            )
+            unsupported_expression("cast", expression, DiagnosticArea::Expression, diagnostics)
         }),
         Expr::Case {
             operand,

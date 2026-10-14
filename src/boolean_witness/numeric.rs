@@ -128,7 +128,7 @@ fn bounded_affine<'a>(
                 // in binary64, regardless of the engine's division type.
                 BinaryOperator::Divide if rhs == Some(1) || rhs == Some(-1) => {
                     let input = left?;
-                    let result = input.transform(i128::from(rhs?), 0)?;
+                    let result = input.transform(rhs?, 0)?;
                     let exact = 1_i128 << 53;
                     (input.minimum >= -exact
                         && input.maximum <= exact

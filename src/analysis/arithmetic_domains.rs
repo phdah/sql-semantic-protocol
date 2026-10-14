@@ -28,9 +28,7 @@ fn signed_limits(bits: u16) -> Option<(i128, i128)> {
 }
 
 fn fits(value: i128, bits: u16) -> bool {
-    signed_limits(bits).is_some_and(|(minimum, maximum)| {
-        minimum <= value && value <= maximum
-    })
+    signed_limits(bits).is_some_and(|(minimum, maximum)| minimum <= value && value <= maximum)
 }
 
 fn integer_value(literal: &LiteralExpression) -> Option<i128> {
@@ -66,10 +64,10 @@ fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> 
             let range = &ranges.ranges()[0];
             let lower = range.lower()?;
             let upper = range.upper()?;
-            let minimum = integer_value(lower.value())?
-                .checked_add(i128::from(!lower.inclusive()))?;
-            let maximum = integer_value(upper.value())?
-                .checked_sub(i128::from(!upper.inclusive()))?;
+            let minimum =
+                integer_value(lower.value())?.checked_add(i128::from(!lower.inclusive()))?;
+            let maximum =
+                integer_value(upper.value())?.checked_sub(i128::from(!upper.inclusive()))?;
             if !fits(minimum, bits) || !fits(maximum, bits) {
                 return None;
             }
@@ -104,10 +102,16 @@ fn typed_expression(
                 return None;
             };
             let values = constrained_values(
-                domains.iter().find(|item| item.column() == &resolved)?.domain(),
+                domains
+                    .iter()
+                    .find(|item| item.column() == &resolved)?
+                    .domain(),
                 *bits,
             )?;
-            Some(TypedIntegers { bits: *bits, values })
+            Some(TypedIntegers {
+                bits: *bits,
+                values,
+            })
         }
         Expression::Literal(literal) => {
             if literal.literal_type() == LiteralType::Null {
@@ -166,10 +170,7 @@ fn typed_expression(
 
 fn every_value_fits(values: &IntegerValues, bits: u16) -> bool {
     match values {
-        IntegerValues::Finite(values) => values
-            .iter()
-            .flatten()
-            .all(|value| fits(*value, bits)),
+        IntegerValues::Finite(values) => values.iter().flatten().all(|value| fits(*value, bits)),
         IntegerValues::Interval { minimum, maximum } => {
             fits(*minimum, bits) && fits(*maximum, bits)
         }
@@ -198,21 +199,14 @@ fn map_unary_minus(values: IntegerValues, bits: u16) -> Option<IntegerValues> {
 fn enumerate(values: &IntegerValues) -> Option<Vec<Option<i128>>> {
     match values {
         IntegerValues::Finite(values) if values.len() <= 64 => Some(values.clone()),
-        IntegerValues::Interval { minimum, maximum }
-            if maximum.checked_sub(*minimum)? <= 63 =>
-        {
+        IntegerValues::Interval { minimum, maximum } if maximum.checked_sub(*minimum)? <= 63 => {
             Some((*minimum..=*maximum).map(Some).collect())
         }
         _ => None,
     }
 }
 
-fn scalar_arithmetic(
-    left: i128,
-    right: i128,
-    operator: BinaryOperator,
-    bits: u16,
-) -> Option<i128> {
+fn scalar_arithmetic(left: i128, right: i128, operator: BinaryOperator, bits: u16) -> Option<i128> {
     let value = match operator {
         BinaryOperator::Add => left.checked_add(right)?,
         BinaryOperator::Subtract => left.checked_sub(right)?,
@@ -277,10 +271,7 @@ fn interval_arithmetic(
                 left_max.checked_mul(right_min)?,
                 left_max.checked_mul(right_max)?,
             ];
-            (
-                *candidates.iter().min()?,
-                *candidates.iter().max()?,
-            )
+            (*candidates.iter().min()?, *candidates.iter().max()?)
         }
         BinaryOperator::Divide if right_min == 1 && right_max == 1 => {
             let exact = 1_i128 << 53;
@@ -342,9 +333,7 @@ fn combine_values(
     // plus a range is not representable as one canonical ValueDomain range.
     let range = |values: IntegerValues| match values {
         IntegerValues::Interval { minimum, maximum } => Some((minimum, maximum)),
-        IntegerValues::Finite(values) if values.len() == 1 => {
-            values[0].map(|value| (value, value))
-        }
+        IntegerValues::Finite(values) if values.len() == 1 => values[0].map(|value| (value, value)),
         _ => None,
     };
     interval_arithmetic(range(left)?, range(right)?, operator, bits)
@@ -356,18 +345,18 @@ fn to_domain(values: IntegerValues) -> ValueDomain {
             SetMode::Include,
             values
                 .into_iter()
-                .map(|value| value.map_or_else(
-                    || LiteralExpression::new(LiteralType::Null, LiteralValue::Null),
-                    integer_literal,
-                ))
+                .map(|value| {
+                    value.map_or_else(
+                        || LiteralExpression::new(LiteralType::Null, LiteralValue::Null),
+                        integer_literal,
+                    )
+                })
                 .collect(),
         ),
-        IntegerValues::Interval { minimum, maximum } => ValueDomain::ranges(vec![
-            ValueRange::new(
-                Some(Bound::new(integer_literal(minimum), true)),
-                Some(Bound::new(integer_literal(maximum), true)),
-            ),
-        ]),
+        IntegerValues::Interval { minimum, maximum } => ValueDomain::ranges(vec![ValueRange::new(
+            Some(Bound::new(integer_literal(minimum), true)),
+            Some(Bound::new(integer_literal(maximum), true)),
+        )]),
     }
 }
 
@@ -384,8 +373,7 @@ pub(super) fn refine_catalog_arithmetic_output_domains(
             .iter()
             .cloned()
             .map(|column| {
-                let Some(typed) =
-                    typed_expression(column.expression(), domains, sources, metadata)
+                let Some(typed) = typed_expression(column.expression(), domains, sources, metadata)
                 else {
                     return column;
                 };

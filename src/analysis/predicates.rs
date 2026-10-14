@@ -362,13 +362,8 @@ pub(super) fn analyze_predicate_expression(
         format: None,
     } = expression
     {
-        let operand = analyze_predicate_expression(
-            expr,
-            named_windows,
-            output_aliases,
-            scope,
-            diagnostics,
-        );
+        let operand =
+            analyze_predicate_expression(expr, named_windows, output_aliases, scope, diagnostics);
         if let Some(cast) = normalize_signed_integer_cast(kind, data_type, operand) {
             return cast;
         }

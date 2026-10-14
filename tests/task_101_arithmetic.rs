@@ -419,9 +419,9 @@ fn distinct_integer_cast_failure_contract_is_serialized() {
     ] {
         let protocol = analyze_sql(sql, "postgresql", &dialect).unwrap();
         let wire = to_json(&protocol);
-        assert!(wire.contains(&format!("\\"cast_kind\\":\\"{name}\\"")), "{sql}: {wire}");
+        assert!(wire.contains(&format!(r#""cast_kind":"{name}""#)), "{sql}: {wire}");
         assert!(
-            wire.contains(&format!("\\"on_failure\\":\\"{expected}\\"")),
+            wire.contains(&format!(r#""on_failure":"{expected}""#)),
             "{sql}: {wire}"
         );
     }

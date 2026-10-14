@@ -16,7 +16,10 @@ struct ExactDecimal {
 
 impl ExactDecimal {
     fn from_literal(literal: &LiteralExpression) -> Option<Self> {
-        if !matches!(literal.literal_type(), LiteralType::Integer | LiteralType::Decimal) {
+        if !matches!(
+            literal.literal_type(),
+            LiteralType::Integer | LiteralType::Decimal
+        ) {
             return None;
         }
         let LiteralValue::Number(text) = literal.value() else {
@@ -28,7 +31,8 @@ impl ExactDecimal {
         };
         let number = number.strip_prefix('+').unwrap_or(number);
         let (integer, fraction) = number.split_once('.').unwrap_or((number, ""));
-        if integer.is_empty() || !integer.bytes().all(|byte| byte.is_ascii_digit())
+        if integer.is_empty()
+            || !integer.bytes().all(|byte| byte.is_ascii_digit())
             || !fraction.bytes().all(|byte| byte.is_ascii_digit())
         {
             return None;
@@ -61,7 +65,8 @@ impl ExactDecimal {
     }
 
     fn rescale(self, target: u32) -> Option<i128> {
-        self.units.checked_mul(10_i128.checked_pow(target.checked_sub(self.scale)?)?)
+        self.units
+            .checked_mul(10_i128.checked_pow(target.checked_sub(self.scale)?)?)
     }
 
     fn value(self) -> LiteralExpression {
@@ -80,7 +85,11 @@ impl ExactDecimal {
                 format!("{integer}.{fractional}")
             }
         };
-        let text = if self.units < 0 { format!("-{text}") } else { text };
+        let text = if self.units < 0 {
+            format!("-{text}")
+        } else {
+            text
+        };
         LiteralExpression::new(LiteralType::Decimal, LiteralValue::Number(text))
     }
 
@@ -117,7 +126,8 @@ impl ExactDecimal {
                 let base_numerator = self.units.checked_mul(10_i128.checked_pow(rhs.scale)?)?;
                 let mut found = None;
                 for scale in 0..=15 {
-                    let Some(numerator) = base_numerator.checked_mul(10_i128.checked_pow(scale)?) else {
+                    let Some(numerator) = base_numerator.checked_mul(10_i128.checked_pow(scale)?)
+                    else {
                         break;
                     };
                     if numerator % denominator == 0 {

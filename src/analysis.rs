@@ -50,11 +50,11 @@ use crate::protocol::{
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
     RowConditions, ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation,
-    SetOperator, SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression, SignedIntegerCastKind, SourceRelation,
-    SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
-    UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
-    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteDefinitionMode,
-    WriteOperation, WriteValue,
+    SetOperator, SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression,
+    SignedIntegerCastKind, SourceRelation, SubquerySemantics, UnaryExpression, UnaryOperator,
+    UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange,
+    WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
+    WindowOrderExpression, WindowSpecification, WriteDefinitionMode, WriteOperation, WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 
