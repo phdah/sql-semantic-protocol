@@ -1135,3 +1135,26 @@ fn modulo_bounds_prove_impossibility_without_assuming_negative_sign_laws() {
         assert_eq!(actual, expected, "{predicate}");
     }
 }
+
+#[test]
+fn finite_union_of_bounded_ranges_retains_exact_arithmetic_values() {
+    let domain = projected_domain(
+        "SELECT a * 2 AS v FROM t WHERE a BETWEEN 1 AND 3 OR a BETWEEN 7 AND 9",
+    );
+    let ValueDomain::Set(values) = domain else {
+        panic!("two small disjoint source intervals should be exhaustive: {domain:?}");
+    };
+    assert_eq!(values.mode(), SetMode::Include);
+    let actual = values
+        .values()
+        .iter()
+        .map(|value| value.value().clone())
+        .collect::<Vec<_>>();
+    for number in [2, 4, 6, 14, 16, 18] {
+        assert!(
+            actual.contains(&LiteralValue::Number(number.to_string())),
+            "missing {number} in {actual:?}"
+        );
+    }
+    assert_eq!(actual.len(), 6);
+}
