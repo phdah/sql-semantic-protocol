@@ -102,6 +102,8 @@ fn nondivisible_equality_is_impossible_without_losing_null_semantics() {
         BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
     ));
     exact("CAST(a AS BIGINT) * 3 <> 7");
+    exact("CAST(a AS BIGINT) * 0 = 0");
+    exact("CAST(a AS BIGINT) % 1 = 0");
     let always = witness("CAST(a AS BIGINT) * 3 IS DISTINCT FROM 7");
     assert!(matches!(
         always.rejected(),
@@ -114,6 +116,21 @@ fn nondivisible_equality_is_impossible_without_losing_null_semantics() {
 }
 
 #[test]
+fn zero_arithmetic_preserves_sql_nullsafe_truth() {
+    let not_distinct = witness("CAST(a AS BIGINT) * 0 IS NOT DISTINCT FROM 0");
+    assert!(matches!(
+        not_distinct.condition(),
+        BooleanRowConstraint::NullTest { negated: true, .. }
+    ));
+    let distinct = witness("CAST(a AS BIGINT) % 1 IS DISTINCT FROM 0");
+    assert!(matches!(
+        distinct.condition(),
+        BooleanRowConstraint::NullTest { negated: false, .. }
+    ));
+    exact("CAST(a AS BIGINT) % 1 = 0 OR a IS NULL");
+}
+
+#[test]
 fn width_guards_and_unsupported_operators_remain_residual() {
     for sql in [
         "a * 3 > 3",
@@ -122,7 +139,6 @@ fn width_guards_and_unsupported_operators_remain_residual() {
         "CAST(a AS BIGINT) / 2 > 0",
         "CAST(a AS BIGINT) / 0 > 0",
         "CAST(a AS BIGINT) % 2 = 0",
-        "CAST(a AS BIGINT) * 0 = 0",
         "CAST(a AS DOUBLE) * 2 > 1",
     ] {
         let proof = witness(sql);
