@@ -472,3 +472,27 @@ fn unit_division_and_nonzero_zero_dividends_have_exhaustive_witnesses() {
         assert_eq!(count, 1, "{predicate}");
     }
 }
+
+#[test]
+fn total_injective_projection_preserves_excluded_values() {
+    let domain = projected_domain(
+        "SELECT CAST(a AS BIGINT) * 3 + 2 AS v FROM t WHERE a <> 0",
+    );
+    let ValueDomain::Set(set) = domain else {
+        panic!("expected excluded transformed value: {domain:?}");
+    };
+    assert_eq!(set.mode(), SetMode::Exclude);
+    assert!(
+        set.values().iter().any(|v| v.value() == &LiteralValue::Number("2".into()))
+    );
+
+    for sql in [
+        "SELECT a + 1 AS v FROM t WHERE a <> 0",
+        "SELECT CAST(a AS BIGINT) * 0 AS v FROM t WHERE a <> 0",
+    ] {
+        assert!(
+            matches!(projected_domain(sql), ValueDomain::Unknown(_)),
+            "{sql}: overflow or non-injectivity must not exclude a value"
+        );
+    }
+}

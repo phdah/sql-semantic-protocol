@@ -39,7 +39,11 @@ bounded intervals through total arithmetic; excluded NULLs remain excluded,
 while nullable finite sets explicitly retain NULL. Finite cross-products are
 exhaustive domain transformations, never samples used to assert impossibility.
 Arithmetic results that could overflow, require implicit coercion, or have
-unattested dialect rounding preserve an unknown output domain. Constant decimal
+unattested dialect rounding preserve an unknown output domain.
+A catalog-certified globally total and injective signed affine projection may
+also propagate finite excluded source values through its exact inverse. Zero
+multipliers, overflow-prone non-widened expressions and non-injective
+operations cannot certify an excluded output. Constant decimal
 expressions have an additional fixed-point subset: operand and output values
 must be exactly representable in binary64, and every intermediate calculation
 must fit bounded decimal precision. Nonterminating divisions, zero divisors,
