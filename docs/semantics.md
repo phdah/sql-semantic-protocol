@@ -874,3 +874,9 @@ reinterpreted as scalar row tuples without an exact operator-specific
 evaluator. There is no implicit guarantee that an arbitrary positive or
 negative terminal goal can be realized. The consumer may use the exact
 snapshots to run the SQL program in DuckDB and verify its outcomes.
+
+TASK-101 provides executable DuckDB negative examples for ordinary integer
+cast overflow, TRY_CAST NULL-on-failure, exact signed boundaries, and safe
+decimal and integer arithmetic. These are local scoped proofs. Nonportable
+implicit coercion and full cross-dialect execution equivalence remain separate
+release gates and are not inferred from DuckDB observations alone.

@@ -496,3 +496,64 @@ fn total_injective_projection_preserves_excluded_values() {
         );
     }
 }
+
+#[test]
+fn portable_casts_agree_across_all_parser_capable_dialects() {
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).unwrap();
+        let Ok(protocol) = analyze_sql(
+            "SELECT CAST('42' AS BIGINT) AS converted",
+            name,
+            dialect.as_ref(),
+        ) else {
+            continue;
+        };
+        let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+            panic!("{name}: expected SELECT");
+        };
+        let ValueDomain::Set(values) = query.output().columns()[0].domain() else {
+            panic!("{name}: canonical literal cast must be exact");
+        };
+        assert_eq!(values.mode(), SetMode::Include, "{name}");
+        assert_eq!(
+            values.values()[0].value(),
+            &LiteralValue::Number("42".into()),
+            "{name}",
+        );
+    }
+}
+
+#[test]
+fn duckdb_cast_arithmetic_and_exception_oracles() {
+    let db = Connection::open_in_memory().unwrap();
+    for (expression, expected) in [
+        ("CAST('42' AS BIGINT)", "42"),
+        ("1.25 + 0.5", "1.75"),
+        ("1.25 - 0.5", "0.75"),
+        ("1.5 * 2.0", "3.00"),
+        ("1.5 / 0.5", "3.0"),
+        ("1.25 % 0.5", "0.25"),
+    ] {
+        let actual: String = db
+            .query_row(
+                &format!("SELECT CAST({expression} AS VARCHAR)"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert!(
+            actual.parse::<f64>().unwrap() == expected.parse::<f64>().unwrap(),
+            "{expression}: expected {expected}, got {actual}",
+        );
+    }
+    let cast_would_throw = db.execute_batch("SELECT CAST(40000 AS SMALLINT)");
+    assert!(cast_would_throw.is_err(), "unsafe ordinary cast must not be called total");
+    let safe_failure: bool = db
+        .query_row("SELECT TRY_CAST(40000 AS SMALLINT) IS NULL", [], |row| row.get(0))
+        .unwrap();
+    assert!(safe_failure);
+    let exact_negative: i64 = db
+        .query_row("SELECT CAST('-32768' AS SMALLINT)", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(exact_negative, -32768);
+}

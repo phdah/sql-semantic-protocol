@@ -10,7 +10,11 @@
       "src/boolean_witness/numeric.rs",
       "tests/task_101_arithmetic.rs",
       "tests/task_70_predicates.rs",
-      "docs/semantics.md"
+      "docs/semantics.md",
+      "src/analysis/arithmetic_domains.rs",
+      "src/analysis/cast_domains.rs",
+      "src/analysis/decimal_literals.rs",
+      "tests/output_domains.rs"
     ],
     "proven_local_variants": [
       "signed_integer_between_and_not_between",
@@ -25,7 +29,11 @@
       "signed_integer_is_distinct_from",
       "direct_is_distinct_from_null",
       "width_checked_signed_affine_multiplication_inversion",
-      "signed_affine_negative_scale_and_nondivisible_equality_three_valued_proofs"
+      "signed_affine_negative_scale_and_nondivisible_equality_three_valued_proofs",
+      "catalog_certified_integer_arithmetic_output_finite_sets_intervals_and_exclusions",
+      "portable_exact_binary64_representable_decimal_literal_arithmetic",
+      "literal_integral_casts_with_explicit_cast_try_safe_failure_contract",
+      "bounded_binary64_exact_unit_division_and_nonzero_zero_dividends"
     ],
     "unproved_scope": [
       "general_arithmetic_overflow",
@@ -82,16 +90,16 @@
       {
         "family": "numeric_general_arithmetic",
         "status": "bounded_local_exact_with_general_residual",
-        "scope": "width-checked single-source signed affine unary +/- and nonzero constant multiplication exact; integer division, modulo, decimals, multi-column and unconstrained overflow remain residual",
-        "evidence": "tests/task_101_arithmetic.rs",
+        "scope": "catalog-checked signed affine +/-/* and unary, finite source arithmetic output sets/ranges/exclusions, certified divide by +/-1 only in exact binary64 range, zero dividends for proven nonzero signed denominators, modulo by +1; portable binary64-exact fixed decimal literal +,-,*,/,positive remainder; unbounded decimal columns, integer division requiring rounding and unchecked overflow residual",
+        "evidence": "tests/task_101_arithmetic.rs; tests/output_domains.rs",
         "release_blocking": true,
         "implementation_task": "TASK-101"
       },
       {
         "family": "noninteger_casts_and_implicit_coercions",
-        "status": "unproved_residual",
-        "scope": "decimal/string/timestamp conversions, non-total narrowing and engine coercion laws",
-        "evidence": "docs/semantics.md",
+        "status": "bounded_literal_exact_with_source_residual",
+        "scope": "finite canonical ASCII text and integral decimal literals explicitly cast to signed integer targets; explicit exception versus NULL-on-failure retained for CAST/TRY_CAST/SAFE_CAST; arbitrary text/session conversions, nonintegral decimal rounding and source decimal casts remain residual",
+        "evidence": "tests/output_domains.rs; tests/task_101_arithmetic.rs",
         "release_blocking": true,
         "implementation_task": "TASK-101"
       },
