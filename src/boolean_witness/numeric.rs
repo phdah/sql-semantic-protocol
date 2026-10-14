@@ -65,13 +65,10 @@ fn bounded_affine<'a>(
             let bounds = evidence(&resolve_column(column, sources))?;
             // A smaller inferred width is deliberately conservative when
             // catalog constraints narrow the source's possible values.
-            let bits = [16, 32, 64]
-                .into_iter()
-                .find(|bits| {
-                    signed_limits(*bits).is_some_and(|(min, max)| {
-                        bounds.minimum >= min && bounds.maximum <= max
-                    })
-                })?;
+            let bits = [16, 32, 64].into_iter().find(|bits| {
+                signed_limits(*bits)
+                    .is_some_and(|(min, max)| bounds.minimum >= min && bounds.maximum <= max)
+            })?;
             Some(AffineInteger {
                 column,
                 coefficient: 1,
@@ -199,20 +196,19 @@ pub(super) fn normalize_affine_comparison(
     sources: &[SourceRelation],
     evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
 ) -> Option<BooleanRowConstraint> {
-    let (affine, operator, literal) =
-        if let (Some(affine), Some(literal)) = (
-            bounded_affine(left, sources, evidence),
-            signed_integer_literal(right),
-        ) {
-            (affine, operator, literal)
-        } else if let (Some(literal), Some(affine)) = (
-            signed_integer_literal(left),
-            bounded_affine(right, sources, evidence),
-        ) {
-            (affine, operator.reversed(), literal)
-        } else {
-            return None;
-        };
+    let (affine, operator, literal) = if let (Some(affine), Some(literal)) = (
+        bounded_affine(left, sources, evidence),
+        signed_integer_literal(right),
+    ) {
+        (affine, operator, literal)
+    } else if let (Some(literal), Some(affine)) = (
+        signed_integer_literal(left),
+        bounded_affine(right, sources, evidence),
+    ) {
+        (affine, operator.reversed(), literal)
+    } else {
+        return None;
+    };
 
     if affine.coefficient == 0 {
         return None;
