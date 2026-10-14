@@ -84,6 +84,75 @@ fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> 
     }
 }
 
+fn same_source_arithmetic(
+    values: &IntegerValues,
+    operator: BinaryOperator,
+    bits: u16,
+) -> Option<IntegerValues> {
+    match values {
+        IntegerValues::Finite(values) => {
+            let mut results = Vec::new();
+            for input in values {
+                let output = match input {
+                    None => None,
+                    Some(value) => {
+                        let number = match operator {
+                            BinaryOperator::Subtract => 0,
+                            BinaryOperator::Multiply => value.checked_mul(*value)?,
+                            BinaryOperator::Divide
+                                if *value != 0 && value.unsigned_abs() <= (1_u128 << 53) =>
+                            {
+                                1
+                            }
+                            BinaryOperator::Modulo if *value != 0 => 0,
+                            _ => return None,
+                        };
+                        if !fits(number, bits) {
+                            return None;
+                        }
+                        Some(number)
+                    }
+                };
+                if !results.contains(&output) {
+                    results.push(output);
+                }
+            }
+            Some(IntegerValues::Finite(results))
+        }
+        IntegerValues::Interval { minimum, maximum } => {
+            let (lower, upper) = match operator {
+                BinaryOperator::Subtract => (0, 0),
+                BinaryOperator::Multiply => {
+                    let lower_squared = minimum.checked_mul(*minimum)?;
+                    let upper_squared = maximum.checked_mul(*maximum)?;
+                    let min_squared = if *minimum <= 0 && *maximum >= 0 {
+                        0
+                    } else {
+                        lower_squared.min(upper_squared)
+                    };
+                    (min_squared, lower_squared.max(upper_squared))
+                }
+                BinaryOperator::Divide
+                    if (*minimum > 0 || *maximum < 0)
+                        && minimum.unsigned_abs() <= (1_u128 << 53)
+                        && maximum.unsigned_abs() <= (1_u128 << 53) =>
+                {
+                    (1, 1)
+                }
+                BinaryOperator::Modulo if *minimum > 0 || *maximum < 0 => (0, 0),
+                _ => return None,
+            };
+            if !fits(lower, bits) || !fits(upper, bits) {
+                return None;
+            }
+            Some(IntegerValues::Interval {
+                minimum: lower,
+                maximum: upper,
+            })
+        }
+    }
+}
+
 fn typed_expression(
     expression: &Expression,
     domains: &[ColumnDomain],
@@ -162,6 +231,19 @@ fn typed_expression(
         }
         Expression::Binary(binary) => {
             let left = typed_expression(binary.left(), domains, sources, metadata)?;
+            // Syntactically identical, catalog-typed row-local expressions
+            // refer to the same value. Independent interval arithmetic would
+            // lose cancellation and can invent negative square results.
+            if binary.left() == binary.right() {
+                if let Some(values) =
+                    same_source_arithmetic(&left.values, binary.operator(), left.bits)
+                {
+                    return Some(TypedIntegers {
+                        bits: left.bits,
+                        values,
+                    });
+                }
+            }
             let right = typed_expression(binary.right(), domains, sources, metadata)?;
             // Conservatively demand that the result fits even the narrowest
             // admissible signed operand width, independent of dialect promotion.
