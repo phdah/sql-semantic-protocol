@@ -547,9 +547,14 @@ fn duckdb_cast_arithmetic_and_exception_oracles() {
         );
     }
     let cast_would_throw = db.execute_batch("SELECT CAST(40000 AS SMALLINT)");
-    assert!(cast_would_throw.is_err(), "unsafe ordinary cast must not be called total");
+    assert!(
+        cast_would_throw.is_err(),
+        "unsafe ordinary cast must not be called total"
+    );
     let safe_failure: bool = db
-        .query_row("SELECT TRY_CAST(40000 AS SMALLINT) IS NULL", [], |row| row.get(0))
+        .query_row("SELECT TRY_CAST(40000 AS SMALLINT) IS NULL", [], |row| {
+            row.get(0)
+        })
         .unwrap();
     assert!(safe_failure);
     let exact_negative: i64 = db
