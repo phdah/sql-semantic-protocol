@@ -5,10 +5,10 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, BooleanRowConstraint, BooleanTruthCase, BooleanWitness,
-    BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput, ProtocolStatement,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, LiteralValue, SetMode, ValueDomain,
-    to_json,
+    parse_dbt_catalog, parse_dbt_manifest, to_json, BooleanRowConstraint, BooleanTruthCase,
+    BooleanWitness, BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput, LiteralValue,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput,
+    ValueDomain,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -336,7 +336,12 @@ fn projected_domain(sql: &str) -> ValueDomain {
     let dialect = PostgreSqlDialect {};
     let input = SqlInput::inline(sql);
     let bundle = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("projection", &input, "postgresql", &dialect)],
+        &[ConfiguredSqlInput::new(
+            "projection",
+            &input,
+            "postgresql",
+            &dialect,
+        )],
         &catalog,
     )
     .unwrap();
@@ -365,13 +370,14 @@ fn catalog_integer_projection_preserves_exact_finite_sets() {
 
 #[test]
 fn catalog_integer_projection_emits_signed_interval_bounds() {
-    let domain = projected_domain(
-        "SELECT CAST(a AS SMALLINT) * -2 AS v FROM t WHERE a BETWEEN -10 AND 10",
-    );
+    let domain =
+        projected_domain("SELECT CAST(a AS SMALLINT) * -2 AS v FROM t WHERE a BETWEEN -10 AND 10");
     let ValueDomain::Ranges(ranges) = domain else {
         panic!("expected bounded interval, got {domain:?}");
     };
-    let [range] = ranges.ranges() else { panic!("one interval required"); };
+    let [range] = ranges.ranges() else {
+        panic!("one interval required");
+    };
     assert_eq!(
         range.lower().unwrap().value().value(),
         &LiteralValue::Number("-20".into())
@@ -386,9 +392,7 @@ fn catalog_integer_projection_emits_signed_interval_bounds() {
 
 #[test]
 fn catalog_cast_and_arithmetic_widths_fail_closed() {
-    let exact = projected_domain(
-        "SELECT CAST(a AS BIGINT) + 1 AS v FROM t WHERE a = 2147483647",
-    );
+    let exact = projected_domain("SELECT CAST(a AS BIGINT) + 1 AS v FROM t WHERE a = 2147483647");
     let ValueDomain::Set(values) = exact else {
         panic!("widened addition should be exact: {exact:?}");
     };
@@ -414,12 +418,23 @@ fn catalog_cast_and_arithmetic_widths_fail_closed() {
 fn distinct_integer_cast_failure_contract_is_serialized() {
     let dialect = PostgreSqlDialect {};
     for (name, sql, expected) in [
-        ("cast", "SELECT a FROM t WHERE CAST(a AS SMALLINT) > 0", "exception"),
-        ("try_cast", "SELECT a FROM t WHERE TRY_CAST(a AS SMALLINT) > 0", "null"),
+        (
+            "cast",
+            "SELECT a FROM t WHERE CAST(a AS SMALLINT) > 0",
+            "exception",
+        ),
+        (
+            "try_cast",
+            "SELECT a FROM t WHERE TRY_CAST(a AS SMALLINT) > 0",
+            "null",
+        ),
     ] {
         let protocol = analyze_sql(sql, "postgresql", &dialect).unwrap();
         let wire = to_json(&protocol);
-        assert!(wire.contains(&format!(r#""cast_kind":"{name}""#)), "{sql}: {wire}");
+        assert!(
+            wire.contains(&format!(r#""cast_kind":"{name}""#)),
+            "{sql}: {wire}"
+        );
         assert!(
             wire.contains(&format!(r#""on_failure":"{expected}""#)),
             "{sql}: {wire}"
@@ -431,10 +446,7 @@ fn distinct_integer_cast_failure_contract_is_serialized() {
 fn unit_division_and_nonzero_zero_dividends_have_exhaustive_witnesses() {
     // INTEGER source evidence fits binary64 exactly even if the engine
     // promotes integer division to floating arithmetic.
-    for predicate in [
-        "CAST(a AS BIGINT) / 1 > 10",
-        "CAST(a AS BIGINT) / -1 < -10",
-    ] {
+    for predicate in ["CAST(a AS BIGINT) / 1 > 10", "CAST(a AS BIGINT) / -1 < -10"] {
         exact(predicate);
     }
     for predicate in [
@@ -443,18 +455,25 @@ fn unit_division_and_nonzero_zero_dividends_have_exhaustive_witnesses() {
     ] {
         // The divisor might equal zero for a=-2147483648, so no proof.
         assert!(
-            matches!(witness(predicate).qualifying(), BooleanWitnessDirection::Residual { .. }),
+            matches!(
+                witness(predicate).qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
             "{predicate}"
         );
     }
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (NULL), (-3), (0), (2), (2147483647);").unwrap();
-    for predicate in [
-        "CAST(a AS BIGINT) / 1 > 10",
-        "CAST(a AS BIGINT) / -1 < -10",
-    ] {
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (NULL), (-3), (0), (2), (2147483647);",
+    )
+    .unwrap();
+    for predicate in ["CAST(a AS BIGINT) / 1 > 10", "CAST(a AS BIGINT) / -1 < -10"] {
         let count: i64 = db
-            .query_row(&format!("SELECT COUNT(*) FROM t WHERE {predicate}"), [], |row| row.get(0))
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
             .unwrap();
         assert_eq!(count, 1, "{predicate}");
     }
