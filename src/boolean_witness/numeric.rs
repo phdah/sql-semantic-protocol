@@ -125,9 +125,7 @@ fn bounded_affine<'a>(
                 // Integer division varies across dialects (and can promote
                 // to floating point). Never infer its width or rounding
                 // without an explicitly attested SQL-engine law.
-                BinaryOperator::Modulo if rhs == Some(1) => {
-                    left?.transform(0, 0)
-                }
+                BinaryOperator::Modulo if rhs == Some(1) => left?.transform(0, 0),
                 BinaryOperator::Divide
                 | BinaryOperator::Modulo
                 | BinaryOperator::StringConcat
@@ -202,16 +200,14 @@ fn constant_expression_truth(
         | ComparisonOperator::Gt
         | ComparisonOperator::Gte
         | ComparisonOperator::IsDistinctFrom
-        | ComparisonOperator::IsNotDistinctFrom => {
-            constant_on_nonnull(
-                column,
-                result,
-                matches!(
-                    operator,
-                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
-                ),
-            )
-        }
+        | ComparisonOperator::IsNotDistinctFrom => constant_on_nonnull(
+            column,
+            result,
+            matches!(
+                operator,
+                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+            ),
+        ),
     }
 }
 
