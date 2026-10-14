@@ -9,7 +9,7 @@
 use super::{signed_integer_literal, BooleanOperands, BooleanRowConstraint, SignedIntegerEvidence};
 use crate::domain::resolve_column;
 use crate::protocol::{
-    BinaryOperator, ColumnExpression, ColumnRef, ComparisonOperator, Expression, SourceRelation,
+    arithmetic_operand_kind, BinaryOperator, ColumnExpression, ColumnRef, ComparisonOperator, Expression, SourceRelation,
     UnaryOperator,
 };
 
@@ -247,24 +247,6 @@ fn compare(left: i128, operator: ComparisonOperator, right: i128) -> bool {
     }
 }
 
-fn operand_kind(expression: &Expression) -> &'static str {
-    match expression {
-        Expression::Column(_) => "source-column",
-        Expression::SignedIntegerCast(_) => "signed-integer-cast",
-        Expression::Literal(literal) => match literal.literal_type() {
-            crate::protocol::LiteralType::Integer => "integer-literal",
-            crate::protocol::LiteralType::Decimal => "decimal-literal",
-            crate::protocol::LiteralType::String => "string-literal",
-            crate::protocol::LiteralType::Boolean => "boolean-literal",
-            crate::protocol::LiteralType::Null => "sql-null",
-            _ => "other-literal",
-        },
-        Expression::Binary(_) => "computed-binary-expression",
-        Expression::Unary(_) => "computed-unary-expression",
-        _ => "unsupported-expression",
-    }
-}
-
 /// Surface the unsupported operator/type pair in the canonical residual.
 /// Do not conflate overflow, dynamic widening and dialect-sensitive casts
 /// with proofs of impossible source rows.
@@ -276,21 +258,21 @@ pub(super) fn unresolved_arithmetic_reason(left: &Expression, right: &Expression
         return format!(
             "arithmetic {} on {} and {} requires type/width/overflow/rounding evidence",
             binary.operator().as_str(),
-            operand_kind(binary.left()),
-            operand_kind(binary.right())
+            arithmetic_operand_kind(binary.left()),
+            arithmetic_operand_kind(binary.right())
         );
     }
     if let Some(Expression::Unary(unary)) = computed {
         return format!(
             "arithmetic unary {} on {} requires total signed range evidence",
             unary.operator().as_str(),
-            operand_kind(unary.operand())
+            arithmetic_operand_kind(unary.operand())
         );
     }
     format!(
         "comparison on {} and {} has no certified typed inversion",
-        operand_kind(left),
-        operand_kind(right)
+        arithmetic_operand_kind(left),
+        arithmetic_operand_kind(right)
     )
 }
 
