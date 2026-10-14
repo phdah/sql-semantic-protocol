@@ -96,7 +96,12 @@ fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> 
                     continue;
                 }
                 let cardinality = maximum.checked_sub(minimum)?.checked_add(1)?;
-                if cardinality > 64 || values.len().checked_add(usize::try_from(cardinality).ok()?)? > 64 {
+                if cardinality > 64
+                    || values
+                        .len()
+                        .checked_add(usize::try_from(cardinality).ok()?)?
+                        > 64
+                {
                     return None;
                 }
                 for value in minimum..=maximum {
@@ -612,9 +617,7 @@ fn interval_arithmetic(
             ];
             (*candidates.iter().min()?, *candidates.iter().max()?)
         }
-        BinaryOperator::Divide
-            if left_min == left_max && right_min == right_max =>
-        {
+        BinaryOperator::Divide if left_min == left_max && right_min == right_max => {
             let value = scalar_arithmetic(left_min, right_min, operator, bits)?;
             (value, value)
         }
@@ -639,9 +642,7 @@ fn interval_arithmetic(
         {
             (0, 0)
         }
-        BinaryOperator::Modulo
-            if right_min == right_max && right_min > 0 && left_min >= 0 =>
-        {
+        BinaryOperator::Modulo if right_min == right_max && right_min > 0 && left_min >= 0 => {
             let modulus = right_min;
             // A contiguous interval crossing a multiple of the divisor
             // contains the wraparound. Otherwise modulo is monotone.
@@ -650,7 +651,7 @@ fn interval_arithmetic(
             } else {
                 (0, modulus - 1)
             }
-        },
+        }
         BinaryOperator::Divide
         | BinaryOperator::Modulo
         | BinaryOperator::StringConcat
