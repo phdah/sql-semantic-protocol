@@ -309,6 +309,9 @@ pub(super) fn analyze_predicate_expression(
         let operator = match op {
             SqlBinaryOperator::Plus => Some(BinaryOperator::Add),
             SqlBinaryOperator::Minus => Some(BinaryOperator::Subtract),
+            SqlBinaryOperator::Multiply => Some(BinaryOperator::Multiply),
+            SqlBinaryOperator::Divide => Some(BinaryOperator::Divide),
+            SqlBinaryOperator::Modulo => Some(BinaryOperator::Modulo),
             _ => None,
         };
         if let Some(operator) = operator {
@@ -323,6 +326,26 @@ pub(super) fn analyze_predicate_expression(
                 ),
                 analyze_predicate_expression(
                     right,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+            ));
+        }
+    }
+
+    if let Expr::UnaryOp { op, expr } = expression {
+        let operator = match op {
+            SqlUnaryOperator::Plus => Some(UnaryOperator::Plus),
+            SqlUnaryOperator::Minus => Some(UnaryOperator::Minus),
+            _ => None,
+        };
+        if let Some(operator) = operator {
+            return Expression::Unary(UnaryExpression::new(
+                operator,
+                analyze_predicate_expression(
+                    expr,
                     named_windows,
                     output_aliases,
                     scope,
