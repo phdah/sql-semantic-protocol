@@ -132,9 +132,21 @@ fn typed_expression(
         Expression::SignedIntegerCast(cast) => {
             let mut input = typed_expression(cast.expression(), domains, sources, metadata)?;
             if !every_value_fits(&input.values, cast.target_bits()) {
-                // CAST may throw, whereas TRY/SAFE_CAST may introduce NULL.
-                // Neither failure path is a total identity.
-                return None;
+                // A throwing CAST is not a total expression over this source.
+                // The NULL-on-failure variants are total for a finite,
+                // catalog-typed integer source and preserve source NULLs.
+                input.values = match (cast.cast_kind(), input.values) {
+                    (
+                        SignedIntegerCastKind::TryCast | SignedIntegerCastKind::SafeCast,
+                        IntegerValues::Finite(values),
+                    ) => IntegerValues::Finite(
+                        values
+                            .into_iter()
+                            .map(|value| value.filter(|number| fits(*number, cast.target_bits())))
+                            .collect(),
+                    ),
+                    _ => return None,
+                };
             }
             input.bits = cast.target_bits();
             Some(input)
@@ -215,25 +227,29 @@ fn scalar_arithmetic(left: i128, right: i128, operator: BinaryOperator, bits: u1
             if right == 0 {
                 return None;
             }
-            if left == 0 {
-                0
-            } else if matches!(right, -1 | 1) {
-                let exact = 1_i128 << 53;
-                let result = left.checked_div(right)?;
-                if left.abs() > exact || result.abs() > exact {
-                    return None;
-                }
-                result
-            } else {
-                // Fractional integer division varies by dialect.
+            // SQL engines differ on fractional integer division and some
+            // promote to binary64. An integral quotient is portable only
+            // when both operands and the result are binary64-exact.
+            let exact = 1_u128 << 53;
+            let result = left.checked_div(right)?;
+            if left.unsigned_abs() > exact
+                || right.unsigned_abs() > exact
+                || result.unsigned_abs() > exact
+                || left.checked_rem(right)? != 0
+            {
                 return None;
             }
+            result
         }
         BinaryOperator::Modulo => {
             if right == 0 {
                 return None;
             }
-            if left == 0 || right == 1 {
+            // Nonnegative integer remainders with positive divisors have
+            // the same value independently of signed-remainder conventions.
+            if left >= 0 && right > 0 {
+                left % right
+            } else if left == 0 || right == 1 {
                 0
             } else {
                 return None;
@@ -273,6 +289,12 @@ fn interval_arithmetic(
             ];
             (*candidates.iter().min()?, *candidates.iter().max()?)
         }
+        BinaryOperator::Divide
+            if left_min == left_max && right_min == right_max =>
+        {
+            let value = scalar_arithmetic(left_min, right_min, operator, bits)?;
+            (value, value)
+        }
         BinaryOperator::Divide if right_min == 1 && right_max == 1 => {
             let exact = 1_i128 << 53;
             if left_min < -exact || left_max > exact {
@@ -294,7 +316,18 @@ fn interval_arithmetic(
         {
             (0, 0)
         }
-        BinaryOperator::Modulo if right_min == 1 && right_max == 1 => (0, 0),
+        BinaryOperator::Modulo
+            if right_min == right_max && right_min > 0 && left_min >= 0 =>
+        {
+            let modulus = right_min;
+            // A contiguous interval crossing a multiple of the divisor
+            // contains the wraparound. Otherwise modulo is monotone.
+            if left_min / modulus == left_max / modulus {
+                (left_min % modulus, left_max % modulus)
+            } else {
+                (0, modulus - 1)
+            }
+        },
         BinaryOperator::Divide
         | BinaryOperator::Modulo
         | BinaryOperator::StringConcat
@@ -314,6 +347,16 @@ fn combine_values(
     operator: BinaryOperator,
     bits: u16,
 ) -> Option<IntegerValues> {
+    if matches!(&left, IntegerValues::Finite(values) if values.is_empty())
+        || matches!(&right, IntegerValues::Finite(values) if values.is_empty())
+    {
+        return Some(IntegerValues::Finite(Vec::new()));
+    }
+    if matches!(&left, IntegerValues::Finite(values) if values == &[None])
+        || matches!(&right, IntegerValues::Finite(values) if values == &[None])
+    {
+        return Some(IntegerValues::Finite(vec![None]));
+    }
     if let (Some(lhs), Some(rhs)) = (enumerate(&left), enumerate(&right)) {
         let mut values = Vec::new();
         for a in lhs {
