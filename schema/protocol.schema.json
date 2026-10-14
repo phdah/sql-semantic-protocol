@@ -1811,7 +1811,19 @@
             64
           ]
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "cast_kind": { "const": "cast" } } },
+          "then": { "properties": { "on_failure": { "const": "exception" } } }
+        },
+        {
+          "if": {
+            "properties": { "cast_kind": { "enum": ["try_cast", "safe_cast"] } }
+          },
+          "then": { "properties": { "on_failure": { "const": "null" } } }
+        }
+      ]
     },
     "unaryExpression": {
       "type": "object",
