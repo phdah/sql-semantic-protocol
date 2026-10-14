@@ -19,6 +19,7 @@ Physical schema and default semantics: `src/relation.rs` owns typed columns, col
 | `WHERE`, `HAVING`, `QUALIFY`, SQL truth | `src/analysis/predicates.rs` | `src/analysis/exactness.rs`, `src/boolean_witness.rs`, `src/domain.rs` | `tests/differential_conformance.rs`, `tests/boolean_witness.rs` |
 | Catalog-certified finite and interval arithmetic output domains | `src/analysis/arithmetic_domains.rs` | `src/analysis/output.rs`, `src/analysis/queries.rs` | `tests/task_101_arithmetic.rs` |
 | Numeric bounds, scalar domains or comparisons | `src/domain.rs` | `src/analysis/domains.rs`, `src/analysis/typing.rs`, `src/protocol/values.rs` | `tests/typed_domains.rs`, `tests/output_domains.rs` |
+| Explicit CAST/TRY_CAST/SAFE_CAST literal outcome domains | `src/analysis/cast_domains.rs` | `src/analysis/output.rs` | `tests/output_domains.rs` |
 | Portable exact-decimal literal output arithmetic | `src/analysis/decimal_literals.rs` | `src/analysis/output.rs` | `tests/output_domains.rs` |
 | Width-checked scalar integer arithmetic and reversible predicates | `src/boolean_witness/numeric.rs` | `src/boolean_witness.rs`, `src/protocol/functions.rs` | `tests/task_101_arithmetic.rs` |
 | `GROUP BY`, aggregation or grouped physical rows | `src/analysis/aggregation.rs` | `src/group_witness.rs`, `src/physical_realization/grouping.rs`, `src/protocol/aggregation.rs` | `tests/group_witness.rs`, `tests/physical_realization/group_rank_set.rs`, `tests/protocol_conformance_physical.rs` |

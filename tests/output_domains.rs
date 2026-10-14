@@ -713,3 +713,34 @@ fn portable_decimal_literal_arithmetic_has_exact_domains() {
         );
     }
 }
+
+#[test]
+fn finite_signed_casts_preserve_total_values_and_failure_modes() {
+    let dialect = GenericDialect {};
+    for (sql, expected) in [
+        ("SELECT CAST(123 AS SMALLINT) AS value", "123"),
+        ("SELECT CAST('42' AS INTEGER) AS value", "42"),
+        ("SELECT CAST(25.0 AS BIGINT) AS value", "25"),
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
+            panic!("{sql}: expected finite total cast");
+        };
+        assert_eq!(values.values()[0].value(), &LiteralValue::Number(expected.into()));
+    }
+    let protocol = analyze_sql("SELECT TRY_CAST(40000 AS SMALLINT) AS value", "generic", &dialect).unwrap();
+    let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
+        panic!("TRY_CAST of an out-of-range exact integer should yield NULL");
+    };
+    assert_eq!(values.values()[0].value(), &LiteralValue::Null);
+    for sql in [
+        "SELECT CAST(40000 AS SMALLINT) AS value",
+        "SELECT CAST('1.5' AS INTEGER) AS value",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        assert!(matches!(
+            first_query(&protocol).output().columns()[0].domain(),
+            ValueDomain::Unknown(_)
+        ), "{sql}: unproved or exceptional cast must not be exact");
+    }
+}

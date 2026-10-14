@@ -45,6 +45,11 @@ must be exactly representable in binary64, and every intermediate calculation
 must fit bounded decimal precision. Nonterminating divisions, zero divisors,
 nonportable decimal fractions and negative-dividend remainder semantics are
 unknown rather than rounded or approximated.
+Explicit integer CASTs of finite, exactly integral numeric literals or
+canonical ASCII integer text have exact value domains when all values fit.
+For out-of-range integral literals, ordinary CAST emits an unknown domain
+because execution raises, while TRY_CAST and SAFE_CAST can yield SQL NULL.
+Unproven text formatting and fractional conversion rules remain residual.
 This is a local witness, not a proof of complete output-value distribution,
 general decimal arithmetic or implicit coercion. NULL-containing finite integer IN/NOT IN lists retain
 SQL UNKNOWN, including impossible qualifying branches. Unsafe casts,

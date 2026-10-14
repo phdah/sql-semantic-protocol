@@ -309,6 +309,7 @@ fn analyze_statement(
 // SQL AST to canonical protocol conversion is split by semantic responsibility.
 mod aggregation;
 mod arithmetic_domains;
+mod cast_domains;
 pub(crate) mod constraints;
 mod decimal_literals;
 mod dependencies;
@@ -331,6 +332,7 @@ mod writes;
 
 use aggregation::*;
 use arithmetic_domains::*;
+use cast_domains::*;
 use constraints::*;
 use decimal_literals::*;
 use dependencies::*;
