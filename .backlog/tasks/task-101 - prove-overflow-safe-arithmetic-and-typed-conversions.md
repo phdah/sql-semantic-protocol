@@ -1,7 +1,7 @@
 ---
 id: TASK-101
 title: Prove typed arithmetic, overflow and conversion outcomes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-13'
 updated_date: '2026-10-13'
@@ -44,3 +44,16 @@ Complete the canonical typed arithmetic and conversion families needed by predic
 - **Delivery:** one focused PR to `main`; finish all the child AC before marking it Done and verify complete relevant CI after implementing (not after every commit). Update canonical API/schema/docs, adapter parity and coverage evidence as applicable.
 - **Scope boundary:** Arithmetic, coercion and their row-local semantic facts only. TASK-102 owns branch expressions; TASK-103 owns correlated Boolean proof; TASK-106 owns relational/physical composition. TASK-88 still owns global dialect-law certification.
 - **Next:** After completion, pick **TASK-102**.
+
+## Implementation progress (2026-10-14)
+
+A first bounded arithmetic increment in `src/boolean_witness/numeric.rs` uses
+canonical integer comparison witnesses and certified source ranges for unary
+sign, constant +/-, nonzero constant multiplication and nested affine
+operations. It guards every intermediate against signed width overflow,
+reverses negative factors correctly and preserves SQL UNKNOWN and NULL-safe
+truth for nondivisible integer equalities. It adds direct SQL, dbt and DuckDB
+oracles in `tests/task_101_arithmetic.rs`. Division, modulo, decimal and
+noninteger conversions are still release-blocking residuals. All five child
+acceptance criteria remain unchecked until their complete scope and CI are
+verified. Do not close TASK-101 or unblock TASK-102 yet.
