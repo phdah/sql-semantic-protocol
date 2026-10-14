@@ -25,9 +25,18 @@ NULL-safe equality is two-valued. Certified total integer CAST/offset NULL tests
 comparisons refine projected domains when source identity is proven.
 
 Widening signed integer CAST, TRY_CAST and SAFE_CAST share one exact source identity only when all catalog-admissible values fit the target, so no failure-to-NULL or overflow is possible. Narrowing and noninteger conversions remain residual. Exactness still requires authoritative source datatype evidence and a complete,
-consistent assignment of all coupled source columns. Arithmetic inversion is
-limited to proven widened signed casts/offsets, including total
-TRY_CAST/SAFE_CAST. NULL-containing finite integer IN/NOT IN lists retain
+consistent assignment of all coupled source columns. Arithmetic inversion also admits a bounded affine subset: signed unary minus,
+constant addition/subtraction and nonzero constant multiplication, including
+literal-on-left operations and nesting. Each operator is checked against the
+entire catalog-admissible signed range and the attested result width before
+rewriting an integer comparison into one scalar source constraint. Integer
+division and modulo remain residual without dialect-certified rounding and
+result-type laws; multiplication that could overflow also remains residual.
+Nondivisible equality uses an exact SQL UNKNOWN-preserving contradiction for
+ordinary comparison and a two-valued contradiction for NULL-safe equality.
+The same width proof certifies NULL tests of total arithmetic expressions.
+This is a local witness, not a proof of complete output-value distribution,
+general decimal arithmetic or implicit coercion. NULL-containing finite integer IN/NOT IN lists retain
 SQL UNKNOWN, including impossible qualifying branches. Unsafe casts,
 noninvertible cross-column constraints, computed BETWEEN bounds and
 dialect-sensitive pattern/regex, collations, coercions or opaque functions
