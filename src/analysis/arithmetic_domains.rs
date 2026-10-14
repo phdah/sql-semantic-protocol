@@ -373,6 +373,10 @@ pub(super) fn refine_catalog_arithmetic_output_domains(
             .iter()
             .cloned()
             .map(|column| {
+                // Preserve exact open and closed bounds for plain projections.
+                if matches!(column.expression(), Expression::Column(_)) {
+                    return column;
+                }
                 let Some(typed) = typed_expression(column.expression(), domains, sources, metadata)
                 else {
                     return column;
