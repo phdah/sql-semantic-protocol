@@ -77,10 +77,37 @@ fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> 
                 Some(IntegerValues::Interval { minimum, maximum })
             }
         }
-        ValueDomain::Unbounded
-        | ValueDomain::Unknown(_)
-        | ValueDomain::Ranges(_)
-        | ValueDomain::Set(_) => None,
+        ValueDomain::Ranges(ranges) => {
+            // Multiple disjoint, fully bounded ranges can still be
+            // represented exactly when their total cardinality is small.
+            // Never infer absence by sampling a larger interval.
+            let mut values = Vec::new();
+            for range in ranges.ranges() {
+                let lower = range.lower()?;
+                let upper = range.upper()?;
+                let minimum =
+                    integer_value(lower.value())?.checked_add(i128::from(!lower.inclusive()))?;
+                let maximum =
+                    integer_value(upper.value())?.checked_sub(i128::from(!upper.inclusive()))?;
+                if !fits(minimum, bits) || !fits(maximum, bits) {
+                    return None;
+                }
+                if minimum > maximum {
+                    continue;
+                }
+                let cardinality = maximum.checked_sub(minimum)?.checked_add(1)?;
+                if cardinality > 64 || values.len().checked_add(usize::try_from(cardinality).ok()?)? > 64 {
+                    return None;
+                }
+                for value in minimum..=maximum {
+                    if !values.contains(&Some(value)) {
+                        values.push(Some(value));
+                    }
+                }
+            }
+            Some(IntegerValues::Finite(values))
+        }
+        ValueDomain::Unbounded | ValueDomain::Unknown(_) | ValueDomain::Set(_) => None,
     }
 }
 
