@@ -46,8 +46,9 @@ fn exact(predicate: &str) -> BooleanWitness {
             proof.qualifying(),
             BooleanWitnessDirection::Exact(BooleanTruthCase::True)
         ),
-        "{predicate}: {:?}",
-        proof.qualifying()
+        "{predicate}: {:?} with condition {:?}",
+        proof.qualifying(),
+        proof.condition()
     );
     assert!(
         matches!(
