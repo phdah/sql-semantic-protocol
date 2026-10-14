@@ -29,9 +29,8 @@ consistent assignment of all coupled source columns. Arithmetic inversion also a
 constant addition/subtraction and constant multiplication (including zero), modulo-one identities, including
 literal-on-left operations and nesting. Each operator is checked against the
 entire catalog-admissible signed range and the attested result width before
-rewriting an integer comparison into one scalar source constraint. Integer
-division and modulo remain residual without dialect-certified rounding and
-result-type laws; multiplication that could overflow also remains residual.
+rewriting an integer comparison into one scalar source constraint. Integer division and general modulo remain residual without dialect-certified rounding and
+result-type laws (modulo by positive one is exact zero for signed integers); multiplication that could overflow also remains residual.
 Nondivisible equality uses an exact SQL UNKNOWN-preserving contradiction for
 ordinary comparison and a two-valued contradiction for NULL-safe equality.
 The same width proof certifies NULL tests of total arithmetic expressions.
