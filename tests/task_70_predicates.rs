@@ -283,6 +283,65 @@ fn null_membership_obligations_preserve_unknown_in_both_directions() {
 }
 
 #[test]
+fn binary_string_equality_requires_attestation_and_has_a_schema_backed_wire_shape() {
+    use sql_semantic_protocol::{to_bundle_json, ComparisonAssumption};
+
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "t",
+        vec![SchemaColumn::from_sql_type("a", "VARCHAR", "postgresql").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
+    for (predicate, operator) in [
+        ("a = 'ab'", "eq"),
+        ("a <> 'ab'", "neq"),
+        ("a IS DISTINCT FROM 'ab'", "is_distinct_from"),
+        ("a IS NOT DISTINCT FROM 'ab'", "is_not_distinct_from"),
+    ] {
+        let input = SqlInput::inline(format!("SELECT a FROM t WHERE {predicate}"));
+        let dialect = PostgreSqlDialect {};
+        let mut bundle = analyze_configured_inputs_with_catalog(
+            &[ConfiguredSqlInput::new("text", &input, "postgresql", &dialect)],
+            &catalog,
+        )
+        .unwrap();
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics()
+        else {
+            panic!("resolved text semantics required");
+        };
+        assert!(
+            matches!(
+                semantics.boolean_witnesses()[0].witness().qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
+            "{predicate}: unproven collation must not be exact"
+        );
+        bundle.declare_comparison_assumptions(&[
+            ComparisonAssumption::BinaryCollation,
+            ComparisonAssumption::NoCharPadding,
+        ]);
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics()
+        else {
+            panic!("resolved text semantics required");
+        };
+        let witness = semantics.boolean_witnesses()[0].witness();
+        assert!(
+            matches!(witness.qualifying(), BooleanWitnessDirection::Exact(BooleanTruthCase::True)),
+            "{predicate}: certified positive witness"
+        );
+        assert!(
+            matches!(witness.rejected(), BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)),
+            "{predicate}: certified negative witness"
+        );
+        let output: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+        let constraint = &output["inputs"][0]["statements"][0]["boolean_witness"]["condition"];
+        assert_eq!(constraint["kind"], "string_equality", "{predicate}");
+        assert_eq!(constraint["operator"], operator, "{predicate}");
+        assert_eq!(constraint["literal"], "ab", "{predicate}");
+    }
+}
+
+#[test]
 fn not_between_with_one_null_bound_keeps_its_qualifying_domain() {
     use sql_semantic_protocol::{LiteralValue, ValueDomain};
 
