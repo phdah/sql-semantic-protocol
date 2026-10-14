@@ -663,7 +663,10 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
     {
         return ValueDomain::set(
             SetMode::Include,
-            vec![LiteralExpression::new(LiteralType::Null, LiteralValue::Null)],
+            vec![LiteralExpression::new(
+                LiteralType::Null,
+                LiteralValue::Null,
+            )],
         );
     }
     let left = singleton_integer(&derive_output_domain(binary.left()));
