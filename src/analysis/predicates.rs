@@ -91,8 +91,10 @@ pub(super) fn analyze_predicate_with_windows(
             any: false,
             expr,
             pattern,
-            escape_char: None,
-        } if safe_like_prefix(pattern).is_some() => {
+            escape_char,
+        } if safe_like_prefix(pattern)
+            .is_some_and(|prefix| safe_like_escape(&prefix, escape_char.as_ref())) =>
+        {
             Predicate::LikePrefix(LikePrefixPredicate::new(
                 analyze_predicate_expression(
                     expr,
@@ -233,6 +235,19 @@ pub(super) fn safe_like_prefix(pattern: &Expr) -> Option<String> {
         .then(|| prefix.to_string())
 }
 
+// An explicit ESCAPE character is harmless for a safe trailing-wildcard
+// prefix only when it cannot escape any character in the pattern. In
+// particular ESCAPE '%' would turn the final wildcard into a literal.
+pub(super) fn safe_like_escape(prefix: &str, escape_char: Option<&sqlparser::ast::Value>) -> bool {
+    match escape_char {
+        None => true,
+        Some(sqlparser::ast::Value::SingleQuotedString(character)) => {
+            character.chars().count() == 1 && character != "%" && !prefix.contains(character)
+        }
+        _ => false,
+    }
+}
+
 pub(super) fn is_plain_boolean_column(expression: &Expr) -> bool {
     match expression {
         Expr::Identifier(_) | Expr::CompoundIdentifier(_) => true,
@@ -317,11 +332,12 @@ pub(super) fn analyze_predicate_expression(
         }
     }
 
-    // Normalize only ordinary, formatting-free signed integer casts in
-    // predicates. TRY/SAFE_CAST, string/decimal casts, ambiguous targets and
-    // narrowing remain unsupported rather than gaining spurious exactness.
+    // Normalize formatting-free signed integer casts when source metadata
+    // can certify total, value-preserving conversion. For TRY/SAFE_CAST this
+    // rules out failure-to-NULL; any narrowing, string/decimal conversion or
+    // unresolved source datatype remains residual at the proof boundary.
     if let Expr::Cast {
-        kind: SqlCastKind::Cast,
+        kind: SqlCastKind::Cast | SqlCastKind::TryCast | SqlCastKind::SafeCast,
         expr,
         data_type,
         format: None,

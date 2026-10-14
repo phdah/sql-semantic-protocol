@@ -13,7 +13,7 @@ use crate::constraints::{
 use crate::domain::{comparison_domain, intersect_domains, resolve_column};
 use crate::protocol::{
     ColumnDomain, ColumnRef, ComparisonAssumption, ComparisonOperator, Expression,
-    LiteralExpression, LiteralType, LiteralValue, Predicate, SourceRelation, ValueDomain,
+    LiteralExpression, LiteralType, LiteralValue, Predicate, SetMode, SourceRelation, ValueDomain,
 };
 
 /// A logical operand sequence with at least two children.
@@ -68,6 +68,12 @@ pub enum BooleanRowConstraint {
         /// Whether the operand is IS NOT NULL.
         negated: bool,
     },
+    /// Ordinary comparison of a source column against literal SQL NULL.
+    /// Its truth is UNKNOWN for both NULL and non-NULL values.
+    UnknownNullComparison {
+        /// Resolved source column.
+        column: ColumnRef,
+    },
     /// Compare an integer source value against a signed integer literal.
     IntegerComparison {
         /// Resolved source column.
@@ -76,6 +82,27 @@ pub enum BooleanRowConstraint {
         operator: ComparisonOperator,
         /// Integer literal, with source datatype verified separately.
         literal: i64,
+    },
+    /// Compare two signed integer source columns on the same source row.
+    /// The two source datatypes must be independently certified and ordinary
+    /// NULL comparisons retain SQL UNKNOWN.
+    IntegerColumnComparison {
+        /// Resolved left source column.
+        left: ColumnRef,
+        /// SQL comparison operator.
+        operator: ComparisonOperator,
+        /// Resolved right source column.
+        right: ColumnRef,
+    },
+    /// Compare a string column against a literal under explicitly attested
+    /// binary collation and no-padding rules.
+    StringEquality {
+        /// Resolved string-typed source column.
+        column: ColumnRef,
+        /// Equals, not-equals or their two-valued NULL-safe counterparts.
+        operator: ComparisonOperator,
+        /// Literal string value.
+        literal: String,
     },
     /// Test a string's binary prefix, or its SQL NOT LIKE complement.
     StringPrefix {
@@ -100,9 +127,12 @@ impl BooleanRowConstraint {
             Self::All(children) | Self::Any(children) => {
                 !children.is_empty() && children.iter().all(Self::is_exact)
             }
-            Self::NullTest { .. } | Self::IntegerComparison { .. } | Self::StringPrefix { .. } => {
-                true
-            }
+            Self::NullTest { .. }
+            | Self::UnknownNullComparison { .. }
+            | Self::IntegerComparison { .. }
+            | Self::IntegerColumnComparison { .. }
+            | Self::StringEquality { .. }
+            | Self::StringPrefix { .. } => true,
             Self::Residual { .. } => false,
         }
     }
@@ -125,6 +155,9 @@ impl BooleanRowConstraint {
                 column: mapped.get(column)?.clone(),
                 negated: *negated,
             }),
+            Self::UnknownNullComparison { column } => Some(Self::UnknownNullComparison {
+                column: mapped.get(column)?.clone(),
+            }),
             Self::IntegerComparison {
                 column,
                 operator,
@@ -133,6 +166,24 @@ impl BooleanRowConstraint {
                 column: mapped.get(column)?.clone(),
                 operator: *operator,
                 literal: *literal,
+            }),
+            Self::IntegerColumnComparison {
+                left,
+                operator,
+                right,
+            } => Some(Self::IntegerColumnComparison {
+                left: mapped.get(left)?.clone(),
+                operator: *operator,
+                right: mapped.get(right)?.clone(),
+            }),
+            Self::StringEquality {
+                column,
+                operator,
+                literal,
+            } => Some(Self::StringEquality {
+                column: mapped.get(column)?.clone(),
+                operator: *operator,
+                literal: literal.clone(),
             }),
             Self::StringPrefix {
                 column,
@@ -154,17 +205,53 @@ impl BooleanRowConstraint {
             Self::All(children) | Self::Any(children) => {
                 children.iter().any(Self::requires_source_type_evidence)
             }
-            Self::IntegerComparison { .. } | Self::StringPrefix { .. } => true,
-            Self::NullTest { .. } | Self::Residual { .. } => false,
+            Self::IntegerComparison { .. }
+            | Self::IntegerColumnComparison { .. }
+            | Self::StringEquality { .. }
+            | Self::StringPrefix { .. } => true,
+            Self::NullTest { .. } | Self::UnknownNullComparison { .. } | Self::Residual { .. } => {
+                false
+            }
         }
     }
 
-    fn contains_string_prefix(&self) -> bool {
+    fn requires_binary_string_assumptions(&self) -> bool {
+        match self {
+            Self::All(operands) | Self::Any(operands) => operands
+                .iter()
+                .any(Self::requires_binary_string_assumptions),
+            Self::StringEquality { .. } | Self::StringPrefix { .. } => true,
+            _ => false,
+        }
+    }
+
+    // For independent signed-integer and NULL tests, integer threshold
+    // representatives partition the complete three-valued truth regions.
+    // Correlated columns and string comparisons only provide existence samples,
+    // not complete absence proofs.
+    fn has_complete_scalar_regions(&self) -> bool {
         match self {
             Self::All(operands) | Self::Any(operands) => {
-                operands.iter().any(Self::contains_string_prefix)
+                operands.iter().all(Self::has_complete_scalar_regions)
             }
-            Self::StringPrefix { .. } => true,
+            Self::NullTest { .. }
+            | Self::UnknownNullComparison { .. }
+            | Self::IntegerComparison { .. } => true,
+            // A source value compared to itself has complete TRUE/FALSE/UNKNOWN
+            // regions, unlike two independently ranged correlated columns.
+            Self::IntegerColumnComparison { left, right, .. } => left == right,
+            Self::StringEquality { .. } | Self::StringPrefix { .. } | Self::Residual { .. } => {
+                false
+            }
+        }
+    }
+
+    fn contains_column_comparison(&self) -> bool {
+        match self {
+            Self::All(operands) | Self::Any(operands) => {
+                operands.iter().any(Self::contains_column_comparison)
+            }
+            Self::IntegerColumnComparison { left, right, .. } => left != right,
             _ => false,
         }
     }
@@ -177,9 +264,15 @@ impl BooleanRowConstraint {
                 }
             }
             Self::NullTest { column, .. }
+            | Self::UnknownNullComparison { column }
             | Self::IntegerComparison { column, .. }
+            | Self::StringEquality { column, .. }
             | Self::StringPrefix { column, .. } => {
                 output.push(column.clone());
+            }
+            Self::IntegerColumnComparison { left, right, .. } => {
+                output.push(left.clone());
+                output.push(right.clone());
             }
             Self::Residual { .. } => {}
         }
@@ -210,6 +303,8 @@ impl BooleanTruthCase {
 pub enum BooleanWitnessDirection {
     /// The complete typed boolean expression is a precise row obligation.
     Exact(BooleanTruthCase),
+    /// An exhaustive typed region proof excludes the requested truth outcome.
+    Impossible,
     /// Source-row constructibility cannot be proven.
     Residual {
         /// Explicit conservative diagnostic.
@@ -289,10 +384,54 @@ impl BooleanWitness {
                         .or_insert(derived);
                     true
                 }
-                // Other exact conjuncts do not invalidate independently proven
-                // integer bounds; they simply contribute no scalar bounds.
-                BooleanRowConstraint::NullTest { .. }
-                | BooleanRowConstraint::StringPrefix { .. } => true,
+                // A comparison against SQL NULL cannot qualify a row, and
+                // contributes no independent value domain.
+                BooleanRowConstraint::UnknownNullComparison { .. } => true,
+                // Coupled source-column comparisons are not independent scalar
+                // domains, even though they can be row-local exact witnesses.
+                BooleanRowConstraint::IntegerColumnComparison { .. } => true,
+                BooleanRowConstraint::StringEquality {
+                    column,
+                    operator,
+                    literal,
+                } => {
+                    let derived = comparison_domain(
+                        *operator,
+                        &LiteralExpression::new(
+                            LiteralType::String,
+                            LiteralValue::Text(literal.clone()),
+                        ),
+                    );
+                    domains
+                        .entry(column.clone())
+                        .and_modify(|existing| *existing = intersect_domains(existing, &derived))
+                        .or_insert(derived);
+                    true
+                }
+                BooleanRowConstraint::NullTest { column, negated } => {
+                    let mode = if *negated {
+                        SetMode::Exclude
+                    } else {
+                        SetMode::Include
+                    };
+                    let derived = ValueDomain::set(
+                        mode,
+                        vec![LiteralExpression::new(
+                            LiteralType::Null,
+                            LiteralValue::Null,
+                        )],
+                    );
+                    domains
+                        .entry(column.clone())
+                        .and_modify(|existing| {
+                            *existing = intersect_domains(existing, &derived);
+                        })
+                        .or_insert(derived);
+                    true
+                }
+                // Pattern constraints have comparison-environment preconditions,
+                // not a general independent scalar interval.
+                BooleanRowConstraint::StringPrefix { .. } => true,
                 BooleanRowConstraint::Any(_) | BooleanRowConstraint::Residual { .. } => false,
             }
         }
@@ -330,7 +469,7 @@ impl BooleanWitness {
     ) -> Option<Self> {
         // Equal datatypes do not attest the same collation or padding laws
         // across warehouse materialization boundaries.
-        if self.condition.contains_string_prefix() {
+        if self.condition.requires_binary_string_assumptions() {
             return None;
         }
         let mut columns = Vec::new();
@@ -465,7 +604,7 @@ impl BooleanWitness {
             .iter()
             .all(|column| column.relation() == Some(&self.source_relation));
         let candidate = self.condition.is_exact() && !columns.is_empty() && resolved_source;
-        let prefix_licensed = !self.condition.contains_string_prefix()
+        let prefix_licensed = !self.condition.requires_binary_string_assumptions()
             || (self
                 .comparison_assumptions
                 .contains(&ComparisonAssumption::BinaryCollation)
@@ -486,6 +625,11 @@ impl BooleanWitness {
         } else {
             BTreeSet::new()
         };
+        let complete_scalar_regions = candidate
+            && prefix_licensed
+            && restrictions.is_some()
+            && self.condition.has_complete_scalar_regions()
+            && !cases.is_empty();
         let reason = if columns.is_empty() {
             "predicate has no resolved source columns"
         } else if !resolved_source {
@@ -501,6 +645,8 @@ impl BooleanWitness {
         };
         self.qualifying = if cases.contains(&SqlTruth::True) {
             BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+        } else if complete_scalar_regions {
+            BooleanWitnessDirection::Impossible
         } else {
             BooleanWitnessDirection::Residual {
                 reason: reason.to_string(),
@@ -508,6 +654,8 @@ impl BooleanWitness {
         };
         self.rejected = if cases.contains(&SqlTruth::False) || cases.contains(&SqlTruth::Unknown) {
             BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        } else if complete_scalar_regions {
+            BooleanWitnessDirection::Impossible
         } else {
             BooleanWitnessDirection::Residual {
                 reason: reason.to_string(),
@@ -682,10 +830,41 @@ fn analyze_candidate(
 
 fn is_witness_candidate(predicate: &Predicate) -> bool {
     match predicate {
-        Predicate::And(_) | Predicate::Or(_) | Predicate::LikePrefix(_) => true,
+        Predicate::And(_)
+        | Predicate::Or(_)
+        | Predicate::Not(_)
+        | Predicate::Between(_)
+        | Predicate::In(_)
+        | Predicate::LikePrefix(_) => true,
+        // Plain column NULL tests already participate in the canonical
+        // scalar domain proof. Creating a second local witness can turn an
+        // exact transitive copy into a spurious composition-domain residual.
+        Predicate::IsNull(test) => !matches!(test.expression(), Expression::Column(_)),
         Predicate::Comparison(comparison) => {
-            // A lone direct column comparison already has a scalar domain;
-            // computed operands need a typed inversion witness.
+            if matches!(
+                comparison.operator(),
+                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+            ) || [comparison.left(), comparison.right()].iter().any(|expression| {
+                matches!(expression, Expression::Literal(literal) if matches!(literal.value(), LiteralValue::Null))
+            }) {
+                return true;
+            }
+            // A lone direct column-to-literal comparison already has a scalar
+            // domain; correlated columns require a coupled typed witness.
+            if matches!(
+                (comparison.left(), comparison.right()),
+                (Expression::Column(_), Expression::Column(_))
+            ) || [comparison.left(), comparison.right()]
+                .iter()
+                .any(|expression| {
+                    matches!(
+                        expression,
+                        Expression::Literal(value) if value.literal_type() == LiteralType::String
+                    )
+                })
+            {
+                return true;
+            }
             [comparison.left(), comparison.right()]
                 .iter()
                 .any(|expression| {
@@ -722,17 +901,122 @@ fn normalize(
                 None => residual("logical predicate has fewer than two operands"),
             }
         }
-        Predicate::IsNull(test) => {
-            if let Expression::Column(column) = test.expression() {
-                BooleanRowConstraint::NullTest {
-                    column: resolve_column(column, sources),
-                    negated: test.negated(),
-                }
-            } else {
-                residual("NULL test involves a computed expression")
-            }
-        }
+        Predicate::IsNull(test) => normalize_null_test(
+            test.expression(),
+            test.negated(),
+            sources,
+            integer_evidence,
+            string_evidence,
+        )
+        .unwrap_or_else(|| residual("NULL test involves an unproven computed expression")),
         Predicate::Comparison(comparison) => {
+            // Ordinary SQL comparison with literal NULL yields UNKNOWN for
+            // every source value. Keep that truth leaf inside IN/BETWEEN/NOT
+            // instead of discarding an entire otherwise-proven predicate.
+            if !matches!(
+                comparison.operator(),
+                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                let column = match (comparison.left(), comparison.right()) {
+                    (Expression::Column(column), Expression::Literal(literal))
+                    | (Expression::Literal(literal), Expression::Column(column))
+                        if matches!(literal.value(), LiteralValue::Null) =>
+                    {
+                        Some(column)
+                    }
+                    _ => None,
+                };
+                if let Some(column) = column {
+                    return BooleanRowConstraint::UnknownNullComparison {
+                        column: resolve_column(column, sources),
+                    };
+                }
+            }
+            // Null-safe comparison with a literal NULL is a two-valued NULL
+            // test for any datatype; ordinary = NULL must stay UNKNOWN.
+            if matches!(
+                comparison.operator(),
+                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                let column = match (comparison.left(), comparison.right()) {
+                    (Expression::Column(column), Expression::Literal(literal))
+                        if matches!(literal.value(), LiteralValue::Null) =>
+                    {
+                        Some(column)
+                    }
+                    (Expression::Literal(literal), Expression::Column(column))
+                        if matches!(literal.value(), LiteralValue::Null) =>
+                    {
+                        Some(column)
+                    }
+                    _ => None,
+                };
+                if let Some(column) = column {
+                    return BooleanRowConstraint::NullTest {
+                        column: resolve_column(column, sources),
+                        negated: comparison.operator() == ComparisonOperator::IsDistinctFrom,
+                    };
+                }
+            }
+            // String comparisons are exact only for catalog-backed variable
+            // strings and attested binary/no-padding comparison settings.
+            if matches!(
+                comparison.operator(),
+                ComparisonOperator::Eq
+                    | ComparisonOperator::Neq
+                    | ComparisonOperator::IsDistinctFrom
+                    | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                let string_pair = match (comparison.left(), comparison.right()) {
+                    (Expression::Column(column), Expression::Literal(literal))
+                    | (Expression::Literal(literal), Expression::Column(column))
+                        if literal.literal_type() == LiteralType::String =>
+                    {
+                        Some((column, literal))
+                    }
+                    _ => None,
+                };
+                if let Some((column, literal)) = string_pair {
+                    let resolved = resolve_column(column, sources);
+                    let LiteralValue::Text(value) = literal.value() else {
+                        return residual("string comparison is not a canonical text literal");
+                    };
+                    if string_evidence(&resolved).is_none() {
+                        return residual("string comparison requires variable-length string type");
+                    }
+                    return BooleanRowConstraint::StringEquality {
+                        column: resolved,
+                        operator: comparison.operator(),
+                        literal: value.clone(),
+                    };
+                }
+            }
+            if let (Expression::Column(left), Expression::Column(right)) =
+                (comparison.left(), comparison.right())
+            {
+                let left = resolve_column(left, sources);
+                let right = resolve_column(right, sources);
+                if sources.len() != 1
+                    || left.relation() != Some(sources[0].name())
+                    || right.relation() != Some(sources[0].name())
+                {
+                    // A self-join's two aliases refer to different row
+                    // variables even when they share one physical table.
+                    return residual(
+                        "cross-relation comparison requires a relational witness, not one source row",
+                    );
+                }
+                if integer_evidence(&left).is_none() || integer_evidence(&right).is_none() {
+                    return residual(
+                        "cross-column comparison requires signed integer type evidence",
+                    );
+                }
+                return BooleanRowConstraint::IntegerColumnComparison {
+                    left,
+                    operator: comparison.operator(),
+                    right,
+                };
+            }
             let (column, operator, literal, offset) = if let Some((column, offset)) =
                 affine_integer_operand(comparison.left(), sources, integer_evidence)
             {
@@ -749,12 +1033,6 @@ fn normalize(
             } else {
                 return residual("comparison is noninvertible or correlates two source values");
             };
-            if matches!(
-                operator,
-                ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
-            ) {
-                return residual("null-safe comparison is not part of the integer witness subset");
-            }
             let Some(value) = signed_integer_literal(literal) else {
                 return residual("comparison literal is not a supported signed integer");
             };
@@ -774,6 +1052,81 @@ fn normalize(
                 literal: value,
             }
         }
+        Predicate::Between(test) => {
+            let (lower, upper, connective) = if test.negated() {
+                (ComparisonOperator::Lt, ComparisonOperator::Gt, false)
+            } else {
+                (ComparisonOperator::Gte, ComparisonOperator::Lte, true)
+            };
+            let operands = vec![
+                normalize_integer_comparison(
+                    test.expression(),
+                    lower,
+                    test.lower(),
+                    sources,
+                    integer_evidence,
+                    string_evidence,
+                ),
+                normalize_integer_comparison(
+                    test.expression(),
+                    upper,
+                    test.upper(),
+                    sources,
+                    integer_evidence,
+                    string_evidence,
+                ),
+            ];
+            let Some(operands) = BooleanOperands::new(operands) else {
+                return residual("BETWEEN requires both comparison bounds");
+            };
+            if connective {
+                BooleanRowConstraint::All(operands)
+            } else {
+                BooleanRowConstraint::Any(operands)
+            }
+        }
+        Predicate::In(test) => {
+            // SQL IN is OR of equalities; NOT IN is AND of inequalities.
+            // A NULL member deliberately stays residual unless the solver can
+            // prove its UNKNOWN effect rather than silently removing it.
+            let operator = if test.negated() {
+                ComparisonOperator::Neq
+            } else {
+                ComparisonOperator::Eq
+            };
+            let mut operands = test.values().iter().map(|value| {
+                normalize_integer_comparison(
+                    test.expression(),
+                    operator,
+                    value,
+                    sources,
+                    integer_evidence,
+                    string_evidence,
+                )
+            });
+            let Some(first) = operands.next() else {
+                return residual("empty IN list has no proven row semantics");
+            };
+            let Some(second) = operands.next() else {
+                return first;
+            };
+            let mut children = vec![first, second];
+            children.extend(operands);
+            let Some(children) = BooleanOperands::new(children) else {
+                return residual("IN list requires at least one value");
+            };
+            if test.negated() {
+                BooleanRowConstraint::All(children)
+            } else {
+                BooleanRowConstraint::Any(children)
+            }
+        }
+        Predicate::Not(negation) => negate_constraint(normalize(
+            negation.operand(),
+            sources,
+            integer_evidence,
+            string_evidence,
+        )),
         Predicate::LikePrefix(test) => {
             let Expression::Column(column) = test.expression() else {
                 return residual("LIKE prefix requires a direct source string column");
@@ -788,9 +1141,269 @@ fn normalize(
                 negated: test.negated(),
             }
         }
-        Predicate::Not(_) => residual("logical NOT needs explicit three-valued inversion"),
         _ => residual("computed, function, collation, cast or other predicate is not invertible"),
     }
+}
+
+// A NULL test is two-valued even when its input is nullable. Only
+// independently certified, total integer expressions may be reduced to
+// source-column NULL tests. Ordinary TRY_CAST or opaque function calls can
+// fail or change NULL behavior and deliberately do not enter this proof.
+fn normalize_null_test(
+    expression: &Expression,
+    negated: bool,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+) -> Option<BooleanRowConstraint> {
+    let test =
+        |column: &crate::protocol::ColumnExpression, negated| BooleanRowConstraint::NullTest {
+            column: resolve_column(column, sources),
+            negated,
+        };
+    if let Expression::Column(column) = expression {
+        return Some(test(column, negated));
+    }
+    if let Some((column, _)) = affine_integer_operand(expression, sources, integer_evidence) {
+        if integer_evidence(&resolve_column(column, sources)).is_some() {
+            return Some(test(column, negated));
+        }
+    }
+    // Searched CASE chooses the first SQL TRUE arm. For the supported
+    // total integer result class, NULL tests of the selected value are exact.
+    // Restrict branch guards to two-valued predicates: SQL UNKNOWN must
+    // select the ELSE arm, whereas ordinary NOT UNKNOWN stays UNKNOWN.
+    if let Expression::Case(case) = expression {
+        if case.operand().is_some() || case.branches().is_empty() {
+            return None;
+        }
+        let else_result = case.else_result()?;
+        let mut prior_negated = Vec::new();
+        let mut alternatives = Vec::new();
+        for branch in case.branches() {
+            let Expression::BooleanPredicate(predicate) = branch.condition() else {
+                return None;
+            };
+            let guard = normalize(predicate, sources, integer_evidence, string_evidence);
+            if !is_two_valued_boolean(&guard)
+                || !is_total_integer_result(branch.result(), sources, integer_evidence)
+            {
+                return None;
+            }
+            let result = normalize_null_test(
+                branch.result(),
+                negated,
+                sources,
+                integer_evidence,
+                string_evidence,
+            )?;
+            let mut conjunction = prior_negated.clone();
+            conjunction.push(guard.clone());
+            conjunction.push(result);
+            alternatives.push(BooleanRowConstraint::All(BooleanOperands::new(
+                conjunction,
+            )?));
+            prior_negated.push(negate_constraint(guard));
+        }
+        if !is_total_integer_result(else_result, sources, integer_evidence) {
+            return None;
+        }
+        prior_negated.push(normalize_null_test(
+            else_result,
+            negated,
+            sources,
+            integer_evidence,
+            string_evidence,
+        )?);
+        alternatives.push(BooleanRowConstraint::All(BooleanOperands::new(
+            prior_negated,
+        )?));
+        return BooleanOperands::new(alternatives).map(BooleanRowConstraint::Any);
+    }
+    let Expression::Function(function) = expression else {
+        return None;
+    };
+    if function.distinct() {
+        return None;
+    }
+    if function.name().eq_ignore_ascii_case("COALESCE") && function.arguments().len() >= 2 {
+        let mut columns = Vec::new();
+        for argument in function.arguments() {
+            match argument {
+                Expression::Literal(literal) if matches!(literal.value(), LiteralValue::Null) => {}
+                Expression::Column(column)
+                    if integer_evidence(&resolve_column(column, sources)).is_some() =>
+                {
+                    columns.push(test(column, negated));
+                }
+                _ => return None,
+            }
+        }
+        return match columns.len() {
+            0 => None,
+            1 => columns.pop(),
+            _ => BooleanOperands::new(columns).map(|operands| {
+                if negated {
+                    BooleanRowConstraint::Any(operands)
+                } else {
+                    BooleanRowConstraint::All(operands)
+                }
+            }),
+        };
+    }
+    if function.name().eq_ignore_ascii_case("NULLIF") {
+        let [Expression::Column(left), Expression::Column(right)] = function.arguments() else {
+            return None;
+        };
+        let left_column = resolve_column(left, sources);
+        let right_column = resolve_column(right, sources);
+        integer_evidence(&left_column)?;
+        integer_evidence(&right_column)?;
+        let comparison = BooleanRowConstraint::IntegerColumnComparison {
+            left: left_column,
+            right: right_column,
+            operator: if negated {
+                ComparisonOperator::IsDistinctFrom
+            } else {
+                ComparisonOperator::IsNotDistinctFrom
+            },
+        };
+        let operands = BooleanOperands::new(vec![test(left, negated), comparison])?;
+        return Some(if negated {
+            BooleanRowConstraint::All(operands)
+        } else {
+            BooleanRowConstraint::Any(operands)
+        });
+    }
+    None
+}
+
+// NOT is an exact logical complement only when the guard can never
+// evaluate to SQL UNKNOWN. This is required by searched CASE fallthrough.
+fn is_two_valued_boolean(condition: &BooleanRowConstraint) -> bool {
+    match condition {
+        BooleanRowConstraint::All(operands) | BooleanRowConstraint::Any(operands) => {
+            operands.iter().all(is_two_valued_boolean)
+        }
+        BooleanRowConstraint::NullTest { .. } => true,
+        BooleanRowConstraint::IntegerComparison { operator, .. }
+        | BooleanRowConstraint::IntegerColumnComparison { operator, .. }
+        | BooleanRowConstraint::StringEquality { operator, .. } => matches!(
+            operator,
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+        ),
+        BooleanRowConstraint::UnknownNullComparison { .. }
+        | BooleanRowConstraint::StringPrefix { .. }
+        | BooleanRowConstraint::Residual { .. } => false,
+    }
+}
+
+// CASE result selection must not trigger an opaque conversion, narrowing cast,
+// or arithmetic overflow before its NULL status can be observed.
+fn is_total_integer_result(
+    expression: &Expression,
+    sources: &[SourceRelation],
+    evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> bool {
+    affine_integer_operand(expression, sources, evidence)
+        .is_some_and(|(column, _)| evidence(&resolve_column(column, sources)).is_some())
+}
+
+// Negation is pushed to proven leaves. De Morgan's laws preserve SQL
+// UNKNOWN, while swapping comparison operators keeps NULL-sensitive
+// comparisons unknown and NULL-safe comparisons two-valued.
+fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
+    match condition {
+        BooleanRowConstraint::All(operands) => BooleanRowConstraint::Any(
+            BooleanOperands::new(operands.iter().cloned().map(negate_constraint).collect())
+                .expect("negation preserves the operand count"),
+        ),
+        BooleanRowConstraint::Any(operands) => BooleanRowConstraint::All(
+            BooleanOperands::new(operands.iter().cloned().map(negate_constraint).collect())
+                .expect("negation preserves the operand count"),
+        ),
+        BooleanRowConstraint::NullTest { column, negated } => BooleanRowConstraint::NullTest {
+            column,
+            negated: !negated,
+        },
+        // SQL NOT UNKNOWN remains UNKNOWN.
+        BooleanRowConstraint::UnknownNullComparison { column } => {
+            BooleanRowConstraint::UnknownNullComparison { column }
+        }
+        BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal,
+        } => {
+            let operator = negated_comparison_operator(operator);
+            BooleanRowConstraint::IntegerComparison {
+                column,
+                operator,
+                literal,
+            }
+        }
+        BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator,
+            right,
+        } => BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator: negated_comparison_operator(operator),
+            right,
+        },
+        BooleanRowConstraint::StringEquality {
+            column,
+            operator,
+            literal,
+        } => BooleanRowConstraint::StringEquality {
+            column,
+            operator: negated_comparison_operator(operator),
+            literal,
+        },
+        BooleanRowConstraint::StringPrefix {
+            column,
+            prefix,
+            negated,
+        } => BooleanRowConstraint::StringPrefix {
+            column,
+            prefix,
+            negated: !negated,
+        },
+        BooleanRowConstraint::Residual { reason } => BooleanRowConstraint::Residual { reason },
+    }
+}
+
+fn negated_comparison_operator(operator: ComparisonOperator) -> ComparisonOperator {
+    match operator {
+        ComparisonOperator::Eq => ComparisonOperator::Neq,
+        ComparisonOperator::Neq => ComparisonOperator::Eq,
+        ComparisonOperator::Lt => ComparisonOperator::Gte,
+        ComparisonOperator::Lte => ComparisonOperator::Gt,
+        ComparisonOperator::Gt => ComparisonOperator::Lte,
+        ComparisonOperator::Gte => ComparisonOperator::Lt,
+        ComparisonOperator::IsDistinctFrom => ComparisonOperator::IsNotDistinctFrom,
+        ComparisonOperator::IsNotDistinctFrom => ComparisonOperator::IsDistinctFrom,
+    }
+}
+
+fn normalize_integer_comparison(
+    left: &Expression,
+    operator: ComparisonOperator,
+    right: &Expression,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+) -> BooleanRowConstraint {
+    normalize(
+        &Predicate::Comparison(crate::protocol::ComparisonPredicate::new(
+            left.clone(),
+            operator,
+            right.clone(),
+        )),
+        sources,
+        integer_evidence,
+        string_evidence,
+    )
 }
 
 fn residual(reason: &str) -> BooleanRowConstraint {
@@ -939,10 +1552,12 @@ impl SqlTruth {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct ColumnThresholds {
     integers: BTreeSet<i128>,
     prefixes: BTreeSet<String>,
+    strings: BTreeSet<String>,
+    compared_columns: BTreeSet<ColumnRef>,
 }
 
 fn collect_comparison_literals(
@@ -955,7 +1570,8 @@ fn collect_comparison_literals(
                 collect_comparison_literals(operand, thresholds);
             }
         }
-        BooleanRowConstraint::NullTest { column, .. } => {
+        BooleanRowConstraint::NullTest { column, .. }
+        | BooleanRowConstraint::UnknownNullComparison { column } => {
             thresholds.entry(column.clone()).or_default();
         }
         BooleanRowConstraint::IntegerComparison {
@@ -966,6 +1582,27 @@ fn collect_comparison_literals(
                 .or_default()
                 .integers
                 .insert(i128::from(*literal));
+        }
+        BooleanRowConstraint::IntegerColumnComparison { left, right, .. } => {
+            thresholds
+                .entry(left.clone())
+                .or_default()
+                .compared_columns
+                .insert(right.clone());
+            thresholds
+                .entry(right.clone())
+                .or_default()
+                .compared_columns
+                .insert(left.clone());
+        }
+        BooleanRowConstraint::StringEquality {
+            column, literal, ..
+        } => {
+            thresholds
+                .entry(column.clone())
+                .or_default()
+                .strings
+                .insert(literal.clone());
         }
         BooleanRowConstraint::StringPrefix { column, prefix, .. } => {
             thresholds
@@ -991,9 +1628,9 @@ pub(crate) fn conjoin_physical_row_truths(
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
 ) -> Option<(BooleanRowConstraint, bool)> {
     if conditions.len() < 2
-        || conditions
-            .iter()
-            .any(|condition| !condition.is_exact() || condition.contains_string_prefix())
+        || conditions.iter().any(|condition| {
+            !condition.is_exact() || condition.requires_binary_string_assumptions()
+        })
     {
         return None;
     }
@@ -1026,6 +1663,11 @@ pub(crate) fn conjoin_physical_row_truths(
             possible.contains(&SqlTruth::False) || possible.contains(&SqlTruth::Unknown)
         }
     };
+    if !satisfiable && joint.contains_column_comparison() {
+        // Region representatives establish concrete existence, but cannot
+        // establish universal absence for correlated source columns.
+        return None;
+    }
     Some((joint, satisfiable))
 }
 
@@ -1040,9 +1682,9 @@ pub(crate) fn jointly_satisfiable_physical_truths(
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
 ) -> Option<bool> {
     if requirements.is_empty()
-        || requirements
-            .iter()
-            .any(|(condition, _)| !condition.is_exact() || condition.contains_string_prefix())
+        || requirements.iter().any(|(condition, _)| {
+            !condition.is_exact() || condition.requires_binary_string_assumptions()
+        })
     {
         return None;
     }
@@ -1065,7 +1707,7 @@ pub(crate) fn jointly_satisfiable_physical_truths(
     if truths.is_empty() {
         return None;
     }
-    Some(truths.iter().any(|row_truths| {
+    let satisfiable = truths.iter().any(|row_truths| {
         row_truths
             .iter()
             .zip(requirements)
@@ -1073,7 +1715,15 @@ pub(crate) fn jointly_satisfiable_physical_truths(
                 BooleanTruthCase::True => *actual == SqlTruth::True,
                 BooleanTruthCase::NotTrue => *actual != SqlTruth::True,
             })
-    }))
+    });
+    if !satisfiable
+        && conditions
+            .iter()
+            .any(|condition| condition.contains_column_comparison())
+    {
+        return None;
+    }
+    Some(satisfiable)
 }
 
 fn possible_joint_truths(
@@ -1107,12 +1757,30 @@ fn possible_joint_truth_vectors(
     for condition in conditions {
         collect_comparison_literals(condition, &mut thresholds);
     }
+    // Candidate values for correlated comparisons must include thresholds
+    // referenced by the opposite column. This is a witness search, not an
+    // exhaustive proof of impossible correlated assignments.
+    let initial = thresholds.clone();
+    for (column, region) in &initial {
+        for other in &region.compared_columns {
+            if let Some(other_region) = initial.get(other) {
+                thresholds
+                    .get_mut(column)
+                    .expect("collected correlated column")
+                    .integers
+                    .extend(other_region.integers.iter().copied());
+            }
+        }
+    }
     let mut assignments = vec![BTreeMap::new()];
     for (column, literals) in thresholds {
         let restriction = restrictions.and_then(|items| items.get(column.name()));
         let integer_bounds = integer_evidence(&column);
         let string_bounds = string_evidence(&column);
-        if !literals.integers.is_empty() && !literals.prefixes.is_empty() {
+        let integer_required =
+            !literals.integers.is_empty() || !literals.compared_columns.is_empty();
+        let string_required = !literals.prefixes.is_empty() || !literals.strings.is_empty();
+        if integer_required && string_required {
             // A single source column cannot simultaneously be an integer and a
             // string under the scoped typed comparison semantics.
             return BTreeSet::new();
@@ -1121,50 +1789,78 @@ fn possible_joint_truth_vectors(
         if let Some(allowed) = restriction.and_then(|item| item.accepted.as_ref()) {
             for value in allowed {
                 let fits = match value {
-                    RowScalar::Integer(value) if !literals.integers.is_empty() => integer_bounds
+                    RowScalar::Integer(value) if integer_required => integer_bounds
                         .is_some_and(|bounds| bounds.minimum <= *value && *value <= bounds.maximum),
-                    RowScalar::String(value) if !literals.prefixes.is_empty() => string_bounds
-                        .is_some_and(|bounds| {
+                    RowScalar::String(value) if string_required => {
+                        string_bounds.is_some_and(|bounds| {
                             bounds
                                 .max_chars
                                 .is_none_or(|max| value.chars().count() as u64 <= max)
-                        }),
+                        })
+                    }
                     // A pure NULL test admits a source value of any scalar kind.
-                    _ if literals.integers.is_empty() && literals.prefixes.is_empty() => true,
+                    _ if !integer_required && !string_required => true,
                     _ => false,
                 };
                 if fits {
                     values.insert(Some(value.clone()));
                 }
             }
-        } else if !literals.integers.is_empty() {
+        } else if integer_required {
             let Some(bounds) = integer_bounds else {
                 return BTreeSet::new();
             };
-            values.insert(Some(RowScalar::Integer(bounds.minimum)));
-            values.insert(Some(RowScalar::Integer(bounds.maximum)));
-            for literal in literals.integers {
-                for value in [literal - 1, literal, literal + 1] {
+            let mut pivots = BTreeSet::from([bounds.minimum, bounds.maximum]);
+            pivots.extend(literals.integers);
+            for other in &literals.compared_columns {
+                let Some(other_bounds) = integer_evidence(other) else {
+                    return BTreeSet::new();
+                };
+                pivots.insert(other_bounds.minimum);
+                pivots.insert(other_bounds.maximum);
+                if let Some(allowed) = restrictions
+                    .and_then(|items| items.get(other.name()))
+                    .and_then(|item| item.accepted.as_ref())
+                {
+                    for value in allowed {
+                        if let RowScalar::Integer(value) = value {
+                            pivots.insert(*value);
+                        }
+                    }
+                }
+            }
+            for pivot in pivots {
+                for value in [pivot.checked_sub(1), Some(pivot), pivot.checked_add(1)]
+                    .into_iter()
+                    .flatten()
+                {
                     if bounds.minimum <= value && value <= bounds.maximum {
                         values.insert(Some(RowScalar::Integer(value)));
                     }
                 }
             }
-        } else if !literals.prefixes.is_empty() {
+        } else if string_required {
             let Some(bounds) = string_bounds else {
                 return BTreeSet::new();
             };
-            // Under attested binary/no-padding semantics, every ASCII prefix
-            // pattern changes truth only at its prefix. Each literal prefix
-            // and the empty string give representatives of the joint truth
-            // regions, including overlapping and negated prefixes.
-            values.insert(Some(RowScalar::String(String::new())));
+            let mut candidates = BTreeSet::from([
+                String::new(),
+                "!".to_string(),
+                "z".to_string(),
+                "0".to_string(),
+            ]);
+            candidates.extend(literals.strings);
             for prefix in literals.prefixes {
+                candidates.insert(prefix.clone());
+                candidates.insert(format!("{prefix}!"));
+                candidates.insert(format!("{prefix}0"));
+            }
+            for value in candidates {
                 if bounds
                     .max_chars
-                    .is_none_or(|max| prefix.chars().count() as u64 <= max)
+                    .is_none_or(|max| value.chars().count() as u64 <= max)
                 {
-                    values.insert(Some(RowScalar::String(prefix)));
+                    values.insert(Some(RowScalar::String(value)));
                 }
             }
         } else {
@@ -1217,6 +1913,10 @@ fn eval_joint_truth(
             }
             Some(truth)
         }
+        BooleanRowConstraint::UnknownNullComparison { column } => {
+            assignment.get(column)?;
+            Some(SqlTruth::Unknown)
+        }
         BooleanRowConstraint::NullTest { column, negated } => {
             let is_null = assignment.get(column)?.is_none();
             Some(if is_null != *negated {
@@ -1232,19 +1932,100 @@ fn eval_joint_truth(
         } => {
             use crate::protocol::ComparisonOperator as Op;
             let value = match assignment.get(column)? {
-                Some(RowScalar::Integer(value)) => *value,
-                None => return Some(SqlTruth::Unknown),
+                Some(RowScalar::Integer(value)) => Some(*value),
+                None => None,
                 _ => return None,
             };
             let literal = i128::from(*literal);
             let result = match operator {
-                Op::Eq => value == literal,
-                Op::Neq => value != literal,
-                Op::Lt => value < literal,
-                Op::Lte => value <= literal,
-                Op::Gt => value > literal,
-                Op::Gte => value >= literal,
-                Op::IsDistinctFrom | Op::IsNotDistinctFrom => return None,
+                Op::IsDistinctFrom => value != Some(literal),
+                Op::IsNotDistinctFrom => value == Some(literal),
+                ordinary => {
+                    let Some(value) = value else {
+                        return Some(SqlTruth::Unknown);
+                    };
+                    match ordinary {
+                        Op::Eq => value == literal,
+                        Op::Neq => value != literal,
+                        Op::Lt => value < literal,
+                        Op::Lte => value <= literal,
+                        Op::Gt => value > literal,
+                        Op::Gte => value >= literal,
+                        Op::IsDistinctFrom | Op::IsNotDistinctFrom => unreachable!("handled above"),
+                    }
+                }
+            };
+            Some(if result {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            })
+        }
+        BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator,
+            right,
+        } => {
+            use crate::protocol::ComparisonOperator as Op;
+            let read = |column: &ColumnRef| -> Option<Option<i128>> {
+                match assignment.get(column)? {
+                    Some(RowScalar::Integer(value)) => Some(Some(*value)),
+                    None => Some(None),
+                    _ => None,
+                }
+            };
+            let lhs = read(left)?;
+            let rhs = read(right)?;
+            let result = match operator {
+                Op::IsDistinctFrom => lhs != rhs,
+                Op::IsNotDistinctFrom => lhs == rhs,
+                ordinary => {
+                    let (Some(lhs), Some(rhs)) = (lhs, rhs) else {
+                        return Some(SqlTruth::Unknown);
+                    };
+                    match ordinary {
+                        Op::Eq => lhs == rhs,
+                        Op::Neq => lhs != rhs,
+                        Op::Lt => lhs < rhs,
+                        Op::Lte => lhs <= rhs,
+                        Op::Gt => lhs > rhs,
+                        Op::Gte => lhs >= rhs,
+                        Op::IsDistinctFrom | Op::IsNotDistinctFrom => unreachable!("handled above"),
+                    }
+                }
+            };
+            Some(if result {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            })
+        }
+        BooleanRowConstraint::StringEquality {
+            column,
+            operator,
+            literal,
+        } => {
+            use crate::protocol::ComparisonOperator as Op;
+            let value = match assignment.get(column)? {
+                Some(RowScalar::String(value)) => Some(value.as_str()),
+                None => None,
+                _ => return None,
+            };
+            let result = match operator {
+                Op::IsDistinctFrom => value != Some(literal.as_str()),
+                Op::IsNotDistinctFrom => value == Some(literal.as_str()),
+                Op::Eq | Op::Neq => {
+                    let Some(value) = value else {
+                        return Some(SqlTruth::Unknown);
+                    };
+                    let equal = value == literal;
+                    if *operator == Op::Eq {
+                        equal
+                    } else {
+                        !equal
+                    }
+                }
+                _ => return None,
             };
             Some(if result {
                 SqlTruth::True
@@ -1332,10 +2113,10 @@ mod tests {
             ));
 
             let domains = witness.qualifying_conjunctive_domains();
-            let [domain] = domains.as_slice() else {
-                panic!("expected one integer domain from the mixed conjunction");
-            };
-            assert_eq!(domain.column(), &a);
+            let domain = domains
+                .iter()
+                .find(|domain| domain.column() == &a)
+                .expect("exact integer comparison must retain its domain");
             assert_eq!(
                 domain.domain(),
                 &comparison_domain(

@@ -789,10 +789,19 @@ fn derive_between(predicate: &BetweenPredicate, sources: &[SourceRelation]) -> D
         }
     };
 
-    let domain = if matches!(lower.value(), LiteralValue::Null)
-        || matches!(upper.value(), LiteralValue::Null)
-    {
-        ValueDomain::Empty
+    let lower_is_null = matches!(lower.value(), LiteralValue::Null);
+    let upper_is_null = matches!(upper.value(), LiteralValue::Null);
+    let domain = if lower_is_null || upper_is_null {
+        // NOT BETWEEN is (value < lower OR value > upper). When just
+        // one bound is NULL, the other comparison can still be TRUE.
+        // Positive BETWEEN cannot be TRUE with either NULL bound.
+        if !predicate.negated() || (lower_is_null && upper_is_null) {
+            ValueDomain::Empty
+        } else if lower_is_null {
+            comparison_domain(ComparisonOperator::Gt, &upper)
+        } else {
+            comparison_domain(ComparisonOperator::Lt, &lower)
+        }
     } else if predicate.negated() {
         match compare_literals(&lower, &upper) {
             Some(Ordering::Greater) => ValueDomain::set(SetMode::Exclude, vec![null_literal()]),

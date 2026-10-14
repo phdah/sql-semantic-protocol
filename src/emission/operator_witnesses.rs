@@ -15,6 +15,7 @@ pub(super) fn boolean_witness_direction_to_value(
     direction: &crate::BooleanWitnessDirection,
 ) -> Value {
     match direction {
+        crate::BooleanWitnessDirection::Impossible => json!({"status": "impossible"}),
         crate::BooleanWitnessDirection::Exact(case) => json!({
             "status": "exact",
             "truth": case.as_str()
@@ -37,6 +38,9 @@ pub(super) fn boolean_constraint_to_value(constraint: &crate::BooleanRowConstrai
         crate::BooleanRowConstraint::NullTest { column, negated } => json!({
             "kind": "null_test", "column": column_ref_to_value(column), "negated": negated
         }),
+        crate::BooleanRowConstraint::UnknownNullComparison { column } => json!({
+            "kind": "unknown_null_comparison", "column": column_ref_to_value(column)
+        }),
         crate::BooleanRowConstraint::IntegerComparison {
             column,
             operator,
@@ -44,6 +48,26 @@ pub(super) fn boolean_constraint_to_value(constraint: &crate::BooleanRowConstrai
         } => json!({
             "kind": "integer_comparison", "column": column_ref_to_value(column),
             "operator": operator.as_str(), "literal": literal
+        }),
+        crate::BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator,
+            right,
+        } => json!({
+            "kind": "integer_column_comparison",
+            "left": column_ref_to_value(left),
+            "operator": operator.as_str(),
+            "right": column_ref_to_value(right)
+        }),
+        crate::BooleanRowConstraint::StringEquality {
+            column,
+            operator,
+            literal,
+        } => json!({
+            "kind": "string_equality",
+            "column": column_ref_to_value(column),
+            "operator": operator.as_str(),
+            "literal": literal
         }),
         crate::BooleanRowConstraint::StringPrefix {
             column,

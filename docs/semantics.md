@@ -12,6 +12,36 @@ Versioned protocol artifacts such as `protocol-v0.1*` and `protocol-v0.2*` remai
 
 The analyzer resolves transformation layers into a deterministic relation dependency graph. It composes semantics through that graph: final outputs expose transitive physical lineage, value domains propagate through safe direct projections and renames, and ambiguous, cyclic, or non-invertible paths remain explicit instead of being guessed. Disconnected pipelines compose independently.
 
+### Bounded source-row Boolean witnesses
+
+The canonical Boolean witness can prove SQL TRUE and NOT TRUE independently for
+catalog-typed signed integer comparisons, `BETWEEN` / `NOT BETWEEN`, finite
+integer `IN` / `NOT IN` lists, nested `NOT` with `AND` / `OR`, and
+`IS [NOT] DISTINCT FROM` against an integer or literal NULL. The analyzer
+normalizes these into shared integer-comparison and NULL-test obligations,
+including De Morgan's laws and explicit UNKNOWN leaves for ordinary comparisons with literal NULL (including NULL-bearing IN lists), instead of introducing a consumer-specific SQL
+evaluation language. It preserves SQL UNKNOWN for ordinary comparisons to NULL;
+NULL-safe equality is two-valued. Certified total integer CAST/offset NULL tests, COALESCE of signed integer columns and literal NULL, and NULLIF of two signed integer columns preserve precise NULL truth. Searched CASE with total signed integer result arms and two-valued guards also has exact branch-selecting NULL witnesses; nullable three-valued guards and implicit ELSE branches remain residual. Exact conjunctive NULL tests and numeric
+comparisons refine projected domains when source identity is proven.
+
+Widening signed integer CAST, TRY_CAST and SAFE_CAST share one exact source identity only when all catalog-admissible values fit the target, so no failure-to-NULL or overflow is possible. Narrowing and noninteger conversions remain residual. Exactness still requires authoritative source datatype evidence and a complete,
+consistent assignment of all coupled source columns. Arithmetic inversion is
+limited to proven widened signed casts/offsets, including total
+TRY_CAST/SAFE_CAST. NULL-containing finite integer IN/NOT IN lists retain
+SQL UNKNOWN, including impossible qualifying branches. Unsafe casts,
+noninvertible cross-column constraints, computed BETWEEN bounds and
+dialect-sensitive pattern/regex, collations, coercions or opaque functions
+remain explicit residuals. Prefix `LIKE` requires separate binary-collation
+and no-padding attestations. An explicit single-character `ESCAPE` is supported only when it never appears in the safe prefix and is not the trailing `%` wildcard. Operator-local witnesses do **not** establish a
+complete physical-source realization across arbitrary producer DAGs. TASK-70
+and the protocol 3.0.0 release gate remain open for unproved expression families.
+
+The audited `task_70_predicate_evidence.family_evidence` entries in
+`docs/coverage-manifest.json` distinguish locally certified subsets from
+release-blocking residual families. These are not cross-dialect physical-source
+oracles; the 13-dialect TASK-88/TASK-89 and final TASK-91 gates remain separate.
+
+
 ### Set operations
 
 The branch-aware contract preserves each SELECT operand's row predicates, source domains and positional output evidence independently. Duplicate counts follow one typed operator rule per node, with NULL-safe equality for entire aligned tuples. A separate `membership` proof emits qualifying and non-qualifying witness directions, each exact only when the full branch-count combination is proven. The direct supported class is a row-preserving, one-relation SELECT of plain input columns without correlated or unknown filters, joins, aggregation, DISTINCT or row limits, with disjoint physical source dependencies across branches. The proof enumerates small source tuple counts (0, 1, and 2) to cover duplicate semantics and zero-result cancellation. More complex branches, shared physical inputs, unresolved positional alignment and unsupported tree shapes remain residual with explicit reasons.

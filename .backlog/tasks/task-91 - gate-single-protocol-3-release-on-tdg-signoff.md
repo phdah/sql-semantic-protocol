@@ -65,6 +65,10 @@ One consolidated 3.0.0 release is requested. The existing Release Please PR #79 
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
 
+## TASK-70 parent decomposition and protocol release gate (2026-10-13)
+
+PR #108 is a mergeable **bounded foundation** only. TASK-70 remains In Progress with its six original AC unchecked. Its dependency-ordered implementation children **TASK-101 → TASK-102 → TASK-103 → TASK-104 → TASK-105 → TASK-106 → TASK-107 → TASK-108** own arithmetic/conversions, computed branches/aliases, correlated Boolean proofs, dialect-sensitive text, temporal/JSON/vendor residual laws, relational/physical composition, expression-specific oracles, and final parent signoff. See the queue in [TASK-70](task-70%20-%20solve-expression-and-predicate-variants.md). The existing TASK-91 dependency on **TASK-70** indirectly gates all eight children. Do not add child prerequisites on TASK-70 (cycle), merge Release Please PR #79, or approve protocol 3.0.0 until TASK-108 verifies the original six parent criteria **and** all independent TASK-88/89/90, sql-tdg and release AC are satisfied.
+
 ## TASK-68 parent decomposition (2026-10-10)
 
 TASK-68 remains In Progress after foundational PR #92 is merged. Its child
@@ -132,3 +136,17 @@ PR #107 additionally proves complete composite comparisons despite unknown earli
 ## TASK-79 schema proof gate (2026-10-13)
 
 TASK-79 implementation is under review in protocol PR #107, and remains a mandatory dependency for this release gate. Its canonical/schema facts, typed nested populations, generated/default subset, dbt and SQL CHECK parity, scalar equality and differential fixtures do **not** constitute final AC signoff. Identity-sequence allocation, deferred FK/transaction enforcement, fully proven coercion/collation/timezone/default adapters, nested Arrow ordered DML/serialization and the complete cross-engine/dialect matrix remain release blockers or require independently reviewed fail-closed certification. The manifest's `task_79_schema_evidence` scope is authoritative; sql-tdg may consume certified portable protocol facts but must not fill unknown protocol semantics with generator heuristics. Keep Release Please PR #79 and this TASK-91 gate closed.
+
+## TASK-70 bounded expression evidence and remaining gates (2026-10-13)
+
+PR #108 contributes typed local source-row truth for NULL membership, exact
+signed integer predicates, certified total CAST/TRY_CAST/SAFE_CAST, selected
+COALESCE/NULLIF/CASE NULL tests, and binary-attested safe LIKE prefixes.
+The matrix under
+`docs/coverage-manifest.json.task_70_predicate_evidence.family_evidence`
+contains the exact proof preconditions and explicitly release-blocking residual
+families. It does **not** certify general arithmetic, dialect-sensitive
+coercions/collations/regex, date/time/JSON/vendor semantics, arbitrary
+computed joins/groupings/writes, or all physical positive/rejecting populations.
+TASK-88/TASK-89, sql-tdg TASK-24..36/43/44 and this TASK-91 gate remain open,
+and PR #79 must not be merged solely from this progress.

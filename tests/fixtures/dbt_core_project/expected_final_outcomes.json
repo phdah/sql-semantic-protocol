@@ -78,21 +78,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -173,11 +211,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -293,21 +331,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -511,11 +587,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -1433,6 +1509,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -1534,8 +1611,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -1574,6 +1650,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -1727,8 +1804,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -2145,21 +2221,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -2372,11 +2486,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -3761,6 +3875,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -3862,8 +3977,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -3902,6 +4016,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -4055,8 +4170,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -4409,6 +4523,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -4442,8 +4557,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [],
@@ -4452,6 +4566,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -4485,8 +4600,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"returns\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "except_distinct",
@@ -4798,21 +4912,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -4893,11 +5045,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -4980,21 +5132,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5075,11 +5265,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -5179,21 +5369,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5274,11 +5502,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -5480,21 +5708,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -5707,11 +5973,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -7092,6 +7358,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -7193,8 +7460,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -7233,6 +7499,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -7386,8 +7653,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -7740,6 +8006,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -7773,8 +8040,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"unioned_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [],
@@ -7783,6 +8049,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -7816,8 +8083,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "intersect_distinct",
@@ -8129,21 +8395,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8224,11 +8528,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -8323,21 +8627,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8418,11 +8760,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         }
@@ -8588,21 +8930,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -8702,11 +9082,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -8767,6 +9147,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -8800,8 +9181,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"stg_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [],
@@ -8810,6 +9190,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -8843,8 +9224,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -8918,21 +9298,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -9136,11 +9554,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -10091,6 +10509,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -10192,8 +10611,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -10232,6 +10650,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -10385,8 +10804,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",
@@ -10803,21 +11221,59 @@
               "kind": "all",
               "operands": [
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "all",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 10,
+                      "operator": "gte"
+                    },
+                    {
+                      "column": {
+                        "name": "amount",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "integer_comparison",
+                      "literal": 100,
+                      "operator": "lte"
+                    }
+                  ]
                 },
                 {
-                  "kind": "residual",
-                  "reason": "computed, function, collation, cast or other predicate is not invertible"
+                  "kind": "any",
+                  "operands": [
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "paid",
+                      "operator": "eq"
+                    },
+                    {
+                      "column": {
+                        "name": "status",
+                        "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+                      },
+                      "kind": "string_equality",
+                      "literal": "pending",
+                      "operator": "eq"
+                    }
+                  ]
                 }
               ]
             },
             "qualifying": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "rejected": {
-              "reason": "predicate has no resolved source columns",
+              "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
               "status": "residual"
             },
             "source_relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
@@ -11165,11 +11621,11 @@
           "operator": "boolean",
           "origin_layer_id": "layer-0004",
           "qualifying": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           },
           "rejected": {
-            "reason": "predicate has no resolved source columns",
+            "reason": "LIKE prefix requires binary_collation and no_char_padding attestations",
             "status": "residual"
           }
         },
@@ -12741,6 +13197,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:left",
                   "output": {
                     "columns": [
@@ -12842,8 +13299,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw_analytics\".\"ranked_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 },
                 {
                   "column_domains": [
@@ -12882,6 +13338,7 @@
                     "residual_conditions": [],
                     "status": "exact"
                   },
+                  "empty_input_preserving": true,
                   "identity": "body:right",
                   "output": {
                     "columns": [
@@ -13035,8 +13492,7 @@
                       "kind": "relation",
                       "name": "\"dbt-core-e2e\".\"raw\".\"legacy_orders\""
                     }
-                  ],
-                  "empty_input_preserving": true
+                  ]
                 }
               ],
               "multiplicity_rule": "sum",

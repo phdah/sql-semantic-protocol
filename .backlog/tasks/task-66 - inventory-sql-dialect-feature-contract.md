@@ -51,6 +51,10 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 
 The maintainer approved the scope decisions on 2026-10-09, and downstream owner acceptance tasks were synchronized in [sql-tdg PR #46](https://github.com/phdah/sql-tdg/pull/46). This is the completed handoff, **not** a declaration that exhaustive owner-level validation or the 3.0.0 release is approved.
 
+## TASK-70 scoped proof ownership (2026-10-13)
+
+TASK-66 remains Done as an **inventory**, not a semantic certification. PR #108 adds a bounded TASK-70 witness subset; remaining expression/predicate variant ownership is tracked by the ordered TASK-101..108 children in [TASK-70](task-70%20-%20solve-expression-and-predicate-variants.md), with a machine-readable per-family `implementation_task` in `docs/coverage-manifest.json.task_70_predicate_evidence.family_evidence`. Unproved and merely parser-supported cells remain release-blocking; TASK-88/89/91 own independent global certification and publication gates.
+
 ## Implementation notes (2026-10-09)
 
 - Inventory: [machine-readable manifest](../../docs/coverage-manifest.json) and [readable matrix](../../docs/coverage.md): **53 feature families**, **251 explicitly enumerated variants**, **13 canonical dialect families**, 689 family cells and 3,263 logical variant/dialect cells with default-deny evidence. `postgres` is covered as the alias of `postgresql`.
@@ -79,3 +83,16 @@ The `task_79_schema_evidence` inventory now records portable `ABS`/`COALESCE`, d
 ## TASK-79 schema capability handoff (2026-10-13)
 
 The authoritative TASK-79 physical-schema evidence inventory is `docs/coverage-manifest.json.task_79_schema_evidence`. PR #107 contributes typed SQL DDL, ODCS defaults, dbt CHECK expressions, portable compound AND/BETWEEN predicates, decimal/text key identity, nested typed source/target populations, and explicit enforcement status proofs. The inventory itself remains Done; these additions **do not** certify unverified per-dialect or downstream generator cells. sql-tdg TASK-31/35/36/43/44 consume the protocol's certified canonical facts and never derive missing defaults, constraints or datatype semantics from raw SQL.
+
+## TASK-70 expression family evidence handoff (2026-10-13)
+
+Protocol PR #108 extends the operator-local Boolean witness contract with
+SQL UNKNOWN-bearing IN/NOT IN and literal-NULL comparisons, catalog-certified
+COALESCE/NULLIF/CASE NULL tests, safe widened CAST/TRY_CAST/SAFE_CAST, safe
+binary LIKE prefix ESCAPE, signed cross-column comparison witnesses and
+integer self-comparison absence proofs. The
+`docs/coverage-manifest.json.task_70_predicate_evidence.family_evidence`
+inventory records exact conditions and unresolved dialect-sensitive families.
+All entries remain release-blocking: this is **bounded local evidence**, not
+TASK-88/89 exhaustive dialect/engine or generator validation. TASK-66 stays
+Done for the inventory, without waiving TASK-70 or TASK-91.

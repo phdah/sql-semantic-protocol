@@ -102,6 +102,53 @@ fn binary_attested_like_prefix_preserves_null_and_correlations() {
 }
 
 #[test]
+fn escaped_like_prefix_requires_same_binary_attestations() {
+    let mut bundle = text_bundle("SELECT a FROM t WHERE a LIKE 'ab%' ESCAPE '!'");
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().condition(),
+        BooleanRowConstraint::StringPrefix { prefix, .. } if prefix == "ab"
+    ));
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+    bundle.declare_comparison_assumptions(&[
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]);
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    assert!(matches!(
+        semantics.boolean_witnesses()[0].witness().qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+
+    for pattern in [
+        "a LIKE 'ab%' ESCAPE 'a'",
+        "a LIKE 'ab%' ESCAPE '%'",
+        "a LIKE 'ab!%' ESCAPE '!'",
+    ] {
+        let bundle = text_bundle(&format!("SELECT a FROM t WHERE {pattern}"));
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+            panic!("expected composition");
+        };
+        assert!(
+            semantics.boolean_witnesses().iter().all(|witness| {
+                !matches!(
+                    witness.witness().qualifying(),
+                    BooleanWitnessDirection::Exact(_)
+                )
+            }),
+            "{pattern}: unsafe escapes must never become exact"
+        );
+    }
+}
+
+#[test]
 fn like_prefix_rechecks_enforced_string_constraints() {
     let mut bundle = text_bundle("SELECT a FROM t WHERE a LIKE 'ab%' OR b LIKE 'ab%'");
     bundle.declare_comparison_assumptions(&[
@@ -463,7 +510,7 @@ fn repeated_column_conditions_are_checked_jointly() {
     };
     assert!(matches!(
         semantics.boolean_witnesses()[0].witness().qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
 }
 
@@ -477,7 +524,7 @@ fn conjunctions_are_coupled_even_without_an_or() {
     assert!(matches!(witness.condition(), BooleanRowConstraint::All(_)));
     assert!(matches!(
         witness.qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
     assert!(matches!(
         witness.rejected(),
@@ -525,7 +572,7 @@ fn enforced_not_null_constraints_reject_impossible_positive_witness() {
     let witness = semantics.boolean_witnesses()[0].witness();
     assert!(matches!(
         witness.qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
     assert!(matches!(
         witness.rejected(),
@@ -560,7 +607,7 @@ fn enforced_accepted_values_restrict_joint_comparison_feasibility() {
     let witness = semantics.boolean_witnesses()[0].witness();
     assert!(matches!(
         witness.qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
     assert!(matches!(
         witness.rejected(),
@@ -604,6 +651,7 @@ fn widening_integer_casts_are_invertible_and_narrowing_casts_are_residual() {
     for sql in [
         "SELECT a FROM t WHERE CAST(a AS BIGINT) > 2 OR CAST(b AS INTEGER) < 0",
         "SELECT a FROM t WHERE 5 < CAST(a AS BIGINT) AND b < 0",
+        "SELECT a FROM t WHERE TRY_CAST(a AS BIGINT) > 2 OR b < 0",
     ] {
         let bundle = typed_bundle(sql);
         let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
@@ -624,7 +672,7 @@ fn widening_integer_casts_are_invertible_and_narrowing_casts_are_residual() {
     for sql in [
         "SELECT a FROM t WHERE CAST(a AS SMALLINT) > 2 OR b < 0",
         "SELECT a FROM t WHERE CAST(a AS VARCHAR) > '2' OR b < 0",
-        "SELECT a FROM t WHERE TRY_CAST(a AS BIGINT) > 2 OR b < 0",
+        "SELECT a FROM t WHERE TRY_CAST(a AS SMALLINT) > 2 OR b < 0",
     ] {
         let bundle = typed_bundle(sql);
         let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
@@ -975,7 +1023,7 @@ fn dialects_preserve_the_same_null_sensitive_source_tree() {
 }
 
 #[test]
-fn impossible_positive_direction_is_residual_even_with_known_integer_types() {
+fn impossible_positive_direction_is_proven_with_known_integer_types() {
     let bundle = typed_bundle("SELECT a FROM t WHERE a > 2147483647 OR b > 2147483647");
     let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
         panic!("expected composition");
@@ -983,7 +1031,7 @@ fn impossible_positive_direction_is_residual_even_with_known_integer_types() {
     let witness = semantics.boolean_witnesses()[0].witness();
     assert!(matches!(
         witness.qualifying(),
-        BooleanWitnessDirection::Residual { .. }
+        BooleanWitnessDirection::Impossible
     ));
     assert!(matches!(
         witness.rejected(),
@@ -1059,6 +1107,7 @@ fn witness_truth(
             };
             Some(value.is_none() != *negated)
         }
+        BooleanRowConstraint::UnknownNullComparison { .. } => None,
         BooleanRowConstraint::IntegerComparison {
             column,
             operator,
@@ -1069,23 +1118,56 @@ fn witness_truth(
                 "b" => b,
                 other => panic!("unexpected source column {other}"),
             };
-            value.map(|v| {
-                let v = i64::from(v);
-                match operator {
-                    ComparisonOperator::Eq => v == *literal,
-                    ComparisonOperator::Neq => v != *literal,
-                    ComparisonOperator::Lt => v < *literal,
-                    ComparisonOperator::Lte => v <= *literal,
-                    ComparisonOperator::Gt => v > *literal,
-                    ComparisonOperator::Gte => v >= *literal,
-                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
-                        panic!("null-safe comparisons must remain residual")
-                    }
+            match operator {
+                ComparisonOperator::IsDistinctFrom => Some(value.map(i64::from) != Some(*literal)),
+                ComparisonOperator::IsNotDistinctFrom => {
+                    Some(value.map(i64::from) == Some(*literal))
                 }
-            })
+                ordinary => value.map(|v| {
+                    let v = i64::from(v);
+                    match ordinary {
+                        ComparisonOperator::Eq => v == *literal,
+                        ComparisonOperator::Neq => v != *literal,
+                        ComparisonOperator::Lt => v < *literal,
+                        ComparisonOperator::Lte => v <= *literal,
+                        ComparisonOperator::Gt => v > *literal,
+                        ComparisonOperator::Gte => v >= *literal,
+                        ComparisonOperator::IsDistinctFrom
+                        | ComparisonOperator::IsNotDistinctFrom => unreachable!("handled above"),
+                    }
+                }),
+            }
         }
-        BooleanRowConstraint::StringPrefix { .. } => {
-            panic!("integer differential fixture cannot evaluate string prefix")
+        BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator,
+            right,
+        } => {
+            let get = |column: &sql_semantic_protocol::ColumnRef| match column.name() {
+                "a" => a,
+                "b" => b,
+                other => panic!("unexpected source column {other}"),
+            };
+            let lhs = get(left);
+            let rhs = get(right);
+            match operator {
+                ComparisonOperator::IsDistinctFrom => Some(lhs != rhs),
+                ComparisonOperator::IsNotDistinctFrom => Some(lhs == rhs),
+                ordinary => lhs.zip(rhs).map(|(lhs, rhs)| match ordinary {
+                    ComparisonOperator::Eq => lhs == rhs,
+                    ComparisonOperator::Neq => lhs != rhs,
+                    ComparisonOperator::Lt => lhs < rhs,
+                    ComparisonOperator::Lte => lhs <= rhs,
+                    ComparisonOperator::Gt => lhs > rhs,
+                    ComparisonOperator::Gte => lhs >= rhs,
+                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
+                        unreachable!("handled above")
+                    }
+                }),
+            }
+        }
+        BooleanRowConstraint::StringEquality { .. } | BooleanRowConstraint::StringPrefix { .. } => {
+            panic!("integer differential fixture cannot evaluate string condition")
         }
         BooleanRowConstraint::Residual { reason } => {
             panic!("differential fixture cannot evaluate residual: {reason}")

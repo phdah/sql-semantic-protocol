@@ -504,6 +504,7 @@ pub(super) fn joint_physical_filters(
         )
         .and_then(|case| WitnessDirection::feasible(vec![case]))
         .unwrap_or_else(|| residual(PhysicalProofGap::LocalWitnessUnproven)),
+        crate::boolean_witness::BooleanWitnessDirection::Impossible => WitnessDirection::Impossible,
         crate::boolean_witness::BooleanWitnessDirection::Residual { .. } => {
             residual(PhysicalProofGap::LocalWitnessUnproven)
         }
