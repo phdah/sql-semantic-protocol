@@ -58,6 +58,57 @@ fn assert_both_directions_exact(predicate: &str) -> BooleanWitness {
 }
 
 #[test]
+fn boolean_constraint_wire_schema_covers_every_emitted_variant() {
+    let schema: Value =
+        serde_json::from_str(include_str!("../schema/protocol.schema.json")).unwrap();
+    let variants = schema["$defs"]["booleanConstraint"]["oneOf"]
+        .as_array()
+        .expect("boolean constraint union");
+    for kind in [
+        "all",
+        "any",
+        "null_test",
+        "unknown_null_comparison",
+        "integer_comparison",
+        "integer_column_comparison",
+        "string_equality",
+        "string_prefix",
+        "residual",
+    ] {
+        assert!(
+            variants.iter().any(|variant| {
+                variant["properties"]["kind"]["const"] == kind
+                    || variant["properties"]["kind"]["enum"]
+                        .as_array()
+                        .is_some_and(|values| values.iter().any(|value| value == kind))
+            }),
+            "emitted boolean constraint {kind} is missing from the active JSON schema"
+        );
+    }
+    let equality = variants
+        .iter()
+        .find(|variant| variant["properties"]["kind"]["const"] == "string_equality")
+        .unwrap();
+    assert_eq!(equality["properties"]["literal"]["type"], "string");
+    let operators = equality["properties"]["operator"]["enum"]
+        .as_array()
+        .expect("certified string comparison operators");
+    for operator in ["eq", "neq", "is_distinct_from", "is_not_distinct_from"] {
+        assert!(operators.iter().any(|item| item == operator), "{operator}");
+    }
+    for required in ["kind", "column", "operator", "literal"] {
+        assert!(
+            equality["required"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|item| item == required),
+            "missing required string equality field {required}"
+        );
+    }
+}
+
+#[test]
 fn expression_family_inventory_has_explicit_fail_closed_scope() {
     let manifest: Value =
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
