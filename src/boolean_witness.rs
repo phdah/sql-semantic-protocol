@@ -8,7 +8,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 mod numeric;
 
-use numeric::{normalize_affine_comparison, normalize_modulo_range_comparison, total_integer_column};
+use numeric::{
+    normalize_affine_comparison, normalize_modulo_range_comparison, total_integer_column,
+};
 
 use crate::constraints::{
     ConstraintEnforcement, ConstraintValue, RelationConstraint, RelationConstraintSet,
