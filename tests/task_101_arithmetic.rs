@@ -399,7 +399,6 @@ fn catalog_cast_and_arithmetic_widths_fail_closed() {
     for sql in [
         "SELECT a + 1 AS v FROM t WHERE a = 2147483647",
         "SELECT CAST(a AS SMALLINT) AS v FROM t WHERE a = 40000",
-        "SELECT TRY_CAST(a AS SMALLINT) AS v FROM t WHERE a = 40000",
     ] {
         let domain = projected_domain(sql);
         assert!(
@@ -561,4 +560,102 @@ fn duckdb_cast_arithmetic_and_exception_oracles() {
         .query_row("SELECT CAST('-32768' AS SMALLINT)", [], |row| row.get(0))
         .unwrap();
     assert_eq!(exact_negative, -32768);
+}
+
+#[test]
+fn exact_integer_division_and_nonnegative_modulo_have_typed_domains() {
+    let division = projected_domain("SELECT CAST(a AS BIGINT) / 3 AS v FROM t WHERE a = 9");
+    let ValueDomain::Set(quotient) = division else {
+        panic!("catalog-typed integral division must be exact: {division:?}");
+    };
+    assert_eq!(
+        quotient.values()[0].value(),
+        &LiteralValue::Number("3".into())
+    );
+
+    let modulo = projected_domain("SELECT a % 3 AS v FROM t WHERE a BETWEEN 0 AND 100");
+    let ValueDomain::Ranges(bounds) = modulo else {
+        panic!("nonnegative modulo has bounded output: {modulo:?}");
+    };
+    let [range] = bounds.ranges() else {
+        panic!("expected one bounded remainder range");
+    };
+    assert_eq!(
+        range.lower().unwrap().value().value(),
+        &LiteralValue::Number("0".into())
+    );
+    assert_eq!(
+        range.upper().unwrap().value().value(),
+        &LiteralValue::Number("2".into())
+    );
+    assert!(range.lower().unwrap().inclusive());
+    assert!(range.upper().unwrap().inclusive());
+
+    let finite = projected_domain("SELECT a % 3 AS v FROM t WHERE a IN (7, 8)");
+    let ValueDomain::Set(values) = finite else {
+        panic!("finite remainder must preserve values: {finite:?}");
+    };
+    assert_eq!(values.values().len(), 2);
+    assert!(values.values().iter().any(|v| v.value() == &LiteralValue::Number("1".into())));
+    assert!(values.values().iter().any(|v| v.value() == &LiteralValue::Number("2".into())));
+
+    for sql in [
+        "SELECT a / 3 AS v FROM t WHERE a = 10",
+        "SELECT a / 0 AS v FROM t WHERE a = 9",
+        "SELECT a % 3 AS v FROM t WHERE a = -8",
+    ] {
+        assert!(
+            matches!(projected_domain(sql), ValueDomain::Unknown(_)),
+            "{sql}: fractional division, zero divisor and negative remainder laws are residual"
+        );
+    }
+}
+
+#[test]
+fn try_cast_narrowing_preserves_finite_null_on_failure_evidence() {
+    let failed = projected_domain("SELECT TRY_CAST(a AS SMALLINT) AS v FROM t WHERE a = 40000");
+    let ValueDomain::Set(values) = failed else {
+        panic!("certified integer TRY_CAST failure must be SQL NULL: {failed:?}");
+    };
+    assert_eq!(values.values().len(), 1);
+    assert_eq!(values.values()[0].value(), &LiteralValue::Null);
+
+    let mixed = projected_domain(
+        "SELECT TRY_CAST(a AS SMALLINT) AS v FROM t WHERE a IN (1, 40000)",
+    );
+    let ValueDomain::Set(values) = mixed else {
+        panic!("finite TRY_CAST must retain successful and failing values: {mixed:?}");
+    };
+    assert_eq!(values.values().len(), 2);
+    assert!(values.values().iter().any(|v| v.value() == &LiteralValue::Null));
+    assert!(values.values().iter().any(|v| v.value() == &LiteralValue::Number("1".into())));
+
+    let ordinary = projected_domain("SELECT CAST(a AS SMALLINT) AS v FROM t WHERE a = 40000");
+    assert!(matches!(ordinary, ValueDomain::Unknown(_)));
+}
+
+#[test]
+fn duckdb_positive_remainder_and_integral_division_oracles() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (NULL), (7), (8), (9), (99), (100);",
+    )
+    .unwrap();
+    for (predicate, expected) in [
+        ("a >= 0 AND a % 3 = 0", 2_i64),
+        ("a >= 0 AND a % 3 = 1", 2),
+        ("a >= 0 AND a % 3 = 2", 1),
+        ("a = 9 AND CAST(a AS BIGINT) / 3 = 3", 1),
+        ("TRY_CAST(a AS SMALLINT) IS NULL", 1),
+    ] {
+        let count: i64 = db
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, expected, "{predicate}");
+    }
 }
