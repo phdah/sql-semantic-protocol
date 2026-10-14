@@ -121,7 +121,6 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
         .collect();
     assert_eq!(names.len(), families.len());
     for family in [
-        "numeric_general_arithmetic",
         "regex_and_nonprefix_patterns",
         "nonbinary_collations_and_padding",
         "noninteger_casts_and_implicit_coercions",
@@ -141,6 +140,12 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
             .as_str()
             .is_some_and(|value| !value.is_empty()));
     }
+    let arithmetic = families
+        .iter()
+        .find(|item| item["family"] == "numeric_general_arithmetic")
+        .unwrap();
+    assert_eq!(arithmetic["status"], "bounded_local_exact_with_general_residual");
+    assert_eq!(arithmetic["release_blocking"], true);
 }
 
 #[test]
