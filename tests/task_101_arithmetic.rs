@@ -596,8 +596,14 @@ fn exact_integer_division_and_nonnegative_modulo_have_typed_domains() {
         panic!("finite remainder must preserve values: {finite:?}");
     };
     assert_eq!(values.values().len(), 2);
-    assert!(values.values().iter().any(|v| v.value() == &LiteralValue::Number("1".into())));
-    assert!(values.values().iter().any(|v| v.value() == &LiteralValue::Number("2".into())));
+    assert!(values
+        .values()
+        .iter()
+        .any(|v| v.value() == &LiteralValue::Number("1".into())));
+    assert!(values
+        .values()
+        .iter()
+        .any(|v| v.value() == &LiteralValue::Number("2".into())));
 
     for sql in [
         "SELECT a / 3 AS v FROM t WHERE a = 10",
@@ -620,15 +626,20 @@ fn try_cast_narrowing_preserves_finite_null_on_failure_evidence() {
     assert_eq!(values.values().len(), 1);
     assert_eq!(values.values()[0].value(), &LiteralValue::Null);
 
-    let mixed = projected_domain(
-        "SELECT TRY_CAST(a AS SMALLINT) AS v FROM t WHERE a IN (1, 40000)",
-    );
+    let mixed =
+        projected_domain("SELECT TRY_CAST(a AS SMALLINT) AS v FROM t WHERE a IN (1, 40000)");
     let ValueDomain::Set(values) = mixed else {
         panic!("finite TRY_CAST must retain successful and failing values: {mixed:?}");
     };
     assert_eq!(values.values().len(), 2);
-    assert!(values.values().iter().any(|v| v.value() == &LiteralValue::Null));
-    assert!(values.values().iter().any(|v| v.value() == &LiteralValue::Number("1".into())));
+    assert!(values
+        .values()
+        .iter()
+        .any(|v| v.value() == &LiteralValue::Null));
+    assert!(values
+        .values()
+        .iter()
+        .any(|v| v.value() == &LiteralValue::Number("1".into())));
 
     let ordinary = projected_domain("SELECT CAST(a AS SMALLINT) AS v FROM t WHERE a = 40000");
     assert!(matches!(ordinary, ValueDomain::Unknown(_)));
@@ -666,25 +677,49 @@ fn correlated_integer_projection_does_not_cartesian_expand_one_source() {
     let ValueDomain::Ranges(zero) = difference else {
         panic!("same-source cancellation must be bounded: {difference:?}");
     };
-    let [range] = zero.ranges() else { panic!("expected one zero range") };
-    assert_eq!(range.lower().unwrap().value().value(), &LiteralValue::Number("0".into()));
-    assert_eq!(range.upper().unwrap().value().value(), &LiteralValue::Number("0".into()));
+    let [range] = zero.ranges() else {
+        panic!("expected one zero range")
+    };
+    assert_eq!(
+        range.lower().unwrap().value().value(),
+        &LiteralValue::Number("0".into())
+    );
+    assert_eq!(
+        range.upper().unwrap().value().value(),
+        &LiteralValue::Number("0".into())
+    );
 
     let square = projected_domain("SELECT a * a AS v FROM t WHERE a BETWEEN -10 AND 20");
     let ValueDomain::Ranges(bounds) = square else {
         panic!("same-source square must not have a negative lower bound: {square:?}");
     };
-    let [range] = bounds.ranges() else { panic!("expected one square range") };
-    assert_eq!(range.lower().unwrap().value().value(), &LiteralValue::Number("0".into()));
-    assert_eq!(range.upper().unwrap().value().value(), &LiteralValue::Number("400".into()));
+    let [range] = bounds.ranges() else {
+        panic!("expected one square range")
+    };
+    assert_eq!(
+        range.lower().unwrap().value().value(),
+        &LiteralValue::Number("0".into())
+    );
+    assert_eq!(
+        range.upper().unwrap().value().value(),
+        &LiteralValue::Number("400".into())
+    );
 
     let quotient = projected_domain("SELECT a / a AS v FROM t WHERE a BETWEEN 1 AND 100");
     let ValueDomain::Ranges(one) = quotient else {
         panic!("nonzero self-division must be total: {quotient:?}");
     };
-    let [range] = one.ranges() else { panic!("expected one unit range") };
-    assert_eq!(range.lower().unwrap().value().value(), &LiteralValue::Number("1".into()));
-    assert_eq!(range.upper().unwrap().value().value(), &LiteralValue::Number("1".into()));
+    let [range] = one.ranges() else {
+        panic!("expected one unit range")
+    };
+    assert_eq!(
+        range.lower().unwrap().value().value(),
+        &LiteralValue::Number("1".into())
+    );
+    assert_eq!(
+        range.upper().unwrap().value().value(),
+        &LiteralValue::Number("1".into())
+    );
 
     for sql in [
         "SELECT a / a AS v FROM t WHERE a BETWEEN -1 AND 1",
@@ -700,16 +735,15 @@ fn correlated_integer_projection_does_not_cartesian_expand_one_source() {
 
 #[test]
 fn unit_division_retains_certified_excluded_source_values() {
-    let domain = projected_domain(
-        "SELECT CAST(a AS BIGINT) / -1 AS v FROM t WHERE a <> 0",
-    );
+    let domain = projected_domain("SELECT CAST(a AS BIGINT) / -1 AS v FROM t WHERE a <> 0");
     let ValueDomain::Set(exclusions) = domain else {
         panic!("total, injective unit division must preserve exclusions: {domain:?}");
     };
     assert_eq!(exclusions.mode(), SetMode::Exclude);
-    assert!(exclusions.values().iter().any(|value| {
-        value.value() == &LiteralValue::Number("0".into())
-    }));
+    assert!(exclusions
+        .values()
+        .iter()
+        .any(|value| { value.value() == &LiteralValue::Number("0".into()) }));
 }
 
 fn projected_decimal_domain(sql: &str) -> ValueDomain {
@@ -722,7 +756,12 @@ fn projected_decimal_domain(sql: &str) -> ValueDomain {
     let dialect = PostgreSqlDialect {};
     let input = SqlInput::inline(sql);
     let bundle = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("decimal", &input, "postgresql", &dialect)],
+        &[ConfiguredSqlInput::new(
+            "decimal",
+            &input,
+            "postgresql",
+            &dialect,
+        )],
         &catalog,
     )
     .unwrap();
@@ -734,19 +773,19 @@ fn projected_decimal_domain(sql: &str) -> ValueDomain {
 
 #[test]
 fn catalog_decimal_finite_operations_have_precision_scale_evidence() {
-    let domain = projected_decimal_domain(
-        "SELECT d + 0.5 AS v FROM t WHERE d IN (1.25, 2.25)",
-    );
+    let domain = projected_decimal_domain("SELECT d + 0.5 AS v FROM t WHERE d IN (1.25, 2.25)");
     let ValueDomain::Set(values) = domain else {
         panic!("exact fixed decimal additions should be finite: {domain:?}");
     };
     assert_eq!(values.values().len(), 2);
-    assert!(values.values().iter().any(|value| {
-        value.value() == &LiteralValue::Number("1.75".into())
-    }));
-    assert!(values.values().iter().any(|value| {
-        value.value() == &LiteralValue::Number("2.75".into())
-    }));
+    assert!(values
+        .values()
+        .iter()
+        .any(|value| { value.value() == &LiteralValue::Number("1.75".into()) }));
+    assert!(values
+        .values()
+        .iter()
+        .any(|value| { value.value() == &LiteralValue::Number("2.75".into()) }));
 
     for (sql, expected) in [
         ("SELECT d * 2 AS v FROM t WHERE d = 1.25", "2.5"),
@@ -779,17 +818,18 @@ fn catalog_decimal_finite_operations_have_precision_scale_evidence() {
 
 #[test]
 fn exact_integral_catalog_decimal_casts_preserve_failure_modes() {
-    let integral = projected_decimal_domain(
-        "SELECT CAST(d AS SMALLINT) AS v FROM t WHERE d = 2.00",
-    );
+    let integral =
+        projected_decimal_domain("SELECT CAST(d AS SMALLINT) AS v FROM t WHERE d = 2.00");
     let ValueDomain::Set(values) = integral else {
         panic!("integral DECIMAL to SMALLINT should be exact: {integral:?}");
     };
-    assert_eq!(values.values()[0].value(), &LiteralValue::Number("2".into()));
-
-    let narrowing = projected_decimal_domain(
-        "SELECT TRY_CAST(d AS SMALLINT) AS v FROM t WHERE d = 40000.00",
+    assert_eq!(
+        values.values()[0].value(),
+        &LiteralValue::Number("2".into())
     );
+
+    let narrowing =
+        projected_decimal_domain("SELECT TRY_CAST(d AS SMALLINT) AS v FROM t WHERE d = 40000.00");
     let ValueDomain::Set(values) = narrowing else {
         panic!("failed total TRY_CAST should be NULL: {narrowing:?}");
     };
@@ -826,9 +866,7 @@ fn correlated_subtraction_proves_sql_true_and_not_true() {
         excluded.rejected(),
         BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
     ));
-    let nullsafe = witness(
-        "CAST(a AS BIGINT) - CAST(a AS BIGINT) IS DISTINCT FROM 0",
-    );
+    let nullsafe = witness("CAST(a AS BIGINT) - CAST(a AS BIGINT) IS DISTINCT FROM 0");
     assert!(matches!(
         nullsafe.qualifying(),
         BooleanWitnessDirection::Exact(BooleanTruthCase::True)
@@ -843,7 +881,10 @@ fn correlated_subtraction_proves_sql_true_and_not_true() {
     for (predicate, expected) in [
         ("CAST(a AS BIGINT) - CAST(a AS BIGINT) = 0", 3_i64),
         ("CAST(a AS BIGINT) - CAST(a AS BIGINT) <> 0", 0),
-        ("CAST(a AS BIGINT) - CAST(a AS BIGINT) IS DISTINCT FROM 0", 1),
+        (
+            "CAST(a AS BIGINT) - CAST(a AS BIGINT) IS DISTINCT FROM 0",
+            1,
+        ),
     ] {
         let count: i64 = db
             .query_row(
@@ -884,7 +925,12 @@ fn finite_decimal_catalog_has_direct_sql_and_dbt_adapter_parity() {
     let sql_catalog = RelationCatalog::from_schemas(&[physical]).unwrap();
     let input = SqlInput::inline(SQL);
     let sql_bundle = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("decimal_direct", &input, "postgresql", &dialect)],
+        &[ConfiguredSqlInput::new(
+            "decimal_direct",
+            &input,
+            "postgresql",
+            &dialect,
+        )],
         &sql_catalog,
     )
     .unwrap();
@@ -967,8 +1013,8 @@ fn duckdb_fixed_decimal_catalog_oracles_cover_nulls_and_conversion_failures() {
 
 fn projected_binary_text_cast(sql: &str, binary_attested: bool) -> ValueDomain {
     use sql_semantic_protocol::{
-        ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-        ConstraintSourceKind, TextComparisonLaw,
+        ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
+        TextComparisonLaw,
     };
 
     let mut column = SchemaColumn::from_sql_type("s", "VARCHAR(20)", "postgresql").unwrap();
@@ -987,12 +1033,17 @@ fn projected_binary_text_cast(sql: &str, binary_attested: bool) -> ValueDomain {
             )
             .unwrap();
     }
-    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new("t", vec![column]).unwrap()])
-        .unwrap();
+    let catalog =
+        RelationCatalog::from_schemas(&[RelationSchema::new("t", vec![column]).unwrap()]).unwrap();
     let dialect = PostgreSqlDialect {};
     let input = SqlInput::inline(sql);
     let bundle = analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("text", &input, "postgresql", &dialect)],
+        &[ConfiguredSqlInput::new(
+            "text",
+            &input,
+            "postgresql",
+            &dialect,
+        )],
         &catalog,
     )
     .unwrap();
@@ -1010,8 +1061,14 @@ fn attested_binary_text_casts_preserve_finite_ascii_and_failure_semantics() {
         panic!("attested binary source and ASCII text must be exact: {domain:?}");
     };
     assert_eq!(set.values().len(), 2);
-    assert!(set.values().iter().any(|value| value.value() == &LiteralValue::Number("42".into())));
-    assert!(set.values().iter().any(|value| value.value() == &LiteralValue::Number("-7".into())));
+    assert!(set
+        .values()
+        .iter()
+        .any(|value| value.value() == &LiteralValue::Number("42".into())));
+    assert!(set
+        .values()
+        .iter()
+        .any(|value| value.value() == &LiteralValue::Number("-7".into())));
 
     let narrowing = projected_binary_text_cast(
         "SELECT TRY_CAST(s AS SMALLINT) AS v FROM t WHERE s IN ('32767', '32768')",
@@ -1020,18 +1077,34 @@ fn attested_binary_text_casts_preserve_finite_ascii_and_failure_semantics() {
     let ValueDomain::Set(values) = narrowing else {
         panic!("finite TRY_CAST must distinguish successful and NULL results: {narrowing:?}");
     };
-    assert!(values.values().iter().any(|value| value.value() == &LiteralValue::Null));
-    assert!(values.values().iter().any(|value| {
-        value.value() == &LiteralValue::Number("32767".into())
-    }));
+    assert!(values
+        .values()
+        .iter()
+        .any(|value| value.value() == &LiteralValue::Null));
+    assert!(values
+        .values()
+        .iter()
+        .any(|value| { value.value() == &LiteralValue::Number("32767".into()) }));
 
     for (sql, attested) in [
-        ("SELECT CAST(s AS INTEGER) AS v FROM t WHERE s = '42'", false),
-        ("SELECT CAST(s AS INTEGER) AS v FROM t WHERE s = '0042'", true),
-        ("SELECT TRY_CAST(s AS INTEGER) AS v FROM t WHERE s = '1.5'", true),
+        (
+            "SELECT CAST(s AS INTEGER) AS v FROM t WHERE s = '42'",
+            false,
+        ),
+        (
+            "SELECT CAST(s AS INTEGER) AS v FROM t WHERE s = '0042'",
+            true,
+        ),
+        (
+            "SELECT TRY_CAST(s AS INTEGER) AS v FROM t WHERE s = '1.5'",
+            true,
+        ),
     ] {
         assert!(
-            matches!(projected_binary_text_cast(sql, attested), ValueDomain::Unknown(_)),
+            matches!(
+                projected_binary_text_cast(sql, attested),
+                ValueDomain::Unknown(_)
+            ),
             "{sql}: nonbinary equality or noncanonical conversion must stay residual"
         );
     }
@@ -1079,12 +1152,7 @@ fn narrowing_try_cast_null_tests_have_both_exact_truth_directions() {
 
 #[test]
 fn modulo_bounds_prove_impossibility_without_assuming_negative_sign_laws() {
-    for predicate in [
-        "a % 3 = 4",
-        "a % 3 > 2",
-        "a % 3 < -2",
-        "4 = a % 3",
-    ] {
+    for predicate in ["a % 3 = 4", "a % 3 > 2", "a % 3 < -2", "4 = a % 3"] {
         let proof = witness(predicate);
         assert!(
             matches!(proof.qualifying(), BooleanWitnessDirection::Impossible),
@@ -1102,7 +1170,10 @@ fn modulo_bounds_prove_impossibility_without_assuming_negative_sign_laws() {
         exact(predicate);
     }
     let all = witness("a % 3 IS DISTINCT FROM 4");
-    assert!(matches!(all.rejected(), BooleanWitnessDirection::Impossible));
+    assert!(matches!(
+        all.rejected(),
+        BooleanWitnessDirection::Impossible
+    ));
 
     for predicate in ["a % 3 = 1", "a % 0 = 1", "a % -3 = 4"] {
         assert!(
@@ -1138,9 +1209,8 @@ fn modulo_bounds_prove_impossibility_without_assuming_negative_sign_laws() {
 
 #[test]
 fn finite_union_of_bounded_ranges_retains_exact_arithmetic_values() {
-    let domain = projected_domain(
-        "SELECT a * 2 AS v FROM t WHERE a BETWEEN 1 AND 3 OR a BETWEEN 7 AND 9",
-    );
+    let domain =
+        projected_domain("SELECT a * 2 AS v FROM t WHERE a BETWEEN 1 AND 3 OR a BETWEEN 7 AND 9");
     let ValueDomain::Set(values) = domain else {
         panic!("two small disjoint source intervals should be exhaustive: {domain:?}");
     };
@@ -1161,13 +1231,11 @@ fn finite_union_of_bounded_ranges_retains_exact_arithmetic_values() {
 
 #[test]
 fn catalog_integer_arithmetic_proofs_agree_across_parser_capable_dialects() {
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "t",
-            vec![SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap()],
-        )
-        .unwrap(),
-    ])
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "t",
+        vec![SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap()])
     .unwrap();
     for name in common::DIALECTS {
         let dialect = dialect_from_name(name).unwrap();
