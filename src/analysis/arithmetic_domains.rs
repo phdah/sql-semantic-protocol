@@ -153,6 +153,49 @@ fn same_source_arithmetic(
     }
 }
 
+// Finite string source predicates imply exact byte values only when a
+// physical binary-comparison law is independently attested. A collation
+// name or a declared VARCHAR alone cannot certify an integer cast.
+fn finite_ascii_integer_source(
+    expression: &Expression,
+    domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<IntegerValues> {
+    let Expression::Column(column) = expression else {
+        return None;
+    };
+    let resolved = resolve_column(column, sources);
+    let schema = metadata.schema_column(&resolved)?;
+    let declared = match schema.data_type() {
+        DataType::Nullable(inner) => inner.as_ref(),
+        other => other,
+    };
+    if !matches!(declared, DataType::String { fixed: false, .. })
+        || schema.text_comparison_law() != Some(crate::relation::TextComparisonLaw::Binary)
+    {
+        return None;
+    }
+    let domain = domains.iter().find(|item| item.column() == &resolved)?;
+    let ValueDomain::Set(values) = domain.domain() else {
+        return None;
+    };
+    if values.mode() != SetMode::Include || values.values().len() > 64 {
+        return None;
+    }
+    let mut integers = Vec::new();
+    for literal in values.values() {
+        if literal.literal_type() == LiteralType::Null {
+            integers.push(None);
+        } else if literal.literal_type() == LiteralType::String {
+            integers.push(Some(exact_integral_literal(literal)?));
+        } else {
+            return None;
+        }
+    }
+    Some(IntegerValues::Finite(integers))
+}
+
 fn typed_expression(
     expression: &Expression,
     domains: &[ColumnDomain],
@@ -203,11 +246,11 @@ fn typed_expression(
                 typed_expression(cast.expression(), domains, sources, metadata)
             {
                 integer
-            } else {
-                let decimal =
-                    finite_decimal_expression(cast.expression(), domains, sources, metadata)?;
+            } else if let Some(decimal) =
+                finite_decimal_expression(cast.expression(), domains, sources, metadata)
+            {
                 // A physically declared fixed decimal may convert without
-                // rounding only when each attested value is integral.
+                // rounding only when every admitted value is integral.
                 decimal.declared?;
                 let values = decimal
                     .values
@@ -220,6 +263,16 @@ fn typed_expression(
                 TypedIntegers {
                     bits: 64,
                     values: IntegerValues::Finite(values),
+                }
+            } else {
+                TypedIntegers {
+                    bits: 64,
+                    values: finite_ascii_integer_source(
+                        cast.expression(),
+                        domains,
+                        sources,
+                        metadata,
+                    )?,
                 }
             };
             if !every_value_fits(&input.values, cast.target_bits()) {
