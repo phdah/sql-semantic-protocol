@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 mod numeric;
 
-use numeric::{normalize_affine_comparison, total_integer_column};
+use numeric::{normalize_affine_comparison, normalize_modulo_range_comparison, total_integer_column};
 
 use crate::constraints::{
     ConstraintEnforcement, ConstraintValue, RelationConstraint, RelationConstraintSet,
@@ -1020,6 +1020,15 @@ fn normalize(
                     operator: comparison.operator(),
                     right,
                 };
+            }
+            if let Some(bounded) = normalize_modulo_range_comparison(
+                comparison.left(),
+                comparison.operator(),
+                comparison.right(),
+                sources,
+                integer_evidence,
+            ) {
+                return bounded;
             }
             if let Some(inverted) = normalize_affine_comparison(
                 comparison.left(),
