@@ -249,5 +249,8 @@ fn direct_sql_and_dbt_catalog_produce_the_same_arithmetic_witness() {
     assert_eq!(dbt.condition(), direct.condition());
     assert_eq!(dbt.qualifying(), direct.qualifying());
     assert_eq!(dbt.rejected(), direct.rejected());
-    assert!(matches!(dbt.qualifying(), BooleanWitnessDirection::Exact(BooleanTruthCase::True)));
+    assert!(matches!(
+        dbt.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
 }
