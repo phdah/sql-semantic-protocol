@@ -1166,10 +1166,14 @@ fn modulo_bounds_prove_impossibility_without_assuming_negative_sign_laws() {
             "{predicate}: NOT TRUE must include SQL NULL"
         );
     }
-    for predicate in ["a % 3 < 3", "a % 3 >= -2", "a % 3 IS DISTINCT FROM 4"] {
+    for predicate in ["a % 3 < 3", "a % 3 >= -2"] {
         exact(predicate);
     }
     let all = witness("a % 3 IS DISTINCT FROM 4");
+    assert!(matches!(
+        all.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
     assert!(matches!(
         all.rejected(),
         BooleanWitnessDirection::Impossible
