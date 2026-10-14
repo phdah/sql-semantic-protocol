@@ -675,7 +675,12 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
     let left = singleton_integer(&derive_output_domain(binary.left()));
     let right = singleton_integer(&derive_output_domain(binary.right()));
     let (Some(left), Some(right)) = (left, right) else {
-        return ValueDomain::unknown("arithmetic output domain requires safely bounded operands");
+        return ValueDomain::unknown(format!(
+            "arithmetic {} on {} and {} requires safely bounded, typed operands",
+            binary.operator().as_str(),
+            crate::protocol::arithmetic_operand_kind(binary.left()),
+            crate::protocol::arithmetic_operand_kind(binary.right())
+        ));
     };
 
     let value = match binary.operator() {
@@ -703,7 +708,14 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
     value
         .filter(|value| i64::try_from(*value).is_ok())
         .map_or_else(
-            || ValueDomain::unknown("arithmetic output domain cannot be computed safely"),
+            || {
+                ValueDomain::unknown(format!(
+                    "arithmetic {} on {} and {} requires attested result width, zero-divisor and rounding laws",
+                    binary.operator().as_str(),
+                    crate::protocol::arithmetic_operand_kind(binary.left()),
+                    crate::protocol::arithmetic_operand_kind(binary.right())
+                ))
+            },
             |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
         )
 }
