@@ -162,6 +162,18 @@ fn arithmetic_literal_domains_fail_closed_on_dialect_dependent_division() {
             "{sql}: implicit arithmetic must not claim a portable exact value"
         );
     }
+    for sql in [
+        "SELECT NULL + 1 AS value",
+        "SELECT 1 - NULL AS value",
+        "SELECT NULL * 3 AS value",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain()
+        else {
+            panic!("{sql}: total NULL arithmetic must yield singleton SQL NULL");
+        };
+        assert_eq!(values.values()[0].value(), &LiteralValue::Null);
+    }
     let safe = analyze_sql("SELECT 7 % 1 AS value", "generic", &dialect).unwrap();
     let ValueDomain::Set(values) = first_query(&safe).output().columns()[0].domain() else {
         panic!("modulo-one has a safe integer value domain");
