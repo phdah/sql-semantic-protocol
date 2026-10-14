@@ -901,10 +901,12 @@ invertible expression subset includes identity arithmetic (`+a`, `a+0`,
 `0+a`, `a-0`), explicit ordinary signed-integer CASTs and constant offsets
 on such casts where every possible source value and computed result fits
 the 16-, 32-, or 64-bit signed cast target.
-The normalized `signed_integer_cast` expression stores `expression` and
-`target_bits`, while its coupled witness is inverted back to a comparison
-on the original source column. Total, formatting-free signed integer
-`TRY_CAST` and `SAFE_CAST` use the same certified path.
+The normalized `signed_integer_cast` expression stores `expression`, `target_bits`,
+`cast_kind` (`cast`, `try_cast`, `safe_cast`) and `on_failure` (`exception` or
+`null`). These fields retain the SQL failure contract even if a catalog proves
+that the conversion is total. Only then may its coupled witness be inverted
+back to the source column. An unsafe ordinary cast may raise, while an unsafe
+TRY_CAST or SAFE_CAST may become NULL; neither is an exact source identity.
 Narrowing, uncast or overflow-prone nonidentity arithmetic, functional and
 unattested collation-sensitive predicates remain residual. A normalized `like_prefix` predicate is supported only when an
 ordinary LIKE/NOT LIKE has exactly one trailing `%`, a nonempty unescaped

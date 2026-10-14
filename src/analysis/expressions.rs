@@ -2,6 +2,34 @@
 
 use super::*;
 
+// Only explicit, formatting-free signed integer casts have a canonical width.
+// Other conversions remain unsupported rather than acquiring implicit session laws.
+pub(super) fn normalize_signed_integer_cast(
+    kind: &SqlCastKind,
+    data_type: &sqlparser::ast::DataType,
+    operand: Expression,
+) -> Option<Expression> {
+    use sqlparser::ast::DataType as SqlDataType;
+    let bits = match data_type {
+        SqlDataType::SmallInt(_) | SqlDataType::Int2(_) | SqlDataType::Int16 => 16,
+        SqlDataType::Int(_)
+        | SqlDataType::Integer(_)
+        | SqlDataType::Int4(_)
+        | SqlDataType::Int32 => 32,
+        SqlDataType::BigInt(_) | SqlDataType::Int8(_) | SqlDataType::Int64 => 64,
+        _ => return None,
+    };
+    let cast_kind = match kind {
+        SqlCastKind::Cast => SignedIntegerCastKind::Cast,
+        SqlCastKind::TryCast => SignedIntegerCastKind::TryCast,
+        SqlCastKind::SafeCast => SignedIntegerCastKind::SafeCast,
+        _ => return None,
+    };
+    Some(Expression::SignedIntegerCast(SignedIntegerCastExpression::new(
+        operand, bits, cast_kind,
+    )))
+}
+
 pub(super) fn analyze_expression_with_scope(
     expression: &Expr,
     scope: &[OutputRelation],
@@ -281,6 +309,24 @@ pub(super) fn analyze_expression_with_windows(
             analyze_binary_expression(left, op, right, expression, named_windows, diagnostics)
         }
         Expr::Nested(inner) => analyze_expression_with_windows(inner, named_windows, diagnostics),
+        Expr::Cast {
+            kind,
+            expr,
+            data_type,
+            format: None,
+        } => normalize_signed_integer_cast(
+            kind,
+            data_type,
+            analyze_expression_with_windows(expr, named_windows, diagnostics),
+        )
+        .unwrap_or_else(|| {
+            unsupported_expression(
+                "cast",
+                expression,
+                DiagnosticArea::Expression,
+                diagnostics,
+            )
+        }),
         Expr::Case {
             operand,
             conditions,

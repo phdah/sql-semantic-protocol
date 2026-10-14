@@ -174,7 +174,7 @@ pub use protocol::{
     QueryStatement, RangesDomain, RelationRef, ResidualCondition, ResidualConditionReason,
     ScalarSubqueryExpression, SetBranch, SetDomain, SetMode, SetMultiplicityRule, SetOperand,
     SetOperation, SetOperator, SetQuantifier, SetWitnessBoundary, SetWitnessCase,
-    SetWitnessDirection, SetWitnessObligation, SignedIntegerCastExpression, SourceRelation,
+    SetWitnessDirection, SetWitnessObligation, SignedIntegerCastExpression, SignedIntegerCastKind, SourceRelation,
     SubquerySemantics, UnaryExpression, UnaryOperator, UnknownDomain, UnknownSemantic,
     UnsupportedSemantic, UnsupportedStatement, ValueDomain, ValueRange, WindowFrame,
     WindowFrameBound, WindowFrameUnits, WindowFunctionExpression, WindowOrderExpression,

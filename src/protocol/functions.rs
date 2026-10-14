@@ -428,14 +428,49 @@ pub enum WindowFrameBound {
 pub struct SignedIntegerCastExpression {
     expression: Box<Expression>,
     target_bits: u16,
+    cast_kind: SignedIntegerCastKind,
+}
+
+/// The SQL cast form, retained even when a catalog proves conversion cannot fail.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SignedIntegerCastKind {
+    /// Ordinary CAST raises an exception when the value cannot be converted.
+    Cast,
+    /// TRY_CAST produces SQL NULL when conversion fails.
+    TryCast,
+    /// SAFE_CAST produces SQL NULL when conversion fails.
+    SafeCast,
+}
+
+impl SignedIntegerCastKind {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Cast => "cast",
+            Self::TryCast => "try_cast",
+            Self::SafeCast => "safe_cast",
+        }
+    }
+
+    /// The canonical failure behavior of this explicit cast.
+    pub fn failure_behavior(self) -> &'static str {
+        match self {
+            Self::Cast => "exception",
+            Self::TryCast | Self::SafeCast => "null",
+        }
+    }
 }
 
 impl SignedIntegerCastExpression {
-    pub(crate) fn new(expression: Expression, target_bits: u16) -> Self {
+    pub(crate) fn new(
+        expression: Expression,
+        target_bits: u16,
+        cast_kind: SignedIntegerCastKind,
+    ) -> Self {
         debug_assert!(matches!(target_bits, 16 | 32 | 64));
         Self {
             expression: Box::new(expression),
             target_bits,
+            cast_kind,
         }
     }
 
@@ -447,6 +482,11 @@ impl SignedIntegerCastExpression {
     /// Signed target width in bits.
     pub fn target_bits(&self) -> u16 {
         self.target_bits
+    }
+
+    /// Preserve whether SQL requested CAST, TRY_CAST or SAFE_CAST.
+    pub fn cast_kind(&self) -> SignedIntegerCastKind {
+        self.cast_kind
     }
 }
 

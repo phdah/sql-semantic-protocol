@@ -1787,11 +1787,19 @@
       "required": [
         "kind",
         "expression",
-        "target_bits"
+        "target_bits",
+        "cast_kind",
+        "on_failure"
       ],
       "properties": {
         "kind": {
           "const": "signed_integer_cast"
+        },
+        "cast_kind": {
+          "enum": ["cast", "try_cast", "safe_cast"]
+        },
+        "on_failure": {
+          "enum": ["exception", "null"]
         },
         "expression": {
           "$ref": "#/$defs/expression"
