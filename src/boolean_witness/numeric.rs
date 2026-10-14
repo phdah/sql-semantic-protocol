@@ -125,6 +125,9 @@ fn bounded_affine<'a>(
                 // Integer division varies across dialects (and can promote
                 // to floating point). Never infer its width or rounding
                 // without an explicitly attested SQL-engine law.
+                BinaryOperator::Modulo if rhs == Some(1) => {
+                    left?.transform(0, 0)
+                }
                 BinaryOperator::Divide
                 | BinaryOperator::Modulo
                 | BinaryOperator::StringConcat
@@ -176,6 +179,42 @@ fn constant_on_nonnull(column: ColumnRef, result: bool, null_safe: bool) -> Bool
     }
 }
 
+fn constant_expression_truth(
+    column: ColumnRef,
+    operator: ComparisonOperator,
+    value: i128,
+    literal: i128,
+) -> BooleanRowConstraint {
+    let result = compare(value, operator, literal);
+    match operator {
+        ComparisonOperator::IsDistinctFrom if !result => BooleanRowConstraint::NullTest {
+            column,
+            negated: false,
+        },
+        ComparisonOperator::IsNotDistinctFrom if result => BooleanRowConstraint::NullTest {
+            column,
+            negated: true,
+        },
+        ComparisonOperator::Eq
+        | ComparisonOperator::Neq
+        | ComparisonOperator::Lt
+        | ComparisonOperator::Lte
+        | ComparisonOperator::Gt
+        | ComparisonOperator::Gte
+        | ComparisonOperator::IsDistinctFrom
+        | ComparisonOperator::IsNotDistinctFrom => {
+            constant_on_nonnull(
+                column,
+                result,
+                matches!(
+                    operator,
+                    ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+                ),
+            )
+        }
+    }
+}
+
 fn compare(left: i128, operator: ComparisonOperator, right: i128) -> bool {
     match operator {
         ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => left == right,
@@ -210,10 +249,15 @@ pub(super) fn normalize_affine_comparison(
         return None;
     };
 
-    if affine.coefficient == 0 {
-        return None;
-    }
     let column = resolve_column(affine.column, sources);
+    if affine.coefficient == 0 {
+        return Some(constant_expression_truth(
+            column,
+            operator,
+            affine.offset,
+            i128::from(literal),
+        ));
+    }
     let bounds = evidence(&column)?;
     let nullable_comparison = matches!(
         operator,
