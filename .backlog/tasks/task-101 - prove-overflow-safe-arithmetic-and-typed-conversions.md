@@ -47,13 +47,25 @@ Complete the canonical typed arithmetic and conversion families needed by predic
 
 ## Implementation progress (2026-10-14)
 
-A first bounded arithmetic increment in `src/boolean_witness/numeric.rs` uses
-canonical integer comparison witnesses and certified source ranges for unary
-sign, constant +/-, constant multiplication, modulo-one identities and nested affine
-operations. It guards every intermediate against signed width overflow,
-reverses negative factors correctly and preserves SQL UNKNOWN and NULL-safe
-truth for nondivisible integer equalities. It adds direct SQL, dbt and DuckDB
-oracles in `tests/task_101_arithmetic.rs`. Division, modulo, decimal and
-noninteger conversions are still release-blocking residuals. All five child
-acceptance criteria remain unchecked until their complete scope and CI are
-verified. Do not close TASK-101 or unblock TASK-102 yet.
+The branch now contains a broader, bounded proof implementation in
+`src/boolean_witness/numeric.rs`, `src/analysis/arithmetic_domains.rs`,
+`src/analysis/decimal_literals.rs` and `src/analysis/cast_domains.rs`:
+
+- Catalog-certified signed affine and correlated cancellation/arithmetic; exact
+  finite sets, enumerable disjoint bounded ranges, conservative interval bounds
+  and invertible exclusions.
+- Exact integral integer division within binary64-exact limits; nonnegative
+  positive-divisor remainder outputs and mathematically impossible comparison
+  outcomes; residual fractional, signed-rule-dependent and zero-divisor cases.
+- Finite physical DECIMAL source values with explicit precision/scale checks,
+  decimal arithmetic and exact integral casts; canonical ASCII string-source
+  casts only under enforced binary comparison provenance.
+- Exact finite TRY/SAFE_CAST failure NULLs and signed narrowing cast IS NULL /
+  IS NOT NULL TRUE and NOT TRUE witnesses.
+- Direct SQL/dbt, parser-capable dialect and executable DuckDB edge-case oracles.
+
+**Verification is pending.** All five child acceptance criteria remain unchecked
+until complete scope and final CI are independently verified. Further release
+blockers include unsupported general decimal runtime laws, implicit/session
+coercion, unbounded conversion rules and non-representable periodic inversion.
+Do not close TASK-101 or unblock TASK-102 based on this increment alone.
