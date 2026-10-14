@@ -711,3 +711,97 @@ fn unit_division_retains_certified_excluded_source_values() {
         value.value() == &LiteralValue::Number("0".into())
     }));
 }
+
+fn projected_decimal_domain(sql: &str) -> ValueDomain {
+    let schema = RelationSchema::new(
+        "t",
+        vec![SchemaColumn::from_sql_type("d", "DECIMAL(8, 2)", "postgresql").unwrap()],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let dialect = PostgreSqlDialect {};
+    let input = SqlInput::inline(sql);
+    let bundle = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new("decimal", &input, "postgresql", &dialect)],
+        &catalog,
+    )
+    .unwrap();
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composed decimal output");
+    };
+    semantics.output().columns()[0].domain().clone()
+}
+
+#[test]
+fn catalog_decimal_finite_operations_have_precision_scale_evidence() {
+    let domain = projected_decimal_domain(
+        "SELECT d + 0.5 AS v FROM t WHERE d IN (1.25, 2.25)",
+    );
+    let ValueDomain::Set(values) = domain else {
+        panic!("exact fixed decimal additions should be finite: {domain:?}");
+    };
+    assert_eq!(values.values().len(), 2);
+    assert!(values.values().iter().any(|value| {
+        value.value() == &LiteralValue::Number("1.75".into())
+    }));
+    assert!(values.values().iter().any(|value| {
+        value.value() == &LiteralValue::Number("2.75".into())
+    }));
+
+    for (sql, expected) in [
+        ("SELECT d * 2 AS v FROM t WHERE d = 1.25", "2.5"),
+        ("SELECT d / 2.0 AS v FROM t WHERE d = 1.5", "0.75"),
+        ("SELECT d % 0.5 AS v FROM t WHERE d = 1.25", "0.25"),
+        ("SELECT -d AS v FROM t WHERE d = 1.25", "-1.25"),
+    ] {
+        let domain = projected_decimal_domain(sql);
+        let ValueDomain::Set(values) = domain else {
+            panic!("{sql}: expected certified decimal singleton: {domain:?}");
+        };
+        assert_eq!(
+            values.values()[0].value(),
+            &LiteralValue::Number(expected.into()),
+            "{sql}"
+        );
+    }
+
+    for sql in [
+        "SELECT d + 0.1 AS v FROM t WHERE d = 1.25",
+        "SELECT d / 0.0 AS v FROM t WHERE d = 1.25",
+        "SELECT d * 10000000 AS v FROM t WHERE d = 5.0",
+    ] {
+        assert!(
+            matches!(projected_decimal_domain(sql), ValueDomain::Unknown(_)),
+            "{sql}: fractional rounding, division errors and precision overflow stay residual"
+        );
+    }
+}
+
+#[test]
+fn exact_integral_catalog_decimal_casts_preserve_failure_modes() {
+    let integral = projected_decimal_domain(
+        "SELECT CAST(d AS SMALLINT) AS v FROM t WHERE d = 2.00",
+    );
+    let ValueDomain::Set(values) = integral else {
+        panic!("integral DECIMAL to SMALLINT should be exact: {integral:?}");
+    };
+    assert_eq!(values.values()[0].value(), &LiteralValue::Number("2".into()));
+
+    let narrowing = projected_decimal_domain(
+        "SELECT TRY_CAST(d AS SMALLINT) AS v FROM t WHERE d = 40000.00",
+    );
+    let ValueDomain::Set(values) = narrowing else {
+        panic!("failed total TRY_CAST should be NULL: {narrowing:?}");
+    };
+    assert_eq!(values.values()[0].value(), &LiteralValue::Null);
+
+    for sql in [
+        "SELECT CAST(d AS SMALLINT) AS v FROM t WHERE d = 40000.00",
+        "SELECT TRY_CAST(d AS SMALLINT) AS v FROM t WHERE d = 1.25",
+    ] {
+        assert!(
+            matches!(projected_decimal_domain(sql), ValueDomain::Unknown(_)),
+            "{sql}: throwing or rounded conversion must not be claimed exact"
+        );
+    }
+}
