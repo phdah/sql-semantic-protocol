@@ -1291,3 +1291,33 @@ fn catalog_integer_arithmetic_proofs_agree_across_parser_capable_dialects() {
         }
     }
 }
+
+#[test]
+fn parser_supported_safe_cast_preserves_null_on_failure() {
+    let mut supported = false;
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).unwrap();
+        let Ok(protocol) = analyze_sql(
+            "SELECT SAFE_CAST(40000 AS SMALLINT) AS v",
+            name,
+            dialect.as_ref(),
+        ) else {
+            continue;
+        };
+        let wire = to_json(&protocol);
+        if !wire.contains(r#""cast_kind":"safe_cast""#) {
+            // Parsing SAFE_CAST as an opaque function is not certified.
+            continue;
+        }
+        supported = true;
+        assert!(wire.contains(r#""on_failure":"null""#), "{name}");
+        let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+            panic!("{name}: expected a SELECT");
+        };
+        let ValueDomain::Set(values) = query.output().columns()[0].domain() else {
+            panic!("{name}: explicit SAFE_CAST failure must be NULL");
+        };
+        assert_eq!(values.values()[0].value(), &LiteralValue::Null);
+    }
+    assert!(supported, "at least one parser dialect must recognize SAFE_CAST");
+}
