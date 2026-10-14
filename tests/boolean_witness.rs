@@ -742,7 +742,10 @@ fn casted_integer_offsets_are_inverted_without_overflow() {
         panic!("expected composition");
     };
     let witness = composed.boolean_witnesses()[0].witness();
-    assert!(matches!(witness.qualifying(), BooleanWitnessDirection::Exact(_)));
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(_)
+    ));
     let BooleanRowConstraint::Any(operands) = witness.condition() else {
         panic!("expected coupled arithmetic disjunction");
     };
