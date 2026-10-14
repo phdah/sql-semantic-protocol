@@ -147,7 +147,6 @@ fn arithmetic_literal_domains_fail_closed_on_dialect_dependent_division() {
     let dialect = GenericDialect {};
     for sql in [
         "SELECT 3 / 2 AS value",
-        "SELECT 7 % 3 AS value",
         "SELECT 9223372036854775807 + 1 AS value",
         "SELECT 9 / 0 AS value",
         "SELECT 0 % 0 AS value",
@@ -173,6 +172,16 @@ fn arithmetic_literal_domains_fail_closed_on_dialect_dependent_division() {
         };
         assert_eq!(values.values()[0].value(), &LiteralValue::Null);
     }
+    let positive = analyze_sql("SELECT 7 % 3 AS value", "generic", &dialect).unwrap();
+    let ValueDomain::Set(positive_values) =
+        first_query(&positive).output().columns()[0].domain()
+    else {
+        panic!("positive integer remainder is portable and exact");
+    };
+    assert_eq!(
+        positive_values.values()[0].value(),
+        &LiteralValue::Number("1".into())
+    );
     let safe = analyze_sql("SELECT 7 % 1 AS value", "generic", &dialect).unwrap();
     let ValueDomain::Set(values) = first_query(&safe).output().columns()[0].domain() else {
         panic!("modulo-one has a safe integer value domain");
