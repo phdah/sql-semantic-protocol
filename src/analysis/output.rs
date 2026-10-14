@@ -632,6 +632,7 @@ pub(super) fn derive_unary_output_domain(unary: &UnaryExpression) -> ValueDomain
         UnaryOperator::Plus => operand,
         UnaryOperator::Minus => singleton_integer(&operand)
             .and_then(i128::checked_neg)
+            .filter(|value| i64::try_from(*value).is_ok())
             .map_or_else(
                 || ValueDomain::unknown("unary minus cannot be bounded safely"),
                 |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
