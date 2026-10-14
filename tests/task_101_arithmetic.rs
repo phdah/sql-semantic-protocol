@@ -1158,3 +1158,64 @@ fn finite_union_of_bounded_ranges_retains_exact_arithmetic_values() {
     }
     assert_eq!(actual.len(), 6);
 }
+
+#[test]
+fn catalog_integer_arithmetic_proofs_agree_across_parser_capable_dialects() {
+    let catalog = RelationCatalog::from_schemas(&[
+        RelationSchema::new(
+            "t",
+            vec![SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap(),
+    ])
+    .unwrap();
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).unwrap();
+        for (predicate, should_qualify) in [
+            ("CAST(a AS BIGINT) * 3 >= 11", true),
+            ("CAST(a AS BIGINT) / 1 >= 11", true),
+            ("CAST(a AS BIGINT) - CAST(a AS BIGINT) = 0", true),
+            ("a % 3 = 4", false),
+        ] {
+            let sql = SqlInput::inline(format!("SELECT a FROM t WHERE {predicate}"));
+            let configured = [ConfiguredSqlInput::new(
+                "dialect_arithmetic",
+                &sql,
+                name,
+                dialect.as_ref(),
+            )];
+            let Ok(bundle) = analyze_configured_inputs_with_catalog(&configured, &catalog) else {
+                continue;
+            };
+            let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics()
+            else {
+                panic!("{name}: expected source semantics");
+            };
+            let proof = semantics.boolean_witnesses()[0].witness();
+            if should_qualify {
+                assert!(
+                    matches!(
+                        proof.qualifying(),
+                        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+                    ),
+                    "{name}: {predicate}: {:?}",
+                    proof.qualifying()
+                );
+            } else {
+                assert!(
+                    matches!(proof.qualifying(), BooleanWitnessDirection::Impossible),
+                    "{name}: {predicate}: {:?}",
+                    proof.qualifying()
+                );
+            }
+            assert!(
+                matches!(
+                    proof.rejected(),
+                    BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+                ) || !should_qualify,
+                "{name}: {predicate}: {:?}",
+                proof.rejected()
+            );
+        }
+    }
+}
