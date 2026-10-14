@@ -199,7 +199,29 @@ fn typed_expression(
             })
         }
         Expression::SignedIntegerCast(cast) => {
-            let mut input = typed_expression(cast.expression(), domains, sources, metadata)?;
+            let mut input = if let Some(integer) =
+                typed_expression(cast.expression(), domains, sources, metadata)
+            {
+                integer
+            } else {
+                let decimal =
+                    finite_decimal_expression(cast.expression(), domains, sources, metadata)?;
+                // A physically declared fixed decimal may convert without
+                // rounding only when each attested value is integral.
+                decimal.declared?;
+                let values = decimal
+                    .values
+                    .into_iter()
+                    .map(|value| match value {
+                        Some(decimal) => decimal.exact_integer().map(Some),
+                        None => Some(None),
+                    })
+                    .collect::<Option<Vec<_>>>()?;
+                TypedIntegers {
+                    bits: 64,
+                    values: IntegerValues::Finite(values),
+                }
+            };
             if !every_value_fits(&input.values, cast.target_bits()) {
                 // A throwing CAST is not a total expression over this source.
                 // The NULL-on-failure variants are total for a finite,
