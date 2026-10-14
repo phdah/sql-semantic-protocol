@@ -144,7 +144,10 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
         .iter()
         .find(|item| item["family"] == "numeric_general_arithmetic")
         .unwrap();
-    assert_eq!(arithmetic["status"], "bounded_local_exact_with_general_residual");
+    assert_eq!(
+        arithmetic["status"],
+        "bounded_local_exact_with_general_residual"
+    );
     assert_eq!(arithmetic["release_blocking"], true);
 }
 
