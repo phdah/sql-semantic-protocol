@@ -1076,3 +1076,62 @@ fn narrowing_try_cast_null_tests_have_both_exact_truth_directions() {
         assert_eq!(actual, expected, "{predicate}");
     }
 }
+
+#[test]
+fn modulo_bounds_prove_impossibility_without_assuming_negative_sign_laws() {
+    for predicate in [
+        "a % 3 = 4",
+        "a % 3 > 2",
+        "a % 3 < -2",
+        "4 = a % 3",
+    ] {
+        let proof = witness(predicate);
+        assert!(
+            matches!(proof.qualifying(), BooleanWitnessDirection::Impossible),
+            "{predicate}: modulus bounds exclude every qualifying source row"
+        );
+        assert!(
+            matches!(
+                proof.rejected(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+            ),
+            "{predicate}: NOT TRUE must include SQL NULL"
+        );
+    }
+    for predicate in ["a % 3 < 3", "a % 3 >= -2", "a % 3 IS DISTINCT FROM 4"] {
+        exact(predicate);
+    }
+    let all = witness("a % 3 IS DISTINCT FROM 4");
+    assert!(matches!(all.rejected(), BooleanWitnessDirection::Impossible));
+
+    for predicate in ["a % 3 = 1", "a % 0 = 1", "a % -3 = 4"] {
+        assert!(
+            matches!(
+                witness(predicate).qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
+            "{predicate}: periodic and nonportable modulo must remain residual"
+        );
+    }
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (NULL), (-2147483648), (-7), (0), (7), (2147483647);",
+    )
+    .unwrap();
+    for (predicate, expected) in [
+        ("a % 3 = 4", 0_i64),
+        ("a % 3 < 3", 5),
+        ("a % 3 IS DISTINCT FROM 4", 6),
+    ] {
+        let actual: i64 = db
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(actual, expected, "{predicate}");
+    }
+}
