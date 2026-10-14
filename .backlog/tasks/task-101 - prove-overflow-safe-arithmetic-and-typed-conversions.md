@@ -49,7 +49,7 @@ Complete the canonical typed arithmetic and conversion families needed by predic
 
 A first bounded arithmetic increment in `src/boolean_witness/numeric.rs` uses
 canonical integer comparison witnesses and certified source ranges for unary
-sign, constant +/-, nonzero constant multiplication and nested affine
+sign, constant +/-, constant multiplication, modulo-one identities and nested affine
 operations. It guards every intermediate against signed width overflow,
 reverses negative factors correctly and preserves SQL UNKNOWN and NULL-safe
 truth for nondivisible integer equalities. It adds direct SQL, dbt and DuckDB
