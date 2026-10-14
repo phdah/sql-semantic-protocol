@@ -26,7 +26,7 @@ comparisons refine projected domains when source identity is proven.
 
 Widening signed integer CAST, TRY_CAST and SAFE_CAST share one exact source identity only when all catalog-admissible values fit the target, so no failure-to-NULL or overflow is possible. Narrowing and noninteger conversions remain residual. Exactness still requires authoritative source datatype evidence and a complete,
 consistent assignment of all coupled source columns. Arithmetic inversion also admits a bounded affine subset: signed unary minus,
-constant addition/subtraction and nonzero constant multiplication, including
+constant addition/subtraction and constant multiplication (including zero), modulo-one identities, including
 literal-on-left operations and nesting. Each operator is checked against the
 entire catalog-admissible signed range and the attested result width before
 rewriting an integer comparison into one scalar source constraint. Integer
