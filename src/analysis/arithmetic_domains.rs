@@ -262,6 +262,145 @@ fn typed_expression(
     }
 }
 
+#[derive(Clone)]
+struct TypedDecimals {
+    values: Vec<Option<ExactDecimal>>,
+    declared: Option<(u64, u64)>,
+}
+
+fn finite_decimal_expression(
+    expression: &Expression,
+    domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<TypedDecimals> {
+    match expression {
+        Expression::Column(column) => {
+            let resolved = resolve_column(column, sources);
+            let declared = metadata.column_data_type(&resolved)?;
+            let declared = match declared {
+                DataType::Nullable(inner) => inner.as_ref(),
+                other => other,
+            };
+            let contract = match declared {
+                DataType::Decimal {
+                    precision: Some(precision),
+                    scale: Some(scale),
+                } => Some((*precision, *scale)),
+                DataType::SignedInteger { bits: Some(bits) } if *bits <= 64 => None,
+                _ => return None,
+            };
+            let column_domain = domains.iter().find(|item| item.column() == &resolved)?;
+            let literals = match column_domain.domain() {
+                ValueDomain::Set(set) if set.mode() == SetMode::Include => set.values(),
+                _ => return None,
+            };
+            if literals.len() > 64 {
+                return None;
+            }
+            let values = literals
+                .iter()
+                .map(|literal| {
+                    if literal.literal_type() == LiteralType::Null {
+                        Some(None)
+                    } else {
+                        let number = ExactDecimal::from_literal(literal)?;
+                        if let Some((precision, scale)) = contract {
+                            if !number.fits_declared(precision, scale) {
+                                return None;
+                            }
+                        }
+                        Some(Some(number))
+                    }
+                })
+                .collect::<Option<Vec<_>>>()?;
+            Some(TypedDecimals {
+                values,
+                declared: contract,
+            })
+        }
+        Expression::Literal(literal) => {
+            let value = if literal.literal_type() == LiteralType::Null {
+                None
+            } else {
+                Some(ExactDecimal::from_literal(literal)?)
+            };
+            Some(TypedDecimals {
+                values: vec![value],
+                declared: None,
+            })
+        }
+        Expression::Unary(unary) => {
+            let mut input = finite_decimal_expression(unary.operand(), domains, sources, metadata)?;
+            input.values = input
+                .values
+                .into_iter()
+                .map(|value| match (unary.operator(), value) {
+                    (_, None) => Some(None),
+                    (UnaryOperator::Plus, Some(value)) => Some(Some(value)),
+                    (UnaryOperator::Minus, Some(value)) => value.unary_minus().map(Some),
+                    (UnaryOperator::BitwiseNot, _) => None,
+                })
+                .collect::<Option<Vec<_>>>()?;
+            Some(input)
+        }
+        Expression::Binary(binary) => {
+            let left = finite_decimal_expression(binary.left(), domains, sources, metadata)?;
+            let right = finite_decimal_expression(binary.right(), domains, sources, metadata)?;
+            let declared = match (left.declared, right.declared) {
+                (Some((lp, ls)), Some((rp, rs))) => Some((lp.min(rp), ls.min(rs))),
+                (Some(declared), None) | (None, Some(declared)) => Some(declared),
+                (None, None) => return None,
+            };
+            if left.values.len().checked_mul(right.values.len())? > 64 {
+                return None;
+            }
+            let mut values = Vec::new();
+            for lhs in &left.values {
+                for rhs in &right.values {
+                    let result = match (lhs, rhs) {
+                        (Some(lhs), Some(rhs)) => Some(lhs.binary(*rhs, binary.operator())?),
+                        _ => None,
+                    };
+                    if let (Some(result), Some((precision, scale))) = (result, declared) {
+                        if !result.fits_declared(precision, scale) {
+                            return None;
+                        }
+                    }
+                    if !values.contains(&result) {
+                        values.push(result);
+                    }
+                }
+            }
+            Some(TypedDecimals { values, declared })
+        }
+        _ => None,
+    }
+}
+
+fn catalog_decimal_domain(
+    expression: &Expression,
+    domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<ValueDomain> {
+    let typed = finite_decimal_expression(expression, domains, sources, metadata)?;
+    typed.declared?;
+    Some(ValueDomain::set(
+        SetMode::Include,
+        typed
+            .values
+            .into_iter()
+            .map(|value| {
+                value.map_or_else(
+                    || LiteralExpression::new(LiteralType::Null, LiteralValue::Null),
+                    ExactDecimal::value,
+                )
+            })
+            .collect(),
+    ))
+}
+
 fn every_value_fits(values: &IntegerValues, bits: u16) -> bool {
     match values {
         IntegerValues::Finite(values) => values.iter().flatten().all(|value| fits(*value, bits)),
@@ -637,11 +776,17 @@ pub(super) fn refine_catalog_arithmetic_output_domains(
                 {
                     return column.with_domain(excluded);
                 }
-                let Some(typed) = typed_expression(column.expression(), domains, sources, metadata)
-                else {
+                let proved = if let Some(decimal) =
+                    catalog_decimal_domain(column.expression(), domains, sources, metadata)
+                {
+                    decimal
+                } else if let Some(integer) =
+                    typed_expression(column.expression(), domains, sources, metadata)
+                {
+                    to_domain(integer.values)
+                } else {
                     return column;
                 };
-                let proved = to_domain(typed.values);
                 let refined = if matches!(column.domain(), ValueDomain::Unknown(_)) {
                     proved
                 } else {
