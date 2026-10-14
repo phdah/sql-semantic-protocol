@@ -378,9 +378,10 @@ fn catalog_integer_projection_retains_exact_signed_finite_values() {
     assert_eq!(values.mode(), SetMode::Include);
     assert_eq!(values.values().len(), 11);
     for source in 0..=10 {
-        assert!(values.values().iter().any(|value| {
-            value.value() == &LiteralValue::Number((-2 * source).to_string())
-        }));
+        assert!(values
+            .values()
+            .iter()
+            .any(|value| { value.value() == &LiteralValue::Number((-2 * source).to_string()) }));
     }
 }
 
@@ -475,16 +476,15 @@ fn unit_division_and_nonzero_zero_dividends_have_exhaustive_witnesses() {
 
 #[test]
 fn total_injective_projection_preserves_excluded_values() {
-    let domain = projected_domain(
-        "SELECT CAST(a AS BIGINT) * 3 + 2 AS v FROM t WHERE a <> 0",
-    );
+    let domain = projected_domain("SELECT CAST(a AS BIGINT) * 3 + 2 AS v FROM t WHERE a <> 0");
     let ValueDomain::Set(set) = domain else {
         panic!("expected excluded transformed value: {domain:?}");
     };
     assert_eq!(set.mode(), SetMode::Exclude);
-    assert!(
-        set.values().iter().any(|v| v.value() == &LiteralValue::Number("2".into()))
-    );
+    assert!(set
+        .values()
+        .iter()
+        .any(|v| v.value() == &LiteralValue::Number("2".into())));
 
     for sql in [
         "SELECT a + 1 AS v FROM t WHERE a <> 0",

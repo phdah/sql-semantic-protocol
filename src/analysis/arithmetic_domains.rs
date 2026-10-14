@@ -367,7 +367,10 @@ struct InjectiveAffine {
     offset: i128,
 }
 
-fn injective_affine(expression: &Expression, sources: &[SourceRelation]) -> Option<InjectiveAffine> {
+fn injective_affine(
+    expression: &Expression,
+    sources: &[SourceRelation],
+) -> Option<InjectiveAffine> {
     match expression {
         Expression::Column(column) => Some(InjectiveAffine {
             column: resolve_column(column, sources),
@@ -399,9 +402,7 @@ fn injective_affine(expression: &Expression, sources: &[SourceRelation]) -> Opti
                     _ => return None,
                 },
                 BinaryOperator::Subtract => match (left, right, left_literal, right_literal) {
-                    (Some(source), _, _, Some(constant)) => {
-                        (source, 1, constant.checked_neg()?)
-                    }
+                    (Some(source), _, _, Some(constant)) => (source, 1, constant.checked_neg()?),
                     (_, Some(source), Some(constant), _) => (source, -1, constant),
                     _ => return None,
                 },
@@ -438,7 +439,9 @@ fn affine_excluded_domain(
     if affine.factor == 0 {
         return None;
     }
-    let column_domain = domains.iter().find(|item| item.column() == &affine.column)?;
+    let column_domain = domains
+        .iter()
+        .find(|item| item.column() == &affine.column)?;
     let ValueDomain::Set(excluded) = column_domain.domain() else {
         return None;
     };
@@ -470,7 +473,10 @@ fn affine_excluded_domain(
             values.push(literal.clone());
         } else {
             let scalar = integer_value(literal)?;
-            let value = affine.factor.checked_mul(scalar)?.checked_add(affine.offset)?;
+            let value = affine
+                .factor
+                .checked_mul(scalar)?
+                .checked_add(affine.offset)?;
             values.push(integer_literal(value));
         }
     }
