@@ -964,3 +964,75 @@ fn duckdb_fixed_decimal_catalog_oracles_cover_nulls_and_conversion_failures() {
         assert_eq!(count, expected, "{predicate}");
     }
 }
+
+fn projected_binary_text_cast(sql: &str, binary_attested: bool) -> ValueDomain {
+    use sql_semantic_protocol::{
+        ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
+        ConstraintSourceKind, TextComparisonLaw,
+    };
+
+    let mut column = SchemaColumn::from_sql_type("s", "VARCHAR(20)", "postgresql").unwrap();
+    if binary_attested {
+        column = column
+            .with_text_comparison_law(
+                TextComparisonLaw::Binary,
+                vec![ConstraintEvidence::new(
+                    ConstraintProvenance::new(
+                        ConstraintSourceKind::ExternalMetadata,
+                        "warehouse:binary",
+                    )
+                    .unwrap(),
+                    ConstraintEnforcement::Enforced,
+                )],
+            )
+            .unwrap();
+    }
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new("t", vec![column]).unwrap()])
+        .unwrap();
+    let dialect = PostgreSqlDialect {};
+    let input = SqlInput::inline(sql);
+    let bundle = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new("text", &input, "postgresql", &dialect)],
+        &catalog,
+    )
+    .unwrap();
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("text source should have composed semantics");
+    };
+    semantics.output().columns()[0].domain().clone()
+}
+
+#[test]
+fn attested_binary_text_casts_preserve_finite_ascii_and_failure_semantics() {
+    let sql = "SELECT CAST(s AS INTEGER) AS v FROM t WHERE s IN ('42', '-7')";
+    let domain = projected_binary_text_cast(sql, true);
+    let ValueDomain::Set(set) = domain else {
+        panic!("attested binary source and ASCII text must be exact: {domain:?}");
+    };
+    assert_eq!(set.values().len(), 2);
+    assert!(set.values().iter().any(|value| value.value() == &LiteralValue::Number("42".into())));
+    assert!(set.values().iter().any(|value| value.value() == &LiteralValue::Number("-7".into())));
+
+    let narrowing = projected_binary_text_cast(
+        "SELECT TRY_CAST(s AS SMALLINT) AS v FROM t WHERE s IN ('32767', '32768')",
+        true,
+    );
+    let ValueDomain::Set(values) = narrowing else {
+        panic!("finite TRY_CAST must distinguish successful and NULL results: {narrowing:?}");
+    };
+    assert!(values.values().iter().any(|value| value.value() == &LiteralValue::Null));
+    assert!(values.values().iter().any(|value| {
+        value.value() == &LiteralValue::Number("32767".into())
+    }));
+
+    for (sql, attested) in [
+        ("SELECT CAST(s AS INTEGER) AS v FROM t WHERE s = '42'", false),
+        ("SELECT CAST(s AS INTEGER) AS v FROM t WHERE s = '0042'", true),
+        ("SELECT TRY_CAST(s AS INTEGER) AS v FROM t WHERE s = '1.5'", true),
+    ] {
+        assert!(
+            matches!(projected_binary_text_cast(sql, attested), ValueDomain::Unknown(_)),
+            "{sql}: nonbinary equality or noncanonical conversion must stay residual"
+        );
+    }
+}
