@@ -653,30 +653,30 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
         BinaryOperator::Add => left.checked_add(right),
         BinaryOperator::Subtract => left.checked_sub(right),
         BinaryOperator::Multiply => left.checked_mul(right),
-        BinaryOperator::Divide => {
-            if right == 0 {
-                None
-            } else {
-                left.checked_div(right)
-            }
-        }
-        BinaryOperator::Modulo => {
-            if right == 0 {
-                None
-            } else {
-                left.checked_rem(right)
-            }
-        }
+        // SQL integer division may return a decimal/floating result in
+        // some dialects and a truncated integer in others. Do not silently
+        // encode Rust integer division as a portable SQL result domain.
+        BinaryOperator::Divide => None,
+        // Modulo by +1 has an exact zero result for every signed integer,
+        // with no divide-by-zero or MIN / -1 edge. Other remainder signs,
+        // argument coercions and zero divisors are not universally attested.
+        BinaryOperator::Modulo if right == 1 => Some(0),
+        BinaryOperator::Modulo => None,
         BinaryOperator::StringConcat
         | BinaryOperator::BitwiseAnd
         | BinaryOperator::BitwiseOr
         | BinaryOperator::BitwiseXor => None,
     };
 
-    value.map_or_else(
-        || ValueDomain::unknown("arithmetic output domain cannot be computed safely"),
-        |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
-    )
+    // Literal calculations with implicit arithmetic widening beyond signed
+    // BIGINT, or dialect-dependent division and remainder laws, are not
+    // portable exact integer domains.
+    value
+        .filter(|value| i64::try_from(*value).is_ok())
+        .map_or_else(
+            || ValueDomain::unknown("arithmetic output domain cannot be computed safely"),
+            |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
+        )
 }
 
 pub(super) fn refine_output_domains_from_predicate(columns: &mut [OutputColumn], predicate: &Expr) {
