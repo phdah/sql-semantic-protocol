@@ -352,8 +352,8 @@ fn combine_values(
     {
         return Some(IntegerValues::Finite(Vec::new()));
     }
-    if matches!(&left, IntegerValues::Finite(values) if values == &[None])
-        || matches!(&right, IntegerValues::Finite(values) if values == &[None])
+    if matches!(&left, IntegerValues::Finite(values) if values.len() == 1 && values[0].is_none())
+        || matches!(&right, IntegerValues::Finite(values) if values.len() == 1 && values[0].is_none())
     {
         return Some(IntegerValues::Finite(vec![None]));
     }
