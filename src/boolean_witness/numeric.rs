@@ -297,6 +297,63 @@ pub(super) fn unresolved_arithmetic_reason(left: &Expression, right: &Expression
     )
 }
 
+/// Prove constant predicate truth when a noninvertible remainder cannot
+/// reach the requested value. A positive integer divisor bounds the absolute
+/// remainder strictly below itself, independently of negative-remainder
+/// conventions. Other remainder comparisons stay residual.
+pub(super) fn normalize_modulo_range_comparison(
+    left: &Expression,
+    operator: ComparisonOperator,
+    right: &Expression,
+    sources: &[SourceRelation],
+    evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<BooleanRowConstraint> {
+    let (binary, operator, literal) = if let (
+        Expression::Binary(binary),
+        Some(literal),
+    ) = (left, signed_integer_literal(right)) {
+        (binary, operator, i128::from(literal))
+    } else if let (
+        Some(literal),
+        Expression::Binary(binary),
+    ) = (signed_integer_literal(left), right) {
+        (binary, operator.reversed(), i128::from(literal))
+    } else {
+        return None;
+    };
+    if binary.operator() != BinaryOperator::Modulo {
+        return None;
+    }
+    let divisor = i128::from(signed_integer_literal(binary.right())?);
+    if divisor <= 0 {
+        return None;
+    }
+    let numerator = bounded_affine(binary.left(), sources, evidence)?;
+    let limit = divisor.checked_sub(1)?;
+    let (minimum, maximum) = if numerator.minimum >= 0 {
+        (0, limit)
+    } else {
+        (-limit, limit)
+    };
+    let low_truth = compare(minimum, operator, literal);
+    let high_truth = compare(maximum, operator, literal);
+    let monotone = matches!(
+        operator,
+        ComparisonOperator::Lt
+            | ComparisonOperator::Lte
+            | ComparisonOperator::Gt
+            | ComparisonOperator::Gte
+    );
+    let outside = literal < minimum || literal > maximum;
+    if low_truth != high_truth || !(monotone || outside) {
+        return None;
+    }
+    let column = resolve_column(numerator.column, sources);
+    Some(constant_expression_truth(
+        column, operator, minimum, literal,
+    ))
+}
+
 /// Invert only algebraically exact, width-checked affine expressions. The
 /// returned predicate retains SQL UNKNOWN when the physical column is NULL.
 pub(super) fn normalize_affine_comparison(
