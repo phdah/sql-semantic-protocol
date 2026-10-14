@@ -90,7 +90,7 @@
       {
         "family": "numeric_general_arithmetic",
         "status": "bounded_local_exact_with_general_residual",
-        "scope": "catalog-checked signed affine +/-/* and unary, finite source arithmetic output sets/ranges/exclusions, certified divide by +/-1 only in exact binary64 range, zero dividends for proven nonzero signed denominators, modulo by +1; portable binary64-exact fixed decimal literal +,-,*,/,positive remainder; unbounded decimal columns, integer division requiring rounding and unchecked overflow residual",
+        "scope": "catalog-certified signed affine +/-/*, unary and correlated cancellation/squares, finite integer sets/ranges/disjoint interval unions/exclusions, integral binary64-exact division and unit inverse, positive-source positive-divisor remainder bounds, impossible universal modulo comparisons, finite catalog DECIMAL precision/scale checked exact binary64 arithmetic; fractional division, signed/zero-divisor errors, unbounded decimals and unproved dialect laws residual",
         "evidence": "tests/task_101_arithmetic.rs; tests/output_domains.rs",
         "release_blocking": true,
         "implementation_task": "TASK-101"
@@ -98,7 +98,7 @@
       {
         "family": "noninteger_casts_and_implicit_coercions",
         "status": "bounded_literal_exact_with_source_residual",
-        "scope": "finite canonical ASCII text and integral decimal literals explicitly cast to signed integer targets; explicit exception versus NULL-on-failure retained for CAST/TRY_CAST/SAFE_CAST; arbitrary text/session conversions, nonintegral decimal rounding and source decimal casts remain residual",
+        "scope": "finite canonical ASCII text and integral decimal literal casts plus catalog-attested finite decimal-to-integer and enforced binary-text-to-integer conversion; identity/widening/narrowing TRY/SAFE_CAST finite SQL NULL and source-row NULL tests, explicit exception vs NULL-on-failure provenance; arbitrary text, implicit/session-dependent coercion and fractional rounding remain residual",
         "evidence": "tests/output_domains.rs; tests/task_101_arithmetic.rs",
         "release_blocking": true,
         "implementation_task": "TASK-101"
