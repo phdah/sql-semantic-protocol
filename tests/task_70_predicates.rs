@@ -283,6 +283,74 @@ fn null_membership_obligations_preserve_unknown_in_both_directions() {
 }
 
 #[test]
+fn not_between_with_one_null_bound_keeps_its_qualifying_domain() {
+    use sql_semantic_protocol::{LiteralValue, ValueDomain};
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (NULL), (2), (3), (4);",
+    )
+    .unwrap();
+
+    for (predicate, lower) in [
+        ("a NOT BETWEEN NULL AND 3", true),
+        ("a NOT BETWEEN 3 AND NULL", false),
+    ] {
+        let actual: i64 = db
+            .query_row(&format!("SELECT COUNT(*) FROM t WHERE {predicate}"), [], |row| {
+                row.get(0)
+            })
+            .unwrap();
+        assert_eq!(actual, 1, "{predicate}: DuckDB oracle");
+
+        let protocol = analyze_sql(
+            &format!("SELECT a FROM t WHERE {predicate}"),
+            "postgresql",
+            &PostgreSqlDialect {},
+        )
+        .unwrap();
+        let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+            panic!("expected query");
+        };
+        let ValueDomain::Ranges(ranges) = query.output().columns()[0].domain() else {
+            panic!("{predicate}: qualifying domain cannot be empty");
+        };
+        let [range] = ranges.ranges() else {
+            panic!("{predicate}: expected one qualifying interval");
+        };
+        let bound = if lower { range.lower() } else { range.upper() }
+            .expect("finite bound of the surviving SQL TRUE region");
+        assert!(!bound.inclusive(), "{predicate}: bound must be exclusive");
+        assert_eq!(bound.value().value(), &LiteralValue::Number("3".into()));
+        assert!(
+            if lower {
+                range.upper().is_none()
+            } else {
+                range.lower().is_none()
+            },
+            "{predicate}: opposite side remains unbounded"
+        );
+    }
+
+    for predicate in ["a BETWEEN NULL AND 3", "a NOT BETWEEN NULL AND NULL"] {
+        let protocol = analyze_sql(
+            &format!("SELECT a FROM t WHERE {predicate}"),
+            "postgresql",
+            &PostgreSqlDialect {},
+        )
+        .unwrap();
+        let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+            panic!("expected query");
+        };
+        assert!(
+            matches!(query.output().columns()[0].domain(), ValueDomain::Empty),
+            "{predicate}: NULL bounds preclude SQL TRUE"
+        );
+    }
+}
+
+#[test]
 fn certified_computed_null_tests_have_exact_two_valued_outcomes() {
     for predicate in [
         "COALESCE(a, b) IS NULL",
