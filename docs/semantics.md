@@ -39,7 +39,12 @@ bounded intervals through total arithmetic; excluded NULLs remain excluded,
 while nullable finite sets explicitly retain NULL. Finite cross-products are
 exhaustive domain transformations, never samples used to assert impossibility.
 Arithmetic results that could overflow, require implicit coercion, or have
-unattested dialect rounding preserve an unknown output domain.
+unattested dialect rounding preserve an unknown output domain. Constant decimal
+expressions have an additional fixed-point subset: operand and output values
+must be exactly representable in binary64, and every intermediate calculation
+must fit bounded decimal precision. Nonterminating divisions, zero divisors,
+nonportable decimal fractions and negative-dividend remainder semantics are
+unknown rather than rounded or approximated.
 This is a local witness, not a proof of complete output-value distribution,
 general decimal arithmetic or implicit coercion. NULL-containing finite integer IN/NOT IN lists retain
 SQL UNKNOWN, including impossible qualifying branches. Unsafe casts,

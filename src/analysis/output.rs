@@ -630,13 +630,13 @@ pub(super) fn derive_unary_output_domain(unary: &UnaryExpression) -> ValueDomain
     let operand = derive_output_domain(unary.operand());
     match unary.operator() {
         UnaryOperator::Plus => operand,
-        UnaryOperator::Minus => singleton_integer(&operand)
+        UnaryOperator::Minus => exact_decimal_unary_domain(unary).unwrap_or_else(|| singleton_integer(&operand)
             .and_then(i128::checked_neg)
             .filter(|value| i64::try_from(*value).is_ok())
             .map_or_else(
                 || ValueDomain::unknown("unary minus cannot be bounded safely"),
                 |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
-            ),
+            )),
         UnaryOperator::BitwiseNot => {
             ValueDomain::unknown("bitwise output domain is not bounded safely")
         }
@@ -644,6 +644,9 @@ pub(super) fn derive_unary_output_domain(unary: &UnaryExpression) -> ValueDomain
 }
 
 pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDomain {
+    if let Some(exact_decimal) = exact_decimal_binary_domain(binary) {
+        return exact_decimal;
+    }
     // Only certified integer operands can propagate a known SQL NULL result.
     // In particular do not turn NULL / 0 or untyped NULL coercions into an
     // exact value-domain proof.

@@ -674,3 +674,42 @@ fn local_case_copy_is_consistent_across_exposed_dialects() {
         );
     }
 }
+
+#[test]
+fn portable_decimal_literal_arithmetic_has_exact_domains() {
+    let dialect = GenericDialect {};
+    for (sql, expected) in [
+        ("SELECT 1.25 + 0.5 AS value", "1.75"),
+        ("SELECT 1.25 - 0.5 AS value", "0.75"),
+        ("SELECT 1.5 * 2.0 AS value", "3.0"),
+        ("SELECT 1.5 / 0.5 AS value", "3.0"),
+        ("SELECT 1.25 % 0.5 AS value", "0.25"),
+        ("SELECT -1.25 + 0.5 AS value", "-0.75"),
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
+            panic!("{sql}: expected exact finite decimal output");
+        };
+        assert_eq!(
+            values.values()[0].value(),
+            &LiteralValue::Number(expected.to_string()),
+            "{sql}",
+        );
+    }
+
+    for sql in [
+        "SELECT 0.1 + 0.2 AS value",
+        "SELECT 1.5 / 0.0 AS value",
+        "SELECT 1.25 / 3.0 AS value",
+        "SELECT -1.25 % 0.5 AS value",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        assert!(
+            matches!(
+                first_query(&protocol).output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
+            "{sql}: nonportable decimal evaluation must stay unknown"
+        );
+    }
+}

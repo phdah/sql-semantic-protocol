@@ -310,6 +310,7 @@ fn analyze_statement(
 mod aggregation;
 mod arithmetic_domains;
 pub(crate) mod constraints;
+mod decimal_literals;
 mod dependencies;
 mod diagnostics;
 mod domains;
@@ -331,6 +332,7 @@ mod writes;
 use aggregation::*;
 use arithmetic_domains::*;
 use constraints::*;
+use decimal_literals::*;
 use dependencies::*;
 use diagnostics::*;
 use domains::*;
