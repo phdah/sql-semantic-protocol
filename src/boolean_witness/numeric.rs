@@ -93,11 +93,8 @@ fn bounded_affine<'a>(
             // Repeated, total row-local operands are correlated, not
             // independent samples. x-x is zero for every non-NULL x and
             // SQL UNKNOWN must still follow a nullable x.
-            if binary.operator() == BinaryOperator::Subtract
-                && binary.left() == binary.right()
-            {
-                return bounded_affine(binary.left(), sources, evidence)?
-                    .transform(0, 0);
+            if binary.operator() == BinaryOperator::Subtract && binary.left() == binary.right() {
+                return bounded_affine(binary.left(), sources, evidence)?.transform(0, 0);
             }
             let left = bounded_affine(binary.left(), sources, evidence);
             let right = bounded_affine(binary.right(), sources, evidence);
@@ -308,15 +305,13 @@ pub(super) fn normalize_modulo_range_comparison(
     sources: &[SourceRelation],
     evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
 ) -> Option<BooleanRowConstraint> {
-    let (binary, operator, literal) = if let (
-        Expression::Binary(binary),
-        Some(literal),
-    ) = (left, signed_integer_literal(right)) {
+    let (binary, operator, literal) = if let (Expression::Binary(binary), Some(literal)) =
+        (left, signed_integer_literal(right))
+    {
         (binary, operator, i128::from(literal))
-    } else if let (
-        Some(literal),
-        Expression::Binary(binary),
-    ) = (signed_integer_literal(left), right) {
+    } else if let (Some(literal), Expression::Binary(binary)) =
+        (signed_integer_literal(left), right)
+    {
         (binary, operator.reversed(), i128::from(literal))
     } else {
         return None;
