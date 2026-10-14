@@ -907,8 +907,18 @@ The normalized `signed_integer_cast` expression stores `expression`, `target_bit
 that the conversion is total. Only then may its coupled witness be inverted
 back to the source column. An unsafe ordinary cast may raise, while an unsafe
 TRY_CAST or SAFE_CAST may become NULL; neither is an exact source identity.
-Narrowing, uncast or overflow-prone nonidentity arithmetic, functional and
-unattested collation-sensitive predicates remain residual. A normalized `like_prefix` predicate is supported only when an
+For finite, typed inputs, total TRY_CAST/SAFE_CAST narrowing outputs include
+the exact successful signed integers and SQL NULL on overflow. Source-row
+IS NULL/IS NOT NULL tests of these narrowing conversions reduce to exact
+range/NULL obligations, while potentially throwing CAST stays residual.
+Canonical finite decimal-to-integer and ASCII text-to-integer conversions
+require demonstrated rounding-free integral values; source text further
+requires an enforced binary comparison law with provenance. Integer
+divisions and modulo are proved only for bounded, portable subsets and
+mathematically excluded remainder outcomes; periodic predicates and
+unattested runtime conversions remain residual. Uncast or overflow-prone
+nonidentity arithmetic, functional and unattested collation-sensitive
+predicates remain residual. A normalized `like_prefix` predicate is supported only when an
 ordinary LIKE/NOT LIKE has exactly one trailing `%`, a nonempty unescaped
 ASCII alphanumeric literal prefix, and a catalog-proven variable-width string
 source column. The source-row `string_prefix` constraint is exact only after
