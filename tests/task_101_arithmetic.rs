@@ -1319,5 +1319,8 @@ fn parser_supported_safe_cast_preserves_null_on_failure() {
         };
         assert_eq!(values.values()[0].value(), &LiteralValue::Null);
     }
-    assert!(supported, "at least one parser dialect must recognize SAFE_CAST");
+    assert!(
+        supported,
+        "at least one parser dialect must recognize SAFE_CAST"
+    );
 }
