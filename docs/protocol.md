@@ -875,18 +875,23 @@ with the application.
 
 ## Coupled source-row boolean witnesses (TASK-63)
 
-A query with a coupled `AND` or `OR`, a standalone supported
-computed comparison, or a safe LIKE prefix over one unambiguous source
-relation may carry a `boolean_witness`; resolved composed outcomes retain it in
+A query with coupled `AND`/`OR`/`NOT`, finite `IN`/`NOT IN` and
+`BETWEEN`/`NOT BETWEEN`, supported computed comparisons or NULL tests,
+or a safe LIKE prefix over one unambiguous source relation may carry a
+`boolean_witness`; resolved composed outcomes retain it in
 `boolean_witnesses` with `origin_layer_id` and `boundary_kind`. The
 representation is **operator-local evidence**, not a promotion of
 `condition_exactness` to exact or a replacement for output value domains.
 
 `condition` is a recursive typed tree with `all` (AND) and `any` (OR)
 nodes, each applying its children to the **same source row**. Supported leaf
-nodes are `null_test` (`column`, `negated`), `integer_comparison`
-(`column`, `operator`, `literal`), and `string_prefix`
-(`column`, `prefix`, `negated`). Column endpoints use physical relation
+nodes include `null_test` (`column`, `negated`),
+`unknown_null_comparison` (`column`, always SQL UNKNOWN),
+`integer_comparison` (`column`, `operator`, `literal`),
+`integer_column_comparison` (`left`, `operator`, `right`),
+`string_equality` (`column`, `operator`, `literal`), and
+`string_prefix` (`column`, `prefix`, `negated`). A `residual`
+leaf keeps a diagnostic reason. Column endpoints use physical relation
 identity and source-column name. Integer comparisons are exact only for
 catalog-confirmed bounded signed integer types and `i64` literals; without
 type evidence the branch remains `residual`. Signed unary literal notation
@@ -898,27 +903,33 @@ on such casts where every possible source value and computed result fits
 the 16-, 32-, or 64-bit signed cast target.
 The normalized `signed_integer_cast` expression stores `expression` and
 `target_bits`, while its coupled witness is inverted back to a comparison
-on the original source column. Narrowing, TRY/SAFE_CAST, uncast or overflow-prone nonidentity
-arithmetic, functional and unattested collation-sensitive predicates remain
-residual. A normalized `like_prefix` predicate is supported only when an
+on the original source column. Total, formatting-free signed integer
+`TRY_CAST` and `SAFE_CAST` use the same certified path.
+Narrowing, uncast or overflow-prone nonidentity arithmetic, functional and
+unattested collation-sensitive predicates remain residual. A normalized `like_prefix` predicate is supported only when an
 ordinary LIKE/NOT LIKE has exactly one trailing `%`, a nonempty unescaped
 ASCII alphanumeric literal prefix, and a catalog-proven variable-width string
 source column. The source-row `string_prefix` constraint is exact only after
 both `binary_collation` and `no_char_padding` comparison declarations. Other
-LIKE forms, ILIKE, embedded wildcards, escape clauses, untyped or fixed-width
-strings stay residual. NULL is UNKNOWN for both LIKE and NOT LIKE. All supported predicates, including repeated-column conjunctions,
+LIKE forms, ILIKE, embedded wildcards, active escape clauses, untyped or fixed-width
+strings stay residual. An explicit single-character ESCAPE is supported only
+when it cannot change the safe prefix or trailing wildcard. NULL is UNKNOWN for both LIKE and NOT LIKE. All supported predicates, including repeated-column conjunctions,
 are solved jointly using bounded source-value partitions. Ambiguous relation
 identity, mixed proven/unproven trees, or oversized searches remain residual.
 
-Each `qualifying` or `rejected` direction has either
-`{status:"exact",truth:"true"|"not_true"}` or
-`{status:"residual",reason:"..."}`. `not_true` explicitly includes
+Each `qualifying` or `rejected` direction has
+`{status:"exact",truth:"true"|"not_true"}`,
+`{status:"impossible"}` (only for exhaustive typed scalar truth regions),
+or `{status:"residual",reason:"..."}`. `not_true` explicitly includes
 both SQL FALSE and UNKNOWN. It is **not** a binary negation of each leaf;
 consumers must retain the complete logical tree with SQL three-valued truth
 rules, including nullable source inputs. An exact direction also requires at least one feasible truth assignment
 within known signed-integer bounds. A contradiction (for example,
-`int32_a > 2147483647 OR int32_b > 2147483647`) leaves the qualifying
-direction residual while allowing the rejected direction to stay exact.
+`int32_a > 2147483647 OR int32_b > 2147483647`) makes the qualifying
+direction impossible when all typed scalar truth regions are exhaustively
+covered, while the rejected direction remains exact. Independent correlated
+columns and string sample representatives cannot establish impossible
+directions from the absence of a sampled witness.
 An SQL datatype alone does not establish a column's NOT NULL constraint.
 When enforced primary-key, NOT NULL, or finite accepted-values constraints are available,
 the analyzer rechecks the coupled truth directions against those restrictions, including
