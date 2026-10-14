@@ -805,3 +805,53 @@ fn exact_integral_catalog_decimal_casts_preserve_failure_modes() {
         );
     }
 }
+
+#[test]
+fn correlated_subtraction_proves_sql_true_and_not_true() {
+    let always = witness("CAST(a AS BIGINT) - CAST(a AS BIGINT) = 0");
+    assert!(matches!(
+        always.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        always.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+    let excluded = witness("CAST(a AS BIGINT) - CAST(a AS BIGINT) <> 0");
+    assert!(matches!(
+        excluded.qualifying(),
+        BooleanWitnessDirection::Impossible
+    ));
+    assert!(matches!(
+        excluded.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
+    let nullsafe = witness(
+        "CAST(a AS BIGINT) - CAST(a AS BIGINT) IS DISTINCT FROM 0",
+    );
+    assert!(matches!(
+        nullsafe.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (NULL), (-2147483648), (0), (2147483647);",
+    )
+    .unwrap();
+    for (predicate, expected) in [
+        ("CAST(a AS BIGINT) - CAST(a AS BIGINT) = 0", 3_i64),
+        ("CAST(a AS BIGINT) - CAST(a AS BIGINT) <> 0", 0),
+        ("CAST(a AS BIGINT) - CAST(a AS BIGINT) IS DISTINCT FROM 0", 1),
+    ] {
+        let count: i64 = db
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, expected, "{predicate}");
+    }
+}
