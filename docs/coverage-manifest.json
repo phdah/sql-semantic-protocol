@@ -7,6 +7,8 @@
     "status": "bounded_boolean_witness_increment_release_blocked",
     "evidence": [
       "src/boolean_witness.rs",
+      "src/boolean_witness/numeric.rs",
+      "tests/task_101_arithmetic.rs",
       "tests/task_70_predicates.rs",
       "docs/semantics.md"
     ],
@@ -21,7 +23,9 @@
       "total_widened_signed_try_and_safe_cast_comparisons",
       "nested_three_valued_not_and_or",
       "signed_integer_is_distinct_from",
-      "direct_is_distinct_from_null"
+      "direct_is_distinct_from_null",
+      "width_checked_signed_affine_multiplication_inversion",
+      "signed_affine_negative_scale_and_nondivisible_equality_three_valued_proofs"
     ],
     "unproved_scope": [
       "general_arithmetic_overflow",
@@ -46,8 +50,8 @@
       {
         "family": "signed_integer_affine_casts",
         "status": "bounded_local_exact",
-        "scope": "widened CAST/TRY_CAST/SAFE_CAST and overflow-checked signed offsets; narrowing residual",
-        "evidence": "tests/boolean_witness.rs",
+        "scope": "catalog-certified CAST/TRY_CAST/SAFE_CAST and signed bounds-checked nested affine +/-/* inversion; narrowing only when values fit",
+        "evidence": "tests/task_101_arithmetic.rs",
         "release_blocking": true,
         "implementation_task": "TASK-101"
       },
@@ -77,9 +81,9 @@
       },
       {
         "family": "numeric_general_arithmetic",
-        "status": "unproved_residual",
-        "scope": "multiplication/division/modulo, general multi-column arithmetic, overflow and underflow",
-        "evidence": "docs/semantics.md",
+        "status": "bounded_local_exact_with_general_residual",
+        "scope": "width-checked single-source signed affine unary +/- and nonzero constant multiplication exact; integer division, modulo, decimals, multi-column and unconstrained overflow remain residual",
+        "evidence": "tests/task_101_arithmetic.rs",
         "release_blocking": true,
         "implementation_task": "TASK-101"
       },
