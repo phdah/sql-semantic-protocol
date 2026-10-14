@@ -644,6 +644,28 @@ pub(super) fn derive_unary_output_domain(unary: &UnaryExpression) -> ValueDomain
 }
 
 pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDomain {
+    // Only certified integer operands can propagate a known SQL NULL result.
+    // In particular do not turn NULL / 0 or untyped NULL coercions into an
+    // exact value-domain proof.
+    let null_literal = |expression: &Expression| {
+        matches!(
+            expression,
+            Expression::Literal(literal) if literal.literal_type() == LiteralType::Null
+        )
+    };
+    if matches!(
+        binary.operator(),
+        BinaryOperator::Add | BinaryOperator::Subtract | BinaryOperator::Multiply
+    ) && ((null_literal(binary.left())
+        && singleton_integer(&derive_output_domain(binary.right())).is_some())
+        || (null_literal(binary.right())
+            && singleton_integer(&derive_output_domain(binary.left())).is_some()))
+    {
+        return ValueDomain::set(
+            SetMode::Include,
+            vec![LiteralExpression::new(LiteralType::Null, LiteralValue::Null)],
+        );
+    }
     let left = singleton_integer(&derive_output_domain(binary.left()));
     let right = singleton_integer(&derive_output_domain(binary.right()));
     let (Some(left), Some(right)) = (left, right) else {
