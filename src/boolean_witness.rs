@@ -1183,6 +1183,66 @@ fn normalize_null_test(
     if let Some(column) = total_integer_column(expression, sources, integer_evidence) {
         return Some(test(column, negated));
     }
+    if let Expression::SignedIntegerCast(cast) = expression {
+        let Expression::Column(source) = cast.expression() else {
+            return None;
+        };
+        if !matches!(
+            cast.cast_kind(),
+            crate::protocol::SignedIntegerCastKind::TryCast
+                | crate::protocol::SignedIntegerCastKind::SafeCast
+        ) {
+            // A potentially failing ordinary CAST raises instead of
+            // returning NULL. Its IS NULL test is not a total predicate.
+            return None;
+        }
+        let column = resolve_column(source, sources);
+        integer_evidence(&column)?;
+        let magnitude = match cast.target_bits() {
+            16 | 32 | 64 => 1_i128 << (u32::from(cast.target_bits()) - 1),
+            _ => return None,
+        };
+        let minimum = i64::try_from(-magnitude).ok()?;
+        let maximum = i64::try_from(magnitude - 1).ok()?;
+        // TRY/SAFE_CAST of an attested signed integer introduces NULL
+        // precisely for source NULL or an out-of-range integer. Preserve
+        // the complementary two-valued IS NOT NULL obligation as well.
+        let comparisons = if negated {
+            vec![
+                test(source, true),
+                BooleanRowConstraint::IntegerComparison {
+                    column: column.clone(),
+                    operator: ComparisonOperator::Gte,
+                    literal: minimum,
+                },
+                BooleanRowConstraint::IntegerComparison {
+                    column,
+                    operator: ComparisonOperator::Lte,
+                    literal: maximum,
+                },
+            ]
+        } else {
+            vec![
+                test(source, false),
+                BooleanRowConstraint::IntegerComparison {
+                    column: column.clone(),
+                    operator: ComparisonOperator::Lt,
+                    literal: minimum,
+                },
+                BooleanRowConstraint::IntegerComparison {
+                    column,
+                    operator: ComparisonOperator::Gt,
+                    literal: maximum,
+                },
+            ]
+        };
+        let children = BooleanOperands::new(comparisons)?;
+        return Some(if negated {
+            BooleanRowConstraint::All(children)
+        } else {
+            BooleanRowConstraint::Any(children)
+        });
+    }
     // Searched CASE chooses the first SQL TRUE arm. For the supported
     // total integer result class, NULL tests of the selected value are exact.
     // Restrict branch guards to two-valued predicates: SQL UNKNOWN must
