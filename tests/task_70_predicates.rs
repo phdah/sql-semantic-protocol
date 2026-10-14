@@ -123,7 +123,6 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
     for family in [
         "regex_and_nonprefix_patterns",
         "nonbinary_collations_and_padding",
-        "noninteger_casts_and_implicit_coercions",
         "date_time_zone_and_calendar",
         "json_array_struct_and_vendor_functions",
         "dialect_specific_nullsafe_operators",
@@ -140,6 +139,13 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
             .as_str()
             .is_some_and(|value| !value.is_empty()));
     }
+    let casts = families
+        .iter()
+        .find(|item| item["family"] == "noninteger_casts_and_implicit_coercions")
+        .unwrap();
+    assert_eq!(casts["status"], "bounded_literal_exact_with_source_residual");
+    assert_eq!(casts["release_blocking"], true);
+    assert!(casts["scope"].as_str().is_some_and(|value| value.contains("arbitrary text")));
     let arithmetic = families
         .iter()
         .find(|item| item["family"] == "numeric_general_arithmetic")
