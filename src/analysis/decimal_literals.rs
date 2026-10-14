@@ -8,14 +8,14 @@
 
 use super::*;
 
-#[derive(Clone, Copy)]
-struct ExactDecimal {
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) struct ExactDecimal {
     units: i128,
     scale: u32,
 }
 
 impl ExactDecimal {
-    fn from_literal(literal: &LiteralExpression) -> Option<Self> {
+    pub(super) fn from_literal(literal: &LiteralExpression) -> Option<Self> {
         if !matches!(
             literal.literal_type(),
             LiteralType::Integer | LiteralType::Decimal
@@ -64,12 +64,31 @@ impl ExactDecimal {
         numerator.unsigned_abs() <= (1_u128 << 53)
     }
 
+    // A source's declared decimal(P, S) is authoritative. A finite
+    // candidate must fit the declaration without rounding or overflow.
+    pub(super) fn fits_declared(self, precision: u64, scale: u64) -> bool {
+        let Ok(scale) = u32::try_from(scale) else {
+            return false;
+        };
+        if self.scale > scale || scale > 15 || precision == 0 || precision > 38 {
+            return false;
+        }
+        let Some(factor) = 10_i128.checked_pow(scale - self.scale) else {
+            return false;
+        };
+        let Some(units) = self.units.checked_mul(factor) else {
+            return false;
+        };
+        let digits = units.unsigned_abs().to_string().len() as u64;
+        digits <= precision
+    }
+
     fn rescale(self, target: u32) -> Option<i128> {
         self.units
             .checked_mul(10_i128.checked_pow(target.checked_sub(self.scale)?)?)
     }
 
-    fn value(self) -> LiteralExpression {
+    pub(super) fn value(self) -> LiteralExpression {
         let magnitude = self.units.unsigned_abs().to_string();
         let scale = usize::try_from(self.scale).unwrap_or(0);
         let text = if scale == 0 {
@@ -93,7 +112,7 @@ impl ExactDecimal {
         LiteralExpression::new(LiteralType::Decimal, LiteralValue::Number(text))
     }
 
-    fn unary_minus(self) -> Option<Self> {
+    pub(super) fn unary_minus(self) -> Option<Self> {
         let result = Self {
             units: self.units.checked_neg()?,
             ..self
@@ -101,7 +120,7 @@ impl ExactDecimal {
         result.is_portably_exact().then_some(result)
     }
 
-    fn binary(self, rhs: Self, operator: BinaryOperator) -> Option<Self> {
+    pub(super) fn binary(self, rhs: Self, operator: BinaryOperator) -> Option<Self> {
         let result = match operator {
             BinaryOperator::Add | BinaryOperator::Subtract => {
                 let scale = self.scale.max(rhs.scale);
