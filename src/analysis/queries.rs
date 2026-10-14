@@ -66,10 +66,15 @@ pub(super) fn analyze_query(
     // branch outputs, not a refinement of that placeholder.
     let output = match set_operation.as_ref() {
         Some(operation) => refine_set_operation_output_domains(output, operation),
-        None => refine_output_domains_from_column_domains(
-            output,
+        None => refine_catalog_arithmetic_output_domains(
+            refine_output_domains_from_column_domains(
+                output,
+                &column_domains,
+                &relation_analysis.sources,
+            ),
             &column_domains,
             &relation_analysis.sources,
+            metadata,
         ),
     };
 

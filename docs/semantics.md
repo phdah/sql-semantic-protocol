@@ -34,6 +34,12 @@ result-type laws (modulo by positive one is exact zero for signed integers); mul
 Nondivisible equality uses an exact SQL UNKNOWN-preserving contradiction for
 ordinary comparison and a two-valued contradiction for NULL-safe equality.
 The same width proof certifies NULL tests of total arithmetic expressions.
+Catalog-typed integer projections also propagate exact finite sets and safely
+bounded intervals through total arithmetic; excluded NULLs remain excluded,
+while nullable finite sets explicitly retain NULL. Finite cross-products are
+exhaustive domain transformations, never samples used to assert impossibility.
+Arithmetic results that could overflow, require implicit coercion, or have
+unattested dialect rounding preserve an unknown output domain.
 This is a local witness, not a proof of complete output-value distribution,
 general decimal arithmetic or implicit coercion. NULL-containing finite integer IN/NOT IN lists retain
 SQL UNKNOWN, including impossible qualifying branches. Unsafe casts,
