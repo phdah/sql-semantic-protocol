@@ -659,3 +659,55 @@ fn duckdb_positive_remainder_and_integral_division_oracles() {
         assert_eq!(count, expected, "{predicate}");
     }
 }
+
+#[test]
+fn correlated_integer_projection_does_not_cartesian_expand_one_source() {
+    let difference = projected_domain("SELECT a - a AS v FROM t WHERE a BETWEEN -100 AND 100");
+    let ValueDomain::Ranges(zero) = difference else {
+        panic!("same-source cancellation must be bounded: {difference:?}");
+    };
+    let [range] = zero.ranges() else { panic!("expected one zero range") };
+    assert_eq!(range.lower().unwrap().value().value(), &LiteralValue::Number("0".into()));
+    assert_eq!(range.upper().unwrap().value().value(), &LiteralValue::Number("0".into()));
+
+    let square = projected_domain("SELECT a * a AS v FROM t WHERE a BETWEEN -10 AND 20");
+    let ValueDomain::Ranges(bounds) = square else {
+        panic!("same-source square must not have a negative lower bound: {square:?}");
+    };
+    let [range] = bounds.ranges() else { panic!("expected one square range") };
+    assert_eq!(range.lower().unwrap().value().value(), &LiteralValue::Number("0".into()));
+    assert_eq!(range.upper().unwrap().value().value(), &LiteralValue::Number("400".into()));
+
+    let quotient = projected_domain("SELECT a / a AS v FROM t WHERE a BETWEEN 1 AND 100");
+    let ValueDomain::Ranges(one) = quotient else {
+        panic!("nonzero self-division must be total: {quotient:?}");
+    };
+    let [range] = one.ranges() else { panic!("expected one unit range") };
+    assert_eq!(range.lower().unwrap().value().value(), &LiteralValue::Number("1".into()));
+    assert_eq!(range.upper().unwrap().value().value(), &LiteralValue::Number("1".into()));
+
+    for sql in [
+        "SELECT a / a AS v FROM t WHERE a BETWEEN -1 AND 1",
+        "SELECT a % a AS v FROM t WHERE a BETWEEN 0 AND 3",
+        "SELECT a * a AS v FROM t WHERE a BETWEEN -100000 AND 100000",
+    ] {
+        assert!(
+            matches!(projected_domain(sql), ValueDomain::Unknown(_)),
+            "{sql}: zero divisor and signed overflow must remain residual"
+        );
+    }
+}
+
+#[test]
+fn unit_division_retains_certified_excluded_source_values() {
+    let domain = projected_domain(
+        "SELECT CAST(a AS BIGINT) / -1 AS v FROM t WHERE a <> 0",
+    );
+    let ValueDomain::Set(exclusions) = domain else {
+        panic!("total, injective unit division must preserve exclusions: {domain:?}");
+    };
+    assert_eq!(exclusions.mode(), SetMode::Exclude);
+    assert!(exclusions.values().iter().any(|value| {
+        value.value() == &LiteralValue::Number("0".into())
+    }));
+}
