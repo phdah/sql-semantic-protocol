@@ -122,9 +122,28 @@ fn bounded_affine<'a>(
                         None
                     }
                 }
-                // Integer division varies across dialects (and can promote
-                // to floating point). Never infer its width or rounding
-                // without an explicitly attested SQL-engine law.
+                // Engines such as DuckDB promote integer division to IEEE
+                // double. Division by +/-1 is value-preserving only where
+                // *every* attested input and result is exactly representable
+                // in binary64, regardless of the engine's division type.
+                BinaryOperator::Divide if rhs == Some(1) || rhs == Some(-1) => {
+                    let input = left?;
+                    let result = input.transform(i128::from(rhs?), 0)?;
+                    let exact = 1_i128 << 53;
+                    (input.minimum >= -exact
+                        && input.maximum <= exact
+                        && result.minimum >= -exact
+                        && result.maximum <= exact)
+                        .then_some(result)
+                }
+                // Zero divided by a catalog-certified, nonzero signed integer
+                // is zero for any SQL rounding rule. NULL still propagates.
+                BinaryOperator::Divide | BinaryOperator::Modulo if lhs == Some(0) => {
+                    let divisor = right?;
+                    (divisor.minimum > 0 || divisor.maximum < 0)
+                        .then(|| divisor.transform(0, 0))
+                        .flatten()
+                }
                 BinaryOperator::Modulo if rhs == Some(1) => left?.transform(0, 0),
                 BinaryOperator::Divide
                 | BinaryOperator::Modulo
