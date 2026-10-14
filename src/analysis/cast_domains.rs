@@ -7,7 +7,7 @@
 
 use super::*;
 
-fn exact_integral_literal(literal: &LiteralExpression) -> Option<i128> {
+pub(super) fn exact_integral_literal(literal: &LiteralExpression) -> Option<i128> {
     match (literal.literal_type(), literal.value()) {
         (LiteralType::Integer, LiteralValue::Number(value)) => value.parse().ok(),
         (LiteralType::Decimal, LiteralValue::Number(value)) => {
