@@ -298,9 +298,11 @@ fn not_between_with_one_null_bound_keeps_its_qualifying_domain() {
         ("a NOT BETWEEN 3 AND NULL", false),
     ] {
         let actual: i64 = db
-            .query_row(&format!("SELECT COUNT(*) FROM t WHERE {predicate}"), [], |row| {
-                row.get(0)
-            })
+            .query_row(
+                &format!("SELECT COUNT(*) FROM t WHERE {predicate}"),
+                [],
+                |row| row.get(0),
+            )
             .unwrap();
         assert_eq!(actual, 1, "{predicate}: DuckDB oracle");
 
