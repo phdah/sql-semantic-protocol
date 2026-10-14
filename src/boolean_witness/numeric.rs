@@ -115,9 +115,9 @@ fn bounded_affine<'a>(
                 }
                 BinaryOperator::Multiply => {
                     if let (Some(input), Some(value)) = (left, rhs) {
-                        (value != 0).then_some(input)?.transform(value, 0)
+                        input.transform(value, 0)
                     } else if let (Some(value), Some(input)) = (lhs, right) {
-                        (value != 0).then_some(input)?.transform(value, 0)
+                        input.transform(value, 0)
                     } else {
                         None
                     }
