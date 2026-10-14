@@ -90,6 +90,15 @@ fn bounded_affine<'a>(
             }
         }
         Expression::Binary(binary) => {
+            // Repeated, total row-local operands are correlated, not
+            // independent samples. x-x is zero for every non-NULL x and
+            // SQL UNKNOWN must still follow a nullable x.
+            if binary.operator() == BinaryOperator::Subtract
+                && binary.left() == binary.right()
+            {
+                return bounded_affine(binary.left(), sources, evidence)?
+                    .transform(0, 0);
+            }
             let left = bounded_affine(binary.left(), sources, evidence);
             let right = bounded_affine(binary.right(), sources, evidence);
             let lhs = signed_integer_literal(binary.left()).map(i128::from);
