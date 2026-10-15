@@ -13,7 +13,7 @@ fn direct_derived_case_witness_source(
     let Some(Predicate::IsNull(test)) = predicate else {
         return None;
     };
-    if !matches!(test.expression(), Expression::Case(_)) || query.with.is_some() {
+    if !matches!(test.expression(), Expression::Column(_)) || query.with.is_some() {
         return None;
     }
     let SetExpr::Select(select) = query.body.as_ref() else {
@@ -227,12 +227,40 @@ pub(super) fn analyze_query(
         predicates.where_predicate(),
         &relation_analysis.dependencies,
     );
-    let witness_sources = local_case_witness_source.as_ref().map_or_else(
-        || relation_analysis.sources.clone(),
-        |source| vec![source.clone()],
-    );
+    // Expand only the certified witness's computed alias. The canonical
+    // predicate and independent source-column domains must keep the
+    // intermediate alias reference and its uncertainty provenance.
+    let local_case_witness_predicate = local_case_witness_source.as_ref().and_then(|_| {
+        let SetExpr::Select(select) = query.body.as_ref() else {
+            return None;
+        };
+        let Some(Predicate::IsNull(test)) = predicates.where_predicate() else {
+            return None;
+        };
+        let mut local_diagnostics = Vec::new();
+        let scope = build_output_scope(
+            select,
+            &BTreeMap::new(),
+            &[],
+            &mut local_diagnostics,
+            Some(metadata),
+        );
+        let expression = inherit_local_case_expression(test.expression().clone(), &scope);
+        matches!(expression, Expression::Case(_))
+            .then(|| Predicate::IsNull(IsNullPredicate::new(expression, test.negated())))
+    });
+    let witness_sources = if local_case_witness_predicate.is_some() {
+        local_case_witness_source
+            .into_iter()
+            .collect::<Vec<_>>()
+    } else {
+        relation_analysis.sources.clone()
+    };
+    let witness_predicate = local_case_witness_predicate
+        .as_ref()
+        .or_else(|| predicates.where_predicate());
     let boolean_witness = crate::boolean_witness::analyze(
-        predicates.where_predicate(),
+        witness_predicate,
         &witness_sources,
         |column| {
             let original_type = metadata.column_data_type(column)?;
