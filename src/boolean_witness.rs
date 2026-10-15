@@ -3212,7 +3212,9 @@ fn possible_joint_truth_vectors(
                     let before_strings = shared.strings.len();
                     let before_prefixes = shared.prefixes.len();
                     shared.strings.extend(other_region.strings.iter().cloned());
-                    shared.prefixes.extend(other_region.prefixes.iter().cloned());
+                    shared
+                        .prefixes
+                        .extend(other_region.prefixes.iter().cloned());
                     changed |= shared.strings.len() != before_strings
                         || shared.prefixes.len() != before_prefixes;
                 }
