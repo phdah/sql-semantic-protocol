@@ -52,18 +52,28 @@ fn direct_derived_case_witness_source(
     if inner
         .projection
         .iter()
-        .filter(|item| matches!(
-            item,
-            SelectItem::ExprWithAlias {
-                expr: Expr::Case { .. },
-                alias,
-            } if &alias.value == target_alias
-        ))
-        .count() != 1
-        || inner.projection.iter().filter(|item| matches!(
-            item,
-            SelectItem::ExprWithAlias { alias, .. } if &alias.value == target_alias
-        )).count() != 1
+        .filter(|item| {
+            matches!(
+                item,
+                SelectItem::ExprWithAlias {
+                    expr: Expr::Case { .. },
+                    alias,
+                } if &alias.value == target_alias
+            )
+        })
+        .count()
+        != 1
+        || inner
+            .projection
+            .iter()
+            .filter(|item| {
+                matches!(
+                    item,
+                    SelectItem::ExprWithAlias { alias, .. } if &alias.value == target_alias
+                )
+            })
+            .count()
+            != 1
     {
         return None;
     }
@@ -88,7 +98,10 @@ fn direct_derived_case_witness_source(
     {
         return None;
     }
-    Some(SourceRelation::new(dependencies.iter().next()?.clone(), None))
+    Some(SourceRelation::new(
+        dependencies.iter().next()?.clone(),
+        None,
+    ))
 }
 
 pub(super) fn analyze_query(
