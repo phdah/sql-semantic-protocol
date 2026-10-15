@@ -2335,7 +2335,15 @@ pub(crate) fn conjoin_physical_row_truths(
     }
     let possible = possible_joint_truths(&joint, &integer_evidence, &|_| None, None);
     if possible.is_empty() {
-        return None;
+        // The representative search may exhaust its assignment budget before
+        // seeing any rows. A separate symbolic proof can still establish
+        // impossibility without relying on that incomplete enumeration.
+        let proven = match truth {
+            BooleanTruthCase::True => true_region_empty(&joint, &integer_evidence, None),
+            BooleanTruthCase::NotTrue => not_true_constraint(&joint)
+                .is_some_and(|not_true| true_region_empty(&not_true, &integer_evidence, None)),
+        };
+        return proven.then_some((joint, false));
     }
     let satisfiable = match truth {
         BooleanTruthCase::True => possible.contains(&SqlTruth::True),
@@ -2392,7 +2400,10 @@ pub(crate) fn jointly_satisfiable_physical_truths(
     }
     let truths = possible_joint_truth_vectors(&conditions, &integer_evidence, &|_| None, None);
     if truths.is_empty() {
-        return None;
+        // No sampled assignment may also mean that enumeration hit its
+        // deterministic limit. Only a symbolic contradiction proves absence.
+        return requirements_jointly_unsatisfiable(requirements, &integer_evidence)
+            .then_some(false);
     }
     let satisfiable = truths.iter().any(|row_truths| {
         row_truths
@@ -3260,6 +3271,59 @@ fn eval_joint_truth(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn symbolic_physical_contradiction_survives_exhausted_sample_budget() {
+        let a = ColumnRef::new(Some("t".to_string()), "a".to_string());
+        let b = ColumnRef::new(Some("t".to_string()), "b".to_string());
+        let mut conditions = vec![
+            BooleanRowConstraint::IntegerColumnComparison {
+                left: a.clone(),
+                operator: ComparisonOperator::Gt,
+                right: b.clone(),
+            },
+            BooleanRowConstraint::IntegerColumnComparison {
+                left: b,
+                operator: ComparisonOperator::Gt,
+                right: a,
+            },
+        ];
+        // Fourteen NULL-only columns push the Cartesian representative search
+        // above 4096 assignments, while the strict cycle is still impossible.
+        for position in 0..14 {
+            conditions.push(BooleanRowConstraint::NullTest {
+                column: ColumnRef::new(Some("t".to_string()), format!("nullable_{position}")),
+                negated: false,
+            });
+        }
+        let references = conditions.iter().collect::<Vec<_>>();
+        let requirements = references
+            .iter()
+            .map(|item| (*item, BooleanTruthCase::True))
+            .collect::<Vec<_>>();
+        let known = |column: &ColumnRef| column.relation() == Some("t");
+        let bounds = |_: &ColumnRef| {
+            Some(SignedIntegerEvidence {
+                minimum: -1,
+                maximum: 1,
+            })
+        };
+        assert_eq!(
+            conjoin_physical_row_truths(
+                "t",
+                BooleanTruthCase::True,
+                &references,
+                known,
+                bounds,
+            )
+            .map(|(_, satisfiable)| satisfiable),
+            Some(false)
+        );
+        assert_eq!(
+            jointly_satisfiable_physical_truths("t", &requirements, known, bounds),
+            Some(false)
+        );
+    }
 
     #[test]
     fn exact_noninteger_conjuncts_preserve_integer_domain() {
