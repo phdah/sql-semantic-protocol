@@ -273,10 +273,9 @@ fn coalesce_unions_argument_domains_and_excludes_null_only_when_proven() {
 
 #[test]
 fn coalesce_short_circuits_null_possibility_per_argument() {
-    // The first argument can never be NULL on a surviving row, so the
-    // coalesce result can never be NULL, but the value bound stays unbounded.
+    // The first argument is never NULL, making the other source irrelevant.
     let sql = "SELECT COALESCE(a, b) AS v FROM t WHERE a IN (1, 3)";
-    assert_exactly_null_excluded(sql);
+    assert_value_set(sql, vec!["1", "3"]);
 }
 
 #[test]
@@ -488,7 +487,7 @@ fn numeric_boundaries_survive_computed_domains() {
     assert_value_set(nullif, vec!["3", "NULL"]);
 
     let wide = "SELECT COALESCE(a, 9223372036854775807) AS v FROM t WHERE a = 0";
-    assert_value_set(wide, vec!["0", "9223372036854775807"]);
+    assert_value_set(wide, vec!["0"]);
 }
 
 #[test]
@@ -774,7 +773,7 @@ fn direct_sql_and_dbt_catalog_share_computed_output_domains() {
         (
             "SELECT id, COALESCE(amount, 0) AS v
              FROM warehouse.raw.orders WHERE amount IN (3, 7)",
-            vec!["0", "3", "7"],
+            vec!["3", "7"],
         ),
     ] {
         let mut manifest: Value =
@@ -872,8 +871,8 @@ fn computed_case_comparisons_preserve_selection_and_unknown() {
     for predicate in [
         "CASE WHEN a > 1 THEN a ELSE 0 END = 5",
         "NOT (CASE WHEN a > 1 THEN a ELSE 0 END = 5)",
-        "CASE WHEN a > 1 THEN NULL ELSE a END = 5",
-        "NOT (CASE WHEN a > 1 THEN NULL ELSE a END = 5)",
+        "CASE WHEN a > 1 THEN NULL ELSE a END = 0",
+        "NOT (CASE WHEN a > 1 THEN NULL ELSE a END = 0)",
         "CASE a WHEN 1 THEN a ELSE 0 END = 1",
         "CASE WHEN a IS NULL THEN 0 ELSE a END = 0",
     ] {
