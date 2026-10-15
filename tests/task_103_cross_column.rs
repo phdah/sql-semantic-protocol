@@ -109,6 +109,35 @@ fn equality_and_order_conflicts_are_impossible() {
 }
 
 #[test]
+fn mixed_disjunctions_share_one_conjunctive_assignment() {
+    for predicate in [
+        "a < b AND (a > b OR a = b)",
+        "a = b AND (a > b OR a < b)",
+        "(a < b OR a = b) AND (b < a OR a = b) AND a <> b",
+        "(a > b OR a = b) AND a < b AND c IS NOT NULL",
+    ] {
+        assert_impossible(predicate);
+    }
+    assert_both_exact("(a > b OR a = b) AND a >= b");
+    assert_both_exact("a < b AND (a > b OR a < b)");
+}
+
+#[test]
+fn mixed_disjunction_budget_exhaustion_is_residual() {
+    // Seven independent binary alternatives require 128 cases, exceeding
+    // the deterministic 64-case cap. Sampling cannot justify impossibility.
+    let predicate = format!(
+        "a < b AND {}",
+        vec!["(a > b OR a = b)"; 7].join(" AND ")
+    );
+    let witness = typed_witness_abc(&predicate);
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Residual { .. }
+    ));
+}
+
+#[test]
 fn jointly_satisfiable_multi_column_predicates_stay_exact() {
     for predicate in [
         "a > b AND b > 0 AND a < 10",
