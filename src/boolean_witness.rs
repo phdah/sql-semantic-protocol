@@ -902,6 +902,8 @@ fn is_witness_candidate(predicate: &Predicate) -> bool {
                         Expression::SignedIntegerCast(_)
                             | Expression::Binary(_)
                             | Expression::Unary(_)
+                            | Expression::Function(_)
+                            | Expression::Case(_)
                     )
                 })
         }
