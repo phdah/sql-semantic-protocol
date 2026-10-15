@@ -618,7 +618,7 @@ fn comparisons_over_computed_values_stay_explicitly_residual() {
 }
 
 #[test]
-fn computed_alias_predicates_through_derived_tables_stay_explicitly_residual() {
+fn untyped_computed_alias_predicates_stay_explicitly_residual() {
     // Computed subquery output domains do not propagate outward, so a NULL
     // test over an aliased computed column cannot anchor source rows yet;
     // the filter stays an explicit computed-expression residual.
@@ -879,4 +879,45 @@ fn computed_case_comparisons_preserve_selection_and_unknown() {
     ] {
         assert_exact_both_directions(predicate);
     }
+}
+
+#[test]
+fn row_preserving_computed_alias_null_test_has_physical_witness() {
+    let schema = RelationSchema::new(
+        "t",
+        vec![
+            SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("b", "BIGINT", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let sql = SqlInput::inline(
+        "SELECT v FROM (
+            SELECT CASE WHEN a > 1 THEN b ELSE NULL END AS v FROM t
+         ) AS sub WHERE v IS NULL",
+    );
+    let dialect = PostgreSqlDialect {};
+    let bundle = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new(
+            "alias",
+            &sql,
+            "postgresql",
+            &dialect,
+        )],
+        &catalog,
+    )
+    .unwrap();
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("resolved local alias");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+    ));
 }
