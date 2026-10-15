@@ -1056,6 +1056,17 @@ fn normalize(
                     right,
                 };
             }
+            if let Some(computed) = normalize_case_integer_comparison(
+                comparison.left(),
+                comparison.operator(),
+                comparison.right(),
+                sources,
+                integer_evidence,
+                string_evidence,
+                column_datatype,
+            ) {
+                return computed;
+            }
             if let Some(computed) = normalize_computed_integer_comparison(
                 comparison.left(),
                 comparison.operator(),
@@ -1218,6 +1229,150 @@ fn normalize(
         }
         _ => residual("computed, function, collation, cast or other predicate is not invertible"),
     }
+}
+
+/// Normalize a CASE-valued integer comparison, preserving first-TRUE branch
+/// selection as a two-valued guard and each result's SQL three-valued truth.
+/// This avoids erroneously letting an unselected nullable arm leak UNKNOWN.
+fn normalize_case_integer_comparison(
+    left: &Expression,
+    operator: ComparisonOperator,
+    right: &Expression,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    column_datatype: &impl Fn(&ColumnRef) -> Option<DataType>,
+) -> Option<BooleanRowConstraint> {
+    let (case, operator, value) = match (left, right) {
+        (Expression::Case(case), other) => (case, operator, signed_integer_literal(other)?),
+        (other, Expression::Case(case)) => (case, operator.reversed(), signed_integer_literal(other)?),
+        _ => return None,
+    };
+    if matches!(
+        operator,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+    ) {
+        return None;
+    }
+
+    let simple_operand = match case.operand() {
+        None => None,
+        Some(Expression::Column(column)) => {
+            let column = resolve_column(column, sources);
+            integer_evidence(&column)?;
+            Some(column)
+        }
+        Some(_) => return None,
+    };
+    let mut prior_not_true = Vec::new();
+    let mut arms = Vec::new();
+    let mut anchor = simple_operand.clone();
+    for branch in case.branches() {
+        let guard = match &simple_operand {
+            None => {
+                let Expression::BooleanPredicate(predicate) = branch.condition() else {
+                    return None;
+                };
+                normalize(predicate, sources, integer_evidence, string_evidence, column_datatype)
+            }
+            Some(column) => BooleanRowConstraint::IntegerComparison {
+                column: column.clone(),
+                operator: ComparisonOperator::Eq,
+                literal: signed_integer_literal(branch.condition())?,
+            },
+        };
+        let guard_not_true = not_true_constraint(&guard)?;
+        if anchor.is_none() {
+            let mut columns = Vec::new();
+            guard.columns(&mut columns);
+            anchor = columns.into_iter().next();
+        }
+        let anchor_column = anchor.as_ref()?;
+        let selected_guard = negate_constraint(guard_not_true.clone());
+        let result_comparison = case_arm_integer_comparison(
+            branch.result(),
+            operator,
+            value,
+            anchor_column,
+            sources,
+            integer_evidence,
+        )?;
+        let mut conjunction = prior_not_true.clone();
+        conjunction.push(selected_guard);
+        conjunction.push(result_comparison);
+        arms.push(conjoin_all(conjunction)?);
+        prior_not_true.push(guard_not_true);
+    }
+    let anchor = anchor?;
+    let null_else =
+        Expression::Literal(LiteralExpression::new(LiteralType::Null, LiteralValue::Null));
+    let else_result = case.else_result().unwrap_or(&null_else);
+    let comparison = case_arm_integer_comparison(
+        else_result,
+        operator,
+        value,
+        &anchor,
+        sources,
+        integer_evidence,
+    )?;
+    prior_not_true.push(comparison);
+    arms.push(conjoin_all(prior_not_true)?);
+    match arms.len() {
+        0 => None,
+        1 => arms.pop(),
+        _ => BooleanOperands::new(arms).map(BooleanRowConstraint::Any),
+    }
+}
+
+fn case_arm_integer_comparison(
+    expression: &Expression,
+    operator: ComparisonOperator,
+    value: i64,
+    anchor: &ColumnRef,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<BooleanRowConstraint> {
+    if let Expression::Column(column) = expression {
+        let column = resolve_column(column, sources);
+        integer_evidence(&column)?;
+        return Some(BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal: value,
+        });
+    }
+    if let Expression::Literal(literal) = expression {
+        if matches!(literal.value(), LiteralValue::Null) {
+            return Some(BooleanRowConstraint::UnknownNullComparison {
+                column: anchor.clone(),
+            });
+        }
+    }
+    let integer = signed_integer_literal(expression)?;
+    let matches = match operator {
+        ComparisonOperator::Eq => integer == value,
+        ComparisonOperator::Neq => integer != value,
+        ComparisonOperator::Lt => integer < value,
+        ComparisonOperator::Lte => integer <= value,
+        ComparisonOperator::Gt => integer > value,
+        ComparisonOperator::Gte => integer >= value,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => return None,
+    };
+    let operands = BooleanOperands::new(vec![
+        BooleanRowConstraint::NullTest {
+            column: anchor.clone(),
+            negated: false,
+        },
+        BooleanRowConstraint::NullTest {
+            column: anchor.clone(),
+            negated: true,
+        },
+    ])?;
+    Some(if matches {
+        BooleanRowConstraint::Any(operands)
+    } else {
+        BooleanRowConstraint::All(operands)
+    })
 }
 
 /// Normalize the provably reversible integer subset of COALESCE and
