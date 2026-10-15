@@ -287,21 +287,30 @@ pub(super) fn joint_nonempty_rejected_terminals(
     WitnessDirection::feasible(vec![populated, empty])
 }
 
+/// Catalog-attested datatype for a physical schema column, when declared.
+pub(super) fn physical_column_datatype(
+    schema: &crate::relation::RelationSchema,
+    column: &crate::protocol::ColumnRef,
+) -> Option<crate::data_type::DataType> {
+    schema
+        .columns()
+        .iter()
+        .find(|known| known.name() == column.name())
+        .map(|known| known.data_type().clone())
+}
+
 /// Evidence for direct physical signed integer comparisons. Kept identical
 /// across the positive-only and mixed-truth physical row solvers.
 pub(super) fn physical_integer_evidence(
     schema: &crate::relation::RelationSchema,
     column: &crate::protocol::ColumnRef,
 ) -> Option<crate::boolean_witness::SignedIntegerEvidence> {
-    let known = schema
-        .columns()
-        .iter()
-        .find(|known| known.name() == column.name())?;
-    let data_type = match known.data_type() {
-        crate::data_type::DataType::Nullable(inner) => inner.as_ref(),
+    let data_type = physical_column_datatype(schema, column)?;
+    let data_type = match data_type {
+        crate::data_type::DataType::Nullable(inner) => *inner,
         other => other,
     };
-    match data_type {
+    match &data_type {
         crate::data_type::DataType::SignedInteger { bits: Some(bits) }
             if *bits > 0 && *bits <= 64 =>
         {

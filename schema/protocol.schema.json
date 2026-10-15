@@ -1799,7 +1799,7 @@
           "enum": ["cast", "try_cast", "safe_cast"]
         },
         "on_failure": {
-          "enum": ["exception", "null"]
+          "enum": ["exception", "null", "runtime_dependent"]
         },
         "expression": {
           "$ref": "#/$defs/expression"
@@ -1815,7 +1815,9 @@
       "allOf": [
         {
           "if": { "properties": { "cast_kind": { "const": "cast" } } },
-          "then": { "properties": { "on_failure": { "const": "exception" } } }
+          "then": {
+            "properties": { "on_failure": { "const": "runtime_dependent" } }
+          }
         },
         {
           "if": {

@@ -35,14 +35,6 @@ pub(super) fn exact_integral_literal(literal: &LiteralExpression) -> Option<i128
     }
 }
 
-fn signed_fits(value: i128, bits: u16) -> bool {
-    if !matches!(bits, 16 | 32 | 64) {
-        return false;
-    }
-    let magnitude = 1_i128 << (u32::from(bits) - 1);
-    -magnitude <= value && value < magnitude
-}
-
 /// Evaluate explicit, portable finite signed integer casts without inventing
 /// engine-specific decimal rounding, formatting or overflow results.
 pub(super) fn derive_signed_integer_cast_output_domain(
@@ -71,13 +63,13 @@ pub(super) fn derive_signed_integer_cast_output_domain(
                 "integer cast source requires exact integral or canonical ASCII evidence",
             );
         };
-        if signed_fits(integer, cast.target_bits()) {
+        if cast.target_width().fits(integer) {
             result.push(integer_literal(integer));
         } else {
             match cast.cast_kind() {
                 SignedIntegerCastKind::Cast => {
                     return ValueDomain::unknown(
-                        "ordinary CAST would raise on out-of-range integer",
+                        "ordinary CAST failure is runtime-dependent for out-of-range integer",
                     );
                 }
                 SignedIntegerCastKind::TryCast | SignedIntegerCastKind::SafeCast => {

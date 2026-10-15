@@ -338,6 +338,11 @@ pub(super) fn scalar_physical_row_truth(
                 .flatten()
         },
         |_column| None,
+        |column| {
+            (column.relation() == Some(filter_source))
+                .then(|| physical_column_datatype(input_schema, column))
+                .flatten()
+        },
     )?;
     let witness = if filter_source == source {
         witness

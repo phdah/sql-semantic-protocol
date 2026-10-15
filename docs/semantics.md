@@ -34,10 +34,8 @@ Nondivisible equality uses an exact SQL UNKNOWN-preserving contradiction for
 ordinary comparison and a two-valued contradiction for NULL-safe equality.
 The same width proof certifies NULL tests of total arithmetic expressions.
 Catalog-typed integer projections also propagate exact finite sets and safely
-bounded intervals through total arithmetic, including exhaustively enumerable unions of bounded ranges and correlated cancellation, squares, unit division, and nonzero self-remainder. Excluded NULLs remain excluded,
-while nullable finite sets explicitly retain NULL. Finite cross-products are
-exhaustive domain transformations, never samples used to assert impossibility.
-Arithmetic results that could overflow, require implicit coercion, or have
+bounded intervals through total arithmetic, including exhaustively enumerable unions of bounded ranges and correlated addition, cancellation, squares, unit division, and nonzero self-remainder. Syntactically identical operands are evaluated once per admitted source value rather than as an independent Cartesian product. Independent finite operands use exhaustive cross-products, never samples used to assert impossibility. Excluded NULLs remain excluded,
+while nullable finite sets explicitly retain NULL. Bare integer literal arithmetic is exact only while both operands and the result fit the deterministic signed 32-bit portable subset; an explicit signed cast can establish a wider result width. Arithmetic results that could overflow, require implicit coercion, or have
 unattested dialect rounding preserve an unknown output domain.
 A catalog-certified globally total and injective signed affine projection may
 also propagate finite excluded source values through its exact inverse. Zero
@@ -50,8 +48,7 @@ nonportable decimal fractions and negative-dividend remainder semantics are
 unknown rather than rounded or approximated.
 Explicit signed integer CASTs of finite, exactly integral numeric literals or
 canonical ASCII integer text have exact value domains when all values fit.
-Catalog-typed finite DECIMAL inputs also admit exact integral conversion; finite string-source conversions require separately attested enforced binary comparison provenance and canonical ASCII text values. For out-of-range integral inputs, ordinary CAST emits an unknown domain
-because execution raises, while TRY_CAST and SAFE_CAST yield SQL NULL.
+Catalog-typed finite DECIMAL inputs also admit exact integral conversion; finite string-source conversions require separately attested enforced binary comparison provenance and canonical ASCII text values. For out-of-range integral inputs, ordinary CAST emits an unknown domain with runtime-dependent failure behavior, while TRY_CAST and SAFE_CAST yield SQL NULL.
 Unproven text formatting, implicit/session-dependent coercion, and fractional conversion rules remain residual.
 This is a local witness, not a proof of complete output-value distribution,
 general decimal arithmetic or implicit coercion. NULL-containing finite integer IN/NOT IN lists retain
@@ -505,13 +502,7 @@ conservative independent `column_domains`; neither case grants
 whole-query row-membership exactness without all other proof obligations.
 
 Signed integer comparisons require authoritative catalog datatypes and
-representable signed literals. Overflow-free identity arithmetic (`+a`, `a+0`, `0+a`, `a-0`),
-catalog-proven lossless ordinary signed-integer CASTs and constant additions
-or subtractions on a widened signed cast are inverted. The arithmetic
-result must fit the explicit cast target width for the *entire* source
-integer domain; its comparison threshold is translated to the source
-column. Uncast nonzero offsets, narrowing and TRY/SAFE_CAST variants,
-functions, ambiguous sources and expressions that can overflow remain residual. Ordinary LIKE/NOT LIKE with one trailing wildcard after an
+representable signed literals. Overflow-free affine arithmetic, including unary signs, constant addition, subtraction and multiplication, identity division and modulo-one, is inverted only when every intermediate fits its attested signed width over the *entire* source domain. A narrowing signed CAST is invertible only when all catalog-admissible values fit. Finite TRY_CAST and SAFE_CAST narrowing may instead prove exact successful values plus NULL-on-failure, and their direct-source NULL tests can distinguish source NULL from out-of-range values. Potentially throwing ordinary casts, fractional or zero-divisor operations, noninvertible periodic predicates, functions, ambiguous sources and expressions that can overflow remain residual. Ordinary LIKE/NOT LIKE with one trailing wildcard after an
 unescaped ASCII alphanumeric prefix is represented as a typed, jointly solved
 source-row `string_prefix`; both `binary_collation` and `no_char_padding`
 attestations are required before either direction can become exact. SQL NULL

@@ -624,14 +624,25 @@ pub(super) fn singleton_integer(domain: &ValueDomain) -> Option<i128> {
     value.parse().ok()
 }
 
+fn explicit_signed_integer_width(expression: &Expression) -> Option<SignedIntegerWidth> {
+    match expression {
+        Expression::SignedIntegerCast(cast) => Some(cast.target_width()),
+        Expression::Unary(unary) => explicit_signed_integer_width(unary.operand()),
+        _ => None,
+    }
+}
+
 pub(super) fn derive_unary_output_domain(unary: &UnaryExpression) -> ValueDomain {
     let operand = derive_output_domain(unary.operand());
     match unary.operator() {
         UnaryOperator::Plus => operand,
         UnaryOperator::Minus => exact_decimal_unary_domain(unary).unwrap_or_else(|| {
+            let width = explicit_signed_integer_width(unary.operand())
+                .unwrap_or(SignedIntegerWidth::Bits32);
             singleton_integer(&operand)
+                .filter(|value| width.fits(*value))
                 .and_then(i128::checked_neg)
-                .filter(|value| i64::try_from(*value).is_ok())
+                .filter(|value| width.fits(*value))
                 .map_or_else(
                     || ValueDomain::unknown("unary minus cannot be bounded safely"),
                     |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
@@ -682,6 +693,16 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
             crate::protocol::arithmetic_operand_kind(binary.right())
         ));
     };
+    let left_width = explicit_signed_integer_width(binary.left());
+    let right_width = explicit_signed_integer_width(binary.right());
+    let result_width = match (left_width, right_width) {
+        (Some(left), Some(right)) => left.min(right),
+        (Some(width), None) | (None, Some(width)) => width,
+        // Portable implicit integer literal arithmetic is limited to the
+        // narrowest conventional SQL integer width. Wider results require an
+        // explicit cast instead of assuming dialect-specific promotion.
+        (None, None) => SignedIntegerWidth::Bits32,
+    };
 
     let value = match binary.operator() {
         BinaryOperator::Add => left.checked_add(right),
@@ -702,11 +723,15 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
         | BinaryOperator::BitwiseXor => None,
     };
 
-    // Literal calculations with implicit arithmetic widening beyond signed
-    // BIGINT, or dialect-dependent division and remainder laws, are not
-    // portable exact integer domains.
+    // Literal calculations with implicit arithmetic widening, or
+    // dialect-dependent division and remainder laws, are not portable exact
+    // integer domains.
     value
-        .filter(|value| i64::try_from(*value).is_ok())
+        .filter(|value| {
+            result_width.fits(left)
+                && result_width.fits(right)
+                && result_width.fits(*value)
+        })
         .map_or_else(
             || {
                 ValueDomain::unknown(format!(

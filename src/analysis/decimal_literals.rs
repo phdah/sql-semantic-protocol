@@ -101,8 +101,13 @@ impl ExactDecimal {
         } else {
             let padded = format!("{magnitude:0>width$}", width = scale + 1);
             let cut = padded.len() - scale;
-            let integer = &padded[..cut];
-            let fractional = padded[cut..].trim_end_matches('0');
+            let integer = padded
+                .get(..cut)
+                .expect("decimal padding places the cut within ASCII digits");
+            let fractional = padded
+                .get(cut..)
+                .expect("decimal padding places the cut within ASCII digits")
+                .trim_end_matches('0');
             if fractional.is_empty() {
                 format!("{integer}.0")
             } else {

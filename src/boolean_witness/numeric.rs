@@ -7,10 +7,11 @@
 //! finite samples as a universal absence proof.
 
 use super::{signed_integer_literal, BooleanOperands, BooleanRowConstraint, SignedIntegerEvidence};
+use crate::data_type::DataType;
 use crate::domain::resolve_column;
 use crate::protocol::{
-    arithmetic_operand_kind, BinaryOperator, ColumnExpression, ColumnRef, ComparisonOperator, Expression, SourceRelation,
-    UnaryOperator,
+    arithmetic_operand_kind, BinaryOperator, ColumnExpression, ColumnRef, ComparisonOperator,
+    Expression, SignedIntegerWidth, SourceRelation, UnaryOperator,
 };
 
 #[derive(Clone, Copy)]
@@ -20,15 +21,7 @@ struct AffineInteger<'a> {
     offset: i128,
     minimum: i128,
     maximum: i128,
-    bits: u16,
-}
-
-fn signed_limits(bits: u16) -> Option<(i128, i128)> {
-    if !matches!(bits, 16 | 32 | 64) {
-        return None;
-    }
-    let magnitude = 1_i128 << (u32::from(bits) - 1);
-    Some((-magnitude, magnitude - 1))
+    width: SignedIntegerWidth,
 }
 
 impl<'a> AffineInteger<'a> {
@@ -36,7 +29,7 @@ impl<'a> AffineInteger<'a> {
         let first = self.minimum.checked_mul(factor)?.checked_add(offset)?;
         let last = self.maximum.checked_mul(factor)?.checked_add(offset)?;
         let (minimum, maximum) = (first.min(last), first.max(last));
-        let (lower, upper) = signed_limits(self.bits)?;
+        let (lower, upper) = self.width.limits();
         if minimum < lower || maximum > upper {
             return None;
         }
@@ -49,9 +42,9 @@ impl<'a> AffineInteger<'a> {
         })
     }
 
-    fn with_width(self, bits: u16) -> Option<Self> {
-        let (lower, upper) = signed_limits(bits)?;
-        (self.minimum >= lower && self.maximum <= upper).then_some(Self { bits, ..self })
+    fn with_width(self, width: SignedIntegerWidth) -> Option<Self> {
+        let (lower, upper) = width.limits();
+        (self.minimum >= lower && self.maximum <= upper).then_some(Self { width, ..self })
     }
 }
 
@@ -65,9 +58,9 @@ fn bounded_affine<'a>(
             let bounds = evidence(&resolve_column(column, sources))?;
             // A smaller inferred width is deliberately conservative when
             // catalog constraints narrow the source's possible values.
-            let bits = [16, 32, 64].into_iter().find(|bits| {
-                signed_limits(*bits)
-                    .is_some_and(|(min, max)| bounds.minimum >= min && bounds.maximum <= max)
+            let width = SignedIntegerWidth::ALL.into_iter().find(|width| {
+                let (min, max) = width.limits();
+                bounds.minimum >= min && bounds.maximum <= max
             })?;
             Some(AffineInteger {
                 column,
@@ -75,11 +68,11 @@ fn bounded_affine<'a>(
                 offset: 0,
                 minimum: bounds.minimum,
                 maximum: bounds.maximum,
-                bits,
+                width,
             })
         }
         Expression::SignedIntegerCast(cast) => {
-            bounded_affine(cast.expression(), sources, evidence)?.with_width(cast.target_bits())
+            bounded_affine(cast.expression(), sources, evidence)?.with_width(cast.target_width())
         }
         Expression::Unary(unary) => {
             let input = bounded_affine(unary.operand(), sources, evidence)?;
@@ -250,7 +243,16 @@ fn compare(left: i128, operator: ComparisonOperator, right: i128) -> bool {
 /// Surface the unsupported operator/type pair in the canonical residual.
 /// Do not conflate overflow, dynamic widening and dialect-sensitive casts
 /// with proofs of impossible source rows.
-pub(super) fn unresolved_arithmetic_reason(left: &Expression, right: &Expression) -> String {
+///
+/// Column operands are qualified with their catalog-attested datatype when
+/// evidence exists, so the residual names the actual type pair instead of an
+/// anonymous structural class. Absent evidence keeps the structural label.
+pub(super) fn unresolved_arithmetic_reason(
+    left: &Expression,
+    right: &Expression,
+    sources: &[SourceRelation],
+    column_datatype: &impl Fn(&ColumnRef) -> Option<DataType>,
+) -> String {
     let computed = [left, right]
         .into_iter()
         .find(|value| matches!(value, Expression::Binary(_) | Expression::Unary(_)));
@@ -258,22 +260,60 @@ pub(super) fn unresolved_arithmetic_reason(left: &Expression, right: &Expression
         return format!(
             "arithmetic {} on {} and {} requires type/width/overflow/rounding evidence",
             binary.operator().as_str(),
-            arithmetic_operand_kind(binary.left()),
-            arithmetic_operand_kind(binary.right())
+            operand_label(binary.left(), sources, column_datatype),
+            operand_label(binary.right(), sources, column_datatype)
         );
     }
     if let Some(Expression::Unary(unary)) = computed {
         return format!(
             "arithmetic unary {} on {} requires total signed range evidence",
             unary.operator().as_str(),
-            arithmetic_operand_kind(unary.operand())
+            operand_label(unary.operand(), sources, column_datatype)
         );
     }
     format!(
         "comparison on {} and {} has no certified typed inversion",
-        arithmetic_operand_kind(left),
-        arithmetic_operand_kind(right)
+        operand_label(left, sources, column_datatype),
+        operand_label(right, sources, column_datatype)
     )
+}
+
+/// Residual operand label: attested datatype for source columns, the
+/// canonical structural class for every other expression.
+fn operand_label(
+    expression: &Expression,
+    sources: &[SourceRelation],
+    column_datatype: &impl Fn(&ColumnRef) -> Option<DataType>,
+) -> String {
+    if let Expression::Column(column) = expression {
+        let resolved = resolve_column(column, sources);
+        if let Some(data_type) = column_datatype(&resolved) {
+            return format!("source-column({})", datatype_label(&data_type));
+        }
+    }
+    arithmetic_operand_kind(expression)
+}
+
+/// Canonical attested-datatype label for typed residual diagnostics.
+///
+/// Modifiers are included only when the catalog declares them; an absent
+/// width or precision stays unqualified rather than being guessed.
+fn datatype_label(data_type: &DataType) -> String {
+    match data_type {
+        DataType::Nullable(inner) => datatype_label(inner),
+        DataType::SignedInteger { bits: Some(bits) } => format!("signed_integer:{bits}"),
+        DataType::UnsignedInteger { bits: Some(bits) } => format!("unsigned_integer:{bits}"),
+        DataType::FloatingPoint { bits: Some(bits) } => format!("floating_point:{bits}"),
+        DataType::Decimal {
+            precision: Some(precision),
+            scale: Some(scale),
+        } => format!("decimal:{precision},{scale}"),
+        DataType::Decimal {
+            precision: Some(precision),
+            scale: None,
+        } => format!("decimal:{precision}"),
+        other => other.kind().to_string(),
+    }
 }
 
 /// Prove constant predicate truth when a noninvertible remainder cannot

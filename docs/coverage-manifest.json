@@ -31,6 +31,8 @@
       "width_checked_signed_affine_multiplication_inversion",
       "signed_affine_negative_scale_and_nondivisible_equality_three_valued_proofs",
       "catalog_certified_integer_arithmetic_output_finite_sets_intervals_and_exclusions",
+      "deterministic_signed_literal_width_and_explicit_widening_guards",
+      "correlated_same_source_integer_and_decimal_arithmetic_domains",
       "portable_exact_binary64_representable_decimal_literal_arithmetic",
       "literal_integral_casts_with_explicit_cast_try_safe_failure_contract",
       "bounded_binary64_exact_unit_division_and_nonzero_zero_dividends"
@@ -43,7 +45,7 @@
       "pattern_escape_regex_collations",
       "date_time_json_vendor_udfs",
       "complete_physical_source_proofs",
-      "full_dialect_and_dbt_execution_oracles"
+      "vendor_engine_execution_equivalence_beyond_bounded_DuckDB_oracles"
     ],
     "release_approved": false,
     "family_evidence": [
@@ -90,7 +92,7 @@
       {
         "family": "numeric_general_arithmetic",
         "status": "bounded_local_exact_with_general_residual",
-        "scope": "catalog-certified signed affine +/-/*, unary and correlated cancellation/squares, finite integer sets/ranges/disjoint interval unions/exclusions, integral binary64-exact division and unit inverse, positive-source positive-divisor remainder bounds, impossible universal modulo comparisons, finite catalog DECIMAL precision/scale checked exact binary64 arithmetic; fractional division, signed/zero-divisor errors, unbounded decimals and unproved dialect laws residual",
+        "scope": "catalog-certified signed affine +/-/*, unary and correlated addition/cancellation/squares, finite integer sets/ranges/disjoint interval unions/exclusions, deterministic signed literal width with explicit widening, integral binary64-exact division and unit inverse, positive-source positive-divisor remainder bounds, impossible universal modulo comparisons, finite catalog DECIMAL precision/scale checked exact binary64 arithmetic; fractional division, signed/zero-divisor errors, unbounded decimals and unproved dialect laws residual",
         "evidence": "tests/task_101_arithmetic.rs; tests/output_domains.rs",
         "release_blocking": true,
         "implementation_task": "TASK-101"
@@ -98,7 +100,7 @@
       {
         "family": "noninteger_casts_and_implicit_coercions",
         "status": "bounded_literal_exact_with_source_residual",
-        "scope": "finite canonical ASCII text and integral decimal literal casts plus catalog-attested finite decimal-to-integer and enforced binary-text-to-integer conversion; identity/widening/narrowing TRY/SAFE_CAST finite SQL NULL and source-row NULL tests, explicit exception vs NULL-on-failure provenance; arbitrary text, implicit/session-dependent coercion and fractional rounding remain residual",
+        "scope": "finite canonical ASCII text and integral decimal literal casts plus catalog-attested finite decimal-to-integer and enforced binary-text-to-integer conversion; identity/widening/narrowing TRY/SAFE_CAST finite SQL NULL and source-row NULL tests, explicit runtime-dependent ordinary CAST vs NULL-on-failure provenance; arbitrary text, implicit/session-dependent coercion and fractional rounding remain residual",
         "evidence": "tests/output_domains.rs; tests/task_101_arithmetic.rs",
         "release_blocking": true,
         "implementation_task": "TASK-101"
@@ -172,6 +174,84 @@
     ],
     "closure_owner": "TASK-108",
     "parent_status": "In Progress"
+  },
+  "task_101_arithmetic_evidence": {
+    "owner": "TASK-101",
+    "status": "verified_bounded_typed_arithmetic_contract_release_blocked",
+    "rust_api": [
+      "BinaryExpression",
+      "BinaryOperator",
+      "UnaryExpression",
+      "UnaryOperator",
+      "SignedIntegerCastExpression",
+      "SignedIntegerCastKind",
+      "BooleanWitness",
+      "BooleanWitnessDirection",
+      "ValueDomain"
+    ],
+    "verified_scope": [
+      "deterministic_signed_literal_width_and_explicit_widening_guards",
+      "catalog_certified_integer_finite_interval_excluded_and_correlated_domains",
+      "width_checked_affine_inversion_with_true_not_true_and_impossible_outcomes",
+      "binary64_exact_integral_division_and_positive_remainder_bounds",
+      "finite_precision_scale_checked_decimal_arithmetic",
+      "cast_try_cast_safe_cast_failure_contracts_and_signed_boundaries",
+      "finite_integral_decimal_and_attested_binary_ASCII_text_conversions",
+      "typed_operator_operand_residuals_for_unproved_arithmetic",
+      "direct_SQL_dbt_catalog_semantic_parity",
+      "parser_capable_dialect_canonical_equivalence",
+      "DuckDB_NULL_overflow_zero_divisor_and_conversion_oracles"
+    ],
+    "tests": [
+      "tests/task_101_arithmetic.rs",
+      "tests/output_domains.rs",
+      "tests/boolean_witness.rs",
+      "tests/task_70_predicates.rs"
+    ],
+    "unproved": [
+      "implicit_or_session_dependent_numeric_coercion",
+      "fractional_integer_division_and_general_signed_remainder_laws",
+      "unbounded_decimal_precision_rounding_and_overflow",
+      "noncanonical_text_and_nonbinary_collation_conversion",
+      "cross_column_noninjective_and_periodic_global_inversion",
+      "vendor_engine_execution_equivalence_beyond_bounded_DuckDB_oracles"
+    ],
+    "release_limit": "TASK-101's canonical bounded arithmetic and conversion acceptance criteria are verified. TASK-88 still owns global dialect-law certification and TASK-91 owns protocol 3.0.0 release readiness.",
+    "acceptance_criteria": {
+      "1": {
+        "scope": "verified_typed_integer_decimal_NULL_overflow_underflow_and_zero_guards_with_explicit_residuals",
+        "tests": [
+          "tests/task_101_arithmetic.rs",
+          "tests/output_domains.rs"
+        ]
+      },
+      "2": {
+        "scope": "verified_finite_range_exclusion_correlation_and_total_injective_inversion",
+        "tests": [
+          "tests/task_101_arithmetic.rs"
+        ]
+      },
+      "3": {
+        "scope": "verified_failure_aware_signed_decimal_and_attested_text_cast_subset",
+        "tests": [
+          "tests/task_101_arithmetic.rs",
+          "tests/output_domains.rs"
+        ]
+      },
+      "4": {
+        "scope": "verified_true_not_true_impossible_and_bidirectional_residual_classification",
+        "tests": [
+          "tests/task_101_arithmetic.rs",
+          "tests/task_70_predicates.rs"
+        ]
+      },
+      "5": {
+        "scope": "verified_direct_dbt_parser_capable_dialect_and_DuckDB_bounded_oracles",
+        "tests": [
+          "tests/task_101_arithmetic.rs"
+        ]
+      }
+    }
   },
   "task_79_schema_evidence": {
     "owner": "TASK-79",
@@ -1804,7 +1884,8 @@
       "physical_source_negative": "not_end_to_end_proven",
       "output_cardinality": "unverified",
       "protocol_tasks": [
-        "TASK-70"
+        "TASK-70",
+        "TASK-101"
       ],
       "tdg_tasks": [
         "TASK-27"

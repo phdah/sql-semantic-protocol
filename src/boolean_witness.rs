@@ -16,6 +16,7 @@ use crate::constraints::{
     ConstraintEnforcement, ConstraintValue, RelationConstraint, RelationConstraintSet,
 };
 
+use crate::data_type::DataType;
 use crate::domain::{comparison_domain, intersect_domains, resolve_column};
 use crate::protocol::{
     ColumnDomain, ColumnRef, ComparisonAssumption, ComparisonOperator, Expression,
@@ -771,8 +772,16 @@ pub(crate) fn analyze(
     sources: &[SourceRelation],
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    column_datatype: impl Fn(&ColumnRef) -> Option<DataType>,
 ) -> Option<BooleanWitness> {
-    analyze_candidate(predicate, sources, integer_evidence, string_evidence, false)
+    analyze_candidate(
+        predicate,
+        sources,
+        integer_evidence,
+        string_evidence,
+        column_datatype,
+        false,
+    )
 }
 
 /// Build a supplementary source-level scalar row witness without altering
@@ -784,8 +793,16 @@ pub(crate) fn analyze_physical_scalar(
     sources: &[SourceRelation],
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    column_datatype: impl Fn(&ColumnRef) -> Option<DataType>,
 ) -> Option<BooleanWitness> {
-    analyze_candidate(predicate, sources, integer_evidence, string_evidence, true)
+    analyze_candidate(
+        predicate,
+        sources,
+        integer_evidence,
+        string_evidence,
+        column_datatype,
+        true,
+    )
 }
 
 fn analyze_candidate(
@@ -793,19 +810,25 @@ fn analyze_candidate(
     sources: &[SourceRelation],
     integer_evidence: impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    column_datatype: impl Fn(&ColumnRef) -> Option<DataType>,
     physical_scalar: bool,
 ) -> Option<BooleanWitness> {
     let predicate = predicate?;
-    if !is_witness_candidate(predicate)
-        && !(physical_scalar
-            && matches!(predicate, Predicate::Comparison(_) | Predicate::IsNull(_)))
+    if !(is_witness_candidate(predicate)
+        || physical_scalar && matches!(predicate, Predicate::Comparison(_) | Predicate::IsNull(_)))
     {
         return None;
     }
     let [source] = sources else {
         return None;
     };
-    let condition = normalize(predicate, sources, &integer_evidence, &string_evidence);
+    let condition = normalize(
+        predicate,
+        sources,
+        &integer_evidence,
+        &string_evidence,
+        &column_datatype,
+    );
     let mut columns = Vec::new();
     condition.columns(&mut columns);
     let integer_bounds = columns
@@ -891,13 +914,22 @@ fn normalize(
     sources: &[SourceRelation],
     integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    column_datatype: &impl Fn(&ColumnRef) -> Option<DataType>,
 ) -> BooleanRowConstraint {
     match predicate {
         Predicate::And(logical) | Predicate::Or(logical) => {
             let operands = logical
                 .operands()
                 .iter()
-                .map(|item| normalize(item, sources, integer_evidence, string_evidence))
+                .map(|item| {
+                    normalize(
+                        item,
+                        sources,
+                        integer_evidence,
+                        string_evidence,
+                        column_datatype,
+                    )
+                })
                 .collect();
             match BooleanOperands::new(operands) {
                 Some(operands) if matches!(predicate, Predicate::And(_)) => {
@@ -913,6 +945,7 @@ fn normalize(
             sources,
             integer_evidence,
             string_evidence,
+            column_datatype,
         )
         .unwrap_or_else(|| residual("NULL test involves an unproven computed expression")),
         Predicate::Comparison(comparison) => {
@@ -1058,6 +1091,8 @@ fn normalize(
                 return residual(&numeric::unresolved_arithmetic_reason(
                     comparison.left(),
                     comparison.right(),
+                    sources,
+                    column_datatype,
                 ));
             };
             let Some(value) = signed_integer_literal(literal) else {
@@ -1093,6 +1128,7 @@ fn normalize(
                     sources,
                     integer_evidence,
                     string_evidence,
+                    column_datatype,
                 ),
                 normalize_integer_comparison(
                     test.expression(),
@@ -1101,6 +1137,7 @@ fn normalize(
                     sources,
                     integer_evidence,
                     string_evidence,
+                    column_datatype,
                 ),
             ];
             let Some(operands) = BooleanOperands::new(operands) else {
@@ -1129,6 +1166,7 @@ fn normalize(
                     sources,
                     integer_evidence,
                     string_evidence,
+                    column_datatype,
                 )
             });
             let Some(first) = operands.next() else {
@@ -1153,6 +1191,7 @@ fn normalize(
             sources,
             integer_evidence,
             string_evidence,
+            column_datatype,
         )),
         Predicate::LikePrefix(test) => {
             let Expression::Column(column) = test.expression() else {
@@ -1182,6 +1221,7 @@ fn normalize_null_test(
     sources: &[SourceRelation],
     integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    column_datatype: &impl Fn(&ColumnRef) -> Option<DataType>,
 ) -> Option<BooleanRowConstraint> {
     let test =
         |column: &crate::protocol::ColumnExpression, negated| BooleanRowConstraint::NullTest {
@@ -1203,18 +1243,15 @@ fn normalize_null_test(
             crate::protocol::SignedIntegerCastKind::TryCast
                 | crate::protocol::SignedIntegerCastKind::SafeCast
         ) {
-            // A potentially failing ordinary CAST raises instead of
-            // returning NULL. Its IS NULL test is not a total predicate.
+            // A potentially failing ordinary CAST has no certified result for
+            // every catalog-admissible row. Its IS NULL test is not total.
             return None;
         }
         let column = resolve_column(source, sources);
         integer_evidence(&column)?;
-        let magnitude = match cast.target_bits() {
-            16 | 32 | 64 => 1_i128 << (u32::from(cast.target_bits()) - 1),
-            _ => return None,
-        };
-        let minimum = i64::try_from(-magnitude).ok()?;
-        let maximum = i64::try_from(magnitude - 1).ok()?;
+        let (minimum, maximum) = cast.target_width().limits();
+        let minimum = i64::try_from(minimum).ok()?;
+        let maximum = i64::try_from(maximum).ok()?;
         // TRY/SAFE_CAST of an attested signed integer introduces NULL
         // precisely for source NULL or an out-of-range integer. Preserve
         // the complementary two-valued IS NOT NULL obligation as well.
@@ -1269,7 +1306,13 @@ fn normalize_null_test(
             let Expression::BooleanPredicate(predicate) = branch.condition() else {
                 return None;
             };
-            let guard = normalize(predicate, sources, integer_evidence, string_evidence);
+            let guard = normalize(
+                predicate,
+                sources,
+                integer_evidence,
+                string_evidence,
+                column_datatype,
+            );
             if !is_two_valued_boolean(&guard)
                 || !is_total_integer_result(branch.result(), sources, integer_evidence)
             {
@@ -1281,6 +1324,7 @@ fn normalize_null_test(
                 sources,
                 integer_evidence,
                 string_evidence,
+                column_datatype,
             )?;
             let mut conjunction = prior_negated.clone();
             conjunction.push(guard.clone());
@@ -1299,6 +1343,7 @@ fn normalize_null_test(
             sources,
             integer_evidence,
             string_evidence,
+            column_datatype,
         )?);
         alternatives.push(BooleanRowConstraint::All(BooleanOperands::new(
             prior_negated,
@@ -1477,6 +1522,7 @@ fn normalize_integer_comparison(
     sources: &[SourceRelation],
     integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    column_datatype: &impl Fn(&ColumnRef) -> Option<DataType>,
 ) -> BooleanRowConstraint {
     normalize(
         &Predicate::Comparison(crate::protocol::ComparisonPredicate::new(
@@ -1487,6 +1533,7 @@ fn normalize_integer_comparison(
         sources,
         integer_evidence,
         string_evidence,
+        column_datatype,
     )
 }
 
@@ -1509,8 +1556,8 @@ fn invertible_integer_column<'a>(
             let column = identity_integer_column(cast.expression())?;
             let source = resolve_column(column, sources);
             let bounds = evidence(&source)?;
-            let magnitude = 1_i128 << (u32::from(cast.target_bits()) - 1);
-            (bounds.minimum >= -magnitude && bounds.maximum < magnitude).then_some(column)
+            let (minimum, maximum) = cast.target_width().limits();
+            (bounds.minimum >= minimum && bounds.maximum <= maximum).then_some(column)
         }
         other => identity_integer_column(other),
     }
@@ -1554,13 +1601,13 @@ fn affine_integer_operand<'a>(
     };
     let column = identity_integer_column(cast.expression())?;
     let bounds = evidence(&resolve_column(column, sources))?;
-    let magnitude = 1_i128 << (u32::from(cast.target_bits()) - 1);
+    let (width_minimum, width_maximum) = cast.target_width().limits();
     let minimum = bounds.minimum.checked_add(delta)?;
     let maximum = bounds.maximum.checked_add(delta)?;
-    (bounds.minimum >= -magnitude
-        && bounds.maximum < magnitude
-        && minimum >= -magnitude
-        && maximum < magnitude)
+    (bounds.minimum >= width_minimum
+        && bounds.maximum <= width_maximum
+        && minimum >= width_minimum
+        && maximum <= width_maximum)
         .then_some((column, delta))
 }
 

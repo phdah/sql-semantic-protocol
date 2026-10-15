@@ -150,6 +150,7 @@ pub(super) fn analyze_query(
                 _ => None,
             }
         },
+        |column| metadata.column_data_type(column).cloned(),
     );
     let (column_domains, output) =
         refine_boolean_qualifying_outcomes(column_domains, output, boolean_witness.as_ref());

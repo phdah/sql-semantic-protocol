@@ -18,6 +18,10 @@ fn active_release_artifacts_match_package_version() {
             "simple example",
             include_str!("../examples/protocol-simple.json"),
         ),
+        (
+            "signed cast fixture",
+            include_str!("fixtures/protocol-signed-cast.json"),
+        ),
     ] {
         let example: serde_json::Value = serde_json::from_str(raw)
             .unwrap_or_else(|error| panic!("{name} should be valid JSON: {error}"));

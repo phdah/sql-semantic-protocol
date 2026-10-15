@@ -902,10 +902,12 @@ invertible expression subset includes identity arithmetic (`+a`, `a+0`,
 on such casts where every possible source value and computed result fits
 the 16-, 32-, or 64-bit signed cast target.
 The normalized `signed_integer_cast` expression stores `expression`, `target_bits`,
-`cast_kind` (`cast`, `try_cast`, `safe_cast`) and `on_failure` (`exception` or
-`null`). These fields retain the SQL failure contract even if a catalog proves
-that the conversion is total. Only then may its coupled witness be inverted
-back to the source column. An unsafe ordinary cast may raise, while an unsafe
+`cast_kind` (`cast`, `try_cast`, `safe_cast`) and `on_failure` (`exception`,
+`null` or `runtime_dependent`). These fields retain the proven failure contract
+even if a catalog proves that the conversion is total. Parser and target-type
+syntax alone do not certify one ordinary CAST failure law, so ordinary CAST is
+`runtime_dependent` until separate runtime evidence establishes an exception.
+Only a total conversion may have its coupled witness inverted back to the source column. An unsafe ordinary cast may raise or follow a vendor conversion law, while an unsafe
 TRY_CAST or SAFE_CAST may become NULL; neither is an exact source identity.
 For finite, typed inputs, total TRY_CAST/SAFE_CAST narrowing outputs include
 the exact successful signed integers and SQL NULL on overflow. Source-row

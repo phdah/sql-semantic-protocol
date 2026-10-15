@@ -6,9 +6,9 @@ use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_sql, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, to_json, BooleanRowConstraint, BooleanTruthCase,
-    BooleanWitness, BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput, LiteralValue,
-    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SetMode, SqlInput,
-    ValueDomain,
+    BooleanWitness, BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput, Error,
+    LiteralValue, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SetMode,
+    SqlInput, ValueDomain,
 };
 use sqlparser::dialect::PostgreSqlDialect;
 
@@ -170,6 +170,31 @@ fn width_guards_and_unsupported_operators_remain_residual() {
 }
 
 #[test]
+fn overflow_and_zero_divisor_residuals_cover_both_truth_directions() {
+    for predicate in [
+        "-a > 0",
+        "a * 3 > 0",
+        "CAST(a AS BIGINT) / 0 > 0",
+        "CAST(a AS BIGINT) % 0 = 0",
+        "CAST(a AS SMALLINT) > 0",
+    ] {
+        for sql in [predicate.to_string(), format!("NOT ({predicate})")] {
+            let proof = witness(&sql);
+            assert!(
+                matches!(proof.qualifying(), BooleanWitnessDirection::Residual { .. }),
+                "{sql}: unsafe arithmetic cannot prove TRUE: {:?}",
+                proof.qualifying()
+            );
+            assert!(
+                matches!(proof.rejected(), BooleanWitnessDirection::Residual { .. }),
+                "{sql}: unsafe arithmetic cannot prove NOT TRUE: {:?}",
+                proof.rejected()
+            );
+        }
+    }
+}
+
+#[test]
 fn total_arithmetic_null_tests_and_signed_negation_preserve_3vl() {
     for sql in [
         "CAST(a AS BIGINT) * -1 IS NULL",
@@ -265,9 +290,10 @@ fn parser_capable_dialects_preserve_the_canonical_arithmetic_boundary() {
                     typed.condition()
                 );
             }
-            Err(_) => {
+            Err(Error::Parse(_)) => {
                 // Parser rejection is a documented boundary, not a semantic proof.
             }
+            Err(error) => panic!("{name}: parsed arithmetic must analyze: {error}"),
         }
     }
 }
@@ -324,6 +350,78 @@ fn direct_sql_and_dbt_catalog_produce_the_same_arithmetic_witness() {
         dbt.qualifying(),
         BooleanWitnessDirection::Exact(BooleanTruthCase::True)
     ));
+}
+
+#[test]
+fn direct_sql_and_dbt_catalog_match_claimed_integer_and_cast_families() {
+    let dialect = PostgreSqlDialect {};
+    let dbt_catalog = parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json")).unwrap();
+    let direct_catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "warehouse.raw.orders",
+        vec![
+            SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap()])
+    .unwrap();
+
+    for expression in [
+        "-CAST(amount AS BIGINT)",
+        "CAST(amount AS BIGINT) + 2",
+        "CAST(amount AS BIGINT) - 2",
+        "CAST(amount AS BIGINT) * 2",
+        "CAST(amount AS BIGINT) / 1",
+        "amount % 3",
+        "TRY_CAST(amount AS SMALLINT)",
+        "amount / 0",
+    ] {
+        let sql = format!(
+            "SELECT {expression} AS calculated FROM warehouse.raw.orders WHERE amount IN (1, 3, 40000)"
+        );
+        let mut manifest_json: Value =
+            serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+        manifest_json["nodes"]["model.demo.stg_orders"]["compiled_code"] = sql.clone().into();
+        let manifest = parse_dbt_manifest(&manifest_json.to_string()).unwrap();
+        let from_dbt =
+            analyze_dbt_artifacts(&manifest, &dbt_catalog, "postgresql", &dialect).unwrap();
+        let input = SqlInput::inline(sql);
+        let from_sql = analyze_configured_inputs_with_catalog(
+            &[ConfiguredSqlInput::new(
+                "direct_family",
+                &input,
+                "postgresql",
+                &dialect,
+            )],
+            &direct_catalog,
+        )
+        .unwrap();
+
+        let semantics = |bundle: &sql_semantic_protocol::AnalysisBundle| {
+            let layer = bundle
+                .layers()
+                .iter()
+                .find(|layer| {
+                    layer
+                        .consumes()
+                        .iter()
+                        .any(|source| source == "warehouse.raw.orders")
+                })
+                .expect("source-consuming arithmetic layer");
+            let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
+                panic!("arithmetic source should have composed semantics");
+            };
+            (
+                semantics.output().clone(),
+                semantics
+                    .boolean_witnesses()
+                    .iter()
+                    .map(|witness| witness.witness().clone())
+                    .collect::<Vec<_>>(),
+            )
+        };
+        assert_eq!(semantics(&from_dbt), semantics(&from_sql), "{expression}");
+    }
 }
 
 fn projected_domain(sql: &str) -> ValueDomain {
@@ -406,6 +504,20 @@ fn catalog_cast_and_arithmetic_widths_fail_closed() {
             "{sql}: unchecked overflow or cast failure must not be exact: {domain:?}"
         );
     }
+
+    let underflow = projected_domain("SELECT -a AS v FROM t WHERE a = -2147483648");
+    assert!(
+        matches!(underflow, ValueDomain::Unknown(_)),
+        "negating INTEGER minimum must retain an underflow residual"
+    );
+    let widened = projected_domain("SELECT -CAST(a AS BIGINT) AS v FROM t WHERE a = -2147483648");
+    let ValueDomain::Set(values) = widened else {
+        panic!("explicit widening must make negation total: {widened:?}");
+    };
+    assert_eq!(
+        values.values()[0].value(),
+        &LiteralValue::Number("2147483648".into())
+    );
 }
 
 #[test]
@@ -415,7 +527,7 @@ fn distinct_integer_cast_failure_contract_is_serialized() {
         (
             "cast",
             "SELECT a FROM t WHERE CAST(a AS SMALLINT) > 0",
-            "exception",
+            "runtime_dependent",
         ),
         (
             "try_cast",
@@ -500,12 +612,14 @@ fn total_injective_projection_preserves_excluded_values() {
 fn portable_casts_agree_across_all_parser_capable_dialects() {
     for name in common::DIALECTS {
         let dialect = dialect_from_name(name).unwrap();
-        let Ok(protocol) = analyze_sql(
+        let protocol = match analyze_sql(
             "SELECT CAST('42' AS BIGINT) AS converted",
             name,
             dialect.as_ref(),
-        ) else {
-            continue;
+        ) {
+            Ok(protocol) => protocol,
+            Err(Error::Parse(_)) => continue,
+            Err(error) => panic!("{name}: parsed cast must analyze: {error}"),
         };
         let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
             panic!("{name}: expected SELECT");
@@ -523,7 +637,38 @@ fn portable_casts_agree_across_all_parser_capable_dialects() {
 }
 
 #[test]
-fn duckdb_cast_arithmetic_and_exception_oracles() {
+fn ordinary_cast_failure_law_stays_runtime_dependent_across_dialects() {
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).unwrap();
+        let protocol = match analyze_sql(
+            "SELECT CAST(40000 AS SMALLINT) AS converted",
+            name,
+            dialect.as_ref(),
+        ) {
+            Ok(protocol) => protocol,
+            Err(Error::Parse(_)) => continue,
+            Err(error) => panic!("{name}: parsed narrowing cast must analyze: {error}"),
+        };
+        let wire = to_json(&protocol);
+        assert!(
+            wire.contains(r#""on_failure":"runtime_dependent""#),
+            "{name}: {wire}"
+        );
+        let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+            panic!("{name}: expected SELECT");
+        };
+        assert!(
+            matches!(
+                query.output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
+            "{name}: out-of-range ordinary CAST cannot claim one runtime outcome"
+        );
+    }
+}
+
+#[test]
+fn duckdb_decimal_arithmetic_oracles_match_expected_results() {
     let db = Connection::open_in_memory().unwrap();
     for (expression, expected) in [
         ("CAST('42' AS BIGINT)", "42"),
@@ -545,6 +690,11 @@ fn duckdb_cast_arithmetic_and_exception_oracles() {
             "{expression}: expected {expected}, got {actual}",
         );
     }
+}
+
+#[test]
+fn duckdb_narrowing_cast_failure_oracles() {
+    let db = Connection::open_in_memory().unwrap();
     let cast_would_throw = db.execute_batch("SELECT CAST(40000 AS SMALLINT)");
     assert!(
         cast_would_throw.is_err(),
@@ -560,6 +710,54 @@ fn duckdb_cast_arithmetic_and_exception_oracles() {
         .query_row("SELECT CAST('-32768' AS SMALLINT)", [], |row| row.get(0))
         .unwrap();
     assert_eq!(exact_negative, -32768);
+}
+
+#[test]
+fn duckdb_rejects_signed_integer_overflow() {
+    let db = Connection::open_in_memory().unwrap();
+    for expression in [
+        "CAST(2147483647 AS INTEGER) + 1",
+        "CAST(2147483647 AS INTEGER) * 2",
+        "-CAST(-2147483648 AS INTEGER)",
+    ] {
+        assert!(
+            db.execute_batch(&format!("SELECT {expression}")).is_err(),
+            "DuckDB must reject signed overflow for {expression}"
+        );
+    }
+}
+
+#[test]
+fn duckdb_zero_divisor_oracles() {
+    let db = Connection::open_in_memory().unwrap();
+    let division_by_zero_is_infinite: bool = db
+        .query_row("SELECT isinf(1 / 0)", [], |row| row.get(0))
+        .unwrap();
+    assert!(division_by_zero_is_infinite);
+    let modulo_by_zero_is_null: bool = db
+        .query_row("SELECT 1 % 0 IS NULL", [], |row| row.get(0))
+        .unwrap();
+    assert!(modulo_by_zero_is_null);
+}
+
+#[test]
+fn explicit_integer_negation_minimum_is_unknown() {
+    let protocol = analyze_sql(
+        "SELECT -CAST(-2147483648 AS INTEGER) AS v",
+        "postgresql",
+        &PostgreSqlDialect {},
+    )
+    .unwrap();
+    let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+        panic!("expected unary overflow query");
+    };
+    assert!(
+        matches!(
+            query.output().columns()[0].domain(),
+            ValueDomain::Unknown(_)
+        ),
+        "explicit INTEGER negation must honor its 32-bit result width"
+    );
 }
 
 #[test]
@@ -731,6 +929,36 @@ fn correlated_integer_projection_does_not_cartesian_expand_one_source() {
             "{sql}: zero divisor and signed overflow must remain residual"
         );
     }
+}
+
+#[test]
+fn correlated_finite_arithmetic_evaluates_each_source_value_once() {
+    let doubled = projected_domain("SELECT a + a AS v FROM t WHERE a IN (1, 3)");
+    let ValueDomain::Set(values) = doubled else {
+        panic!("correlated integer addition should remain finite: {doubled:?}");
+    };
+    let actual = values
+        .values()
+        .iter()
+        .map(|value| value.value().clone())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        actual,
+        vec![
+            LiteralValue::Number("2".into()),
+            LiteralValue::Number("6".into())
+        ]
+    );
+
+    let cancelled = projected_decimal_domain("SELECT d - d AS v FROM t WHERE d IN (1.25, 2.25)");
+    let ValueDomain::Set(values) = cancelled else {
+        panic!("correlated decimal subtraction should remain finite: {cancelled:?}");
+    };
+    assert_eq!(values.values().len(), 1);
+    assert_eq!(
+        values.values()[0].value(),
+        &LiteralValue::Number("0.0".into())
+    );
 }
 
 #[test]
@@ -967,8 +1195,10 @@ fn portable_decimal_literal_outcomes_match_parser_capable_dialects() {
             ("SELECT 1.25 + 0.5 AS result", "1.75"),
             ("SELECT 1.5 / 0.5 AS result", "3.0"),
         ] {
-            let Ok(protocol) = analyze_sql(sql, name, dialect.as_ref()) else {
-                continue;
+            let protocol = match analyze_sql(sql, name, dialect.as_ref()) {
+                Ok(protocol) => protocol,
+                Err(Error::Parse(_)) => continue,
+                Err(error) => panic!("{name}: parsed decimal arithmetic must analyze: {error}"),
             };
             let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
                 panic!("{name}: expected SELECT");
@@ -1250,15 +1480,19 @@ fn catalog_integer_arithmetic_proofs_agree_across_parser_capable_dialects() {
             ("a % 3 = 4", false),
         ] {
             let sql = SqlInput::inline(format!("SELECT a FROM t WHERE {predicate}"));
+            match analyze_sql(sql.sql(), name, dialect.as_ref()) {
+                Ok(_) => {}
+                Err(Error::Parse(_)) => continue,
+                Err(error) => panic!("{name}: parsed arithmetic must analyze: {error}"),
+            }
             let configured = [ConfiguredSqlInput::new(
                 "dialect_arithmetic",
                 &sql,
                 name,
                 dialect.as_ref(),
             )];
-            let Ok(bundle) = analyze_configured_inputs_with_catalog(&configured, &catalog) else {
-                continue;
-            };
+            let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+                .unwrap_or_else(|error| panic!("{name}: typed arithmetic must analyze: {error}"));
             let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics()
             else {
                 panic!("{name}: expected source semantics");
@@ -1297,12 +1531,14 @@ fn parser_supported_safe_cast_preserves_null_on_failure() {
     let mut supported = false;
     for name in common::DIALECTS {
         let dialect = dialect_from_name(name).unwrap();
-        let Ok(protocol) = analyze_sql(
+        let protocol = match analyze_sql(
             "SELECT SAFE_CAST(40000 AS SMALLINT) AS v",
             name,
             dialect.as_ref(),
-        ) else {
-            continue;
+        ) {
+            Ok(protocol) => protocol,
+            Err(Error::Parse(_)) => continue,
+            Err(error) => panic!("{name}: parsed SAFE_CAST must analyze: {error}"),
         };
         let wire = to_json(&protocol);
         if !wire.contains(r#""cast_kind":"safe_cast""#) {
@@ -1338,7 +1574,10 @@ fn unsupported_operator_type_pairs_emit_specific_residual_reasons() {
     ] {
         let proof = witness(predicate);
         let BooleanRowConstraint::Residual { reason } = proof.condition() else {
-            panic!("{predicate}: unsupported/unbounded type pair needs typed residual: {:?}", proof.condition());
+            panic!(
+                "{predicate}: unsupported/unbounded type pair needs typed residual: {:?}",
+                proof.condition()
+            );
         };
         assert!(
             reason.contains(operator) && reason.contains(left) && reason.contains(right),
@@ -1349,4 +1588,27 @@ fn unsupported_operator_type_pairs_emit_specific_residual_reasons() {
             "{predicate}: unchecked arithmetic must not claim universal exactness"
         );
     }
+}
+
+#[test]
+fn typed_residual_reasons_attest_datatypes_and_cast_widths() {
+    let column_pair = witness("a + b > 0");
+    let BooleanRowConstraint::Residual { reason } = column_pair.condition() else {
+        panic!("a bare column pair without width laws must stay residual");
+    };
+    assert!(
+        reason.contains("source-column(signed_integer:32)")
+            && reason.contains("source-column(signed_integer:64)"),
+        "residual must name both attested source datatypes: {reason}"
+    );
+
+    let cast_operand = witness("CAST(a AS SMALLINT) / b > 0");
+    let BooleanRowConstraint::Residual { reason } = cast_operand.condition() else {
+        panic!("unchecked cast division must stay residual");
+    };
+    assert!(
+        reason.contains("signed-integer-cast:16")
+            && reason.contains("source-column(signed_integer:64)"),
+        "residual must carry the explicit cast width and the attested column: {reason}"
+    );
 }

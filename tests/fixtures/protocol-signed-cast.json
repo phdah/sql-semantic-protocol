@@ -1,0 +1,242 @@
+{
+  "graph": {
+    "components": [
+      {
+        "diagnostics": [],
+        "final_outcomes": [
+          {
+            "kind": "anonymous",
+            "layer_id": "layer-0001"
+          }
+        ],
+        "id": "component-0001",
+        "layer_ids": [
+          "layer-0001"
+        ]
+      }
+    ],
+    "diagnostics": [],
+    "edges": [
+      {
+        "consumer_layer_id": "layer-0001",
+        "producer_layer_ids": [],
+        "relation": "t",
+        "resolution": "external"
+      }
+    ],
+    "physical_nodes": [
+      {
+        "inputs": [],
+        "produced_relations": [
+          "t"
+        ],
+        "ref": {
+          "id": "t",
+          "kind": "source"
+        },
+        "write_kind": null
+      },
+      {
+        "inputs": [
+          {
+            "id": "t",
+            "kind": "source"
+          }
+        ],
+        "produced_relations": [],
+        "ref": {
+          "id": "layer-0001",
+          "kind": "layer"
+        },
+        "write_kind": null
+      }
+    ],
+    "physical_source_plans": [
+      {
+        "gap": "no_witness",
+        "layer_id": "layer-0001",
+        "node_refs": [
+          {
+            "id": "t",
+            "kind": "source"
+          },
+          {
+            "id": "layer-0001",
+            "kind": "layer"
+          }
+        ],
+        "physical_sources": [
+          "t"
+        ],
+        "qualifying": {
+          "reason": "no_witness",
+          "status": "residual"
+        },
+        "rejected": {
+          "reason": "no_witness",
+          "status": "residual"
+        },
+        "zero_output": {
+          "cases": [
+            {
+              "obligations": [
+                {
+                  "boundary": {
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0001",
+                    "relation": "t"
+                  },
+                  "bounds": {
+                    "maximum": 0,
+                    "minimum": 0
+                  },
+                  "closed_world": true,
+                  "kind": "rows",
+                  "predicate": {
+                    "kind": "is_null",
+                    "negated": true,
+                    "term": {
+                      "kind": "integer",
+                      "value": 1
+                    }
+                  },
+                  "quantifier": "for_all"
+                },
+                {
+                  "boundary": {
+                    "kind": "physical",
+                    "origin_layer_id": "layer-0001",
+                    "relation": "t"
+                  },
+                  "coverage": {
+                    "kind": "entire_relation"
+                  },
+                  "kind": "closed_world"
+                }
+              ],
+              "strength": "sufficient"
+            }
+          ],
+          "status": "feasible"
+        }
+      }
+    ]
+  },
+  "inputs": [
+    {
+      "dialect": "generic",
+      "id": "input-0001",
+      "source": {
+        "kind": "inline",
+        "label": null
+      },
+      "statements": [
+        {
+          "column_domains": [],
+          "condition_exactness": {
+            "comparison_assumptions": [],
+            "residual_conditions": [],
+            "status": "exact"
+          },
+          "dependencies": [
+            "t"
+          ],
+          "diagnostics": [],
+          "joins": [],
+          "kind": "query",
+          "output": {
+            "columns": [
+              {
+                "domain": {
+                  "kind": "unknown",
+                  "reason": "integer cast output requires finite typed input or catalog evidence"
+                },
+                "expression": {
+                  "cast_kind": "cast",
+                  "expression": {
+                    "kind": "column",
+                    "name": "a",
+                    "relation": null
+                  },
+                  "kind": "signed_integer_cast",
+                  "on_failure": "runtime_dependent",
+                  "target_bits": 32
+                },
+                "lineage": [],
+                "name": "v"
+              }
+            ]
+          },
+          "predicates": {
+            "having": null,
+            "qualify": null,
+            "where": null
+          },
+          "sources": [
+            {
+              "alias": null,
+              "kind": "relation",
+              "name": "t"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "composed_semantics": {
+        "column_domains": [],
+        "condition_exactness": {
+          "comparison_assumptions": [],
+          "residual_conditions": [],
+          "status": "exact"
+        },
+        "dependencies": [
+          "t"
+        ],
+        "diagnostics": [],
+        "join_equalities": [],
+        "output": {
+          "columns": [
+            {
+              "domain": {
+                "kind": "unknown",
+                "reason": "integer cast output requires finite typed input or catalog evidence"
+              },
+              "expression": {
+                "cast_kind": "cast",
+                "expression": {
+                  "kind": "column",
+                  "name": "a",
+                  "relation": null
+                },
+                "kind": "signed_integer_cast",
+                "on_failure": "runtime_dependent",
+                "target_bits": 32
+              },
+              "lineage": [],
+              "name": "v"
+            }
+          ]
+        },
+        "status": "resolved"
+      },
+      "consumes": [
+        "t"
+      ],
+      "id": "layer-0001",
+      "produces": [
+        {
+          "kind": "anonymous",
+          "layer_id": "layer-0001"
+        }
+      ],
+      "statement": {
+        "input_id": "input-0001",
+        "statement_index": 0
+      }
+    }
+  ],
+  "protocol_version": "2.0.3"
+}

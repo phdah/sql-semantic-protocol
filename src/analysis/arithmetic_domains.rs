@@ -15,20 +15,8 @@ enum IntegerValues {
 
 #[derive(Clone)]
 struct TypedIntegers {
-    bits: u16,
+    width: SignedIntegerWidth,
     values: IntegerValues,
-}
-
-fn signed_limits(bits: u16) -> Option<(i128, i128)> {
-    if !matches!(bits, 16 | 32 | 64) {
-        return None;
-    }
-    let magnitude = 1_i128 << (u32::from(bits) - 1);
-    Some((-magnitude, magnitude - 1))
-}
-
-fn fits(value: i128, bits: u16) -> bool {
-    signed_limits(bits).is_some_and(|(minimum, maximum)| minimum <= value && value <= maximum)
 }
 
 fn integer_value(literal: &LiteralExpression) -> Option<i128> {
@@ -41,7 +29,7 @@ fn integer_value(literal: &LiteralExpression) -> Option<i128> {
     }
 }
 
-fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> {
+fn constrained_values(domain: &ValueDomain, width: SignedIntegerWidth) -> Option<IntegerValues> {
     match domain {
         ValueDomain::Empty => Some(IntegerValues::Finite(Vec::new())),
         ValueDomain::Set(set) if set.mode() == SetMode::Include => {
@@ -51,7 +39,7 @@ fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> 
                     None
                 } else {
                     let number = integer_value(value)?;
-                    if !fits(number, bits) {
+                    if !width.fits(number) {
                         return None;
                     }
                     Some(number)
@@ -61,14 +49,14 @@ fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> 
             Some(IntegerValues::Finite(values))
         }
         ValueDomain::Ranges(ranges) if ranges.ranges().len() == 1 => {
-            let range = &ranges.ranges()[0];
+            let range = ranges.ranges().first()?;
             let lower = range.lower()?;
             let upper = range.upper()?;
             let minimum =
                 integer_value(lower.value())?.checked_add(i128::from(!lower.inclusive()))?;
             let maximum =
                 integer_value(upper.value())?.checked_sub(i128::from(!upper.inclusive()))?;
-            if !fits(minimum, bits) || !fits(maximum, bits) {
+            if !width.fits(minimum) || !width.fits(maximum) {
                 return None;
             }
             if minimum > maximum {
@@ -89,7 +77,7 @@ fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> 
                     integer_value(lower.value())?.checked_add(i128::from(!lower.inclusive()))?;
                 let maximum =
                     integer_value(upper.value())?.checked_sub(i128::from(!upper.inclusive()))?;
-                if !fits(minimum, bits) || !fits(maximum, bits) {
+                if !width.fits(minimum) || !width.fits(maximum) {
                     return None;
                 }
                 if minimum > maximum {
@@ -119,7 +107,7 @@ fn constrained_values(domain: &ValueDomain, bits: u16) -> Option<IntegerValues> 
 fn same_source_arithmetic(
     values: &IntegerValues,
     operator: BinaryOperator,
-    bits: u16,
+    width: SignedIntegerWidth,
 ) -> Option<IntegerValues> {
     match values {
         IntegerValues::Finite(values) => {
@@ -129,6 +117,7 @@ fn same_source_arithmetic(
                     None => None,
                     Some(value) => {
                         let number = match operator {
+                            BinaryOperator::Add => value.checked_add(*value)?,
                             BinaryOperator::Subtract => 0,
                             BinaryOperator::Multiply => value.checked_mul(*value)?,
                             BinaryOperator::Divide
@@ -139,7 +128,7 @@ fn same_source_arithmetic(
                             BinaryOperator::Modulo if *value != 0 => 0,
                             _ => return None,
                         };
-                        if !fits(number, bits) {
+                        if !width.fits(number) {
                             return None;
                         }
                         Some(number)
@@ -153,6 +142,10 @@ fn same_source_arithmetic(
         }
         IntegerValues::Interval { minimum, maximum } => {
             let (lower, upper) = match operator {
+                BinaryOperator::Add => (
+                    minimum.checked_add(*minimum)?,
+                    maximum.checked_add(*maximum)?,
+                ),
                 BinaryOperator::Subtract => (0, 0),
                 BinaryOperator::Multiply => {
                     let lower_squared = minimum.checked_mul(*minimum)?;
@@ -174,7 +167,7 @@ fn same_source_arithmetic(
                 BinaryOperator::Modulo if *minimum > 0 || *maximum < 0 => (0, 0),
                 _ => return None,
             };
-            if !fits(lower, bits) || !fits(upper, bits) {
+            if !width.fits(lower) || !width.fits(upper) {
                 return None;
             }
             Some(IntegerValues::Interval {
@@ -245,31 +238,33 @@ fn typed_expression(
             let DataType::SignedInteger { bits: Some(bits) } = declared else {
                 return None;
             };
+            let width = SignedIntegerWidth::from_bits(*bits)?;
             let values = constrained_values(
                 domains
                     .iter()
                     .find(|item| item.column() == &resolved)?
                     .domain(),
-                *bits,
+                width,
             )?;
-            Some(TypedIntegers {
-                bits: *bits,
-                values,
-            })
+            Some(TypedIntegers { width, values })
         }
         Expression::Literal(literal) => {
             if literal.literal_type() == LiteralType::Null {
                 return Some(TypedIntegers {
-                    bits: 64,
+                    width: SignedIntegerWidth::Bits64,
                     values: IntegerValues::Finite(vec![None]),
                 });
             }
             let value = integer_value(literal)?;
-            if !fits(value, 64) {
+            let width = if SignedIntegerWidth::Bits32.fits(value) {
+                SignedIntegerWidth::Bits32
+            } else if SignedIntegerWidth::Bits64.fits(value) {
+                SignedIntegerWidth::Bits64
+            } else {
                 return None;
-            }
+            };
             Some(TypedIntegers {
-                bits: 64,
+                width,
                 values: IntegerValues::Finite(vec![Some(value)]),
             })
         }
@@ -293,12 +288,12 @@ fn typed_expression(
                     })
                     .collect::<Option<Vec<_>>>()?;
                 TypedIntegers {
-                    bits: 64,
+                    width: SignedIntegerWidth::Bits64,
                     values: IntegerValues::Finite(values),
                 }
             } else {
                 TypedIntegers {
-                    bits: 64,
+                    width: SignedIntegerWidth::Bits64,
                     values: finite_ascii_integer_source(
                         cast.expression(),
                         domains,
@@ -307,7 +302,7 @@ fn typed_expression(
                     )?,
                 }
             };
-            if !every_value_fits(&input.values, cast.target_bits()) {
+            if !every_value_fits(&input.values, cast.target_width()) {
                 // A throwing CAST is not a total expression over this source.
                 // The NULL-on-failure variants are total for a finite,
                 // catalog-typed integer source and preserve source NULLs.
@@ -318,20 +313,20 @@ fn typed_expression(
                     ) => IntegerValues::Finite(
                         values
                             .into_iter()
-                            .map(|value| value.filter(|number| fits(*number, cast.target_bits())))
+                            .map(|value| value.filter(|number| cast.target_width().fits(*number)))
                             .collect(),
                     ),
                     _ => return None,
                 };
             }
-            input.bits = cast.target_bits();
+            input.width = cast.target_width();
             Some(input)
         }
         Expression::Unary(unary) => {
             let mut input = typed_expression(unary.operand(), domains, sources, metadata)?;
             input.values = match unary.operator() {
                 UnaryOperator::Plus => input.values,
-                UnaryOperator::Minus => map_unary_minus(input.values, input.bits)?,
+                UnaryOperator::Minus => map_unary_minus(input.values, input.width)?,
                 UnaryOperator::BitwiseNot => return None,
             };
             Some(input)
@@ -343,20 +338,27 @@ fn typed_expression(
             // lose cancellation and can invent negative square results.
             if binary.left() == binary.right() {
                 if let Some(values) =
-                    same_source_arithmetic(&left.values, binary.operator(), left.bits)
+                    same_source_arithmetic(&left.values, binary.operator(), left.width)
                 {
                     return Some(TypedIntegers {
-                        bits: left.bits,
+                        width: left.width,
                         values,
                     });
                 }
             }
             let right = typed_expression(binary.right(), domains, sources, metadata)?;
-            // Conservatively demand that the result fits even the narrowest
-            // admissible signed operand width, independent of dialect promotion.
-            let bits = left.bits.min(right.bits);
-            let values = combine_values(left.values, right.values, binary.operator(), bits)?;
-            Some(TypedIntegers { bits, values })
+            // A bare integer literal adopts an independently typed operand's
+            // width. Otherwise demand that the result fits even the narrowest
+            // admissible signed width, independent of dialect promotion.
+            let left_literal = singleton_integer(&derive_output_domain(binary.left())).is_some();
+            let right_literal = singleton_integer(&derive_output_domain(binary.right())).is_some();
+            let width = match (left_literal, right_literal) {
+                (true, false) => right.width,
+                (false, true) => left.width,
+                _ => left.width.min(right.width),
+            };
+            let values = combine_values(left.values, right.values, binary.operator(), width)?;
+            Some(TypedIntegers { width, values })
         }
         Expression::Function(_)
         | Expression::AggregateFunction(_)
@@ -452,6 +454,27 @@ fn finite_decimal_expression(
             Some(input)
         }
         Expression::Binary(binary) => {
+            if binary.left() == binary.right() {
+                let input = finite_decimal_expression(binary.left(), domains, sources, metadata)?;
+                let declared = input.declared?;
+                let mut values = Vec::new();
+                for input in input.values {
+                    let result = match input {
+                        Some(value) => Some(value.binary(value, binary.operator())?),
+                        None => None,
+                    };
+                    if result.is_some_and(|value| !value.fits_declared(declared.0, declared.1)) {
+                        return None;
+                    }
+                    if !values.contains(&result) {
+                        values.push(result);
+                    }
+                }
+                return Some(TypedDecimals {
+                    values,
+                    declared: Some(declared),
+                });
+            }
             let left = finite_decimal_expression(binary.left(), domains, sources, metadata)?;
             let right = finite_decimal_expression(binary.right(), domains, sources, metadata)?;
             let declared = match (left.declared, right.declared) {
@@ -508,16 +531,16 @@ fn catalog_decimal_domain(
     ))
 }
 
-fn every_value_fits(values: &IntegerValues, bits: u16) -> bool {
+fn every_value_fits(values: &IntegerValues, width: SignedIntegerWidth) -> bool {
     match values {
-        IntegerValues::Finite(values) => values.iter().flatten().all(|value| fits(*value, bits)),
+        IntegerValues::Finite(values) => values.iter().flatten().all(|value| width.fits(*value)),
         IntegerValues::Interval { minimum, maximum } => {
-            fits(*minimum, bits) && fits(*maximum, bits)
+            width.fits(*minimum) && width.fits(*maximum)
         }
     }
 }
 
-fn map_unary_minus(values: IntegerValues, bits: u16) -> Option<IntegerValues> {
+fn map_unary_minus(values: IntegerValues, width: SignedIntegerWidth) -> Option<IntegerValues> {
     let result = match values {
         IntegerValues::Finite(values) => IntegerValues::Finite(
             values
@@ -533,7 +556,7 @@ fn map_unary_minus(values: IntegerValues, bits: u16) -> Option<IntegerValues> {
             maximum: minimum.checked_neg()?,
         },
     };
-    every_value_fits(&result, bits).then_some(result)
+    every_value_fits(&result, width).then_some(result)
 }
 
 fn enumerate(values: &IntegerValues) -> Option<Vec<Option<i128>>> {
@@ -546,7 +569,12 @@ fn enumerate(values: &IntegerValues) -> Option<Vec<Option<i128>>> {
     }
 }
 
-fn scalar_arithmetic(left: i128, right: i128, operator: BinaryOperator, bits: u16) -> Option<i128> {
+fn scalar_arithmetic(
+    left: i128,
+    right: i128,
+    operator: BinaryOperator,
+    width: SignedIntegerWidth,
+) -> Option<i128> {
     let value = match operator {
         BinaryOperator::Add => left.checked_add(right)?,
         BinaryOperator::Subtract => left.checked_sub(right)?,
@@ -588,14 +616,14 @@ fn scalar_arithmetic(left: i128, right: i128, operator: BinaryOperator, bits: u1
         | BinaryOperator::BitwiseOr
         | BinaryOperator::BitwiseXor => return None,
     };
-    fits(value, bits).then_some(value)
+    width.fits(value).then_some(value)
 }
 
 fn interval_arithmetic(
     left: (i128, i128),
     right: (i128, i128),
     operator: BinaryOperator,
-    bits: u16,
+    width: SignedIntegerWidth,
 ) -> Option<IntegerValues> {
     let (left_min, left_max) = left;
     let (right_min, right_max) = right;
@@ -618,7 +646,7 @@ fn interval_arithmetic(
             (*candidates.iter().min()?, *candidates.iter().max()?)
         }
         BinaryOperator::Divide if left_min == left_max && right_min == right_max => {
-            let value = scalar_arithmetic(left_min, right_min, operator, bits)?;
+            let value = scalar_arithmetic(left_min, right_min, operator, width)?;
             (value, value)
         }
         BinaryOperator::Divide if right_min == 1 && right_max == 1 => {
@@ -659,7 +687,7 @@ fn interval_arithmetic(
         | BinaryOperator::BitwiseOr
         | BinaryOperator::BitwiseXor => return None,
     };
-    if !fits(minimum, bits) || !fits(maximum, bits) {
+    if !width.fits(minimum) || !width.fits(maximum) {
         return None;
     }
     Some(IntegerValues::Interval { minimum, maximum })
@@ -669,15 +697,15 @@ fn combine_values(
     left: IntegerValues,
     right: IntegerValues,
     operator: BinaryOperator,
-    bits: u16,
+    width: SignedIntegerWidth,
 ) -> Option<IntegerValues> {
     if matches!(&left, IntegerValues::Finite(values) if values.is_empty())
         || matches!(&right, IntegerValues::Finite(values) if values.is_empty())
     {
         return Some(IntegerValues::Finite(Vec::new()));
     }
-    if matches!(&left, IntegerValues::Finite(values) if values.len() == 1 && values[0].is_none())
-        || matches!(&right, IntegerValues::Finite(values) if values.len() == 1 && values[0].is_none())
+    if matches!(&left, IntegerValues::Finite(values) if matches!(values.as_slice(), [None]))
+        || matches!(&right, IntegerValues::Finite(values) if matches!(values.as_slice(), [None]))
     {
         return Some(IntegerValues::Finite(vec![None]));
     }
@@ -686,7 +714,7 @@ fn combine_values(
         for a in lhs {
             for b in &rhs {
                 let value = match (a, *b) {
-                    (Some(a), Some(b)) => Some(scalar_arithmetic(a, b, operator, bits)?),
+                    (Some(a), Some(b)) => Some(scalar_arithmetic(a, b, operator, width)?),
                     _ => None,
                 };
                 if !values.contains(&value) {
@@ -700,10 +728,12 @@ fn combine_values(
     // plus a range is not representable as one canonical ValueDomain range.
     let range = |values: IntegerValues| match values {
         IntegerValues::Interval { minimum, maximum } => Some((minimum, maximum)),
-        IntegerValues::Finite(values) if values.len() == 1 => values[0].map(|value| (value, value)),
-        _ => None,
+        IntegerValues::Finite(values) => match values.as_slice() {
+            [Some(value)] => Some((*value, *value)),
+            _ => None,
+        },
     };
-    interval_arithmetic(range(left)?, range(right)?, operator, bits)
+    interval_arithmetic(range(left)?, range(right)?, operator, width)
 }
 
 fn to_domain(values: IntegerValues) -> ValueDomain {
@@ -830,7 +860,8 @@ fn affine_excluded_domain(
     let DataType::SignedInteger { bits: Some(bits) } = declared else {
         return None;
     };
-    let (min, max) = signed_limits(*bits)?;
+    let width = SignedIntegerWidth::from_bits(*bits)?;
+    let (min, max) = width.limits();
     // Check *all* admissible values across all intermediate operations.
     // A finite sample cannot prove that inversion avoids overflow.
     let full_domain = [ColumnDomain::new(

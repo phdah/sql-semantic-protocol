@@ -10,13 +10,17 @@ pub(super) fn normalize_signed_integer_cast(
     operand: Expression,
 ) -> Option<Expression> {
     use sqlparser::ast::DataType as SqlDataType;
-    let bits = match data_type {
-        SqlDataType::SmallInt(_) | SqlDataType::Int2(_) | SqlDataType::Int16 => 16,
+    let width = match data_type {
+        SqlDataType::SmallInt(_) | SqlDataType::Int2(_) | SqlDataType::Int16 => {
+            SignedIntegerWidth::Bits16
+        }
         SqlDataType::Int(_)
         | SqlDataType::Integer(_)
         | SqlDataType::Int4(_)
-        | SqlDataType::Int32 => 32,
-        SqlDataType::BigInt(_) | SqlDataType::Int8(_) | SqlDataType::Int64 => 64,
+        | SqlDataType::Int32 => SignedIntegerWidth::Bits32,
+        SqlDataType::BigInt(_) | SqlDataType::Int8(_) | SqlDataType::Int64 => {
+            SignedIntegerWidth::Bits64
+        }
         _ => return None,
     };
     let cast_kind = match kind {
@@ -26,7 +30,7 @@ pub(super) fn normalize_signed_integer_cast(
         _ => return None,
     };
     Some(Expression::SignedIntegerCast(
-        SignedIntegerCastExpression::new(operand, bits, cast_kind),
+        SignedIntegerCastExpression::new(operand, width, cast_kind),
     ))
 }
 

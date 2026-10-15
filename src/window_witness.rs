@@ -242,8 +242,8 @@ fn analyze_predicate(query: &QueryStatement, predicate: &Predicate) -> Option<Wi
     let Ok(threshold) = text.parse::<u64>() else {
         return Some(result);
     };
-    if !matches!(operator, ComparisonOperator::Lte)
-        && !(operator == ComparisonOperator::Eq && threshold == 1)
+    if !(matches!(operator, ComparisonOperator::Lte)
+        || operator == ComparisonOperator::Eq && threshold == 1)
     {
         result.qualifying = residual("unsupported_rank_comparison");
         result.rejected = residual("unsupported_rank_comparison");
