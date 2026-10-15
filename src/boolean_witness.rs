@@ -1343,11 +1343,20 @@ fn normalize_null_test(
             let guard_not_true = not_true_constraint(&guard)?;
             let nullness =
                 case_result_null_test(branch.result(), negated, sources, integer_evidence)?;
-            if let CaseArmNullness::Provable(constraint) = &nullness {
-                let mut conjunction = prior_not_true.clone();
-                conjunction.push(guard.clone());
-                conjunction.push(constraint.clone());
-                alternatives.push(conjoin_all(conjunction)?);
+            match nullness {
+                CaseArmNullness::Provable(constraint) => {
+                    let mut conjunction = prior_not_true.clone();
+                    conjunction.push(guard.clone());
+                    conjunction.push(constraint);
+                    alternatives.push(conjoin_all(conjunction)?);
+                }
+                CaseArmNullness::Vacuous => {
+                    // The test holds for every row selecting this arm.
+                    let mut conjunction = prior_not_true.clone();
+                    conjunction.push(guard.clone());
+                    alternatives.push(conjoin_all(conjunction)?);
+                }
+                CaseArmNullness::Impossible => {}
             }
             // Arm selection depends only on guards, never on the arm result,
             // so the fallthrough guard is recorded even for dropped arms.

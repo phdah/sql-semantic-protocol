@@ -1084,7 +1084,7 @@ pub(crate) fn intersect_set_operation_domains(
     intersect_domains(left, right)
 }
 
-fn set_literals_provably_distinct(left: &LiteralExpression, right: &LiteralExpression) -> bool {
+pub(crate) fn set_literals_provably_distinct(left: &LiteralExpression, right: &LiteralExpression) -> bool {
     match (left.value(), right.value()) {
         (LiteralValue::Null, _) | (_, LiteralValue::Null) => true,
         (LiteralValue::Number(_), LiteralValue::Number(_)) => {
@@ -1420,6 +1420,15 @@ fn literal_in_range(literal: &LiteralExpression, range: &ValueRange) -> Option<b
     }
 
     Some(true)
+}
+
+pub(crate) fn numeric_literals_equal(
+    left: &LiteralExpression,
+    right: &LiteralExpression,
+) -> Option<bool> {
+    numeric_text(left)?;
+    numeric_text(right)?;
+    compare_literals(left, right).map(|ordering| ordering == Ordering::Equal)
 }
 
 fn compare_literals(left: &LiteralExpression, right: &LiteralExpression) -> Option<Ordering> {

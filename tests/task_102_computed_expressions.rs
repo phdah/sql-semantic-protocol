@@ -260,7 +260,7 @@ fn coalesce_unions_argument_domains_and_excludes_null_only_when_proven() {
     assert_value_set("SELECT COALESCE(NULL, NULL) AS v FROM t", vec!["NULL"]);
     assert_value_set(
         "SELECT COALESCE(a, 0) AS v FROM t WHERE a IN (1, 3)",
-        vec!["0", "1", "3"],
+        vec!["1", "3"],
     );
     // An IS NULL filter proves the first argument is NULL, so the coalesce
     // result is exactly the fallback value.
@@ -819,4 +819,30 @@ fn direct_sql_and_dbt_catalog_share_computed_output_domains() {
         );
         assert_value_set_domain(sql, &dbt_domain, expected);
     }
+}
+
+#[test]
+fn case_vacuous_then_arm_keeps_true_rows_in_witness() {
+    assert_impossible_true("CASE WHEN a IS NULL THEN 0 ELSE a END IS NULL");
+    let witness = witness_for("CASE WHEN a IS NULL THEN 0 ELSE a END IS NOT NULL");
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(witness.rejected(), BooleanWitnessDirection::Impossible));
+}
+
+#[test]
+fn coalesce_stops_after_a_guaranteed_non_null_argument() {
+    assert_value_set("SELECT COALESCE(1, 2) AS v FROM t", vec!["1"]);
+    assert_value_set(
+        "SELECT COALESCE(a, 0) AS v FROM t WHERE a IN (1, 3)",
+        vec!["1", "3"],
+    );
+}
+
+#[test]
+fn nullif_numeric_literals_compare_by_sql_value() {
+    assert_value_set("SELECT NULLIF(1, 1.0) AS v FROM t", vec!["NULL"]);
+    assert_value_set("SELECT NULLIF(1, 2.0) AS v FROM t", vec!["1"]);
 }

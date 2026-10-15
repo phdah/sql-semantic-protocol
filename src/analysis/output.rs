@@ -1,6 +1,7 @@
 //! SELECT output projections and value domains.
 
 use super::*;
+use crate::domain::{numeric_literals_equal, set_literals_provably_distinct};
 
 pub(super) type LocalOutputMap = BTreeMap<String, Output>;
 
@@ -611,11 +612,13 @@ fn derive_case_domain(case_expression: &CaseExpression, ctx: DomainContext<'_>) 
         let arm = guard_refined_arm_domain(branch.result(), branch.source_domains(), ctx);
         domain = union_domains(&domain, &arm);
     }
-    let else_domain = case_expression
-        .else_result()
-        .map_or_else(null_only_domain, |result| {
-            guard_refined_arm_domain(result, case_expression.else_source_domains(), ctx)
-        });
+    let else_domain = match case_expression.else_result() {
+        Some(result) => guard_refined_arm_domain(result, case_expression.else_source_domains(), ctx),
+        None if matches!(case_expression.else_source_domains(), CaseSourceDomains::Unreachable) => {
+            ValueDomain::Empty
+        }
+        None => null_only_domain(),
+    };
     union_domains(&domain, &else_domain)
 }
 
@@ -680,16 +683,14 @@ fn guarded_result_column_domain(
 fn derive_coalesce_domain(arguments: &[Expression], ctx: DomainContext<'_>) -> ValueDomain {
     let mut domain = ValueDomain::Empty;
     for argument in arguments {
-        domain = union_domains(&domain, &derive_domain(argument, ctx));
+        // SQL only evaluates this argument when every predecessor was NULL.
+        // Its non-NULL values can reach the output, but its NULL value cannot.
+        domain = union_domains(&domain, &exclude_null(derive_domain(argument, ctx)));
+        if !possibly_null_expression(argument, ctx) {
+            return domain;
+        }
     }
-    if arguments
-        .iter()
-        .all(|argument| possibly_null_expression(argument, ctx))
-    {
-        domain
-    } else {
-        exclude_null(domain)
-    }
+    union_domains(&domain, &null_only_domain())
 }
 
 /// NULLIF(left, right) returns NULL when both arguments are NULL-unequal
@@ -705,19 +706,55 @@ fn derive_nullif_domain(
     let left_domain = derive_domain(left, ctx);
     let right_domain = derive_domain(right, ctx);
     let base = match singleton_non_null_value(&right_domain) {
-        Some(value) => intersect_domains(
-            &left_domain,
-            &ValueDomain::set(SetMode::Exclude, vec![value]),
-        ),
+        Some(value) => match &left_domain {
+            ValueDomain::Set(set) if set.mode() == SetMode::Include => ValueDomain::set(
+                SetMode::Include,
+                set.values()
+                    .iter()
+                    .filter(|candidate| {
+                        *candidate != &value
+                            && !numeric_literals_equal(candidate, &value).unwrap_or(false)
+                    })
+                    .cloned()
+                    .collect(),
+            ),
+            _ => intersect_domains(
+                &left_domain,
+                &ValueDomain::set(SetMode::Exclude, vec![value]),
+            ),
+        },
         None => left_domain.clone(),
     };
     let null_output = possibly_null_expression(left, ctx)
-        || non_null_possible(&intersect_domains(&left_domain, &right_domain));
+        || domains_may_compare_equal(&left_domain, &right_domain);
     if null_output {
         union_domains(&base, &null_only_domain())
     } else {
         base
     }
+}
+
+/// Structural set intersection cannot rule out SQL numeric equality across
+/// literal types, nor collation-dependent equality for unproven scalar types.
+fn domains_may_compare_equal(left: &ValueDomain, right: &ValueDomain) -> bool {
+    if matches!(left, ValueDomain::Empty) || matches!(right, ValueDomain::Empty) {
+        return false;
+    }
+    if let (ValueDomain::Set(left), ValueDomain::Set(right)) = (left, right) {
+        if left.mode() == SetMode::Include && right.mode() == SetMode::Include {
+            return left.values().iter().any(|a| {
+                !matches!(a.value(), LiteralValue::Null)
+                    && right.values().iter().any(|b| {
+                        !matches!(b.value(), LiteralValue::Null)
+                            && !set_literals_provably_distinct(a, b)
+                    })
+            });
+        }
+    }
+    if matches!(left, ValueDomain::Unknown(_)) || matches!(right, ValueDomain::Unknown(_)) {
+        return true;
+    }
+    non_null_possible(&intersect_domains(left, right))
 }
 
 /// Whether an expression can evaluate to SQL NULL under the given sources.
