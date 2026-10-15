@@ -452,6 +452,10 @@ fn certified_computed_null_tests_have_exact_two_valued_outcomes() {
         "CASE WHEN a IS NULL THEN b ELSE a END IS NULL",
         "CASE WHEN a IS NOT NULL THEN b ELSE a END IS NOT NULL",
         "CASE WHEN a IS NULL THEN b WHEN b IS NULL THEN a ELSE b END IS NULL",
+        // TASK-102 lifts these two: a NULL-sensitive guard and an implicit
+        // NULL ELSE both yield exact two-valued IS NULL regions.
+        "CASE WHEN a > 1 THEN b ELSE a END IS NULL",
+        "CASE WHEN a IS NULL THEN b END IS NULL",
     ] {
         assert_both_directions_exact(predicate);
     }
@@ -461,17 +465,22 @@ fn certified_computed_null_tests_have_exact_two_valued_outcomes() {
         impossible.qualifying(),
         BooleanWitnessDirection::Impossible
     ));
+    // TASK-102 follow-up: a non-NULL literal COALESCE fallback can never be
+    // NULL, so IS NOT NULL holds on every row and NOT TRUE is impossible.
+    let trivially_true = typed_witness("COALESCE(a, 'text') IS NOT NULL");
+    assert!(matches!(
+        trivially_true.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+    assert!(matches!(
+        trivially_true.rejected(),
+        BooleanWitnessDirection::Impossible
+    ));
 }
 
 #[test]
 fn opaque_or_mixed_type_computed_null_tests_fail_closed() {
-    for predicate in [
-        "COALESCE(a, ABS(b)) IS NULL",
-        "COALESCE(a, 'text') IS NOT NULL",
-        "NULLIF(a, a + 1) IS NULL",
-        "CASE WHEN a > 1 THEN b ELSE a END IS NULL",
-        "CASE WHEN a IS NULL THEN b END IS NULL",
-    ] {
+    for predicate in ["COALESCE(a, ABS(b)) IS NULL", "NULLIF(a, a + 1) IS NULL"] {
         let witness = typed_witness(predicate);
         assert!(
             matches!(

@@ -506,22 +506,63 @@ pub(super) fn derive_expression_domain_with_column_domains(
     column_domains: &[ColumnDomain],
     sources: &[SourceRelation],
 ) -> ValueDomain {
-    if let Expression::Column(column) = expression {
-        let resolved = resolve_column(column, sources);
-        if let Some(domain) = column_domains
-            .iter()
-            .find(|candidate| candidate.column() == &resolved)
-        {
-            return domain.domain().clone();
-        }
-    }
-
-    derive_output_domain(expression)
+    derive_domain(
+        expression,
+        Some(DomainSources {
+            column_domains,
+            sources,
+        }),
+    )
 }
 
+/// Source evidence for one output-value derivation: WHERE-derived column
+/// domains plus the query's source relations for reference resolution.
+#[derive(Clone, Copy)]
+struct DomainSources<'a> {
+    column_domains: &'a [ColumnDomain],
+    sources: &'a [SourceRelation],
+}
+
+type DomainContext<'a> = Option<DomainSources<'a>>;
+
 pub(super) fn derive_output_domain(expression: &Expression) -> ValueDomain {
+    derive_domain(expression, None)
+}
+
+fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain {
     match expression {
-        Expression::Column(_) => ValueDomain::Unbounded,
+        Expression::Column(column) => {
+            if let Some(DomainSources {
+                column_domains,
+                sources,
+            }) = ctx
+            {
+                let resolved = resolve_column(column, sources);
+                if let Some(domain) = column_domains
+                    .iter()
+                    .find(|candidate| candidate.column() == &resolved)
+                {
+                    return domain.domain().clone();
+                }
+            }
+            ValueDomain::Unbounded
+        }
+        Expression::Case(case_expression) => derive_case_domain(case_expression, ctx),
+        Expression::Function(function)
+            if function.name().eq_ignore_ascii_case("COALESCE")
+                && function.arguments().len() >= 2 =>
+        {
+            derive_coalesce_domain(function.arguments(), ctx)
+        }
+        Expression::Function(function)
+            if function.name().eq_ignore_ascii_case("NULLIF")
+                && function.arguments().len() == 2 =>
+        {
+            match function.arguments() {
+                [left, right] => derive_nullif_domain(left, right, ctx),
+                _ => ValueDomain::unknown("NULLIF requires exactly two arguments"),
+            }
+        }
         Expression::Literal(literal) => ValueDomain::set(SetMode::Include, vec![literal.clone()]),
         Expression::BooleanPredicate(_) => boolean_domain(),
         Expression::WindowFunction(window)
@@ -539,25 +580,6 @@ pub(super) fn derive_output_domain(expression: &Expression) -> ValueDomain {
         }
         Expression::AggregateFunction(_) => {
             ValueDomain::unknown("aggregate output domain is not known safely")
-        }
-        Expression::Case(case_expression) => {
-            let mut domain = ValueDomain::Empty;
-            for branch in case_expression.branches() {
-                domain = union_domains(&domain, &derive_output_domain(branch.result()));
-            }
-            let else_domain = case_expression.else_result().map_or_else(
-                || {
-                    ValueDomain::set(
-                        SetMode::Include,
-                        vec![LiteralExpression::new(
-                            LiteralType::Null,
-                            LiteralValue::Null,
-                        )],
-                    )
-                },
-                derive_output_domain,
-            );
-            union_domains(&domain, &else_domain)
         }
         Expression::SignedIntegerCast(cast) => derive_signed_integer_cast_output_domain(cast),
         Expression::Unary(unary) => derive_unary_output_domain(unary),
@@ -579,6 +601,231 @@ pub(super) fn derive_output_domain(expression: &Expression) -> ValueDomain {
             ValueDomain::unknown("unsupported expression has no safely known output domain")
         }
     }
+}
+
+/// Union of every CASE arm result domain, with each reachable arm refined by
+/// its guard-restricted source domain when the arm result is a source column.
+fn derive_case_domain(case_expression: &CaseExpression, ctx: DomainContext<'_>) -> ValueDomain {
+    let mut domain = ValueDomain::Empty;
+    for branch in case_expression.branches() {
+        let arm = guard_refined_arm_domain(branch.result(), branch.source_domains(), ctx);
+        domain = union_domains(&domain, &arm);
+    }
+    let else_domain = case_expression
+        .else_result()
+        .map_or_else(null_only_domain, |result| {
+            guard_refined_arm_domain(result, case_expression.else_source_domains(), ctx)
+        });
+    union_domains(&domain, &else_domain)
+}
+
+fn guard_refined_arm_domain(
+    result: &Expression,
+    source_domains: &CaseSourceDomains,
+    ctx: DomainContext<'_>,
+) -> ValueDomain {
+    let base = derive_domain(result, ctx);
+    match guarded_result_column_domain(source_domains, result, ctx) {
+        Some(guard) => intersect_domains(&base, &guard),
+        None => base,
+    }
+}
+
+/// Guard-restricted domain for a CASE arm result column.
+///
+/// Returns `None` when no sound refinement exists: unknown guards, guards
+/// whose source references do not resolve to the arm result, and guards that
+/// would union to an unrepresentable residual all fall back to the unrefined
+/// arm domain. Unreachable arms refine to the empty domain so that they
+/// contribute nothing to the CASE union.
+fn guarded_result_column_domain(
+    source_domains: &CaseSourceDomains,
+    result: &Expression,
+    ctx: DomainContext<'_>,
+) -> Option<ValueDomain> {
+    match source_domains {
+        CaseSourceDomains::Unreachable => Some(ValueDomain::Empty),
+        CaseSourceDomains::Unknown(_) => None,
+        CaseSourceDomains::Reachable { alternatives } => {
+            let Expression::Column(column) = result else {
+                return None;
+            };
+            let DomainSources { sources, .. } = ctx?;
+            let resolved = resolve_column(column, sources);
+            let mut union: Option<ValueDomain> = None;
+            for alternative in alternatives {
+                let candidate = alternative
+                    .column_domains()
+                    .iter()
+                    .find(|candidate| candidate.column() == &resolved)?;
+                let domain = candidate.domain().clone();
+                union = Some(match union {
+                    None => domain,
+                    Some(accumulated) => union_domains(&accumulated, &domain),
+                });
+            }
+            match union {
+                // A union that collapses to Unknown must not regress the arm
+                // to a residual; the unrefined arm domain stays sound.
+                Some(ValueDomain::Unknown(_)) => None,
+                union => union,
+            }
+        }
+    }
+}
+
+/// COALESCE output is the union of its argument domains. SQL NULL is
+/// possible only when every argument can evaluate to NULL; proven-null-free
+/// coalesces exclude NULL from their domain.
+fn derive_coalesce_domain(arguments: &[Expression], ctx: DomainContext<'_>) -> ValueDomain {
+    let mut domain = ValueDomain::Empty;
+    for argument in arguments {
+        domain = union_domains(&domain, &derive_domain(argument, ctx));
+    }
+    if arguments
+        .iter()
+        .all(|argument| possibly_null_expression(argument, ctx))
+    {
+        domain
+    } else {
+        exclude_null(domain)
+    }
+}
+
+/// NULLIF(left, right) returns NULL when both arguments are NULL-unequal
+/// comparable values that compare equal, otherwise left. The exact equal
+/// value of a constant right argument is removed from the left domain; NULL
+/// joins the domain whenever left can be NULL or both domains can share a
+/// non-NULL value.
+fn derive_nullif_domain(
+    left: &Expression,
+    right: &Expression,
+    ctx: DomainContext<'_>,
+) -> ValueDomain {
+    let left_domain = derive_domain(left, ctx);
+    let right_domain = derive_domain(right, ctx);
+    let base = match singleton_non_null_value(&right_domain) {
+        Some(value) => intersect_domains(
+            &left_domain,
+            &ValueDomain::set(SetMode::Exclude, vec![value]),
+        ),
+        None => left_domain.clone(),
+    };
+    let null_output = possibly_null_expression(left, ctx)
+        || non_null_possible(&intersect_domains(&left_domain, &right_domain));
+    if null_output {
+        union_domains(&base, &null_only_domain())
+    } else {
+        base
+    }
+}
+
+/// Whether an expression can evaluate to SQL NULL under the given sources.
+///
+/// Source columns consult their proven domain: a domain that excludes NULL
+/// proves the column is non-NULL on every surviving row. Every other
+/// expression form is conservatively treated as NULL-capable.
+fn possibly_null_expression(expression: &Expression, ctx: DomainContext<'_>) -> bool {
+    match expression {
+        Expression::Literal(literal) => matches!(literal.value(), LiteralValue::Null),
+        Expression::Column(_) => domain_possibly_null(&derive_domain(expression, ctx)),
+        _ => true,
+    }
+}
+
+fn domain_possibly_null(domain: &ValueDomain) -> bool {
+    match domain {
+        ValueDomain::Empty | ValueDomain::Ranges(_) => false,
+        ValueDomain::Set(set) => match set.mode() {
+            SetMode::Include => set
+                .values()
+                .iter()
+                .any(|value| matches!(value.value(), LiteralValue::Null)),
+            SetMode::Exclude => !set
+                .values()
+                .iter()
+                .any(|value| matches!(value.value(), LiteralValue::Null)),
+        },
+        ValueDomain::Unbounded | ValueDomain::Unknown(_) => true,
+    }
+}
+
+/// Whether at least one non-NULL value can satisfy a domain. Used to prove
+/// that two domains can share an equal non-NULL value.
+fn non_null_possible(domain: &ValueDomain) -> bool {
+    match domain {
+        ValueDomain::Empty => false,
+        ValueDomain::Set(set) if set.mode() == SetMode::Include => set
+            .values()
+            .iter()
+            .any(|value| !matches!(value.value(), LiteralValue::Null)),
+        // Ranges are numeric and NULL-free. Exclusion sets, unbounded and
+        // unknown domains cannot prove the absence of a non-NULL value.
+        ValueDomain::Ranges(_)
+        | ValueDomain::Set(_)
+        | ValueDomain::Unbounded
+        | ValueDomain::Unknown(_) => true,
+    }
+}
+
+/// The single non-NULL value of a finite include-set domain, if any.
+fn singleton_non_null_value(domain: &ValueDomain) -> Option<LiteralExpression> {
+    let ValueDomain::Set(set) = domain else {
+        return None;
+    };
+    if set.mode() != SetMode::Include {
+        return None;
+    }
+    let [value] = set.values() else {
+        return None;
+    };
+    (!matches!(value.value(), LiteralValue::Null)).then(|| value.clone())
+}
+
+/// Remove SQL NULL from a domain without inventing or losing other values.
+fn exclude_null(domain: ValueDomain) -> ValueDomain {
+    let null = null_literal();
+    match domain {
+        ValueDomain::Set(set) if set.mode() == SetMode::Include => {
+            let values = set
+                .values()
+                .iter()
+                .filter(|value| !matches!(value.value(), LiteralValue::Null))
+                .cloned()
+                .collect::<Vec<_>>();
+            if values.is_empty() {
+                ValueDomain::Empty
+            } else {
+                ValueDomain::set(SetMode::Include, values)
+            }
+        }
+        ValueDomain::Set(set) => {
+            if set
+                .values()
+                .iter()
+                .any(|value| matches!(value.value(), LiteralValue::Null))
+            {
+                ValueDomain::Set(set)
+            } else {
+                let mut values = set.values().to_vec();
+                values.push(null);
+                ValueDomain::set(SetMode::Exclude, values)
+            }
+        }
+        ValueDomain::Unbounded => ValueDomain::set(SetMode::Exclude, vec![null]),
+        // Ranges, empty and unknown domains already exclude or cannot
+        // represent a NULL removal.
+        other => other,
+    }
+}
+
+/// The exact domain containing only SQL NULL.
+fn null_only_domain() -> ValueDomain {
+    ValueDomain::set(SetMode::Include, vec![null_literal()])
+}
+
+fn null_literal() -> LiteralExpression {
+    LiteralExpression::new(LiteralType::Null, LiteralValue::Null)
 }
 
 pub(super) fn boolean_domain() -> ValueDomain {

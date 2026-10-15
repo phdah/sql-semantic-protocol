@@ -360,10 +360,45 @@ fn typed_expression(
             let values = combine_values(left.values, right.values, binary.operator(), width)?;
             Some(TypedIntegers { width, values })
         }
+        Expression::Case(case) => {
+            // Each arm is evaluated over every surviving row without guard
+            // refinement, so the union is a sound (possibly loose) superset
+            // of the CASE outputs. Only finite arm values are enumerable;
+            // intervals and underivable arms keep the explicit fallback.
+            let mut results = Vec::new();
+            let mut width = SignedIntegerWidth::Bits16;
+            for result in case
+                .branches()
+                .iter()
+                .map(|branch| branch.result())
+                .chain(case.else_result())
+            {
+                let arm = typed_expression(result, domains, sources, metadata)?;
+                width = width.max(arm.width);
+                let IntegerValues::Finite(arm_values) = arm.values else {
+                    return None;
+                };
+                for value in arm_values {
+                    if !results.contains(&value) {
+                        results.push(value);
+                    }
+                }
+                if results.len() > 64 {
+                    return None;
+                }
+            }
+            // An implicit ELSE is SQL NULL.
+            if case.else_result().is_none() && !results.contains(&None) {
+                results.push(None);
+            }
+            Some(TypedIntegers {
+                width,
+                values: IntegerValues::Finite(results),
+            })
+        }
         Expression::Function(_)
         | Expression::AggregateFunction(_)
         | Expression::WindowFunction(_)
-        | Expression::Case(_)
         | Expression::BooleanPredicate(_)
         | Expression::ScalarSubquery(_)
         | Expression::Unknown(_)

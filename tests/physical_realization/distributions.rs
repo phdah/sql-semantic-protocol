@@ -321,7 +321,9 @@ fn computed_histograms_fail_closed_for_lossy_overflow_and_intermediate_coercion(
     }
 
     // A NULL-only goal must not skip expression-structure validation:
-    // COALESCE does not propagate source NULL.
+    // COALESCE does not propagate source NULL. Because the non-NULL fallback
+    // makes COALESCE(x, 0) provably never NULL, a NULL-only goal is exactly
+    // unsatisfiable rather than merely unproved.
     let mut null_bundle = bundle_with_schemas(
         &[
             "CREATE TABLE stage AS SELECT a AS x FROM t",
@@ -341,7 +343,7 @@ fn computed_histograms_fail_closed_for_lossy_overflow_and_intermediate_coercion(
     );
     assert_eq!(
         null_bundle.outcome_goals()[0].status(),
-        OutcomeGoalStatus::Residual
+        OutcomeGoalStatus::Unsatisfiable
     );
 
     let mut bundle = bundle_with_schemas(
