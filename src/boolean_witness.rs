@@ -2464,6 +2464,15 @@ fn true_region_empty(
     integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
     restrictions: Option<&BTreeMap<String, ColumnRestriction>>,
 ) -> bool {
+    // Mixed conjunctions/disjunctions require each disjunctive branch to be
+    // unsatisfiable under the *same* conjunctive requirements. Distribute only
+    // within a fixed budget; an unsupported subtree remains unproven.
+    if let Some(cases) = bounded_conjunctive_cases(condition) {
+        return !cases.is_empty()
+            && cases
+                .iter()
+                .all(|leaves| joint_integer_contradiction(leaves, integer_evidence, restrictions));
+    }
     match condition {
         BooleanRowConstraint::All(operands) => {
             if operands
@@ -2490,6 +2499,62 @@ fn true_region_empty(
         | BooleanRowConstraint::IntegerColumnComparison { .. } => {
             joint_integer_contradiction(&[condition], integer_evidence, restrictions)
         }
+    }
+}
+
+/// Convert a bounded Boolean TRUE region into conjunctive cases.
+///
+/// Each case represents one alternative satisfying assignment. An entire
+/// expression is impossible only if every case is contradictory. Exhausting
+/// either budget or encountering an unproved leaf fails closed to `None`.
+fn bounded_conjunctive_cases<'a>(
+    condition: &'a BooleanRowConstraint,
+) -> Option<Vec<Vec<&'a BooleanRowConstraint>>> {
+    const MAX_CASES: usize = 64;
+    const MAX_ATOMS_PER_CASE: usize = 128;
+    match condition {
+        BooleanRowConstraint::All(operands) => {
+            let mut cases = vec![Vec::new()];
+            for child in operands.iter() {
+                let child_cases = bounded_conjunctive_cases(child)?;
+                if cases.len().saturating_mul(child_cases.len()) > MAX_CASES {
+                    return None;
+                }
+                let mut expanded = Vec::new();
+                for prior in &cases {
+                    for alternative in &child_cases {
+                        if prior.len().saturating_add(alternative.len()) > MAX_ATOMS_PER_CASE {
+                            return None;
+                        }
+                        let mut case = prior.clone();
+                        case.extend(alternative.iter().copied());
+                        expanded.push(case);
+                    }
+                }
+                cases = expanded;
+            }
+            Some(cases)
+        }
+        BooleanRowConstraint::Any(operands) => {
+            let mut cases = Vec::new();
+            for child in operands.iter() {
+                let child_cases = bounded_conjunctive_cases(child)?;
+                if cases.len().saturating_add(child_cases.len()) > MAX_CASES {
+                    return None;
+                }
+                cases.extend(child_cases);
+            }
+            Some(cases)
+        }
+        BooleanRowConstraint::NullTest { .. }
+        | BooleanRowConstraint::UnknownNullComparison { .. }
+        | BooleanRowConstraint::IntegerComparison { .. }
+        | BooleanRowConstraint::IntegerColumnComparison { .. } => {
+            Some(vec![vec![condition]])
+        }
+        BooleanRowConstraint::Residual { .. }
+        | BooleanRowConstraint::StringEquality { .. }
+        | BooleanRowConstraint::StringPrefix { .. } => None,
     }
 }
 
