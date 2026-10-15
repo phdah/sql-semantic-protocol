@@ -447,6 +447,25 @@ pub(super) fn refine_boolean_qualifying_outcomes(
     output: Output,
     witness: Option<&crate::boolean_witness::BooleanWitness>,
 ) -> (Vec<ColumnDomain>, Output) {
+    // A symbolically impossible joint filter admits no qualifying rows, so
+    // every projected output is empty even when no independent per-column
+    // domain can be narrowed.
+    if witness.is_some_and(|item| {
+        matches!(
+            item.qualifying(),
+            crate::boolean_witness::BooleanWitnessDirection::Impossible
+        )
+    }) {
+        let output = Output::new(
+            output
+                .columns()
+                .iter()
+                .cloned()
+                .map(|column| column.with_domain(ValueDomain::Empty))
+                .collect(),
+        );
+        return (column_domains, output);
+    }
     let proven = witness
         .map(crate::boolean_witness::BooleanWitness::qualifying_conjunctive_domains)
         .unwrap_or_default();

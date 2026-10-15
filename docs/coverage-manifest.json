@@ -35,11 +35,12 @@
       "correlated_same_source_integer_and_decimal_arithmetic_domains",
       "portable_exact_binary64_representable_decimal_literal_arithmetic",
       "literal_integral_casts_with_explicit_cast_try_safe_failure_contract",
-      "bounded_binary64_exact_unit_division_and_nonzero_zero_dividends"
+      "bounded_binary64_exact_unit_division_and_nonzero_zero_dividends",
+      "correlated_cross_column_joint_impossibility_and_null_safe_tautologies"
     ],
     "unproved_scope": [
       "general_arithmetic_overflow",
-      "cross_column_global_unsatisfiability_and_nonscalar_relations",
+      "general_cross_column_disjunctive_and_nonscalar_relations",
       "computed_case_coalesce_nullif_with_opaque_mixed_type_and_cross_column_operands",
       "general_noninteger_source_casts_and_implicit_coercions",
       "pattern_escape_regex_collations",
@@ -75,9 +76,9 @@
       },
       {
         "family": "signed_integer_cross_column",
-        "status": "bounded_existence_only",
-        "scope": "source-row signed cross-column comparisons; only identical-column absence is exhaustive",
-        "evidence": "tests/task_70_predicates.rs",
+        "status": "bounded_joint_exact",
+        "scope": "source-row signed cross-column conjunctions prove joint impossibility from total-order invariants, difference constraints with exhaustive type bounds and accepted values, plus null-safe complementary tautologies; disjunctive IN and unparenthesized null-safe AND/OR stay residual",
+        "evidence": "tests/task_103_cross_column.rs; tests/task_70_predicates.rs",
         "release_blocking": true,
         "implementation_task": "TASK-103"
       },

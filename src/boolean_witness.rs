@@ -637,6 +637,31 @@ impl BooleanWitness {
             && restrictions.is_some()
             && self.condition.has_complete_scalar_regions()
             && !cases.is_empty();
+        let symbolic_qualifying_impossible = candidate
+            && prefix_licensed
+            && restrictions.is_some()
+            && !cases.contains(&SqlTruth::True)
+            && restrictions.as_ref().is_some_and(|items| {
+                true_region_empty(
+                    &self.condition,
+                    &|column| self.integer_bounds.get(column).copied(),
+                    Some(items),
+                )
+            });
+        let symbolic_rejected_impossible = candidate
+            && prefix_licensed
+            && restrictions.is_some()
+            && !cases.contains(&SqlTruth::False)
+            && !cases.contains(&SqlTruth::Unknown)
+            && restrictions.as_ref().is_some_and(|items| {
+                not_true_constraint(&self.condition).is_some_and(|not_true| {
+                    true_region_empty(
+                        &not_true,
+                        &|column| self.integer_bounds.get(column).copied(),
+                        Some(items),
+                    )
+                })
+            });
         let reason = if columns.is_empty() {
             "predicate has no resolved source columns"
         } else if !resolved_source {
@@ -652,7 +677,7 @@ impl BooleanWitness {
         };
         self.qualifying = if cases.contains(&SqlTruth::True) {
             BooleanWitnessDirection::Exact(BooleanTruthCase::True)
-        } else if complete_scalar_regions {
+        } else if complete_scalar_regions || symbolic_qualifying_impossible {
             BooleanWitnessDirection::Impossible
         } else {
             BooleanWitnessDirection::Residual {
@@ -661,7 +686,7 @@ impl BooleanWitness {
         };
         self.rejected = if cases.contains(&SqlTruth::False) || cases.contains(&SqlTruth::Unknown) {
             BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
-        } else if complete_scalar_regions {
+        } else if complete_scalar_regions || symbolic_rejected_impossible {
             BooleanWitnessDirection::Impossible
         } else {
             BooleanWitnessDirection::Residual {
@@ -2310,7 +2335,15 @@ pub(crate) fn conjoin_physical_row_truths(
     }
     let possible = possible_joint_truths(&joint, &integer_evidence, &|_| None, None);
     if possible.is_empty() {
-        return None;
+        // The representative search may exhaust its assignment budget before
+        // seeing any rows. A separate symbolic proof can still establish
+        // impossibility without relying on that incomplete enumeration.
+        let proven = match truth {
+            BooleanTruthCase::True => true_region_empty(&joint, &integer_evidence, None),
+            BooleanTruthCase::NotTrue => not_true_constraint(&joint)
+                .is_some_and(|not_true| true_region_empty(&not_true, &integer_evidence, None)),
+        };
+        return proven.then_some((joint, false));
     }
     let satisfiable = match truth {
         BooleanTruthCase::True => possible.contains(&SqlTruth::True),
@@ -2319,9 +2352,16 @@ pub(crate) fn conjoin_physical_row_truths(
         }
     };
     if !satisfiable && joint.contains_column_comparison() {
-        // Region representatives establish concrete existence, but cannot
-        // establish universal absence for correlated source columns.
-        return None;
+        // Bounded representatives alone cannot assert universal absence for
+        // correlated columns. A symbolic integer-order invariant can.
+        let proven = match truth {
+            BooleanTruthCase::True => true_region_empty(&joint, &integer_evidence, None),
+            BooleanTruthCase::NotTrue => not_true_constraint(&joint)
+                .is_some_and(|not_true| true_region_empty(&not_true, &integer_evidence, None)),
+        };
+        if !proven {
+            return None;
+        }
     }
     Some((joint, satisfiable))
 }
@@ -2360,7 +2400,10 @@ pub(crate) fn jointly_satisfiable_physical_truths(
     }
     let truths = possible_joint_truth_vectors(&conditions, &integer_evidence, &|_| None, None);
     if truths.is_empty() {
-        return None;
+        // No sampled assignment may also mean that enumeration hit its
+        // deterministic limit. Only a symbolic contradiction proves absence.
+        return requirements_jointly_unsatisfiable(requirements, &integer_evidence)
+            .then_some(false);
     }
     let satisfiable = truths.iter().any(|row_truths| {
         row_truths
@@ -2375,10 +2418,583 @@ pub(crate) fn jointly_satisfiable_physical_truths(
         && conditions
             .iter()
             .any(|condition| condition.contains_column_comparison())
+        && !requirements_jointly_unsatisfiable(requirements, &integer_evidence)
     {
         return None;
     }
     Some(satisfiable)
+}
+
+/// Whether the requested row requirements admit no shared physical assignment.
+///
+/// Each `NotTrue` requirement is rewritten with `not_true_constraint` so the
+/// joint obligation becomes one conjunction whose SQL TRUE region must hold.
+/// `None` from that rewrite, residual/string leaves, missing type evidence,
+/// or deterministic resource caps all fail closed to `false` (unproven).
+fn requirements_jointly_unsatisfiable(
+    requirements: &[(&BooleanRowConstraint, BooleanTruthCase)],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> bool {
+    let mut conjuncts = Vec::new();
+    for (condition, truth) in requirements {
+        match truth {
+            BooleanTruthCase::True => conjuncts.push((*condition).clone()),
+            BooleanTruthCase::NotTrue => {
+                let Some(not_true) = not_true_constraint(condition) else {
+                    return false;
+                };
+                conjuncts.push(not_true);
+            }
+        }
+    }
+    let Some(all) = BooleanOperands::new(conjuncts).map(BooleanRowConstraint::All) else {
+        return false;
+    };
+    true_region_empty(&all, integer_evidence, None)
+}
+
+/// Whether no shared non-null-aware integer assignment makes `condition` TRUE.
+///
+/// This is a sound symbolic complement to bounded enumeration: enumeration
+/// proves existence, this proves universal absence from total-order invariants,
+/// exhaustive type bounds, and accepted-value evidence. Anything else fails
+/// closed to `false`. Deterministic caps keep the proof bounded.
+fn true_region_empty(
+    condition: &BooleanRowConstraint,
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    restrictions: Option<&BTreeMap<String, ColumnRestriction>>,
+) -> bool {
+    // Mixed conjunctions/disjunctions require each disjunctive branch to be
+    // unsatisfiable under the *same* conjunctive requirements. Distribute only
+    // within a fixed budget; an unsupported subtree remains unproven.
+    if let Some(cases) = bounded_conjunctive_cases(condition) {
+        return !cases.is_empty()
+            && cases
+                .iter()
+                .all(|leaves| joint_integer_contradiction(leaves, integer_evidence, restrictions));
+    }
+    match condition {
+        BooleanRowConstraint::All(operands) => {
+            if operands
+                .iter()
+                .any(|child| true_region_empty(child, integer_evidence, restrictions))
+            {
+                return true;
+            }
+            let mut leaves = Vec::new();
+            if !collect_conjunctive_leaves(condition, &mut leaves) {
+                return false;
+            }
+            joint_integer_contradiction(&leaves, integer_evidence, restrictions)
+        }
+        BooleanRowConstraint::Any(operands) => operands
+            .iter()
+            .all(|child| true_region_empty(child, integer_evidence, restrictions)),
+        BooleanRowConstraint::UnknownNullComparison { .. } => true,
+        BooleanRowConstraint::Residual { .. }
+        | BooleanRowConstraint::StringEquality { .. }
+        | BooleanRowConstraint::StringPrefix { .. }
+        | BooleanRowConstraint::NullTest { .. } => false,
+        BooleanRowConstraint::IntegerComparison { .. }
+        | BooleanRowConstraint::IntegerColumnComparison { .. } => {
+            joint_integer_contradiction(&[condition], integer_evidence, restrictions)
+        }
+    }
+}
+
+/// Convert a bounded Boolean TRUE region into conjunctive cases.
+///
+/// Each case represents one alternative satisfying assignment. An entire
+/// expression is impossible only if every case is contradictory. Exhausting
+/// either budget or encountering an unproved leaf fails closed to `None`.
+fn bounded_conjunctive_cases(
+    condition: &BooleanRowConstraint,
+) -> Option<Vec<Vec<&BooleanRowConstraint>>> {
+    const MAX_CASES: usize = 64;
+    const MAX_ATOMS_PER_CASE: usize = 128;
+    match condition {
+        BooleanRowConstraint::All(operands) => {
+            let mut cases = vec![Vec::new()];
+            for child in operands.iter() {
+                let child_cases = bounded_conjunctive_cases(child)?;
+                if cases.len().saturating_mul(child_cases.len()) > MAX_CASES {
+                    return None;
+                }
+                let mut expanded = Vec::new();
+                for prior in &cases {
+                    for alternative in &child_cases {
+                        if prior.len().saturating_add(alternative.len()) > MAX_ATOMS_PER_CASE {
+                            return None;
+                        }
+                        let mut case = prior.clone();
+                        case.extend(alternative.iter().copied());
+                        expanded.push(case);
+                    }
+                }
+                cases = expanded;
+            }
+            Some(cases)
+        }
+        BooleanRowConstraint::Any(operands) => {
+            let mut cases = Vec::new();
+            for child in operands.iter() {
+                let child_cases = bounded_conjunctive_cases(child)?;
+                if cases.len().saturating_add(child_cases.len()) > MAX_CASES {
+                    return None;
+                }
+                cases.extend(child_cases);
+            }
+            Some(cases)
+        }
+        BooleanRowConstraint::NullTest { .. }
+        | BooleanRowConstraint::UnknownNullComparison { .. }
+        | BooleanRowConstraint::IntegerComparison { .. }
+        | BooleanRowConstraint::IntegerColumnComparison { .. } => Some(vec![vec![condition]]),
+        BooleanRowConstraint::Residual { .. }
+        | BooleanRowConstraint::StringEquality { .. }
+        | BooleanRowConstraint::StringPrefix { .. } => None,
+    }
+}
+
+/// Flatten nested `All` into leaves. Returns `false` when a disjunctive or
+/// non-conjunctive shape needs case splitting beyond this bounded prover.
+fn collect_conjunctive_leaves<'a>(
+    condition: &'a BooleanRowConstraint,
+    leaves: &mut Vec<&'a BooleanRowConstraint>,
+) -> bool {
+    match condition {
+        BooleanRowConstraint::All(operands) => operands
+            .iter()
+            .all(|child| collect_conjunctive_leaves(child, leaves)),
+        BooleanRowConstraint::Any(_)
+        | BooleanRowConstraint::Residual { .. }
+        | BooleanRowConstraint::StringEquality { .. }
+        | BooleanRowConstraint::StringPrefix { .. } => false,
+        BooleanRowConstraint::NullTest { .. }
+        | BooleanRowConstraint::UnknownNullComparison { .. }
+        | BooleanRowConstraint::IntegerComparison { .. }
+        | BooleanRowConstraint::IntegerColumnComparison { .. } => {
+            leaves.push(condition);
+            true
+        }
+    }
+}
+
+/// Joint contradiction over one conjunction of integer/null leaves.
+///
+/// TRUE of an ordinary comparison requires non-NULL operands; NULL-safe
+/// `IsDistinctFrom`/`IsNotDistinctFrom` are two-valued. Equalities use
+/// union-find, orders use integer difference constraints with a CONST node
+/// (`<` becomes `<= -1`), type bounds contribute edges, and accepted values
+/// contribute disjointness. A negative cycle or direct null/equality conflict
+/// proves no shared TRUE row exists.
+fn joint_integer_contradiction(
+    leaves: &[&BooleanRowConstraint],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    restrictions: Option<&BTreeMap<String, ColumnRestriction>>,
+) -> bool {
+    const MAX_ATOMS: usize = 128;
+    const MAX_COLUMNS: usize = 32;
+    if leaves.is_empty() || leaves.len() > MAX_ATOMS {
+        return false;
+    }
+    let mut columns: Vec<ColumnRef> = Vec::new();
+    for leaf in leaves {
+        let mut found = Vec::new();
+        leaf.columns(&mut found);
+        for column in found {
+            if !columns.contains(&column) {
+                columns.push(column);
+            }
+        }
+    }
+    if columns.is_empty() || columns.len() > MAX_COLUMNS {
+        return false;
+    }
+    // Every integer leaf needs catalog type evidence; otherwise the
+    // contradiction would assume an unproven domain.
+    for column in &columns {
+        let mut needs_integer = false;
+        for leaf in leaves {
+            match leaf {
+                BooleanRowConstraint::IntegerComparison { column: target, .. }
+                    if target == column =>
+                {
+                    needs_integer = true;
+                }
+                BooleanRowConstraint::IntegerColumnComparison { left, right, .. }
+                    if left == column || right == column =>
+                {
+                    needs_integer = true;
+                }
+                BooleanRowConstraint::IntegerComparison { .. }
+                | BooleanRowConstraint::IntegerColumnComparison { .. }
+                | BooleanRowConstraint::NullTest { .. }
+                | BooleanRowConstraint::UnknownNullComparison { .. }
+                | BooleanRowConstraint::All(_)
+                | BooleanRowConstraint::Any(_)
+                | BooleanRowConstraint::StringEquality { .. }
+                | BooleanRowConstraint::StringPrefix { .. }
+                | BooleanRowConstraint::Residual { .. } => {}
+            }
+        }
+        if needs_integer && integer_evidence(column).is_none() {
+            return false;
+        }
+    }
+
+    let mut must_null: BTreeSet<ColumnRef> = BTreeSet::new();
+    let mut must_non_null: BTreeSet<ColumnRef> = BTreeSet::new();
+    for leaf in leaves {
+        match leaf {
+            BooleanRowConstraint::NullTest { column, negated } => {
+                if *negated {
+                    must_non_null.insert(column.clone());
+                } else {
+                    must_null.insert(column.clone());
+                }
+            }
+            BooleanRowConstraint::UnknownNullComparison { .. } => return true,
+            BooleanRowConstraint::IntegerComparison {
+                column, operator, ..
+            } if !matches!(operator, ComparisonOperator::IsDistinctFrom) => {
+                // Ordinary comparisons require non-NULL for TRUE. IS NOT
+                // DISTINCT FROM against a non-NULL literal is TRUE only for
+                // the equal non-NULL value; IS DISTINCT FROM stays TRUE for
+                // NULL and must not force non-NULL.
+                must_non_null.insert(column.clone());
+            }
+            BooleanRowConstraint::IntegerColumnComparison {
+                left,
+                right,
+                operator,
+            } => {
+                if matches!(
+                    operator,
+                    ComparisonOperator::Eq
+                        | ComparisonOperator::Neq
+                        | ComparisonOperator::Lt
+                        | ComparisonOperator::Lte
+                        | ComparisonOperator::Gt
+                        | ComparisonOperator::Gte
+                ) {
+                    must_non_null.insert(left.clone());
+                    must_non_null.insert(right.clone());
+                }
+                if left == right
+                    && matches!(
+                        operator,
+                        ComparisonOperator::Neq
+                            | ComparisonOperator::Lt
+                            | ComparisonOperator::Gt
+                            | ComparisonOperator::IsDistinctFrom
+                    )
+                {
+                    return true;
+                }
+            }
+            BooleanRowConstraint::IntegerComparison { .. }
+            | BooleanRowConstraint::All(_)
+            | BooleanRowConstraint::Any(_)
+            | BooleanRowConstraint::StringEquality { .. }
+            | BooleanRowConstraint::StringPrefix { .. }
+            | BooleanRowConstraint::Residual { .. } => {}
+        }
+    }
+    // IS DISTINCT FROM against a literal is TRUE for NULL, handled above
+    // by not forcing non-NULL.
+    if must_null.intersection(&must_non_null).next().is_some() {
+        return true;
+    }
+
+    // Equality union-find over column-column equalities. Any inconsistent
+    // access fails closed to unproven rather than panicking.
+    let index_of = |column: &ColumnRef| columns.iter().position(|item| item == column);
+    let mut parent: Vec<usize> = (0..columns.len()).collect();
+    fn find(parent: &mut [usize], mut node: usize) -> Option<usize> {
+        while parent.get(node).is_some_and(|root| *root != node) {
+            let next = *parent.get(node)?;
+            let grandparent = *parent.get(next).unwrap_or(&next);
+            *parent.get_mut(node)? = grandparent;
+            node = grandparent;
+        }
+        parent.get(node).copied()
+    }
+    fn union(parent: &mut [usize], left: usize, right: usize) -> bool {
+        let (Some(left), Some(right)) = (find(parent, left), find(parent, right)) else {
+            return false;
+        };
+        if left != right {
+            if let Some(slot) = parent.get_mut(left) {
+                *slot = right;
+            } else {
+                return false;
+            }
+        }
+        true
+    }
+    for leaf in leaves {
+        if let BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            right,
+            operator,
+        } = leaf
+        {
+            if matches!(
+                operator,
+                ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                let (Some(left), Some(right)) = (index_of(left), index_of(right)) else {
+                    return false;
+                };
+                if !union(&mut parent, left, right) {
+                    return false;
+                }
+            }
+        }
+    }
+    // Disequality against an equality group is contradictory.
+    for leaf in leaves {
+        if let BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            right,
+            operator,
+        } = leaf
+        {
+            if matches!(
+                operator,
+                ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom
+            ) {
+                let (Some(left), Some(right)) = (index_of(left), index_of(right)) else {
+                    return false;
+                };
+                let (Some(left_root), Some(right_root)) =
+                    (find(&mut parent, left), find(&mut parent, right))
+                else {
+                    return false;
+                };
+                if left_root == right_root {
+                    return true;
+                }
+            }
+        }
+    }
+    // Column forced to a literal while forbidden the same literal.
+    let mut forced: BTreeMap<ColumnRef, i128> = BTreeMap::new();
+    for leaf in leaves {
+        if let BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal,
+        } = leaf
+        {
+            if matches!(
+                operator,
+                ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom
+            ) {
+                let value = i128::from(*literal);
+                if let Some(prior) = forced.get(column) {
+                    if *prior != value {
+                        return true;
+                    }
+                } else {
+                    forced.insert(column.clone(), value);
+                }
+            }
+        }
+    }
+    for leaf in leaves {
+        let forbidden = match leaf {
+            BooleanRowConstraint::IntegerComparison {
+                column,
+                operator,
+                literal,
+            } if matches!(
+                operator,
+                ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom
+            ) =>
+            {
+                Some((column, operator, i128::from(*literal)))
+            }
+            _ => None,
+        };
+        if let Some((column, operator, literal)) = forbidden {
+            if forced.get(column).is_some_and(|value| *value == literal) {
+                // A forced non-NULL equality makes the forbidden literal
+                // FALSE; NULL would make ordinary Neq UNKNOWN, but the
+                // forced equality already requires non-NULL.
+                if *operator == ComparisonOperator::Neq {
+                    if !must_null.contains(column) {
+                        return true;
+                    }
+                } else if forced.contains_key(column) {
+                    // IS DISTINCT FROM is TRUE for NULL, but the forced
+                    // IS NOT DISTINCT FROM/Eq arm already pins non-NULL.
+                    return true;
+                }
+            }
+        }
+    }
+    // Accepted-value disjointness and forced-literal membership.
+    if let Some(items) = restrictions {
+        let accepted_integers = |column: &ColumnRef| -> Option<BTreeSet<i128>> {
+            let item = items.get(column.name())?;
+            let allowed = item.accepted.as_ref()?;
+            let mut values = BTreeSet::new();
+            for value in allowed {
+                match value {
+                    RowScalar::Integer(value) => {
+                        values.insert(*value);
+                    }
+                    RowScalar::String(_) => return None,
+                }
+            }
+            Some(values)
+        };
+        for (column, value) in &forced {
+            if let Some(allowed) = accepted_integers(column) {
+                if !allowed.contains(value) && !must_null.contains(column) {
+                    // A forced non-NULL literal outside the enforced
+                    // accepted set can never be TRUE.
+                    return true;
+                }
+            }
+        }
+        // Equality groups with disjoint accepted sets and a non-NULL
+        // requirement cannot share one TRUE row (both-NULL would fail the
+        // ordinary equality or order conjuncts already recorded).
+        let mut groups: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
+        for position in 0..columns.len() {
+            let Some(root) = find(&mut parent, position) else {
+                return false;
+            };
+            groups.entry(root).or_default().push(position);
+        }
+        for members in groups.values() {
+            let mut shared: Option<BTreeSet<i128>> = None;
+            let mut has_accepted = false;
+            let mut group_must_non_null = false;
+            for position in members {
+                let column = &columns[*position];
+                if must_non_null.contains(column)
+                    || items.get(column.name()).is_some_and(|item| item.not_null)
+                {
+                    group_must_non_null = true;
+                }
+                if let Some(allowed) = accepted_integers(column) {
+                    has_accepted = true;
+                    shared = Some(match shared {
+                        Some(current) => current.intersection(&allowed).copied().collect(),
+                        None => allowed,
+                    });
+                }
+            }
+            if has_accepted && group_must_non_null && shared.is_some_and(|values| values.is_empty())
+            {
+                return true;
+            }
+        }
+    }
+
+    // Difference constraints: edge `from -> to` with weight `w` means
+    // `to - from <= w`. CONST (index len) is fixed at zero.
+    let const_index = columns.len();
+    let node_count = columns.len() + 1;
+    let mut edges: Vec<(usize, usize, i128)> = Vec::new();
+    let push = |edges: &mut Vec<(usize, usize, i128)>, from: usize, to: usize, weight: i128| {
+        edges.push((from, to, weight));
+    };
+    for leaf in leaves {
+        match leaf {
+            BooleanRowConstraint::IntegerComparison {
+                column,
+                operator,
+                literal,
+            } => {
+                let Some(position) = index_of(column) else {
+                    return false;
+                };
+                let value = i128::from(*literal);
+                let (Some(lower), Some(upper)) = (value.checked_sub(1), value.checked_add(1))
+                else {
+                    return false;
+                };
+                match operator {
+                    ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => {
+                        push(&mut edges, const_index, position, value);
+                        push(&mut edges, position, const_index, -value);
+                    }
+                    ComparisonOperator::Lt => push(&mut edges, const_index, position, lower),
+                    ComparisonOperator::Lte => push(&mut edges, const_index, position, value),
+                    ComparisonOperator::Gt => push(&mut edges, position, const_index, -upper),
+                    ComparisonOperator::Gte => push(&mut edges, position, const_index, -value),
+                    ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => {}
+                }
+            }
+            BooleanRowConstraint::IntegerColumnComparison {
+                left,
+                right,
+                operator,
+            } => {
+                let (Some(left), Some(right)) = (index_of(left), index_of(right)) else {
+                    return false;
+                };
+                match operator {
+                    ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => {
+                        push(&mut edges, right, left, 0);
+                        push(&mut edges, left, right, 0);
+                    }
+                    ComparisonOperator::Lt => push(&mut edges, right, left, -1),
+                    ComparisonOperator::Lte => push(&mut edges, right, left, 0),
+                    ComparisonOperator::Gt => push(&mut edges, left, right, -1),
+                    ComparisonOperator::Gte => push(&mut edges, left, right, 0),
+                    ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => {}
+                }
+            }
+            BooleanRowConstraint::NullTest { .. }
+            | BooleanRowConstraint::UnknownNullComparison { .. }
+            | BooleanRowConstraint::All(_)
+            | BooleanRowConstraint::Any(_)
+            | BooleanRowConstraint::StringEquality { .. }
+            | BooleanRowConstraint::StringPrefix { .. }
+            | BooleanRowConstraint::Residual { .. } => {}
+        }
+    }
+    for (position, column) in columns.iter().enumerate() {
+        // Pure NULL tests are valid on non-integer columns. Only the columns
+        // used by integer comparisons require type bounds (checked above).
+        if let Some(bounds) = integer_evidence(column) {
+            push(&mut edges, const_index, position, bounds.maximum);
+            push(&mut edges, position, const_index, -bounds.minimum);
+        }
+    }
+    // Bellman-Ford from a virtual super source (all distances zero):
+    // a further relaxation on iteration N proves a negative cycle.
+    // Out-of-range access fails closed to unproven rather than panicking.
+    let mut distance = vec![0_i128; node_count];
+    for _ in 0..node_count {
+        let mut relaxed = false;
+        for (from, to, weight) in &edges {
+            let (Some(current_from), Some(current_to)) = (distance.get(*from), distance.get(*to))
+            else {
+                return false;
+            };
+            let Some(candidate) = current_from.checked_add(*weight) else {
+                return false;
+            };
+            if candidate < *current_to {
+                let Some(slot) = distance.get_mut(*to) else {
+                    return false;
+                };
+                *slot = candidate;
+                relaxed = true;
+            }
+        }
+        if !relaxed {
+            return false;
+        }
+    }
+    true
 }
 
 fn possible_joint_truths(
@@ -2712,6 +3328,58 @@ fn eval_joint_truth(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn symbolic_physical_contradiction_survives_exhausted_sample_budget() {
+        let a = ColumnRef::new(Some("t".to_string()), "a".to_string());
+        let b = ColumnRef::new(Some("t".to_string()), "b".to_string());
+        let mut conditions = vec![
+            BooleanRowConstraint::IntegerColumnComparison {
+                left: a.clone(),
+                operator: ComparisonOperator::Gt,
+                right: b.clone(),
+            },
+            BooleanRowConstraint::IntegerColumnComparison {
+                left: b,
+                operator: ComparisonOperator::Gt,
+                right: a,
+            },
+        ];
+        // Fourteen NULL-only columns push the Cartesian representative search
+        // above 4096 assignments, while the strict cycle is still impossible.
+        for position in 0..14 {
+            conditions.push(BooleanRowConstraint::NullTest {
+                column: ColumnRef::new(Some("t".to_string()), format!("nullable_{position}")),
+                negated: false,
+            });
+        }
+        let references = conditions.iter().collect::<Vec<_>>();
+        let requirements = references
+            .iter()
+            .map(|item| (*item, BooleanTruthCase::True))
+            .collect::<Vec<_>>();
+        let known = |column: &ColumnRef| column.relation() == Some("t");
+        let bounds = |column: &ColumnRef| {
+            // NULL-only string columns must not require integer evidence.
+            if column.name().starts_with("nullable_") {
+                None
+            } else {
+                Some(SignedIntegerEvidence {
+                    minimum: -1,
+                    maximum: 1,
+                })
+            }
+        };
+        assert_eq!(
+            conjoin_physical_row_truths("t", BooleanTruthCase::True, &references, known, bounds,)
+                .map(|(_, satisfiable)| satisfiable),
+            Some(false)
+        );
+        assert_eq!(
+            jointly_satisfiable_physical_truths("t", &requirements, known, bounds),
+            Some(false)
+        );
+    }
 
     #[test]
     fn exact_noninteger_conjuncts_preserve_integer_domain() {
