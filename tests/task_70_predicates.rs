@@ -804,14 +804,15 @@ fn identical_source_column_comparison_regions_are_exhaustive() {
 }
 
 #[test]
-fn mutually_exclusive_correlated_comparisons_never_claim_impossibility_from_samples() {
+fn mutually_exclusive_correlated_comparisons_prove_impossibility_symbolically() {
+    // TASK-103: a strict two-cycle violates the integer total order for every
+    // non-NULL row, and NULL rows yield UNKNOWN rather than TRUE. This is a
+    // symbolic invariant proof, not a bounded-sample absence claim.
     let witness = typed_witness("a > b AND b > a");
     assert!(
-        matches!(
-            witness.qualifying(),
-            BooleanWitnessDirection::Residual { .. }
-        ),
-        "bounded representatives must not assert universal infeasibility"
+        matches!(witness.qualifying(), BooleanWitnessDirection::Impossible),
+        "strict order cycle must be provably impossible, got {:?}",
+        witness.qualifying()
     );
     assert!(matches!(
         witness.rejected(),

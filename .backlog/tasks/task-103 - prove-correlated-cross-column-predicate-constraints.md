@@ -1,18 +1,18 @@
 ---
 id: TASK-103
 title: Prove correlated cross-column and mixed Boolean constraints
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-13'
+updated_date: '2026-10-15 16:53'
 labels: []
 milestone: m-3
 dependencies:
   - TASK-102
 references:
-  - 'TASK-70'
-  - 'TASK-68'
-  - 'TASK-86'
+  - TASK-70
+  - TASK-68
+  - TASK-86
 priority: high
 type: feature
 ---
@@ -36,6 +36,12 @@ Extend bounded existence-only cross-column assignments to sound typed joint cons
 - [ ] #4 Provide deterministic TRUE and NOT TRUE witnesses, including FALSE versus UNKNOWN causes, and propagate strongest safely justified per-column and output domains; verify NULL, duplicates and comparison settings rather than assuming binary/coercion laws.
 - [ ] #5 Add property/differential DuckDB checks and hand-constructed counterexamples for multi-column conjunctions/disjunctions, satisfiable/impossible/unknown, computed aliases and dbt parity; validate schema/API/manifest changes.
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Research boolean_witness joint enumeration limits (done: existence-only, has_complete_scalar_regions false for distinct cross-column, conjoin/jointly_satisfiable guard on contains_column_comparison). 2. Implement symbolic joint unsatisfiability prover in src/boolean_witness.rs: flatten All into null + equality/union-find + difference-constraints graph with CONST node for literals (strict < as <=-1), self-contradiction, disjoint accepted sets, deterministic caps (<=32 cols, <=128 atoms). Prove qualifying Impossible when enumeration empty but symbolic unsat; prove rejected Impossible via not_true_constraint unsat for tautologies. 3. Wire prover into recheck_truth_directions and into conjoin_physical_row_truths/jointly_satisfiable_physical_truths (return Some(false) on symbolic proof instead of None). 4. TDD: new tests/task_103_cross_column.rs covering mixed AND/OR/NOT, BETWEEN/IN NULL members, null-safe, computed affine/CASE aliases, impossible cycles (a>b AND b>a, 3-cycle, literal-bound cycles, equality+disequality), tautologies (null-safe complements), satisfiable controls, FALSE vs UNKNOWN witnesses, DuckDB differential oracles, dbt parity, all-dialect parser shape. Update mutually_exclusive test to Impossible. 5. Update docs/semantics.md, docs/coverage-manifest.json (signed_integer_cross_column to bounded_joint_exact), docs/code-map.md if ownership shifts, schema only if needed (no wire change expected). 6. Verify: cargo fmt, clippy -D warnings, single-file tests, full cargo test, cargo doc if docs change.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation and verification
 

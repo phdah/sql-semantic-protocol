@@ -52,8 +52,18 @@ Catalog-typed finite DECIMAL inputs also admit exact integral conversion; finite
 Unproven text formatting, implicit/session-dependent coercion, and fractional conversion rules remain residual.
 This is a local witness, not a proof of complete output-value distribution,
 general decimal arithmetic or implicit coercion. NULL-containing finite integer IN/NOT IN lists retain
-SQL UNKNOWN, including impossible qualifying branches. Unsafe casts,
-noninvertible cross-column constraints, computed BETWEEN bounds and
+SQL UNKNOWN, including impossible qualifying branches. Correlated signed
+integer cross-column conjunctions additionally prove joint impossibility
+from total-order invariants: strict order cycles, equality with
+disequality, conflicting NULL with non-NULL requirements, and literal-bound
+cycles detected through integer difference constraints with exhaustive type
+bounds and enforced accepted values. Complementary null-safe disjunctions
+prove tautologies through the same joint check on their NOT TRUE region.
+Disjunctive IN lists need case splitting beyond this bounded prover, and
+unparenthesized `IS [NOT] DISTINCT FROM ... AND/OR ...` remains a
+parser-boundary residual because sqlparser binds the right operand
+loosely. Unsafe casts, non-order-based or unbounded cross-column relations,
+computed BETWEEN bounds and
 dialect-sensitive pattern/regex, collations, coercions or opaque functions
 remain explicit residuals. Prefix `LIKE` requires separate binary-collation
 and no-padding attestations. An explicit single-character `ESCAPE` is supported only when it never appears in the safe prefix and is not the trailing `%` wildcard. Operator-local witnesses do **not** establish a
