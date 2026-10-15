@@ -385,29 +385,25 @@ fn contradictory_case_guard_contributes_no_domain() {
 
 #[test]
 fn computed_case_arms_evaluate_through_catalog_total_arithmetic() {
-    // Arms are evaluated over every surviving row without guard refinement,
-    // so the union is a sound superset: 11 is unreachable (its guard needs
-    // a > 1 while a = 1 selects ELSE) but safely included.
+    // A CASE arm is evaluated only for source values selecting that arm.
     let sql = "SELECT CASE WHEN a > 1 THEN a + 10 ELSE 0 END AS v
                FROM t WHERE a IN (1, 3)";
-    assert_value_set_domain(sql, &catalog_projected_domain(sql), vec!["0", "11", "13"]);
+    assert_value_set_domain(sql, &catalog_projected_domain(sql), vec!["0", "13"]);
 
-    // An implicit ELSE contributes SQL NULL to the arm union.
     let implicit = "SELECT CASE WHEN a > 1 THEN a + 10 END AS v
                     FROM t WHERE a IN (1, 3)";
     assert_value_set_domain(
         implicit,
         &catalog_projected_domain(implicit),
-        vec!["11", "13", "NULL"],
+        vec!["13", "NULL"],
     );
 
-    // Simple-CASE arms compose through the same finite union.
     let simple = "SELECT CASE a WHEN 1 THEN a + 10 ELSE 0 END AS v
                   FROM t WHERE a IN (1, 3)";
     assert_value_set_domain(
         simple,
         &catalog_projected_domain(simple),
-        vec!["0", "11", "13"],
+        vec!["0", "11"],
     );
 }
 
@@ -845,4 +841,12 @@ fn coalesce_stops_after_a_guaranteed_non_null_argument() {
 fn nullif_numeric_literals_compare_by_sql_value() {
     assert_value_set("SELECT NULLIF(1, 1.0) AS v FROM t", vec!["NULL"]);
     assert_value_set("SELECT NULLIF(1, 2.0) AS v FROM t", vec!["1"]);
+}
+
+#[test]
+fn implicit_else_is_excluded_when_where_proves_every_guard_true() {
+    assert_value_set(
+        "SELECT CASE WHEN a > 0 THEN a END AS v FROM t WHERE a IN (1, 3)",
+        vec!["1", "3"],
+    );
 }
