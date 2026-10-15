@@ -648,7 +648,13 @@ fn text_witness_truth(
 #[test]
 fn impossible_text_conjunctions_yield_empty_output_domains() {
     use sql_semantic_protocol::ValueDomain;
-    for predicate in ["a = b AND a IS NULL", "a <> a", "a IS DISTINCT FROM a"] {
+    for predicate in [
+        "a = b AND a IS NULL",
+        "a <> a",
+        "a IS DISTINCT FROM a",
+        "a <> a OR b <> b",
+        "a IS DISTINCT FROM a OR b IS DISTINCT FROM b",
+    ] {
         let bundle = text_bundle(predicate, true);
         let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
             panic!("{predicate}: typed query must resolve");
@@ -671,6 +677,55 @@ fn impossible_text_conjunctions_yield_empty_output_domains() {
             "{predicate}: impossible filter must yield an empty output domain"
         );
     }
+}
+
+#[test]
+fn transitive_text_equalities_share_prefix_candidates() {
+    // If only adjacent text comparisons share candidates, a = b AND b = c
+    // cannot find c's required LIKE prefix on a even though the row exists.
+    let schema = RelationSchema::new(
+        "t",
+        ["a", "b", "c"]
+            .into_iter()
+            .map(|name| SchemaColumn::from_sql_type(name, "VARCHAR(8)", "postgresql").unwrap())
+            .collect(),
+    )
+    .unwrap();
+    let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
+    let input = SqlInput::inline(
+        "SELECT a FROM t WHERE a = b AND b = c AND c LIKE 'xy%'".to_string(),
+    );
+    let dialect = PostgreSqlDialect {};
+    let mut bundle = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new(
+            "transitive_text",
+            &input,
+            "postgresql",
+            &dialect,
+        )],
+        &catalog,
+    )
+    .unwrap();
+    bundle.declare_comparison_assumptions(&[
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]);
+    let witness = single_witness(&bundle).expect("attested text witness");
+    assert!(
+        matches!(
+            witness.qualifying(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+        ),
+        "transitive equality must share prefix candidates: {:?}",
+        witness.qualifying()
+    );
+    assert!(
+        matches!(
+            witness.rejected(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        ),
+        "a mismatch or NULL rejects the chain"
+    );
 }
 
 #[test]
