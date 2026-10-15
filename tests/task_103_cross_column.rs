@@ -124,9 +124,14 @@ fn mixed_disjunctions_share_one_conjunctive_assignment() {
 
 #[test]
 fn mixed_disjunction_budget_exhaustion_is_residual() {
-    // Seven independent binary alternatives require 128 cases, exceeding
-    // the deterministic 64-case cap. Sampling cannot justify impossibility.
-    let predicate = format!("a < b AND {}", ["(a > b OR a = b)"; 7].join(" AND "));
+    // Sixty-five distinct disjunctive branches exceed the deterministic
+    // 64-case cap. Each branch is feasible alone, but none with a < b.
+    // Representative absence cannot be used as a universal proof.
+    let disjunction = (0..65)
+        .map(|value| format!("(a > b AND c = {value})"))
+        .collect::<Vec<_>>()
+        .join(" OR ");
+    let predicate = format!("a < b AND ({disjunction})");
     let witness = typed_witness_abc(&predicate);
     assert!(matches!(
         witness.qualifying(),
