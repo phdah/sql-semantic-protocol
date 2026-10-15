@@ -2967,13 +2967,11 @@ fn joint_integer_contradiction(
         }
     }
     for (position, column) in columns.iter().enumerate() {
+        // Pure NULL tests are valid on non-integer columns. Only the columns
+        // used by integer comparisons require type bounds (checked above).
         if let Some(bounds) = integer_evidence(column) {
             push(&mut edges, const_index, position, bounds.maximum);
             push(&mut edges, position, const_index, -bounds.minimum);
-        } else {
-            // Without exhaustive type bounds an order cycle could escape
-            // through an unbounded column.
-            return false;
         }
     }
     // Bellman-Ford from a virtual super source (all distances zero):
@@ -3367,11 +3365,16 @@ mod tests {
             .map(|item| (*item, BooleanTruthCase::True))
             .collect::<Vec<_>>();
         let known = |column: &ColumnRef| column.relation() == Some("t");
-        let bounds = |_: &ColumnRef| {
-            Some(SignedIntegerEvidence {
-                minimum: -1,
-                maximum: 1,
-            })
+        let bounds = |column: &ColumnRef| {
+            // NULL-only string columns must not require integer evidence.
+            if column.name().starts_with("nullable_") {
+                None
+            } else {
+                Some(SignedIntegerEvidence {
+                    minimum: -1,
+                    maximum: 1,
+                })
+            }
         };
         assert_eq!(
             conjoin_physical_row_truths(
