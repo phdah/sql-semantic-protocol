@@ -2,6 +2,65 @@
 
 use super::*;
 
+/// A plain derived SELECT preserves physical row identity only when it adds
+/// neither filters nor row-shaping. Use this narrow certified path exclusively
+/// for a uniquely expanded CASE alias NULL test.
+fn direct_derived_case_witness_source(
+    query: &SqlQuery,
+    predicate: Option<&Predicate>,
+    dependencies: &BTreeSet<String>,
+) -> Option<SourceRelation> {
+    let Some(Predicate::IsNull(test)) = predicate else {
+        return None;
+    };
+    if !matches!(test.expression(), Expression::Case(_)) || query.with.is_some() {
+        return None;
+    }
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return None;
+    };
+    let [outer] = select.from.as_slice() else {
+        return None;
+    };
+    if !outer.joins.is_empty() {
+        return None;
+    }
+    let TableFactor::Derived { subquery, .. } = &outer.relation else {
+        return None;
+    };
+    if subquery.with.is_some() || subquery.limit_clause.is_some() || subquery.fetch.is_some() {
+        return None;
+    }
+    let SetExpr::Select(inner) = subquery.body.as_ref() else {
+        return None;
+    };
+    let [inner_from] = inner.from.as_slice() else {
+        return None;
+    };
+    if !matches!(
+        &inner_from.relation,
+        TableFactor::Table {
+            alias: None,
+            sample: None,
+            ..
+        }
+    ) || !inner_from.joins.is_empty()
+        || inner.selection.is_some()
+        || inner.having.is_some()
+        || inner.qualify.is_some()
+        || inner.prewhere.is_some()
+        || inner.distinct.is_some()
+        || inner.top.is_some()
+        || !inner.lateral_views.is_empty()
+        || !matches!(&inner.group_by, GroupByExpr::Expressions(items, modifiers)
+            if items.is_empty() && modifiers.is_empty())
+        || dependencies.len() != 1
+    {
+        return None;
+    }
+    Some(SourceRelation::new(dependencies.iter().next()?.clone(), None))
+}
+
 pub(super) fn analyze_query(
     query: &SqlQuery,
     produced_relation: Option<String>,
@@ -116,9 +175,22 @@ pub(super) fn analyze_query(
         .merged_with(&ConditionExactness::from_residuals(
             missing_column_residuals,
         ));
+    // An unfiltered, row-preserving derived SELECT over one physical table
+    // can expose a computed CASE alias without creating a new row identity.
+    // Rebind that single expression's witness to its actual physical source;
+    // all other derived shapes remain explicit residual boundaries.
+    let local_case_witness_source = direct_derived_case_witness_source(
+        query,
+        predicates.where_predicate(),
+        &relation_analysis.dependencies,
+    );
+    let witness_sources = local_case_witness_source.as_ref().map_or_else(
+        || relation_analysis.sources.clone(),
+        |source| vec![source.clone()],
+    );
     let boolean_witness = crate::boolean_witness::analyze(
         predicates.where_predicate(),
-        &relation_analysis.sources,
+        &witness_sources,
         |column| {
             let original_type = metadata.column_data_type(column)?;
             let data_type = match original_type {
