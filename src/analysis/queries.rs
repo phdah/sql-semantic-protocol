@@ -250,9 +250,7 @@ pub(super) fn analyze_query(
             .then(|| Predicate::IsNull(IsNullPredicate::new(expression, test.negated())))
     });
     let witness_sources = if local_case_witness_predicate.is_some() {
-        local_case_witness_source
-            .into_iter()
-            .collect::<Vec<_>>()
+        local_case_witness_source.into_iter().collect::<Vec<_>>()
     } else {
         relation_analysis.sources.clone()
     };
