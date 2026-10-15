@@ -2507,9 +2507,9 @@ fn true_region_empty(
 /// Each case represents one alternative satisfying assignment. An entire
 /// expression is impossible only if every case is contradictory. Exhausting
 /// either budget or encountering an unproved leaf fails closed to `None`.
-fn bounded_conjunctive_cases<'a>(
-    condition: &'a BooleanRowConstraint,
-) -> Option<Vec<Vec<&'a BooleanRowConstraint>>> {
+fn bounded_conjunctive_cases(
+    condition: &BooleanRowConstraint,
+) -> Option<Vec<Vec<&BooleanRowConstraint>>> {
     const MAX_CASES: usize = 64;
     const MAX_ATOMS_PER_CASE: usize = 128;
     match condition {
@@ -2549,9 +2549,7 @@ fn bounded_conjunctive_cases<'a>(
         BooleanRowConstraint::NullTest { .. }
         | BooleanRowConstraint::UnknownNullComparison { .. }
         | BooleanRowConstraint::IntegerComparison { .. }
-        | BooleanRowConstraint::IntegerColumnComparison { .. } => {
-            Some(vec![vec![condition]])
-        }
+        | BooleanRowConstraint::IntegerColumnComparison { .. } => Some(vec![vec![condition]]),
         BooleanRowConstraint::Residual { .. }
         | BooleanRowConstraint::StringEquality { .. }
         | BooleanRowConstraint::StringPrefix { .. } => None,
@@ -2717,11 +2715,7 @@ fn joint_integer_contradiction(
         while parent.get(node).is_some_and(|root| *root != node) {
             let next = *parent.get(node)?;
             let grandparent = *parent.get(next).unwrap_or(&next);
-            if let Some(slot) = parent.get_mut(node) {
-                *slot = grandparent;
-            } else {
-                return None;
-            }
+            *parent.get_mut(node)? = grandparent;
             node = grandparent;
         }
         parent.get(node).copied()
@@ -3377,14 +3371,8 @@ mod tests {
             }
         };
         assert_eq!(
-            conjoin_physical_row_truths(
-                "t",
-                BooleanTruthCase::True,
-                &references,
-                known,
-                bounds,
-            )
-            .map(|(_, satisfiable)| satisfiable),
+            conjoin_physical_row_truths("t", BooleanTruthCase::True, &references, known, bounds,)
+                .map(|(_, satisfiable)| satisfiable),
             Some(false)
         );
         assert_eq!(
