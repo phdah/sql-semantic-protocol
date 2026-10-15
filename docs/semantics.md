@@ -59,8 +59,12 @@ disequality, conflicting NULL with non-NULL requirements, and literal-bound
 cycles detected through integer difference constraints with exhaustive type
 bounds and enforced accepted values. Complementary null-safe disjunctions
 prove tautologies through the same joint check on their NOT TRUE region.
-Disjunctive IN lists need case splitting beyond this bounded prover, and
-unparenthesized `IS [NOT] DISTINCT FROM ... AND/OR ...` remains a
+Mixed AND/OR constraints, including small disjunctive integer IN lists,
+can be split into at most 64 conjunctive cases (128 atoms per case);
+each case must be proved contradictory. Larger formulas, unproved branches,
+and non-integer predicates remain residual unless an independent conjunct
+already establishes impossibility. Pure NULL tests need no integer type
+evidence. Unparenthesized `IS [NOT] DISTINCT FROM ... AND/OR ...` remains a
 parser-boundary residual because sqlparser binds the right operand
 loosely. Unsafe casts, non-order-based or unbounded cross-column relations,
 computed BETWEEN bounds and
