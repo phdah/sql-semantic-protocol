@@ -614,10 +614,25 @@ fn derive_case_domain(case_expression: &CaseExpression, ctx: DomainContext<'_>) 
     }
     let else_domain = match case_expression.else_result() {
         Some(result) => guard_refined_arm_domain(result, case_expression.else_source_domains(), ctx),
-        None if matches!(case_expression.else_source_domains(), CaseSourceDomains::Unreachable) => {
-            ValueDomain::Empty
-        }
-        None => null_only_domain(),
+        None => {
+            if let Some(DomainSources { column_domains, .. }) = ctx {
+                if case_guarded_domain_alternatives(
+                    case_expression.else_source_domains(),
+                    column_domains,
+                )
+                .is_some_and(|alternatives| alternatives.is_empty())
+                {
+                    ValueDomain::Empty
+                } else {
+                    null_only_domain()
+                }
+            } else if matches!(case_expression.else_source_domains(), CaseSourceDomains::Unreachable)
+            {
+                ValueDomain::Empty
+            } else {
+                null_only_domain()
+            }
+        },
     };
     union_domains(&domain, &else_domain)
 }
@@ -627,10 +642,58 @@ fn guard_refined_arm_domain(
     source_domains: &CaseSourceDomains,
     ctx: DomainContext<'_>,
 ) -> ValueDomain {
+    if let Some(DomainSources { column_domains, .. }) = ctx {
+        if case_guarded_domain_alternatives(source_domains, column_domains)
+            .is_some_and(|alternatives| alternatives.is_empty())
+        {
+            return ValueDomain::Empty;
+        }
+    } else if matches!(source_domains, CaseSourceDomains::Unreachable) {
+        return ValueDomain::Empty;
+    }
     let base = derive_domain(result, ctx);
     match guarded_result_column_domain(source_domains, result, ctx) {
         Some(guard) => intersect_domains(&base, &guard),
         None => base,
+    }
+}
+
+/// Apply CASE branch restrictions to query-level column evidence. Unknown
+/// guards cannot safely narrow any source. An empty result means the arm is
+/// unreachable under the query filters.
+pub(super) fn case_guarded_domain_alternatives(
+    guard: &CaseSourceDomains,
+    domains: &[ColumnDomain],
+) -> Option<Vec<Vec<ColumnDomain>>> {
+    match guard {
+        CaseSourceDomains::Unreachable => Some(Vec::new()),
+        CaseSourceDomains::Unknown(_) => None,
+        CaseSourceDomains::Reachable { alternatives } => Some(
+            alternatives
+                .iter()
+                .filter_map(|alternative| {
+                    let mut refined = domains.to_vec();
+                    for candidate in alternative.column_domains() {
+                        if let Some(index) = refined
+                            .iter()
+                            .position(|known| known.column() == candidate.column())
+                        {
+                            let joint = intersect_domains(
+                                refined[index].domain(),
+                                candidate.domain(),
+                            );
+                            if matches!(joint, ValueDomain::Empty) {
+                                return None;
+                            }
+                            refined[index] = ColumnDomain::new(candidate.column().clone(), joint);
+                        } else {
+                            refined.push(candidate.clone());
+                        }
+                    }
+                    Some(refined)
+                })
+                .collect(),
+        ),
     }
 }
 
