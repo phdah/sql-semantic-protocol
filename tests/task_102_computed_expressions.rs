@@ -606,12 +606,11 @@ fn opaque_guard_case_residualizes() {
 
 #[test]
 fn comparisons_over_computed_values_stay_explicitly_residual() {
-    // Unsupported CASE comparisons still preserve a computed-expression
-    // residual; independently invertible integer functions no longer do.
-    assert_computed_expression_residual(
-        "SELECT a FROM t WHERE CASE WHEN a > 1 THEN a ELSE 0 END = 5",
-    );
+    // CASE, COALESCE and NULLIF comparisons with certified integer
+    // operands are reversible without reconstructing SQL in consumers.
     for predicate in [
+        "CASE WHEN a > 1 THEN a ELSE 0 END = 5",
+        "NOT (CASE WHEN a > 1 THEN a ELSE 0 END = 5)",
         "COALESCE(a, 0) > 5",
         "COALESCE(a, 0) = 0",
         "NULLIF(a, 5) = 3",
@@ -864,6 +863,20 @@ fn computed_integer_comparisons_preserve_true_and_unknown_regions() {
         "NOT (NULLIF(a, 5) = 3)",
         "NULLIF(a, 5) = 3 AND b > 0",
         "NULLIF(a, 5) = 3 OR b IS NULL",
+    ] {
+        assert_exact_both_directions(predicate);
+    }
+}
+
+#[test]
+fn computed_case_comparisons_preserve_selection_and_unknown() {
+    for predicate in [
+        "CASE WHEN a > 1 THEN a ELSE 0 END = 5",
+        "NOT (CASE WHEN a > 1 THEN a ELSE 0 END = 5)",
+        "CASE WHEN a > 1 THEN NULL ELSE a END = 5",
+        "NOT (CASE WHEN a > 1 THEN NULL ELSE a END = 5)",
+        "CASE a WHEN 1 THEN a ELSE 0 END = 1",
+        "CASE WHEN a IS NULL THEN 0 ELSE a END = 0",
     ] {
         assert_exact_both_directions(predicate);
     }
