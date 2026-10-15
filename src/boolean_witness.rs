@@ -1056,6 +1056,15 @@ fn normalize(
                     right,
                 };
             }
+            if let Some(computed) = normalize_computed_integer_comparison(
+                comparison.left(),
+                comparison.operator(),
+                comparison.right(),
+                sources,
+                integer_evidence,
+            ) {
+                return computed;
+            }
             if let Some(bounded) = normalize_modulo_range_comparison(
                 comparison.left(),
                 comparison.operator(),
@@ -1209,6 +1218,101 @@ fn normalize(
         }
         _ => residual("computed, function, collation, cast or other predicate is not invertible"),
     }
+}
+
+/// Normalize the provably reversible integer subset of COALESCE and
+/// NULLIF comparisons. Preserving UNKNOWN on NULLIF's equal-value branch is
+/// essential: a plain conjunction would incorrectly turn NOT UNKNOWN TRUE.
+fn normalize_computed_integer_comparison(
+    left: &Expression,
+    operator: ComparisonOperator,
+    right: &Expression,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<BooleanRowConstraint> {
+    let (computed, operator, comparison_literal) = match (left, right) {
+        (Expression::Function(function), other) => {
+            (function, operator, signed_integer_literal(other)?)
+        }
+        (other, Expression::Function(function)) => {
+            (function, operator.reversed(), signed_integer_literal(other)?)
+        }
+        _ => return None,
+    };
+    if computed.distinct() {
+        return None;
+    }
+    let [Expression::Column(column), fallback] = computed.arguments() else {
+        return None;
+    };
+    let source = resolve_column(column, sources);
+    integer_evidence(&source)?;
+    let fallback_literal = signed_integer_literal(fallback)?;
+    let comparison = BooleanRowConstraint::IntegerComparison {
+        column: source.clone(),
+        operator,
+        literal: comparison_literal,
+    };
+
+    if computed.name().eq_ignore_ascii_case("COALESCE") {
+        // COALESCE(a, fallback) never returns NULL when fallback is a
+        // certified non-NULL integer literal. The NULL arm evaluates the
+        // comparison over fallback, not over source a.
+        let fallback_matches = match operator {
+            ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => {
+                fallback_literal == comparison_literal
+            }
+            ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => {
+                fallback_literal != comparison_literal
+            }
+            ComparisonOperator::Lt => fallback_literal < comparison_literal,
+            ComparisonOperator::Lte => fallback_literal <= comparison_literal,
+            ComparisonOperator::Gt => fallback_literal > comparison_literal,
+            ComparisonOperator::Gte => fallback_literal >= comparison_literal,
+        };
+        let null_arm = BooleanRowConstraint::NullTest {
+            column: source,
+            negated: !fallback_matches,
+        };
+        return BooleanOperands::new(vec![null_arm, comparison]).map(|operands| {
+            if fallback_matches {
+                BooleanRowConstraint::Any(operands)
+            } else {
+                BooleanRowConstraint::All(operands)
+            }
+        });
+    }
+
+    if !computed.name().eq_ignore_ascii_case("NULLIF")
+        || matches!(
+            operator,
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+        )
+    {
+        return None;
+    }
+    // When a == fallback, NULLIF returns SQL NULL. Preserve the UNKNOWN
+    // comparison truth under that condition, rather than incorrectly
+    // classifying it as FALSE (which would make NOT wrongly qualify).
+    let equal_arm = BooleanRowConstraint::All(BooleanOperands::new(vec![
+        BooleanRowConstraint::IntegerComparison {
+            column: source.clone(),
+            operator: ComparisonOperator::Eq,
+            literal: fallback_literal,
+        },
+        BooleanRowConstraint::UnknownNullComparison {
+            column: source.clone(),
+        },
+    ])?);
+    let other_arm = BooleanRowConstraint::All(BooleanOperands::new(vec![
+        BooleanRowConstraint::IntegerComparison {
+            column: source,
+            operator: ComparisonOperator::Neq,
+            literal: fallback_literal,
+        },
+        comparison,
+    ])?);
+    BooleanOperands::new(vec![equal_arm, other_arm]).map(BooleanRowConstraint::Any)
 }
 
 // A NULL test is two-valued even when its input is nullable. Only
