@@ -24,10 +24,34 @@ evaluation language. It preserves SQL UNKNOWN for ordinary comparisons to NULL;
 NULL-safe equality is two-valued. Certified total integer CAST/offset NULL tests, COALESCE of signed integer columns and literal NULL, and NULLIF of two signed integer columns preserve precise NULL truth. Searched CASE with total signed integer result arms and two-valued guards also has exact branch-selecting NULL witnesses; nullable three-valued guards and implicit ELSE branches remain residual. Exact conjunctive NULL tests and numeric
 comparisons refine projected domains when source identity is proven.
 
-Widening signed integer CAST, TRY_CAST and SAFE_CAST share one exact source identity only when all catalog-admissible values fit the target, so no failure-to-NULL or overflow is possible. Narrowing and noninteger conversions remain residual. Exactness still requires authoritative source datatype evidence and a complete,
-consistent assignment of all coupled source columns. Arithmetic inversion is
-limited to proven widened signed casts/offsets, including total
-TRY_CAST/SAFE_CAST. NULL-containing finite integer IN/NOT IN lists retain
+Widening signed integer CAST, TRY_CAST and SAFE_CAST share one exact source identity only when all catalog-admissible values fit the target, so no failure-to-NULL or overflow is possible. For finite, catalog-typed inputs, narrowing TRY_CAST and SAFE_CAST produce exact SQL NULL for out-of-range members; a potentially throwing ordinary CAST remains unknown. Narrowing TRY_CAST and SAFE_CAST of a direct signed source also have exact IS NULL and IS NOT NULL source-row witnesses, covering source NULL and both signed overflow boundaries. Exactness still requires authoritative source datatype evidence and a complete,
+consistent assignment of all coupled source columns. Arithmetic inversion also admits a bounded affine subset: signed unary minus,
+constant addition/subtraction and constant multiplication (including zero), modulo-one identities, including
+literal-on-left operations and nesting. Each operator is checked against the
+entire catalog-admissible signed range and the attested result width before
+rewriting an integer comparison into one scalar source constraint. Catalog-attested integer division may propagate a finite exact integral quotient when both operands and the result are binary64-exact, and division by signed one is invertible on a wholly exact source interval. Fractional division and zero divisors remain residual. Positive-divisor remainder with nonnegative integer input propagates finite outputs or bounded ranges; general periodic remainder inversion stays residual, but unattainable comparisons (for example, an integer remainder modulo 3 equaling 4) have proven TRUE/NOT TRUE classifications using universal absolute remainder bounds. Signed overflow and implicit-coercion uncertainty remain residual.
+Nondivisible equality uses an exact SQL UNKNOWN-preserving contradiction for
+ordinary comparison and a two-valued contradiction for NULL-safe equality.
+The same width proof certifies NULL tests of total arithmetic expressions.
+Catalog-typed integer projections also propagate exact finite sets and safely
+bounded intervals through total arithmetic, including exhaustively enumerable unions of bounded ranges and correlated addition, cancellation, squares, unit division, and nonzero self-remainder. Syntactically identical operands are evaluated once per admitted source value rather than as an independent Cartesian product. Independent finite operands use exhaustive cross-products, never samples used to assert impossibility. Excluded NULLs remain excluded,
+while nullable finite sets explicitly retain NULL. Bare integer literal arithmetic is exact only while both operands and the result fit the deterministic signed 32-bit portable subset; an explicit signed cast can establish a wider result width. Arithmetic results that could overflow, require implicit coercion, or have
+unattested dialect rounding preserve an unknown output domain.
+A catalog-certified globally total and injective signed affine projection may
+also propagate finite excluded source values through its exact inverse. Zero
+multipliers, overflow-prone non-widened expressions and non-injective
+operations cannot certify an excluded output. Constant decimal
+expressions and catalog-typed finite DECIMAL source domains have a checked fixed-point subset: operand and output values
+must be exactly representable in binary64, every intermediate calculation
+must fit bounded decimal precision, and catalog decimals must respect their attested precision and scale. Nonterminating divisions, zero divisors,
+nonportable decimal fractions and negative-dividend remainder semantics are
+unknown rather than rounded or approximated.
+Explicit signed integer CASTs of finite, exactly integral numeric literals or
+canonical ASCII integer text have exact value domains when all values fit.
+Catalog-typed finite DECIMAL inputs also admit exact integral conversion; finite string-source conversions require separately attested enforced binary comparison provenance and canonical ASCII text values. For out-of-range integral inputs, ordinary CAST emits an unknown domain with runtime-dependent failure behavior, while TRY_CAST and SAFE_CAST yield SQL NULL.
+Unproven text formatting, implicit/session-dependent coercion, and fractional conversion rules remain residual.
+This is a local witness, not a proof of complete output-value distribution,
+general decimal arithmetic or implicit coercion. NULL-containing finite integer IN/NOT IN lists retain
 SQL UNKNOWN, including impossible qualifying branches. Unsafe casts,
 noninvertible cross-column constraints, computed BETWEEN bounds and
 dialect-sensitive pattern/regex, collations, coercions or opaque functions
@@ -478,13 +502,7 @@ conservative independent `column_domains`; neither case grants
 whole-query row-membership exactness without all other proof obligations.
 
 Signed integer comparisons require authoritative catalog datatypes and
-representable signed literals. Overflow-free identity arithmetic (`+a`, `a+0`, `0+a`, `a-0`),
-catalog-proven lossless ordinary signed-integer CASTs and constant additions
-or subtractions on a widened signed cast are inverted. The arithmetic
-result must fit the explicit cast target width for the *entire* source
-integer domain; its comparison threshold is translated to the source
-column. Uncast nonzero offsets, narrowing and TRY/SAFE_CAST variants,
-functions, ambiguous sources and expressions that can overflow remain residual. Ordinary LIKE/NOT LIKE with one trailing wildcard after an
+representable signed literals. Overflow-free affine arithmetic, including unary signs, constant addition, subtraction and multiplication, identity division and modulo-one, is inverted only when every intermediate fits its attested signed width over the *entire* source domain. A narrowing signed CAST is invertible only when all catalog-admissible values fit. Finite TRY_CAST and SAFE_CAST narrowing may instead prove exact successful values plus NULL-on-failure, and their direct-source NULL tests can distinguish source NULL from out-of-range values. Potentially throwing ordinary casts, fractional or zero-divisor operations, noninvertible periodic predicates, functions, ambiguous sources and expressions that can overflow remain residual. Ordinary LIKE/NOT LIKE with one trailing wildcard after an
 unescaped ASCII alphanumeric prefix is represented as a typed, jointly solved
 source-row `string_prefix`; both `binary_collation` and `no_char_padding`
 attestations are required before either direction can become exact. SQL NULL
@@ -846,3 +864,9 @@ reinterpreted as scalar row tuples without an exact operator-specific
 evaluator. There is no implicit guarantee that an arbitrary positive or
 negative terminal goal can be realized. The consumer may use the exact
 snapshots to run the SQL program in DuckDB and verify its outcomes.
+
+TASK-101 provides executable DuckDB negative examples for ordinary integer
+cast overflow, TRY_CAST NULL-on-failure, exact signed boundaries, and safe
+decimal and integer arithmetic. These are local scoped proofs. Nonportable
+implicit coercion and full cross-dialect execution equivalence remain separate
+release gates and are not inferred from DuckDB observations alone.

@@ -901,12 +901,26 @@ invertible expression subset includes identity arithmetic (`+a`, `a+0`,
 `0+a`, `a-0`), explicit ordinary signed-integer CASTs and constant offsets
 on such casts where every possible source value and computed result fits
 the 16-, 32-, or 64-bit signed cast target.
-The normalized `signed_integer_cast` expression stores `expression` and
-`target_bits`, while its coupled witness is inverted back to a comparison
-on the original source column. Total, formatting-free signed integer
-`TRY_CAST` and `SAFE_CAST` use the same certified path.
-Narrowing, uncast or overflow-prone nonidentity arithmetic, functional and
-unattested collation-sensitive predicates remain residual. A normalized `like_prefix` predicate is supported only when an
+The normalized `signed_integer_cast` expression stores `expression`, `target_bits`,
+`cast_kind` (`cast`, `try_cast`, `safe_cast`) and `on_failure` (`exception`,
+`null` or `runtime_dependent`). These fields retain the proven failure contract
+even if a catalog proves that the conversion is total. Parser and target-type
+syntax alone do not certify one ordinary CAST failure law, so ordinary CAST is
+`runtime_dependent` until separate runtime evidence establishes an exception.
+Only a total conversion may have its coupled witness inverted back to the source column. An unsafe ordinary cast may raise or follow a vendor conversion law, while an unsafe
+TRY_CAST or SAFE_CAST may become NULL; neither is an exact source identity.
+For finite, typed inputs, total TRY_CAST/SAFE_CAST narrowing outputs include
+the exact successful signed integers and SQL NULL on overflow. Source-row
+IS NULL/IS NOT NULL tests of these narrowing conversions reduce to exact
+range/NULL obligations, while potentially throwing CAST stays residual.
+Canonical finite decimal-to-integer and ASCII text-to-integer conversions
+require demonstrated rounding-free integral values; source text further
+requires an enforced binary comparison law with provenance. Integer
+divisions and modulo are proved only for bounded, portable subsets and
+mathematically excluded remainder outcomes; periodic predicates and
+unattested runtime conversions remain residual. Uncast or overflow-prone
+nonidentity arithmetic, functional and unattested collation-sensitive
+predicates remain residual. A normalized `like_prefix` predicate is supported only when an
 ordinary LIKE/NOT LIKE has exactly one trailing `%`, a nonempty unescaped
 ASCII alphanumeric literal prefix, and a catalog-proven variable-width string
 source column. The source-row `string_prefix` constraint is exact only after

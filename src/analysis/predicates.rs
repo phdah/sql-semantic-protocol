@@ -309,6 +309,9 @@ pub(super) fn analyze_predicate_expression(
         let operator = match op {
             SqlBinaryOperator::Plus => Some(BinaryOperator::Add),
             SqlBinaryOperator::Minus => Some(BinaryOperator::Subtract),
+            SqlBinaryOperator::Multiply => Some(BinaryOperator::Multiply),
+            SqlBinaryOperator::Divide => Some(BinaryOperator::Divide),
+            SqlBinaryOperator::Modulo => Some(BinaryOperator::Modulo),
             _ => None,
         };
         if let Some(operator) = operator {
@@ -332,29 +335,15 @@ pub(super) fn analyze_predicate_expression(
         }
     }
 
-    // Normalize formatting-free signed integer casts when source metadata
-    // can certify total, value-preserving conversion. For TRY/SAFE_CAST this
-    // rules out failure-to-NULL; any narrowing, string/decimal conversion or
-    // unresolved source datatype remains residual at the proof boundary.
-    if let Expr::Cast {
-        kind: SqlCastKind::Cast | SqlCastKind::TryCast | SqlCastKind::SafeCast,
-        expr,
-        data_type,
-        format: None,
-    } = expression
-    {
-        use sqlparser::ast::DataType as SqlDataType;
-        let bits = match data_type {
-            SqlDataType::SmallInt(_) | SqlDataType::Int2(_) | SqlDataType::Int16 => Some(16),
-            SqlDataType::Int(_)
-            | SqlDataType::Integer(_)
-            | SqlDataType::Int4(_)
-            | SqlDataType::Int32 => Some(32),
-            SqlDataType::BigInt(_) | SqlDataType::Int8(_) | SqlDataType::Int64 => Some(64),
+    if let Expr::UnaryOp { op, expr } = expression {
+        let operator = match op {
+            SqlUnaryOperator::Plus => Some(UnaryOperator::Plus),
+            SqlUnaryOperator::Minus => Some(UnaryOperator::Minus),
             _ => None,
         };
-        if let Some(bits) = bits {
-            return Expression::SignedIntegerCast(SignedIntegerCastExpression::new(
+        if let Some(operator) = operator {
+            return Expression::Unary(UnaryExpression::new(
+                operator,
                 analyze_predicate_expression(
                     expr,
                     named_windows,
@@ -362,8 +351,21 @@ pub(super) fn analyze_predicate_expression(
                     scope,
                     diagnostics,
                 ),
-                bits,
             ));
+        }
+    }
+
+    if let Expr::Cast {
+        kind,
+        expr,
+        data_type,
+        format: None,
+    } = expression
+    {
+        let operand =
+            analyze_predicate_expression(expr, named_windows, output_aliases, scope, diagnostics);
+        if let Some(cast) = normalize_signed_integer_cast(kind, data_type, operand) {
+            return cast;
         }
     }
 

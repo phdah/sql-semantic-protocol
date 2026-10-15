@@ -50,11 +50,11 @@ use crate::protocol::{
     MergeMatchKind, NotPredicate, Output, OutputColumn, Predicate, Predicates, Protocol,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
     RowConditions, ScalarSubqueryExpression, SetBranch, SetMode, SetOperand, SetOperation,
-    SetOperator, SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression, SourceRelation,
-    SubquerySemantics, UnaryExpression, UnaryOperator, UnknownSemantic, UnsupportedSemantic,
-    UnsupportedStatement, ValueDomain, ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits,
-    WindowFunctionExpression, WindowOrderExpression, WindowSpecification, WriteDefinitionMode,
-    WriteOperation, WriteValue,
+    SetOperator, SetQuantifier, SetWitnessBoundary, SignedIntegerCastExpression,
+    SignedIntegerCastKind, SignedIntegerWidth, SourceRelation, SubquerySemantics, UnaryExpression,
+    UnaryOperator, UnknownSemantic, UnsupportedSemantic, UnsupportedStatement, ValueDomain,
+    ValueRange, WindowFrame, WindowFrameBound, WindowFrameUnits, WindowFunctionExpression,
+    WindowOrderExpression, WindowSpecification, WriteDefinitionMode, WriteOperation, WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
 
@@ -308,7 +308,10 @@ fn analyze_statement(
 
 // SQL AST to canonical protocol conversion is split by semantic responsibility.
 mod aggregation;
+mod arithmetic_domains;
+mod cast_domains;
 pub(crate) mod constraints;
+mod decimal_literals;
 mod dependencies;
 mod diagnostics;
 mod domains;
@@ -328,7 +331,10 @@ mod typing;
 mod writes;
 
 use aggregation::*;
+use arithmetic_domains::*;
+use cast_domains::*;
 use constraints::*;
+use decimal_literals::*;
 use dependencies::*;
 use diagnostics::*;
 use domains::*;

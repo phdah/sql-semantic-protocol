@@ -31,7 +31,7 @@ Dialect names here are **inventory entries only**, never a production runtime wh
 | `predicates.boolean_logic` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-70 | TASK-27 |
 | `predicates.null_truth` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-70 | TASK-26, TASK-27 |
 | `predicates.string_pattern` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-70 | TASK-27 |
-| `predicates.computed` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-70 | TASK-27 |
+| `predicates.computed` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-70, TASK-101 | TASK-27 |
 | `predicates.temporal` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-70, TASK-79 | TASK-27 |
 | `predicates.comparison_environment` | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | ? | Block | TASK-70, TASK-79 | TASK-27, TASK-33 |
 | `joins.inner` | P | P | P | P | P | P | P | P | P | P | P | P | P | Block | TASK-71 | TASK-25 |

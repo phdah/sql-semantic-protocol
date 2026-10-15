@@ -427,15 +427,108 @@ pub enum WindowFrameBound {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SignedIntegerCastExpression {
     expression: Box<Expression>,
-    target_bits: u16,
+    target_width: SignedIntegerWidth,
+    cast_kind: SignedIntegerCastKind,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum SignedIntegerWidth {
+    Bits16,
+    Bits32,
+    Bits64,
+}
+
+impl SignedIntegerWidth {
+    pub(crate) const ALL: [Self; 3] = [Self::Bits16, Self::Bits32, Self::Bits64];
+
+    pub(crate) const fn from_bits(bits: u16) -> Option<Self> {
+        match bits {
+            16 => Some(Self::Bits16),
+            32 => Some(Self::Bits32),
+            64 => Some(Self::Bits64),
+            _ => None,
+        }
+    }
+
+    pub(crate) const fn bits(self) -> u16 {
+        match self {
+            Self::Bits16 => 16,
+            Self::Bits32 => 32,
+            Self::Bits64 => 64,
+        }
+    }
+
+    pub(crate) const fn limits(self) -> (i128, i128) {
+        let magnitude = 1_i128 << (self.bits() - 1);
+        (-magnitude, magnitude - 1)
+    }
+
+    pub(crate) const fn fits(self, value: i128) -> bool {
+        let (minimum, maximum) = self.limits();
+        minimum <= value && value <= maximum
+    }
+}
+
+/// The SQL cast form, retained even when a catalog proves conversion cannot fail.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SignedIntegerCastKind {
+    /// Ordinary CAST has runtime-dependent failure behavior until attested.
+    Cast,
+    /// TRY_CAST produces SQL NULL when conversion fails.
+    TryCast,
+    /// SAFE_CAST produces SQL NULL when conversion fails.
+    SafeCast,
+}
+
+/// Failure behavior retained for an explicit signed-integer cast.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SignedIntegerCastFailureBehavior {
+    /// The runtime raises an exception for an invalid conversion.
+    Exception,
+    /// The runtime produces SQL NULL for an invalid conversion.
+    Null,
+    /// The available parser/type evidence does not certify one runtime law.
+    RuntimeDependent,
+}
+
+impl SignedIntegerCastFailureBehavior {
+    pub(crate) const fn as_str(self) -> &'static str {
+        match self {
+            Self::Exception => "exception",
+            Self::Null => "null",
+            Self::RuntimeDependent => "runtime_dependent",
+        }
+    }
+}
+
+impl SignedIntegerCastKind {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::Cast => "cast",
+            Self::TryCast => "try_cast",
+            Self::SafeCast => "safe_cast",
+        }
+    }
+
+    /// The canonical failure behavior of this explicit cast.
+    pub fn failure_behavior(self) -> SignedIntegerCastFailureBehavior {
+        match self {
+            Self::Cast => SignedIntegerCastFailureBehavior::RuntimeDependent,
+            Self::TryCast | Self::SafeCast => SignedIntegerCastFailureBehavior::Null,
+        }
+    }
 }
 
 impl SignedIntegerCastExpression {
-    pub(crate) fn new(expression: Expression, target_bits: u16) -> Self {
-        debug_assert!(matches!(target_bits, 16 | 32 | 64));
+    pub(crate) fn new(
+        expression: Expression,
+        target_width: SignedIntegerWidth,
+        cast_kind: SignedIntegerCastKind,
+    ) -> Self {
         Self {
             expression: Box::new(expression),
-            target_bits,
+            target_width,
+            cast_kind,
         }
     }
 
@@ -446,7 +539,16 @@ impl SignedIntegerCastExpression {
 
     /// Signed target width in bits.
     pub fn target_bits(&self) -> u16 {
-        self.target_bits
+        self.target_width.bits()
+    }
+
+    pub(crate) fn target_width(&self) -> SignedIntegerWidth {
+        self.target_width
+    }
+
+    /// Preserve whether SQL requested CAST, TRY_CAST or SAFE_CAST.
+    pub fn cast_kind(&self) -> SignedIntegerCastKind {
+        self.cast_kind
     }
 }
 

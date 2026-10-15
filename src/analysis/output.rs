@@ -559,9 +559,7 @@ pub(super) fn derive_output_domain(expression: &Expression) -> ValueDomain {
             );
             union_domains(&domain, &else_domain)
         }
-        Expression::SignedIntegerCast(_) => ValueDomain::unknown(
-            "signed integer cast output domain requires source datatype evidence",
-        ),
+        Expression::SignedIntegerCast(cast) => derive_signed_integer_cast_output_domain(cast),
         Expression::Unary(unary) => derive_unary_output_domain(unary),
         Expression::Binary(binary) => derive_binary_output_domain(binary),
         Expression::ScalarSubquery(subquery) => {
@@ -626,16 +624,30 @@ pub(super) fn singleton_integer(domain: &ValueDomain) -> Option<i128> {
     value.parse().ok()
 }
 
+fn explicit_signed_integer_width(expression: &Expression) -> Option<SignedIntegerWidth> {
+    match expression {
+        Expression::SignedIntegerCast(cast) => Some(cast.target_width()),
+        Expression::Unary(unary) => explicit_signed_integer_width(unary.operand()),
+        _ => None,
+    }
+}
+
 pub(super) fn derive_unary_output_domain(unary: &UnaryExpression) -> ValueDomain {
     let operand = derive_output_domain(unary.operand());
     match unary.operator() {
         UnaryOperator::Plus => operand,
-        UnaryOperator::Minus => singleton_integer(&operand)
-            .and_then(i128::checked_neg)
-            .map_or_else(
-                || ValueDomain::unknown("unary minus cannot be bounded safely"),
-                |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
-            ),
+        UnaryOperator::Minus => exact_decimal_unary_domain(unary).unwrap_or_else(|| {
+            let width = explicit_signed_integer_width(unary.operand())
+                .unwrap_or(SignedIntegerWidth::Bits32);
+            singleton_integer(&operand)
+                .filter(|value| width.fits(*value))
+                .and_then(i128::checked_neg)
+                .filter(|value| width.fits(*value))
+                .map_or_else(
+                    || ValueDomain::unknown("unary minus cannot be bounded safely"),
+                    |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
+                )
+        }),
         UnaryOperator::BitwiseNot => {
             ValueDomain::unknown("bitwise output domain is not bounded safely")
         }
@@ -643,40 +655,94 @@ pub(super) fn derive_unary_output_domain(unary: &UnaryExpression) -> ValueDomain
 }
 
 pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDomain {
+    if let Some(exact_decimal) = exact_decimal_binary_domain(binary) {
+        return exact_decimal;
+    }
+    // Only certified integer operands can propagate a known SQL NULL result.
+    // In particular do not turn NULL / 0 or untyped NULL coercions into an
+    // exact value-domain proof.
+    let null_literal = |expression: &Expression| {
+        matches!(
+            expression,
+            Expression::Literal(literal) if literal.literal_type() == LiteralType::Null
+        )
+    };
+    if matches!(
+        binary.operator(),
+        BinaryOperator::Add | BinaryOperator::Subtract | BinaryOperator::Multiply
+    ) && ((null_literal(binary.left())
+        && singleton_integer(&derive_output_domain(binary.right())).is_some())
+        || (null_literal(binary.right())
+            && singleton_integer(&derive_output_domain(binary.left())).is_some()))
+    {
+        return ValueDomain::set(
+            SetMode::Include,
+            vec![LiteralExpression::new(
+                LiteralType::Null,
+                LiteralValue::Null,
+            )],
+        );
+    }
     let left = singleton_integer(&derive_output_domain(binary.left()));
     let right = singleton_integer(&derive_output_domain(binary.right()));
     let (Some(left), Some(right)) = (left, right) else {
-        return ValueDomain::unknown("arithmetic output domain requires safely bounded operands");
+        return ValueDomain::unknown(format!(
+            "arithmetic {} on {} and {} requires safely bounded, typed operands",
+            binary.operator().as_str(),
+            crate::protocol::arithmetic_operand_kind(binary.left()),
+            crate::protocol::arithmetic_operand_kind(binary.right())
+        ));
+    };
+    let left_width = explicit_signed_integer_width(binary.left());
+    let right_width = explicit_signed_integer_width(binary.right());
+    let result_width = match (left_width, right_width) {
+        (Some(left), Some(right)) => left.min(right),
+        (Some(width), None) | (None, Some(width)) => width,
+        // Portable implicit integer literal arithmetic is limited to the
+        // narrowest conventional SQL integer width. Wider results require an
+        // explicit cast instead of assuming dialect-specific promotion.
+        (None, None) => SignedIntegerWidth::Bits32,
     };
 
     let value = match binary.operator() {
         BinaryOperator::Add => left.checked_add(right),
         BinaryOperator::Subtract => left.checked_sub(right),
         BinaryOperator::Multiply => left.checked_mul(right),
-        BinaryOperator::Divide => {
-            if right == 0 {
-                None
-            } else {
-                left.checked_div(right)
-            }
-        }
-        BinaryOperator::Modulo => {
-            if right == 0 {
-                None
-            } else {
-                left.checked_rem(right)
-            }
-        }
+        // SQL integer division may return a decimal/floating result in
+        // some dialects and a truncated integer in others. Do not silently
+        // encode Rust integer division as a portable SQL result domain.
+        BinaryOperator::Divide => None,
+        // Modulo by +1 has an exact zero result for every signed integer,
+        // with no divide-by-zero or MIN / -1 edge. Other remainder signs,
+        // argument coercions and zero divisors are not universally attested.
+        BinaryOperator::Modulo if right == 1 => Some(0),
+        BinaryOperator::Modulo => None,
         BinaryOperator::StringConcat
         | BinaryOperator::BitwiseAnd
         | BinaryOperator::BitwiseOr
         | BinaryOperator::BitwiseXor => None,
     };
 
-    value.map_or_else(
-        || ValueDomain::unknown("arithmetic output domain cannot be computed safely"),
-        |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
-    )
+    // Literal calculations with implicit arithmetic widening, or
+    // dialect-dependent division and remainder laws, are not portable exact
+    // integer domains.
+    value
+        .filter(|value| {
+            result_width.fits(left)
+                && result_width.fits(right)
+                && result_width.fits(*value)
+        })
+        .map_or_else(
+            || {
+                ValueDomain::unknown(format!(
+                    "arithmetic {} on {} and {} requires attested result width, zero-divisor and rounding laws",
+                    binary.operator().as_str(),
+                    crate::protocol::arithmetic_operand_kind(binary.left()),
+                    crate::protocol::arithmetic_operand_kind(binary.right())
+                ))
+            },
+            |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),
+        )
 }
 
 pub(super) fn refine_output_domains_from_predicate(columns: &mut [OutputColumn], predicate: &Expr) {

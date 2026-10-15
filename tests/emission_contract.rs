@@ -62,6 +62,32 @@ fn simple_query_emission_matches_active_protocol_fixture() {
 }
 
 #[test]
+fn signed_integer_cast_emission_matches_full_contract_fixture() {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql("SELECT CAST(a AS INTEGER) AS v FROM t", "generic", &dialect)
+        .expect("cast fixture query should analyze");
+
+    let actual: serde_json::Value =
+        serde_json::from_str(&to_json(&protocol)).expect("emitted protocol should be JSON");
+    let expected: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/protocol-signed-cast.json"))
+            .expect("signed cast fixture should be JSON");
+
+    assert_eq!(actual, expected);
+    let cast = &actual["inputs"][0]["statements"][0]["output"]["columns"][0]["expression"];
+    assert_eq!(
+        *cast,
+        serde_json::json!({
+            "kind": "signed_integer_cast",
+            "expression": {"kind": "column", "name": "a", "relation": null},
+            "target_bits": 32,
+            "cast_kind": "cast",
+            "on_failure": "runtime_dependent",
+        })
+    );
+}
+
+#[test]
 fn single_and_collection_emission_use_the_same_active_contract() {
     let dialect = GenericDialect {};
     let sql = "SELECT a FROM t WHERE a > 10";

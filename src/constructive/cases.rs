@@ -187,11 +187,7 @@ pub(super) fn directly_conflicts(obligations: &[WitnessObligation]) -> bool {
                         layer_id: r,
                         bounds: b,
                     },
-                ) if l == r => {
-                    if disjoint(*a, *b) {
-                        return true;
-                    }
-                }
+                ) if l == r && disjoint(*a, *b) => return true,
                 (
                     WitnessObligation::StateRows {
                         relation: l,
@@ -203,11 +199,7 @@ pub(super) fn directly_conflicts(obligations: &[WitnessObligation]) -> bool {
                         before: bb,
                         after: ba,
                     },
-                ) if l == r => {
-                    if disjoint(*ab, *bb) || disjoint(*aa, *ba) {
-                        return true;
-                    }
-                }
+                ) if l == r && (disjoint(*ab, *bb) || disjoint(*aa, *ba)) => return true,
                 (
                     WitnessObligation::Predicate(WitnessFormula::RowTruth {
                         row: a,

@@ -66,10 +66,15 @@ pub(super) fn analyze_query(
     // branch outputs, not a refinement of that placeholder.
     let output = match set_operation.as_ref() {
         Some(operation) => refine_set_operation_output_domains(output, operation),
-        None => refine_output_domains_from_column_domains(
-            output,
+        None => refine_catalog_arithmetic_output_domains(
+            refine_output_domains_from_column_domains(
+                output,
+                &column_domains,
+                &relation_analysis.sources,
+            ),
             &column_domains,
             &relation_analysis.sources,
+            metadata,
         ),
     };
 
@@ -145,9 +150,24 @@ pub(super) fn analyze_query(
                 _ => None,
             }
         },
+        |column| metadata.column_data_type(column).cloned(),
     );
     let (column_domains, output) =
         refine_boolean_qualifying_outcomes(column_domains, output, boolean_witness.as_ref());
+    // Typed scalar projections depend on the *final* qualifying source range:
+    // Boolean witness inversion may prove bounds absent from predicate-only
+    // domain analysis. Re-derive computed results from that same row-local
+    // source evidence without refining unrelated or residual witnesses.
+    let output = if set_operation.is_none() {
+        refine_catalog_arithmetic_output_domains(
+            output,
+            &column_domains,
+            &relation_analysis.sources,
+            metadata,
+        )
+    } else {
+        output
+    };
     sort_diagnostics(&mut diagnostics);
 
     // Only a plain one-to-one projection preserves all source-row truth

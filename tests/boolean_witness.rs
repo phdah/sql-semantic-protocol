@@ -723,7 +723,6 @@ fn casted_integer_offsets_are_inverted_without_overflow() {
         "a + 1 > 2 OR b < 0",
         "CAST(a AS INTEGER) + 1 > 2 OR b < 0",
         "CAST(a AS BIGINT) + 9223372036854775807 > 2 OR b < 0",
-        "CAST(a AS BIGINT) * 2 > 2 OR b < 0",
     ] {
         let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
         let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
@@ -737,6 +736,27 @@ fn casted_integer_offsets_are_inverted_without_overflow() {
             "{predicate}"
         );
     }
+    let predicate = "CAST(a AS BIGINT) * 2 > 2 OR b < 0";
+    let bundle = typed_bundle(&format!("SELECT a FROM t WHERE {predicate}"));
+    let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
+        panic!("expected composition");
+    };
+    let witness = composed.boolean_witnesses()[0].witness();
+    assert!(matches!(
+        witness.qualifying(),
+        BooleanWitnessDirection::Exact(_)
+    ));
+    let BooleanRowConstraint::Any(operands) = witness.condition() else {
+        panic!("expected coupled arithmetic disjunction");
+    };
+    assert!(matches!(
+        &operands[0],
+        BooleanRowConstraint::IntegerComparison {
+            operator: ComparisonOperator::Gt,
+            literal: 1,
+            ..
+        }
+    ));
 }
 
 #[test]

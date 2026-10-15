@@ -121,10 +121,8 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
         .collect();
     assert_eq!(names.len(), families.len());
     for family in [
-        "numeric_general_arithmetic",
         "regex_and_nonprefix_patterns",
         "nonbinary_collations_and_padding",
-        "noninteger_casts_and_implicit_coercions",
         "date_time_zone_and_calendar",
         "json_array_struct_and_vendor_functions",
         "dialect_specific_nullsafe_operators",
@@ -141,6 +139,27 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
             .as_str()
             .is_some_and(|value| !value.is_empty()));
     }
+    let casts = families
+        .iter()
+        .find(|item| item["family"] == "noninteger_casts_and_implicit_coercions")
+        .unwrap();
+    assert_eq!(
+        casts["status"],
+        "bounded_literal_exact_with_source_residual"
+    );
+    assert_eq!(casts["release_blocking"], true);
+    assert!(casts["scope"]
+        .as_str()
+        .is_some_and(|value| value.contains("arbitrary text")));
+    let arithmetic = families
+        .iter()
+        .find(|item| item["family"] == "numeric_general_arithmetic")
+        .unwrap();
+    assert_eq!(
+        arithmetic["status"],
+        "bounded_local_exact_with_general_residual"
+    );
+    assert_eq!(arithmetic["release_blocking"], true);
 }
 
 #[test]
@@ -450,7 +469,6 @@ fn opaque_or_mixed_type_computed_null_tests_fail_closed() {
         "COALESCE(a, ABS(b)) IS NULL",
         "COALESCE(a, 'text') IS NOT NULL",
         "NULLIF(a, a + 1) IS NULL",
-        "TRY_CAST(a AS SMALLINT) IS NULL",
         "CASE WHEN a > 1 THEN b ELSE a END IS NULL",
         "CASE WHEN a IS NULL THEN b END IS NULL",
     ] {

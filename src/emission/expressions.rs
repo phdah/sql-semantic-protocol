@@ -19,7 +19,9 @@ pub(super) fn expression_to_value(expression: &Expression) -> Value {
         Expression::SignedIntegerCast(expression) => json!({
             "kind": "signed_integer_cast",
             "expression": expression_to_value(expression.expression()),
-            "target_bits": expression.target_bits()
+            "target_bits": expression.target_bits(),
+            "cast_kind": expression.cast_kind().as_str(),
+            "on_failure": expression.cast_kind().failure_behavior().as_str()
         }),
         Expression::Unary(expression) => unary_expression_to_value(expression),
         Expression::Binary(expression) => binary_expression_to_value(expression),

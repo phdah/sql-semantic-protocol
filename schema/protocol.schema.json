@@ -1787,11 +1787,19 @@
       "required": [
         "kind",
         "expression",
-        "target_bits"
+        "target_bits",
+        "cast_kind",
+        "on_failure"
       ],
       "properties": {
         "kind": {
           "const": "signed_integer_cast"
+        },
+        "cast_kind": {
+          "enum": ["cast", "try_cast", "safe_cast"]
+        },
+        "on_failure": {
+          "enum": ["exception", "null", "runtime_dependent"]
         },
         "expression": {
           "$ref": "#/$defs/expression"
@@ -1803,7 +1811,21 @@
             64
           ]
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "cast_kind": { "const": "cast" } } },
+          "then": {
+            "properties": { "on_failure": { "const": "runtime_dependent" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "cast_kind": { "enum": ["try_cast", "safe_cast"] } }
+          },
+          "then": { "properties": { "on_failure": { "const": "null" } } }
+        }
+      ]
     },
     "unaryExpression": {
       "type": "object",

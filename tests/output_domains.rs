@@ -142,6 +142,105 @@ fn count_and_constant_arithmetic_have_safe_intrinsic_domains() {
     assert_eq!(value.value(), &LiteralValue::Number("42".to_string()));
 }
 
+fn assert_unknown_domain(sql: &str) {
+    let dialect = GenericDialect {};
+    let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+    assert!(
+        matches!(
+            first_query(&protocol).output().columns()[0].domain(),
+            ValueDomain::Unknown(_)
+        ),
+        "{sql}: implicit arithmetic must not claim a portable exact value"
+    );
+}
+
+#[test]
+fn implicit_integer_division_is_not_portable_exact() {
+    assert_unknown_domain("SELECT 3 / 2 AS value");
+}
+
+#[test]
+fn zero_divisor_division_is_not_portable_exact() {
+    assert_unknown_domain("SELECT 9 / 0 AS value");
+}
+
+#[test]
+fn zero_divisor_remainder_is_not_portable_exact() {
+    assert_unknown_domain("SELECT 0 % 0 AS value");
+}
+
+#[test]
+fn implicit_integer_overflow_is_not_portable_exact() {
+    assert_unknown_domain("SELECT 2147483647 + 1 AS value");
+    assert_unknown_domain("SELECT 9223372036854775807 + 1 AS value");
+}
+
+#[test]
+fn decimal_literal_sum_is_not_portable_exact() {
+    assert_unknown_domain("SELECT 1.2 + 0.3 AS value");
+}
+
+#[test]
+fn null_arithmetic_is_singleton_null() {
+    let dialect = GenericDialect {};
+    for sql in [
+        "SELECT NULL + 1 AS value",
+        "SELECT 1 - NULL AS value",
+        "SELECT NULL * 3 AS value",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
+            panic!("{sql}: total NULL arithmetic must yield singleton SQL NULL");
+        };
+        assert_eq!(values.values()[0].value(), &LiteralValue::Null);
+    }
+}
+
+#[test]
+fn explicit_bigint_widening_carries_exact_result() {
+    let dialect = GenericDialect {};
+    let widened = analyze_sql(
+        "SELECT CAST(2147483647 AS BIGINT) + 1 AS value",
+        "generic",
+        &dialect,
+    )
+    .unwrap();
+    let ValueDomain::Set(values) = first_query(&widened).output().columns()[0].domain() else {
+        panic!("explicit BIGINT arithmetic should carry an exact width");
+    };
+    assert_eq!(
+        values.values()[0].value(),
+        &LiteralValue::Number("2147483648".into())
+    );
+}
+
+#[test]
+fn portable_positive_remainder_is_exact() {
+    let dialect = GenericDialect {};
+    let positive = analyze_sql("SELECT 7 % 3 AS value", "generic", &dialect).unwrap();
+    let ValueDomain::Set(positive_values) = first_query(&positive).output().columns()[0].domain()
+    else {
+        panic!("positive integer remainder is portable and exact");
+    };
+    assert_eq!(
+        positive_values.values()[0].value(),
+        &LiteralValue::Number("1".into())
+    );
+}
+
+#[test]
+fn modulo_one_is_exact_zero() {
+    let dialect = GenericDialect {};
+    let safe = analyze_sql("SELECT 7 % 1 AS value", "generic", &dialect).unwrap();
+    let ValueDomain::Set(values) = first_query(&safe).output().columns()[0].domain() else {
+        panic!("modulo-one has a safe integer value domain");
+    };
+    assert_eq!(
+        values.values()[0].value(),
+        &LiteralValue::Number("0".into())
+    );
+}
+
 #[test]
 fn derived_output_domain_survives_multi_layer_composition() {
     let dialect = GenericDialect {};
@@ -630,6 +729,87 @@ fn local_case_copy_is_consistent_across_exposed_dialects() {
                 Expression::Case(_)
             ),
             "dialect {dialect_name}"
+        );
+    }
+}
+
+#[test]
+fn portable_decimal_literal_arithmetic_has_exact_domains() {
+    let dialect = GenericDialect {};
+    for (sql, expected) in [
+        ("SELECT 1.25 + 0.5 AS value", "1.75"),
+        ("SELECT 1.25 - 0.5 AS value", "0.75"),
+        ("SELECT 1.5 * 2.0 AS value", "3.0"),
+        ("SELECT 1.5 / 0.5 AS value", "3.0"),
+        ("SELECT 1.25 % 0.5 AS value", "0.25"),
+        ("SELECT -1.25 + 0.5 AS value", "-0.75"),
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
+            panic!("{sql}: expected exact finite decimal output");
+        };
+        assert_eq!(
+            values.values()[0].value(),
+            &LiteralValue::Number(expected.to_string()),
+            "{sql}",
+        );
+    }
+
+    for sql in [
+        "SELECT 0.1 + 0.2 AS value",
+        "SELECT 1.5 / 0.0 AS value",
+        "SELECT 1.25 / 3.0 AS value",
+        "SELECT -1.25 % 0.5 AS value",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        assert!(
+            matches!(
+                first_query(&protocol).output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
+            "{sql}: nonportable decimal evaluation must stay unknown"
+        );
+    }
+}
+
+#[test]
+fn finite_signed_casts_preserve_total_values_and_failure_modes() {
+    let dialect = GenericDialect {};
+    for (sql, expected) in [
+        ("SELECT CAST(123 AS SMALLINT) AS value", "123"),
+        ("SELECT CAST('42' AS INTEGER) AS value", "42"),
+        ("SELECT CAST(25.0 AS BIGINT) AS value", "25"),
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
+            panic!("{sql}: expected finite total cast");
+        };
+        assert_eq!(
+            values.values()[0].value(),
+            &LiteralValue::Number(expected.into())
+        );
+    }
+    let protocol = analyze_sql(
+        "SELECT TRY_CAST(40000 AS SMALLINT) AS value",
+        "generic",
+        &dialect,
+    )
+    .unwrap();
+    let ValueDomain::Set(values) = first_query(&protocol).output().columns()[0].domain() else {
+        panic!("TRY_CAST of an out-of-range exact integer should yield NULL");
+    };
+    assert_eq!(values.values()[0].value(), &LiteralValue::Null);
+    for sql in [
+        "SELECT CAST(40000 AS SMALLINT) AS value",
+        "SELECT CAST('1.5' AS INTEGER) AS value",
+    ] {
+        let protocol = analyze_sql(sql, "generic", &dialect).unwrap();
+        assert!(
+            matches!(
+                first_query(&protocol).output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
+            "{sql}: unproved or exceptional cast must not be exact"
         );
     }
 }
