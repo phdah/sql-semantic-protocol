@@ -2620,11 +2620,11 @@ fn true_region_empty(
         BooleanRowConstraint::UnknownNullComparison { .. } => true,
         BooleanRowConstraint::Residual { .. }
         | BooleanRowConstraint::StringEquality { .. }
-        | BooleanRowConstraint::StringColumnComparison { .. }
         | BooleanRowConstraint::StringPrefix { .. }
         | BooleanRowConstraint::NullTest { .. } => false,
         BooleanRowConstraint::IntegerComparison { .. }
-        | BooleanRowConstraint::IntegerColumnComparison { .. } => {
+        | BooleanRowConstraint::IntegerColumnComparison { .. }
+        | BooleanRowConstraint::StringColumnComparison { .. } => {
             joint_integer_contradiction(&[condition], integer_evidence, restrictions)
         }
     }
@@ -2677,10 +2677,10 @@ fn bounded_conjunctive_cases(
         BooleanRowConstraint::NullTest { .. }
         | BooleanRowConstraint::UnknownNullComparison { .. }
         | BooleanRowConstraint::IntegerComparison { .. }
-        | BooleanRowConstraint::IntegerColumnComparison { .. } => Some(vec![vec![condition]]),
+        | BooleanRowConstraint::IntegerColumnComparison { .. }
+        | BooleanRowConstraint::StringColumnComparison { .. } => Some(vec![vec![condition]]),
         BooleanRowConstraint::Residual { .. }
         | BooleanRowConstraint::StringEquality { .. }
-        | BooleanRowConstraint::StringColumnComparison { .. }
         | BooleanRowConstraint::StringPrefix { .. } => None,
     }
 }
@@ -3195,19 +3195,31 @@ fn possible_joint_truth_vectors(
                     .extend(other_region.integers.iter().copied());
             }
         }
-        // Text equality needs shared byte candidates: a prefix required on
-        // one side (for example by LIKE) must be representable on the other,
-        // or no joint TRUE row is ever found even when one exists.
-        for other in &region.compared_text_columns {
-            if let Some(other_region) = initial.get(other) {
-                let shared = thresholds
-                    .get_mut(column)
-                    .expect("collected correlated text column");
-                shared.strings.extend(other_region.strings.iter().cloned());
-                shared
-                    .prefixes
-                    .extend(other_region.prefixes.iter().cloned());
+    }
+    // Text equalities can form transitive chains (a = b AND b = c). Share
+    // candidate literals and LIKE prefixes across the entire connected
+    // component; a single pass misses satisfying assignments at distance >1.
+    // Only finite collected values propagate, so this reaches a fixed point.
+    loop {
+        let snapshot = thresholds.clone();
+        let mut changed = false;
+        for (column, region) in &snapshot {
+            for other in &region.compared_text_columns {
+                if let Some(other_region) = snapshot.get(other) {
+                    let shared = thresholds
+                        .get_mut(column)
+                        .expect("collected correlated text column");
+                    let before_strings = shared.strings.len();
+                    let before_prefixes = shared.prefixes.len();
+                    shared.strings.extend(other_region.strings.iter().cloned());
+                    shared.prefixes.extend(other_region.prefixes.iter().cloned());
+                    changed |= shared.strings.len() != before_strings
+                        || shared.prefixes.len() != before_prefixes;
+                }
             }
+        }
+        if !changed {
+            break;
         }
     }
     let mut assignments = vec![BTreeMap::new()];
