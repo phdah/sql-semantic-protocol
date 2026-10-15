@@ -369,7 +369,13 @@ pub(super) fn analyze_predicate_expression(
         }
     }
 
-    analyze_expression_with_scope(expression, scope, named_windows, diagnostics)
+    // A uniquely resolved local CASE alias retains its canonical computed
+    // expression, not an untyped reference to the derived SELECT column.
+    // Ambiguous and non-CASE projections are left as source references.
+    inherit_local_case_expression(
+        analyze_expression_with_scope(expression, scope, named_windows, diagnostics),
+        scope,
+    )
 }
 
 pub(super) fn normalize_comparison(
