@@ -37,6 +37,36 @@ fn direct_derived_case_witness_source(
     let [inner_from] = inner.from.as_slice() else {
         return None;
     };
+    // Only an unambiguous SQL alias reference may inherit the producer's
+    // CASE. Direct expressions in the outer WHERE are not interchangeable
+    // with projected columns and must not borrow this physical identity.
+    let target_alias = match select.selection.as_ref()? {
+        Expr::IsNull(expression) | Expr::IsNotNull(expression) => {
+            let Expr::Identifier(name) = expression.as_ref() else {
+                return None;
+            };
+            &name.value
+        }
+        _ => return None,
+    };
+    if inner
+        .projection
+        .iter()
+        .filter(|item| matches!(
+            item,
+            SelectItem::ExprWithAlias {
+                expr: Expr::Case { .. },
+                alias,
+            } if &alias.value == target_alias
+        ))
+        .count() != 1
+        || inner.projection.iter().filter(|item| matches!(
+            item,
+            SelectItem::ExprWithAlias { alias, .. } if &alias.value == target_alias
+        )).count() != 1
+    {
+        return None;
+    }
     if !matches!(
         &inner_from.relation,
         TableFactor::Table {
