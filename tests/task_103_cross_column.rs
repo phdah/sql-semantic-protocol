@@ -126,7 +126,7 @@ fn mixed_disjunctions_share_one_conjunctive_assignment() {
 fn mixed_disjunction_budget_exhaustion_is_residual() {
     // Seven independent binary alternatives require 128 cases, exceeding
     // the deterministic 64-case cap. Sampling cannot justify impossibility.
-    let predicate = format!("a < b AND {}", vec!["(a > b OR a = b)"; 7].join(" AND "));
+    let predicate = format!("a < b AND {}", ["(a > b OR a = b)"; 7].join(" AND "));
     let witness = typed_witness_abc(&predicate);
     assert!(matches!(
         witness.qualifying(),
