@@ -69,6 +69,16 @@ pub(super) fn boolean_constraint_to_value(constraint: &crate::BooleanRowConstrai
             "operator": operator.as_str(),
             "literal": literal
         }),
+        crate::BooleanRowConstraint::StringColumnComparison {
+            left,
+            operator,
+            right,
+        } => json!({
+            "kind": "string_column_comparison",
+            "left": column_ref_to_value(left),
+            "operator": operator.as_str(),
+            "right": column_ref_to_value(right)
+        }),
         crate::BooleanRowConstraint::StringPrefix {
             column,
             prefix,

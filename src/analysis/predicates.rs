@@ -107,6 +107,34 @@ pub(super) fn analyze_predicate_with_windows(
                 *negated,
             ))
         }
+        Expr::Like {
+            negated,
+            any: false,
+            expr,
+            pattern,
+            escape_char,
+        } if safe_like_exact(pattern, escape_char.as_ref()).is_some() => {
+            let literal = safe_like_exact(pattern, escape_char.as_ref())
+                .expect("guarded wildcard-free LIKE literal");
+            normalize_comparison(
+                analyze_predicate_expression(
+                    expr,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                if *negated {
+                    ComparisonOperator::Neq
+                } else {
+                    ComparisonOperator::Eq
+                },
+                Expression::Literal(LiteralExpression::new(
+                    LiteralType::String,
+                    LiteralValue::Text(literal),
+                )),
+            )
+        }
         Expr::IsNull(inner) => Predicate::IsNull(IsNullPredicate::new(
             analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             false,
@@ -246,6 +274,46 @@ pub(super) fn safe_like_escape(prefix: &str, escape_char: Option<&sqlparser::ast
         }
         _ => false,
     }
+}
+
+// A wildcard-free LIKE pattern is a portable equality only when no
+// dialect can read a character as a wildcard, character class or escape.
+// Standard wildcards (`%`, `_`), T-SQL classes (`[`, `]`), the MySQL
+// implicit backslash escape and non-ASCII tokenization are all rejected,
+// mirroring the ASCII-alphanumeric law of safe LIKE prefixes. An explicit
+// ESCAPE is inert exactly when its single character never occurs in the
+// pattern, so it escapes nothing. Unlike a safe prefix, a wildcard-free
+// pattern cannot contain the `%` wildcard, so `ESCAPE '%'` is inert here.
+pub(super) fn safe_like_exact(
+    pattern: &Expr,
+    escape_char: Option<&sqlparser::ast::Value>,
+) -> Option<String> {
+    let Expr::Value(value) = pattern else {
+        return None;
+    };
+    let sqlparser::ast::Value::SingleQuotedString(text) = &value.value else {
+        return None;
+    };
+    if text.contains('%')
+        || text.contains('_')
+        || text.contains('[')
+        || text.contains(']')
+        || text.contains('\\')
+        || !text.bytes().all(|byte| byte.is_ascii_alphanumeric())
+    {
+        return None;
+    }
+    let inert = match escape_char {
+        None => true,
+        Some(sqlparser::ast::Value::SingleQuotedString(character)) => {
+            character.chars().count() == 1 && !text.contains(character.as_str())
+        }
+        _ => false,
+    };
+    if !inert {
+        return None;
+    }
+    Some(text.clone())
 }
 
 pub(super) fn is_plain_boolean_column(expression: &Expr) -> bool {
@@ -392,6 +460,12 @@ pub(super) fn comparison_operator(operator: &SqlBinaryOperator) -> Option<Compar
         SqlBinaryOperator::LtEq => Some(ComparisonOperator::Lte),
         SqlBinaryOperator::Gt => Some(ComparisonOperator::Gt),
         SqlBinaryOperator::GtEq => Some(ComparisonOperator::Gte),
+        // MySQL `<=>` is a two-valued null-safe equality: TRUE when both
+        // sides are NULL or equal, FALSE otherwise. It coincides with
+        // `IS NOT DISTINCT FROM` and inherits the same typed proof laws:
+        // exact for catalog-typed integers and for attested binary strings,
+        // residual everywhere else. No vendor default is assumed.
+        SqlBinaryOperator::Spaceship => Some(ComparisonOperator::IsNotDistinctFrom),
         _ => None,
     }
 }

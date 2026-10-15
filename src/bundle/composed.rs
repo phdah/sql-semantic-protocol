@@ -594,6 +594,20 @@ impl ResolvedComposedSemantics {
         &self.output
     }
 
+    /// After witness evidence changes without re-running analysis, an
+    /// impossible qualifying direction admits no rows, so every projected
+    /// output is empty. This mirrors the analysis-time impossible refinement
+    /// without inventing per-column domains. Idempotent for witnesses that
+    /// were already impossible before the evidence update.
+    pub(crate) fn refresh_empty_output_on_impossible(&mut self) {
+        let directions = self
+            .boolean_witnesses
+            .iter()
+            .map(|item| item.witness.qualifying())
+            .collect::<Vec<_>>();
+        self.output.empty_on_impossible(directions);
+    }
+
     /// Return diagnostics for semantics that could not be propagated precisely.
     pub fn diagnostics(&self) -> &[CompositionDiagnostic] {
         &self.diagnostics

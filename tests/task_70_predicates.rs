@@ -72,6 +72,7 @@ fn boolean_constraint_wire_schema_covers_every_emitted_variant() {
         "integer_comparison",
         "integer_column_comparison",
         "string_equality",
+        "string_column_comparison",
         "string_prefix",
         "residual",
     ] {
@@ -125,7 +126,6 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
         "nonbinary_collations_and_padding",
         "date_time_zone_and_calendar",
         "json_array_struct_and_vendor_functions",
-        "dialect_specific_nullsafe_operators",
         "computed_join_group_write_expressions",
         "whole_graph_physical_realization",
     ] {
@@ -139,6 +139,20 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
             .as_str()
             .is_some_and(|value| !value.is_empty()));
     }
+    // TASK-104 promotes MySQL null-safe equality to bounded exactness while
+    // unscoped dialect spellings stay residual.
+    let nullsafe = families
+        .iter()
+        .find(|item| item["family"] == "dialect_specific_nullsafe_operators")
+        .unwrap();
+    assert_eq!(
+        nullsafe["status"],
+        "bounded_local_exact_with_general_residual"
+    );
+    assert_eq!(nullsafe["release_blocking"], true);
+    assert!(nullsafe["scope"]
+        .as_str()
+        .is_some_and(|value| value.contains("<=>")));
     let casts = families
         .iter()
         .find(|item| item["family"] == "noninteger_casts_and_implicit_coercions")

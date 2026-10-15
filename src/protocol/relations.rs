@@ -17,6 +17,26 @@ impl Output {
     pub fn columns(&self) -> &[OutputColumn] {
         &self.columns
     }
+
+    /// Empty every projected column when any witness direction is impossible.
+    /// After witness evidence changes without re-running analysis, an
+    /// impossible qualifying direction admits no rows. This mirrors the
+    /// analysis-time impossible refinement without inventing per-column
+    /// domains, and is idempotent for already-empty outputs.
+    pub(crate) fn empty_on_impossible<'a>(
+        &mut self,
+        directions: impl IntoIterator<Item = &'a crate::boolean_witness::BooleanWitnessDirection>,
+    ) {
+        use crate::boolean_witness::BooleanWitnessDirection;
+        if directions
+            .into_iter()
+            .any(|direction| matches!(direction, BooleanWitnessDirection::Impossible))
+        {
+            for column in &mut self.columns {
+                column.domain = ValueDomain::Empty;
+            }
+        }
+    }
 }
 
 /// One final query output column.

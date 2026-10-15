@@ -136,6 +136,7 @@ impl AnalysisBundle {
                         .witness
                         .declare_comparison_assumptions(&self.comparison_declarations);
                 }
+                semantics.refresh_empty_output_on_impossible();
             }
         }
         self.refresh_outcome_goals();
@@ -183,6 +184,7 @@ impl AnalysisBundle {
                     item.witness
                         .restrict_with_schema_constraints(&self.relation_constraints);
                 }
+                semantics.refresh_empty_output_on_impossible();
             }
         }
         self.refresh_outcome_goals();

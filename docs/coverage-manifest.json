@@ -36,7 +36,11 @@
       "portable_exact_binary64_representable_decimal_literal_arithmetic",
       "literal_integral_casts_with_explicit_cast_try_safe_failure_contract",
       "bounded_binary64_exact_unit_division_and_nonzero_zero_dividends",
-      "correlated_cross_column_joint_impossibility_and_null_safe_tautologies"
+      "correlated_cross_column_joint_impossibility_and_null_safe_tautologies",
+      "wildcard_free_like_as_attested_string_equality",
+      "attested_cross_text_column_equality_with_shared_candidates",
+      "mysql_spaceship_as_typed_null_safe_equality",
+      "reflexive_and_null_clash_text_impossibility_with_empty_outputs"
     ],
     "unproved_scope": [
       "general_arithmetic_overflow",
@@ -85,8 +89,8 @@
       {
         "family": "string_binary_equality_and_like_prefix",
         "status": "conditional_local_exact",
-        "scope": "variable-length strings; binary collation, no CHAR padding; safe nonescaping ASCII LIKE prefix",
-        "evidence": "tests/boolean_witness.rs",
+        "scope": "variable-length strings; binary collation, no CHAR padding; safe nonescaping ASCII LIKE prefix, wildcard-free LIKE/NOT LIKE as string equality, attested cross-text-column equality with shared byte candidates, reflexive and null-clash text impossibility with empty outputs, mixed Boolean couplings; ILIKE/regex/COLLATE/CHAR/Unicode/ordering remain residual",
+        "evidence": "tests/boolean_witness.rs; tests/task_104_pattern_collation_nullsafe.rs",
         "release_blocking": true,
         "implementation_task": "TASK-104"
       },
@@ -109,16 +113,16 @@
       {
         "family": "regex_and_nonprefix_patterns",
         "status": "unproved_residual",
-        "scope": "regex flags, backtracking, ILIKE, unsafe LIKE ESCAPE, Unicode and vendor pattern laws",
-        "evidence": "docs/semantics.md",
+        "scope": "regex flags, backtracking, ILIKE, unsafe LIKE ESCAPE, Unicode and vendor pattern laws; wildcard-free portable LIKE and safe ESCAPE variants are exact under attestations (see string_binary_equality_and_like_prefix)",
+        "evidence": "docs/semantics.md; tests/task_104_pattern_collation_nullsafe.rs",
         "release_blocking": true,
         "implementation_task": "TASK-104"
       },
       {
         "family": "nonbinary_collations_and_padding",
         "status": "unproved_residual",
-        "scope": "locale comparison and trailing-space semantics without explicit binary/no-pad proof",
-        "evidence": "docs/semantics.md",
+        "scope": "locale comparison and trailing-space semantics without explicit binary/no-pad proof; CHAR operands stay residual even when attested, text ordering has no proven collation order",
+        "evidence": "docs/semantics.md; tests/task_104_pattern_collation_nullsafe.rs",
         "release_blocking": true,
         "implementation_task": "TASK-104"
       },
@@ -140,9 +144,9 @@
       },
       {
         "family": "dialect_specific_nullsafe_operators",
-        "status": "unproved_residual",
-        "scope": "MySQL <=> and other dialect-specific nullsafe spellings without scoped dialect evidence",
-        "evidence": "docs/semantics.md",
+        "status": "bounded_local_exact_with_general_residual",
+        "scope": "MySQL <=> normalizes to IS NOT DISTINCT FROM with the same typed laws (integers exact unattested, text exact only when attested); unparenthesized null-safe AND/OR and other dialect-specific spellings without scoped evidence stay residual",
+        "evidence": "tests/task_104_pattern_collation_nullsafe.rs; tests/task_103_cross_column.rs",
         "release_blocking": true,
         "implementation_task": "TASK-104"
       },

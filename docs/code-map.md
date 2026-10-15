@@ -16,7 +16,7 @@ Physical schema and default semantics: `src/relation.rs` owns typed columns, col
 |---|---|---|---|
 | SQL `JOIN`, ON, equality or join kind | `src/analysis/joins.rs` | `src/analysis/relations.rs`, `src/join_witness.rs`, `src/physical_realization/joins.rs` | `tests/differential_conformance.rs`, `tests/physical_realization/joins.rs`, `tests/protocol_conformance_physical.rs` |
 | CTE, derived table, source alias, table scope | `src/analysis/relations.rs` | `src/analysis/lineage.rs`, `src/composition.rs` | `tests/local_relations.rs` |
-| `WHERE`, `HAVING`, `QUALIFY`, SQL truth | `src/analysis/predicates.rs` | `src/analysis/exactness.rs`, `src/boolean_witness.rs`, `src/domain.rs` | `tests/differential_conformance.rs`, `tests/boolean_witness.rs`, `tests/task_103_cross_column.rs` |
+| `WHERE`, `HAVING`, `QUALIFY`, SQL truth | `src/analysis/predicates.rs` | `src/analysis/exactness.rs`, `src/boolean_witness.rs`, `src/domain.rs` | `tests/differential_conformance.rs`, `tests/boolean_witness.rs`, `tests/task_103_cross_column.rs`, `tests/task_104_pattern_collation_nullsafe.rs` |
 | Catalog-certified finite and interval arithmetic output domains | `src/analysis/arithmetic_domains.rs` | `src/analysis/output.rs`, `src/analysis/queries.rs` | `tests/task_101_arithmetic.rs` |
 | Numeric bounds, scalar domains or comparisons | `src/domain.rs` | `src/analysis/domains.rs`, `src/analysis/typing.rs`, `src/protocol/values.rs` | `tests/typed_domains.rs`, `tests/output_domains.rs` |
 | Explicit CAST/TRY_CAST/SAFE_CAST literal outcome domains | `src/analysis/cast_domains.rs` | `src/analysis/output.rs` | `tests/output_domains.rs` |
