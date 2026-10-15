@@ -1186,7 +1186,9 @@ fn witness_truth(
                 }),
             }
         }
-        BooleanRowConstraint::StringEquality { .. } | BooleanRowConstraint::StringPrefix { .. } => {
+        BooleanRowConstraint::StringEquality { .. }
+        | BooleanRowConstraint::StringColumnComparison { .. }
+        | BooleanRowConstraint::StringPrefix { .. } => {
             panic!("integer differential fixture cannot evaluate string condition")
         }
         BooleanRowConstraint::Residual { reason } => {
@@ -1234,6 +1236,52 @@ fn string_witness_truth(
                 other => panic!("unexpected source column {other}"),
             };
             value.map(|text| text.starts_with(prefix) != *negated)
+        }
+        BooleanRowConstraint::StringEquality {
+            column,
+            operator,
+            literal,
+        } => {
+            let value = match column.name() {
+                "a" => a,
+                "b" => b,
+                other => panic!("unexpected source column {other}"),
+            };
+            match operator {
+                sql_semantic_protocol::ComparisonOperator::IsDistinctFrom => {
+                    Some(value != Some(literal.as_str()))
+                }
+                sql_semantic_protocol::ComparisonOperator::IsNotDistinctFrom => {
+                    Some(value == Some(literal.as_str()))
+                }
+                sql_semantic_protocol::ComparisonOperator::Eq => value.map(|text| text == literal),
+                sql_semantic_protocol::ComparisonOperator::Neq => value.map(|text| text != literal),
+                _ => panic!("unsupported string differential operator: {operator:?}"),
+            }
+        }
+        BooleanRowConstraint::StringColumnComparison {
+            left,
+            operator,
+            right,
+        } => {
+            let get = |column: &sql_semantic_protocol::ColumnRef| match column.name() {
+                "a" => a,
+                "b" => b,
+                other => panic!("unexpected source column {other}"),
+            };
+            let lhs = get(left);
+            let rhs = get(right);
+            match operator {
+                sql_semantic_protocol::ComparisonOperator::IsDistinctFrom => Some(lhs != rhs),
+                sql_semantic_protocol::ComparisonOperator::IsNotDistinctFrom => Some(lhs == rhs),
+                sql_semantic_protocol::ComparisonOperator::Eq => {
+                    lhs.zip(rhs).map(|(lhs, rhs)| lhs == rhs)
+                }
+                sql_semantic_protocol::ComparisonOperator::Neq => {
+                    lhs.zip(rhs).map(|(lhs, rhs)| lhs != rhs)
+                }
+                _ => panic!("unsupported string differential operator: {operator:?}"),
+            }
         }
         other => panic!("unsupported string differential node: {other:?}"),
     }

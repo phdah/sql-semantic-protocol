@@ -66,9 +66,27 @@ and non-integer predicates remain residual unless an independent conjunct
 already establishes impossibility. Pure NULL tests need no integer type
 evidence. Unparenthesized `IS [NOT] DISTINCT FROM ... AND/OR ...` remains a
 parser-boundary residual because sqlparser binds the right operand
-loosely. Unsafe casts, non-order-based or unbounded cross-column relations,
+loosely. MySQL `<=>` normalizes to `IS NOT DISTINCT FROM` and inherits its
+typed laws exactly: catalog-typed integer operands are exact with no
+attestation, while text operands need the binary/no-padding attestations like
+every other text equality. Attested equality-family comparisons between two
+catalog-proven variable-width text columns are exact source-row obligations
+in both directions, with shared byte candidates across the two sides so mixed
+conjunctions with LIKE prefixes stay jointly satisfiable; text ordering has
+no proven collation order. Reflexive text disequality (`a <> a`,
+`a IS DISTINCT FROM a`) and an ordinary text equality coupled with a NULL
+requirement are symbolically impossible once attested, and an
+attestation-time impossible direction empties projected output domains. ILIKE,
+SIMILAR TO, RLIKE/REGEXP, PostgreSQL regex and `~~` spellings, `LIKE ANY`,
+COLLATE expressions, fixed-width CHAR operands, Unicode/non-ASCII patterns,
+T-SQL character classes, backslash patterns, interior/leading wildcards and
+unsafe ESCAPE modes remain explicit residuals in every parser-capable
+dialect; a successful parse never implies engine or collation parity.
+A wildcard-free LIKE/NOT LIKE with a portable literal pattern normalizes to
+an attested string equality (`eq`/`neq`), preserving SQL UNKNOWN for NULL.
+Unsafe casts, non-order-based or unbounded cross-column relations,
 computed BETWEEN bounds and
-dialect-sensitive pattern/regex, collations, coercions or opaque functions
+dialect-sensitive regex, collations, coercions or opaque functions
 remain explicit residuals. Prefix `LIKE` requires separate binary-collation
 and no-padding attestations. An explicit single-character `ESCAPE` is supported only when it never appears in the safe prefix and is not the trailing `%` wildcard. Operator-local witnesses do **not** establish a
 complete physical-source realization across arbitrary producer DAGs. TASK-70

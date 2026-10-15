@@ -265,6 +265,7 @@ impl QueryStatement {
         if let Some(witness) = &mut self.boolean_witness {
             witness.declare_comparison_assumptions(declared);
         }
+        self.refresh_empty_output_on_impossible();
     }
 
     /// Return final query output columns in SELECT-list order.
@@ -302,6 +303,20 @@ impl QueryStatement {
         if let Some(witness) = &mut self.boolean_witness {
             witness.restrict_with_schema_constraints(sets);
         }
+        self.refresh_empty_output_on_impossible();
+    }
+
+    /// After witness evidence changes without re-running analysis, an
+    /// impossible qualifying direction admits no rows, so every projected
+    /// output is empty. This mirrors the analysis-time impossible refinement
+    /// without inventing per-column domains.
+    fn refresh_empty_output_on_impossible(&mut self) {
+        let directions = self
+            .boolean_witness
+            .iter()
+            .map(|witness| witness.qualifying())
+            .collect::<Vec<_>>();
+        self.output.empty_on_impossible(directions);
     }
 
     /// Return the set-operation tree when this query combines multiple query operands.

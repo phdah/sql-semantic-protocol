@@ -889,7 +889,8 @@ nodes include `null_test` (`column`, `negated`),
 `unknown_null_comparison` (`column`, always SQL UNKNOWN),
 `integer_comparison` (`column`, `operator`, `literal`),
 `integer_column_comparison` (`left`, `operator`, `right`),
-`string_equality` (`column`, `operator`, `literal`), and
+`string_equality` (`column`, `operator`, `literal`),
+`string_column_comparison` (`left`, `operator`, `right`), and
 `string_prefix` (`column`, `prefix`, `negated`). A `residual`
 leaf keeps a diagnostic reason. Column endpoints use physical relation
 identity and source-column name. Integer comparisons are exact only for
@@ -924,10 +925,26 @@ predicates remain residual. A normalized `like_prefix` predicate is supported on
 ordinary LIKE/NOT LIKE has exactly one trailing `%`, a nonempty unescaped
 ASCII alphanumeric literal prefix, and a catalog-proven variable-width string
 source column. The source-row `string_prefix` constraint is exact only after
-both `binary_collation` and `no_char_padding` comparison declarations. Other
+both `binary_collation` and `no_char_padding` comparison declarations. A
+wildcard-free LIKE/NOT LIKE with a portable literal pattern normalizes to
+`string_equality` (`eq`/`neq`) under the same attestations: the pattern must
+be a single-quoted literal without `%`, `_`, T-SQL class brackets, backslash
+or non-ASCII bytes, with an inert single-character ESCAPE (absent from the
+pattern, so it escapes nothing; `%` is inert here because a wildcard-free
+pattern cannot contain the wildcard). Other
 LIKE forms, ILIKE, embedded wildcards, active escape clauses, untyped or fixed-width
 strings stay residual. An explicit single-character ESCAPE is supported only
-when it cannot change the safe prefix or trailing wildcard. NULL is UNKNOWN for both LIKE and NOT LIKE. All supported predicates, including repeated-column conjunctions,
+when it cannot change the safe prefix or trailing wildcard. NULL is UNKNOWN for both LIKE and NOT LIKE.
+Attested equality-family comparisons between two catalog-proven
+variable-width string columns (`=`, `<>`, `IS DISTINCT FROM`,
+`IS NOT DISTINCT FROM`) normalize to `string_column_comparison` with the same
+attestation gate; MySQL `<=>` maps to `is_not_distinct_from` under the same
+typed laws (exact for catalog-typed integers without attestations, attested
+for text). Text ordering comparisons (`<`, `<=`, `>`, `>=`) have no proven
+collation order and stay residual, as do ILIKE, SIMILAR TO, RLIKE/REGEXP,
+PostgreSQL regex and `~~` operator spellings, `LIKE ANY`, COLLATE expressions
+and fixed-width CHAR operands, in every parser-capable dialect. A successful
+parse never implies regex-engine or vendor-collation parity. All supported predicates, including repeated-column conjunctions,
 are solved jointly using bounded source-value partitions. Ambiguous relation
 identity, mixed proven/unproven trees, or oversized searches remain residual.
 
@@ -943,7 +960,11 @@ within known signed-integer bounds. A contradiction (for example,
 direction impossible when all typed scalar truth regions are exhaustively
 covered, while the rejected direction remains exact. Independent correlated
 columns and string sample representatives cannot establish impossible
-directions from the absence of a sampled witness.
+directions from the absence of a sampled witness. Proven symbolic text
+contradictions can: an ordinary attested text equality coupled with a NULL
+requirement on either side, and a reflexive `<>`/`IS DISTINCT FROM` on one
+text column, are impossible. An attestation-time impossible direction empties
+every projected output domain exactly like an analysis-time one.
 An SQL datatype alone does not establish a column's NOT NULL constraint.
 When enforced primary-key, NOT NULL, or finite accepted-values constraints are available,
 the analyzer rechecks the coupled truth directions against those restrictions, including

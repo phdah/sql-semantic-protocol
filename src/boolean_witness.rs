@@ -111,6 +111,18 @@ pub enum BooleanRowConstraint {
         /// Literal string value.
         literal: String,
     },
+    /// Compare two variable-length string source columns on the same source
+    /// row under explicitly attested binary collation and no-padding rules.
+    /// Only the equality family is modeled; text ordering has no proven
+    /// collation order and stays residual.
+    StringColumnComparison {
+        /// Resolved left string-typed source column.
+        left: ColumnRef,
+        /// Equals, not-equals or their two-valued NULL-safe counterparts.
+        operator: ComparisonOperator,
+        /// Resolved right string-typed source column.
+        right: ColumnRef,
+    },
     /// Test a string's binary prefix, or its SQL NOT LIKE complement.
     StringPrefix {
         /// Resolved string-typed source column.
@@ -139,6 +151,7 @@ impl BooleanRowConstraint {
             | Self::IntegerComparison { .. }
             | Self::IntegerColumnComparison { .. }
             | Self::StringEquality { .. }
+            | Self::StringColumnComparison { .. }
             | Self::StringPrefix { .. } => true,
             Self::Residual { .. } => false,
         }
@@ -192,6 +205,15 @@ impl BooleanRowConstraint {
                 operator: *operator,
                 literal: literal.clone(),
             }),
+            Self::StringColumnComparison {
+                left,
+                operator,
+                right,
+            } => Some(Self::StringColumnComparison {
+                left: mapped.get(left)?.clone(),
+                operator: *operator,
+                right: mapped.get(right)?.clone(),
+            }),
             Self::StringPrefix {
                 column,
                 prefix,
@@ -215,6 +237,7 @@ impl BooleanRowConstraint {
             Self::IntegerComparison { .. }
             | Self::IntegerColumnComparison { .. }
             | Self::StringEquality { .. }
+            | Self::StringColumnComparison { .. }
             | Self::StringPrefix { .. } => true,
             Self::NullTest { .. } | Self::UnknownNullComparison { .. } | Self::Residual { .. } => {
                 false
@@ -227,7 +250,9 @@ impl BooleanRowConstraint {
             Self::All(operands) | Self::Any(operands) => operands
                 .iter()
                 .any(Self::requires_binary_string_assumptions),
-            Self::StringEquality { .. } | Self::StringPrefix { .. } => true,
+            Self::StringEquality { .. }
+            | Self::StringColumnComparison { .. }
+            | Self::StringPrefix { .. } => true,
             _ => false,
         }
     }
@@ -246,7 +271,10 @@ impl BooleanRowConstraint {
             | Self::IntegerComparison { .. } => true,
             // A source value compared to itself has complete TRUE/FALSE/UNKNOWN
             // regions, unlike two independently ranged correlated columns.
+            // The same holds for one text value compared to itself under
+            // attested binary equality; distinct text columns only sample.
             Self::IntegerColumnComparison { left, right, .. } => left == right,
+            Self::StringColumnComparison { left, right, .. } => left == right,
             Self::StringEquality { .. } | Self::StringPrefix { .. } | Self::Residual { .. } => {
                 false
             }
@@ -259,6 +287,7 @@ impl BooleanRowConstraint {
                 operands.iter().any(Self::contains_column_comparison)
             }
             Self::IntegerColumnComparison { left, right, .. } => left != right,
+            Self::StringColumnComparison { left, right, .. } => left != right,
             _ => false,
         }
     }
@@ -278,6 +307,10 @@ impl BooleanRowConstraint {
                 output.push(column.clone());
             }
             Self::IntegerColumnComparison { left, right, .. } => {
+                output.push(left.clone());
+                output.push(right.clone());
+            }
+            Self::StringColumnComparison { left, right, .. } => {
                 output.push(left.clone());
                 output.push(right.clone());
             }
@@ -397,6 +430,7 @@ impl BooleanWitness {
                 // Coupled source-column comparisons are not independent scalar
                 // domains, even though they can be row-local exact witnesses.
                 BooleanRowConstraint::IntegerColumnComparison { .. } => true,
+                BooleanRowConstraint::StringColumnComparison { .. } => true,
                 BooleanRowConstraint::StringEquality {
                     column,
                     operator,
@@ -1071,6 +1105,37 @@ fn normalize(
                     return residual(
                         "cross-relation comparison requires a relational witness, not one source row",
                     );
+                }
+                // Attested binary equality between two variable-length text
+                // columns is an exact source-row obligation once the caller
+                // declares binary collation and no CHAR padding. Ordering
+                // comparisons have no proven collation order and stay
+                // residual, as do columns without variable-length evidence
+                // (notably fixed-width CHAR, whose padding law is unproven).
+                if matches!(
+                    comparison.operator(),
+                    ComparisonOperator::Eq
+                        | ComparisonOperator::Neq
+                        | ComparisonOperator::IsDistinctFrom
+                        | ComparisonOperator::IsNotDistinctFrom
+                ) && string_evidence(&left).is_some()
+                    && string_evidence(&right).is_some()
+                {
+                    return BooleanRowConstraint::StringColumnComparison {
+                        left,
+                        operator: comparison.operator(),
+                        right,
+                    };
+                }
+                if matches!(
+                    comparison.operator(),
+                    ComparisonOperator::Lt
+                        | ComparisonOperator::Lte
+                        | ComparisonOperator::Gt
+                        | ComparisonOperator::Gte
+                ) && (string_evidence(&left).is_some() || string_evidence(&right).is_some())
+                {
+                    return residual("text ordering comparison requires a proven collation order");
                 }
                 if integer_evidence(&left).is_none() || integer_evidence(&right).is_none() {
                     return residual(
@@ -1943,6 +2008,33 @@ fn not_true_constraint(condition: &BooleanRowConstraint) -> Option<BooleanRowCon
                 literal: literal.clone(),
             },
         ),
+        BooleanRowConstraint::StringColumnComparison {
+            left,
+            operator,
+            right,
+        } => {
+            let negated = BooleanRowConstraint::StringColumnComparison {
+                left: left.clone(),
+                operator: negated_comparison_operator(*operator),
+                right: right.clone(),
+            };
+            if two_valued_comparison(*operator) {
+                Some(negated)
+            } else {
+                BooleanOperands::new(vec![
+                    BooleanRowConstraint::NullTest {
+                        column: left.clone(),
+                        negated: false,
+                    },
+                    BooleanRowConstraint::NullTest {
+                        column: right.clone(),
+                        negated: false,
+                    },
+                    negated,
+                ])
+                .map(BooleanRowConstraint::Any)
+            }
+        }
         BooleanRowConstraint::StringPrefix {
             column,
             prefix,
@@ -2037,6 +2129,15 @@ fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
             column,
             operator: negated_comparison_operator(operator),
             literal,
+        },
+        BooleanRowConstraint::StringColumnComparison {
+            left,
+            operator,
+            right,
+        } => BooleanRowConstraint::StringColumnComparison {
+            left,
+            operator: negated_comparison_operator(operator),
+            right,
         },
         BooleanRowConstraint::StringPrefix {
             column,
@@ -2238,6 +2339,7 @@ struct ColumnThresholds {
     prefixes: BTreeSet<String>,
     strings: BTreeSet<String>,
     compared_columns: BTreeSet<ColumnRef>,
+    compared_text_columns: BTreeSet<ColumnRef>,
 }
 
 fn collect_comparison_literals(
@@ -2283,6 +2385,31 @@ fn collect_comparison_literals(
                 .or_default()
                 .strings
                 .insert(literal.clone());
+        }
+        BooleanRowConstraint::StringColumnComparison { left, right, .. } => {
+            // Record the text correlation for candidate sharing below; the
+            // empty marker forces the string (never integer) value path.
+            // It is already a default candidate, so no truth region is added.
+            thresholds
+                .entry(left.clone())
+                .or_default()
+                .compared_text_columns
+                .insert(right.clone());
+            thresholds
+                .entry(right.clone())
+                .or_default()
+                .compared_text_columns
+                .insert(left.clone());
+            thresholds
+                .entry(left.clone())
+                .or_default()
+                .strings
+                .insert(String::new());
+            thresholds
+                .entry(right.clone())
+                .or_default()
+                .strings
+                .insert(String::new());
         }
         BooleanRowConstraint::StringPrefix { column, prefix, .. } => {
             thresholds
@@ -2496,7 +2623,8 @@ fn true_region_empty(
         | BooleanRowConstraint::StringPrefix { .. }
         | BooleanRowConstraint::NullTest { .. } => false,
         BooleanRowConstraint::IntegerComparison { .. }
-        | BooleanRowConstraint::IntegerColumnComparison { .. } => {
+        | BooleanRowConstraint::IntegerColumnComparison { .. }
+        | BooleanRowConstraint::StringColumnComparison { .. } => {
             joint_integer_contradiction(&[condition], integer_evidence, restrictions)
         }
     }
@@ -2549,7 +2677,8 @@ fn bounded_conjunctive_cases(
         BooleanRowConstraint::NullTest { .. }
         | BooleanRowConstraint::UnknownNullComparison { .. }
         | BooleanRowConstraint::IntegerComparison { .. }
-        | BooleanRowConstraint::IntegerColumnComparison { .. } => Some(vec![vec![condition]]),
+        | BooleanRowConstraint::IntegerColumnComparison { .. }
+        | BooleanRowConstraint::StringColumnComparison { .. } => Some(vec![vec![condition]]),
         BooleanRowConstraint::Residual { .. }
         | BooleanRowConstraint::StringEquality { .. }
         | BooleanRowConstraint::StringPrefix { .. } => None,
@@ -2573,7 +2702,8 @@ fn collect_conjunctive_leaves<'a>(
         BooleanRowConstraint::NullTest { .. }
         | BooleanRowConstraint::UnknownNullComparison { .. }
         | BooleanRowConstraint::IntegerComparison { .. }
-        | BooleanRowConstraint::IntegerColumnComparison { .. } => {
+        | BooleanRowConstraint::IntegerColumnComparison { .. }
+        | BooleanRowConstraint::StringColumnComparison { .. } => {
             leaves.push(condition);
             true
         }
@@ -2634,6 +2764,7 @@ fn joint_integer_contradiction(
                 | BooleanRowConstraint::All(_)
                 | BooleanRowConstraint::Any(_)
                 | BooleanRowConstraint::StringEquality { .. }
+                | BooleanRowConstraint::StringColumnComparison { .. }
                 | BooleanRowConstraint::StringPrefix { .. }
                 | BooleanRowConstraint::Residual { .. } => {}
             }
@@ -2693,6 +2824,27 @@ fn joint_integer_contradiction(
                     return true;
                 }
             }
+            BooleanRowConstraint::StringColumnComparison {
+                left,
+                right,
+                operator,
+            } => {
+                // Byte equality is reflexive under any attested binary law:
+                // ordinary comparisons need both sides non-NULL for TRUE,
+                // while NULL-safe operators are two-valued.
+                if matches!(operator, ComparisonOperator::Eq | ComparisonOperator::Neq) {
+                    must_non_null.insert(left.clone());
+                    must_non_null.insert(right.clone());
+                }
+                if left == right
+                    && matches!(
+                        operator,
+                        ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom
+                    )
+                {
+                    return true;
+                }
+            }
             BooleanRowConstraint::IntegerComparison { .. }
             | BooleanRowConstraint::All(_)
             | BooleanRowConstraint::Any(_)
@@ -2707,7 +2859,8 @@ fn joint_integer_contradiction(
         return true;
     }
 
-    // Equality union-find over column-column equalities. Any inconsistent
+    // Equality union-find over typed integer and attested binary-text columns.
+    // Any inconsistent
     // access fails closed to unproven rather than panicking.
     let index_of = |column: &ColumnRef| columns.iter().position(|item| item == column);
     let mut parent: Vec<usize> = (0..columns.len()).collect();
@@ -2738,6 +2891,11 @@ fn joint_integer_contradiction(
             left,
             right,
             operator,
+        }
+        | BooleanRowConstraint::StringColumnComparison {
+            left,
+            right,
+            operator,
         } = leaf
         {
             if matches!(
@@ -2756,6 +2914,11 @@ fn joint_integer_contradiction(
     // Disequality against an equality group is contradictory.
     for leaf in leaves {
         if let BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            right,
+            operator,
+        }
+        | BooleanRowConstraint::StringColumnComparison {
             left,
             right,
             operator,
@@ -2956,6 +3119,7 @@ fn joint_integer_contradiction(
             | BooleanRowConstraint::All(_)
             | BooleanRowConstraint::Any(_)
             | BooleanRowConstraint::StringEquality { .. }
+            | BooleanRowConstraint::StringColumnComparison { .. }
             | BooleanRowConstraint::StringPrefix { .. }
             | BooleanRowConstraint::Residual { .. } => {}
         }
@@ -3041,6 +3205,34 @@ fn possible_joint_truth_vectors(
                     .integers
                     .extend(other_region.integers.iter().copied());
             }
+        }
+    }
+    // Text equalities can form transitive chains (a = b AND b = c). Share
+    // candidate literals and LIKE prefixes across the entire connected
+    // component; a single pass misses satisfying assignments at distance >1.
+    // Only finite collected values propagate, so this reaches a fixed point.
+    loop {
+        let snapshot = thresholds.clone();
+        let mut changed = false;
+        for (column, region) in &snapshot {
+            for other in &region.compared_text_columns {
+                if let Some(other_region) = snapshot.get(other) {
+                    let shared = thresholds
+                        .get_mut(column)
+                        .expect("collected correlated text column");
+                    let before_strings = shared.strings.len();
+                    let before_prefixes = shared.prefixes.len();
+                    shared.strings.extend(other_region.strings.iter().cloned());
+                    shared
+                        .prefixes
+                        .extend(other_region.prefixes.iter().cloned());
+                    changed |= shared.strings.len() != before_strings
+                        || shared.prefixes.len() != before_prefixes;
+                }
+            }
+        }
+        if !changed {
+            break;
         }
     }
     let mut assignments = vec![BTreeMap::new()];
@@ -3316,6 +3508,41 @@ fn eval_joint_truth(
             };
             let matching = value.starts_with(prefix) != *negated;
             Some(if matching {
+                SqlTruth::True
+            } else {
+                SqlTruth::False
+            })
+        }
+        BooleanRowConstraint::StringColumnComparison {
+            left,
+            operator,
+            right,
+        } => {
+            use crate::protocol::ComparisonOperator as Op;
+            // Byte equality under attested binary collation. Ordinary
+            // operators yield UNKNOWN when either side is NULL; NULL-safe
+            // operators are two-valued.
+            let read = |column: &ColumnRef| -> Option<Option<&str>> {
+                match assignment.get(column)? {
+                    Some(RowScalar::String(value)) => Some(Some(value.as_str())),
+                    None => Some(None),
+                    _ => None,
+                }
+            };
+            let lhs = read(left)?;
+            let rhs = read(right)?;
+            let result = match operator {
+                Op::IsDistinctFrom => lhs != rhs,
+                Op::IsNotDistinctFrom => lhs == rhs,
+                Op::Eq | Op::Neq => {
+                    let (Some(lhs), Some(rhs)) = (lhs, rhs) else {
+                        return Some(SqlTruth::Unknown);
+                    };
+                    (lhs == rhs) == (*operator == Op::Eq)
+                }
+                Op::Lt | Op::Lte | Op::Gt | Op::Gte => return None,
+            };
+            Some(if result {
                 SqlTruth::True
             } else {
                 SqlTruth::False

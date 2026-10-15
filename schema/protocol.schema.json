@@ -5519,6 +5519,79 @@
           "additionalProperties": false,
           "required": [
             "kind",
+            "left",
+            "operator",
+            "right"
+          ],
+          "properties": {
+            "kind": {
+              "const": "string_column_comparison"
+            },
+            "left": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "relation",
+                "name"
+              ],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "operator": {
+              "enum": [
+                "eq",
+                "neq",
+                "is_distinct_from",
+                "is_not_distinct_from"
+              ]
+            },
+            "right": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "relation",
+                "name"
+              ],
+              "properties": {
+                "relation": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
             "column",
             "operator",
             "literal"
