@@ -2859,7 +2859,8 @@ fn joint_integer_contradiction(
         return true;
     }
 
-    // Equality union-find over column-column equalities. Any inconsistent
+    // Equality union-find over typed integer and attested binary-text columns.
+    // Any inconsistent
     // access fails closed to unproven rather than panicking.
     let index_of = |column: &ColumnRef| columns.iter().position(|item| item == column);
     let mut parent: Vec<usize> = (0..columns.len()).collect();
@@ -2890,6 +2891,11 @@ fn joint_integer_contradiction(
             left,
             right,
             operator,
+        }
+        | BooleanRowConstraint::StringColumnComparison {
+            left,
+            right,
+            operator,
         } = leaf
         {
             if matches!(
@@ -2908,6 +2914,11 @@ fn joint_integer_contradiction(
     // Disequality against an equality group is contradictory.
     for leaf in leaves {
         if let BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            right,
+            operator,
+        }
+        | BooleanRowConstraint::StringColumnComparison {
             left,
             right,
             operator,
