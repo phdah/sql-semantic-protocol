@@ -361,24 +361,23 @@ fn typed_expression(
             Some(TypedIntegers { width, values })
         }
         Expression::Case(case) => {
-            // Each arm is evaluated over every surviving row without guard
-            // refinement, so the union is a sound (possibly loose) superset
-            // of the CASE outputs. Only finite arm values are enumerable;
-            // intervals and underivable arms keep the explicit fallback.
+            // Enumerate each computed arm using only source rows that can
+            // select that arm, including earlier WHEN fallthrough.
             let mut results = Vec::new();
             let mut width = SignedIntegerWidth::Bits16;
-            for result in case
-                .branches()
-                .iter()
-                .map(|branch| branch.result())
-                .chain(case.else_result())
-            {
-                let arm = typed_expression(result, domains, sources, metadata)?;
+            for branch in case.branches() {
+                let arm = guarded_case_integer_arm(
+                    branch.result(),
+                    branch.source_domains(),
+                    domains,
+                    sources,
+                    metadata,
+                )?;
                 width = width.max(arm.width);
-                let IntegerValues::Finite(arm_values) = arm.values else {
+                let IntegerValues::Finite(values) = arm.values else {
                     return None;
                 };
-                for value in arm_values {
+                for value in values {
                     if !results.contains(&value) {
                         results.push(value);
                     }
@@ -387,11 +386,26 @@ fn typed_expression(
                     return None;
                 }
             }
-            // An implicit ELSE is SQL NULL.
-            if case.else_result().is_none() && !results.contains(&None) {
-                results.push(None);
+            let null_expression =
+                Expression::Literal(LiteralExpression::new(LiteralType::Null, LiteralValue::Null));
+            let otherwise = case.else_result().unwrap_or(&null_expression);
+            let arm = guarded_case_integer_arm(
+                otherwise,
+                case.else_source_domains(),
+                domains,
+                sources,
+                metadata,
+            )?;
+            width = width.max(arm.width);
+            let IntegerValues::Finite(values) = arm.values else {
+                return None;
+            };
+            for value in values {
+                if !results.contains(&value) {
+                    results.push(value);
+                }
             }
-            Some(TypedIntegers {
+            (results.len() <= 64).then_some(TypedIntegers {
                 width,
                 values: IntegerValues::Finite(results),
             })
@@ -404,6 +418,41 @@ fn typed_expression(
         | Expression::Unknown(_)
         | Expression::Unsupported(_) => None,
     }
+}
+
+/// Evaluate an arm under its proven branch-selecting column restrictions.
+/// Unknown guard semantics fall back to the unfiltered expression.
+fn guarded_case_integer_arm(
+    result: &Expression,
+    guard: &CaseSourceDomains,
+    domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<TypedIntegers> {
+    let Some(alternatives) = case_guarded_domain_alternatives(guard, domains) else {
+        return typed_expression(result, domains, sources, metadata);
+    };
+    let mut values = Vec::new();
+    let mut width = SignedIntegerWidth::Bits16;
+    for alternative in alternatives {
+        let arm = typed_expression(result, &alternative, sources, metadata)?;
+        width = width.max(arm.width);
+        let IntegerValues::Finite(candidates) = arm.values else {
+            return None;
+        };
+        for value in candidates {
+            if !values.contains(&value) {
+                values.push(value);
+            }
+        }
+        if values.len() > 64 {
+            return None;
+        }
+    }
+    Some(TypedIntegers {
+        width,
+        values: IntegerValues::Finite(values),
+    })
 }
 
 #[derive(Clone)]
