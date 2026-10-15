@@ -692,9 +692,8 @@ fn transitive_text_equalities_share_prefix_candidates() {
     )
     .unwrap();
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
-    let input = SqlInput::inline(
-        "SELECT a FROM t WHERE a = b AND b = c AND c LIKE 'xy%'".to_string(),
-    );
+    let input =
+        SqlInput::inline("SELECT a FROM t WHERE a = b AND b = c AND c LIKE 'xy%'".to_string());
     let dialect = PostgreSqlDialect {};
     let mut bundle = analyze_configured_inputs_with_catalog(
         &[ConfiguredSqlInput::new(
