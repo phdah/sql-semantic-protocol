@@ -1,2 +1,4 @@
 target/
 opencode.json
+/.agents/
+/skills-lock.json
