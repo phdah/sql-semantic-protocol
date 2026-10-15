@@ -40,7 +40,7 @@
     "unproved_scope": [
       "general_arithmetic_overflow",
       "cross_column_global_unsatisfiability_and_nonscalar_relations",
-      "computed_case_coalesce_nullif_beyond_proven_null_tests_and_aliases",
+      "computed_case_coalesce_nullif_with_opaque_mixed_type_and_cross_column_operands",
       "general_noninteger_source_casts_and_implicit_coercions",
       "pattern_escape_regex_collations",
       "date_time_json_vendor_udfs",
@@ -68,8 +68,8 @@
       {
         "family": "computed_null_tests",
         "status": "bounded_local_exact",
-        "scope": "typed COALESCE/NULLIF NULL tests and searched CASE total integer arms with two-valued guards",
-        "evidence": "tests/task_70_predicates.rs",
+        "scope": "typed COALESCE/NULLIF NULL tests and output domains plus simple/searched CASE total integer arms with exact two-valued NULL witnesses including nullable 3VL guards and implicit NULL ELSE",
+        "evidence": "tests/task_102_computed_expressions.rs; tests/task_70_predicates.rs",
         "release_blocking": true,
         "implementation_task": "TASK-102"
       },
@@ -250,6 +250,73 @@
         "tests": [
           "tests/task_101_arithmetic.rs"
         ]
+      }
+    }
+  },
+  "task_102_computed_expressions_evidence": {
+    "owner": "TASK-102",
+    "status": "verified_bounded_computed_expression_contract_release_blocked",
+    "rust_api": [
+      "Expression",
+      "ValueDomain",
+      "SetDomain",
+      "BooleanWitness",
+      "BooleanWitnessDirection"
+    ],
+    "verified_scope": [
+      "COALESCE_unions_argument_domains_and_excludes_NULL_only_when_proven_non_null",
+      "COALESCE_non_null_literal_fallback_proves_IS_NULL_impossible_and_IS_NOT_NULL_trivial",
+      "NULLIF_subtracts_singleton_literal_domains_and_tracks_NULL_possibility",
+      "CASE_guard_refined_branch_result_domains_with_unbounded_fallback",
+      "CASE_without_else_adds_NULL_and_unreachable_branches_contribute_nothing",
+      "simple_CASE_three_valued_equality_guards_with_exact_NULL_witnesses",
+      "simple_and_searched_CASE_exact_two_valued_NULL_witnesses_including_3VL_guards_and_implicit_else",
+      "NULLIF_literal_operand_exact_two_valued_NULL_witnesses",
+      "catalog_total_arithmetic_finite_union_for_computed_CASE_arms",
+      "comparisons_over_computed_values_and_derived_alias_predicates_stay_explicitly_residual",
+      "opaque_guards_operands_and_mixed_types_keep_explicit_residuals",
+      "computed_aliases_are_rename_invariant_and_carry_canonical_lineage",
+      "duplicated_output_names_resolve_positionally",
+      "direct_SQL_dbt_catalog_semantic_parity",
+      "parser_capable_dialect_canonical_equivalence",
+      "DuckDB_computed_value_oracles",
+      "numeric_boundaries_contradictory_branches_and_alias_shadowing"
+    ],
+    "tests": [
+      "tests/task_102_computed_expressions.rs",
+      "tests/task_70_predicates.rs",
+      "tests/physical_realization/distributions.rs"
+    ],
+    "unproved": [
+      "scalar_subquery_and_opaque_function_domains",
+      "unary_minus_literal_domains_outside_witness_numeric_support",
+      "cross_column_global_inversion_for_computed_null_tests",
+      "vendor_engine_execution_equivalence_beyond_bounded_DuckDB_oracles"
+    ],
+    "release_limit": "TASK-102's canonical bounded computed-expression and CASE/COALESCE/NULLIF acceptance criteria are verified. TASK-88 still owns global dialect-law certification and TASK-91 owns protocol 3.0.0 release readiness.",
+    "acceptance_criteria": {
+      "1": {
+        "scope": "verified_typed_branch_domains_with_3VL_fall_through_for_CASE_COALESCE_NULLIF",
+        "tests": ["tests/task_102_computed_expressions.rs"]
+      },
+      "2": {
+        "scope": "verified_rename_invariant_canonical_computed_alias_references_without_AST_leak",
+        "tests": ["tests/task_102_computed_expressions.rs"]
+      },
+      "3": {
+        "scope": "verified_guard_refined_branch_domains_reversible_source_constraints_and_explicit_residuals",
+        "tests": ["tests/task_102_computed_expressions.rs"]
+      },
+      "4": {
+        "scope": "verified_positive_not_true_impossible_and_residual_witnesses_including_nested_and_null_branches",
+        "tests": [
+          "tests/task_102_computed_expressions.rs",
+          "tests/task_70_predicates.rs"
+        ]
+      },
+      "5": {
+        "scope": "verified_direct_dbt_parser_capable_dialect_DuckDB_alias_shadowing_and_numeric_boundary_oracles",
+        "tests": ["tests/task_102_computed_expressions.rs"]
       }
     }
   },
@@ -1885,7 +1952,8 @@
       "output_cardinality": "unverified",
       "protocol_tasks": [
         "TASK-70",
-        "TASK-101"
+        "TASK-101",
+        "TASK-102"
       ],
       "tdg_tasks": [
         "TASK-27"

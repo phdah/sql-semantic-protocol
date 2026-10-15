@@ -902,6 +902,8 @@ fn is_witness_candidate(predicate: &Predicate) -> bool {
                         Expression::SignedIntegerCast(_)
                             | Expression::Binary(_)
                             | Expression::Unary(_)
+                            | Expression::Function(_)
+                            | Expression::Case(_)
                     )
                 })
         }
@@ -1055,6 +1057,26 @@ fn normalize(
                     operator: comparison.operator(),
                     right,
                 };
+            }
+            if let Some(computed) = normalize_case_integer_comparison(
+                comparison.left(),
+                comparison.operator(),
+                comparison.right(),
+                sources,
+                integer_evidence,
+                string_evidence,
+                column_datatype,
+            ) {
+                return computed;
+            }
+            if let Some(computed) = normalize_computed_integer_comparison(
+                comparison.left(),
+                comparison.operator(),
+                comparison.right(),
+                sources,
+                integer_evidence,
+            ) {
+                return computed;
             }
             if let Some(bounded) = normalize_modulo_range_comparison(
                 comparison.left(),
@@ -1211,6 +1233,257 @@ fn normalize(
     }
 }
 
+/// Normalize a CASE-valued integer comparison, preserving first-TRUE branch
+/// selection as a two-valued guard and each result's SQL three-valued truth.
+/// This avoids erroneously letting an unselected nullable arm leak UNKNOWN.
+fn normalize_case_integer_comparison(
+    left: &Expression,
+    operator: ComparisonOperator,
+    right: &Expression,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    string_evidence: &impl Fn(&ColumnRef) -> Option<StringEvidence>,
+    column_datatype: &impl Fn(&ColumnRef) -> Option<DataType>,
+) -> Option<BooleanRowConstraint> {
+    let (case, operator, value) = match (left, right) {
+        (Expression::Case(case), other) => (case, operator, signed_integer_literal(other)?),
+        (other, Expression::Case(case)) => {
+            (case, operator.reversed(), signed_integer_literal(other)?)
+        }
+        _ => return None,
+    };
+    if matches!(
+        operator,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+    ) {
+        return None;
+    }
+
+    let simple_operand = match case.operand() {
+        None => None,
+        Some(Expression::Column(column)) => {
+            let column = resolve_column(column, sources);
+            integer_evidence(&column)?;
+            Some(column)
+        }
+        Some(_) => return None,
+    };
+    let mut prior_not_true = Vec::new();
+    let mut arms = Vec::new();
+    let mut anchor = simple_operand.clone();
+    for branch in case.branches() {
+        let guard = match &simple_operand {
+            None => {
+                let Expression::BooleanPredicate(predicate) = branch.condition() else {
+                    return None;
+                };
+                normalize(
+                    predicate,
+                    sources,
+                    integer_evidence,
+                    string_evidence,
+                    column_datatype,
+                )
+            }
+            Some(column) => BooleanRowConstraint::IntegerComparison {
+                column: column.clone(),
+                operator: ComparisonOperator::Eq,
+                literal: signed_integer_literal(branch.condition())?,
+            },
+        };
+        let guard_not_true = not_true_constraint(&guard)?;
+        if anchor.is_none() {
+            let mut columns = Vec::new();
+            guard.columns(&mut columns);
+            anchor = columns.into_iter().next();
+        }
+        let anchor_column = anchor.as_ref()?;
+        let selected_guard = negate_constraint(guard_not_true.clone());
+        let result_comparison = case_arm_integer_comparison(
+            branch.result(),
+            operator,
+            value,
+            anchor_column,
+            sources,
+            integer_evidence,
+        )?;
+        let mut conjunction = prior_not_true.clone();
+        conjunction.push(selected_guard);
+        conjunction.push(result_comparison);
+        arms.push(conjoin_all(conjunction)?);
+        prior_not_true.push(guard_not_true);
+    }
+    let anchor = anchor?;
+    let null_else = Expression::Literal(LiteralExpression::new(
+        LiteralType::Null,
+        LiteralValue::Null,
+    ));
+    let else_result = case.else_result().unwrap_or(&null_else);
+    let comparison = case_arm_integer_comparison(
+        else_result,
+        operator,
+        value,
+        &anchor,
+        sources,
+        integer_evidence,
+    )?;
+    prior_not_true.push(comparison);
+    arms.push(conjoin_all(prior_not_true)?);
+    match arms.len() {
+        0 => None,
+        1 => arms.pop(),
+        _ => BooleanOperands::new(arms).map(BooleanRowConstraint::Any),
+    }
+}
+
+fn case_arm_integer_comparison(
+    expression: &Expression,
+    operator: ComparisonOperator,
+    value: i64,
+    anchor: &ColumnRef,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<BooleanRowConstraint> {
+    if let Expression::Column(column) = expression {
+        let column = resolve_column(column, sources);
+        integer_evidence(&column)?;
+        return Some(BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal: value,
+        });
+    }
+    if let Expression::Literal(literal) = expression {
+        if matches!(literal.value(), LiteralValue::Null) {
+            return Some(BooleanRowConstraint::UnknownNullComparison {
+                column: anchor.clone(),
+            });
+        }
+    }
+    let integer = signed_integer_literal(expression)?;
+    let matches = match operator {
+        ComparisonOperator::Eq => integer == value,
+        ComparisonOperator::Neq => integer != value,
+        ComparisonOperator::Lt => integer < value,
+        ComparisonOperator::Lte => integer <= value,
+        ComparisonOperator::Gt => integer > value,
+        ComparisonOperator::Gte => integer >= value,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => return None,
+    };
+    let operands = BooleanOperands::new(vec![
+        BooleanRowConstraint::NullTest {
+            column: anchor.clone(),
+            negated: false,
+        },
+        BooleanRowConstraint::NullTest {
+            column: anchor.clone(),
+            negated: true,
+        },
+    ])?;
+    Some(if matches {
+        BooleanRowConstraint::Any(operands)
+    } else {
+        BooleanRowConstraint::All(operands)
+    })
+}
+
+/// Normalize the provably reversible integer subset of COALESCE and
+/// NULLIF comparisons. Preserving UNKNOWN on NULLIF's equal-value branch is
+/// essential: a plain conjunction would incorrectly turn NOT UNKNOWN TRUE.
+fn normalize_computed_integer_comparison(
+    left: &Expression,
+    operator: ComparisonOperator,
+    right: &Expression,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<BooleanRowConstraint> {
+    let (computed, operator, comparison_literal) = match (left, right) {
+        (Expression::Function(function), other) => {
+            (function, operator, signed_integer_literal(other)?)
+        }
+        (other, Expression::Function(function)) => (
+            function,
+            operator.reversed(),
+            signed_integer_literal(other)?,
+        ),
+        _ => return None,
+    };
+    if computed.distinct() {
+        return None;
+    }
+    let [Expression::Column(column), fallback] = computed.arguments() else {
+        return None;
+    };
+    let source = resolve_column(column, sources);
+    integer_evidence(&source)?;
+    let fallback_literal = signed_integer_literal(fallback)?;
+    let comparison = BooleanRowConstraint::IntegerComparison {
+        column: source.clone(),
+        operator,
+        literal: comparison_literal,
+    };
+
+    if computed.name().eq_ignore_ascii_case("COALESCE") {
+        // COALESCE(a, fallback) never returns NULL when fallback is a
+        // certified non-NULL integer literal. The NULL arm evaluates the
+        // comparison over fallback, not over source a.
+        let fallback_matches = match operator {
+            ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => {
+                fallback_literal == comparison_literal
+            }
+            ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => {
+                fallback_literal != comparison_literal
+            }
+            ComparisonOperator::Lt => fallback_literal < comparison_literal,
+            ComparisonOperator::Lte => fallback_literal <= comparison_literal,
+            ComparisonOperator::Gt => fallback_literal > comparison_literal,
+            ComparisonOperator::Gte => fallback_literal >= comparison_literal,
+        };
+        let null_arm = BooleanRowConstraint::NullTest {
+            column: source,
+            negated: !fallback_matches,
+        };
+        return BooleanOperands::new(vec![null_arm, comparison]).map(|operands| {
+            if fallback_matches {
+                BooleanRowConstraint::Any(operands)
+            } else {
+                BooleanRowConstraint::All(operands)
+            }
+        });
+    }
+
+    if !computed.name().eq_ignore_ascii_case("NULLIF")
+        || matches!(
+            operator,
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+        )
+    {
+        return None;
+    }
+    // When a == fallback, NULLIF returns SQL NULL. Preserve the UNKNOWN
+    // comparison truth under that condition, rather than incorrectly
+    // classifying it as FALSE (which would make NOT wrongly qualify).
+    let equal_arm = BooleanRowConstraint::All(BooleanOperands::new(vec![
+        BooleanRowConstraint::IntegerComparison {
+            column: source.clone(),
+            operator: ComparisonOperator::Eq,
+            literal: fallback_literal,
+        },
+        BooleanRowConstraint::UnknownNullComparison {
+            column: source.clone(),
+        },
+    ])?);
+    let other_arm = BooleanRowConstraint::All(BooleanOperands::new(vec![
+        BooleanRowConstraint::IntegerComparison {
+            column: source,
+            operator: ComparisonOperator::Neq,
+            literal: fallback_literal,
+        },
+        comparison,
+    ])?);
+    BooleanOperands::new(vec![equal_arm, other_arm]).map(BooleanRowConstraint::Any)
+}
+
 // A NULL test is two-valued even when its input is nullable. Only
 // independently certified, total integer expressions may be reduced to
 // source-column NULL tests. Ordinary TRY_CAST or opaque function calls can
@@ -1291,64 +1564,104 @@ fn normalize_null_test(
             BooleanRowConstraint::Any(children)
         });
     }
-    // Searched CASE chooses the first SQL TRUE arm. For the supported
-    // total integer result class, NULL tests of the selected value are exact.
-    // Restrict branch guards to two-valued predicates: SQL UNKNOWN must
-    // select the ELSE arm, whereas ordinary NOT UNKNOWN stays UNKNOWN.
+    // Searched CASE chooses the first arm whose guard is SQL TRUE; UNKNOWN or
+    // FALSE guards fall through to the next arm or the ELSE result. For the
+    // supported total integer / NULL result class, NULL tests of the selected
+    // value remain exact. Guards may be NULL-sensitive: fallthrough uses the
+    // FALSE-or-UNKNOWN region rather than a Rust negation.
     if let Expression::Case(case) = expression {
-        if case.operand().is_some() || case.branches().is_empty() {
+        if case.branches().is_empty() {
             return None;
         }
-        let else_result = case.else_result()?;
-        let mut prior_negated = Vec::new();
+        // Simple CASE compares the operand with three-valued equality: a NULL
+        // operand never matches, so it falls through like an UNKNOWN guard.
+        // Synthesize the equality guard for column operands and signed
+        // integer WHEN values; anything else stays residual.
+        let simple_operand = match case.operand() {
+            None => None,
+            Some(operand) => {
+                let Expression::Column(column) = operand else {
+                    return None;
+                };
+                let resolved = resolve_column(column, sources);
+                integer_evidence(&resolved)?;
+                Some(resolved)
+            }
+        };
+        let mut prior_not_true = Vec::new();
         let mut alternatives = Vec::new();
         for branch in case.branches() {
-            let Expression::BooleanPredicate(predicate) = branch.condition() else {
-                return None;
+            let guard = match &simple_operand {
+                None => {
+                    let Expression::BooleanPredicate(predicate) = branch.condition() else {
+                        return None;
+                    };
+                    normalize(
+                        predicate,
+                        sources,
+                        integer_evidence,
+                        string_evidence,
+                        column_datatype,
+                    )
+                }
+                Some(operand) => {
+                    let literal = signed_integer_literal(branch.condition())?;
+                    BooleanRowConstraint::IntegerComparison {
+                        column: operand.clone(),
+                        operator: ComparisonOperator::Eq,
+                        literal,
+                    }
+                }
             };
-            let guard = normalize(
-                predicate,
-                sources,
-                integer_evidence,
-                string_evidence,
-                column_datatype,
-            );
-            if !is_two_valued_boolean(&guard)
-                || !is_total_integer_result(branch.result(), sources, integer_evidence)
-            {
-                return None;
+            let guard_not_true = not_true_constraint(&guard)?;
+            let nullness =
+                case_result_null_test(branch.result(), negated, sources, integer_evidence)?;
+            match nullness {
+                CaseArmNullness::Provable(constraint) => {
+                    let mut conjunction = prior_not_true.clone();
+                    conjunction.push(guard.clone());
+                    conjunction.push(constraint);
+                    alternatives.push(conjoin_all(conjunction)?);
+                }
+                CaseArmNullness::Vacuous => {
+                    // The test holds for every row selecting this arm.
+                    let mut conjunction = prior_not_true.clone();
+                    conjunction.push(guard.clone());
+                    alternatives.push(conjoin_all(conjunction)?);
+                }
+                CaseArmNullness::Impossible => {}
             }
-            let result = normalize_null_test(
-                branch.result(),
-                negated,
-                sources,
-                integer_evidence,
-                string_evidence,
-                column_datatype,
-            )?;
-            let mut conjunction = prior_negated.clone();
-            conjunction.push(guard.clone());
-            conjunction.push(result);
-            alternatives.push(BooleanRowConstraint::All(BooleanOperands::new(
-                conjunction,
-            )?));
-            prior_negated.push(negate_constraint(guard));
+            // Arm selection depends only on guards, never on the arm result,
+            // so the fallthrough guard is recorded even for dropped arms.
+            prior_not_true.push(guard_not_true);
         }
-        if !is_total_integer_result(else_result, sources, integer_evidence) {
-            return None;
+        // An implicit ELSE is SQL NULL.
+        let else_nullness = match case.else_result() {
+            Some(result) => case_result_null_test(result, negated, sources, integer_evidence)?,
+            None => {
+                if negated {
+                    CaseArmNullness::Impossible
+                } else {
+                    CaseArmNullness::Vacuous
+                }
+            }
+        };
+        match else_nullness {
+            CaseArmNullness::Impossible => {}
+            CaseArmNullness::Vacuous => {
+                alternatives.push(conjoin_all(prior_not_true)?);
+            }
+            CaseArmNullness::Provable(constraint) => {
+                let mut conjunction = prior_not_true;
+                conjunction.push(constraint);
+                alternatives.push(conjoin_all(conjunction)?);
+            }
         }
-        prior_negated.push(normalize_null_test(
-            else_result,
-            negated,
-            sources,
-            integer_evidence,
-            string_evidence,
-            column_datatype,
-        )?);
-        alternatives.push(BooleanRowConstraint::All(BooleanOperands::new(
-            prior_negated,
-        )?));
-        return BooleanOperands::new(alternatives).map(BooleanRowConstraint::Any);
+        return match alternatives.len() {
+            0 => None,
+            1 => Some(alternatives.pop()?),
+            _ => BooleanOperands::new(alternatives).map(BooleanRowConstraint::Any),
+        };
     }
     let Expression::Function(function) = expression else {
         return None;
@@ -1358,16 +1671,46 @@ fn normalize_null_test(
     }
     if function.name().eq_ignore_ascii_case("COALESCE") && function.arguments().len() >= 2 {
         let mut columns = Vec::new();
+        let mut anchor: Option<ColumnRef> = None;
+        let mut never_null_literal = false;
         for argument in function.arguments() {
             match argument {
                 Expression::Literal(literal) if matches!(literal.value(), LiteralValue::Null) => {}
+                Expression::Literal(_) => never_null_literal = true,
                 Expression::Column(column)
                     if integer_evidence(&resolve_column(column, sources)).is_some() =>
                 {
+                    if anchor.is_none() {
+                        anchor = Some(resolve_column(column, sources));
+                    }
                     columns.push(test(column, negated));
                 }
                 _ => return None,
             }
+        }
+        if never_null_literal {
+            // A non-NULL literal argument can never be NULL, so it decides
+            // the outcome alone: IS NULL can never be TRUE and IS NOT NULL
+            // can never be NOT TRUE. Encode the empty TRUE region as an
+            // explicit contradiction (IS NULL) or the full TRUE region as a
+            // tautology (IS NOT NULL) over the first column, so joint-truth
+            // analysis proves the direction exactly instead of residualizing.
+            let anchor = anchor?;
+            let pair = BooleanOperands::new(vec![
+                BooleanRowConstraint::NullTest {
+                    column: anchor.clone(),
+                    negated: false,
+                },
+                BooleanRowConstraint::NullTest {
+                    column: anchor,
+                    negated: true,
+                },
+            ])?;
+            return Some(if negated {
+                BooleanRowConstraint::Any(pair)
+            } else {
+                BooleanRowConstraint::All(pair)
+            });
         }
         return match columns.len() {
             0 => None,
@@ -1382,23 +1725,57 @@ fn normalize_null_test(
         };
     }
     if function.name().eq_ignore_ascii_case("NULLIF") {
-        let [Expression::Column(left), Expression::Column(right)] = function.arguments() else {
+        let [left, right] = function.arguments() else {
             return None;
         };
-        let left_column = resolve_column(left, sources);
-        let right_column = resolve_column(right, sources);
-        integer_evidence(&left_column)?;
-        integer_evidence(&right_column)?;
-        let comparison = BooleanRowConstraint::IntegerColumnComparison {
-            left: left_column,
-            right: right_column,
-            operator: if negated {
-                ComparisonOperator::IsDistinctFrom
-            } else {
-                ComparisonOperator::IsNotDistinctFrom
-            },
+        // NULLIF(a, b) is NULL exactly when the two arguments are NULL-equal,
+        // and otherwise returns the left argument. Both truth directions stay
+        // exact for two source columns or an attested integer literal.
+        let (left_column, comparison) = match (left, right) {
+            (Expression::Column(left), Expression::Column(right)) => {
+                let left_column = resolve_column(left, sources);
+                let right_column = resolve_column(right, sources);
+                integer_evidence(&left_column)?;
+                integer_evidence(&right_column)?;
+                let operator = if negated {
+                    ComparisonOperator::IsDistinctFrom
+                } else {
+                    ComparisonOperator::IsNotDistinctFrom
+                };
+                (
+                    left_column.clone(),
+                    BooleanRowConstraint::IntegerColumnComparison {
+                        left: left_column,
+                        operator,
+                        right: right_column,
+                    },
+                )
+            }
+            (Expression::Column(left), other) => {
+                let value = signed_integer_literal(other)?;
+                let left_column = resolve_column(left, sources);
+                integer_evidence(&left_column)?;
+                let operator = if negated {
+                    ComparisonOperator::Neq
+                } else {
+                    ComparisonOperator::Eq
+                };
+                let comparison = BooleanRowConstraint::IntegerComparison {
+                    column: left_column.clone(),
+                    operator,
+                    literal: value,
+                };
+                (left_column, comparison)
+            }
+            _ => return None,
         };
-        let operands = BooleanOperands::new(vec![test(left, negated), comparison])?;
+        let operands = BooleanOperands::new(vec![
+            BooleanRowConstraint::NullTest {
+                column: left_column,
+                negated,
+            },
+            comparison,
+        ])?;
         return Some(if negated {
             BooleanRowConstraint::All(operands)
         } else {
@@ -1408,34 +1785,181 @@ fn normalize_null_test(
     None
 }
 
-// NOT is an exact logical complement only when the guard can never
-// evaluate to SQL UNKNOWN. This is required by searched CASE fallthrough.
-fn is_two_valued_boolean(condition: &BooleanRowConstraint) -> bool {
-    match condition {
-        BooleanRowConstraint::All(operands) | BooleanRowConstraint::Any(operands) => {
-            operands.iter().all(is_two_valued_boolean)
-        }
-        BooleanRowConstraint::NullTest { .. } => true,
-        BooleanRowConstraint::IntegerComparison { operator, .. }
-        | BooleanRowConstraint::IntegerColumnComparison { operator, .. }
-        | BooleanRowConstraint::StringEquality { operator, .. } => matches!(
-            operator,
-            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
-        ),
-        BooleanRowConstraint::UnknownNullComparison { .. }
-        | BooleanRowConstraint::StringPrefix { .. }
-        | BooleanRowConstraint::Residual { .. } => false,
+/// How a CASE arm result's NULL status constrains the source row.
+enum CaseArmNullness {
+    /// The IS NULL / IS NOT NULL test reduces to a source-column constraint.
+    Provable(BooleanRowConstraint),
+    /// The NULL test holds for every admissible arm result (e.g. a NULL
+    /// literal under IS NULL), so the arm adds no value conjunct.
+    Vacuous,
+    /// The NULL test can never hold for this arm (e.g. a NULL literal under
+    /// IS NOT NULL), so the arm contributes no qualifying region.
+    Impossible,
+}
+
+/// Reduce an arm result's IS NULL / IS NOT NULL to a source constraint, a
+/// constant TRUE, or a constant FALSE. Only NULL literals and total integer
+/// results are supported; anything else stays an explicit residual.
+fn case_result_null_test(
+    result: &Expression,
+    negated: bool,
+    sources: &[SourceRelation],
+    integer_evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
+) -> Option<CaseArmNullness> {
+    if let Expression::Literal(literal) = result {
+        return Some(
+            match (matches!(literal.value(), LiteralValue::Null), negated) {
+                (true, false) | (false, true) => CaseArmNullness::Vacuous,
+                (true, true) | (false, false) => CaseArmNullness::Impossible,
+            },
+        );
+    }
+    let column = total_integer_column(result, sources, integer_evidence)?;
+    Some(CaseArmNullness::Provable(BooleanRowConstraint::NullTest {
+        column: resolve_column(column, sources),
+        negated,
+    }))
+}
+
+/// Collapse a conjunction to a single constraint when only one operand
+/// remains, keeping `All` only for two or more.
+fn conjoin_all(mut operands: Vec<BooleanRowConstraint>) -> Option<BooleanRowConstraint> {
+    match operands.len() {
+        0 => None,
+        1 => Some(operands.pop()?),
+        _ => Some(BooleanRowConstraint::All(BooleanOperands::new(operands)?)),
     }
 }
 
-// CASE result selection must not trigger an opaque conversion, narrowing cast,
-// or arithmetic overflow before its NULL status can be observed.
-fn is_total_integer_result(
-    expression: &Expression,
-    sources: &[SourceRelation],
-    evidence: &impl Fn(&ColumnRef) -> Option<SignedIntegerEvidence>,
-) -> bool {
-    total_integer_column(expression, sources, evidence).is_some()
+/// The FALSE-or-UNKNOWN region of a normalized predicate: SQL's NOT TRUE.
+/// NULL-sensitive comparisons fold their UNKNOWN arm back in, so this is
+/// broader than a three-valued negation. Returns `None` when the subtree
+/// cannot express that region (opaque or already residual guards).
+fn not_true_constraint(condition: &BooleanRowConstraint) -> Option<BooleanRowConstraint> {
+    /// The NOT TRUE region of one single-column comparison: the plain
+    /// negated comparison when the operator is two-valued, otherwise the
+    /// negated comparison OR the column being NULL (the UNKNOWN arm folds
+    /// back into the accepted region).
+    fn not_true_of_comparison(
+        column: &ColumnRef,
+        operator: ComparisonOperator,
+        negated: BooleanRowConstraint,
+    ) -> Option<BooleanRowConstraint> {
+        if two_valued_comparison(operator) {
+            Some(negated)
+        } else {
+            BooleanOperands::new(vec![
+                BooleanRowConstraint::NullTest {
+                    column: column.clone(),
+                    negated: false,
+                },
+                negated,
+            ])
+            .map(BooleanRowConstraint::Any)
+        }
+    }
+    match condition {
+        BooleanRowConstraint::NullTest { column, negated } => {
+            Some(BooleanRowConstraint::NullTest {
+                column: column.clone(),
+                negated: !negated,
+            })
+        }
+        BooleanRowConstraint::IntegerComparison {
+            column,
+            operator,
+            literal,
+        } => not_true_of_comparison(
+            column,
+            *operator,
+            BooleanRowConstraint::IntegerComparison {
+                column: column.clone(),
+                operator: negated_comparison_operator(*operator),
+                literal: *literal,
+            },
+        ),
+        BooleanRowConstraint::IntegerColumnComparison {
+            left,
+            operator,
+            right,
+        } => {
+            let negated = BooleanRowConstraint::IntegerColumnComparison {
+                left: left.clone(),
+                operator: negated_comparison_operator(*operator),
+                right: right.clone(),
+            };
+            if two_valued_comparison(*operator) {
+                Some(negated)
+            } else {
+                BooleanOperands::new(vec![
+                    BooleanRowConstraint::NullTest {
+                        column: left.clone(),
+                        negated: false,
+                    },
+                    BooleanRowConstraint::NullTest {
+                        column: right.clone(),
+                        negated: false,
+                    },
+                    negated,
+                ])
+                .map(BooleanRowConstraint::Any)
+            }
+        }
+        BooleanRowConstraint::StringEquality {
+            column,
+            operator,
+            literal,
+        } => not_true_of_comparison(
+            column,
+            *operator,
+            BooleanRowConstraint::StringEquality {
+                column: column.clone(),
+                operator: negated_comparison_operator(*operator),
+                literal: literal.clone(),
+            },
+        ),
+        BooleanRowConstraint::StringPrefix {
+            column,
+            prefix,
+            negated,
+        } => BooleanOperands::new(vec![
+            BooleanRowConstraint::NullTest {
+                column: column.clone(),
+                negated: false,
+            },
+            BooleanRowConstraint::StringPrefix {
+                column: column.clone(),
+                prefix: prefix.clone(),
+                negated: !negated,
+            },
+        ])
+        .map(BooleanRowConstraint::Any),
+        BooleanRowConstraint::UnknownNullComparison { .. }
+        | BooleanRowConstraint::Residual { .. } => None,
+        // De Morgan over SQL's NOT TRUE: NOT TRUE(a AND b) = NOT TRUE(a) OR
+        // NOT TRUE(b), and the converse for OR.
+        BooleanRowConstraint::All(operands) => {
+            let mapped = operands
+                .iter()
+                .map(not_true_constraint)
+                .collect::<Option<Vec<_>>>()?;
+            BooleanOperands::new(mapped).map(BooleanRowConstraint::Any)
+        }
+        BooleanRowConstraint::Any(operands) => {
+            let mapped = operands
+                .iter()
+                .map(not_true_constraint)
+                .collect::<Option<Vec<_>>>()?;
+            BooleanOperands::new(mapped).map(BooleanRowConstraint::All)
+        }
+    }
+}
+
+fn two_valued_comparison(operator: ComparisonOperator) -> bool {
+    matches!(
+        operator,
+        ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom
+    )
 }
 
 // Negation is pushed to proven leaves. De Morgan's laws preserve SQL

@@ -565,12 +565,12 @@ fn filtered_case_output_keeps_its_expression_domain() {
         panic!("expected CASE output set");
     };
     assert_eq!(domain.mode(), SetMode::Include);
-    assert_eq!(domain.values().len(), 2);
+    assert_eq!(domain.values().len(), 1);
     assert!(domain
         .values()
         .iter()
         .any(|value| value.value() == &LiteralValue::Text("high".to_string())));
-    assert!(domain
+    assert!(!domain
         .values()
         .iter()
         .any(|value| value.value() == &LiteralValue::Text("standard".to_string())));
@@ -612,7 +612,7 @@ fn filtered_case_domain_survives_composition_without_becoming_empty() {
     let ValueDomain::Set(domain) = semantics.output().columns()[0].domain() else {
         panic!("expected composed CASE output set");
     };
-    assert_eq!(domain.values().len(), 2);
+    assert_eq!(domain.values().len(), 1);
 }
 
 #[test]

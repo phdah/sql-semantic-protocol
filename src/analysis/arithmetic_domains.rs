@@ -360,15 +360,101 @@ fn typed_expression(
             let values = combine_values(left.values, right.values, binary.operator(), width)?;
             Some(TypedIntegers { width, values })
         }
+        Expression::Case(case) => {
+            // Enumerate each computed arm using only source rows that can
+            // select that arm, including earlier WHEN fallthrough.
+            let mut results = Vec::new();
+            let mut width = SignedIntegerWidth::Bits16;
+            for branch in case.branches() {
+                let arm = guarded_case_integer_arm(
+                    branch.result(),
+                    branch.source_domains(),
+                    domains,
+                    sources,
+                    metadata,
+                )?;
+                width = width.max(arm.width);
+                let IntegerValues::Finite(values) = arm.values else {
+                    return None;
+                };
+                for value in values {
+                    if !results.contains(&value) {
+                        results.push(value);
+                    }
+                }
+                if results.len() > 64 {
+                    return None;
+                }
+            }
+            let null_expression = Expression::Literal(LiteralExpression::new(
+                LiteralType::Null,
+                LiteralValue::Null,
+            ));
+            let otherwise = case.else_result().unwrap_or(&null_expression);
+            let arm = guarded_case_integer_arm(
+                otherwise,
+                case.else_source_domains(),
+                domains,
+                sources,
+                metadata,
+            )?;
+            width = width.max(arm.width);
+            let IntegerValues::Finite(values) = arm.values else {
+                return None;
+            };
+            for value in values {
+                if !results.contains(&value) {
+                    results.push(value);
+                }
+            }
+            (results.len() <= 64).then_some(TypedIntegers {
+                width,
+                values: IntegerValues::Finite(results),
+            })
+        }
         Expression::Function(_)
         | Expression::AggregateFunction(_)
         | Expression::WindowFunction(_)
-        | Expression::Case(_)
         | Expression::BooleanPredicate(_)
         | Expression::ScalarSubquery(_)
         | Expression::Unknown(_)
         | Expression::Unsupported(_) => None,
     }
+}
+
+/// Evaluate an arm under its proven branch-selecting column restrictions.
+/// Unknown guard semantics fall back to the unfiltered expression.
+fn guarded_case_integer_arm(
+    result: &Expression,
+    guard: &CaseSourceDomains,
+    domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<TypedIntegers> {
+    let Some(alternatives) = case_guarded_domain_alternatives(guard, domains) else {
+        return typed_expression(result, domains, sources, metadata);
+    };
+    let mut values = Vec::new();
+    let mut width = SignedIntegerWidth::Bits16;
+    for alternative in alternatives {
+        let arm = typed_expression(result, &alternative, sources, metadata)?;
+        width = width.max(arm.width);
+        let IntegerValues::Finite(candidates) = arm.values else {
+            return None;
+        };
+        for value in candidates {
+            if !values.contains(&value) {
+                values.push(value);
+            }
+        }
+        if values.len() > 64 {
+            return None;
+        }
+    }
+    Some(TypedIntegers {
+        width,
+        values: IntegerValues::Finite(values),
+    })
 }
 
 #[derive(Clone)]

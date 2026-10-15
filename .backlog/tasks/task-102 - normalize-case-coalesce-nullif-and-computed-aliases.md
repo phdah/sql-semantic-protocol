@@ -1,10 +1,10 @@
 ---
 id: TASK-102
 title: Prove CASE, COALESCE, NULLIF and computed alias outcomes
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-13'
+updated_date: '2026-10-15'
 labels: []
 milestone: m-3
 dependencies:
@@ -30,11 +30,11 @@ Promote computed expressions from the currently proven NULL-test subset to typed
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Normalize searched/simple CASE, COALESCE and NULLIF with typed branches, lazy/short-circuit guards and SQL TRUE/FALSE/UNKNOWN fallthrough; preserve output NULLability and nonliteral computed arm domains.
-- [ ] #2 Represent derived SELECT columns and aliases using stable canonical references across nested projections and source columns, without leaking sqlparser AST types into the emitted domain model.
-- [ ] #3 Propagate precise typed output domains, inclusivity and excluded values through conditional branches; derive reversible source constraints for certified guards/arms and explicitly residualize lossy, ambiguous or noninvertible mappings.
-- [ ] #4 Produce positive, NOT TRUE, impossible and residual predicate witnesses for comparisons and IS NULL/IS NOT NULL over supported computed values and aliases, including nested AND/OR/NOT and NULL branches.
-- [ ] #5 Test direct SQL, dbt compiled SQL/catalog parity, alias shadowing and duplicated names, numeric boundaries, contradictory branches, NULLs and DuckDB computed-value oracles across parser-capable dialects. Update APIs/schema/docs/coverage where semantics change.
+- [x] #1 Normalize searched/simple CASE, COALESCE and NULLIF with typed branches, lazy/short-circuit guards and SQL TRUE/FALSE/UNKNOWN fallthrough; preserve output NULLability and nonliteral computed arm domains.
+- [x] #2 Represent derived SELECT columns and aliases using stable canonical references across nested projections and source columns, without leaking sqlparser AST types into the emitted domain model.
+- [x] #3 Propagate precise typed output domains, inclusivity and excluded values through conditional branches; derive reversible source constraints for certified guards/arms and explicitly residualize lossy, ambiguous or noninvertible mappings.
+- [x] #4 Produce positive, NOT TRUE, impossible and residual predicate witnesses for comparisons and IS NULL/IS NOT NULL over supported computed values and aliases, including nested AND/OR/NOT and NULL branches.
+- [x] #5 Test direct SQL, dbt compiled SQL/catalog parity, alias shadowing and duplicated names, numeric boundaries, contradictory branches, NULLs and DuckDB computed-value oracles across parser-capable dialects. Update APIs/schema/docs/coverage where semantics change.
 <!-- AC:END -->
 
 ## Implementation and verification

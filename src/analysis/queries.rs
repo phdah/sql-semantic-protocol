@@ -2,6 +2,108 @@
 
 use super::*;
 
+/// A plain derived SELECT preserves physical row identity only when it adds
+/// neither filters nor row-shaping. Use this narrow certified path exclusively
+/// for a uniquely expanded CASE alias NULL test.
+fn direct_derived_case_witness_source(
+    query: &SqlQuery,
+    predicate: Option<&Predicate>,
+    dependencies: &BTreeSet<String>,
+) -> Option<SourceRelation> {
+    let Some(Predicate::IsNull(test)) = predicate else {
+        return None;
+    };
+    if !matches!(test.expression(), Expression::Column(_)) || query.with.is_some() {
+        return None;
+    }
+    let SetExpr::Select(select) = query.body.as_ref() else {
+        return None;
+    };
+    let [outer] = select.from.as_slice() else {
+        return None;
+    };
+    if !outer.joins.is_empty() {
+        return None;
+    }
+    let TableFactor::Derived { subquery, .. } = &outer.relation else {
+        return None;
+    };
+    if subquery.with.is_some() || subquery.limit_clause.is_some() || subquery.fetch.is_some() {
+        return None;
+    }
+    let SetExpr::Select(inner) = subquery.body.as_ref() else {
+        return None;
+    };
+    let [inner_from] = inner.from.as_slice() else {
+        return None;
+    };
+    // Only an unambiguous SQL alias reference may inherit the producer's
+    // CASE. Direct expressions in the outer WHERE are not interchangeable
+    // with projected columns and must not borrow this physical identity.
+    let target_alias = match select.selection.as_ref()? {
+        Expr::IsNull(expression) | Expr::IsNotNull(expression) => {
+            let Expr::Identifier(name) = expression.as_ref() else {
+                return None;
+            };
+            &name.value
+        }
+        _ => return None,
+    };
+    if inner
+        .projection
+        .iter()
+        .filter(|item| {
+            matches!(
+                item,
+                SelectItem::ExprWithAlias {
+                    expr: Expr::Case { .. },
+                    alias,
+                } if &alias.value == target_alias
+            )
+        })
+        .count()
+        != 1
+        || inner
+            .projection
+            .iter()
+            .filter(|item| {
+                matches!(
+                    item,
+                    SelectItem::ExprWithAlias { alias, .. } if &alias.value == target_alias
+                )
+            })
+            .count()
+            != 1
+    {
+        return None;
+    }
+    if !matches!(
+        &inner_from.relation,
+        TableFactor::Table {
+            alias: None,
+            sample: None,
+            ..
+        }
+    ) || !inner_from.joins.is_empty()
+        || inner.selection.is_some()
+        || inner.having.is_some()
+        || inner.qualify.is_some()
+        || inner.prewhere.is_some()
+        || inner.distinct.is_some()
+        || inner.top.is_some()
+        || !inner.lateral_views.is_empty()
+        || !matches!(&inner.group_by, GroupByExpr::Expressions(items, modifiers)
+            if items.is_empty() && modifiers.is_empty())
+        || dependencies.len() != 1
+    {
+        return None;
+    }
+    Some(SourceRelation::new(
+        dependencies.iter().next()?.clone(),
+        None,
+    ))
+}
+
 pub(super) fn analyze_query(
     query: &SqlQuery,
     produced_relation: Option<String>,
@@ -116,9 +218,48 @@ pub(super) fn analyze_query(
         .merged_with(&ConditionExactness::from_residuals(
             missing_column_residuals,
         ));
-    let boolean_witness = crate::boolean_witness::analyze(
+    // An unfiltered, row-preserving derived SELECT over one physical table
+    // can expose a computed CASE alias without creating a new row identity.
+    // Rebind that single expression's witness to its actual physical source;
+    // all other derived shapes remain explicit residual boundaries.
+    let local_case_witness_source = direct_derived_case_witness_source(
+        query,
         predicates.where_predicate(),
-        &relation_analysis.sources,
+        &relation_analysis.dependencies,
+    );
+    // Expand only the certified witness's computed alias. The canonical
+    // predicate and independent source-column domains must keep the
+    // intermediate alias reference and its uncertainty provenance.
+    let local_case_witness_predicate = local_case_witness_source.as_ref().and_then(|_| {
+        let SetExpr::Select(select) = query.body.as_ref() else {
+            return None;
+        };
+        let Some(Predicate::IsNull(test)) = predicates.where_predicate() else {
+            return None;
+        };
+        let mut local_diagnostics = Vec::new();
+        let scope = build_output_scope(
+            select,
+            &BTreeMap::new(),
+            &[],
+            &mut local_diagnostics,
+            Some(metadata),
+        );
+        let expression = inherit_local_case_expression(test.expression().clone(), &scope);
+        matches!(expression, Expression::Case(_))
+            .then(|| Predicate::IsNull(IsNullPredicate::new(expression, test.negated())))
+    });
+    let witness_sources = if local_case_witness_predicate.is_some() {
+        local_case_witness_source.into_iter().collect::<Vec<_>>()
+    } else {
+        relation_analysis.sources.clone()
+    };
+    let witness_predicate = local_case_witness_predicate
+        .as_ref()
+        .or_else(|| predicates.where_predicate());
+    let boolean_witness = crate::boolean_witness::analyze(
+        witness_predicate,
+        &witness_sources,
         |column| {
             let original_type = metadata.column_data_type(column)?;
             let data_type = match original_type {
