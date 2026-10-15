@@ -1,10 +1,10 @@
 ---
 id: TASK-104
 title: 'Certify pattern, collation and null-safe expression laws'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-15 18:17'
+updated_date: '2026-10-15 18:18'
 labels: []
 milestone: m-3
 dependencies:
@@ -28,13 +28,12 @@ Complete the scoped text/pattern and dialect-specific comparison audit. Exact cl
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
-- [ ] #1 Implement exact LIKE/NOT LIKE, supported ESCAPE variants and provably safe nonprefix patterns where typed binary/no-padding and wildcard/escape laws suffice; preserve SQL UNKNOWN for NULL operands. Audit ILIKE and regex-family spellings and flags for each parser-capable dialect.
-- [ ] #2 Represent collation, case folding, CHAR padding, Unicode, comparison ordering and null-safe equality assumptions as explicit canonical evidence/preconditions, not inferred vendor defaults; handle MySQL `<=>` and relevant AST variants only under proven laws.
-- [ ] #3 Prove TRUE/NOT TRUE, impossible, residual, precise value-domain constraints and output comparison settings for safe text patterns, cross-text-column equality where attested and interactions with mixed Boolean predicates.
-- [ ] #4 Enumerate and explicitly classify every inventoried dialect-sensitive text/operator variant as exact under certified conditions or fail-closed residual with a reason. Never claim regex engine or vendor collation parity based solely on a successful parser.
-- [ ] #5 Add shared cross-dialect canonical equivalence, syntax-boundary cases, dbt evidence parity, DuckDB pattern/collation comparison oracles and negative/NULL/ESCAPE counterexamples. Update `docs/coverage-manifest.json`, contract, schema and tests.
+- [x] #1 Implement exact LIKE/NOT LIKE, supported ESCAPE variants and provably safe nonprefix patterns where typed binary/no-padding and wildcard/escape laws suffice; preserve SQL UNKNOWN for NULL operands. Audit ILIKE and regex-family spellings and flags for each parser-capable dialect.
+- [x] #2 Represent collation, case folding, CHAR padding, Unicode, comparison ordering and null-safe equality assumptions as explicit canonical evidence/preconditions, not inferred vendor defaults; handle MySQL `<=>` and relevant AST variants only under proven laws.
+- [x] #3 Prove TRUE/NOT TRUE, impossible, residual, precise value-domain constraints and output comparison settings for safe text patterns, cross-text-column equality where attested and interactions with mixed Boolean predicates.
+- [x] #4 Enumerate and explicitly classify every inventoried dialect-sensitive text/operator variant as exact under certified conditions or fail-closed residual with a reason. Never claim regex engine or vendor collation parity based solely on a successful parser.
+- [x] #5 Add shared cross-dialect canonical equivalence, syntax-boundary cases, dbt evidence parity, DuckDB pattern/collation comparison oracles and negative/NULL/ESCAPE counterexamples. Update `docs/coverage-manifest.json`, contract, schema and tests.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -48,6 +47,12 @@ Complete the scoped text/pattern and dialect-specific comparison audit. Exact cl
 <!-- SECTION:NOTES:BEGIN -->
 Two-axis review completed. Standards: fixed DRY duplication (single Output::empty_on_impossible owner in protocol/relations.rs), replaced unreachable! with an exhaustive match in the new eval arm, kept double-eval guard style consistent with the pre-existing prefix code. Spec: extended the 52-row variant matrix across all 14 parser-capable dialects (728 analyses, zero parser boundaries; every spelling parses everywhere and classification holds), added the unparenthesized null-safe text parser-boundary residual, added dbt residual-pattern parity alongside the exact spaceship parity. Rebutted with evidence: output-emptying on attestation-time Impossible is required by AC#3 plus the project-wide outcome-first DoD (leaving Unknown when Empty is proven would be a wrong domain); <=> parses in all 14 sqlparser dialects (token-level, verified in parser source) so the shared-shape assertion records parser-boundary fact, not engine parity; space/punctuation patterns stay residual under the documented portable ASCII-alphanumeric law while regex/collation modes remain intentionally residual. Verified: cargo fmt, clippy -D warnings clean, cargo doc clean, 12/12 task_104 green, full cargo test 993 passed 0 failed across 72 binaries.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-104 implemented in PR #112 (feat/task-104-pattern-collation-nullsafe-laws targeting main). Wildcard-free LIKE/NOT LIKE normalizes to attested string equality under a portable literal law with inert-ESCAPE handling (NULL stays UNKNOWN); MySQL <=> maps to IS NOT DISTINCT FROM under the same typed laws; new StringColumnComparison constraint certifies attested cross-text-column equality with shared byte candidates, symbolic null-clash/reflexive impossibility, and attestation-time Empty outputs via a single Output::empty_on_impossible owner. 52-row variant matrix classified exact-vs-residual across all 14 parser-capable dialects with zero parser boundaries; ILIKE/regex/PG spellings/LIKE ANY/COLLATE/CHAR/Unicode/ordering stay fail-closed. DuckDB oracle over 12 predicates, dbt exact+residual parity, schema/contract/manifest updates included. Verified: cargo fmt, clippy -D warnings clean, cargo doc clean, 12/12 task_104 green, full suite 993 passed 0 failed (72 binaries). Two-axis review findings addressed or rebutted with evidence in implementation notes.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Implementation and verification
 
