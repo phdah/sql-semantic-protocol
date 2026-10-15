@@ -1,10 +1,10 @@
 ---
 id: TASK-102
 title: Prove CASE, COALESCE, NULLIF and computed alias outcomes
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-13'
+updated_date: '2026-10-15'
 labels: []
 milestone: m-3
 dependencies:
