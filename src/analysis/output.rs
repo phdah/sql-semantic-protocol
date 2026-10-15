@@ -613,7 +613,9 @@ fn derive_case_domain(case_expression: &CaseExpression, ctx: DomainContext<'_>) 
         domain = union_domains(&domain, &arm);
     }
     let else_domain = match case_expression.else_result() {
-        Some(result) => guard_refined_arm_domain(result, case_expression.else_source_domains(), ctx),
+        Some(result) => {
+            guard_refined_arm_domain(result, case_expression.else_source_domains(), ctx)
+        }
         None => {
             if let Some(DomainSources { column_domains, .. }) = ctx {
                 if case_guarded_domain_alternatives(
@@ -626,13 +628,15 @@ fn derive_case_domain(case_expression: &CaseExpression, ctx: DomainContext<'_>) 
                 } else {
                     null_only_domain()
                 }
-            } else if matches!(case_expression.else_source_domains(), CaseSourceDomains::Unreachable)
-            {
+            } else if matches!(
+                case_expression.else_source_domains(),
+                CaseSourceDomains::Unreachable
+            ) {
                 ValueDomain::Empty
             } else {
                 null_only_domain()
             }
-        },
+        }
     };
     union_domains(&domain, &else_domain)
 }
@@ -678,10 +682,8 @@ pub(super) fn case_guarded_domain_alternatives(
                             .iter()
                             .position(|known| known.column() == candidate.column())
                         {
-                            let joint = intersect_domains(
-                                refined[index].domain(),
-                                candidate.domain(),
-                            );
+                            let joint =
+                                intersect_domains(refined[index].domain(), candidate.domain());
                             if matches!(joint, ValueDomain::Empty) {
                                 return None;
                             }

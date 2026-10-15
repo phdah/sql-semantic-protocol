@@ -386,8 +386,10 @@ fn typed_expression(
                     return None;
                 }
             }
-            let null_expression =
-                Expression::Literal(LiteralExpression::new(LiteralType::Null, LiteralValue::Null));
+            let null_expression = Expression::Literal(LiteralExpression::new(
+                LiteralType::Null,
+                LiteralValue::Null,
+            ));
             let otherwise = case.else_result().unwrap_or(&null_expression);
             let arm = guarded_case_integer_arm(
                 otherwise,

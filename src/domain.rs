@@ -1084,7 +1084,10 @@ pub(crate) fn intersect_set_operation_domains(
     intersect_domains(left, right)
 }
 
-pub(crate) fn set_literals_provably_distinct(left: &LiteralExpression, right: &LiteralExpression) -> bool {
+pub(crate) fn set_literals_provably_distinct(
+    left: &LiteralExpression,
+    right: &LiteralExpression,
+) -> bool {
     match (left.value(), right.value()) {
         (LiteralValue::Null, _) | (_, LiteralValue::Null) => true,
         (LiteralValue::Number(_), LiteralValue::Number(_)) => {

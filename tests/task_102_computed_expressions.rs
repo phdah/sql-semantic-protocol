@@ -400,11 +400,7 @@ fn computed_case_arms_evaluate_through_catalog_total_arithmetic() {
 
     let simple = "SELECT CASE a WHEN 1 THEN a + 10 ELSE 0 END AS v
                   FROM t WHERE a IN (1, 3)";
-    assert_value_set_domain(
-        simple,
-        &catalog_projected_domain(simple),
-        vec!["0", "11"],
-    );
+    assert_value_set_domain(simple, &catalog_projected_domain(simple), vec!["0", "11"]);
 }
 
 #[test]
@@ -827,7 +823,10 @@ fn case_vacuous_then_arm_keeps_true_rows_in_witness() {
         witness.qualifying(),
         BooleanWitnessDirection::Exact(BooleanTruthCase::True)
     ));
-    assert!(matches!(witness.rejected(), BooleanWitnessDirection::Impossible));
+    assert!(matches!(
+        witness.rejected(),
+        BooleanWitnessDirection::Impossible
+    ));
 }
 
 #[test]

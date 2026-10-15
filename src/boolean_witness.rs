@@ -1245,7 +1245,9 @@ fn normalize_case_integer_comparison(
 ) -> Option<BooleanRowConstraint> {
     let (case, operator, value) = match (left, right) {
         (Expression::Case(case), other) => (case, operator, signed_integer_literal(other)?),
-        (other, Expression::Case(case)) => (case, operator.reversed(), signed_integer_literal(other)?),
+        (other, Expression::Case(case)) => {
+            (case, operator.reversed(), signed_integer_literal(other)?)
+        }
         _ => return None,
     };
     if matches!(
@@ -1273,7 +1275,13 @@ fn normalize_case_integer_comparison(
                 let Expression::BooleanPredicate(predicate) = branch.condition() else {
                     return None;
                 };
-                normalize(predicate, sources, integer_evidence, string_evidence, column_datatype)
+                normalize(
+                    predicate,
+                    sources,
+                    integer_evidence,
+                    string_evidence,
+                    column_datatype,
+                )
             }
             Some(column) => BooleanRowConstraint::IntegerComparison {
                 column: column.clone(),
@@ -1304,8 +1312,10 @@ fn normalize_case_integer_comparison(
         prior_not_true.push(guard_not_true);
     }
     let anchor = anchor?;
-    let null_else =
-        Expression::Literal(LiteralExpression::new(LiteralType::Null, LiteralValue::Null));
+    let null_else = Expression::Literal(LiteralExpression::new(
+        LiteralType::Null,
+        LiteralValue::Null,
+    ));
     let else_result = case.else_result().unwrap_or(&null_else);
     let comparison = case_arm_integer_comparison(
         else_result,
@@ -1389,9 +1399,11 @@ fn normalize_computed_integer_comparison(
         (Expression::Function(function), other) => {
             (function, operator, signed_integer_literal(other)?)
         }
-        (other, Expression::Function(function)) => {
-            (function, operator.reversed(), signed_integer_literal(other)?)
-        }
+        (other, Expression::Function(function)) => (
+            function,
+            operator.reversed(),
+            signed_integer_literal(other)?,
+        ),
         _ => return None,
     };
     if computed.distinct() {
