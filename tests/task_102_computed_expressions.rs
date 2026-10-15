@@ -606,16 +606,19 @@ fn opaque_guard_case_residualizes() {
 
 #[test]
 fn comparisons_over_computed_values_stay_explicitly_residual() {
-    // Scalar comparisons over CASE/COALESCE/NULLIF results have no
-    // source-row inversion in this increment: no boolean witness row is
-    // emitted, but the composition layer records an explicit
-    // computed-expression residual instead of silently dropping the filter.
+    // Unsupported CASE comparisons still preserve a computed-expression
+    // residual; independently invertible integer functions no longer do.
+    assert_computed_expression_residual(
+        "SELECT a FROM t WHERE CASE WHEN a > 1 THEN a ELSE 0 END = 5",
+    );
     for predicate in [
-        "CASE WHEN a > 1 THEN a ELSE 0 END = 5",
         "COALESCE(a, 0) > 5",
+        "COALESCE(a, 0) = 0",
         "NULLIF(a, 5) = 3",
+        "NOT (NULLIF(a, 5) = 3)",
+        "NULLIF(a, 5) = 3 OR b = 7",
     ] {
-        assert_computed_expression_residual(&format!("SELECT a FROM t WHERE {predicate}"));
+        assert_exact_both_directions(predicate);
     }
 }
 
@@ -849,4 +852,19 @@ fn implicit_else_is_excluded_when_where_proves_every_guard_true() {
         "SELECT CASE WHEN a > 0 THEN a END AS v FROM t WHERE a IN (1, 3)",
         vec!["1", "3"],
     );
+}
+
+#[test]
+fn computed_integer_comparisons_preserve_true_and_unknown_regions() {
+    for predicate in [
+        "COALESCE(a, 0) > 5",
+        "COALESCE(a, 0) = 0",
+        "NOT (COALESCE(a, 0) > 5)",
+        "NULLIF(a, 5) = 3",
+        "NOT (NULLIF(a, 5) = 3)",
+        "NULLIF(a, 5) = 3 AND b > 0",
+        "NULLIF(a, 5) = 3 OR b IS NULL",
+    ] {
+        assert_exact_both_directions(predicate);
+    }
 }
