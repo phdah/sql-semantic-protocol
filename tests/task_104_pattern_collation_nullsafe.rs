@@ -653,7 +653,7 @@ fn impossible_text_conjunctions_yield_empty_output_domains() {
         "a <> a",
         "a IS DISTINCT FROM a",
         "a <> a OR b <> b",
-        "a IS DISTINCT FROM a OR b IS DISTINCT FROM b",
+        "(a IS DISTINCT FROM a) OR (b IS DISTINCT FROM b)",
         "a = b AND a <> b",
         "(a IS NOT DISTINCT FROM b) AND (a IS DISTINCT FROM b)",
     ] {
