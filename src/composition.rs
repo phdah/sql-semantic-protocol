@@ -18,8 +18,8 @@ use crate::protocol::{
     CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef, ComparisonOperator,
     ConditionClause, ConditionExactness, Expression, Join, JoinKind, LineageSource,
     LiteralExpression, LiteralType, LiteralValue, Output, OutputColumn, Predicate,
-    ProtocolStatement, QueryStatement, RelationRef, ResidualCondition,
-    ResidualConditionReason, SetMode, SourceRelation, ValueDomain, ValueRange, WriteKind,
+    ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
+    SetMode, SourceRelation, ValueDomain, ValueRange, WriteKind,
 };
 
 pub(crate) fn compose_layers(
@@ -1131,7 +1131,10 @@ impl<'a> Composer<'a> {
         let Expression::Binary(binary) = expression else {
             return None;
         };
-        if !matches!(binary.operator(), BinaryOperator::Add | BinaryOperator::Subtract) {
+        if !matches!(
+            binary.operator(),
+            BinaryOperator::Add | BinaryOperator::Subtract
+        ) {
             return None;
         }
         let Expression::SignedIntegerCast(cast) = binary.left() else {
