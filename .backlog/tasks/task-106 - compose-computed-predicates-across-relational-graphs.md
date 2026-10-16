@@ -276,3 +276,40 @@ operator proofs that reconcile overlapping join/group/window/key histograms,
 and full direct-SQL/dbt/DuckDB conformance for those combinations. A single
 supported affine case cannot close the general requirements. Do not check
 AC #1-#5 until those are independently verified.
+
+### Strict graph integration work (2026-10-16, PR #114)
+
+Added source-independent, protocol-owned proof paths beyond the bounded
+review baseline:
+
+- `src/composition.rs` transports catalog-independent, *bounded* signed
+  integer interval/set outcomes through an explicitly typed widening CAST
+  plus constant affine arithmetic on a resolved producer reference. This
+  retains open/closed bounds and stable physical lineage, checks width and
+  overflow, and never substitutes an arbitrary unbounded producer domain.
+- `src/physical_realization/joins.rs` now reuses a single complete
+  source-row assignment across multiple overlapping filtered equijoins,
+  requiring independently certified non-key TRUE predicates to pass the
+  existing coupled satisfiability solver. Contradictory or unproved
+  conjunctions remain residual. It additionally composes a certified
+  `DistinctMatched` equijoin with singleton GROUP BY on its *same* key.
+- `src/physical_realization/composition.rs` deduplicates identical
+  group/operator histograms while retaining both terminal output goals.
+  Independently certified, singleton/distinct-key group histograms may
+  share one physical bag when the complete source row count matches.
+  Higher group multiplicities or incompatible keys remain residual.
+- `tests/task_106_composed_predicates.rs` exercises overlapping positive
+  joins, contradictory filters, reused operator histograms, distinct
+  group keys, join/group key correlations, affine producer domains and
+  inclusive/exclusive bounds; where supported, DuckDB executes the same
+  complete source bags. The semantic guide, coverage manifest and code map
+  reflect those stronger contracts.
+
+**Strict completion still requires an independently verified finite
+support matrix for all canonical TASK-101..105 expression families and
+supported cross-operator compositions**, especially correlated shared
+join/group/window/write-state populations that cannot be represented
+by the currently certified singleton-group and equijoin patterns.
+The acceptance boxes remain unchecked pending that evidence; avoid
+representing the mere number of new fixtures or a green bounded build as
+universal proof coverage.
