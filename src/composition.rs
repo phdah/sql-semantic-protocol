@@ -11,28 +11,33 @@ use crate::bundle::{
     ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason, GraphEdge,
     RelationResolution, TransformationLayer,
 };
+use crate::data_type::DataType;
 use crate::domain::{intersect_case_domain_values, intersect_domains};
 use crate::join_witness::JoinWitness;
 use crate::protocol::{
-    CaseBranch, CaseExpression, CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain,
-    ColumnExpression, ColumnRef, ComparisonOperator, ConditionClause, ConditionExactness,
-    Expression, Join, JoinKind, LineageSource, Output, OutputColumn, Predicate, ProtocolStatement,
-    QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason, SourceRelation,
-    ValueDomain, WriteKind,
+    BinaryOperator, Bound, CaseBranch, CaseExpression, CaseSourceDomainAlternative,
+    CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef, ComparisonOperator,
+    ConditionClause, ConditionExactness, Expression, Join, JoinKind, LineageSource,
+    LiteralExpression, LiteralType, LiteralValue, Output, OutputColumn, Predicate,
+    ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
+    SetMode, SourceRelation, UnaryOperator, ValueDomain, ValueRange, WriteKind,
 };
+use crate::relation::RelationSchema;
 
 pub(crate) fn compose_layers(
     inputs: &[AnalyzedInput],
     layers: &[TransformationLayer],
     graph: &AnalysisGraph,
+    schemas: &[RelationSchema],
 ) -> Vec<ComposedSemantics> {
-    Composer::new(inputs, layers, graph).compose_all()
+    Composer::new(inputs, layers, graph, schemas).compose_all()
 }
 
 struct Composer<'a> {
     inputs: &'a [AnalyzedInput],
     layers: &'a [TransformationLayer],
     graph: &'a AnalysisGraph,
+    schemas: &'a [RelationSchema],
     layer_indices: BTreeMap<String, usize>,
     memo: BTreeMap<String, ComposedSemantics>,
 }
@@ -42,6 +47,7 @@ impl<'a> Composer<'a> {
         inputs: &'a [AnalyzedInput],
         layers: &'a [TransformationLayer],
         graph: &'a AnalysisGraph,
+        schemas: &'a [RelationSchema],
     ) -> Self {
         let layer_indices = layers
             .iter()
@@ -53,6 +59,7 @@ impl<'a> Composer<'a> {
             inputs,
             layers,
             graph,
+            schemas,
             layer_indices,
             memo: BTreeMap::new(),
         }
@@ -1081,7 +1088,12 @@ impl<'a> Composer<'a> {
     ) -> ValueDomain {
         let domain = column.domain().clone();
         let Some(source) = column.plain_copy_source() else {
-            return domain;
+            return self
+                .compose_affine_output_domain(consumer, column.expression())
+                .map_or(domain.clone(), |inherited| match &domain {
+                    ValueDomain::Unknown(_) | ValueDomain::Unbounded => inherited,
+                    _ => intersect_domains(&domain, &inherited),
+                });
         };
         let Some(edge) = self
             .edge_for_source(consumer.id(), source.relation())
@@ -1110,6 +1122,212 @@ impl<'a> Composer<'a> {
         };
 
         intersect_domains(&domain, producer_column.domain())
+    }
+
+    /// Reuse the canonical upstream value domain for an explicit, total
+    /// signed-integer CAST followed by a constant affine translation. The
+    /// composed producer already owns any WHERE, HAVING or prior source
+    /// restrictions; a fully bounded domain proves both no overflow and the
+    /// strongest representable translated interval without SQL reparsing.
+    ///
+    /// The legacy single-hop shape keeps its exact prior outcomes. Nested and
+    /// cross-layer constant affine chains (nested `CAST`/`+`/`-`/`*const`
+    /// spines and recast-free references to computed producer outputs) are
+    /// certified by [`Composer::certified_affine`] afterwards; anything
+    /// reaching neither stays residual.
+    fn compose_affine_output_domain(
+        &mut self,
+        consumer: &TransformationLayer,
+        expression: &Expression,
+    ) -> Option<ValueDomain> {
+        if let Some(domain) = self.legacy_single_affine_domain(consumer, expression) {
+            return Some(domain);
+        }
+        self.certified_affine(consumer, expression)
+            .map(|(domain, _)| domain)
+    }
+
+    /// Verbatim prior single-hop proof for `CAST(column AS wider) +/- constant`.
+    fn legacy_single_affine_domain(
+        &mut self,
+        consumer: &TransformationLayer,
+        expression: &Expression,
+    ) -> Option<ValueDomain> {
+        let Expression::Binary(binary) = expression else {
+            return None;
+        };
+        if !matches!(
+            binary.operator(),
+            BinaryOperator::Add | BinaryOperator::Subtract
+        ) {
+            return None;
+        }
+        let Expression::SignedIntegerCast(cast) = binary.left() else {
+            return None;
+        };
+        let Expression::Column(column) = cast.expression() else {
+            return None;
+        };
+        let Expression::Literal(literal) = binary.right() else {
+            return None;
+        };
+        if literal.literal_type() != LiteralType::Integer {
+            return None;
+        }
+        let LiteralValue::Number(number) = literal.value() else {
+            return None;
+        };
+        let mut offset = number.parse::<i128>().ok()?;
+        if binary.operator() == BinaryOperator::Subtract {
+            offset = offset.checked_neg()?;
+        }
+        let query = self.query_for_layer(consumer)?;
+        let source = crate::domain::resolve_column(column, query.sources());
+        let edge = self
+            .edge_for_source(consumer.id(), source.relation()?)
+            .cloned()?;
+        if edge.resolution() != RelationResolution::Resolved {
+            return None;
+        }
+        let [producer_id] = edge.producer_layer_ids() else {
+            return None;
+        };
+        // Integer-valued bounds alone are not proof of the underlying SQL
+        // column datatype: a decimal or text source might be truncated or
+        // rounded by CAST. Require an actual catalog-attested integer column
+        // before treating this mapping as lossless.
+        let declared = self
+            .schemas
+            .iter()
+            .find(|schema| schema.relation() == edge.relation())?
+            .columns()
+            .iter()
+            .find(|column| column.name() == source.name())?
+            .data_type();
+        if signed_width(declared)? > cast.target_bits() {
+            return None;
+        }
+        let layer = self.layer_by_id(producer_id)?;
+        if !matches!(layer.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
+        let ComposedSemantics::Resolved(upstream) = self.compose_layer(producer_id) else {
+            return None;
+        };
+        let mut columns = upstream
+            .output()
+            .columns()
+            .iter()
+            .filter(|candidate| candidate.name() == source.name());
+        let input = columns.next()?;
+        if columns.next().is_some() {
+            return None;
+        }
+        translated_signed_domain(input.domain(), cast.target_bits(), offset)
+    }
+
+    /// Certify nested and cross-layer constant affine chains of the form
+    /// `CAST(...)+/-const` and `CAST(...)*const` over one ultimate base
+    /// column. Additions keep the left operand width (integer literals coerce
+    /// to it, as in the legacy proof); scales keep it for the same reason.
+    /// Each `CAST` must not narrow the certified flowing width. Every hop
+    /// translates the finite domain stepwise and fail-closes on overflow, so
+    /// intermediate execution widths are honored exactly. Division, modulo
+    /// and a zero scale stay residual: engines differ on the former, and the
+    /// latter needs nullability evidence the domain does not carry.
+    /// Returns the translated domain with the execution width its values
+    /// provably fit.
+    fn certified_affine(
+        &mut self,
+        consumer: &TransformationLayer,
+        expression: &Expression,
+    ) -> Option<(ValueDomain, u16)> {
+        match expression {
+            Expression::Binary(binary) => {
+                if binary.operator() == BinaryOperator::Multiply {
+                    let factor = affine_integer_constant(binary.right())?;
+                    let (inner, width) = self.certified_affine(consumer, binary.left())?;
+                    return Some((scaled_signed_domain(&inner, width, factor)?, width));
+                }
+                if !matches!(
+                    binary.operator(),
+                    BinaryOperator::Add | BinaryOperator::Subtract
+                ) {
+                    return None;
+                }
+                let Expression::Literal(literal) = binary.right() else {
+                    return None;
+                };
+                if literal.literal_type() != LiteralType::Integer {
+                    return None;
+                }
+                let LiteralValue::Number(number) = literal.value() else {
+                    return None;
+                };
+                let mut offset = number.parse::<i128>().ok()?;
+                if binary.operator() == BinaryOperator::Subtract {
+                    offset = offset.checked_neg()?;
+                }
+                let (inner, width) = self.certified_affine(consumer, binary.left())?;
+                Some((translated_signed_domain(&inner, width, offset)?, width))
+            }
+            Expression::SignedIntegerCast(cast) => {
+                let (inner, width) = self.certified_affine(consumer, cast.expression())?;
+                if cast.target_bits() < width {
+                    return None;
+                }
+                Some((inner, cast.target_bits()))
+            }
+            Expression::Column(column) => self.certified_affine_base(consumer, column),
+            _ => None,
+        }
+    }
+
+    /// Anchor a nested affine chain at one direct producer output column.
+    /// The producer output domain is reused with the execution width of its
+    /// own expression shape (falling back to the catalog-attested column
+    /// width), after checking the finite domain actually fits that width.
+    /// Non-affine, non-catalog-typed producer expressions stay residual, as do
+    /// ambiguous outputs and non-Definition producers.
+    fn certified_affine_base(
+        &mut self,
+        consumer: &TransformationLayer,
+        column: &ColumnExpression,
+    ) -> Option<(ValueDomain, u16)> {
+        let query = self.query_for_layer(consumer).cloned()?;
+        let source = crate::domain::resolve_column(column, query.sources());
+        let edge = self
+            .edge_for_source(consumer.id(), source.relation()?)
+            .cloned()?;
+        if edge.resolution() != RelationResolution::Resolved {
+            return None;
+        }
+        let [producer_id] = edge.producer_layer_ids() else {
+            return None;
+        };
+        let producer = self.layer_by_id(producer_id).cloned()?;
+        if !matches!(producer.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
+        let ComposedSemantics::Resolved(upstream) = self.compose_layer(producer_id) else {
+            return None;
+        };
+        let mut matches = upstream
+            .output()
+            .columns()
+            .iter()
+            .filter(|candidate| candidate.name() == source.name());
+        let input = matches.next()?;
+        if matches.next().is_some() {
+            return None;
+        }
+        let width = affine_expression_width(input.expression())
+            .or_else(|| catalog_signed_width(self.schemas, edge.relation(), source.name()))?;
+        let domain = input.domain().clone();
+        if !domain_fits_signed_width(&domain, width) {
+            return None;
+        }
+        Some((domain, width))
     }
 
     fn expand_lineage_source(
@@ -1216,6 +1434,240 @@ impl<'a> Composer<'a> {
             edge.consumer_layer_id() == consumer_layer_id
                 && edge.relation() == canonical_relation.as_str()
         })
+    }
+}
+
+/// Move a fully proven integer value domain through `CAST(value AS
+/// SIGNED(width)) + offset`. An unknown, unbounded, noninteger or
+/// overflowing region is deliberately not sharpened.
+fn translated_signed_domain(domain: &ValueDomain, bits: u16, offset: i128) -> Option<ValueDomain> {
+    if bits == 0 || bits > 64 {
+        return None;
+    }
+    let magnitude = 1_i128.checked_shl(u32::from(bits.checked_sub(1)?))?;
+    let minimum = -magnitude;
+    let maximum = magnitude - 1;
+    let shift = |literal: &LiteralExpression| -> Option<LiteralExpression> {
+        if literal.literal_type() == LiteralType::Null {
+            return Some(literal.clone());
+        }
+        if literal.literal_type() != LiteralType::Integer {
+            return None;
+        }
+        let LiteralValue::Number(text) = literal.value() else {
+            return None;
+        };
+        let value = text.parse::<i128>().ok()?;
+        let translated = value.checked_add(offset)?;
+        if value < minimum || value > maximum || translated < minimum || translated > maximum {
+            return None;
+        }
+        Some(LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(translated.to_string()),
+        ))
+    };
+    match domain {
+        ValueDomain::Empty => Some(ValueDomain::Empty),
+        ValueDomain::Set(set) if set.mode() == SetMode::Include => Some(ValueDomain::set(
+            SetMode::Include,
+            set.values().iter().map(shift).collect::<Option<Vec<_>>>()?,
+        )),
+        ValueDomain::Ranges(ranges) => {
+            let translated = ranges
+                .ranges()
+                .iter()
+                .map(|range| {
+                    let lower = range.lower()?;
+                    let upper = range.upper()?;
+                    Some(ValueRange::new(
+                        Some(Bound::new(shift(lower.value())?, lower.inclusive())),
+                        Some(Bound::new(shift(upper.value())?, upper.inclusive())),
+                    ))
+                })
+                .collect::<Option<Vec<_>>>()?;
+            Some(ValueDomain::ranges(translated))
+        }
+        ValueDomain::Unbounded | ValueDomain::Unknown(_) | ValueDomain::Set(_) => None,
+    }
+}
+
+/// Catalog-attested signed width of a relation column, directly or through
+/// nullability. Only fully specified 1..=64-bit signed integers qualify.
+fn signed_width(data_type: &DataType) -> Option<u16> {
+    match data_type {
+        DataType::SignedInteger { bits: Some(bits) } if *bits > 0 && *bits <= 64 => Some(*bits),
+        DataType::Nullable(inner) => signed_width(inner),
+        _ => None,
+    }
+}
+
+/// Catalog-attested signed width of a (possibly intermediate) relation column.
+fn catalog_signed_width(schemas: &[RelationSchema], relation: &str, column: &str) -> Option<u16> {
+    let declared = schemas
+        .iter()
+        .find(|schema| schema.relation() == relation)?
+        .columns()
+        .iter()
+        .find(|candidate| candidate.name() == column)?
+        .data_type();
+    signed_width(declared)
+}
+
+/// Read a constant integer scale or offset operand: an integer literal, or a
+/// unary-minus integer literal (the only spelling of a negative constant,
+/// e.g. `* -2`, which the parser does not fold into a literal). Only the
+/// multiply domain arm accepts the unary spelling: subtraction already has
+/// its own binary operator, so the additive domain arms keep their
+/// literal-only shape. Width inference uses this helper uniformly because
+/// the kept-left-width claim is spelling-independent.
+/// Anything else has no portable constant meaning here.
+fn affine_integer_constant(expression: &Expression) -> Option<i128> {
+    match expression {
+        Expression::Literal(literal) => {
+            if literal.literal_type() != LiteralType::Integer {
+                return None;
+            }
+            let LiteralValue::Number(number) = literal.value() else {
+                return None;
+            };
+            number.parse::<i128>().ok()
+        }
+        Expression::Unary(unary) => {
+            if unary.operator() != UnaryOperator::Minus {
+                return None;
+            }
+            affine_integer_constant(unary.operand())?.checked_neg()
+        }
+        _ => None,
+    }
+}
+
+/// Move a fully proven integer value domain through `value * factor` at a
+/// signed execution width. A zero factor collapses every value and needs
+/// nullability evidence the domain does not carry, so it stays residual; an
+/// unknown, unbounded, noninteger or overflowing region is deliberately not
+/// sharpened. A negative factor swaps the range ends while each bound keeps
+/// its own inclusivity.
+fn scaled_signed_domain(domain: &ValueDomain, bits: u16, factor: i128) -> Option<ValueDomain> {
+    if bits == 0 || bits > 64 || factor == 0 {
+        return None;
+    }
+    let magnitude = 1_i128.checked_shl(u32::from(bits.checked_sub(1)?))?;
+    let minimum = -magnitude;
+    let maximum = magnitude - 1;
+    let scale = |literal: &LiteralExpression| -> Option<LiteralExpression> {
+        if literal.literal_type() == LiteralType::Null {
+            return Some(literal.clone());
+        }
+        if literal.literal_type() != LiteralType::Integer {
+            return None;
+        }
+        let LiteralValue::Number(text) = literal.value() else {
+            return None;
+        };
+        let value = text.parse::<i128>().ok()?;
+        let scaled = value.checked_mul(factor)?;
+        if value < minimum || value > maximum || scaled < minimum || scaled > maximum {
+            return None;
+        }
+        Some(LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(scaled.to_string()),
+        ))
+    };
+    match domain {
+        ValueDomain::Empty => Some(ValueDomain::Empty),
+        ValueDomain::Set(set) if set.mode() == SetMode::Include => Some(ValueDomain::set(
+            SetMode::Include,
+            set.values().iter().map(scale).collect::<Option<Vec<_>>>()?,
+        )),
+        ValueDomain::Ranges(ranges) => {
+            let scaled = ranges
+                .ranges()
+                .iter()
+                .map(|range| {
+                    let lower = range.lower()?;
+                    let upper = range.upper()?;
+                    let scaled_lower = scale(lower.value())?;
+                    let scaled_upper = scale(upper.value())?;
+                    if factor > 0 {
+                        Some(ValueRange::new(
+                            Some(Bound::new(scaled_lower, lower.inclusive())),
+                            Some(Bound::new(scaled_upper, upper.inclusive())),
+                        ))
+                    } else {
+                        Some(ValueRange::new(
+                            Some(Bound::new(scaled_upper, upper.inclusive())),
+                            Some(Bound::new(scaled_lower, lower.inclusive())),
+                        ))
+                    }
+                })
+                .collect::<Option<Vec<_>>>()?;
+            Some(ValueDomain::ranges(scaled))
+        }
+        ValueDomain::Unbounded | ValueDomain::Unknown(_) | ValueDomain::Set(_) => None,
+    }
+}
+
+/// Infer the execution width of an affine-shaped expression: integer literals
+/// coerce to the operand type, so additions and constant scales keep their
+/// left width and casts fix theirs. The constant operand may use the
+/// unary-minus spelling, mirroring the scale proof. Anything else has no
+/// provable width here.
+fn affine_expression_width(expression: &Expression) -> Option<u16> {
+    match expression {
+        Expression::SignedIntegerCast(cast) => Some(cast.target_bits()),
+        Expression::Binary(binary) => {
+            if !matches!(
+                binary.operator(),
+                BinaryOperator::Add | BinaryOperator::Subtract | BinaryOperator::Multiply
+            ) {
+                return None;
+            }
+            affine_integer_constant(binary.right())?;
+            affine_expression_width(binary.left())
+        }
+        _ => None,
+    }
+}
+
+/// Check a certified finite domain against a signed execution width without
+/// translating it. NULL survives any CAST; anything non-finite or
+/// non-integer stays unprovable here.
+fn domain_fits_signed_width(domain: &ValueDomain, bits: u16) -> bool {
+    if bits == 0 || bits > 64 {
+        return false;
+    }
+    let magnitude = match 1_i128.checked_shl(u32::from(bits) - 1) {
+        Some(magnitude) => magnitude,
+        None => return false,
+    };
+    let fits = |literal: &LiteralExpression| -> bool {
+        if literal.literal_type() == LiteralType::Null {
+            return true;
+        }
+        if literal.literal_type() != LiteralType::Integer {
+            return false;
+        }
+        let LiteralValue::Number(text) = literal.value() else {
+            return false;
+        };
+        match text.parse::<i128>() {
+            Ok(value) => value >= -magnitude && value < magnitude,
+            Err(_) => false,
+        }
+    };
+    match domain {
+        ValueDomain::Empty => true,
+        ValueDomain::Set(set) if set.mode() == SetMode::Include => set.values().iter().all(fits),
+        ValueDomain::Ranges(ranges) => ranges.ranges().iter().all(|range| {
+            let (Some(lower), Some(upper)) = (range.lower(), range.upper()) else {
+                return false;
+            };
+            fits(lower.value()) && fits(upper.value())
+        }),
+        ValueDomain::Unbounded | ValueDomain::Unknown(_) | ValueDomain::Set(_) => false,
     }
 }
 

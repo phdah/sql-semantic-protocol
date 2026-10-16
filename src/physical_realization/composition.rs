@@ -299,6 +299,141 @@ pub(super) fn physical_operator_population_case(
     Some((witness, counts, case))
 }
 
+/// Two independently certified group/rank operator populations can share
+/// one physical bag only when their complete, deterministic row assignment
+/// can satisfy every operator's key and multiplicity law simultaneously.
+///
+/// Identical grouping histograms share one bag through block-diagonal
+/// pairing: N groups of r rows on one key and N groups of r rows on another
+/// key are jointly realized by pairing the i-th keys with r rows each.
+/// This is sound for every `Groups` producer because group constructors only
+/// certify COUNT-based populations without same-layer `WHERE`: the witnesses
+/// pin full closed-world key histograms, so no value-level predicate can
+/// distinguish the paired keys.
+/// Singleton GROUP BY rows are numbered 0..N-1 on their key. ROW_NUMBER
+/// partitioned by the *same* singleton grouping key sees exactly one row
+/// per partition, regardless of its independently typed ORDER BY column. An
+/// unpartitioned ROW_NUMBER over the same N singleton rows also sees every
+/// row pass: its certified limit covers all N rows in the single partition.
+/// Non-identical group multiplicities, different rank partitions and
+/// unproved windows remain residual rather than being multiplied as
+/// independent examples.
+///
+/// Soundness: the shared bag carries N distinct keys with one row each, so
+/// it presents N one-row partitions to the rank operator. With one row per
+/// partition ROW_NUMBER is identically 1, which passes any certified rank
+/// filter: every `Ranked` producer (`construct_rank_with_map`,
+/// `construct_mapped_rank`) requires an exact first-row direction
+/// (`min_preceding == 0`) with a nonzero limit over a single partition key
+/// and a single order key, and the order key cannot discriminate single-row
+/// partitions. Even where the rank population would also admit multi-row
+/// partitions (e.g. `QUALIFY rn <= 2`), the shared singleton-key bag still
+/// satisfies both terminal count goals. Predecessor-requiring filters
+/// (`rn > 1`), unpartitioned multi-row ranks and unproved windows cannot
+/// produce a matching `Ranked` shape and stay residual.
+///
+/// The match is exhaustive over `OutcomeWitness` (no `_` catch-all) so that
+/// adding a variant forces this compatibility proof to be revisited instead
+/// of silently failing closed or, worse, silently sharing.
+fn compatible_operator_populations(
+    left: &crate::outcome_proofs::OutcomeWitness,
+    right: &crate::outcome_proofs::OutcomeWitness,
+) -> bool {
+    use crate::outcome_proofs::OutcomeWitness;
+    match (left, right) {
+        (
+            OutcomeWitness::Groups {
+                relation: left_relation,
+                groups: left_groups,
+                rows_per_group: left_rows_per_group,
+                ..
+            },
+            OutcomeWitness::Groups {
+                relation: right_relation,
+                groups: right_groups,
+                rows_per_group: right_rows_per_group,
+                ..
+            },
+        ) => {
+            left_relation == right_relation
+                && left_groups == right_groups
+                && left_rows_per_group == right_rows_per_group
+        }
+        (
+            OutcomeWitness::Groups {
+                relation: group_relation,
+                key,
+                groups,
+                rows_per_group: 1,
+            },
+            OutcomeWitness::Ranked {
+                relation: rank_relation,
+                partition_key: Some(partition),
+                rows,
+                ..
+            },
+        )
+        | (
+            OutcomeWitness::Ranked {
+                relation: rank_relation,
+                partition_key: Some(partition),
+                rows,
+                ..
+            },
+            OutcomeWitness::Groups {
+                relation: group_relation,
+                key,
+                groups,
+                rows_per_group: 1,
+            },
+        ) => group_relation == rank_relation && key == partition && groups == rows,
+        (
+            OutcomeWitness::Groups {
+                relation: group_relation,
+                groups,
+                rows_per_group: 1,
+                ..
+            },
+            OutcomeWitness::Ranked {
+                relation: rank_relation,
+                partition_key: None,
+                rows,
+                ..
+            },
+        )
+        | (
+            OutcomeWitness::Ranked {
+                relation: rank_relation,
+                partition_key: None,
+                rows,
+                ..
+            },
+            OutcomeWitness::Groups {
+                relation: group_relation,
+                groups,
+                rows_per_group: 1,
+                ..
+            },
+        ) => group_relation == rank_relation && groups == rows,
+        (OutcomeWitness::Groups { .. }, _)
+        | (_, OutcomeWitness::Groups { .. })
+        | (OutcomeWitness::Ranked { .. }, _)
+        | (_, OutcomeWitness::Ranked { .. }) => false,
+        (
+            OutcomeWitness::Singleton
+            | OutcomeWitness::EmptySources { .. }
+            | OutcomeWitness::SourceRows { .. }
+            | OutcomeWitness::JoinPairs { .. }
+            | OutcomeWitness::SetTuples { .. },
+            OutcomeWitness::Singleton
+            | OutcomeWitness::EmptySources { .. }
+            | OutcomeWitness::SourceRows { .. }
+            | OutcomeWitness::JoinPairs { .. }
+            | OutcomeWitness::SetTuples { .. },
+        ) => false,
+    }
+}
+
 /// Safely share fully controlled physical relations across several terminal
 /// operators. Identical constructions can reuse the same rows; independent
 /// sources remain disjoint. A different sufficient population over one source
@@ -319,9 +454,23 @@ pub(super) fn joint_operator_population_goals(
     let mut obligations = Vec::new();
     for &(id, rows) in targets {
         if let Some((witness, counts, case)) = physical_operator_population_case(bundle, id, rows) {
+            let reused = counts.keys().any(|relation| sources.contains_key(relation));
+            let all_reused = counts.keys().all(|relation| sources.contains_key(relation));
+            // An operator-local population can be reused only if *every*
+            // overlapping physical source already has this same complete
+            // construction. Mixing a reused source with an independently
+            // sampled new source would require another correlation proof.
+            if reused && !all_reused {
+                return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
+            }
             for (relation, count) in counts {
                 if let Some(existing) = sources.get(&relation) {
-                    if *existing != count || populations.get(&relation) != Some(&witness) {
+                    if *existing != count
+                        || !populations.get(&relation).is_some_and(|previous| {
+                            previous == &witness
+                                || compatible_operator_populations(previous, &witness)
+                        })
+                    {
                         return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
                     }
                 } else {
@@ -329,7 +478,22 @@ pub(super) fn joint_operator_population_goals(
                     populations.insert(relation, witness.clone());
                 }
             }
-            obligations.extend(case.obligations().iter().cloned());
+            for obligation in case.obligations() {
+                if !all_reused
+                    || matches!(
+                        obligation,
+                        WitnessObligation::OutputRows { .. }
+                            | WitnessObligation::OperatorPopulation { .. }
+                    )
+                {
+                    // Shared source closures count once, but each different
+                    // locally certified grouping histogram retains its own
+                    // operator proof on those same physical rows.
+                    if !obligations.contains(obligation) {
+                        obligations.push(obligation.clone());
+                    }
+                }
+            }
         } else if let Some(relation) = exact_transparent_source(bundle, id) {
             let Some(&existing) = sources.get(&relation) else {
                 // Process operator and transparent goals in either order

@@ -239,6 +239,131 @@ fn join_population_reconciles_joint_terminal_counts_without_duplicate_source_row
 }
 
 #[test]
+fn task_106_join_and_two_negative_terminals_share_full_physical_sources() {
+    let b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a,k FROM l",
+            "CREATE TABLE mart AS SELECT a,k FROM r",
+            "SELECT s.a FROM stage s JOIN mart m ON s.k=m.k",
+            "SELECT a FROM l WHERE a < 0",
+            "SELECT a FROM r WHERE a > 10",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (b.layers()[2].id(), 2),
+        (b.layers()[3].id(), 0),
+        (b.layers()[4].id(), 0),
+    ];
+    let result = physical_joint_source_plan(&b, &goals);
+    let WitnessDirection::Feasible(cases) = result.outcome() else {
+        panic!("join and NOT TRUE terminals must share controlled source rows: {result:?}");
+    };
+    assert_eq!(result.sources(), &["l".to_string(), "r".to_string()]);
+    assert!(cases.iter().any(|case| {
+        case.obligations()
+            .iter()
+            .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+            .count()
+            == 2
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::Rows {
+                            predicate: WitnessFormula::RowTruth {
+                                truth: BooleanTruthCase::NotTrue,
+                                ..
+                            },
+                            ..
+                        }
+                    )
+                })
+                .count()
+                == 2
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                .count()
+                == 3
+    }));
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER,k INTEGER);
+         CREATE TABLE r(a INTEGER,k INTEGER);
+         INSERT INTO l VALUES (NULL,0),(1,1);
+         INSERT INTO r VALUES (2,0),(3,1);
+         CREATE TABLE stage AS SELECT a,k FROM l;
+         CREATE TABLE mart AS SELECT a,k FROM r;",
+    )
+    .unwrap();
+    let joined: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM stage s JOIN mart m ON s.k=m.k",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    let rejected_left: i64 = db
+        .query_row("SELECT COUNT(*) FROM l WHERE a < 0", [], |row| row.get(0))
+        .unwrap();
+    let rejected_right: i64 = db
+        .query_row("SELECT COUNT(*) FROM r WHERE a > 10", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!((joined, rejected_left, rejected_right), (2, 0, 0));
+}
+
+#[test]
+fn task_106_positive_inner_join_cannot_reject_both_null_complements() {
+    let b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a,k FROM l",
+            "CREATE TABLE mart AS SELECT a,k FROM r",
+            "SELECT s.a FROM stage s JOIN mart m ON s.k=m.k",
+            "SELECT a FROM l WHERE a IS NULL",
+            "SELECT a FROM l WHERE a IS NOT NULL",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (b.layers()[2].id(), 1),
+        (b.layers()[3].id(), 0),
+        (b.layers()[4].id(), 0),
+    ];
+    let joint = physical_joint_source_plan(&b, &goals);
+    assert!(
+        matches!(joint.outcome(), WitnessDirection::Impossible),
+        "every nonempty left-side row must pass one of the complementary filters: {joint:?}"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER,k INTEGER);
+         CREATE TABLE r(a INTEGER,k INTEGER);
+         INSERT INTO l VALUES (NULL,1),(4,2);
+         INSERT INTO r VALUES (1,1),(2,2);
+         CREATE TABLE stage AS SELECT a,k FROM l;
+         CREATE TABLE mart AS SELECT a,k FROM r;",
+    )
+    .unwrap();
+    let actual: (i64, i64, i64) = db
+        .query_row(
+            "SELECT
+                (SELECT COUNT(*) FROM stage s JOIN mart m ON s.k=m.k),
+                (SELECT COUNT(*) FROM l WHERE a IS NULL),
+                (SELECT COUNT(*) FROM l WHERE a IS NOT NULL)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .unwrap();
+    assert_eq!(actual, (2, 1, 1));
+}
+
+#[test]
 fn physical_semijoin_and_antijoin_use_complete_nonempty_or_absent_partners() {
     for sql in [
         "SELECT l.a FROM l LEFT SEMI JOIN r ON l.k = r.k",
@@ -360,17 +485,25 @@ fn complete_join_population_preserves_outer_absence_and_duplicate_bags() {
             }
         ))));
 
-    for sql in [
-        "SELECT l.a FROM l JOIN r ON l.k=r.k AND l.a > 0",
-        "SELECT DISTINCT l.a FROM l JOIN r ON l.k=r.k",
-    ] {
-        let b = bundle(&[sql], "postgresql");
-        let proof = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);
-        assert!(
-            !matches!(proof.outcome(), WitnessDirection::Feasible(_)),
-            "{sql}: unproved row-shaping predicates may not be discarded"
-        );
-    }
+    let filtered = bundle(
+        &["SELECT l.a FROM l JOIN r ON l.k=r.k AND l.a > 0"],
+        "postgresql",
+    );
+    let proof = physical_joint_source_plan(&filtered, &[(filtered.layers()[0].id(), 4)]);
+    assert!(
+        matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+        "typed non-key ON filters are carried by every complete source row"
+    );
+
+    let distinct = bundle(
+        &["SELECT DISTINCT l.a FROM l JOIN r ON l.k=r.k"],
+        "postgresql",
+    );
+    let proof = physical_joint_source_plan(&distinct, &[(distinct.layers()[0].id(), 4)]);
+    assert!(
+        !matches!(proof.outcome(), WitnessDirection::Feasible(_)),
+        "DISTINCT row shaping may not be discarded"
+    );
 
     let b = bundle(&["SELECT l.a FROM l CROSS JOIN r"], "postgresql");
     let p = physical_joint_source_plan(&b, &[(b.layers()[0].id(), 4)]);

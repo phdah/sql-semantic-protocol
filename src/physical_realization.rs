@@ -21,6 +21,16 @@ use crate::protocol::{
     SetOperand, SetOperation, WriteKind,
 };
 
+/// Whether a relation carries an unproven constraint that blocks closed-world
+/// physical plans. Centralizes the repeated relation-constraint check so all
+/// physical engines fail closed on the same evidence.
+pub(super) fn blocks_unconstrained_physical_plans(bundle: &AnalysisBundle, relation: &str) -> bool {
+    bundle
+        .relation_constraints()
+        .iter()
+        .any(|set| set.relation() == relation && set.blocks_unconstrained_physical_plans())
+}
+
 /// Stable reference to a physical source or an in-bundle producer layer.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum PhysicalPlanRef {

@@ -416,6 +416,26 @@ pub(super) fn analyze_query(
             (false, false)
         };
 
+    // A WHERE-bearing JOIN cannot use plain_goal_output_shape, but it
+    // must still prove the absence of DISTINCT, LIMIT, TOP and other
+    // row-shaping syntax before its physical row-count construction.
+    let filtered_join_goal_output_shape = query.with.is_none()
+        && query.limit_clause.is_none()
+        && query.fetch.is_none()
+        && matches!(query.body.as_ref(), SetExpr::Select(select)
+            if select.top.is_none()
+                && select.distinct.is_none()
+                && select.selection.is_some()
+                && select.having.is_none()
+                && select.qualify.is_none()
+                && select.prewhere.is_none()
+                && select.connect_by.is_none()
+                && select.lateral_views.is_empty()
+                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                    if items.is_empty() && modifiers.is_empty())
+                && select.from.len() == 1
+                && matches!(&select.from[0].relation, TableFactor::Table { sample: None, .. }));
+
     QueryStatement::new(
         relation_analysis.sources,
         relation_analysis.dependencies.into_iter().collect(),
@@ -433,6 +453,7 @@ pub(super) fn analyze_query(
     .with_proven_single_row_output(proven_single_row_output)
     .with_group_row_correspondence(group_rows_match_surviving_groups)
     .with_goal_shapes(plain_goal_output_shape, ranked_goal_output_shape)
+    .with_filtered_join_goal_shape(filtered_join_goal_output_shape)
     .with_group_witness()
     .with_window_witness()
     .with_projected_window_witness(projected_window_filter(query, metadata))

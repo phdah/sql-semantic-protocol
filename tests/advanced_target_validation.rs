@@ -3,8 +3,9 @@ mod common;
 use common::DIALECTS;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_inputs, to_bundle_json, AnalysisBundle, ComposedSemantics, ResolvedComposedSemantics,
-    SqlInput, TransformationLayer,
+    analyze_configured_inputs_with_catalog, analyze_inputs, to_bundle_json, AnalysisBundle,
+    ComposedSemantics, ConfiguredSqlInput, RelationCatalog, RelationSchema,
+    ResolvedComposedSemantics, SchemaColumn, SqlInput, TransformationLayer,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
@@ -388,6 +389,60 @@ fn representative_bundle_validates_the_complete_advanced_target() {
     Schemas::load()
         .validate(&document)
         .unwrap_or_else(|error| panic!("representative document violates active schema: {error}"));
+}
+
+#[test]
+fn computed_merge_assignments_retain_domains_in_schema_valid_json() {
+    let dialect = GenericDialect {};
+    let source = SqlInput::inline(
+        "MERGE INTO target AS t USING source AS s ON t.id = s.id
+         WHEN MATCHED AND s.score BETWEEN 1 AND 5
+             THEN UPDATE SET score = s.score + 4
+         WHEN NOT MATCHED AND s.score BETWEEN 1 AND 5
+             THEN INSERT (id, score) VALUES (s.id, s.score + 4)",
+    );
+    let schema = |relation: &str| {
+        RelationSchema::new(
+            relation,
+            vec![
+                SchemaColumn::from_sql_type("id", "INTEGER", "generic").unwrap(),
+                SchemaColumn::from_sql_type("score", "INTEGER", "generic").unwrap(),
+            ],
+        )
+        .unwrap()
+    };
+    let catalog = RelationCatalog::from_schemas(&[schema("target"), schema("source")]).unwrap();
+    let bundle = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new(
+            "computed-merge",
+            &source,
+            "generic",
+            &dialect,
+        )],
+        &catalog,
+    )
+    .unwrap();
+    let document: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+    let write = &document["inputs"][0]["statements"][0]["write"];
+    let update = &write["merge_clauses"][0]["action"]["assignments"][0]["value"];
+    let insert = &write["merge_clauses"][1]["action"]["values"][0][1];
+    for value in [update, insert] {
+        assert_eq!(value["expression"]["kind"], "binary");
+        assert_eq!(value["domain"]["kind"], "set");
+        assert_eq!(
+            value["domain"]["values"],
+            serde_json::json!([
+                {"kind": "literal", "type": "integer", "value": 5},
+                {"kind": "literal", "type": "integer", "value": 6},
+                {"kind": "literal", "type": "integer", "value": 7},
+                {"kind": "literal", "type": "integer", "value": 8},
+                {"kind": "literal", "type": "integer", "value": 9}
+            ])
+        );
+    }
+    Schemas::load()
+        .validate(&document)
+        .unwrap_or_else(|error| panic!("computed MERGE document violates active schema: {error}"));
 }
 
 #[test]

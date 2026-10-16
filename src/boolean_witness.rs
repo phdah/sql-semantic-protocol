@@ -157,6 +157,15 @@ impl BooleanRowConstraint {
         }
     }
 
+    /// Whether this canonical predicate constrains the given physical column.
+    /// Joint operator construction uses this to keep independently selected
+    /// non-key values separate from join key assignments.
+    pub(crate) fn references_column(&self, column: &ColumnRef) -> bool {
+        let mut columns = Vec::new();
+        self.columns(&mut columns);
+        columns.contains(column)
+    }
+
     fn mapped_columns(&self, mapped: &BTreeMap<ColumnRef, ColumnRef>) -> Option<Self> {
         match self {
             Self::All(items) => Some(Self::All(BooleanOperands::new(
@@ -226,6 +235,79 @@ impl BooleanRowConstraint {
             Self::Residual { reason } => Some(Self::Residual {
                 reason: reason.clone(),
             }),
+        }
+    }
+
+    /// Invert a total signed-integer affine projection on the same row.
+    ///
+    /// Every mapped column represents `physical + offset`. The caller must
+    /// prove the materialized expression total, the original and physical
+    /// widths, and NULL preservation. Only integer comparisons and NULL
+    /// tests admit this exact inversion; other SQL expressions stay residual.
+    fn mapped_integer_affine(
+        &self,
+        mappings: &BTreeMap<ColumnRef, (ColumnRef, i64)>,
+    ) -> Option<Self> {
+        match self {
+            Self::All(items) | Self::Any(items) => {
+                let mapped = items
+                    .iter()
+                    .map(|item| item.mapped_integer_affine(mappings))
+                    .collect::<Option<Vec<_>>>()?;
+                let operands = BooleanOperands::new(mapped)?;
+                Some(match self {
+                    Self::All(_) => Self::All(operands),
+                    Self::Any(_) => Self::Any(operands),
+                    _ => return None,
+                })
+            }
+            Self::IntegerComparison {
+                column,
+                operator,
+                literal,
+            } => {
+                let (physical, offset) = mappings.get(column)?;
+                Some(Self::IntegerComparison {
+                    column: physical.clone(),
+                    operator: *operator,
+                    literal: literal.checked_sub(*offset)?,
+                })
+            }
+            Self::IntegerColumnComparison {
+                left,
+                operator,
+                right,
+            } => {
+                let (physical_left, left_offset) = mappings.get(left)?;
+                let (physical_right, right_offset) = mappings.get(right)?;
+                // Shifting both operands by the same constant preserves
+                // their comparison including SQL's nullable truth table.
+                if left_offset != right_offset {
+                    return None;
+                }
+                Some(Self::IntegerColumnComparison {
+                    left: physical_left.clone(),
+                    operator: *operator,
+                    right: physical_right.clone(),
+                })
+            }
+            Self::NullTest { column, negated } => {
+                let (physical, _) = mappings.get(column)?;
+                Some(Self::NullTest {
+                    column: physical.clone(),
+                    negated: *negated,
+                })
+            }
+            Self::UnknownNullComparison { column } => {
+                let (physical, _) = mappings.get(column)?;
+                Some(Self::UnknownNullComparison {
+                    column: physical.clone(),
+                })
+            }
+            Self::StringEquality { .. }
+            | Self::StringColumnComparison { .. }
+            | Self::StringPrefix { .. }
+            | Self::Residual { .. } => None,
         }
     }
 
@@ -570,6 +652,88 @@ impl BooleanWitness {
             comparison_assumptions: self.comparison_assumptions.clone(),
             source_constraints: Vec::new(),
         })
+    }
+
+    /// Transport a typed integer predicate through a caller-certified
+    /// lossless widening materialization. The producer must independently
+    /// prove every expression and hop are total and injective; the physical
+    /// source width replaces (rather than inherits) the wider intermediate
+    /// bounds before either truth direction is rechecked.
+    pub(crate) fn mapped_to_physical_widened(
+        &self,
+        resolve: impl FnMut(&ColumnRef) -> Option<ColumnRef>,
+        mut physical_integer: impl FnMut(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    ) -> Option<Self> {
+        if !self.condition.is_exact()
+            || self.condition.requires_binary_string_assumptions()
+            || self.integer_bounds.is_empty()
+        {
+            return None;
+        }
+        let mut mapped = self.mapped_to_physical_certified(resolve, |_, _| true)?;
+        let mut integer_bounds = BTreeMap::new();
+        for column in mapped.integer_bounds.keys() {
+            integer_bounds.insert(column.clone(), physical_integer(column)?);
+        }
+        mapped.integer_bounds = integer_bounds;
+        mapped.recheck_truth_directions();
+        Some(mapped)
+    }
+
+    /// Transport a typed predicate through a total affine materialization
+    /// whose canonical expression proves `output = physical + offset`.
+    ///
+    /// The caller supplies complete per-hop arithmetic/type/overflow proofs;
+    /// transformed integer witnesses are reclassified using the physical
+    /// column bounds, never an intermediate materialization's width.
+    pub(crate) fn mapped_to_physical_affine(
+        &self,
+        mut resolve: impl FnMut(&ColumnRef) -> Option<(ColumnRef, i64)>,
+        mut physical_integer: impl FnMut(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    ) -> Option<Self> {
+        if !self.condition.is_exact() || self.condition.requires_binary_string_assumptions() {
+            return None;
+        }
+        let mut columns = Vec::new();
+        self.condition.columns(&mut columns);
+        let mut mappings = BTreeMap::new();
+        for column in columns {
+            if mappings.contains_key(&column) {
+                continue;
+            }
+            let mapping = resolve(&column)?;
+            mappings.insert(column, mapping);
+        }
+        let relations = mappings
+            .values()
+            .filter_map(|(column, _)| column.relation())
+            .collect::<BTreeSet<_>>();
+        let mut relations = relations.into_iter();
+        let relation = relations.next()?.to_string();
+        if relations.next().is_some() {
+            return None;
+        }
+        let condition = self.condition.mapped_integer_affine(&mappings)?;
+        let integer_bounds = mappings
+            .values()
+            .map(|(column, _)| Some((column.clone(), physical_integer(column)?)))
+            .collect::<Option<BTreeMap<_, _>>>()?;
+        let mut result = Self {
+            source_relation: relation,
+            condition,
+            qualifying: BooleanWitnessDirection::Residual {
+                reason: "affine materialization truth not yet rechecked".to_string(),
+            },
+            rejected: BooleanWitnessDirection::Residual {
+                reason: "affine materialization truth not yet rechecked".to_string(),
+            },
+            integer_bounds,
+            string_bounds: BTreeMap::new(),
+            comparison_assumptions: BTreeSet::new(),
+            source_constraints: Vec::new(),
+        };
+        result.recheck_truth_directions();
+        Some(result)
     }
 
     /// Recheck a sequence of WHERE filters on the *same physical row* jointly.

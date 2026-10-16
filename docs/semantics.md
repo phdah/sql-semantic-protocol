@@ -415,6 +415,8 @@ Everything else is default-denied unless analysis proves an exact representation
 
 Nested subqueries carry their own joins, column domains, and exactness contract. A correlated subquery is residual in its nested scope because its membership depends on the outer row. At the bundle layer, resolved `composed_semantics.condition_exactness` is transitive: a layer is exact only when its owning query, every referenced CTE or derived-table scope, and every resolved ancestor layer are exact. Composed residuals include an `origin` with the producing `layer_id` and local `scope` such as `query`, `cte:x`, or `derived:d`. Unreferenced CTEs contribute no residuals or diagnostics. Domain composition is conservative: intersecting an `unknown` domain with any other domain remains `unknown` rather than recovering a narrower known domain.
 
+Typed single-source filters also compose across transparent layers without relabeling provenance: each layer keeps its own exact boolean witness (physical for direct sources, intermediate through filtered producers), and the joint terminal proof conjoins every layer filter against one shared physical row for TRUE versus NOT TRUE. Typed comparisons cross a materialization boundary only with certified identical datatypes at both ends of the identity chain; without that evidence the joint proof stays residual. Contradictory composed filters retain empty composed domains. When independently type-certified same-row filters establish a necessary contradiction, physical realization proves TRUE impossible while retaining a feasible NOT TRUE witness; otherwise an explicit conflicting-domains gap remains, never a fabricated row. General computed projections remain residual across materialization boundaries, although a downstream filter still narrows the composed output domain (for example `v > 5` yields an exclusive lower bound on `v`) while lineage back to the physical source is preserved. A narrow exception permits physical TRUE/NOT TRUE realization for a single-source WHERE filter through complete, unfiltered definitions consisting only of identity copies and catalog-certified lossless signed-integer widening CASTs. The mapper verifies every producer's source/output datatype and NULL compatibility, then rechecks the predicate against the physical signed width; narrowing casts, opaque expressions, unsupported constraints and partial DML producers remain residual. Inner-join scalar ON conjuncts (for example `ON l.k = r.k AND l.a > 0`) keep the join scope exact with the key equality and the scalar column domain, while the single-source row proof stays residual because the scope has two producers. Filtered joins, grouped HAVING output domains, QUALIFY scopes, computed aliases, duplicate and NULL duplicate joint assignments, and partial or unsupported producers follow the same rule: exact where the existing operator semantics permit, explicit residual otherwise, each exercised against DuckDB execution without claiming engine equivalence. This bounded physical witness does not convert unresolved composed output domains or diagnostics into an exact semantic claim. A separately certified equijoin population may also share physical leaves with zero-count terminal filters when all negative predicates constrain only non-key columns and admit a joint SQL NOT TRUE assignment. Ordered INSERT/UPDATE/MERGE remains a separate closed-world write-state proof rather than a single-row physical filter witness; computed INSERT projections (for example `score + 1`) are evaluated row-locally and verified against DuckDB intermediate states.
+
 Analyzer diagnostics follow the same default-deny rule. Diagnostics that can affect membership become an `analysis_diagnostic` residual unless the AST construct was already classified directly. Diagnostics that are independently non-membership-only include ordering/layout diagnostics, output/lineage/wildcard diagnostics, and expression/function/window diagnostics when they occur outside a row condition; if the same expression occurs in a WHERE/ON predicate, the normalized predicate classifier supplies the residual. `unsupported_top`, `unsupported_prewhere`, `unsupported_connect_by`, `unsupported_limit`, `unsupported_fetch`, and set-operation diagnostics are not duplicated because their AST operators already create explicit residuals.
 
 
@@ -923,6 +925,88 @@ rows may be fabricated for copied branches.
 ### Independent mixed physical operator DAGs
 
 Complete mixed join/group, group/rank, grouped COUNT filter and certified empty/nonempty-inner membership populations can be composed across separate terminal targets when their sets of physical source relations are disjoint. Each local case must prove an exact entire-relation closed source count; the joint case carries both operator laws and any transparent source terminal counts. A repeated physical source across different mixed cases still requires a correlated proof and remains residual, even if the sampled row counts happen to agree.
+
+### Composed typed predicate graphs (TASK-106)
+
+Typed `WHERE` predicates compose through transparent materializations while
+retaining physical column identity, output domains, bound inclusivity and SQL
+TRUE versus NOT TRUE. A certified signed widening cast can be inverted one
+materialization at a time. Derived affine output intervals across producers
+also require catalog-certified *signed integer* column widths: numeric-looking
+bounds alone are not proof that an underlying DECIMAL or TEXT CAST is lossless.
+Computed CAST operand lineage is retained through the canonical dependency graph. This includes an explicit widening CAST followed
+by a constant affine addition or subtraction when its full catalog-attested
+source range fits the declared output width. Nested constant-affine
+`CAST`/`+`/`-` spines and recast-free references to computed producer
+outputs transport finite value domains stepwise at each hop's execution
+width: additions and constant scales keep their left operand width, casts
+must not narrow the certified flowing width, a negative scale swaps the
+range ends while each bound keeps its inclusivity, and every hop
+fail-closes on overflow. Narrowing casts, non-constant operands, a zero
+scale, division/modulo and unknown producers stay residual. Canonical integer comparisons,
+NULL tests and their same-row AND/OR expressions are inverted with their
+physical integer bounds rechecked for SQL TRUE versus NOT TRUE. An implicit
+arithmetic cast, potential overflow, lossy conversion, LIMIT/DISTINCT or
+untransported producer law blocks this proof. Other computed aliases still
+preserve narrowed output domains and lineage but remain physical residuals
+rather than guessed source values.
+
+A complete single-equijoin population may also carry exact scalar `ON` and
+(for INNER joins) `WHERE` predicates that resolve to exactly one input and do not
+reference a join key. Source-row restrictions cannot certify post-join `WHERE`
+for outer joins because of NULL extension; those queries remain residual.
+Several predicates on the same source must be jointly satisfiable, not just
+individually exact. A closed physical bag may carry a nonempty conjunction of
+certified TRUE source-row filters, which is flattened only for joint
+satisfiability with independent NOT TRUE terminal obligations. Every admitted
+filter refers to the same row identity, not separately sampled candidates.
+Joint count construction reuses that single assignment with independent
+positive or zero-output terminals. Independently enforced constraints on a
+materialized relation are not silently inherited from its upstream physical
+source: identity and widening inverses remain residual unless these additional
+laws have been transported and verified. Join-key
+restrictions, ambiguous source predicates, unsupported join shapes and
+unattested source types remain residual. Separate filtered join targets can
+share one joint count proof when their complete physical source bags are
+disjoint; the composer retains each source's certified TRUE filter and its
+join-key population. Overlapping filtered joins on the same physical source can also share one
+closed assignment when their exact non-key TRUE restrictions are jointly
+satisfiable and their key-population patterns agree. A distinct-matched
+join's certified physical key histogram additionally supports a GROUP BY
+on that same physical key, with one group per row. Independently certified
+one-row-per-key grouping populations on distinct group columns can coexist
+on one source bag, as can identical non-singleton group histograms through
+block-diagonal key pairing. Singleton groups additionally share one bag
+with a same-key partitioned `ROW_NUMBER` (each partition holds exactly one
+row) and with an unpartitioned `ROW_NUMBER` whose certified limit covers
+all rows. Different group multiplicities, predecessor-requiring ranks and
+other overlapping physical sources with incompatible
+filters or unreconciled group/join histograms remain residual, not
+optimistically combined.
+
+Existing operator-specific laws remain authoritative for grouped
+`COUNT`/`HAVING` and `ROW_NUMBER`/`QUALIFY` populations. Unsupported aggregate
+or window expressions do not become exact merely because a neighboring
+predicate is typed. A grouped operator's complete histogram is stored once
+when the same population is reused by multiple terminal goals. Complete ordered INSERT, UPDATE and MERGE plans evaluate
+their supported computed assignments against one shared state. Catalog-typed
+integer assignment expressions reuse the arithmetic-domain prover, so a
+branch-constrained `score BETWEEN 1 AND 5` followed by `score + 4` has the
+exact finite write domain `{5, 6, 7, 8, 9}`. The normalized expression and
+domain are emitted together. Partial producers, missing source schemas, lossy
+casts and unverified DML forms retain their specific residual gap.
+
+
+The TASK-106 implementation is certified against the **frozen fifteen-case
+support matrix** in
+[`TASK-106`](../.backlog/tasks/task-106%20-%20compose-computed-predicates-across-relational-graphs.md).
+Each entry names its expected proof classification and public-API regression
+evidence. This is finite closure of documented transfer and source-population
+laws, not a claim to solve arbitrary correlated operator graphs or symbolic
+expression domains. The fail-closed residual boundaries above are part of the
+completed TASK-106 contract; extending them to new exact cases requires a
+separate scoped task. The protocol 3.0.0 release remains independently gated
+by TASK-91.
 
 
 ### Ordered physical write-state construction (TASK-98)

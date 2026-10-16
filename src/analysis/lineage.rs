@@ -274,6 +274,7 @@ pub(super) fn collect_output_lineage(
         }
         Expr::UnaryOp { expr, .. }
         | Expr::Nested(expr)
+        | Expr::Cast { expr, .. }
         | Expr::IsNull(expr)
         | Expr::IsNotNull(expr) => {
             collect_output_lineage(

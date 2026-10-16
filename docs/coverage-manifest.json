@@ -114,7 +114,9 @@
       "reflexive_and_null_clash_text_impossibility_with_empty_outputs",
       "validated_gregorian_date_literal_identity_and_year_month_day_extraction",
       "ordered_date_domain_intersection_negation_and_impossible_intervals",
-      "source_sql_null_truth_for_temporal_json_and_nested_types"
+      "source_sql_null_truth_for_temporal_json_and_nested_types",
+      "composed_transparent_layer_filter_conjunction_with_joint_true_not_true",
+      "contradictory_composed_filters_with_impossible_qualifying_and_feasible_rejection"
     ],
     "unproved_scope": [
       "general_arithmetic_overflow",
@@ -226,17 +228,17 @@
       },
       {
         "family": "computed_join_group_write_expressions",
-        "status": "unproved_residual",
-        "scope": "general expression projections/aliases across joins, grouped aggregates, inserts and merges",
-        "evidence": "docs/semantics.md",
+        "status": "bounded_composed_and_write_exact_with_explicit_residuals",
+        "scope": "typed single-source filters conjoin across transparent layers; complete single-equijoin populations carry jointly satisfiable non-key scalar ON filters and, for INNER joins only, WHERE filters as closed physical row obligations; outer-join WHERE is residual; grouped HAVING and ranked QUALIFY output domains use their existing operator laws; downstream filters narrow computed-alias outputs while unsupported source inversion stays residual; certified lossless signed widening casts and total constant-affine expressions admit physical TRUE/NOT TRUE inversion with per-hop type/NULL/overflow and bag-shape checks; nested constant-affine CAST/+/- and constant-scale spines and recast-free references to computed producer outputs transport finite value domains stepwise at each hop's execution width with overflow fail-closed, while narrowing casts, non-constant operands, zero scales, division/modulo and unknown producers stay residual; catalog-typed computed UPDATE and MERGE assignments retain exact finite arithmetic domains; unsupported aggregates, join-key filters, lossy inverses and unverified writes remain explicit residuals",
+        "evidence": "tests/task_106_composed_predicates.rs; tests/advanced_target_validation.rs; tests/physical_write_adapter_parity.rs; src/composition.rs; src/analysis/arithmetic_domains.rs; src/analysis/writes.rs; src/physical_realization/joins.rs; docs/semantics.md",
         "release_blocking": true,
         "implementation_task": "TASK-106"
       },
       {
         "family": "whole_graph_physical_realization",
-        "status": "unproved_residual",
-        "scope": "joint physical-source construction and negative output evidence across general DAGs",
-        "evidence": "docs/semantics.md",
+        "status": "bounded_joint_exact_with_general_residual",
+        "scope": "joint TRUE versus NOT TRUE physical-source proofs across transparent chains, certified widening projections, contradictory filter impossibility, duplicate/NULL joint assignments, and filtered equijoin populations sharing complete physical leaves with conjunctive non-key TRUE restrictions and independent NOT TRUE negative terminal filters; independent intermediate CHECK/default/diagnostic laws prevent uncertified inversion; supported GROUP HAVING and ranked QUALIFY populations retain complete source bags and bounded outcomes; closed-world ordered INSERT UPDATE MERGE with computed projections is verified against DuckDB intermediates and direct SQL/dbt catalog parity; independent and compatible overlapping filtered join DAGs share certified closed-source populations; distinct join keys correlate with same-key singleton GROUP targets and independent distinct group keys share one source assignment; identical non-singleton group histograms share one source assignment via block-diagonal pairing; singleton groups share with same-key partitioned ranks and with unpartitioned ranks covering all rows; mismatched multiplicities, predecessor-requiring ranks, noncertified overlapping multi-operator DAGs and correlated key predicates stay residual",
+        "evidence": "tests/task_106_composed_predicates.rs; tests/physical_realization/joins.rs; tests/physical_write_states.rs; tests/physical_write_adapter_parity.rs; src/physical_realization/graph.rs; src/physical_realization/joins.rs; src/physical_realization/joint_counts.rs; src/physical_realization/composition.rs; docs/semantics.md",
         "release_blocking": true,
         "implementation_task": "TASK-106"
       }

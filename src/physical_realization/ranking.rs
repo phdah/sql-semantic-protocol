@@ -112,11 +112,7 @@ pub(super) fn physical_rank_partition_count_plan(
         .source_schemas()
         .iter()
         .find(|item| item.relation() == source)?;
-    if bundle
-        .relation_constraints()
-        .iter()
-        .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
-    {
+    if blocks_unconstrained_physical_plans(bundle, source.as_str()) {
         return None;
     }
     let partition_domain = physical_integer_evidence(schema, &partition)?;

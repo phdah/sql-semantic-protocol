@@ -46,6 +46,7 @@ pub struct QueryStatement {
     proven_single_row_output: bool,
     group_rows_match_surviving_groups: bool,
     plain_goal_output_shape: bool,
+    filtered_join_goal_output_shape: bool,
     ranked_goal_output_shape: bool,
     set_operation: Option<SetOperation>,
     produced_relation: Option<String>,
@@ -78,6 +79,7 @@ impl QueryStatement {
             proven_single_row_output: false,
             group_rows_match_surviving_groups: false,
             plain_goal_output_shape: false,
+            filtered_join_goal_output_shape: false,
             ranked_goal_output_shape: false,
             set_operation: None,
             produced_relation: None,
@@ -154,6 +156,18 @@ impl QueryStatement {
     /// Whether this local query has no row-shaping beyond a plain FROM/JOIN projection.
     pub fn plain_goal_output_shape(&self) -> bool {
         self.plain_goal_output_shape
+    }
+
+    /// Store the parser-certified row shape for WHERE-bearing joins.
+    pub(crate) fn with_filtered_join_goal_shape(mut self, proven: bool) -> Self {
+        self.filtered_join_goal_output_shape = proven;
+        self
+    }
+
+    /// Whether a filtered JOIN has no other row-shaping syntax such as LIMIT,
+    /// DISTINCT, TOP or grouping. The physical planner certifies its WHERE.
+    pub(crate) fn filtered_join_goal_output_shape(&self) -> bool {
+        self.filtered_join_goal_output_shape
     }
 
     /// Whether QUALIFY is the sole row-shaping operation on a single direct table.

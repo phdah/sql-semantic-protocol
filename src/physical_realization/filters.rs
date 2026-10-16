@@ -29,34 +29,37 @@ pub fn physical_source_plan(bundle: &AnalysisBundle, target_layer_id: &str) -> P
         }) {
             Some(semantics) => {
                 let proofs = local_constructive_witnesses(semantics);
-                if !semantics
+                let conflicting_domains = semantics
                     .column_domains()
                     .iter()
-                    .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty))
-                    && semantics.boolean_witnesses().len() == proofs.len()
-                {
+                    .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty));
+                if semantics.boolean_witnesses().len() == proofs.len() {
                     if let Some((qualifying, rejected)) =
                         joint_physical_filters(bundle, &walker, semantics)
                     {
-                        let partial = matches!(qualifying, WitnessDirection::Residual { .. })
-                            || matches!(rejected, WitnessDirection::Residual { .. });
-                        return PhysicalSourcePlan {
-                            target_layer_id: target_layer_id.to_string(),
-                            nodes: walker.nodes,
-                            sources: walker.sources.into_iter().collect(),
-                            qualifying,
-                            rejected,
-                            zero_output,
-                            gap: partial.then_some(PhysicalProofGap::LocalWitnessUnproven),
-                        };
+                        // An empty composed domain must never yield a feasible
+                        // qualifying row. A separately certified conjunction
+                        // may nevertheless prove TRUE impossible, rather than
+                        // hiding that necessary contradiction behind a gap.
+                        if !conflicting_domains
+                            || matches!(qualifying, WitnessDirection::Impossible)
+                        {
+                            let partial = matches!(qualifying, WitnessDirection::Residual { .. })
+                                || matches!(rejected, WitnessDirection::Residual { .. });
+                            return PhysicalSourcePlan {
+                                target_layer_id: target_layer_id.to_string(),
+                                nodes: walker.nodes,
+                                sources: walker.sources.into_iter().collect(),
+                                qualifying,
+                                rejected,
+                                zero_output,
+                                gap: partial.then_some(PhysicalProofGap::LocalWitnessUnproven),
+                            };
+                        }
                     }
                 }
 
-                gap = if semantics
-                    .column_domains()
-                    .iter()
-                    .any(|domain| matches!(domain.domain(), crate::protocol::ValueDomain::Empty))
-                {
+                gap = if conflicting_domains {
                     Some(PhysicalProofGap::ConflictingDomains)
                 } else if proofs.is_empty() {
                     Some(PhysicalProofGap::NoWitness)
@@ -174,10 +177,7 @@ pub(super) fn repeatable_row_truth(
         .source_schemas()
         .iter()
         .any(|schema| schema.relation() == source)
-        || bundle
-            .relation_constraints()
-            .iter()
-            .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
+        || blocks_unconstrained_physical_plans(bundle, source)
     {
         return None;
     }
@@ -271,11 +271,7 @@ pub(super) fn scalar_physical_row_truth(
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == source)?;
-    if bundle
-        .relation_constraints()
-        .iter()
-        .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
-    {
+    if blocks_unconstrained_physical_plans(bundle, source) {
         return None;
     }
 
@@ -322,11 +318,7 @@ pub(super) fn scalar_physical_row_truth(
         .source_schemas()
         .iter()
         .find(|candidate| candidate.relation() == filter_source)?;
-    if bundle
-        .relation_constraints()
-        .iter()
-        .any(|set| set.relation() == filter_source && set.blocks_unconstrained_physical_plans())
-    {
+    if blocks_unconstrained_physical_plans(bundle, filter_source) {
         return None;
     }
     let witness = crate::boolean_witness::analyze_physical_scalar(

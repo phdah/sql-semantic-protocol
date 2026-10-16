@@ -166,6 +166,19 @@ impl AnalysisBundle {
     pub(crate) fn replace_source_schemas(&mut self, mut schemas: Vec<RelationSchema>) {
         schemas.sort_by(|left, right| left.relation().cmp(right.relation()));
         self.source_schemas = schemas;
+        // Catalog evidence arrives after initial input and graph construction.
+        // Recompose canonical outcomes once the authoritative type metadata
+        // is installed so cross-materialization arithmetic proofs can use it.
+        // Do not leave the earlier schema-free residual cached in the layers.
+        let composed = crate::composition::compose_layers(
+            &self.inputs,
+            &self.layers,
+            &self.graph,
+            &self.source_schemas,
+        );
+        for (layer, semantics) in self.layers.iter_mut().zip(composed) {
+            layer.composed_semantics = semantics;
+        }
         self.validate_existing_constraints();
         self.recheck_boolean_witnesses();
     }
@@ -287,7 +300,8 @@ impl AnalysisBundle {
 
         let mut layers = build_layers(&inputs, resolver)?;
         let graph = build_graph(&layers);
-        let composed = crate::composition::compose_layers(&inputs, &layers, &graph);
+        let composed =
+            crate::composition::compose_layers(&inputs, &layers, &graph, &source_schemas);
         for (layer, semantics) in layers.iter_mut().zip(composed) {
             layer.composed_semantics = semantics;
         }

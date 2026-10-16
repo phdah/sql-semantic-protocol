@@ -419,6 +419,363 @@ pub(super) fn conjoin_source_row_truths(
     ))
 }
 
+/// Extract join keys from one exact complete join population case.
+///
+/// Returns `None` when the case carries no single closed-world join
+/// population, so callers skip it without failing the whole goal.
+struct PositiveJoinKeys {
+    left_key: crate::protocol::ColumnRef,
+    right_key: crate::protocol::ColumnRef,
+    join_kind: crate::protocol::JoinKind,
+}
+
+fn positive_join_keys(case: &WitnessCase) -> Option<PositiveJoinKeys> {
+    case.obligations().iter().find_map(|obligation| {
+        if let WitnessObligation::JoinPopulation {
+            left_key,
+            right_key,
+            join_kind,
+            closed_world: true,
+            ..
+        } = obligation
+        {
+            Some(PositiveJoinKeys {
+                left_key: left_key.clone(),
+                right_key: right_key.clone(),
+                join_kind: *join_kind,
+            })
+        } else {
+            None
+        }
+    })
+}
+
+/// Exact closed source counts with their non-key TRUE restrictions.
+struct ClosedSourceRestrictions {
+    counts: BTreeMap<String, u64>,
+    filters: BTreeMap<String, Vec<WitnessFormula>>,
+}
+
+/// Flatten an AND of certified TRUE row predicates on one physical source.
+///
+/// ForAll(AND(p, q)) is equivalent to requiring both predicates of the same
+/// row. Do not distribute OR or accept mixed formula kinds here, because the
+/// joint assignment solver requires one identical source-row identity.
+fn certified_source_true_conjuncts(
+    formula: &WitnessFormula,
+    source: &str,
+    left_key: &crate::protocol::ColumnRef,
+    right_key: &crate::protocol::ColumnRef,
+) -> Option<Vec<WitnessFormula>> {
+    match formula {
+        WitnessFormula::RowTruth {
+            row,
+            predicate,
+            truth: crate::boolean_witness::BooleanTruthCase::True,
+        } if row.relation() == source
+            && predicate.is_exact()
+            && !predicate.references_column(left_key)
+            && !predicate.references_column(right_key) =>
+        {
+            Some(vec![formula.clone()])
+        }
+        WitnessFormula::All(conjuncts) if !conjuncts.is_empty() => {
+            let mut result = Vec::new();
+            for conjunct in conjuncts {
+                result.extend(certified_source_true_conjuncts(
+                    conjunct, source, left_key, right_key,
+                )?);
+            }
+            Some(result)
+        }
+        _ => None,
+    }
+}
+
+/// Extract exact closed source counts and non-key TRUE restrictions.
+///
+/// Skips tautologies and rejects key references, inexact conditions and
+/// duplicate source counts so joint construction fails closed.
+fn closed_source_restrictions(
+    case: &WitnessCase,
+    left_key: &crate::protocol::ColumnRef,
+    right_key: &crate::protocol::ColumnRef,
+) -> Option<ClosedSourceRestrictions> {
+    let mut counts = BTreeMap::<String, u64>::new();
+    let mut restrictions = BTreeMap::<String, Vec<WitnessFormula>>::new();
+    for obligation in case.obligations() {
+        if let WitnessObligation::Rows {
+            boundary,
+            quantifier: RowQuantifier::ForAll,
+            bounds,
+            predicate,
+            closed_world: true,
+        } = obligation
+        {
+            if boundary.kind() != GroupBoundaryKind::Physical
+                || bounds.maximum() != Some(bounds.minimum())
+                || counts
+                    .insert(boundary.relation().to_string(), bounds.minimum())
+                    .is_some()
+            {
+                return None;
+            }
+            if *predicate == count_tautology() {
+                continue;
+            }
+            let truths = certified_source_true_conjuncts(
+                predicate,
+                boundary.relation(),
+                left_key,
+                right_key,
+            )?;
+            restrictions
+                .entry(boundary.relation().to_string())
+                .or_default()
+                .extend(truths);
+        }
+    }
+    (!counts.is_empty()).then_some(ClosedSourceRestrictions {
+        counts,
+        filters: restrictions,
+    })
+}
+
+/// Outcome of reconciling zero-output terminals with a positive join case.
+enum ZeroReconciliation {
+    /// All zero terminals contributed NOT TRUE restrictions.
+    Satisfied(BTreeMap<String, Vec<WitnessFormula>>),
+    /// A terminal could not be reconciled; skip this positive case.
+    Unsafe,
+}
+
+/// Force zero-output terminals to reject every row of the positive sources.
+///
+/// Non-key NOT TRUE restrictions are collected per source. Empty sources use
+/// their zero-count proof; contradictions are checked separately so outer
+/// joins stay residual instead of guessing impossibility.
+fn reconcile_zero_terminals(
+    bundle: &AnalysisBundle,
+    zeros: &[&str],
+    counts: &BTreeMap<String, u64>,
+    mut restrictions: BTreeMap<String, Vec<WitnessFormula>>,
+    left_key: &crate::protocol::ColumnRef,
+    right_key: &crate::protocol::ColumnRef,
+) -> ZeroReconciliation {
+    for &zero_id in zeros {
+        let physical = physical_source_plan(bundle, zero_id);
+        let [source] = physical.sources() else {
+            return ZeroReconciliation::Unsafe;
+        };
+        let Some(&rows) = counts.get(source) else {
+            return ZeroReconciliation::Unsafe;
+        };
+        if rows == 0 {
+            // No row can survive a zero-preserving filter over an empty
+            // physical source. Never infer this from a partial producer.
+            if !matches!(
+                physical_row_count_plan(bundle, zero_id, 0),
+                WitnessDirection::Feasible(_)
+            ) {
+                return ZeroReconciliation::Unsafe;
+            }
+            continue;
+        }
+        let WitnessDirection::Feasible(negative_cases) =
+            physical_rejected_row_count_plan(bundle, zero_id, rows)
+        else {
+            return ZeroReconciliation::Unsafe;
+        };
+        let [negative] = negative_cases.as_slice() else {
+            return ZeroReconciliation::Unsafe;
+        };
+        let Some(formula) = negative.obligations().iter().find_map(|obligation| {
+            if let WitnessObligation::Rows {
+                boundary,
+                quantifier: RowQuantifier::ForAll,
+                predicate:
+                    formula @ WitnessFormula::RowTruth {
+                        predicate,
+                        truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
+                        ..
+                    },
+                bounds,
+                closed_world: true,
+            } = obligation
+            {
+                (boundary.kind() == GroupBoundaryKind::Physical
+                    && boundary.relation() == source
+                    && bounds.minimum() == rows
+                    && bounds.maximum() == Some(rows)
+                    && predicate.is_exact()
+                    && !predicate.references_column(left_key)
+                    && !predicate.references_column(right_key))
+                .then(|| formula.clone())
+            } else {
+                None
+            }
+        }) else {
+            return ZeroReconciliation::Unsafe;
+        };
+        restrictions
+            .entry(source.clone())
+            .or_default()
+            .push(formula);
+    }
+    ZeroReconciliation::Satisfied(restrictions)
+}
+
+/// Check joint satisfiability of all per-source TRUE/NOT TRUE restrictions.
+///
+/// Returns `Some(false)` only for certified INNER contradictions over
+/// nonempty sources; outer-join contradictions and unverified combinations
+/// return `None` so callers stay residual rather than guessing impossibility.
+fn joint_restrictions_satisfiable(
+    bundle: &AnalysisBundle,
+    counts: &BTreeMap<String, u64>,
+    restrictions: &BTreeMap<String, Vec<WitnessFormula>>,
+    join_kind: crate::protocol::JoinKind,
+) -> Option<bool> {
+    for (source, predicates) in restrictions {
+        match joint_source_truths_satisfiable(bundle, source, predicates) {
+            Some(true) => {}
+            Some(false)
+                if join_kind == crate::protocol::JoinKind::Inner
+                    && counts.get(source).is_some_and(|count| *count > 0) =>
+            {
+                // Positive INNER joins necessarily consume a nonempty
+                // left and right source. If every source row would have
+                // to satisfy contradictory NOT TRUE filters, no complete
+                // physical assignment exists, independent of the join
+                // key population chosen.
+                return Some(false);
+            }
+            Some(false) | None => return None,
+        }
+    }
+    Some(true)
+}
+
+/// Rebuild one joint case by conjoining collected restrictions per source.
+fn rebuild_joint_case(
+    case: &WitnessCase,
+    restrictions: &BTreeMap<String, Vec<WitnessFormula>>,
+    zeros: &[&str],
+) -> Option<WitnessCase> {
+    let mut obligations = Vec::new();
+    for obligation in case.obligations() {
+        if let WitnessObligation::Rows {
+            boundary,
+            quantifier: RowQuantifier::ForAll,
+            bounds,
+            closed_world: true,
+            ..
+        } = obligation
+        {
+            if let Some(predicates) = restrictions.get(boundary.relation()) {
+                let predicate = match predicates.as_slice() {
+                    [one] => one.clone(),
+                    many => WitnessFormula::All(many.to_vec()),
+                };
+                obligations.push(WitnessObligation::Rows {
+                    boundary: boundary.clone(),
+                    quantifier: RowQuantifier::ForAll,
+                    bounds: *bounds,
+                    predicate,
+                    closed_world: true,
+                });
+                continue;
+            }
+        }
+        obligations.push(obligation.clone());
+    }
+    for &id in zeros {
+        obligations.push(WitnessObligation::OutputRows {
+            layer_id: id.to_string(),
+            bounds: CountBounds::new(0, Some(0))?,
+        });
+    }
+    WitnessCase::new(obligations, ProofStrength::Sufficient)
+}
+
+/// Reuse one exact complete join population while forcing other terminals
+/// to reject every physical source row under SQL NOT TRUE. The negative
+/// predicates must mention only non-join columns, so fixed key histograms,
+/// bag multiplicities and NULL-aware join behavior remain unchanged.
+/// Contradictory or unverified combinations stay residual: exhausting these
+/// sufficient populations is never a proof of global impossibility.
+pub(super) fn joint_join_with_rejected_filters(
+    bundle: &AnalysisBundle,
+    targets: &[(&str, u64)],
+) -> Option<WitnessDirection> {
+    let positives = targets
+        .iter()
+        .filter(|(_, rows)| *rows > 0)
+        .copied()
+        .collect::<Vec<_>>();
+    let zeros = targets
+        .iter()
+        .filter(|(_, rows)| *rows == 0)
+        .map(|(id, _)| *id)
+        .collect::<Vec<_>>();
+    let [(positive_id, positive_rows)] = positives.as_slice() else {
+        return None;
+    };
+    if zeros.is_empty() {
+        return None;
+    }
+    let WitnessDirection::Feasible(cases) =
+        physical_join_population_count_plan(bundle, positive_id, *positive_rows)?
+    else {
+        return None;
+    };
+
+    let mut satisfied = Vec::new();
+    for case in cases {
+        let Some(PositiveJoinKeys {
+            left_key,
+            right_key,
+            join_kind,
+        }) = positive_join_keys(&case)
+        else {
+            continue;
+        };
+        let Some(ClosedSourceRestrictions {
+            counts,
+            filters: restrictions,
+        }) = closed_source_restrictions(&case, &left_key, &right_key)
+        else {
+            continue;
+        };
+        let restrictions = match reconcile_zero_terminals(
+            bundle,
+            &zeros,
+            &counts,
+            restrictions,
+            &left_key,
+            &right_key,
+        ) {
+            ZeroReconciliation::Satisfied(restrictions) => restrictions,
+            ZeroReconciliation::Unsafe => continue,
+        };
+        let Some(satisfiable) =
+            joint_restrictions_satisfiable(bundle, &counts, &restrictions, join_kind)
+        else {
+            continue;
+        };
+        if !satisfiable {
+            return Some(WitnessDirection::Impossible);
+        }
+        if let Some(joint) = rebuild_joint_case(&case, &restrictions, &zeros) {
+            satisfied.push(joint);
+        }
+    }
+    Some(
+        WitnessDirection::feasible(satisfied)
+            .unwrap_or_else(|| residual(PhysicalProofGap::UnprovedCrossRowCorrelation)),
+    )
+}
+
 /// Construct a single complete physical source assignment for several
 /// terminal row-count goals. Independent sufficient cases are composed only
 /// after reconciling their *shared physical source identities*.
@@ -514,7 +871,13 @@ pub fn physical_joint_row_count_plan(
             return proof;
         }
     }
+    if let Some(witness) = joint_join_and_distinct_group_goals(bundle, &ordered) {
+        return witness;
+    }
     if let Some(witness) = joint_mixed_operator_and_source_goals(bundle, &ordered) {
+        return witness;
+    }
+    if let Some(witness) = joint_join_with_rejected_filters(bundle, &ordered) {
         return witness;
     }
     if let Some(witness) = joint_operator_population_goals(bundle, &ordered) {

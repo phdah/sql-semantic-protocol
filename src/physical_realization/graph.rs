@@ -315,6 +315,33 @@ pub(super) fn prove_zero_rows(
         .unwrap_or_else(|| residual(PhysicalProofGap::UnresolvedSemantics))
 }
 
+/// Catalog-attested datatype for a column reference, when its relation
+/// declares the column. Missing schemas or columns stay unproved.
+fn bundle_column_datatype(
+    bundle: &AnalysisBundle,
+    column: &crate::protocol::ColumnRef,
+) -> Option<crate::data_type::DataType> {
+    let relation = column.relation()?;
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == relation)?;
+    super::joint_counts::physical_column_datatype(schema, column)
+}
+
+/// Reject untransported relation laws at a materialization boundary.
+///
+/// A copied value or widening CAST does not discharge constraints declared
+/// independently on the produced table. Defaults, generated expressions,
+/// CHECKs and even unresolved diagnostics must not silently disappear when
+/// its rows are mapped back to a physical source.
+pub(super) fn untransported_materialization_laws(bundle: &AnalysisBundle, relation: &str) -> bool {
+    bundle.relation_constraints().iter().any(|set| {
+        set.relation() == relation
+            && (set.blocks_unconstrained_physical_plans() || !set.column_value_sources().is_empty())
+    })
+}
+
 /// Follow an identity-only column through an intermediate producer. The
 /// producer is permitted to filter its own rows because the *joint* terminal
 /// proof later requires all filters, but the intermediate's local witness is
@@ -356,6 +383,9 @@ pub(super) fn resolve_filter_column_with_evidence(
             column.name().to_string(),
         )),
         RelationResolution::Resolved => {
+            if untransported_materialization_laws(bundle, &canonical) {
+                return None;
+            }
             let [producer_id] = edge.producer_layer_ids() else {
                 return None;
             };
@@ -418,6 +448,309 @@ pub(super) fn resolve_filter_column_with_evidence(
     }
 }
 
+/// The one certified computed projection this physical mapper can invert:
+/// an explicit, total signed-integer widening CAST of a single physical
+/// column. Its declared materialized width must match the CAST result.
+/// Plain copies are permitted alongside it but must retain equal datatypes.
+fn widened_or_copied_source(
+    bundle: &AnalysisBundle,
+    relation: &str,
+    output: &crate::protocol::OutputColumn,
+    query: &QueryStatement,
+) -> Option<crate::protocol::ColumnRef> {
+    use crate::data_type::DataType;
+
+    fn signed_width(value: &DataType) -> Option<u16> {
+        match value {
+            DataType::SignedInteger { bits: Some(bits) } if *bits <= 64 => Some(*bits),
+            DataType::Nullable(inner) => signed_width(inner),
+            _ => None,
+        }
+    }
+
+    let [input] = query.sources() else {
+        return None;
+    };
+    let produced =
+        crate::protocol::ColumnRef::new(Some(relation.to_string()), output.name().to_string());
+    let to = bundle_column_datatype(bundle, &produced)?;
+    match output.expression() {
+        crate::protocol::Expression::Column(_) => {
+            let lineage = output.plain_copy_source()?;
+            if lineage.relation() != input.name() {
+                return None;
+            }
+            let physical = crate::protocol::ColumnRef::new(
+                Some(lineage.relation().to_string()),
+                lineage.column().to_string(),
+            );
+            (bundle_column_datatype(bundle, &physical)? == to).then_some(physical)
+        }
+        crate::protocol::Expression::SignedIntegerCast(cast) => {
+            // A computed CAST does not necessarily carry plain-copy lineage.
+            // Resolve its canonical operand instead; the single named source
+            // removes ambiguity without reconstructing SQL or trusting hints.
+            let crate::protocol::Expression::Column(column) = cast.expression() else {
+                return None;
+            };
+            let physical = crate::domain::resolve_column(column, query.sources());
+            if physical.relation() != Some(input.name()) {
+                return None;
+            }
+            let from = bundle_column_datatype(bundle, &physical)?;
+            // A declared NOT NULL boundary cannot silently discard source
+            // NULLs. Preserve the complete SQL NULL domain across the cast.
+            if matches!(&from, DataType::Nullable(_)) != matches!(&to, DataType::Nullable(_)) {
+                return None;
+            }
+            let source_bits = signed_width(&from)?;
+            let target_bits = signed_width(&to)?;
+            (source_bits <= target_bits && target_bits == cast.target_bits()).then_some(physical)
+        }
+        _ => None,
+    }
+}
+
+/// Transportable affine output: a total explicit signed widening CAST
+/// followed by an integer addition or subtraction.
+///
+/// `CAST(a AS BIGINT) + k` is total only if every value of the
+/// catalog-attested source type fits the declared output width after adding
+/// `k`. An implicit arithmetic coercion cannot substitute for the explicit
+/// CAST because overflow could occur before materialization.
+fn total_affine_source(
+    bundle: &AnalysisBundle,
+    relation: &str,
+    output: &crate::protocol::OutputColumn,
+    query: &QueryStatement,
+) -> Option<(crate::protocol::ColumnRef, i64)> {
+    use crate::data_type::DataType;
+    use crate::protocol::{BinaryOperator, Expression, LiteralType, LiteralValue};
+
+    fn signed_width(value: &DataType) -> Option<u16> {
+        match value {
+            DataType::SignedInteger { bits: Some(bits) } if *bits <= 64 && *bits > 0 => Some(*bits),
+            DataType::Nullable(inner) => signed_width(inner),
+            _ => None,
+        }
+    }
+    fn signed_limits(bits: u16) -> Option<(i128, i128)> {
+        let power = 1_i128.checked_shl(u32::from(bits.checked_sub(1)?))?;
+        Some((-power, power - 1))
+    }
+
+    let [input] = query.sources() else {
+        return None;
+    };
+    let Expression::Binary(binary) = output.expression() else {
+        return None;
+    };
+    let offset = match binary.operator() {
+        BinaryOperator::Add | BinaryOperator::Subtract => {
+            let Expression::Literal(literal) = binary.right() else {
+                return None;
+            };
+            if literal.literal_type() != LiteralType::Integer {
+                return None;
+            }
+            let LiteralValue::Number(number) = literal.value() else {
+                return None;
+            };
+            let value = number.parse::<i64>().ok()?;
+            if binary.operator() == BinaryOperator::Subtract {
+                value.checked_neg()?
+            } else {
+                value
+            }
+        }
+        _ => return None,
+    };
+    let Expression::SignedIntegerCast(cast) = binary.left() else {
+        return None;
+    };
+    let Expression::Column(column) = cast.expression() else {
+        return None;
+    };
+    let physical = crate::domain::resolve_column(column, query.sources());
+    if physical.relation() != Some(input.name()) {
+        return None;
+    }
+    let from = bundle_column_datatype(bundle, &physical)?;
+    let output_ref =
+        crate::protocol::ColumnRef::new(Some(relation.to_string()), output.name().to_string());
+    let to = bundle_column_datatype(bundle, &output_ref)?;
+    if matches!(&from, DataType::Nullable(_)) != matches!(&to, DataType::Nullable(_)) {
+        return None;
+    }
+    let from_bits = signed_width(&from)?;
+    let to_bits = signed_width(&to)?;
+    if from_bits > to_bits || cast.target_bits() != to_bits {
+        return None;
+    }
+    let (minimum, maximum) = signed_limits(from_bits)?;
+    let (output_minimum, output_maximum) = signed_limits(to_bits)?;
+    let transformed_minimum = minimum.checked_add(i128::from(offset))?;
+    let transformed_maximum = maximum.checked_add(i128::from(offset))?;
+    (transformed_minimum >= output_minimum && transformed_maximum <= output_maximum)
+        .then_some((physical, offset))
+}
+
+/// Only complete, unfiltered producer definitions with total projections
+/// are admissible. CAST inversion cannot make a partial DML producer physical.
+fn total_widening_producer(
+    bundle: &AnalysisBundle,
+    node: &PhysicalPlanNode,
+    query: &QueryStatement,
+) -> bool {
+    let [relation] = node.produced_relations() else {
+        return false;
+    };
+    matches!(node.write_kind(), Some(WriteKind::Definition))
+        // Parser-certified, unlimited bag output: computed expressions must
+        // not bypass DISTINCT/LIMIT/TOP, grouping or sampled table shapes.
+        && query.plain_goal_output_shape()
+        && query.sources().len() == 1
+        && query.joins().is_empty()
+        && query.aggregation().is_none()
+        && query.set_operation().is_none()
+        && query.window_witness().is_none()
+        && query.subquery_witnesses().is_empty()
+        && query.predicates().where_predicate().is_none()
+        && query.predicates().having_predicate().is_none()
+        && query.predicates().qualify_predicate().is_none()
+        && query.diagnostics().is_empty()
+        && !query.output().columns().is_empty()
+        && query.output().columns().iter().all(|column| {
+            widened_or_copied_source(bundle, relation, column, query).is_some()
+                || total_affine_source(bundle, relation, column, query).is_some()
+        })
+}
+
+/// Resolve only those computed materializations whose entire producer chain
+/// consists of identity columns or certified lossless signed widening casts.
+fn resolve_widened_filter_column(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    consumer_id: &str,
+    column: &crate::protocol::ColumnRef,
+    depth: usize,
+) -> Option<crate::protocol::ColumnRef> {
+    if depth > walker.layers.len() {
+        return None;
+    }
+    let layer = walker.layers.get(consumer_id).copied()?;
+    let canonical = layer.canonical_relation(column.relation()?);
+    let edge = bundle
+        .graph()
+        .edges()
+        .iter()
+        .find(|edge| edge.consumer_layer_id() == consumer_id && edge.relation() == canonical)?;
+    match edge.resolution() {
+        RelationResolution::External => Some(crate::protocol::ColumnRef::new(
+            Some(edge.relation().to_string()),
+            column.name().to_string(),
+        )),
+        RelationResolution::Resolved => {
+            // A materialized relation may carry its own CHECK, key, default
+            // or generated-column law not entailed by a copied source value.
+            // Until those laws are transported, such edges are not invertible.
+            if untransported_materialization_laws(bundle, &canonical) {
+                return None;
+            }
+            let [producer_id] = edge.producer_layer_ids() else {
+                return None;
+            };
+            let node = walker
+                .nodes
+                .iter()
+                .find(|node| node.id() == &PhysicalPlanRef::Layer(producer_id.clone()))?;
+            let producer = walker.layers.get(producer_id.as_str()).copied()?;
+            let query = query_for(bundle, producer)?;
+            if !total_widening_producer(bundle, node, query) {
+                return None;
+            }
+            let mut outputs = query
+                .output()
+                .columns()
+                .iter()
+                .filter(|output| output.name() == column.name());
+            let output = outputs.next()?;
+            if outputs.next().is_some() {
+                return None;
+            }
+            let physical = widened_or_copied_source(bundle, &canonical, output, query)?;
+            resolve_widened_filter_column(bundle, walker, producer.id(), &physical, depth + 1)
+        }
+        _ => None,
+    }
+}
+
+/// Follow a fully certified affine/identity/widening chain back to one
+/// physical column while accumulating its exact signed integer offset.
+/// Unsupported arithmetic, source-state laws and lossy conversions fail closed.
+fn resolve_affine_filter_column(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    consumer_id: &str,
+    column: &crate::protocol::ColumnRef,
+    depth: usize,
+) -> Option<(crate::protocol::ColumnRef, i64)> {
+    if depth > walker.layers.len() {
+        return None;
+    }
+    let layer = walker.layers.get(consumer_id).copied()?;
+    let canonical = layer.canonical_relation(column.relation()?);
+    let edge = bundle
+        .graph()
+        .edges()
+        .iter()
+        .find(|edge| edge.consumer_layer_id() == consumer_id && edge.relation() == canonical)?;
+    match edge.resolution() {
+        RelationResolution::External => Some((
+            crate::protocol::ColumnRef::new(
+                Some(edge.relation().to_string()),
+                column.name().to_string(),
+            ),
+            0,
+        )),
+        RelationResolution::Resolved => {
+            if untransported_materialization_laws(bundle, &canonical) {
+                return None;
+            }
+            let [producer_id] = edge.producer_layer_ids() else {
+                return None;
+            };
+            let node = walker
+                .nodes
+                .iter()
+                .find(|node| node.id() == &PhysicalPlanRef::Layer(producer_id.clone()))?;
+            let producer = walker.layers.get(producer_id.as_str()).copied()?;
+            let query = query_for(bundle, producer)?;
+            if !total_widening_producer(bundle, node, query) {
+                return None;
+            }
+            let mut outputs = query
+                .output()
+                .columns()
+                .iter()
+                .filter(|output| output.name() == column.name());
+            let output = outputs.next()?;
+            if outputs.next().is_some() {
+                return None;
+            }
+            let (upstream, offset) = total_affine_source(bundle, &canonical, output, query)
+                .or_else(|| {
+                    widened_or_copied_source(bundle, &canonical, output, query)
+                        .map(|physical| (physical, 0))
+                })?;
+            let (physical, upstream_offset) =
+                resolve_affine_filter_column(bundle, walker, producer.id(), &upstream, depth + 1)?;
+            Some((physical, upstream_offset.checked_add(offset)?))
+        }
+        _ => None,
+    }
+}
+
 /// Normalize sequential physical WHERE filters into one candidate-row
 /// formula, then solve TRUE versus FALSE/UNKNOWN jointly. Distinct independent
 /// sufficient examples must never simply be conjoined without this proof.
@@ -427,10 +760,19 @@ pub(super) fn joint_physical_filters(
     semantics: &crate::bundle::ResolvedComposedSemantics,
 ) -> Option<(WitnessDirection, WitnessDirection)> {
     let filters = semantics.boolean_witnesses();
-    if filters.len() <= 1 || filters.len() > 12 || walker.sources.len() != 1 {
+    if filters.is_empty()
+        || filters.len() > 12
+        || walker.sources.len() != 1
+        || (filters.len() == 1 && filters[0].boundary_kind() != GroupBoundaryKind::Intermediate)
+    {
         return None;
     }
     let source = walker.sources.iter().next()?;
+    // No source-row population may silently ignore enforced or unverified
+    // physical constraints when transporting an intermediate witness.
+    if blocks_unconstrained_physical_plans(bundle, source) {
+        return None;
+    }
     if filters
         .iter()
         .any(|filter| filter.boundary_kind() == GroupBoundaryKind::Unresolved)
@@ -447,6 +789,12 @@ pub(super) fn joint_physical_filters(
         };
         let layer = walker.layers.get(id.as_str()).copied()?;
         let query = query_for(bundle, layer)?;
+        // An append, update or merge reads an existing target state and
+        // cannot be modeled as an independently constructed filter chain.
+        // Only full definitions and plain read-only queries are safe here.
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
         if origin_ids.contains(layer.id()) {
             if !query.filter_only_row_shape()
                 || query.sources().len() != 1
@@ -467,7 +815,7 @@ pub(super) fn joint_physical_filters(
             {
                 return None;
             }
-        } else if !transparent_projection(query) {
+        } else if !transparent_projection(query) && !total_widening_producer(bundle, node, query) {
             return None;
         }
     }
@@ -477,9 +825,78 @@ pub(super) fn joint_physical_filters(
             GroupBoundaryKind::Physical => {
                 (filter.witness().source_relation() == source).then(|| filter.witness().clone())
             }
-            GroupBoundaryKind::Intermediate => filter.witness().mapped_to_physical(|column| {
-                resolve_filter_column(bundle, walker, filter.origin_layer_id(), column, 0)
-            }),
+            GroupBoundaryKind::Intermediate => {
+                // Typed comparisons cross a materialization boundary only
+                // with certified identical datatypes at both ends of the
+                // identity chain. Conditions needing no type evidence keep
+                // the historical uncertified path so untyped NULL-test
+                // chains still conjoin.
+                let certified = filter.witness().mapped_to_physical_certified(
+                    |column| {
+                        resolve_filter_column_with_evidence(
+                            bundle,
+                            walker,
+                            filter.origin_layer_id(),
+                            column,
+                            0,
+                            true,
+                        )
+                    },
+                    |original, mapped| {
+                        let original_type = bundle_column_datatype(bundle, original);
+                        let mapped_type = bundle_column_datatype(bundle, mapped);
+                        original_type.is_some() && original_type == mapped_type
+                    },
+                );
+                certified
+                    .or_else(|| {
+                        filter.witness().mapped_to_physical(|column| {
+                            resolve_filter_column(
+                                bundle,
+                                walker,
+                                filter.origin_layer_id(),
+                                column,
+                                0,
+                            )
+                        })
+                    })
+                    .or_else(|| {
+                        let schema = bundle
+                            .source_schemas()
+                            .iter()
+                            .find(|schema| schema.relation() == source)?;
+                        filter.witness().mapped_to_physical_widened(
+                            |column| {
+                                resolve_widened_filter_column(
+                                    bundle,
+                                    walker,
+                                    filter.origin_layer_id(),
+                                    column,
+                                    0,
+                                )
+                            },
+                            |column| physical_integer_evidence(schema, column),
+                        )
+                    })
+                    .or_else(|| {
+                        let schema = bundle
+                            .source_schemas()
+                            .iter()
+                            .find(|schema| schema.relation() == source)?;
+                        filter.witness().mapped_to_physical_affine(
+                            |column| {
+                                resolve_affine_filter_column(
+                                    bundle,
+                                    walker,
+                                    filter.origin_layer_id(),
+                                    column,
+                                    0,
+                                )
+                            },
+                            |column| physical_integer_evidence(schema, column),
+                        )
+                    })
+            }
             GroupBoundaryKind::Unresolved => None,
         })
         .collect::<Option<Vec<_>>>()?;

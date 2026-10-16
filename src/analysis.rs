@@ -293,6 +293,7 @@ fn analyze_statement(
             selection.as_ref(),
             returning.is_some(),
             or.is_some(),
+            metadata,
         ),
         SqlStatement::Delete(delete) => analyze_delete(delete),
         SqlStatement::Merge {
@@ -302,7 +303,7 @@ fn analyze_statement(
             clauses,
             output,
             ..
-        } => analyze_merge(table, source, on, clauses, output.is_some()),
+        } => analyze_merge(table, source, on, clauses, output.is_some(), metadata),
         _ => unsupported_statement(),
     }
 }

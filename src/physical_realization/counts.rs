@@ -46,6 +46,17 @@ pub fn physical_row_count_plan(
                 .unwrap_or_else(|| residual(PhysicalProofGap::NoWitness));
         }
     }
+    // An exact TRUE contradiction across a certified, row-preserving
+    // filter chain rules out every positive terminal cardinality, not only
+    // a single candidate row. Do not infer impossibility from a residual or
+    // an empty *sample*: the complete conjunction must prove it.
+    if rows > 0
+        && physical.gap().is_none()
+        && matches!(physical.qualifying(), WitnessDirection::Impossible)
+        && matches!(physical.zero_output(), WitnessDirection::Feasible(_))
+    {
+        return WitnessDirection::Impossible;
+    }
     if physical.nodes().is_empty() {
         return residual(physical.gap().unwrap_or(PhysicalProofGap::NoWitness));
     }
@@ -352,9 +363,7 @@ pub fn physical_unconditional_delete_plan(
             .source_schemas()
             .iter()
             .any(|schema| schema.relation() == write.target())
-        || bundle.relation_constraints().iter().any(|set| {
-            set.relation() == write.target() && set.blocks_unconstrained_physical_plans()
-        })
+        || blocks_unconstrained_physical_plans(bundle, write.target())
         || effect.resulting_rows(
             initial_rows,
             crate::protocol::WriteRowCounts::new(0, 0, initial_rows),
