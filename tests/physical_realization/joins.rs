@@ -261,24 +261,34 @@ fn task_106_join_and_two_negative_terminals_share_full_physical_sources() {
     };
     assert_eq!(result.sources(), &["l".to_string(), "r".to_string()]);
     assert!(cases.iter().any(|case| {
-        case.obligations().iter().filter(|obligation| {
-            matches!(obligation, WitnessObligation::ClosedWorld { .. })
-        }).count() == 2
-            && case.obligations().iter().filter(|obligation| {
-                matches!(
-                    obligation,
-                    WitnessObligation::Rows {
-                        predicate: WitnessFormula::RowTruth {
-                            truth: BooleanTruthCase::NotTrue,
+        case.obligations()
+            .iter()
+            .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+            .count()
+            == 2
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::Rows {
+                            predicate: WitnessFormula::RowTruth {
+                                truth: BooleanTruthCase::NotTrue,
+                                ..
+                            },
                             ..
-                        },
-                        ..
-                    }
-                )
-            }).count() == 2
-            && case.obligations().iter().filter(|obligation| {
-                matches!(obligation, WitnessObligation::OutputRows { .. })
-            }).count() == 3
+                        }
+                    )
+                })
+                .count()
+                == 2
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                .count()
+                == 3
     }));
 
     let db = Connection::open_in_memory().unwrap();
