@@ -254,3 +254,25 @@ integration child. Parent TASK-70 and release TASK-91 retain their own gates.
 ## Strict acceptance reopening (2026-10-16)
 
 All five AC have been reopened at the user's request. Under strict reading, bounded exactness plus generic fallback residuals are insufficient when composable computed-expression transformations have deterministic proofs that the canonical graph should transport. Remaining blockers include (i) cross-materialization affine arithmetic inversion with width/overflow/null evidence; (ii) corresponding strongest output domains across those boundaries; (iii) physically consistent shared-source multi-operator DAG assignments, including overlapping join/group/negative-filter interactions; and (iv) raw SQL/dbt/DuckDB evidence over these combinations. Keep the task In Progress until explicit regression cases verify all five, not merely CI on earlier bounded cases.
+
+### Strict-scope progress: total affine physical inverse (2026-10-16)
+
+Implemented a real missing proof path without redefining the criteria:
+`src/boolean_witness.rs` can rewrite integer comparisons, column
+comparisons with identical offsets, NULL tests and AND/OR predicates over
+certified `physical + offset` mappings, rechecking physical source bounds
+and both SQL TRUE/NOT TRUE directions. `src/physical_realization/graph.rs`
+now transports an explicit total signed widening CAST followed by a constant
+addition/subtraction across producer edges after checking source type limits,
+overflow, materialized NULL semantics, producer bag shape, full definition
+and independent relation laws. The regression tests exercise
+`CAST(a AS BIGINT)+1` materializations against DuckDB and preserve
+residual for INTEGER overflow and nontransparent DISTINCT/LIMIT. Coverage,
+code map and semantics updated.
+
+**Still open under strict AC:** symbolic output-domain refinement of nested
+and multiple general computed projections, producer-shared correlated
+operator proofs that reconcile overlapping join/group/window/key histograms,
+and full direct-SQL/dbt/DuckDB conformance for those combinations. A single
+supported affine case cannot close the general requirements. Do not check
+AC #1-#5 until those are independently verified.
