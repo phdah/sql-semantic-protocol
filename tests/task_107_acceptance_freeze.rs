@@ -74,19 +74,40 @@ fn frozen_variant_dialect_inventory_matches_the_authoritative_task_66_scope() {
             name(cell, "feature_id").to_owned(),
             name(cell, "variant").to_owned(),
         );
-        assert!(seen_variants.insert(pair), "{id}: duplicate feature variant");
-        assert!(!name(cell, "sql_shape").is_empty(), "{id}: missing frozen SQL shape");
-        assert!(!name(cell, "fixture_id").is_empty(), "{id}: missing fixture ID");
-        assert!(!name(cell, "exactness_floor").is_empty(), "{id}: missing exactness floor");
+        assert!(
+            seen_variants.insert(pair),
+            "{id}: duplicate feature variant"
+        );
+        assert!(
+            !name(cell, "sql_shape").is_empty(),
+            "{id}: missing frozen SQL shape"
+        );
+        assert!(
+            !name(cell, "fixture_id").is_empty(),
+            "{id}: missing fixture ID"
+        );
+        assert!(
+            !name(cell, "exactness_floor").is_empty(),
+            "{id}: missing exactness floor"
+        );
         assert_eq!(entries(cell, "mandatory_oracle_fields").len(), 8, "{id}");
 
         match name(cell, "classification") {
             "exact_required" => {
-                assert!(cell.get("conditional_boundary").is_none(), "{id}: mandatory case downgraded");
+                assert!(
+                    cell.get("conditional_boundary").is_none(),
+                    "{id}: mandatory case downgraded"
+                );
             }
             "conditional" => {
-                assert!(!name(cell, "conditional_boundary").is_empty(), "{id}: missing limitation");
-                assert!(!name(cell, "defer_owner").is_empty(), "{id}: no future owner");
+                assert!(
+                    !name(cell, "conditional_boundary").is_empty(),
+                    "{id}: missing limitation"
+                );
+                assert!(
+                    !name(cell, "defer_owner").is_empty(),
+                    "{id}: no future owner"
+                );
                 assert_eq!(
                     name(cell, "release_disposition"),
                     "review_required_before_release",
@@ -96,7 +117,9 @@ fn frozen_variant_dialect_inventory_matches_the_authoritative_task_66_scope() {
             classification => panic!("{id}: invalid proof classification {classification}"),
         }
 
-        let cells = cell["dialect_cells"].as_object().expect("per-dialect cells");
+        let cells = cell["dialect_cells"]
+            .as_object()
+            .expect("per-dialect cells");
         let keys: BTreeSet<_> = cells.keys().map(String::as_str).collect();
         assert_eq!(keys, expected_dialects, "{id}: missing dialect coverage");
         for (dialect, evidence) in cells {
@@ -114,8 +137,15 @@ fn frozen_variant_dialect_inventory_matches_the_authoritative_task_66_scope() {
             seen_dialects.insert(fixture);
         }
     }
-    assert_eq!(seen_variants, expected_variants, "TASK-66 predicate feature inventory drift");
-    assert_eq!(seen_dialects.len(), 546, "duplicate or missing dialect fixture IDs");
+    assert_eq!(
+        seen_variants, expected_variants,
+        "TASK-66 predicate feature inventory drift"
+    );
+    assert_eq!(
+        seen_dialects.len(),
+        546,
+        "duplicate or missing dialect fixture IDs"
+    );
 }
 
 #[test]
@@ -140,7 +170,10 @@ fn frozen_child_families_and_golden_cases_are_nonvacuous_and_closed_world() {
             named_evidence.insert(family);
         }
     }
-    assert_eq!(named_evidence, expected, "an exact TASK-70 family lost its owning test");
+    assert_eq!(
+        named_evidence, expected,
+        "an exact TASK-70 family lost its owning test"
+    );
 
     let mut golden_ids = BTreeSet::new();
     let goldens = entries(&freeze, "golden_cases");
@@ -148,9 +181,15 @@ fn frozen_child_families_and_golden_cases_are_nonvacuous_and_closed_world() {
     for golden in goldens {
         let id = name(golden, "id");
         assert!(golden_ids.insert(id), "{id}: duplicate golden");
-        assert_eq!(golden["source_closed_world"], true, "{id}: source bag must be complete");
+        assert_eq!(
+            golden["source_closed_world"], true,
+            "{id}: source bag must be complete"
+        );
         assert!(!name(golden, "sql").is_empty());
-        assert!(golden["expected_output_domain"].is_object(), "{id}: expected typed domain");
+        assert!(
+            golden["expected_output_domain"].is_object(),
+            "{id}: expected typed domain"
+        );
         assert!(!name(golden, "positive_proof").is_empty());
         assert!(!name(golden, "not_true_proof").is_empty());
         assert_eq!(name(golden, "oracle"), "duckdb");
@@ -167,15 +206,31 @@ fn frozen_child_families_and_golden_cases_are_nonvacuous_and_closed_world() {
             .iter()
             .map(|row| row.as_i64().expect("rejected row ID"))
             .collect();
-        assert_eq!(source.len(), entries(golden, "source_rows").len(), "{id}: duplicate source row ID");
-        assert!(positive.is_disjoint(&rejected), "{id}: TRUE/NOT TRUE overlap");
+        assert_eq!(
+            source.len(),
+            entries(golden, "source_rows").len(),
+            "{id}: duplicate source row ID"
+        );
+        assert!(
+            positive.is_disjoint(&rejected),
+            "{id}: TRUE/NOT TRUE overlap"
+        );
         let partition: BTreeSet<_> = positive.union(&rejected).copied().collect();
-        assert_eq!(partition, source, "{id}: incomplete TRUE/NOT TRUE partition");
-        assert!(matches!(name(golden, "status"), "contract_frozen_unverified" | "verified"));
+        assert_eq!(
+            partition, source,
+            "{id}: incomplete TRUE/NOT TRUE partition"
+        );
+        assert!(matches!(
+            name(golden, "status"),
+            "contract_frozen_unverified" | "verified"
+        ));
     }
     let mut compositions = BTreeMap::new();
     for case in entries(&freeze, "composition_cases") {
-        assert!(compositions.insert(name(case, "id"), case).is_none(), "duplicate composition ID");
+        assert!(
+            compositions.insert(name(case, "id"), case).is_none(),
+            "duplicate composition ID"
+        );
         assert!(!name(case, "test_file").is_empty());
         assert!(!name(case, "test_name").is_empty());
     }
@@ -199,18 +254,45 @@ fn unfinished_criteria_cannot_be_signed_off_by_a_green_partial_suite() {
         let id = format!("AC{i}");
         assert!(!entries(&freeze["original_acceptance_criteria"][&id], "required").is_empty());
         assert!(!name(&freeze["original_acceptance_criteria"][&id], "pass").is_empty());
-        assert!(criteria[i - 1].contains(&format!("#{i} ")), "missing original AC #{i}");
+        assert!(
+            criteria[i - 1].contains(&format!("#{i} ")),
+            "missing original AC #{i}"
+        );
     }
 
-    if status_done || criteria.iter().any(|criterion| criterion.starts_with("- [x]")) {
-        assert!(status_done && criteria.iter().all(|criterion| criterion.starts_with("- [x]")));
+    if status_done
+        || criteria
+            .iter()
+            .any(|criterion| criterion.starts_with("- [x]"))
+    {
+        assert!(
+            status_done
+                && criteria
+                    .iter()
+                    .all(|criterion| criterion.starts_with("- [x]"))
+        );
         for cell in entries(&freeze, "inventory_cells") {
-            for dialect in cell["dialect_cells"].as_object().expect("dialect object").values() {
-                assert_ne!(name(dialect, "parser"), "unverified", "cannot close missing parser");
-                assert_ne!(name(dialect, "canonical"), "unverified", "cannot close missing equivalence");
+            for dialect in cell["dialect_cells"]
+                .as_object()
+                .expect("dialect object")
+                .values()
+            {
+                assert_ne!(
+                    name(dialect, "parser"),
+                    "unverified",
+                    "cannot close missing parser"
+                );
+                assert_ne!(
+                    name(dialect, "canonical"),
+                    "unverified",
+                    "cannot close missing equivalence"
+                );
             }
             if cell["classification"] == "conditional" {
-                assert_ne!(name(cell, "release_disposition"), "review_required_before_release");
+                assert_ne!(
+                    name(cell, "release_disposition"),
+                    "review_required_before_release"
+                );
             }
         }
         for golden in entries(&freeze, "golden_cases") {
@@ -219,6 +301,9 @@ fn unfinished_criteria_cannot_be_signed_off_by_a_green_partial_suite() {
         for composition in entries(&freeze, "composition_cases") {
             assert_eq!(name(composition, "status"), "verified");
         }
-        assert_eq!(freeze["final_ci_verified"], true, "CI needs verified final SHA evidence");
+        assert_eq!(
+            freeze["final_ci_verified"], true,
+            "CI needs verified final SHA evidence"
+        );
     }
 }
