@@ -8,7 +8,7 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, ComposedSemantics, ComparisonAssumption,
+    parse_dbt_catalog, parse_dbt_manifest, ComparisonAssumption, ComposedSemantics,
     ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -61,7 +61,10 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
 
         let input = SqlInput::inline(&sql);
         let configured = [ConfiguredSqlInput::new(
-            "direct", &input, "postgresql", parser.as_ref()
+            "direct",
+            &input,
+            "postgresql",
+            parser.as_ref(),
         )];
         let mut direct = analyze_configured_inputs_with_catalog(&configured, &direct_catalog)
             .unwrap_or_else(|error| panic!("{id}: direct SQL {sql}: {error}"));
@@ -83,10 +86,9 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
         });
         let dbt_manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
         let dbt_catalog = parse_dbt_catalog(&artifact.to_string()).unwrap();
-        let mut dbt = analyze_dbt_artifacts(
-            &dbt_manifest, &dbt_catalog, "postgresql", parser.as_ref()
-        )
-        .unwrap_or_else(|error| panic!("{id}: compiled dbt SQL {sql}: {error}"));
+        let mut dbt =
+            analyze_dbt_artifacts(&dbt_manifest, &dbt_catalog, "postgresql", parser.as_ref())
+                .unwrap_or_else(|error| panic!("{id}: compiled dbt SQL {sql}: {error}"));
 
         if cell["feature_id"] == "predicates.string_pattern" {
             let comparison_laws = [
@@ -99,14 +101,37 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
 
         let expected = source_semantics(&direct);
         let actual = source_semantics(&dbt);
-        assert_eq!(actual.output(), expected.output(), "{id}: output typed domain / bounds");
-        assert_eq!(actual.column_domains(), expected.column_domains(), "{id}: physical input domain");
-        assert_eq!(actual.condition_exactness(), expected.condition_exactness(), "{id}: false exactness / residual strength");
         assert_eq!(
-            actual.boolean_witnesses().iter().map(|w| w.witness()).collect::<Vec<_>>(),
-            expected.boolean_witnesses().iter().map(|w| w.witness()).collect::<Vec<_>>(),
+            actual.output(),
+            expected.output(),
+            "{id}: output typed domain / bounds"
+        );
+        assert_eq!(
+            actual.column_domains(),
+            expected.column_domains(),
+            "{id}: physical input domain"
+        );
+        assert_eq!(
+            actual.condition_exactness(),
+            expected.condition_exactness(),
+            "{id}: false exactness / residual strength"
+        );
+        assert_eq!(
+            actual
+                .boolean_witnesses()
+                .iter()
+                .map(|w| w.witness())
+                .collect::<Vec<_>>(),
+            expected
+                .boolean_witnesses()
+                .iter()
+                .map(|w| w.witness())
+                .collect::<Vec<_>>(),
             "{id}: SQL TRUE and NOT TRUE obligation parity"
         );
     }
-    assert_eq!(confirmed, 28, "mandatory exact feature inventory silently changed");
+    assert_eq!(
+        confirmed, 28,
+        "mandatory exact feature inventory silently changed"
+    );
 }
