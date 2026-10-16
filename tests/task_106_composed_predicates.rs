@@ -1391,3 +1391,76 @@ fn outer_join_contradiction_stays_residual_not_impossible() {
         "outer-join contradiction must not be proven impossible: {joint:?}"
     );
 }
+
+#[test]
+fn filtered_join_count_requires_unlimited_bag_output_shape() {
+    for sql in [
+        "SELECT l.a FROM l JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5 LIMIT 1",
+        "SELECT DISTINCT l.a FROM l JOIN r ON l.k = r.k WHERE l.a = 1",
+    ] {
+        let bundle = analyze_chain(&[sql], "postgresql");
+        let result = physical_row_count_plan(&bundle, bundle.layers()[0].id(), 3);
+        assert!(
+            !matches!(result, WitnessDirection::Feasible(_)),
+            "{sql}: row-shaping must not be ignored: {result:?}"
+        );
+    }
+
+    let sql = "SELECT l.a FROM l JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5";
+    let bundle = analyze_chain(&[sql], "postgresql");
+    let result = physical_row_count_plan(&bundle, bundle.layers()[0].id(), 3);
+    assert!(
+        matches!(result, WitnessDirection::Feasible(_)),
+        "plain filtered inner join must remain constructible: {result:?}"
+    );
+}
+
+#[test]
+fn outer_join_where_must_not_use_null_extended_rows_as_survivors() {
+    let sql = "SELECT l.a FROM l LEFT JOIN r ON l.k = r.k WHERE r.a = 1";
+    let bundle = analyze_chain(&[sql], "postgresql");
+    let result = physical_row_count_plan(&bundle, bundle.layers()[0].id(), 2);
+    assert!(
+        !matches!(result, WitnessDirection::Feasible(_)),
+        "source-row restrictions cannot certify post-join WHERE: {result:?}"
+    );
+
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch("CREATE TABLE l(a INTEGER, k INTEGER); CREATE TABLE r(a INTEGER, k INTEGER); INSERT INTO l VALUES (1,0),(2,1);").expect("test inputs");
+    let surviving: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM l LEFT JOIN r ON l.k = r.k WHERE r.a = 1",
+            [],
+            |row| row.get(0),
+        )
+        .expect("outer join oracle");
+    assert_eq!(surviving, 0, "NULL-extended right rows fail the WHERE");
+}
+
+#[test]
+fn contradictory_independent_join_scalar_filters_never_yield_a_complete_population() {
+    let sql = "SELECT l.a FROM l JOIN r ON l.k = r.k AND l.a > 5 AND l.a < 2";
+    let bundle = analyze_chain(&[sql], "postgresql");
+    let result = physical_row_count_plan(&bundle, bundle.layers()[0].id(), 1);
+    assert!(
+        !matches!(result, WitnessDirection::Feasible(_)),
+        "separately exact ON conjuncts have no jointly satisfying source row: {result:?}"
+    );
+
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, k INTEGER);
+         INSERT INTO l VALUES (1,0),(7,0);
+         INSERT INTO r VALUES (1,0);",
+    )
+    .expect("join contradiction inputs");
+    let count: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM l JOIN r ON l.k = r.k AND l.a > 5 AND l.a < 2",
+            [],
+            |row| row.get(0),
+        )
+        .expect("join contradiction oracle");
+    assert_eq!(count, 0);
+}
