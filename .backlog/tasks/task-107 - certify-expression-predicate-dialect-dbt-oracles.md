@@ -1,10 +1,10 @@
 ---
 id: TASK-107
 title: Certify expression and predicate SQL/dbt/dialect oracles
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-13'
+updated_date: '2026-10-16'
 labels: []
 milestone: m-3
 dependencies:
@@ -56,3 +56,22 @@ The existing **AC #1..#5 remain required**. Interpret and verify them through th
 - **Delivery:** one focused PR to `main`; finish all the child AC before marking it Done and verify complete relevant CI after implementing (not after every commit). Update canonical API/schema/docs, adapter parity and coverage evidence as applicable.
 - **Scope boundary:** Expression-specific conformance, not a duplicate of TASK-88's global dialect feature matrix or TASK-89's all-operator DML/DDL/dbt end-to-end acceptance.
 - **Next:** After completion, pick **TASK-108**.
+
+## Implementation increment (2026-10-16)
+
+- Registered versioned representative expression family evidence in
+  `docs/task-107-oracle-matrix.json`, linked from the canonical coverage manifest.
+  Each referenced existing test is checked by name, with explicit domains,
+  TRUE / NOT TRUE classifications, and named owners for conditional boundaries.
+- Added `tests/task_107_expression_oracles.rs` with direct SQL and dbt
+  manifest/catalog equality for typed output domains and witnesses, canonical
+  parser-equivalence assertions for all 13 advertised dialect names, bounded
+  interval inclusivity, and deterministic multi-seed DuckDB positive, FALSE,
+  UNKNOWN, contradiction, tautology, duplicate and NULL source-oracles.
+- **This is not TASK-107 sign-off.** The new matrix explicitly lists the
+  missing full TASK-66 inventory closure, every exact family/variant, dialect
+  assumptions, physical complete-source differential oracle expansion,
+  ODCS adapter parity, and full verification gates.
+- Original AC #1..#5 remain unchecked. Do not mark Done or release 3.0.0
+  until the original task and frozen acceptance contract are independently
+  satisfied and CI passes.
