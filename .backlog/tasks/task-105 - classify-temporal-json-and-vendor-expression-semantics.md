@@ -1,7 +1,7 @@
 ---
 id: TASK-105
 title: Classify temporal, JSON and vendor expression outcomes
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-13'
 updated_date: '2026-10-16'
@@ -31,11 +31,11 @@ Audit date/time, JSON/nested values and vendor functions against the existing sc
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Inventory DATE/TIME/TIMESTAMP and interval expressions, casts/comparisons, calendar boundaries, time zones, DST and engine/session-dependent coercion laws by parser AST and dialect; certify exact typed result domains only where necessary execution laws and metadata are explicit.
-- [ ] #2 Classify JSON path extraction, array/struct/nested comparisons, JSON SQL NULL versus JSON null and vendor function/operator families. Implement deterministic, provable typed subsets and retain explicit residuals for missing type/path/engine evidence.
-- [ ] #3 Preserve extensibility for UDFs and opaque/vendor functions through typed residual or externally validated evidence; never silently evaluate a UDF or mark a stochastic/session-sensitive result exact.
-- [ ] #4 For certified variants provide reversible constraints where possible, typed output domains, canonical TRUE/NOT TRUE/impossible witnesses and comparison assumptions; ensure all other inventoried variants remain fail-closed with traceable reasons.
-- [ ] #5 Add direct SQL/dbt adapter parity and parser boundary tests for all relevant dialects, focused DuckDB differential oracles for executable semantics, residual regression tests, and machine-readable per-family coverage plus docs/schema changes.
+- [x] #1 Inventory DATE/TIME/TIMESTAMP and interval expressions, casts/comparisons, calendar boundaries, time zones, DST and engine/session-dependent coercion laws by parser AST and dialect; certify exact typed result domains only where necessary execution laws and metadata are explicit.
+- [x] #2 Classify JSON path extraction, array/struct/nested comparisons, JSON SQL NULL versus JSON null and vendor function/operator families. Implement deterministic, provable typed subsets and retain explicit residuals for missing type/path/engine evidence.
+- [x] #3 Preserve extensibility for UDFs and opaque/vendor functions through typed residual or externally validated evidence; never silently evaluate a UDF or mark a stochastic/session-sensitive result exact.
+- [x] #4 For certified variants provide reversible constraints where possible, typed output domains, canonical TRUE/NOT TRUE/impossible witnesses and comparison assumptions; ensure all other inventoried variants remain fail-closed with traceable reasons.
+- [x] #5 Add direct SQL/dbt adapter parity and parser boundary tests for all relevant dialects, focused DuckDB differential oracles for executable semantics, residual regression tests, and machine-readable per-family coverage plus docs/schema changes.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -56,8 +56,15 @@ Audit existing portable typed DATE/TIME comparisons, explicit timestamp-zone evi
 - Two-axis review: addressed the input-triggered Unicode suffix panic, positional local-column alias mismatch, precision-qualified literal overclaim, and loss of literal timezone qualification. Added checked UTF-8 suffix parsing and modifier-aware fail-closed normalization, preserving source comparison assumptions only for independently valid literals. Temporal precision and zone regression/oracle tests now use explicit AST evidence rather than unsafe timestamp spelling equivalence.
 - Standards review: consolidated physical and analysis Gregorian validation under `src/temporal.rs`, preserving malformed-versus-impossible physical classifications; renamed the general expression residual label helper. Alias application has one shared analysis owner used by CTE/derived scopes.
 - Final review closure: both reviewers verified all findings resolved. Literal precision is bounded to the certified 0..6 subset; all three positional-alias paths now have all-dialect fixtures and explicit parser-boundary expectations.
-- Final local verification: full `cargo test --quiet --no-fail-fast`, `cargo fmt`, `cargo clippy --all-targets --all-features -- -D warnings`, and `cargo doc --no-deps` pass. Focused evidence includes 21 TASK-105 tests, 20 typed-domain tests, 21 differential tests and six physical type-validation unit tests. Two existing artifact-generated dbt E2E tests are explicitly ignored by the default suite and owned by the CI dbt job. Remote CI pending before task closure.
+- Final local verification: full `cargo test --quiet --no-fail-fast`, `cargo fmt`, `cargo clippy --all-targets --all-features -- -D warnings`, and `cargo doc --no-deps` pass. Focused evidence includes 21 TASK-105 tests, 20 typed-domain tests, 21 differential tests and six physical type-validation unit tests. Two existing artifact-generated dbt E2E tests are explicitly ignored by the default suite and owned by the CI dbt job.
+- Remote verification: all nine checks pass on PR #113, including default/no-default feature suites, lint/doc/dependency checks and dbt Core E2E: https://github.com/phdah/sql-semantic-protocol/actions/runs/38863120417 .
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Delivered TASK-105 in https://github.com/phdah/sql-semantic-protocol/pull/113 from `feat/task-105-temporal-json-vendor` to `main`. All five scoped acceptance criteria are verified. Certified DATE constants/identity casts/extraction, ordered DATE outcomes and datatype-independent source SQL NULL witnesses share canonical ownership and preserve domains through composition and positional aliases. Precision/zone/calendar/Unicode boundaries, JSON document null and opaque function execution fail closed with traceable reasons. The executable inventory covers 56 expressions and three alias cases over all exposed dialect names, with explicit parser limitations; SQL/dbt/ODCS parity and independent DuckDB oracles pass. Standards and spec review findings are resolved, all local gates pass, and all nine remote CI checks including dbt E2E pass. TASK-70 remains In Progress and TASK-91/protocol 3.0.0 remain gated; TASK-106 is the next queued child.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Implementation and verification
 
