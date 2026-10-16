@@ -939,9 +939,11 @@ by a constant affine addition or subtraction when its full catalog-attested
 source range fits the declared output width. Nested constant-affine
 `CAST`/`+`/`-` spines and recast-free references to computed producer
 outputs transport finite value domains stepwise at each hop's execution
-width: additions keep their left operand width, casts must not narrow the
-certified flowing width, and every hop fail-closes on overflow. Narrowing
-casts, non-constant operands and unknown producers stay residual. Canonical integer comparisons,
+width: additions and constant scales keep their left operand width, casts
+must not narrow the certified flowing width, a negative scale swaps the
+range ends while each bound keeps its inclusivity, and every hop
+fail-closes on overflow. Narrowing casts, non-constant operands, a zero
+scale, division/modulo and unknown producers stay residual. Canonical integer comparisons,
 NULL tests and their same-row AND/OR expressions are inverted with their
 physical integer bounds rechecked for SQL TRUE versus NOT TRUE. An implicit
 arithmetic cast, potential overflow, lossy conversion, LIMIT/DISTINCT or

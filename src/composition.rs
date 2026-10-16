@@ -20,7 +20,7 @@ use crate::protocol::{
     ConditionClause, ConditionExactness, Expression, Join, JoinKind, LineageSource,
     LiteralExpression, LiteralType, LiteralValue, Output, OutputColumn, Predicate,
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
-    SetMode, SourceRelation, ValueDomain, ValueRange, WriteKind,
+    SetMode, SourceRelation, UnaryOperator, ValueDomain, ValueRange, WriteKind,
 };
 use crate::relation::RelationSchema;
 
@@ -1131,10 +1131,10 @@ impl<'a> Composer<'a> {
     /// strongest representable translated interval without SQL reparsing.
     ///
     /// The legacy single-hop shape keeps its exact prior outcomes. Nested and
-    /// cross-layer constant affine chains (nested `CAST`/`+`/`-` spines and
-    /// recast-free references to computed producer outputs) are certified by
-    /// [`Composer::certified_affine`] afterwards; anything reaching neither
-    /// stays residual.
+    /// cross-layer constant affine chains (nested `CAST`/`+`/`-`/`*const`
+    /// spines and recast-free references to computed producer outputs) are
+    /// certified by [`Composer::certified_affine`] afterwards; anything
+    /// reaching neither stays residual.
     fn compose_affine_output_domain(
         &mut self,
         consumer: &TransformationLayer,
@@ -1227,11 +1227,14 @@ impl<'a> Composer<'a> {
     }
 
     /// Certify nested and cross-layer constant affine chains of the form
-    /// `CAST(...)+/-const` over one ultimate base column. Additions keep the
-    /// left operand width (integer literals coerce to it, as in the legacy
-    /// proof); each `CAST` must not narrow the certified flowing width.
-    /// Every hop translates the finite domain stepwise and fail-closes on
-    /// overflow, so intermediate execution widths are honored exactly.
+    /// `CAST(...)+/-const` and `CAST(...)*const` over one ultimate base
+    /// column. Additions keep the left operand width (integer literals coerce
+    /// to it, as in the legacy proof); scales keep it for the same reason.
+    /// Each `CAST` must not narrow the certified flowing width. Every hop
+    /// translates the finite domain stepwise and fail-closes on overflow, so
+    /// intermediate execution widths are honored exactly. Division, modulo
+    /// and a zero scale stay residual: engines differ on the former, and the
+    /// latter needs nullability evidence the domain does not carry.
     /// Returns the translated domain with the execution width its values
     /// provably fit.
     fn certified_affine(
@@ -1241,6 +1244,11 @@ impl<'a> Composer<'a> {
     ) -> Option<(ValueDomain, u16)> {
         match expression {
             Expression::Binary(binary) => {
+                if binary.operator() == BinaryOperator::Multiply {
+                    let factor = affine_integer_constant(binary.right())?;
+                    let (inner, width) = self.certified_affine(consumer, binary.left())?;
+                    return Some((scaled_signed_domain(&inner, width, factor)?, width));
+                }
                 if !matches!(
                     binary.operator(),
                     BinaryOperator::Add | BinaryOperator::Subtract
@@ -1506,27 +1514,116 @@ fn catalog_signed_width(schemas: &[RelationSchema], relation: &str, column: &str
     signed_width(declared)
 }
 
+/// Read a constant integer scale or offset operand: an integer literal, or a
+/// unary-minus integer literal (the only spelling of a negative constant,
+/// e.g. `* -2`, which the parser does not fold into a literal). Only the
+/// multiply proof accepts the unary spelling: subtraction already has its own
+/// binary operator, so the additive arms keep their literal-only shape.
+/// Anything else has no portable constant meaning here.
+fn affine_integer_constant(expression: &Expression) -> Option<i128> {
+    match expression {
+        Expression::Literal(literal) => {
+            if literal.literal_type() != LiteralType::Integer {
+                return None;
+            }
+            let LiteralValue::Number(number) = literal.value() else {
+                return None;
+            };
+            number.parse::<i128>().ok()
+        }
+        Expression::Unary(unary) => {
+            if unary.operator() != UnaryOperator::Minus {
+                return None;
+            }
+            affine_integer_constant(unary.operand())?.checked_neg()
+        }
+        _ => None,
+    }
+}
+
+/// Move a fully proven integer value domain through `value * factor` at a
+/// signed execution width. A zero factor collapses every value and needs
+/// nullability evidence the domain does not carry, so it stays residual; an
+/// unknown, unbounded, noninteger or overflowing region is deliberately not
+/// sharpened. A negative factor swaps the range ends while each bound keeps
+/// its own inclusivity.
+fn scaled_signed_domain(domain: &ValueDomain, bits: u16, factor: i128) -> Option<ValueDomain> {
+    if bits == 0 || bits > 64 || factor == 0 {
+        return None;
+    }
+    let magnitude = 1_i128.checked_shl(u32::from(bits.checked_sub(1)?))?;
+    let minimum = -magnitude;
+    let maximum = magnitude - 1;
+    let scale = |literal: &LiteralExpression| -> Option<LiteralExpression> {
+        if literal.literal_type() == LiteralType::Null {
+            return Some(literal.clone());
+        }
+        if literal.literal_type() != LiteralType::Integer {
+            return None;
+        }
+        let LiteralValue::Number(text) = literal.value() else {
+            return None;
+        };
+        let value = text.parse::<i128>().ok()?;
+        let scaled = value.checked_mul(factor)?;
+        if value < minimum || value > maximum || scaled < minimum || scaled > maximum {
+            return None;
+        }
+        Some(LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(scaled.to_string()),
+        ))
+    };
+    match domain {
+        ValueDomain::Empty => Some(ValueDomain::Empty),
+        ValueDomain::Set(set) if set.mode() == SetMode::Include => Some(ValueDomain::set(
+            SetMode::Include,
+            set.values().iter().map(scale).collect::<Option<Vec<_>>>()?,
+        )),
+        ValueDomain::Ranges(ranges) => {
+            let scaled = ranges
+                .ranges()
+                .iter()
+                .map(|range| {
+                    let lower = range.lower()?;
+                    let upper = range.upper()?;
+                    let scaled_lower = scale(lower.value())?;
+                    let scaled_upper = scale(upper.value())?;
+                    if factor > 0 {
+                        Some(ValueRange::new(
+                            Some(Bound::new(scaled_lower, lower.inclusive())),
+                            Some(Bound::new(scaled_upper, upper.inclusive())),
+                        ))
+                    } else {
+                        Some(ValueRange::new(
+                            Some(Bound::new(scaled_upper, upper.inclusive())),
+                            Some(Bound::new(scaled_lower, lower.inclusive())),
+                        ))
+                    }
+                })
+                .collect::<Option<Vec<_>>>()?;
+            Some(ValueDomain::ranges(scaled))
+        }
+        ValueDomain::Unbounded | ValueDomain::Unknown(_) | ValueDomain::Set(_) => None,
+    }
+}
+
 /// Infer the execution width of an affine-shaped expression: integer literals
-/// coerce to the operand type, so additions keep their left width and casts
-/// fix theirs. The literal must be integer-typed, mirroring the domain
-/// proof: a non-integer operand has no portable arithmetic meaning.
-/// Anything else has no provable width here.
+/// coerce to the operand type, so additions and constant scales keep their
+/// left width and casts fix theirs. The constant operand may use the
+/// unary-minus spelling, mirroring the scale proof. Anything else has no
+/// provable width here.
 fn affine_expression_width(expression: &Expression) -> Option<u16> {
     match expression {
         Expression::SignedIntegerCast(cast) => Some(cast.target_bits()),
         Expression::Binary(binary) => {
             if !matches!(
                 binary.operator(),
-                BinaryOperator::Add | BinaryOperator::Subtract
+                BinaryOperator::Add | BinaryOperator::Subtract | BinaryOperator::Multiply
             ) {
                 return None;
             }
-            let Expression::Literal(literal) = binary.right() else {
-                return None;
-            };
-            if literal.literal_type() != LiteralType::Integer {
-                return None;
-            }
+            affine_integer_constant(binary.right())?;
             affine_expression_width(binary.left())
         }
         _ => None,

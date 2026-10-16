@@ -324,3 +324,20 @@ by the currently certified singleton-group and equijoin patterns.
 The acceptance boxes remain unchecked pending that evidence; avoid
 representing the mere number of new fixtures or a green bounded build as
 universal proof coverage.
+
+### Strict-scope progress: constant-scale affine transport (2026-10-16)
+
+Next missing proof path under strict AC1/AC2, TDD red-then-green at the
+public analyze + composed-domain seam (`tests/task_106_composed_predicates.rs`
+with DuckDB oracles): `src/composition.rs certified_affine` now transports
+constant scales (`CAST(a AS BIGINT) * 2 + 1` over `[5,10]` certifies
+`[11,21]`) stepwise at each hop's execution width. Negative scales use the
+unary-minus spelling (`* -2` certifies `[-20,-10]`, ends swapped with
+inclusivity kept); overflow fail-closes, a zero scale stays residual
+(collapse needs nullability evidence), and division/modulo stay residual
+(portability). `affine_expression_width` and the semantics guide plus
+coverage manifest scope updated to match. 4 new tests; focused file green
+(65 passed), clippy/doc/no-default green.
+Still open for Done: multi-column/nonlinear symbolic domains, general
+multi-join DAGs, correlated sources, general aggregates/windows,
+rank-over-join proofs, and the full family support matrix.

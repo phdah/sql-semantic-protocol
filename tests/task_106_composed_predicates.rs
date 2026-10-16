@@ -2865,3 +2865,133 @@ fn decimal_producer_does_not_gain_integer_affine_certification_from_bounds_alone
         "decimal or fractional producer values cannot be recast as proven whole-integer bounds"
     );
 }
+
+#[test]
+fn scaled_affine_chain_transports_bounded_domain() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT (CAST(a AS BIGINT) * 2) + 1 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("materialized computed output");
+    assert_range_bounds(value.domain(), "scaled affine output", "11", "21");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (2),(5),(7),(10),(12),(NULL);
+         CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10;
+         CREATE TABLE mart AS SELECT (CAST(a AS BIGINT) * 2) + 1 AS v FROM stage;",
+    )
+    .unwrap();
+    let (minimum, maximum): (i64, i64) = db
+        .query_row("SELECT MIN(v), MAX(v) FROM mart", [], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        })
+        .unwrap();
+    assert_eq!((minimum, maximum), (11, 21));
+}
+
+#[test]
+fn negative_scaled_affine_flips_boundaries() {
+    // `* -2` parses with a unary-minus operand, the only spelling of a
+    // negative scale. Bounds swap ends while keeping their inclusivity.
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT CAST(a AS BIGINT) * -2 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("materialized computed output");
+    assert_range_bounds(value.domain(), "negative scaled output", "-20", "-10");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (2),(5),(7),(10),(12),(NULL);
+         CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10;
+         CREATE TABLE mart AS SELECT CAST(a AS BIGINT) * -2 AS v FROM stage;",
+    )
+    .unwrap();
+    let (minimum, maximum): (i64, i64) = db
+        .query_row("SELECT MIN(v), MAX(v) FROM mart", [], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        })
+        .unwrap();
+    assert_eq!((minimum, maximum), (-20, -10));
+}
+
+#[test]
+fn overflowing_scaled_affine_stays_residual() {
+    // 5 * 2^62 overflows BIGINT, so no bounded domain may be certified even
+    // though the scale is constant.
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT CAST(a AS BIGINT) * 4611686018427387904 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("materialized computed output");
+    assert!(
+        !matches!(value.domain(), ValueDomain::Ranges(_)),
+        "overflowing scaled arithmetic must not certify bounded domains: {:?}",
+        value.domain()
+    );
+}
+
+#[test]
+fn division_and_modulo_stay_residual_across_materialization() {
+    // Integer division and modulo have no portable cross-layer proof:
+    // engines differ on fractional division and signed remainders.
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT CAST(a AS BIGINT) / 2 AS d, CAST(a AS BIGINT) % 2 AS m FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    for name in ["d", "m"] {
+        let value = mart
+            .output()
+            .columns()
+            .iter()
+            .find(|column| column.name() == name)
+            .expect("materialized computed output");
+        assert!(
+            !matches!(value.domain(), ValueDomain::Ranges(_)),
+            "{name}: division/modulo must not certify bounded domains: {:?}",
+            value.domain()
+        );
+    }
+}
