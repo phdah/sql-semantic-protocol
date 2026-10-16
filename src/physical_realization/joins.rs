@@ -315,7 +315,9 @@ pub(super) fn physical_join_population_with_source_counts(
         return None;
     };
     let join_query = query_for(bundle, join_layer)?;
-    if join_query.joins().len() != 1
+    if !(join_query.plain_goal_output_shape()
+        || join_query.filtered_join_goal_output_shape())
+        || join_query.joins().len() != 1
         || join_query.sources().len() != 2
         || join_query.aggregation().is_some()
         || join_query.set_operation().is_some()
@@ -347,6 +349,12 @@ pub(super) fn physical_join_population_with_source_counts(
     if matches!(join_kind, JoinKind::Cross | JoinKind::Unknown) {
         return None;
     }
+    // Source-row restrictions do not represent SQL WHERE evaluated after
+    // NULL extension. In outer joins even an empty nonpreserved input can
+    // produce rows that WHERE then discards.
+    if join_kind != JoinKind::Inner && join_query.predicates().where_predicate().is_some() {
+        return None;
+    }
 
     // Identity-only producer chains remain supported. A direct filtered
     // producer may additionally select a typed, repeatable literal equality
@@ -374,6 +382,20 @@ pub(super) fn physical_join_population_with_source_counts(
         }
         let (source, predicate) = direct_filtered_source(bundle, &walker, node)?;
         source_filters.entry(source).or_default().push(predicate);
+    }
+
+    // Individually exact scalar filters need not share a satisfying row.
+    // In particular ON x > 5 AND x < 2 cannot be certified by combining
+    // independent sufficient examples. A mixed or unproved conjunction is
+    // left residual rather than emitting an inconsistent complete population.
+    if source_filters.iter().any(|(source, filters)| {
+        filters.len() > 1
+            && !matches!(
+                joint_source_truths_satisfiable(bundle, source, filters),
+                Some(true)
+            )
+    }) {
+        return None;
     }
 
     // A residual local join witness cannot certify source rows through a
