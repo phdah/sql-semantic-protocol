@@ -1517,8 +1517,10 @@ fn catalog_signed_width(schemas: &[RelationSchema], relation: &str, column: &str
 /// Read a constant integer scale or offset operand: an integer literal, or a
 /// unary-minus integer literal (the only spelling of a negative constant,
 /// e.g. `* -2`, which the parser does not fold into a literal). Only the
-/// multiply proof accepts the unary spelling: subtraction already has its own
-/// binary operator, so the additive arms keep their literal-only shape.
+/// multiply domain arm accepts the unary spelling: subtraction already has
+/// its own binary operator, so the additive domain arms keep their
+/// literal-only shape. Width inference uses this helper uniformly because
+/// the kept-left-width claim is spelling-independent.
 /// Anything else has no portable constant meaning here.
 fn affine_integer_constant(expression: &Expression) -> Option<i128> {
     match expression {

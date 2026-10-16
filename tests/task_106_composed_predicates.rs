@@ -2941,6 +2941,38 @@ fn negative_scaled_affine_flips_boundaries() {
 }
 
 #[test]
+fn negative_scaled_affine_preserves_open_interval_boundaries() {
+    // Exclusive ends stay exclusive through the swap: (5,10) * -2 = (-20,-10).
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a > 5 AND a < 10",
+            "CREATE TABLE mart AS SELECT CAST(a AS BIGINT) * -2 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("materialized computed output");
+    let ValueDomain::Ranges(ranges) = value.domain() else {
+        panic!("expected scaled open interval, got {:?}", value.domain());
+    };
+    let [range] = ranges.ranges() else {
+        panic!("one scaled range");
+    };
+    let lower = range.lower().expect("lower");
+    let upper = range.upper().expect("upper");
+    assert_eq!(lower.value().value(), &LiteralValue::Number("-20".into()));
+    assert_eq!(upper.value().value(), &LiteralValue::Number("-10".into()));
+    assert!(!lower.inclusive() && !upper.inclusive());
+}
+
+#[test]
 fn overflowing_scaled_affine_stays_residual() {
     // 5 * 2^62 overflows BIGINT, so no bounded domain may be certified even
     // though the scale is constant.
