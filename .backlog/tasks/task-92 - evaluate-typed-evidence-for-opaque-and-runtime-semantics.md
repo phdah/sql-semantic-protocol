@@ -38,6 +38,17 @@ A **post-v3 future feature**, not a 3.0.0 release blocker: support safely provab
 - [ ] #6 Publish a backward-compatible extension and consumer migration plan; keep v3 coverage-manifest and release-blocking acceptance truthful.
 <!-- AC:END -->
 
+
+## Reviewed finite acceptance contract (2026-10-16)
+
+The existing **AC #1..#6 remain required**. Interpret and verify them through the frozen TASK-92 row of [the backlog acceptance contracts](../../docs/backlog-acceptance-contracts.md), additive to the approved TASK-66 feature/dialect inventory. This specifies a finite **minimum exactness floor**, not permission to omit named feature families or mark unimplemented mandatory cases `Residual`.
+
+1. **Mandatory exact core:** Post-v3 prototype: versioned typed deterministic function signature with inputs, output domain, NULL, error, side-effects, and source cardinality obligations.
+2. **Mandatory cross-operator / adapter evidence:** Trust evidence: structured user declaration, dbt or catalog/ODCS metadata adapters each show attested vs absent/untrusted evidence with provenance and exact/residual contrast.
+3. **Conditional and non-exact boundary:** Conditional research: bounded recursion, seeded stochastic models and session-sensitive coercion/time/collation classified, not universally exact; prove an extension-safe migration path.
+
+**Acceptance sign-off:** Before implementation, register each original named AC variant as a versioned feature/dialect cell and freeze fixture IDs in `docs/coverage-manifest.json`. Every mandatory core cell needs typed output domains (including NULL and interval inclusivity), positive/rejected membership and `Exact`/`Impossible` physical-source proof as applicable, complete DuckDB source/terminal oracles where executable, and representable SQL/dbt/ODCS parity plus 13-dialect parser equivalence evidence. Conditional cells need a documented parser/runtime boundary, typed `Residual` or justified `Impossible`, named owner, and explicit release disposition, **not a shortcut for missing implementation**. Sign off AC #1..#6 only after required cells and final CI are verified. Do not approve independent release gates through this task.
+
 ## Delivery guidance
 
 Target a version after the consolidated 3.0.0 release unless the maintainer separately reprioritizes it. Do not import SQL parser logic into sql-tdg or interpret UDFs in the consumer. Source-specific discovery ends at an adapter boundary; all proofs and outcome obligations must use one canonical typed contract.
