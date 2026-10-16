@@ -2096,6 +2096,9 @@ fn uncorrelated_nonunit_group_histograms_stay_residual() {
 
 #[test]
 fn singleton_group_and_matching_rank_partitions_share_one_source_bag() {
+    // QUALIFY is a parser-boundary dialect feature: only dialects whose
+    // parser accepts it (here duckdb, mirroring the other physical QUALIFY
+    // tests) can reach the shared group/rank proof.
     let bundle = analyze_chain(
         &[
             "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
@@ -2223,6 +2226,7 @@ fn singleton_group_and_matching_rank_partitions_share_one_source_bag() {
 
 #[test]
 fn rank_partition_on_different_key_stays_residual_against_singleton_groups() {
+    // Same parser boundary as above: duckdb for QUALIFY.
     let bundle = analyze_chain(
         &[
             "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
@@ -2237,6 +2241,28 @@ fn rank_partition_on_different_key_stays_residual_against_singleton_groups() {
     assert!(
         !matches!(plan, WitnessDirection::Feasible(_)),
         "different rank partitions need their own correlation proof: {plan:?}"
+    );
+}
+
+#[test]
+fn rank_requiring_predecessor_stays_residual_against_singleton_groups() {
+    // QUALIFY rn > 1 needs at least two rows per partition, so no
+    // singleton-key bag can satisfy both terminals at once. Same parser
+    // boundary as above: duckdb for QUALIFY.
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+            "SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn > 1",
+        ],
+        "duckdb",
+    );
+    let plan = physical_joint_row_count_plan(
+        &bundle,
+        &[(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)],
+    );
+    assert!(
+        !matches!(plan, WitnessDirection::Feasible(_)),
+        "predecessor-requiring ranks must not share the singleton bag: {plan:?}"
     );
 }
 

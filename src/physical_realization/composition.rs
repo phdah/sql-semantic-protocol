@@ -309,6 +309,23 @@ pub(super) fn physical_operator_population_case(
 /// per partition, regardless of its independently typed ORDER BY column.
 /// Non-singleton groups, different rank partitions and unproved windows
 /// remain residual rather than being multiplied as independent examples.
+///
+/// Soundness: the shared bag carries N distinct keys with one row each, so
+/// it presents N one-row partitions to the rank operator. With one row per
+/// partition ROW_NUMBER is identically 1, which passes any certified rank
+/// filter: every `Ranked` producer (`construct_rank_with_map`,
+/// `construct_mapped_rank`) requires an exact first-row direction
+/// (`min_preceding == 0`) with a nonzero limit over a single partition key
+/// and a single order key, and the order key cannot discriminate single-row
+/// partitions. Even where the rank population would also admit multi-row
+/// partitions (e.g. `QUALIFY rn <= 2`), the shared singleton-key bag still
+/// satisfies both terminal count goals. Predecessor-requiring filters
+/// (`rn > 1`), unpartitioned multi-row ranks and unproved windows cannot
+/// produce a matching `Ranked` shape and stay residual.
+///
+/// The match is exhaustive over `OutcomeWitness` (no `_` catch-all) so that
+/// adding a variant forces this compatibility proof to be revisited instead
+/// of silently failing closed or, worse, silently sharing.
 fn compatible_operator_populations(
     left: &crate::outcome_proofs::OutcomeWitness,
     right: &crate::outcome_proofs::OutcomeWitness,
@@ -357,7 +374,22 @@ fn compatible_operator_populations(
                 rows_per_group: 1,
             },
         ) => group_relation == rank_relation && key == partition && groups == rows,
-        _ => false,
+        (OutcomeWitness::Groups { .. }, _)
+        | (_, OutcomeWitness::Groups { .. })
+        | (OutcomeWitness::Ranked { .. }, _)
+        | (_, OutcomeWitness::Ranked { .. }) => false,
+        (
+            OutcomeWitness::Singleton
+            | OutcomeWitness::EmptySources { .. }
+            | OutcomeWitness::SourceRows { .. }
+            | OutcomeWitness::JoinPairs { .. }
+            | OutcomeWitness::SetTuples { .. },
+            OutcomeWitness::Singleton
+            | OutcomeWitness::EmptySources { .. }
+            | OutcomeWitness::SourceRows { .. }
+            | OutcomeWitness::JoinPairs { .. }
+            | OutcomeWitness::SetTuples { .. },
+        ) => false,
     }
 }
 
