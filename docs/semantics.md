@@ -959,8 +959,15 @@ restrictions, ambiguous source predicates, unsupported join shapes and
 unattested source types remain residual. Separate filtered join targets can
 share one joint count proof when their complete physical source bags are
 disjoint; the composer retains each source's certified TRUE filter and its
-join-key population. Overlapping physical sources with different filters or
-unreconciled join-key histograms remain residual, not optimistically combined.
+join-key population. Overlapping filtered joins on the same physical source can also share one
+closed assignment when their exact non-key TRUE restrictions are jointly
+satisfiable and their key-population patterns agree. A distinct-matched
+join's certified physical key histogram additionally supports a GROUP BY
+on that same physical key, with one group per row. Independently certified
+one-row-per-key grouping populations on distinct group columns can coexist
+on one source bag. Other overlapping physical sources with incompatible
+filters or unreconciled group/join histograms remain residual, not
+optimistically combined.
 
 Existing operator-specific laws remain authoritative for grouped
 `COUNT`/`HAVING` and `ROW_NUMBER`/`QUALIFY` populations. Unsupported aggregate
