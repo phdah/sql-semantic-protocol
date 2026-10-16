@@ -329,6 +329,24 @@ fn bundle_column_datatype(
     super::joint_counts::physical_column_datatype(schema, column)
 }
 
+/// Reject untransported relation laws at a materialization boundary.
+///
+/// A copied value or widening CAST does not discharge constraints declared
+/// independently on the produced table. Defaults, generated expressions,
+/// CHECKs and even unresolved diagnostics must not silently disappear when
+/// its rows are mapped back to a physical source.
+pub(super) fn untransported_materialization_laws(
+    bundle: &AnalysisBundle,
+    relation: &str,
+) -> bool {
+    bundle.relation_constraints().iter().any(|set| {
+        set.relation() == relation
+            && (!set.constraints().is_empty()
+                || !set.column_value_sources().is_empty()
+                || !set.diagnostics().is_empty())
+    })
+}
+
 /// Follow an identity-only column through an intermediate producer. The
 /// producer is permitted to filter its own rows because the *joint* terminal
 /// proof later requires all filters, but the intermediate's local witness is
@@ -370,6 +388,9 @@ pub(super) fn resolve_filter_column_with_evidence(
             column.name().to_string(),
         )),
         RelationResolution::Resolved => {
+            if untransported_materialization_laws(bundle, &canonical) {
+                return None;
+            }
             let [producer_id] = edge.producer_layer_ids() else {
                 return None;
             };
@@ -552,12 +573,7 @@ fn resolve_widened_filter_column(
             // A materialized relation may carry its own CHECK, key, default
             // or generated-column law not entailed by a copied source value.
             // Until those laws are transported, such edges are not invertible.
-            if bundle.relation_constraints().iter().any(|set| {
-                set.relation() == canonical
-                    && (!set.constraints().is_empty()
-                        || !set.column_value_sources().is_empty()
-                        || !set.diagnostics().is_empty())
-            }) {
+            if untransported_materialization_laws(bundle, &canonical) {
                 return None;
             }
             let [producer_id] = edge.producer_layer_ids() else {
