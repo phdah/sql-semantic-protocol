@@ -289,12 +289,13 @@ fn parser_capable_dialects_share_composed_filter_outcomes() {
             .iter()
             .map(|query| SqlInput::inline(*query))
             .collect::<Vec<_>>();
+        let ids = (0..queries.len())
+            .map(|index| format!("q-{index}"))
+            .collect::<Vec<_>>();
         let inputs = sources
             .iter()
-            .enumerate()
-            .map(|(index, source)| {
-                ConfiguredSqlInput::new(format!("q-{index}"), source, name, dialect.as_ref())
-            })
+            .zip(&ids)
+            .map(|(source, id)| ConfiguredSqlInput::new(id, source, name, dialect.as_ref()))
             .collect::<Vec<_>>();
         match analyze_configured_inputs_with_catalog(&inputs, &catalog()) {
             Ok(bundle) => {
@@ -324,9 +325,7 @@ fn parser_capable_dialects_share_composed_filter_outcomes() {
             dialect.as_ref(),
         ) {
             Ok(protocol) => {
-                let Some(sql_semantic_protocol::ProtocolStatement::Query(query)) =
-                    protocol.statements().first()
-                else {
+                let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
                     panic!("{name}: expected query");
                 };
                 let witness = query.boolean_witness().expect("local witness");
