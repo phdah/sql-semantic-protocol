@@ -24,7 +24,12 @@ fn unproven_nan_and_signed_zero_cannot_be_certified_as_exact_integer_equalities(
     ] {
         let input = SqlInput::inline(format!("SELECT a FROM t WHERE {predicate}"));
         let bundle = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("environment", &input, "postgresql", dialect.as_ref())],
+            &[ConfiguredSqlInput::new(
+                "environment",
+                &input,
+                "postgresql",
+                dialect.as_ref(),
+            )],
             &catalog,
         )
         .unwrap_or_else(|error| panic!("{id}: {predicate}: {error}"));
