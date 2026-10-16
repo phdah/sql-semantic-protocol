@@ -13,7 +13,6 @@ use crate::bundle::{
 };
 use crate::data_type::DataType;
 use crate::domain::{intersect_case_domain_values, intersect_domains};
-use crate::relation::RelationSchema;
 use crate::join_witness::JoinWitness;
 use crate::protocol::{
     BinaryOperator, Bound, CaseBranch, CaseExpression, CaseSourceDomainAlternative,
@@ -23,6 +22,7 @@ use crate::protocol::{
     ProtocolStatement, QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason,
     SetMode, SourceRelation, ValueDomain, ValueRange, WriteKind,
 };
+use crate::relation::RelationSchema;
 
 pub(crate) fn compose_layers(
     inputs: &[AnalyzedInput],
