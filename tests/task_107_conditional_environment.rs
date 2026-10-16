@@ -43,7 +43,10 @@ fn unproven_nan_and_signed_zero_cannot_be_certified_as_exact_integer_equalities(
         for item in semantics.boolean_witnesses() {
             let witness = item.witness();
             assert!(
-                matches!(witness.qualifying(), BooleanWitnessDirection::Residual { .. }),
+                matches!(
+                    witness.qualifying(),
+                    BooleanWitnessDirection::Residual { .. }
+                ),
                 "{id}: unproven TRUE cannot be constructed: {:?}",
                 witness.qualifying()
             );
