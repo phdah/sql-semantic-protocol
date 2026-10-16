@@ -200,9 +200,7 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
     }
 }
 
-#[test]
-fn all_mandatory_variants_match_independent_duckdb_closed_source_membership() {
-    let freeze: Value = serde_json::from_str(FREEZE).unwrap();
+fn complete_mandatory_source() -> Connection {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
         "CREATE TABLE t(id BIGINT PRIMARY KEY, a INTEGER, b INTEGER, s VARCHAR(8));
@@ -218,6 +216,13 @@ fn all_mandatory_variants_match_independent_duckdb_closed_source_membership() {
          (9, 2147483647, -2147483648, 'abX')",
     )
     .unwrap();
+    db
+}
+
+#[test]
+fn all_mandatory_variants_match_independent_duckdb_closed_source_membership() {
+    let freeze: Value = serde_json::from_str(FREEZE).unwrap();
+    let db = complete_mandatory_source();
     // Hand-worked expectations, not computed from the protocol analyzer.
     // Every mandatory variant ID is listed exactly once, including output-only
     // shapes which must preserve the complete physical bag.
@@ -287,5 +292,37 @@ fn all_mandatory_variants_match_independent_duckdb_closed_source_membership() {
                 "{id}: SQL NOT TRUE must retain FALSE and UNKNOWN; SQL={rejected_sql}"
             );
         }
+    }
+}
+
+#[test]
+fn frozen_output_projections_have_independent_null_failure_and_exact_value_oracles() {
+    let freeze: Value = serde_json::from_str(FREEZE).unwrap();
+    let db = complete_mandatory_source();
+    // Complete ordered output bags, hand-calculated from the nine committed
+    // physical source instances. A NULL output is distinct from an absent row.
+    let cases: [(&str, &[Option<i64>]); 6] = [
+        ("E107-V027", &[Some(3), Some(4), Some(5)]),
+        ("E107-V028", &[None, Some(0), Some(1), Some(2), Some(3), Some(4), Some(-1), None, None]),
+        ("E107-V029", &[Some(0), Some(0), Some(0), Some(2), Some(3), Some(4), Some(0), Some(0), Some(2147483647)]),
+        ("E107-V030", &[Some(0), Some(0), Some(1), Some(2), Some(3), Some(4), Some(-1), Some(-2147483648), Some(2147483647)]),
+        ("E107-V031", &[None, Some(0), None, Some(2), Some(3), Some(4), Some(-1), Some(-2147483648), Some(2147483647)]),
+        ("E107-V033", &[None, Some(0), Some(3), Some(6), Some(9), Some(12), Some(-3), Some(-6442450944), Some(6442450941)]),
+    ];
+    for (id, expected) in cases {
+        let fixture = freeze["inventory_cells"].as_array().unwrap()
+            .iter().find(|cell| cell["id"] == id).expect("frozen output variant");
+        assert_eq!(fixture["classification"], "exact_required");
+        let sql = format!("{} ORDER BY id", fixture["sql_shape"].as_str().unwrap());
+        let mut stmt = db.prepare(&sql).unwrap_or_else(|error| panic!("{id}: {sql}: {error}"));
+        let results = stmt
+            .query_map([], |row| row.get::<_, Option<i64>>(0))
+            .unwrap_or_else(|error| panic!("{id}: {sql}: {error}"))
+            .map(|value| value.expect("typed output row"))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            results, expected,
+            "{id}: executed output bag does not match independently worked type/null/overflow boundaries; SQL={sql}"
+        );
     }
 }
