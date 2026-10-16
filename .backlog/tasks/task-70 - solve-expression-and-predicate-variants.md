@@ -44,6 +44,17 @@ Current boolean proof supports a restricted scalar subset. Expand safe, typed ex
 - [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
+
+## Reviewed finite acceptance contract (2026-10-16)
+
+The existing **AC #1..#6 remain required**. Interpret and verify them through the frozen TASK-70 row of [the backlog acceptance contracts](../../docs/backlog-acceptance-contracts.md), which are additive to the approved TASK-66 feature/dialect inventory. This section specifies a finite **minimum exactness floor**, not permission to omit named feature families or mark unimplemented mandatory cases `Residual`.
+
+1. **Mandatory exact core:** Parent sign-off: TASK-101..107 and TASK-108 map the six original AC, with each family in the approved TASK-66 inventory classified.
+2. **Mandatory cross-operator / adapter evidence:** Finite child matrix: signed arithmetic/casts, CASE/COALESCE/NULLIF, correlated predicates, text patterns, temporal/JSON/vendor boundaries, composed physical graphs, SQL/dbt/13-dialect oracle evidence.
+3. **Conditional and non-exact boundary:** TASK-108 must audit every original AC and unresolved family; no parent completion from bounded TASK-106 alone.
+
+**Acceptance sign-off:** Before implementation, register each original named AC variant as a versioned feature/dialect cell and freeze fixture IDs in `docs/coverage-manifest.json`. Each mandatory core cell needs independently asserted typed output domains (including NULL and interval inclusivity), positive/rejected membership and `Exact`/`Impossible` physical-source proof as applicable, full DuckDB source/terminal oracle when executable, and representable SQL/dbt/ODCS adapter plus 13-dialect parser equivalence coverage. Conditional cells need a documented parser/runtime boundary, typed `Residual` or justified `Impossible`, named owner, and explicit release disposition, **not a shortcut for missing implementation**. Sign off AC #1..#6 only after all required cells and final CI are verified. Do not promote this child to release approval or silently amend parent acceptance criteria.
+
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
