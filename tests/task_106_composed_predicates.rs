@@ -1821,34 +1821,50 @@ fn overlapping_filtered_joins_reconcile_one_shared_physical_source() {
         ],
         "postgresql",
     );
-    let goals = [
-        (bundle.layers()[0].id(), 2),
-        (bundle.layers()[1].id(), 2),
-    ];
+    let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
     let plan = physical_joint_row_count_plan(&bundle, &goals);
     let WitnessDirection::Feasible(cases) = plan else {
         panic!("overlapping joins must jointly reconcile source-row truths: {plan:?}");
     };
-    assert!(cases.iter().any(|case| {
-        let closures = case.obligations().iter().filter(|item| {
-            matches!(item, WitnessObligation::ClosedWorld { .. })
-        }).count();
-        let joins = case.obligations().iter().filter(|item| {
-            matches!(item, WitnessObligation::JoinPopulation { closed_world: true, .. })
-        }).count();
-        let shared = case.obligations().iter().filter(|item| {
-            matches!(
-                item,
-                WitnessObligation::Rows {
-                    boundary,
-                    predicate: WitnessFormula::All(parts),
-                    closed_world: true,
-                    ..
-                } if boundary.relation() == "l" && parts.len() == 2
-            )
-        }).count();
-        closures == 3 && joins == 2 && shared == 1
-    }), "each shared physical row must satisfy both typed filters");
+    assert!(
+        cases.iter().any(|case| {
+            let closures = case
+                .obligations()
+                .iter()
+                .filter(|item| matches!(item, WitnessObligation::ClosedWorld { .. }))
+                .count();
+            let joins = case
+                .obligations()
+                .iter()
+                .filter(|item| {
+                    matches!(
+                        item,
+                        WitnessObligation::JoinPopulation {
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                })
+                .count();
+            let shared = case
+                .obligations()
+                .iter()
+                .filter(|item| {
+                    matches!(
+                        item,
+                        WitnessObligation::Rows {
+                            boundary,
+                            predicate: WitnessFormula::All(parts),
+                            closed_world: true,
+                            ..
+                        } if boundary.relation() == "l" && parts.len() == 2
+                    )
+                })
+                .count();
+            closures == 3 && joins == 2 && shared == 1
+        }),
+        "each shared physical row must satisfy both typed filters"
+    );
 
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(
@@ -1882,10 +1898,7 @@ fn conflicting_overlapping_filtered_join_populations_are_not_fabricated() {
     );
     let plan = physical_joint_row_count_plan(
         &bundle,
-        &[
-            (bundle.layers()[0].id(), 2),
-            (bundle.layers()[1].id(), 2),
-        ],
+        &[(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)],
     );
     assert!(
         !matches!(plan, WitnessDirection::Feasible(_)),
@@ -1962,42 +1975,48 @@ fn identical_group_operator_histograms_are_shared_once_across_terminals() {
         ],
         "postgresql",
     );
-    let goals = [
-        (bundle.layers()[0].id(), 2),
-        (bundle.layers()[1].id(), 2),
-    ];
+    let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
     let result = physical_joint_row_count_plan(&bundle, &goals);
     let WitnessDirection::Feasible(cases) = result else {
         panic!("identical grouping populations must share one physical input: {result:?}");
     };
-    assert!(cases.iter().any(|case| {
-        case.obligations()
-            .iter()
-            .filter(|obligation| matches!(obligation, WitnessObligation::OperatorPopulation { .. }))
-            .count()
-            == 1
-            && case
-                .obligations()
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations()
                 .iter()
-                .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+                .filter(|obligation| {
+                    matches!(obligation, WitnessObligation::OperatorPopulation { .. })
+                })
                 .count()
                 == 1
-            && case
-                .obligations()
-                .iter()
-                .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
-                .count()
-                == 2
-    }), "one physical grouping histogram supports two output goals");
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| {
+                        matches!(obligation, WitnessObligation::ClosedWorld { .. })
+                    })
+                    .count()
+                    == 1
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                    .count()
+                    == 2
+        }),
+        "one physical grouping histogram supports two output goals"
+    );
 
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (0),(1);")
         .expect("group inputs");
-    let count: i64 = db.query_row(
-        "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM t GROUP BY a)",
-        [],
-        |row| row.get(0),
-    ).unwrap();
+    let count: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM t GROUP BY a)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
     assert_eq!(count, 2);
 }
 
@@ -2010,33 +2029,37 @@ fn distinct_group_keys_share_one_joint_source_assignment() {
         ],
         "postgresql",
     );
-    let goal = [
-        (bundle.layers()[0].id(), 2),
-        (bundle.layers()[1].id(), 2),
-    ];
+    let goal = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
     let plan = physical_joint_row_count_plan(&bundle, &goal);
     let WitnessDirection::Feasible(cases) = plan else {
         panic!("two independent distinct group keys can be assigned to one bag: {plan:?}");
     };
-    assert!(cases.iter().any(|case| {
-        case.obligations()
-            .iter()
-            .filter(|obligation| matches!(obligation, WitnessObligation::OperatorPopulation { .. }))
-            .count()
-            == 2
-            && case
-                .obligations()
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations()
                 .iter()
-                .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
-                .count()
-                == 1
-            && case
-                .obligations()
-                .iter()
-                .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                .filter(|obligation| {
+                    matches!(obligation, WitnessObligation::OperatorPopulation { .. })
+                })
                 .count()
                 == 2
-    }), "both group histograms refer to one physical t relation");
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| {
+                        matches!(obligation, WitnessObligation::ClosedWorld { .. })
+                    })
+                    .count()
+                    == 1
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                    .count()
+                    == 2
+        }),
+        "both group histograms refer to one physical t relation"
+    );
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -2063,10 +2086,7 @@ fn uncorrelated_nonunit_group_histograms_stay_residual() {
     );
     let plan = physical_joint_row_count_plan(
         &bundle,
-        &[
-            (bundle.layers()[0].id(), 2),
-            (bundle.layers()[1].id(), 1),
-        ],
+        &[(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 1)],
     );
     assert!(
         !matches!(plan, WitnessDirection::Feasible(_)),
@@ -2083,31 +2103,39 @@ fn join_population_and_group_of_same_key_share_one_complete_source_bag() {
         ],
         "postgresql",
     );
-    let goals = [
-        (bundle.layers()[0].id(), 2),
-        (bundle.layers()[1].id(), 2),
-    ];
+    let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
     let plan = physical_joint_row_count_plan(&bundle, &goals);
     let WitnessDirection::Feasible(cases) = plan else {
         panic!("distinct matched join keys certify exactly two singleton groups: {plan:?}");
     };
-    assert!(cases.iter().any(|case| {
-        case.obligations().iter().filter(|obligation| {
-            matches!(obligation, WitnessObligation::ClosedWorld { .. })
-        }).count() == 2
-            && case.obligations().iter().any(|obligation| {
-                matches!(
-                    obligation,
-                    WitnessObligation::JoinPopulation { closed_world: true, .. }
-                )
-            })
-            && case.obligations().iter().any(|obligation| {
-                matches!(obligation, WitnessObligation::OperatorPopulation { .. })
-            })
-            && case.obligations().iter().filter(|obligation| {
-                matches!(obligation, WitnessObligation::OutputRows { .. })
-            }).count() == 2
-    }), "both operators share l's DISTINCT key histogram");
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations()
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+                .count()
+                == 2
+                && case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::JoinPopulation {
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                })
+                && case.obligations().iter().any(|obligation| {
+                    matches!(obligation, WitnessObligation::OperatorPopulation { .. })
+                })
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                    .count()
+                    == 2
+        }),
+        "both operators share l's DISTINCT key histogram"
+    );
 
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
@@ -2136,10 +2164,7 @@ fn grouping_a_non_join_key_does_not_inherit_join_key_uniqueness() {
     );
     let result = physical_joint_row_count_plan(
         &bundle,
-        &[
-            (bundle.layers()[0].id(), 2),
-            (bundle.layers()[1].id(), 2),
-        ],
+        &[(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)],
     );
     assert!(
         !matches!(result, WitnessDirection::Impossible),
