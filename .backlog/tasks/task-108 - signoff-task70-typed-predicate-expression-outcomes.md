@@ -40,6 +40,17 @@ Independent parent-criteria signoff after all TASK-101..107 implementation PRs a
 - [ ] #5 Re-run complete CI (fmt, strict Clippy, tests, docs, no-default-features, dbt E2E and active protocol JSON schema snapshots), update code map, docs/coverage-manifest and TASK-66/88/89/91 handoffs. Only then check all original TASK-70 AC and mark parent Done; TASK-91/3.0.0 release remains blocked until its separate signoff.
 <!-- AC:END -->
 
+
+## Reviewed finite acceptance contract (2026-10-16)
+
+The existing **AC #1..#5 remain required**. Interpret and verify them through the frozen TASK-108 row of [the backlog acceptance contracts](../../docs/backlog-acceptance-contracts.md), additive to the approved TASK-66 feature/dialect inventory. This specifies a finite **minimum exactness floor**, not permission to omit named feature families or mark unimplemented mandatory cases `Residual`.
+
+1. **Mandatory exact core:** Independent audit: TASK-101..107 Done/merged, original TASK-70 six criteria each mapped to tests/modules/manifest rows and all promised families accounted for.
+2. **Mandatory cross-operator / adapter evidence:** Evidence: representative exact, impossible and residual expression/physical outcome under SQL/dbt/ODCS, all 13 parser paths and reproducible DuckDB negative/domain oracles.
+3. **Conditional and non-exact boundary:** Gate: full CI and schema snapshots; TASK-70 can close only after all original AC proved; TASK-88/89/91 independent release blockers remain open until their own checks.
+
+**Acceptance sign-off:** Before implementation, register each original named AC variant as a versioned feature/dialect cell and freeze fixture IDs in `docs/coverage-manifest.json`. Every mandatory core cell needs typed output domains (including NULL and interval inclusivity), positive/rejected membership and `Exact`/`Impossible` physical-source proof as applicable, complete DuckDB source/terminal oracles where executable, and representable SQL/dbt/ODCS parity plus 13-dialect parser equivalence evidence. Conditional cells need a documented parser/runtime boundary, typed `Residual` or justified `Impossible`, named owner, and explicit release disposition, **not a shortcut for missing implementation**. Sign off AC #1..#5 only after required cells and final CI are verified. Do not approve independent release gates through this task.
+
 ## Implementation and verification
 
 - **Parent:** [TASK-70](task-70%20-%20solve-expression-and-predicate-variants.md), still **In Progress** until TASK-108 verifies all six original acceptance criteria.
