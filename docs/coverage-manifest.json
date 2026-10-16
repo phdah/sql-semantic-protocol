@@ -229,7 +229,7 @@
       {
         "family": "computed_join_group_write_expressions",
         "status": "bounded_composed_exact_with_computed_residual",
-        "scope": "typed single-source filters conjoin across transparent layers, filtered single-layer INNER join keys and grouped HAVING output domains compose; computed projections across materialization boundaries stay explicit residual",
+        "scope": "typed single-source filters conjoin across transparent layers, filtered INNER join keys and grouped HAVING output domains compose; certified lossless signed widening casts admit bounded physical TRUE/NOT TRUE inversion with per-hop type/NULL checks; general computed projections, unsupported aggregates and writes remain explicit semantic residuals",
         "evidence": "tests/task_106_composed_predicates.rs; src/composition.rs; docs/semantics.md",
         "release_blocking": true,
         "implementation_task": "TASK-106"
@@ -237,7 +237,7 @@
       {
         "family": "whole_graph_physical_realization",
         "status": "bounded_joint_exact_with_general_residual",
-        "scope": "joint TRUE versus NOT TRUE physical-source proofs across filtered transparent chains including contradictory impossibility with feasible rejection and DuckDB positive/negative oracles; general multi-operator DAGs stay residual",
+        "scope": "joint TRUE versus NOT TRUE physical-source proofs across transparent chains, certified widening projections, contradictory filter impossibility, and equijoin populations sharing complete physical leaves with independent non-key negative terminal filters; closed-world ordered INSERT UPDATE MERGE separately verified; general multi-operator DAGs and correlated key predicates stay residual",
         "evidence": "tests/task_106_composed_predicates.rs; src/physical_realization/graph.rs; docs/semantics.md",
         "release_blocking": true,
         "implementation_task": "TASK-106"
