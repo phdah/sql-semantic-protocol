@@ -936,7 +936,12 @@ also require catalog-certified *signed integer* column widths: numeric-looking
 bounds alone are not proof that an underlying DECIMAL or TEXT CAST is lossless.
 Computed CAST operand lineage is retained through the canonical dependency graph. This includes an explicit widening CAST followed
 by a constant affine addition or subtraction when its full catalog-attested
-source range fits the declared output width. Canonical integer comparisons,
+source range fits the declared output width. Nested constant-affine
+`CAST`/`+`/`-` spines and recast-free references to computed producer
+outputs transport finite value domains stepwise at each hop's execution
+width: additions keep their left operand width, casts must not narrow the
+certified flowing width, and every hop fail-closes on overflow. Narrowing
+casts, non-constant operands and unknown producers stay residual. Canonical integer comparisons,
 NULL tests and their same-row AND/OR expressions are inverted with their
 physical integer bounds rechecked for SQL TRUE versus NOT TRUE. An implicit
 arithmetic cast, potential overflow, lossy conversion, LIMIT/DISTINCT or
@@ -968,7 +973,12 @@ satisfiable and their key-population patterns agree. A distinct-matched
 join's certified physical key histogram additionally supports a GROUP BY
 on that same physical key, with one group per row. Independently certified
 one-row-per-key grouping populations on distinct group columns can coexist
-on one source bag. Other overlapping physical sources with incompatible
+on one source bag, as can identical non-singleton group histograms through
+block-diagonal key pairing. Singleton groups additionally share one bag
+with a same-key partitioned `ROW_NUMBER` (each partition holds exactly one
+row) and with an unpartitioned `ROW_NUMBER` whose certified limit covers
+all rows. Different group multiplicities, predecessor-requiring ranks and
+other overlapping physical sources with incompatible
 filters or unreconciled group/join histograms remain residual, not
 optimistically combined.
 

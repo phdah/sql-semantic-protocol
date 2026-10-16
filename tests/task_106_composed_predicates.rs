@@ -668,6 +668,196 @@ fn direct_sql_and_dbt_agree_on_composed_range_filters() {
 }
 
 #[test]
+fn parser_capable_dialects_share_nested_affine_domains() {
+    let mut expected = None;
+    let mut capable = 0;
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).expect("registered dialect");
+        let queries = [
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT (CAST(a AS BIGINT) + 1) + 2 AS v FROM stage",
+        ];
+        let sources = queries
+            .iter()
+            .map(|query| SqlInput::inline(*query))
+            .collect::<Vec<_>>();
+        let ids = (0..queries.len())
+            .map(|index| format!("q-{index}"))
+            .collect::<Vec<_>>();
+        let inputs = sources
+            .iter()
+            .zip(&ids)
+            .map(|(source, id)| ConfiguredSqlInput::new(id, source, name, dialect.as_ref()))
+            .collect::<Vec<_>>();
+        match analyze_configured_inputs_with_catalog(&inputs, &catalog()) {
+            Ok(bundle) => {
+                let ComposedSemantics::Resolved(semantics) =
+                    bundle.layers()[mart_layer(&bundle)].composed_semantics()
+                else {
+                    panic!("{name}: mart must resolve");
+                };
+                let value = semantics
+                    .output()
+                    .columns()
+                    .iter()
+                    .find(|column| column.name() == "v")
+                    .expect("nested affine output");
+                assert_range_bounds(value.domain(), name, "8", "13");
+                let actual = value.domain().clone();
+                if let Some(expected) = &expected {
+                    assert_eq!(&actual, expected, "{name}: canonical domain drift");
+                } else {
+                    expected = Some(actual);
+                }
+                capable += 1;
+            }
+            Err(ConfiguredInputAnalysisError::Input(inner))
+                if matches!(inner.error(), Error::Parse(_)) =>
+            {
+                // Parser rejection is a documented boundary, not a proof.
+            }
+            Err(error) => panic!("{name}: nested affine chain must analyze: {error}"),
+        }
+    }
+    assert!(capable > 0, "at least one dialect must accept the chain");
+}
+
+#[test]
+fn parser_capable_dialects_share_identical_group_joint_plans() {
+    let mut expected = None;
+    let mut capable = 0;
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).expect("registered dialect");
+        let queries = [
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
+            "SELECT b, COUNT(*) AS n FROM t GROUP BY b HAVING COUNT(*) >= 2",
+        ];
+        let sources = queries
+            .iter()
+            .map(|query| SqlInput::inline(*query))
+            .collect::<Vec<_>>();
+        let ids = (0..queries.len())
+            .map(|index| format!("q-{index}"))
+            .collect::<Vec<_>>();
+        let inputs = sources
+            .iter()
+            .zip(&ids)
+            .map(|(source, id)| ConfiguredSqlInput::new(id, source, name, dialect.as_ref()))
+            .collect::<Vec<_>>();
+        match analyze_configured_inputs_with_catalog(&inputs, &catalog()) {
+            Ok(bundle) => {
+                let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
+                let plan = physical_joint_row_count_plan(&bundle, &goals);
+                let WitnessDirection::Feasible(_) = &plan else {
+                    panic!("{name}: identical histograms must share one bag: {plan:?}");
+                };
+                let actual = plan.clone();
+                if let Some(expected) = &expected {
+                    assert_eq!(&actual, expected, "{name}: canonical joint plan drift");
+                } else {
+                    expected = Some(actual);
+                }
+                capable += 1;
+            }
+            Err(ConfiguredInputAnalysisError::Input(inner))
+                if matches!(inner.error(), Error::Parse(_)) =>
+            {
+                // Parser rejection is a documented boundary, not a proof.
+            }
+            Err(error) => panic!("{name}: grouped layers must analyze: {error}"),
+        }
+    }
+    assert!(capable > 0, "at least one dialect must accept the layers");
+}
+
+#[test]
+fn direct_sql_and_dbt_agree_on_nested_affine_domains() {
+    const SQL: &str = "SELECT (CAST(amount AS BIGINT) + 1) + 2 AS v FROM warehouse.raw.orders WHERE amount BETWEEN 5 AND 10";
+    let mut manifest: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
+    let manifest = sql_semantic_protocol::parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let dbt_catalog =
+        sql_semantic_protocol::parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json"))
+            .unwrap();
+    let dialect = sql_semantic_protocol::dialect_from_name("postgresql").unwrap();
+    let from_dbt = sql_semantic_protocol::analyze_dbt_artifacts(
+        &manifest,
+        &dbt_catalog,
+        "postgresql",
+        dialect.as_ref(),
+    )
+    .unwrap();
+
+    let physical = RelationSchema::new(
+        "warehouse.raw.orders",
+        vec![
+            SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap();
+    let direct_catalog = RelationCatalog::from_schemas(&[physical]).unwrap();
+    let source = SqlInput::inline(SQL);
+    let from_sql = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new(
+            "direct",
+            &source,
+            "postgresql",
+            dialect.as_ref(),
+        )],
+        &direct_catalog,
+    )
+    .unwrap();
+    let domain = |bundle: &AnalysisBundle| {
+        let layer = bundle
+            .layers()
+            .iter()
+            .find(|layer| {
+                layer
+                    .consumes()
+                    .iter()
+                    .any(|consumed| consumed == "warehouse.raw.orders")
+            })
+            .expect("source-consuming layer");
+        let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
+            panic!("resolved layer expected");
+        };
+        semantics
+            .output()
+            .columns()
+            .iter()
+            .find(|column| column.name() == "v")
+            .expect("nested affine output")
+            .domain()
+            .clone()
+    };
+    let dbt = domain(&from_dbt);
+    let direct = domain(&from_sql);
+    assert_eq!(
+        dbt, direct,
+        "dbt artifacts must reuse the canonical affine proof"
+    );
+    // The single-layer BETWEEN expands to an exact finite set here (rather
+    // than the equivalent range the staged chain produces); both are sound,
+    // and the set is the strongest finite outcome.
+    let ValueDomain::Set(set) = &direct else {
+        panic!("nested affine dbt parity: expected finite set domain, got {direct:?}");
+    };
+    assert_eq!(set.mode(), sql_semantic_protocol::SetMode::Include);
+    let mut values = set
+        .values()
+        .iter()
+        .map(|literal| match literal.value() {
+            LiteralValue::Number(number) => number.parse::<i64>().expect("integer set value"),
+            other => panic!("integer set value expected, got {other:?}"),
+        })
+        .collect::<Vec<_>>();
+    values.sort_unstable();
+    assert_eq!(values, vec![8, 9, 10, 11, 12, 13]);
+}
+
+#[test]
 fn duckdb_joint_positive_and_negative_rows_match_composed_filters() {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(
