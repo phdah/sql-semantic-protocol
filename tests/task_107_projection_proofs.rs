@@ -10,8 +10,8 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, BooleanWitnessDirection,
-    ComposedSemantics, ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    ValueDomain, LiteralValue, SetMode,
+    ComposedSemantics, ConfiguredSqlInput, LiteralValue, RelationCatalog, RelationSchema,
+    SchemaColumn, SetMode, SqlInput, ValueDomain,
 };
 
 const FREEZE: &str = include_str!("../docs/task-107-acceptance-freeze.json");
@@ -92,7 +92,11 @@ fn five_projection_families_have_typed_domains_and_independent_two_direction_nul
         let ValueDomain::Set(values) = projected.output().columns()[0].domain() else {
             panic!("{id}: finite input must produce exact typed finite output domain");
         };
-        assert_eq!(values.mode(), SetMode::Include, "{id}: output inclusion set");
+        assert_eq!(
+            values.mode(),
+            SetMode::Include,
+            "{id}: output inclusion set"
+        );
         let expected_values: &[LiteralValue] = match id {
             "E107-V028" => &[
                 LiteralValue::Number("1".into()),
@@ -121,10 +125,17 @@ fn five_projection_families_have_typed_domains_and_independent_two_direction_nul
             ],
             _ => unreachable!("frozen inventory"),
         };
-        assert_eq!(values.values().len(), expected_values.len(), "{id}: set cardinality");
+        assert_eq!(
+            values.values().len(),
+            expected_values.len(),
+            "{id}: set cardinality"
+        );
         for expected in expected_values {
             assert!(
-                values.values().iter().any(|value| value.value() == expected),
+                values
+                    .values()
+                    .iter()
+                    .any(|value| value.value() == expected),
                 "{id}: finite domain omitted {expected:?}"
             );
         }
