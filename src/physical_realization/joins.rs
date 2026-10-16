@@ -909,6 +909,133 @@ fn joined_source_true_filters(
     })
 }
 
+/// Correlate a DISTINCT-MATCHED join population with grouping of the
+/// same physical equality key. The join already fixes every input key to
+/// a distinct 0..N-1 value; grouping that key emits exactly N singleton
+/// groups on the *same* closed bag. Other aggregates or grouping keys must
+/// be proved by a different operator correlation and stay residual.
+pub(super) fn joint_join_and_distinct_group_goals(
+    bundle: &AnalysisBundle,
+    goals: &[(&str, u64)],
+) -> Option<WitnessDirection> {
+    use crate::outcome_proofs::OutcomeWitness;
+
+    if goals.len() < 2 {
+        return None;
+    }
+    let join_goals = goals
+        .iter()
+        .filter_map(|&(id, rows)| {
+            physical_join_population_count_plan(bundle, id, rows)
+                .is_some()
+                .then_some((id, rows))
+        })
+        .collect::<Vec<_>>();
+    let [(join_id, join_rows)] = join_goals.as_slice() else {
+        return None;
+    };
+    let WitnessDirection::Feasible(join_cases) =
+        physical_join_population_count_plan(bundle, join_id, *join_rows)?
+    else {
+        return None;
+    };
+    let mut groups = Vec::new();
+    for &(id, rows) in goals {
+        if id == *join_id {
+            continue;
+        }
+        let (witness, counts, _) = physical_operator_population_case(bundle, id, rows)?;
+        let OutcomeWitness::Groups {
+            relation,
+            key,
+            groups: count,
+            rows_per_group: 1,
+        } = &witness
+        else {
+            return None;
+        };
+        if *count != rows || counts.get(relation) != Some(&rows) || counts.len() != 1 {
+            return None;
+        }
+        groups.push((id, rows, relation.clone(), key.clone(), witness));
+    }
+    if groups.is_empty() {
+        return None;
+    }
+
+    let mut cases = Vec::new();
+    for join_case in join_cases {
+        let Some((
+            left_key,
+            right_key,
+            left_rows,
+            right_rows,
+        )) = join_case.obligations().iter().find_map(|obligation| {
+            if let WitnessObligation::JoinPopulation {
+                left_key,
+                right_key,
+                left_rows,
+                right_rows,
+                pattern: JoinPopulationPattern::DistinctMatched,
+                closed_world: true,
+                ..
+            } = obligation {
+                Some((left_key, right_key, *left_rows, *right_rows))
+            } else {
+                None
+            }
+        }) else {
+            continue;
+        };
+        let mut obligations = join_case.obligations().to_vec();
+        let mut valid = true;
+        for (id, rows, source, key, witness) in &groups {
+            let owned = if left_key == key {
+                *left_rows == *rows
+            } else if right_key == key {
+                *right_rows == *rows
+            } else {
+                false
+            };
+            if !owned
+                || key.relation() != Some(source)
+                || !join_case.obligations().iter().any(|obligation| {
+                    matches!(
+                        obligation,
+                        WitnessObligation::ClosedWorld {
+                            boundary,
+                            coverage: ClosedWorldCoverage::EntireRelation
+                        } if boundary.kind() == GroupBoundaryKind::Physical
+                            && boundary.relation() == source
+                    )
+                })
+            {
+                valid = false;
+                break;
+            }
+            let population = WitnessObligation::OperatorPopulation {
+                witness: witness.clone(),
+            };
+            if !obligations.contains(&population) {
+                obligations.push(population);
+            }
+            obligations.push(WitnessObligation::OutputRows {
+                layer_id: id.to_string(),
+                bounds: CountBounds::new(*rows, Some(*rows))?,
+            });
+        }
+        if valid {
+            if let Some(case) = WitnessCase::new(obligations, ProofStrength::Sufficient) {
+                cases.push(case);
+            }
+        }
+    }
+    Some(
+        WitnessDirection::feasible(cases)
+            .unwrap_or_else(|| residual(PhysicalProofGap::UnprovedCrossRowCorrelation)),
+    )
+}
+
 /// Compose closed physical key populations across multiple terminal goals.
 /// Never cross-product independently feasible examples unless every selected
 /// case can share identical source-row counts and compatible key assignments.
