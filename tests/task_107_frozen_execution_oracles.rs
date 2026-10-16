@@ -303,18 +303,89 @@ fn frozen_output_projections_have_independent_null_failure_and_exact_value_oracl
     // physical source instances. A NULL output is distinct from an absent row.
     let cases: [(&str, &[Option<i64>]); 6] = [
         ("E107-V027", &[Some(3), Some(4), Some(5)]),
-        ("E107-V028", &[None, Some(0), Some(1), Some(2), Some(3), Some(4), Some(-1), None, None]),
-        ("E107-V029", &[Some(0), Some(0), Some(0), Some(2), Some(3), Some(4), Some(0), Some(0), Some(2147483647)]),
-        ("E107-V030", &[Some(0), Some(0), Some(1), Some(2), Some(3), Some(4), Some(-1), Some(-2147483648), Some(2147483647)]),
-        ("E107-V031", &[None, Some(0), None, Some(2), Some(3), Some(4), Some(-1), Some(-2147483648), Some(2147483647)]),
-        ("E107-V033", &[None, Some(0), Some(3), Some(6), Some(9), Some(12), Some(-3), Some(-6442450944), Some(6442450941)]),
+        (
+            "E107-V028",
+            &[
+                None,
+                Some(0),
+                Some(1),
+                Some(2),
+                Some(3),
+                Some(4),
+                Some(-1),
+                None,
+                None,
+            ],
+        ),
+        (
+            "E107-V029",
+            &[
+                Some(0),
+                Some(0),
+                Some(0),
+                Some(2),
+                Some(3),
+                Some(4),
+                Some(0),
+                Some(0),
+                Some(2147483647),
+            ],
+        ),
+        (
+            "E107-V030",
+            &[
+                Some(0),
+                Some(0),
+                Some(1),
+                Some(2),
+                Some(3),
+                Some(4),
+                Some(-1),
+                Some(-2147483648),
+                Some(2147483647),
+            ],
+        ),
+        (
+            "E107-V031",
+            &[
+                None,
+                Some(0),
+                None,
+                Some(2),
+                Some(3),
+                Some(4),
+                Some(-1),
+                Some(-2147483648),
+                Some(2147483647),
+            ],
+        ),
+        (
+            "E107-V033",
+            &[
+                None,
+                Some(0),
+                Some(3),
+                Some(6),
+                Some(9),
+                Some(12),
+                Some(-3),
+                Some(-6442450944),
+                Some(6442450941),
+            ],
+        ),
     ];
     for (id, expected) in cases {
-        let fixture = freeze["inventory_cells"].as_array().unwrap()
-            .iter().find(|cell| cell["id"] == id).expect("frozen output variant");
+        let fixture = freeze["inventory_cells"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|cell| cell["id"] == id)
+            .expect("frozen output variant");
         assert_eq!(fixture["classification"], "exact_required");
         let sql = format!("{} ORDER BY id", fixture["sql_shape"].as_str().unwrap());
-        let mut stmt = db.prepare(&sql).unwrap_or_else(|error| panic!("{id}: {sql}: {error}"));
+        let mut stmt = db
+            .prepare(&sql)
+            .unwrap_or_else(|error| panic!("{id}: {sql}: {error}"));
         let results = stmt
             .query_map([], |row| row.get::<_, Option<i64>>(0))
             .unwrap_or_else(|error| panic!("{id}: {sql}: {error}"))
