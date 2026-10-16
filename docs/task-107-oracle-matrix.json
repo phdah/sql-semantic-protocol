@@ -1,0 +1,203 @@
+{
+  "version": 1,
+  "owner": "TASK-107",
+  "status": "implementation_in_progress",
+  "release_approved": false,
+  "baseline": "b75b16a29234fc207af0014bf662d39223b2502f",
+  "scope": "Incremental oracle registrations. This is NOT a completed inventory of all original TASK-107 acceptance cells.",
+  "acceptance_criteria_status": {
+    "1": "in_progress",
+    "2": "in_progress",
+    "3": "in_progress",
+    "4": "in_progress",
+    "5": "not_verified"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "oracle_seeds": [
+    0,
+    1,
+    42,
+    20261016
+  ],
+  "oracle_source": "tests/task_107_expression_oracles.rs::seeded_values",
+  "oracle_runtime": "DuckDB only. This is not a native execution certification for any other dialect.",
+  "outstanding": [
+    "Expand the frozen matrix to every advertised exact expression variant in TASK-101..106, with typed independent source/output/witness fixtures.",
+    "Record exhaustive per-feature per-dialect parse/equivalence outcomes, including dialect/session assumptions, without treating parser acceptance as engine execution.",
+    "Extend randomized property oracles from bounded TRUE/NOT TRUE to full physical-source and negative terminal outputs, overflow, type boundary and residual reasons.",
+    "Execute compiled dbt Core E2E and ODCS/source-independent parity for every representable matrix family, not only representative regression cases.",
+    "Audit schema/API/examples/docs and all mandatory coverage cells; run full fmt/clippy/test/doc, no-default-features and dbt E2E CI."
+  ],
+  "fixtures": [
+    {
+      "id": "E107-ARITH-001",
+      "family": "signed_arithmetic_and_cast",
+      "classification": "exact_required",
+      "test_file": "tests/task_101_arithmetic.rs",
+      "test_name": "signed_multiplication_inverts_rounded_thresholds",
+      "expected_domain": "typed signed integer bounds after checked widening/multiplication",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-ARITH-002",
+      "family": "signed_arithmetic_and_cast",
+      "classification": "exact_required",
+      "test_file": "tests/task_101_arithmetic.rs",
+      "test_name": "catalog_decimal_finite_operations_have_precision_scale_evidence",
+      "expected_domain": "finite exact decimal projection domains with precision/scale",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-COMPUTED-001",
+      "family": "case_coalesce_nullif",
+      "classification": "exact_required",
+      "test_file": "tests/task_102_computed_expressions.rs",
+      "test_name": "computed_integer_comparisons_preserve_true_and_unknown_regions",
+      "expected_domain": "guard-refined finite computed integer domains",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-COMPUTED-002",
+      "family": "case_coalesce_nullif",
+      "classification": "exact_required",
+      "test_file": "tests/task_102_computed_expressions.rs",
+      "test_name": "coalesce_with_null_free_fallback_proves_impossible_and_trivially_true",
+      "expected_domain": "NULL excluded from COALESCE with non-NULL fallback",
+      "positive": "impossible",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-CORRELATED-001",
+      "family": "correlated_cross_column",
+      "classification": "exact_required",
+      "test_file": "tests/task_103_cross_column.rs",
+      "test_name": "strict_and_nonstrict_order_cycles_are_impossible",
+      "expected_domain": "empty domain on impossible cyclic inequalities",
+      "positive": "impossible",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-CORRELATED-002",
+      "family": "correlated_cross_column",
+      "classification": "exact_required",
+      "test_file": "tests/task_103_cross_column.rs",
+      "test_name": "mixed_disjunctions_share_one_conjunctive_assignment",
+      "expected_domain": "coupled source-row constraints without independent-branch fabrication",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-PATTERN-001",
+      "family": "pattern_collation_nullsafe",
+      "classification": "exact_required",
+      "test_file": "tests/task_104_pattern_collation_nullsafe.rs",
+      "test_name": "exact_like_without_wildcard_is_certified_string_equality",
+      "expected_domain": "typed text equality under certified comparison settings",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-PATTERN-002",
+      "family": "pattern_collation_nullsafe",
+      "classification": "conditional",
+      "test_file": "tests/task_104_pattern_collation_nullsafe.rs",
+      "test_name": "cross_text_column_equality_is_exact_only_when_attested",
+      "expected_domain": "text comparison domains restricted by attested binary collation and no padding",
+      "positive": "conditional_exact",
+      "not_true": "conditional_exact",
+      "boundary": "Unknown collation/character-padding settings do not justify binary equality.",
+      "followup_owner": "TASK-88"
+    },
+    {
+      "id": "E107-CALENDAR-001",
+      "family": "temporal_json_vendor",
+      "classification": "exact_required",
+      "test_file": "tests/task_105_temporal_json_vendor.rs",
+      "test_name": "explicit_date_literal_identity_cast_has_an_exact_calendar_domain",
+      "expected_domain": "singleton Gregorian DATE domain with validated leap day",
+      "positive": "not_applicable_projection",
+      "not_true": "not_applicable_projection"
+    },
+    {
+      "id": "E107-JSON-001",
+      "family": "temporal_json_vendor",
+      "classification": "conditional",
+      "test_file": "tests/task_105_temporal_json_vendor.rs",
+      "test_name": "nested_comparisons_and_path_null_tests_stay_residual_despite_schema_evidence",
+      "expected_domain": "explicit unknown domain for unsupported nested paths",
+      "positive": "residual",
+      "not_true": "residual",
+      "boundary": "Unavailable portable JSON missing-path and nested comparison semantics.",
+      "followup_owner": "TASK-88"
+    },
+    {
+      "id": "E107-COMPOSE-001",
+      "family": "composed_relational_predicates",
+      "classification": "exact_required",
+      "test_file": "tests/task_106_composed_predicates.rs",
+      "test_name": "filtered_chain_conjoins_typed_range_filters",
+      "expected_domain": "composed interval intersection preserving inclusivity",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-COMPOSE-002",
+      "family": "composed_relational_predicates",
+      "classification": "exact_required",
+      "test_file": "tests/task_106_composed_predicates.rs",
+      "test_name": "filtered_join_and_negative_terminals_share_one_complete_assignment",
+      "expected_domain": "joint closed physical-source rows and terminal membership",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-ORACLE-001",
+      "family": "composed_relational_predicates",
+      "classification": "exact_required",
+      "test_file": "tests/task_107_expression_oracles.rs",
+      "test_name": "multi_seed_duckdb_true_and_not_true_oracles_check_exact_impossible_and_null",
+      "expected_domain": "bounded seeded integer/null/duplicate source rows and complete three-valued partition",
+      "positive": "exact_or_impossible_per_case",
+      "not_true": "exact_or_impossible_per_case"
+    },
+    {
+      "id": "E107-ADAPTER-001",
+      "family": "case_coalesce_nullif",
+      "classification": "exact_required",
+      "test_file": "tests/task_107_expression_oracles.rs",
+      "test_name": "compiled_dbt_and_catalog_match_direct_sql_typed_expression_semantics",
+      "expected_domain": "canonical SQL/dbt output and source typed domains are equal",
+      "positive": "exact_or_impossible_per_case",
+      "not_true": "exact_or_impossible_per_case"
+    },
+    {
+      "id": "E107-DIALECT-001",
+      "family": "pattern_collation_nullsafe",
+      "classification": "conditional",
+      "test_file": "tests/task_107_expression_oracles.rs",
+      "test_name": "shared_expression_sql_has_parser_classifications_for_all_13_dialects",
+      "expected_domain": "identical canonical protocol JSON on parser-equivalent ASTs",
+      "positive": "parser_classified",
+      "not_true": "parser_classified",
+      "boundary": "Dialect parser acceptance is not vendor runtime equivalence.",
+      "followup_owner": "TASK-88"
+    }
+  ]
+}
