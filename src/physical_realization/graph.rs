@@ -511,6 +511,94 @@ fn widened_or_copied_source(
     }
 }
 
+/// Transportable affine output: a total explicit signed widening CAST
+/// followed by an integer addition or subtraction.
+///
+/// `CAST(a AS BIGINT) + k` is total only if every value of the
+ /// catalog-attested source type fits the declared output width after adding
+/// `k`. An implicit arithmetic coercion cannot substitute for the explicit
+/// CAST because overflow could occur before materialization.
+fn total_affine_source(
+    bundle: &AnalysisBundle,
+    relation: &str,
+    output: &crate::protocol::OutputColumn,
+    query: &QueryStatement,
+) -> Option<(crate::protocol::ColumnRef, i64)> {
+    use crate::data_type::DataType;
+    use crate::protocol::{BinaryOperator, Expression, LiteralType, LiteralValue};
+
+    fn signed_width(value: &DataType) -> Option<u16> {
+        match value {
+            DataType::SignedInteger { bits: Some(bits) } if *bits <= 64 && *bits > 0 => {
+                Some(*bits)
+            }
+            DataType::Nullable(inner) => signed_width(inner),
+            _ => None,
+        }
+    }
+    fn signed_limits(bits: u16) -> Option<(i128, i128)> {
+        let power = 1_i128.checked_shl(u32::from(bits.checked_sub(1)?))?;
+        Some((-power, power - 1))
+    }
+
+    let [input] = query.sources() else {
+        return None;
+    };
+    let Expression::Binary(binary) = output.expression() else {
+        return None;
+    };
+    let offset = match binary.operator() {
+        BinaryOperator::Add | BinaryOperator::Subtract => {
+            let Expression::Literal(literal) = binary.right() else {
+                return None;
+            };
+            if literal.literal_type() != LiteralType::Integer {
+                return None;
+            }
+            let LiteralValue::Number(number) = literal.value() else {
+                return None;
+            };
+            let value = number.parse::<i64>().ok()?;
+            if binary.operator() == BinaryOperator::Subtract {
+                value.checked_neg()?
+            } else {
+                value
+            }
+        }
+        _ => return None,
+    };
+    let Expression::SignedIntegerCast(cast) = binary.left() else {
+        return None;
+    };
+    let Expression::Column(column) = cast.expression() else {
+        return None;
+    };
+    let physical = crate::domain::resolve_column(column, query.sources());
+    if physical.relation() != Some(input.name()) {
+        return None;
+    }
+    let from = bundle_column_datatype(bundle, &physical)?;
+    let output_ref = crate::protocol::ColumnRef::new(
+        Some(relation.to_string()),
+        output.name().to_string(),
+    );
+    let to = bundle_column_datatype(bundle, &output_ref)?;
+    if matches!(&from, DataType::Nullable(_)) != matches!(&to, DataType::Nullable(_)) {
+        return None;
+    }
+    let from_bits = signed_width(&from)?;
+    let to_bits = signed_width(&to)?;
+    if from_bits > to_bits || cast.target_bits() != to_bits {
+        return None;
+    }
+    let (minimum, maximum) = signed_limits(from_bits)?;
+    let (output_minimum, output_maximum) = signed_limits(to_bits)?;
+    let transformed_minimum = minimum.checked_add(i128::from(offset))?;
+    let transformed_maximum = maximum.checked_add(i128::from(offset))?;
+    (transformed_minimum >= output_minimum && transformed_maximum <= output_maximum)
+        .then_some((physical, offset))
+}
+
 /// Only complete, unfiltered producer definitions with total projections
 /// are admissible. CAST inversion cannot make a partial DML producer physical.
 fn total_widening_producer(
@@ -537,7 +625,10 @@ fn total_widening_producer(
             .output()
             .columns()
             .iter()
-            .all(|column| widened_or_copied_source(bundle, relation, column, query).is_some())
+            .all(|column| {
+                widened_or_copied_source(bundle, relation, column, query).is_some()
+                    || total_affine_source(bundle, relation, column, query).is_some()
+            })
 }
 
 /// Resolve only those computed materializations whose entire producer chain
@@ -594,6 +685,77 @@ fn resolve_widened_filter_column(
             }
             let physical = widened_or_copied_source(bundle, &canonical, output, query)?;
             resolve_widened_filter_column(bundle, walker, producer.id(), &physical, depth + 1)
+        }
+        _ => None,
+    }
+}
+
+/// Follow a fully certified affine/identity/widening chain back to one
+/// physical column while accumulating its exact signed integer offset.
+/// Unsupported arithmetic, source-state laws and lossy conversions fail closed.
+fn resolve_affine_filter_column(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    consumer_id: &str,
+    column: &crate::protocol::ColumnRef,
+    depth: usize,
+) -> Option<(crate::protocol::ColumnRef, i64)> {
+    if depth > walker.layers.len() {
+        return None;
+    }
+    let layer = walker.layers.get(consumer_id).copied()?;
+    let canonical = layer.canonical_relation(column.relation()?);
+    let edge = bundle
+        .graph()
+        .edges()
+        .iter()
+        .find(|edge| edge.consumer_layer_id() == consumer_id && edge.relation() == canonical)?;
+    match edge.resolution() {
+        RelationResolution::External => Some((
+            crate::protocol::ColumnRef::new(
+                Some(edge.relation().to_string()),
+                column.name().to_string(),
+            ),
+            0,
+        )),
+        RelationResolution::Resolved => {
+            if untransported_materialization_laws(bundle, &canonical) {
+                return None;
+            }
+            let [producer_id] = edge.producer_layer_ids() else {
+                return None;
+            };
+            let node = walker
+                .nodes
+                .iter()
+                .find(|node| node.id() == &PhysicalPlanRef::Layer(producer_id.clone()))?;
+            let producer = walker.layers.get(producer_id.as_str()).copied()?;
+            let query = query_for(bundle, producer)?;
+            if !total_widening_producer(bundle, node, query) {
+                return None;
+            }
+            let mut outputs = query
+                .output()
+                .columns()
+                .iter()
+                .filter(|output| output.name() == column.name());
+            let output = outputs.next()?;
+            if outputs.next().is_some() {
+                return None;
+            }
+            let (upstream, offset) = total_affine_source(bundle, &canonical, output, query)
+                .or_else(|| {
+                    widened_or_copied_source(bundle, &canonical, output, query)
+                        .map(|physical| (physical, 0))
+                })?;
+            let (physical, upstream_offset) = resolve_affine_filter_column(
+                bundle,
+                walker,
+                producer.id(),
+                &upstream,
+                depth + 1,
+            )?;
+            Some((physical, upstream_offset.checked_add(offset)?))
         }
         _ => None,
     }
@@ -716,6 +878,24 @@ pub(super) fn joint_physical_filters(
                         filter.witness().mapped_to_physical_widened(
                             |column| {
                                 resolve_widened_filter_column(
+                                    bundle,
+                                    walker,
+                                    filter.origin_layer_id(),
+                                    column,
+                                    0,
+                                )
+                            },
+                            |column| physical_integer_evidence(schema, column),
+                        )
+                    })
+                    .or_else(|| {
+                        let schema = bundle
+                            .source_schemas()
+                            .iter()
+                            .find(|schema| schema.relation() == source)?;
+                        filter.witness().mapped_to_physical_affine(
+                            |column| {
+                                resolve_affine_filter_column(
                                     bundle,
                                     walker,
                                     filter.origin_layer_id(),
