@@ -2,6 +2,8 @@
 
 This review freezes a **finite verification floor**, not a ceiling on protocol features. It complements the existing acceptance criteria and the TASK-66 feature/dialect inventory. Each task's existing AC remains mandatory; none is waived by this review.
 
+**Snapshot boundary:** Feature-family membership is fixed by this review and the approved `docs/coverage-manifest.json` inventory at baseline commit `b75b16a29234fc207af0014bf662d39223b2502f`. The eventual implementation task registers specific fixture IDs before changing semantics; adding newly discovered SQL/operator variants later does not silently expand that task. Mandatory core families listed here cannot be reclassified as residual solely because implementation is difficult. If the inventory genuinely needs changing, revise the task contract explicitly in a separate reviewed change and retain the required release-blocking richness.
+
 ## Release-quality completion rules
 
 1. **Inventory closure:** Before implementing a task, map every explicitly named operator, syntax variant, proof and adapter in its original AC to a versioned matrix cell: `exact_required`, `conditional` (with evidence prerequisites), or `approved_deferred` (explicit owner, reason, follow-up and release approval). No implicit `where supported` exclusions. Freeze the matrix and review any scope changes.
