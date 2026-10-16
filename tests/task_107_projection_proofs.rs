@@ -17,7 +17,9 @@ use sql_semantic_protocol::{
 const FREEZE: &str = include_str!("../docs/task-107-acceptance-freeze.json");
 
 fn ids(db: &Connection, sql: &str) -> Vec<i64> {
-    let mut statement = db.prepare(sql).unwrap_or_else(|error| panic!("{sql}: {error}"));
+    let mut statement = db
+        .prepare(sql)
+        .unwrap_or_else(|error| panic!("{sql}: {error}"));
     statement
         .query_map([], |row| row.get::<_, i64>(0))
         .unwrap_or_else(|error| panic!("{sql}: {error}"))
@@ -63,16 +65,18 @@ fn five_projection_families_have_typed_domains_and_independent_two_direction_nul
             .expect("frozen projection");
         assert_eq!(fixture["classification"], "exact_required", "{id}");
         assert!(
-            fixture["sql_shape"]
-                .as_str()
-                .unwrap()
-                .contains(expression),
+            fixture["sql_shape"].as_str().unwrap().contains(expression),
             "{id}: frozen SQL no longer exercises the audited expression"
         );
 
         let projection = SqlInput::inline(format!("SELECT {expression} AS v FROM t"));
         let projection_bundle = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("project", &projection, "postgresql", dialect.as_ref())],
+            &[ConfiguredSqlInput::new(
+                "project",
+                &projection,
+                "postgresql",
+                dialect.as_ref(),
+            )],
             &catalog,
         )
         .unwrap_or_else(|error| panic!("{id}: projection: {error}"));
@@ -82,19 +86,26 @@ fn five_projection_families_have_typed_domains_and_independent_two_direction_nul
             panic!("{id}: missing typed projected semantics");
         };
         assert!(
-            !matches!(projected.output().columns()[0].domain(), ValueDomain::Unknown(_)),
+            !matches!(
+                projected.output().columns()[0].domain(),
+                ValueDomain::Unknown(_)
+            ),
             "{id}: claimed mandatory exact projected domain is unknown"
         );
 
         let predicate = format!("({expression}) IS NULL");
         let filter = SqlInput::inline(format!("SELECT a FROM t WHERE {predicate}"));
         let filtered = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("filter", &filter, "postgresql", dialect.as_ref())],
+            &[ConfiguredSqlInput::new(
+                "filter",
+                &filter,
+                "postgresql",
+                dialect.as_ref(),
+            )],
             &catalog,
         )
         .unwrap_or_else(|error| panic!("{id}: {predicate}: {error}"));
-        let ComposedSemantics::Resolved(semantics) =
-            filtered.layers()[0].composed_semantics()
+        let ComposedSemantics::Resolved(semantics) = filtered.layers()[0].composed_semantics()
         else {
             panic!("{id}: unresolved truth proof");
         };
@@ -114,8 +125,7 @@ fn five_projection_families_have_typed_domains_and_independent_two_direction_nul
         );
 
         let true_sql = format!("SELECT id FROM t WHERE {predicate} ORDER BY id");
-        let not_true_sql =
-            format!("SELECT id FROM t WHERE ({predicate}) IS NOT TRUE ORDER BY id");
+        let not_true_sql = format!("SELECT id FROM t WHERE ({predicate}) IS NOT TRUE ORDER BY id");
         assert_eq!(ids(&db, &true_sql), expected_null, "{id}: TRUE bag");
         let true_set: BTreeSet<_> = expected_null.iter().copied().collect();
         let independently_rejected = (1..=9)
