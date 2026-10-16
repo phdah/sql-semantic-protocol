@@ -1734,6 +1734,26 @@ fn total_affine_projection_transports_true_and_not_true_through_materialization(
         "NULL and out-of-range rows must remain SQL NOT TRUE: {plan:?}"
     );
 
+    for producer in [
+        "CREATE TABLE stage AS SELECT CAST(a AS BIGINT) + 1 AS v FROM t LIMIT 1",
+        "CREATE TABLE stage AS SELECT DISTINCT CAST(a AS BIGINT) + 1 AS v FROM t",
+    ] {
+        let shaped_sources = [SqlInput::inline(producer), SqlInput::inline(sql[1])];
+        let shaped_inputs = shaped_sources
+            .iter()
+            .zip(["stage", "mart"])
+            .map(|(source, id)| {
+                ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref())
+            })
+            .collect::<Vec<_>>();
+        let shaped = analyze_configured_inputs_with_catalog(&shaped_inputs, &catalog).unwrap();
+        let result = physical_source_plan(&shaped, shaped.layers()[1].id());
+        assert!(
+            !matches!(result.qualifying(), WitnessDirection::Feasible(_)),
+            "LIMIT or DISTINCT may not be inverted as a complete producer: {result:?}"
+        );
+    }
+
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(
         "CREATE TABLE t(a INTEGER);
