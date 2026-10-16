@@ -606,6 +606,9 @@ fn total_widening_producer(
         return false;
     };
     matches!(node.write_kind(), Some(WriteKind::Definition))
+        // Parser-certified, unlimited bag output: computed expressions must
+        // not bypass DISTINCT/LIMIT/TOP, grouping or sampled table shapes.
+        && query.plain_goal_output_shape()
         && query.sources().len() == 1
         && query.joins().is_empty()
         && query.aggregation().is_none()
