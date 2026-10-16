@@ -13,6 +13,7 @@ Start with the [project README](../README.md) for an overview and first commands
 | [Generator scope sign-off](coverage-signoff.md) | Four concrete maintainer decisions, with defaults and alternatives |
 | [Generator release coverage](coverage.md) | 13-dialect feature and syntax-variant matrix, test evidence and downstream sign-off gate |
 | [Machine-readable coverage manifest](coverage-manifest.json) | Release-scoped feature variants, per-dialect evidence and executable fixtures |
+| [Bounded backlog acceptance contracts](backlog-acceptance-contracts.md) | Frozen verification floors and explicit sign-off boundaries for unfinished protocol tasks |
 | [Protocol conformance suite](conformance-suite.md) | Versioned fixtures, output oracles and consumer handoff |
 | [TASK-68 physical-source sign-off](task-68-signoff.md) | Exact bounded JOIN/GROUP construction, joint terminal oracles, residual boundaries and independent release gate |
 | [Versioning and releases](releasing.md) | Shared application/protocol version and release automation |
