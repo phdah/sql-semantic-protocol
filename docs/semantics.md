@@ -940,9 +940,15 @@ A complete single-equijoin population may also carry exact scalar `ON` and
 reference a join key. Source-row restrictions cannot certify post-join `WHERE`
 for outer joins because of NULL extension; those queries remain residual.
 Several predicates on the same source must be jointly satisfiable, not just
-individually exact. Every admitted filter is attached to the same closed
-physical source bag, never separately sampled. Joint count construction reuses the same filtered
-join assignment with independent positive or zero-output terminals. Join-key
+individually exact. A closed physical bag may carry a nonempty conjunction of
+certified TRUE source-row filters, which is flattened only for joint
+satisfiability with independent NOT TRUE terminal obligations. Every admitted
+filter refers to the same row identity, not separately sampled candidates.
+Joint count construction reuses that single assignment with independent
+positive or zero-output terminals. Independently enforced constraints on a
+materialized relation are not silently inherited from its upstream physical
+source: identity and widening inverses remain residual unless these additional
+laws have been transported and verified. Join-key
 restrictions, ambiguous source predicates, unsupported join shapes and
 unattested source types remain residual.
 
