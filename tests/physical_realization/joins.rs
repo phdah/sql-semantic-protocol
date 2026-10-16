@@ -318,6 +318,52 @@ fn task_106_join_and_two_negative_terminals_share_full_physical_sources() {
 }
 
 #[test]
+fn task_106_positive_inner_join_cannot_reject_both_null_complements() {
+    let b = bundle(
+        &[
+            "CREATE TABLE stage AS SELECT a,k FROM l",
+            "CREATE TABLE mart AS SELECT a,k FROM r",
+            "SELECT s.a FROM stage s JOIN mart m ON s.k=m.k",
+            "SELECT a FROM l WHERE a IS NULL",
+            "SELECT a FROM l WHERE a IS NOT NULL",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (b.layers()[2].id(), 1),
+        (b.layers()[3].id(), 0),
+        (b.layers()[4].id(), 0),
+    ];
+    let joint = physical_joint_source_plan(&b, &goals);
+    assert!(
+        matches!(joint.outcome(), WitnessDirection::Impossible),
+        "every nonempty left-side row must pass one of the complementary filters: {joint:?}"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER,k INTEGER);
+         CREATE TABLE r(a INTEGER,k INTEGER);
+         INSERT INTO l VALUES (NULL,1),(4,2);
+         INSERT INTO r VALUES (1,1),(2,2);
+         CREATE TABLE stage AS SELECT a,k FROM l;
+         CREATE TABLE mart AS SELECT a,k FROM r;",
+    )
+    .unwrap();
+    let actual: (i64, i64, i64) = db
+        .query_row(
+            "SELECT
+                (SELECT COUNT(*) FROM stage s JOIN mart m ON s.k=m.k),
+                (SELECT COUNT(*) FROM l WHERE a IS NULL),
+                (SELECT COUNT(*) FROM l WHERE a IS NOT NULL)",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .unwrap();
+    assert_eq!(actual, (2, 1, 1));
+}
+
+#[test]
 fn physical_semijoin_and_antijoin_use_complete_nonempty_or_absent_partners() {
     for sql in [
         "SELECT l.a FROM l LEFT SEMI JOIN r ON l.k = r.k",
