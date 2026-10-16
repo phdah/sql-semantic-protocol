@@ -233,8 +233,11 @@ fn frozen_child_families_and_golden_cases_are_nonvacuous_and_closed_world() {
         );
         let file = name(case, "test_file");
         let test = name(case, "test_name");
-        let source = std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(file))
-            .unwrap_or_else(|error| panic!("{}: missing test file {file}: {error}", case["id"]));
+        let source =
+            std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(file))
+                .unwrap_or_else(|error| {
+                    panic!("{}: missing test file {file}: {error}", case["id"])
+                });
         assert!(
             source.contains(&format!("fn {test}(")),
             "{}: no executable regression {file}::{test}",
