@@ -353,6 +353,68 @@ fn computed_alias_filter_across_layers_stays_residual() {
 }
 
 #[test]
+fn certified_signed_widening_cast_survives_materialized_filter_inversion() {
+    let sql = [
+        "CREATE TABLE stage AS SELECT CAST(a AS BIGINT) AS v FROM t",
+        "CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10",
+    ];
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let sources = sql.iter().map(|text| SqlInput::inline(*text)).collect::<Vec<_>>();
+    let ids = ["stage", "mart"];
+    let inputs = sources
+        .iter()
+        .zip(ids)
+        .map(|(source, id)| ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let schema = |relation: &str, column: &str, data_type: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, data_type, "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let catalog = RelationCatalog::from_schemas(&[
+        schema("t", "a", "INTEGER"),
+        schema("stage", "v", "BIGINT"),
+        schema("mart", "v", "BIGINT"),
+    ])
+    .unwrap();
+    let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog).unwrap();
+    let target = bundle.layers()[1].id();
+    let plan = physical_source_plan(&bundle, target);
+    assert_eq!(plan.sources(), &["t".to_string()]);
+    assert_eq!(plan.gap(), None, "{plan:?}");
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
+        "total widening CAST must admit a physical qualifying row: {plan:?}"
+    );
+    assert!(
+        matches!(plan.rejected(), WitnessDirection::Feasible(_)),
+        "SQL NOT TRUE must remain constructible: {plan:?}"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (3),(7),(NULL);
+         CREATE TABLE stage AS SELECT CAST(a AS BIGINT) AS v FROM t;
+         CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10;",
+    )
+    .unwrap();
+    let actual: i64 = db
+        .query_row("SELECT COUNT(*) FROM mart", [], |row| row.get(0))
+        .unwrap();
+    let negative: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM stage WHERE (v BETWEEN 5 AND 10) IS NOT TRUE",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!((actual, negative), (1, 2));
+}
+
+#[test]
 fn parser_capable_dialects_share_composed_filter_outcomes() {
     for name in common::DIALECTS {
         let dialect = dialect_from_name(name).expect("registered dialect");
