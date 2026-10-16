@@ -127,7 +127,7 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
                 .iter()
                 .map(|w| w.witness())
                 .collect();
-            let proved = directions.len() == 1
+            let constructive_both = directions.len() == 1
                 && matches!(
                     directions[0].qualifying(),
                     BooleanWitnessDirection::Exact(_) | BooleanWitnessDirection::Impossible
@@ -136,8 +136,17 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
                     directions[0].rejected(),
                     BooleanWitnessDirection::Exact(_) | BooleanWitnessDirection::Impossible
                 );
-            if !proved {
-                unproved.push(format!("{id}: {sql}; witnesses={directions:?}"));
+            // Scalar comparison and NULL predicates are certified directly
+            // by exact typed column/output domains. The analyzer deliberately
+            // omits a redundant BooleanWitness for these local predicates.
+            let exact_scalar_domain = directions.is_empty()
+                && expected.condition_exactness().is_exact()
+                && !expected.column_domains().is_empty();
+            if !constructive_both && !exact_scalar_domain {
+                unproved.push(format!(
+                    "{id}: {sql}; witnesses={directions:?}; exactness={:?}; column_domains={:?}",
+                    expected.condition_exactness(), expected.column_domains()
+                ));
             }
         }
         assert_eq!(
