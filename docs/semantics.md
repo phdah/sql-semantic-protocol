@@ -931,9 +931,15 @@ Complete mixed join/group, group/rank, grouped COUNT filter and certified empty/
 Typed `WHERE` predicates compose through transparent materializations while
 retaining physical column identity, output domains, bound inclusivity and SQL
 TRUE versus NOT TRUE. A certified signed widening cast can be inverted one
-materialization at a time. Computed aliases still preserve their narrowed
-output domain and lineage when source inversion is not certified; their
-physical construction remains residual rather than guessing a source value.
+materialization at a time. This includes an explicit widening CAST followed
+by a constant affine addition or subtraction when its full catalog-attested
+source range fits the declared output width. Canonical integer comparisons,
+NULL tests and their same-row AND/OR expressions are inverted with their
+physical integer bounds rechecked for SQL TRUE versus NOT TRUE. An implicit
+arithmetic cast, potential overflow, lossy conversion, LIMIT/DISTINCT or
+untransported producer law blocks this proof. Other computed aliases still
+preserve narrowed output domains and lineage but remain physical residuals
+rather than guessed source values.
 
 A complete single-equijoin population may also carry exact scalar `ON` and
 (for INNER joins) `WHERE` predicates that resolve to exactly one input and do not
