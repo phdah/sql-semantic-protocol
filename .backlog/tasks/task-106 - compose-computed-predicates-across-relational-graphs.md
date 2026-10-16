@@ -4,19 +4,19 @@ title: Compose typed expression obligations through relational graphs
 status: In Progress
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-16'
+updated_date: '2026-10-16 11:56'
 labels: []
 milestone: m-3
 dependencies:
   - TASK-105
 references:
-  - 'TASK-70'
-  - 'TASK-68'
-  - 'TASK-85'
-  - 'TASK-86'
-  - 'TASK-80'
-  - 'TASK-81'
-  - 'TASK-82'
+  - TASK-70
+  - TASK-68
+  - TASK-85
+  - TASK-86
+  - TASK-80
+  - TASK-81
+  - TASK-82
 priority: high
 type: feature
 ---
@@ -40,6 +40,18 @@ Consume canonical expression and predicate proofs from TASK-101..105 across actu
 - [ ] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
 - [ ] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Continue bounded TASK-106 increment on feat/task-106-composed-predicate-graphs toward AC closure without overclaiming general DAGs.
+
+1. Fix masked oracle bug: DuckDB oracle in task_106 ordered INSERT/UPDATE/MERGE must execute computed score+1 projection and assert intermediate INSERT state, matching protocol transitions. Verify: cargo test physical_write_states task_106.
+2. Strengthen relational-operator evidence in tests/task_106_composed_predicates.rs (public API only, TDD): filtered INNER JOIN with DuckDB oracle + key-equality stability; grouped HAVING with DuckDB oracle + output-domain + residual exactness; QUALIFY residual with DuckDB execution contrast; ON-clause typed filter stays residual while key equality stays exact; SELECT computed-alias output domain after composition (unbounded, lineage preserved); joint duplicate/NULL typed assignment sharing one physical source (positive + NOT TRUE). Verify: cargo test --test task_106_composed_predicates.
+3. Add AC4 residual guards: partial-producer filter chain, unsupported aggregation, narrowing TRY_CAST inversion, missing schema, unverified DML remain typed residual (no feasible plan). Reuse existing gaps (PartialProducer, NonInvertibleTransformation, ConflictingDomains) with TASK-106 typed predicates. Verify: same test binary.
+4. Update canonical evidence: docs/semantics.md bounded TASK-106 paragraph, docs/coverage-manifest.json whole_graph/computed families, docs/code-map.md if ownership changes, no protocol wire change. Verify: cargo test --test coverage_manifest, cargo doc --no-deps.
+5. Full verification: cargo fmt, cargo clippy --all-targets --all-features -- -D warnings, cargo test, plus no-default-features and dbt E2E if present. Update task notes, keep AC unchecked until evidence reviewed; commit on branch.
+<!-- SECTION:PLAN:END -->
 
 ## Bounded implementation evidence (2026-10-16, PR #114)
 

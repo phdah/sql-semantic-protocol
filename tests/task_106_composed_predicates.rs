@@ -683,3 +683,391 @@ fn duckdb_joint_positive_and_negative_rows_match_composed_filters() {
         "DuckDB-negative case must have a feasible rejected proof"
     );
 }
+
+#[test]
+fn filtered_join_duckdb_oracle_matches_key_equalities() {
+    // A filtered INNER JOIN keeps its typed key equality exact while the
+    // multi-source row proof stays explicitly residual: no single-source
+    // witness may be fabricated for a two-source scope.
+    let bundle = analyze_chain(
+        &["SELECT l.a, r.b FROM l INNER JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("join layer must resolve");
+    };
+    let equality = semantics
+        .join_equalities()
+        .iter()
+        .find(|equality| equality.join_kind() == JoinKind::Inner)
+        .expect("typed inner join key must compose");
+    assert_eq!(
+        (equality.left().relation(), equality.left().column()),
+        ("l", "k")
+    );
+    assert_eq!(
+        (equality.right().relation(), equality.right().column()),
+        ("r", "k")
+    );
+    assert!(
+        semantics.boolean_witnesses().is_empty(),
+        "multi-source scope must not emit a single-source witness"
+    );
+    let plan = physical_source_plan(&bundle, bundle.layers()[0].id());
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Residual { .. }),
+        "single-source plan must not fabricate a join proof: {plan:?}"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER, b INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, b INTEGER, k INTEGER);
+         INSERT INTO l VALUES (2, 0, 1), (99, 0, 2), (NULL, 0, 3);
+         INSERT INTO r VALUES (0, 10, 1), (0, 20, 2), (0, 30, 3);
+         CREATE TABLE joined AS SELECT l.a, r.b FROM l INNER JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5;",
+    )
+    .unwrap();
+    let matched: i64 = db
+        .query_row("SELECT COUNT(*) FROM joined", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(matched, 1, "only the in-range join key survives");
+    let rejected: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM l WHERE (a BETWEEN 1 AND 5) IS NOT TRUE",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(rejected, 2, "out-of-range and NULL rows are NOT TRUE");
+}
+
+#[test]
+fn join_on_typed_filter_stays_residual_while_key_stays_exact() {
+    // An extra typed predicate inside ON composes with the key equality: the
+    // inner-join scope stays exact with the scalar filter carried as a column
+    // domain, while the single-source row proof stays residual because the
+    // scope has two physical producers.
+    let bundle = analyze_chain(
+        &["SELECT l.a FROM l INNER JOIN r ON l.k = r.k AND l.a > 0"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("join layer must resolve");
+    };
+    assert!(
+        semantics
+            .join_equalities()
+            .iter()
+            .any(|equality| equality.join_kind() == JoinKind::Inner),
+        "key equality must survive an additional ON conjunct"
+    );
+    assert!(
+        semantics.condition_exactness().is_exact(),
+        "typed ON scalar filter keeps inner-join scope exact"
+    );
+    let plan = physical_source_plan(&bundle, bundle.layers()[0].id());
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Residual { .. }),
+        "unproved ON row-shaping must not become feasible: {plan:?}"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER, k INTEGER);
+         CREATE TABLE r(a INTEGER, k INTEGER);
+         INSERT INTO l VALUES (1, 1), (-2, 2);
+         INSERT INTO r VALUES (10, 1), (20, 2);
+         SELECT COUNT(*) FROM l INNER JOIN r ON l.k = r.k AND l.a > 0;",
+    )
+    .unwrap();
+    let matched: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM l INNER JOIN r ON l.k = r.k AND l.a > 0",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(matched, 1);
+}
+
+#[test]
+fn grouped_having_duckdb_oracle_matches_output_domains() {
+    // GROUP BY keeps the typed filter bound on the group key while HAVING
+    // over COUNT(*) stays an explicit residual: no source-column domain is
+    // invented from the aggregate result.
+    let bundle = analyze_chain(
+        &["SELECT a, COUNT(*) AS n FROM t WHERE a BETWEEN 1 AND 10 GROUP BY a HAVING COUNT(*) > 1"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("grouped layer must resolve");
+    };
+    let column = semantics
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "a")
+        .expect("grouped key a");
+    assert_range_bounds(column.domain(), "grouped a", "1", "10");
+    assert!(
+        !semantics.condition_exactness().is_exact(),
+        "HAVING must keep an explicit residual"
+    );
+    let plan = physical_source_plan(&bundle, bundle.layers()[0].id());
+    assert!(
+        matches!(plan.zero_output(), WitnessDirection::Feasible(_)),
+        "an empty physical source cannot produce groups: {plan:?}"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER, k INTEGER);
+         INSERT INTO t VALUES (3, 0, 1), (3, 0, 2), (7, 0, 3), (99, 0, 4), (NULL, 0, 5);",
+    )
+    .unwrap();
+    let groups: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM t WHERE a BETWEEN 1 AND 10 GROUP BY a HAVING COUNT(*) > 1)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(groups, 1, "only a=3 forms a repeated in-range group");
+}
+
+#[test]
+fn qualify_residual_contrasts_duckdb_execution() {
+    // QUALIFY is outside the composed filter contract: the scope stays
+    // residual even though DuckDB executes the windowed filter.
+    let bundle = analyze_chain(
+        &["SELECT a FROM t QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY a) = 1"],
+        "duckdb",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("qualify layer must resolve");
+    };
+    assert!(
+        !semantics.condition_exactness().is_exact(),
+        "QUALIFY must keep an explicit residual"
+    );
+    let plan = physical_source_plan(&bundle, bundle.layers()[0].id());
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Residual { .. }),
+        "windowed QUALIFY must not become a single-source filter proof: {plan:?}"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER, k INTEGER);
+         INSERT INTO t VALUES (2, 0, 1), (1, 0, 1), (5, 0, 2);",
+    )
+    .unwrap();
+    let rows: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a FROM t QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY a) = 1)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(
+        rows, 2,
+        "DuckDB executes QUALIFY while the protocol stays residual"
+    );
+}
+
+#[test]
+fn computed_alias_output_domain_stays_unknown_with_lineage() {
+    // A computed projection across a materialization boundary must not invent
+    // source bounds, but the downstream WHERE filter still narrows the
+    // composed output: v keeps (5, +inf) while the source inversion stays
+    // residual.
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a + 1 AS v FROM t",
+            "CREATE TABLE mart AS SELECT v FROM stage WHERE v > 5",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) =
+        bundle.layers()[mart_layer(&bundle)].composed_semantics()
+    else {
+        panic!("mart layer must resolve");
+    };
+    assert!(
+        !semantics.condition_exactness().is_exact(),
+        "computed cross-layer filter must stay residual"
+    );
+    let column = semantics
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("projected v");
+    let ValueDomain::Ranges(ranges) = column.domain() else {
+        panic!(
+            "downstream filter must narrow the composed output domain: {:?}",
+            column.domain()
+        );
+    };
+    assert_eq!(ranges.ranges().len(), 1);
+    let range = &ranges.ranges()[0];
+    assert_eq!(
+        range.lower().expect("lower").value().value(),
+        &LiteralValue::Number("5".to_string())
+    );
+    assert!(
+        !range.lower().expect("lower").inclusive(),
+        "v > 5 stays exclusive"
+    );
+    assert!(range.upper().is_none(), "no invented upper bound");
+    assert_eq!(
+        semantics.dependencies(),
+        &["t".to_string()],
+        "physical lineage must survive the residual"
+    );
+    let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Residual { .. }),
+        "computed inversion must stay residual: {plan:?}"
+    );
+}
+
+#[test]
+fn joint_duplicate_null_typed_assignment_shares_one_source() {
+    // One complete source with duplicates and NULLs satisfies a positive
+    // range terminal and a joint NOT TRUE terminal on the same rows.
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
+            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b BETWEEN 6 AND 100",
+        ],
+        "postgresql",
+    );
+    let mart = bundle.layers()[mart_layer(&bundle)].id();
+    let joint = physical_joint_row_count_plan(&bundle, &[(mart, 1)]);
+    assert!(
+        matches!(joint, WitnessDirection::Feasible(_)),
+        "one qualifying row must be jointly constructible: {joint:?}"
+    );
+    let empty = physical_row_count_plan(&bundle, mart, 0);
+    assert!(
+        matches!(empty, WitnessDirection::Feasible(_)),
+        "an empty physical source remains a valid zero construction: {empty:?}"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER);
+         INSERT INTO t VALUES (3, 7), (3, 7), (NULL, 7), (3, 1);
+         CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10;
+         CREATE TABLE mart AS SELECT a, b FROM stage WHERE b BETWEEN 6 AND 100;",
+    )
+    .unwrap();
+    let positive: i64 = db
+        .query_row("SELECT COUNT(*) FROM mart", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(
+        positive, 2,
+        "duplicate qualifying rows survive both filters"
+    );
+    let rejected: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM t WHERE (a BETWEEN 1 AND 10 AND b BETWEEN 6 AND 100) IS NOT TRUE",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(rejected, 2, "NULL and out-of-range duplicates are NOT TRUE");
+}
+
+#[test]
+fn partial_unsupported_lossy_and_missing_evidence_stay_residual() {
+    // AC4: only necessary contradictions or complete closed-world absence may
+    // prove impossibility. Everything else must fail closed.
+    let partial = analyze_chain(
+        &[
+            "INSERT INTO mart (a, b) SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
+            "CREATE TABLE downstream AS SELECT a, b FROM mart",
+        ],
+        "postgresql",
+    );
+    match partial.layers()[1].composed_semantics() {
+        ComposedSemantics::Unresolved(_) => {}
+        other => {
+            panic!("downstream full read over a partial write must stay unresolved: {other:?}")
+        }
+    }
+
+    let unsupported = analyze_chain(
+        &["SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) + 1 > 2"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(unsupported_semantics) =
+        unsupported.layers()[0].composed_semantics()
+    else {
+        panic!("unsupported HAVING layer must resolve with residual");
+    };
+    assert!(
+        !unsupported_semantics.condition_exactness().is_exact(),
+        "unsupported aggregate HAVING must stay residual"
+    );
+
+    // Lossy narrowing TRY_CAST inversion must not fabricate a physical row;
+    // this complements the certified widening test above.
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let narrowing_sources = ["CREATE TABLE stage AS SELECT TRY_CAST(a AS INTEGER) AS v FROM t"]
+        .into_iter()
+        .map(SqlInput::inline)
+        .collect::<Vec<_>>();
+    let narrowing_inputs = narrowing_sources
+        .iter()
+        .zip(["stage"])
+        .map(|(source, id)| ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let schema = |relation: &str, column: &str, data_type: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(column, data_type, "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let narrowing_catalog = RelationCatalog::from_schemas(&[
+        schema("t", "a", "BIGINT"),
+        schema("stage", "v", "INTEGER"),
+    ])
+    .unwrap();
+    let narrowing_bundle =
+        analyze_configured_inputs_with_catalog(&narrowing_inputs, &narrowing_catalog).unwrap();
+    let narrowing_plan = physical_source_plan(&narrowing_bundle, narrowing_bundle.layers()[0].id());
+    assert!(
+        matches!(
+            narrowing_plan.qualifying(),
+            WitnessDirection::Residual { .. }
+        ),
+        "lossy narrowing must stay residual: {narrowing_plan:?}"
+    );
+
+    // Missing source constraints (no catalog) must stay residual, never exact.
+    match analyze_sql(
+        "SELECT a FROM t WHERE a BETWEEN 1 AND 10",
+        "postgresql",
+        dialect.as_ref(),
+    ) {
+        Ok(protocol) => {
+            let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+                panic!("expected query");
+            };
+            let witness = query.boolean_witness().expect("local witness");
+            assert!(
+                matches!(
+                    witness.qualifying(),
+                    BooleanWitnessDirection::Residual { .. }
+                ),
+                "untyped range must stay residual without catalog evidence"
+            );
+        }
+        Err(Error::Parse(_)) => {}
+        Err(error) => panic!("unexpected analysis error: {error}"),
+    }
+}

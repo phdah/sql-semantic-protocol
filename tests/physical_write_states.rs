@@ -303,8 +303,25 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
          CREATE TABLE source(id INTEGER,score INTEGER);
          INSERT INTO target VALUES (1,4);
          INSERT INTO source VALUES (2,9),(3,-5);
-         INSERT INTO target (id,score) SELECT id,score FROM source WHERE id > 1;
-         UPDATE target SET score = score + 2 WHERE id = 2;
+         INSERT INTO target (id,score) SELECT id,score + 1 FROM source WHERE id > 1;",
+    )
+    .unwrap();
+    let inserted: Vec<(i64, i64)> = {
+        let mut stmt = db
+            .prepare("SELECT id,score FROM target ORDER BY id")
+            .unwrap();
+        stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+            .unwrap()
+            .map(|value| value.unwrap())
+            .collect()
+    };
+    assert_eq!(
+        inserted,
+        vec![(1, 4), (2, 10), (3, -4)],
+        "DuckDB must evaluate the same computed INSERT projection"
+    );
+    db.execute_batch(
+        "UPDATE target SET score = score + 2 WHERE id = 2;
          MERGE INTO target USING source ON target.id = source.id
             WHEN MATCHED AND source.score < 0 THEN DELETE
             WHEN MATCHED THEN UPDATE SET score = source.score
