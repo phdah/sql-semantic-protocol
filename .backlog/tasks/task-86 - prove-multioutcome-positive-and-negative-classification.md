@@ -41,6 +41,17 @@ Whole-project dbt generation must preserve all terminals while producing deliber
 - [ ] #9 Counterexamples such as falsifying one arm of A OR B while B passes must **not** be considered rejected; prove nonmembership of each selected terminal after all alternative branches/lineage paths.
 <!-- AC:END -->
 
+
+## Reviewed finite acceptance contract (2026-10-16)
+
+The existing **AC #1..#9 remain required**. Interpret and verify them through the frozen TASK-86 row of [the backlog acceptance contracts](../../docs/backlog-acceptance-contracts.md), additive to the approved TASK-66 feature/dialect inventory. This specifies a finite **minimum exactness floor**, not permission to omit named feature families or mark unimplemented mandatory cases `Residual`.
+
+1. **Mandatory exact core:** Exact core: each source row has per-terminal positive, FALSE, UNKNOWN or absence membership with stable lineage; A OR B rejection requires both arms fail.
+2. **Mandatory cross-operator / adapter evidence:** Exact composition: two simultaneous terminal filters over shared inputs with at least two distinct feasible rejection columns, seeded deterministic reachability and complete DuckDB terminal snapshots.
+3. **Conditional and non-exact boundary:** Inventory conditional: grouped/window/set rejected alternatives and counterfactuals; record all provably constructive alternatives for frozen fixture predicates, not arbitrary formulas.
+
+**Acceptance sign-off:** Before implementation, register each original named AC variant as a versioned feature/dialect cell and freeze fixture IDs in `docs/coverage-manifest.json`. Every mandatory core cell needs typed output domains (including NULL and interval inclusivity), positive/rejected membership and `Exact`/`Impossible` physical-source proof as applicable, complete DuckDB source/terminal oracles where executable, and representable SQL/dbt/ODCS parity plus 13-dialect parser equivalence evidence. Conditional cells need a documented parser/runtime boundary, typed `Residual` or justified `Impossible`, named owner, and explicit release disposition, **not a shortcut for missing implementation**. Sign off AC #1..#9 only after required cells and final CI are verified. Do not approve independent release gates through this task.
+
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
