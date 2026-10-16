@@ -984,9 +984,9 @@ pub(super) fn joint_join_and_distinct_group_goals(
         let mut valid = true;
         for (id, rows, source, key, witness) in &groups {
             let owned = if left_key == key {
-                *left_rows == *rows
+                left_rows == *rows
             } else if right_key == key {
-                *right_rows == *rows
+                right_rows == *rows
             } else {
                 false
             };
