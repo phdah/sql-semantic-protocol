@@ -452,34 +452,36 @@ fn widened_or_copied_source(
         }
     }
 
-    let [lineage] = output.lineage() else {
-        return None;
-    };
     let [input] = query.sources() else {
         return None;
     };
-    if lineage.relation() != input.name() {
-        return None;
-    }
-    let physical = crate::protocol::ColumnRef::new(
-        Some(lineage.relation().to_string()),
-        lineage.column().to_string(),
-    );
     let produced =
         crate::protocol::ColumnRef::new(Some(relation.to_string()), output.name().to_string());
-    let from = bundle_column_datatype(bundle, &physical)?;
     let to = bundle_column_datatype(bundle, &produced)?;
     match output.expression() {
         crate::protocol::Expression::Column(_) => {
-            (output.plain_copy_source().is_some() && from == to).then_some(physical)
+            let lineage = output.plain_copy_source()?;
+            if lineage.relation() != input.name() {
+                return None;
+            }
+            let physical = crate::protocol::ColumnRef::new(
+                Some(lineage.relation().to_string()),
+                lineage.column().to_string(),
+            );
+            (bundle_column_datatype(bundle, &physical)? == to).then_some(physical)
         }
         crate::protocol::Expression::SignedIntegerCast(cast) => {
+            // A computed CAST does not necessarily carry plain-copy lineage.
+            // Resolve its canonical operand instead; the single named source
+            // removes ambiguity without reconstructing SQL or trusting hints.
             let crate::protocol::Expression::Column(column) = cast.expression() else {
                 return None;
             };
-            if crate::domain::resolve_column(column, query.sources()) != physical {
+            let physical = crate::domain::resolve_column(column, query.sources());
+            if physical.relation() != Some(input.name()) {
                 return None;
             }
+            let from = bundle_column_datatype(bundle, &physical)?;
             let source_bits = signed_width(&from)?;
             let target_bits = signed_width(&to)?;
             (source_bits <= target_bits && target_bits == cast.target_bits()).then_some(physical)
