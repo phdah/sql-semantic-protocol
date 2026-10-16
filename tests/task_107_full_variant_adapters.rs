@@ -32,7 +32,12 @@ fn serialized_source_semantics(bundle: &sql_semantic_protocol::AnalysisBundle) -
     let index = bundle
         .layers()
         .iter()
-        .position(|layer| layer.consumes().iter().any(|name| name == "warehouse.raw.orders"))
+        .position(|layer| {
+            layer
+                .consumes()
+                .iter()
+                .any(|name| name == "warehouse.raw.orders")
+        })
         .expect("physical source layer index");
     let document: Value =
         serde_json::from_str(&to_bundle_json(bundle)).expect("valid canonical protocol JSON");
