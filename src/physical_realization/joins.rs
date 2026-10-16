@@ -315,6 +315,16 @@ pub(super) fn physical_join_population_with_source_counts(
         return None;
     };
     let join_query = query_for(bundle, join_layer)?;
+    // A materialized relation may impose additional warehouse laws not
+    // entailed by its SELECT. These complete source-row examples cannot
+    // establish that such an intermediate state can actually be written.
+    if walker.nodes.iter().any(|node| {
+        node.produced_relations()
+            .iter()
+            .any(|relation| untransported_materialization_laws(bundle, relation))
+    }) {
+        return None;
+    }
     if !(join_query.plain_goal_output_shape() || join_query.filtered_join_goal_output_shape())
         || join_query.joins().len() != 1
         || join_query.sources().len() != 2
