@@ -299,22 +299,22 @@ pub(super) fn physical_operator_population_case(
     Some((witness, counts, case))
 }
 
-/// Two complete group populations can use the same physical source rows
-/// when each produces exactly one row per distinct integer group key.
+/// Two independently certified group/rank operator populations can share
+/// one physical bag only when their complete, deterministic row assignment
+/// can satisfy every operator's key and multiplicity law simultaneously.
 ///
-/// Their operator-local constructors already certified the full source
-/// cardinality and representability of keys 0..N-1. The same N-row bag can
-/// assign that distinct sequence simultaneously to independent group columns;
-/// identical group columns simply reuse the sequence. More complex group
-/// multiplicities and HAVING constraints require correlated histograms and
-/// therefore remain residual.
-fn compatible_distinct_group_populations(
+/// Singleton GROUP BY rows are numbered 0..N-1 on their key. Distinct
+/// grouping keys can receive that sequence independently. ROW_NUMBER
+/// partitioned by the *same* singleton grouping key sees exactly one row
+/// per partition, regardless of its independently typed ORDER BY column.
+/// Non-singleton groups, different rank partitions and unproved windows
+/// remain residual rather than being multiplied as independent examples.
+fn compatible_operator_populations(
     left: &crate::outcome_proofs::OutcomeWitness,
     right: &crate::outcome_proofs::OutcomeWitness,
 ) -> bool {
     use crate::outcome_proofs::OutcomeWitness;
-    matches!(
-        (left, right),
+    match (left, right) {
         (
             OutcomeWitness::Groups {
                 relation: left_relation,
@@ -327,9 +327,38 @@ fn compatible_distinct_group_populations(
                 groups: right_groups,
                 rows_per_group: 1,
                 ..
-            }
-        ) if left_relation == right_relation && left_groups == right_groups
-    )
+            },
+        ) => left_relation == right_relation && left_groups == right_groups,
+        (
+            OutcomeWitness::Groups {
+                relation: group_relation,
+                key,
+                groups,
+                rows_per_group: 1,
+            },
+            OutcomeWitness::Ranked {
+                relation: rank_relation,
+                partition_key: Some(partition),
+                rows,
+                ..
+            },
+        )
+        | (
+            OutcomeWitness::Ranked {
+                relation: rank_relation,
+                partition_key: Some(partition),
+                rows,
+                ..
+            },
+            OutcomeWitness::Groups {
+                relation: group_relation,
+                key,
+                groups,
+                rows_per_group: 1,
+            },
+        ) => group_relation == rank_relation && key == partition && groups == rows,
+        _ => false,
+    }
 }
 
 /// Safely share fully controlled physical relations across several terminal
@@ -366,7 +395,7 @@ pub(super) fn joint_operator_population_goals(
                     if *existing != count
                         || !populations.get(&relation).is_some_and(|previous| {
                             previous == &witness
-                                || compatible_distinct_group_populations(previous, &witness)
+                                || compatible_operator_populations(previous, &witness)
                         })
                     {
                         return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
