@@ -1554,6 +1554,11 @@ fn multiple_join_source_filters_reconcile_joint_true_and_not_true_terminals() {
         ],
         "postgresql",
     );
+    let positive = physical_row_count_plan(&bundle, bundle.layers()[0].id(), 2);
+    assert!(
+        matches!(positive, WitnessDirection::Feasible(_)),
+        "first certify the conjunctive filtered join population: {positive:?}"
+    );
     let goals = [
         (bundle.layers()[0].id(), 2),
         (bundle.layers()[1].id(), 0),
