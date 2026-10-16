@@ -6,6 +6,9 @@
     "owner": "TASK-107",
     "status": "implementation_in_progress",
     "matrix": "docs/task-107-oracle-matrix.json",
+    "acceptance_freeze": "docs/task-107-acceptance-freeze.json",
+    "frozen_variant_cells": 42,
+    "frozen_dialect_cells": 546,
     "test": "tests/task_107_expression_oracles.rs",
     "coverage": "registered representative SQL, dbt, dialect and seeded DuckDB evidence; acceptance matrix and full CI remain incomplete",
     "release_approved": false
