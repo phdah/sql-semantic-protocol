@@ -124,6 +124,30 @@ fn frozen_expression_families_have_explicit_owners_and_test_evidence() {
 }
 
 #[test]
+fn all_task_70_evidence_families_have_an_explicit_task_107_oracle_owner() {
+    let matrix: Value = serde_json::from_str(MATRIX).expect("versioned oracle matrix");
+    let coverage: Value =
+        serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
+    let expected: BTreeSet<_> = coverage["task_70_predicate_evidence"]["family_evidence"]
+        .as_array()
+        .expect("authoritative family inventory")
+        .iter()
+        .map(|family| family["family"].as_str().expect("family id"))
+        .collect();
+    let registered: BTreeSet<_> = matrix["fixtures"]
+        .as_array()
+        .expect("frozen fixture ids")
+        .iter()
+        .filter_map(|fixture| fixture["task_70_family"].as_str())
+        .collect();
+    assert_eq!(
+        registered, expected,
+        "every authoritative TASK-70 family needs a named TASK-107 oracle owner"
+    );
+    assert_eq!(registered.len(), 14, "approved expression inventory changed");
+}
+
+#[test]
 fn shared_expression_sql_has_parser_classifications_for_all_13_dialects() {
     let fixtures = [
         "SELECT amount FROM warehouse.raw.orders WHERE amount BETWEEN 1 AND 10",
