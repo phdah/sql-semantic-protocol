@@ -456,6 +456,42 @@ struct ClosedSourceRestrictions {
     filters: BTreeMap<String, Vec<WitnessFormula>>,
 }
 
+/// Flatten an AND of certified TRUE row predicates on one physical source.
+///
+/// ForAll(AND(p, q)) is equivalent to requiring both predicates of the same
+/// row. Do not distribute OR or accept mixed formula kinds here, because the
+/// joint assignment solver requires one identical source-row identity.
+fn certified_source_true_conjuncts(
+    formula: &WitnessFormula,
+    source: &str,
+    left_key: &crate::protocol::ColumnRef,
+    right_key: &crate::protocol::ColumnRef,
+) -> Option<Vec<WitnessFormula>> {
+    match formula {
+        WitnessFormula::RowTruth {
+            row,
+            predicate,
+            truth: crate::boolean_witness::BooleanTruthCase::True,
+        } if row.relation() == source
+            && predicate.is_exact()
+            && !predicate.references_column(left_key)
+            && !predicate.references_column(right_key) =>
+        {
+            Some(vec![formula.clone()])
+        }
+        WitnessFormula::All(conjuncts) if !conjuncts.is_empty() => {
+            let mut result = Vec::new();
+            for conjunct in conjuncts {
+                result.extend(certified_source_true_conjuncts(
+                    conjunct, source, left_key, right_key,
+                )?);
+            }
+            Some(result)
+        }
+        _ => None,
+    }
+}
+
 /// Extract exact closed source counts and non-key TRUE restrictions.
 ///
 /// Skips tautologies and rejects key references, inexact conditions and
@@ -487,25 +523,16 @@ fn closed_source_restrictions(
             if *predicate == count_tautology() {
                 continue;
             }
-            let WitnessFormula::RowTruth {
-                row,
-                predicate: condition,
-                truth: crate::boolean_witness::BooleanTruthCase::True,
-            } = predicate
-            else {
-                return None;
-            };
-            if row.relation() != boundary.relation()
-                || !condition.is_exact()
-                || condition.references_column(left_key)
-                || condition.references_column(right_key)
-            {
-                return None;
-            }
+            let truths = certified_source_true_conjuncts(
+                predicate,
+                boundary.relation(),
+                left_key,
+                right_key,
+            )?;
             restrictions
                 .entry(boundary.relation().to_string())
                 .or_default()
-                .push(predicate.clone());
+                .extend(truths);
         }
     }
     (!counts.is_empty()).then_some(ClosedSourceRestrictions {
