@@ -536,11 +536,12 @@ pub(super) fn joint_join_with_rejected_filters(
                 if let WitnessObligation::Rows {
                     boundary,
                     quantifier: RowQuantifier::ForAll,
-                    predicate: formula @ WitnessFormula::RowTruth {
-                        predicate,
-                        truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
-                        ..
-                    },
+                    predicate:
+                        formula @ WitnessFormula::RowTruth {
+                            predicate,
+                            truth: crate::boolean_witness::BooleanTruthCase::NotTrue,
+                            ..
+                        },
                     bounds,
                     closed_world: true,
                 } = obligation
@@ -560,7 +561,10 @@ pub(super) fn joint_join_with_rejected_filters(
                 safe = false;
                 break;
             };
-            restrictions.entry(source.clone()).or_default().push(formula);
+            restrictions
+                .entry(source.clone())
+                .or_default()
+                .push(formula);
         }
         if !safe {
             continue;
