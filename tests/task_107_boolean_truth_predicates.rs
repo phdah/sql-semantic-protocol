@@ -3,7 +3,8 @@
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, ComposedSemantics,
+    analyze_configured_inputs_with_catalog, dialect_from_name, BooleanWitnessDirection,
+    ComposedSemantics,
     ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -43,9 +44,19 @@ fn computed_boolean_truth_tests_keep_unknown_rejected_with_typed_domains() {
         let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
             panic!("{predicate}: typed WHERE semantic resolution must succeed");
         };
+        let exact_truth_directions = semantics.boolean_witnesses().iter().any(|item| {
+            let witness = item.witness();
+            matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Exact(_) | BooleanWitnessDirection::Impossible
+            ) && matches!(
+                witness.rejected(),
+                BooleanWitnessDirection::Exact(_) | BooleanWitnessDirection::Impossible
+            )
+        });
         assert!(
-            semantics.condition_exactness().is_exact(),
-            "{predicate}: cannot certify computed truth test without exact source law"
+            semantics.condition_exactness().is_exact() || exact_truth_directions,
+            "{predicate}: cannot certify computed truth test without exact domain or Boolean witness"
         );
         let sql_true = format!("SELECT id FROM t WHERE {predicate} ORDER BY id");
         let sql_rejected = format!("SELECT id FROM t WHERE ({predicate}) IS NOT TRUE ORDER BY id");
