@@ -359,7 +359,10 @@ fn certified_signed_widening_cast_survives_materialized_filter_inversion() {
         "CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10",
     ];
     let dialect = dialect_from_name("postgresql").unwrap();
-    let sources = sql.iter().map(|text| SqlInput::inline(*text)).collect::<Vec<_>>();
+    let sources = sql
+        .iter()
+        .map(|text| SqlInput::inline(*text))
+        .collect::<Vec<_>>();
     let ids = ["stage", "mart"];
     let inputs = sources
         .iter()
