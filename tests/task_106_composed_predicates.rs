@@ -386,7 +386,14 @@ fn certified_signed_widening_cast_survives_materialized_filter_inversion() {
     let target = bundle.layers()[1].id();
     let plan = physical_source_plan(&bundle, target);
     assert_eq!(plan.sources(), &["t".to_string()]);
-    assert_eq!(plan.gap(), None, "{plan:?}");
+    assert_eq!(
+        plan.gap(),
+        None,
+        "{plan:?}; composed: {:?}; producer: {:?}; filter: {:?}",
+        bundle.layers()[1].composed_semantics(),
+        bundle.inputs()[0].statements()[0],
+        bundle.inputs()[1].statements()[0]
+    );
     assert!(
         matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
         "total widening CAST must admit a physical qualifying row: {plan:?}"
