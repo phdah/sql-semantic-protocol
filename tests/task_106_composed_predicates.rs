@@ -415,6 +415,35 @@ fn certified_signed_widening_cast_survives_materialized_filter_inversion() {
         )
         .unwrap();
     assert_eq!((actual, negative), (1, 2));
+
+    // Reusing the same inverse for BIGINT -> INTEGER would be unsound:
+    // TRY_CAST may produce NULL and an ordinary CAST may fail at runtime.
+    let narrowing = [
+        "CREATE TABLE stage AS SELECT TRY_CAST(a AS INTEGER) AS v FROM t",
+        "CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10",
+    ];
+    let narrowing_sources = narrowing
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
+    let narrowing_inputs = narrowing_sources
+        .iter()
+        .zip(ids)
+        .map(|(source, id)| ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let narrowing_catalog = RelationCatalog::from_schemas(&[
+        schema("t", "a", "BIGINT"),
+        schema("stage", "v", "INTEGER"),
+        schema("mart", "v", "INTEGER"),
+    ])
+    .unwrap();
+    let narrowing_bundle =
+        analyze_configured_inputs_with_catalog(&narrowing_inputs, &narrowing_catalog).unwrap();
+    let narrowing_plan = physical_source_plan(&narrowing_bundle, narrowing_bundle.layers()[1].id());
+    assert!(
+        !matches!(narrowing_plan.qualifying(), WitnessDirection::Feasible(_)),
+        "lossy narrowing must not fabricate a physical qualifying row: {narrowing_plan:?}"
+    );
 }
 
 #[test]
