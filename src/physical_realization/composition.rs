@@ -319,6 +319,15 @@ pub(super) fn joint_operator_population_goals(
     let mut obligations = Vec::new();
     for &(id, rows) in targets {
         if let Some((witness, counts, case)) = physical_operator_population_case(bundle, id, rows) {
+            let reused = counts.keys().any(|relation| sources.contains_key(relation));
+            let all_reused = counts.keys().all(|relation| sources.contains_key(relation));
+            // An operator-local population can be reused only if *every*
+            // overlapping physical source already has this same complete
+            // construction. Mixing a reused source with an independently
+            // sampled new source would require another correlation proof.
+            if reused && !all_reused {
+                return Some(residual(PhysicalProofGap::UnprovedCrossRowCorrelation));
+            }
             for (relation, count) in counts {
                 if let Some(existing) = sources.get(&relation) {
                     if *existing != count || populations.get(&relation) != Some(&witness) {
@@ -329,7 +338,15 @@ pub(super) fn joint_operator_population_goals(
                     populations.insert(relation, witness.clone());
                 }
             }
-            obligations.extend(case.obligations().iter().cloned());
+            for obligation in case.obligations() {
+                if !all_reused || matches!(obligation, WitnessObligation::OutputRows { .. }) {
+                    // Shared source closures and operator histograms are
+                    // one physical assignment, not duplicated obligations.
+                    if !obligations.contains(obligation) {
+                        obligations.push(obligation.clone());
+                    }
+                }
+            }
         } else if let Some(relation) = exact_transparent_source(bundle, id) {
             let Some(&existing) = sources.get(&relation) else {
                 // Process operator and transparent goals in either order
