@@ -101,9 +101,8 @@ TASK-106 complete within its documented operator-evidence contract. Typed expres
 
 ## Bounded implementation evidence (2026-10-16, PR #114)
 
-Increment on `feat/task-106-composed-predicate-graphs`. The initial
-implementation passed CI (fmt, strict Clippy, tests, docs,
-no-default-features, dbt E2E); subsequent review fixes require revalidation.
+Increment on `feat/task-106-composed-predicate-graphs`. The reviewed implementation passed CI (fmt, strict Clippy, full tests, docs,
+no-default-features, dbt E2E) at commit `fae14cac735763d2223b14b88d705d1deedec265`; task sign-off adds documentation only.
 This evidence supports the five acceptance criteria together with the completion matrix below; it does not imply universal support for arbitrary SQL graphs:
 
 - `src/physical_realization/graph.rs`: `joint_physical_filters` now tries the
@@ -150,7 +149,7 @@ This evidence supports the five acceptance criteria together with the completion
 
 ## Code-review follow-up (2026-10-16)
 
-Matt Pocock two-axis review of PR #114 found that filtered join counts could bypass row-shape checks (LIMIT/DISTINCT), treat post-outer-join WHERE as a source-row predicate, and conjoin independently exact but mutually inconsistent scalar ON conditions. The PR now requires a separately certified filtered-join bag shape, keeps outer WHERE residual, and admits multiple source predicates only after joint satisfiability is established. Regression tests cover all three cases with DuckDB oracles where relevant. The bounded implementation does not establish full acceptance of AC #1-#5.
+Matt Pocock two-axis review of PR #114 found that filtered join counts could bypass row-shape checks (LIMIT/DISTINCT), treat post-outer-join WHERE as a source-row predicate, and conjoin independently exact but mutually inconsistent scalar ON conditions. The PR now requires a separately certified filtered-join bag shape, keeps outer WHERE residual, and admits multiple source predicates only after joint satisfiability is established. Regression tests cover all three cases with DuckDB oracles where relevant. The bounded implementation was subsequently verified against AC #1-#5 under the explicit supported-operator and residual semantics documented in the final sign-off matrix.
 
 ## Follow-up integration work (PR #114)
 
