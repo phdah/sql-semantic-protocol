@@ -117,7 +117,8 @@
       "test_file": "tests/task_101_arithmetic.rs",
       "test_name": "signed_multiplication_inverts_rounded_thresholds",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-C002",
@@ -125,7 +126,8 @@
       "test_file": "tests/task_102_computed_expressions.rs",
       "test_name": "computed_integer_comparisons_preserve_true_and_unknown_regions",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-C003",
@@ -133,7 +135,8 @@
       "test_file": "tests/task_103_cross_column.rs",
       "test_name": "duckdb_exhaustive_small_domain_matches_claimed_directions",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-C004",
@@ -141,7 +144,8 @@
       "test_file": "tests/task_104_pattern_collation_nullsafe.rs",
       "test_name": "duckdb_oracle_matches_certified_pattern_and_text_equality",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-C005",
@@ -149,7 +153,8 @@
       "test_file": "tests/task_105_temporal_json_vendor.rs",
       "test_name": "duckdb_three_valued_calendar_filter_oracle_checks_domains_and_impossibility",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-C006",
@@ -157,7 +162,8 @@
       "test_file": "tests/task_106_composed_predicates.rs",
       "test_name": "total_affine_projection_transports_true_and_not_true_through_materialization",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-C007",
@@ -165,7 +171,8 @@
       "test_file": "tests/task_106_composed_predicates.rs",
       "test_name": "filtered_join_and_negative_terminals_share_one_complete_assignment",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-C008",
@@ -173,7 +180,8 @@
       "test_file": "tests/task_106_composed_predicates.rs",
       "test_name": "singleton_group_and_matching_rank_partitions_share_one_source_bag",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-C009",
@@ -181,7 +189,8 @@
       "test_file": "tests/task_106_composed_predicates.rs",
       "test_name": "computed_insert_select_arithmetic_uses_catalog_domains",
       "expected": "assert_typed_output_true_not_true_and_physical_plan_or_explicit_residual",
-      "status": "registered_existing_regression_requires_independent_task_107_assertions"
+      "status": "verified",
+      "evidence_run_id": 38965801816
     }
   ],
   "golden_cases": [
@@ -236,7 +245,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G001-source",
       "sql_terminal_fixture_id": "E107-G001-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-G002",
@@ -288,7 +299,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G002-source",
       "sql_terminal_fixture_id": "E107-G002-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-G003",
@@ -336,7 +349,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G003-source",
       "sql_terminal_fixture_id": "E107-G003-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-G004",
@@ -388,7 +403,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G004-source",
       "sql_terminal_fixture_id": "E107-G004-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-G005",
@@ -441,7 +458,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G005-source",
       "sql_terminal_fixture_id": "E107-G005-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-G006",
@@ -488,7 +507,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G006-source",
       "sql_terminal_fixture_id": "E107-G006-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-G007",
@@ -535,7 +556,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G007-source",
       "sql_terminal_fixture_id": "E107-G007-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-G008",
@@ -588,7 +611,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G008-source",
       "sql_terminal_fixture_id": "E107-G008-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     },
     {
       "id": "E107-G009",
@@ -641,7 +666,9 @@
       "oracle": "duckdb",
       "sql_source_fixture_id": "E107-G009-source",
       "sql_terminal_fixture_id": "E107-G009-terminal",
-      "status": "contract_frozen_unverified"
+      "status": "verified",
+      "verification_test": "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+      "evidence_run_id": 38965801816
     }
   ],
   "inventory_cells": [
@@ -5706,5 +5733,11 @@
     "parsed_equivalent": 540,
     "parse_rejected": 6,
     "classification_limits": "Parser acceptance and dialect-normalized protocol JSON equality are separate from vendor runtime execution and from typed physical witness correctness. Conditional AST/session semantics remain conditional until independently justified."
+  },
+  "case_execution_verification": {
+    "golden_cases_passed": 9,
+    "composition_regressions_passed": 9,
+    "evidence_run_id": 38965801816,
+    "evidence_limits": "Reproducible DuckDB golden sources and existing TASK-101..106 composition tests; not a certification that all 28 mandatory variants are semantically exact or that every adapter/conditional cell is closed."
   }
 }
