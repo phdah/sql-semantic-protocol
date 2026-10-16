@@ -789,7 +789,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V002",
@@ -908,7 +909,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V003",
@@ -1027,7 +1029,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V004",
@@ -1146,7 +1149,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V005",
@@ -1265,7 +1269,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V006",
@@ -1384,7 +1389,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V007",
@@ -1503,7 +1509,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V008",
@@ -1622,7 +1629,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V009",
@@ -1741,7 +1749,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V010",
@@ -1860,7 +1869,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V011",
@@ -1979,7 +1989,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V012",
@@ -2098,7 +2109,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V013",
@@ -2217,7 +2229,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V014",
@@ -2336,7 +2349,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V015",
@@ -2455,7 +2469,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V016",
@@ -2574,7 +2589,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V017",
@@ -2693,7 +2709,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V018",
@@ -2812,7 +2829,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V019",
@@ -2931,7 +2949,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V020",
@@ -3050,7 +3069,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V021",
@@ -3172,7 +3192,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V022",
@@ -3291,7 +3312,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V023",
@@ -3413,7 +3435,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V024",
@@ -3535,7 +3558,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V025",
@@ -3654,7 +3678,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V026",
@@ -3776,7 +3801,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V027",
@@ -3895,7 +3921,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V028",
@@ -4014,7 +4041,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V029",
@@ -4133,7 +4161,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V030",
@@ -4252,7 +4281,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V031",
@@ -4371,7 +4401,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V032",
@@ -4493,7 +4524,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V033",
@@ -4612,7 +4644,8 @@
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
     },
     {
       "id": "E107-V034",
@@ -4734,7 +4767,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V035",
@@ -4856,7 +4890,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V036",
@@ -4978,7 +5013,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V037",
@@ -5106,7 +5142,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V038",
@@ -5228,7 +5265,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V039",
@@ -5350,7 +5388,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V040",
@@ -5472,7 +5511,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V041",
@@ -5594,7 +5634,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     },
     {
       "id": "E107-V042",
@@ -5716,7 +5757,8 @@
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
-      }
+      },
+      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
     }
   ],
   "scope_policy": {
