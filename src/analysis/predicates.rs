@@ -318,9 +318,7 @@ pub(super) fn analyze_predicate_with_windows(
 // Only an unescaped alphabetic/digit prefix and one final wildcard is
 // independent of dialect-specific LIKE escape, collation and tokenization rules.
 // Non-ASCII and embedded wildcards remain regular unsupported SQL expressions.
-pub(super) // Only the ISO ordinary comparison operators propagate a literal SQL
-// NULL to UNKNOWN; IS DISTINCT FROM and NULL-safe vendor operators do not.
-fn is_null_rejecting_literal_comparison(expression: &Expr) -> bool {
+pub(super) fn is_null_rejecting_literal_comparison(expression: &Expr) -> bool {
     let expression = match expression {
         Expr::Nested(inner) => inner.as_ref(),
         other => other,
