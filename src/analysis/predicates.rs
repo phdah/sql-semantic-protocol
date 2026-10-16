@@ -113,6 +113,27 @@ pub(super) fn analyze_predicate_with_windows(
             expr,
             pattern,
             escape_char,
+        } if safe_escaped_underscore_like_prefix(pattern, escape_char.as_ref()).is_some() => {
+            let prefix = safe_escaped_underscore_like_prefix(pattern, escape_char.as_ref())
+                .expect("guarded explicitly escaped underscore LIKE prefix");
+            Predicate::LikePrefix(LikePrefixPredicate::new(
+                analyze_predicate_expression(
+                    expr,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                prefix,
+                *negated,
+            ))
+        }
+        Expr::Like {
+            negated,
+            any: false,
+            expr,
+            pattern,
+            escape_char,
         } if safe_like_exact(pattern, escape_char.as_ref()).is_some() => {
             let literal = safe_like_exact(pattern, escape_char.as_ref())
                 .expect("guarded wildcard-free LIKE literal");
@@ -268,7 +289,49 @@ pub(super) fn analyze_predicate_with_windows(
 // Only an unescaped alphabetic/digit prefix and one final wildcard is
 // independent of dialect-specific LIKE escape, collation and tokenization rules.
 // Non-ASCII and embedded wildcards remain regular unsupported SQL expressions.
-pub(super) fn safe_like_prefix(pattern: &Expr) -> Option<String> {
+pub(super) // Normalize the finite SQL-standard ESCAPE '!' shape into the same
+// parser-independent literal-prefix model as ordinary ASCII LIKE. Only
+// escaped underscores are recognized: unescaped '_', interior '%', locale
+// characters, escaping the terminal wildcard, or other escape syntaxes
+// remain explicit residuals. Exactness still requires binary/no-padding
+// comparison attestations at the typed source boundary.
+fn safe_escaped_underscore_like_prefix(
+    pattern: &Expr,
+    escape_char: Option<&sqlparser::ast::Value>,
+) -> Option<String> {
+    let Some(sqlparser::ast::Value::SingleQuotedString(escape)) = escape_char else {
+        return None;
+    };
+    if escape != "!" {
+        return None;
+    }
+    let Expr::Value(value) = pattern else {
+        return None;
+    };
+    let sqlparser::ast::Value::SingleQuotedString(text) = &value.value else {
+        return None;
+    };
+    let body = text.strip_suffix('%')?;
+    let mut chars = body.chars();
+    let mut prefix = String::new();
+    let mut found_escape = false;
+    while let Some(character) = chars.next() {
+        if character == '!' {
+            if chars.next()? != '_' {
+                return None;
+            }
+            prefix.push('_');
+            found_escape = true;
+        } else if character.is_ascii_alphanumeric() {
+            prefix.push(character);
+        } else {
+            return None;
+        }
+    }
+    (found_escape && !prefix.is_empty()).then_some(prefix)
+}
+
+fn safe_like_prefix(pattern: &Expr) -> Option<String> {
     let Expr::Value(value) = pattern else {
         return None;
     };
