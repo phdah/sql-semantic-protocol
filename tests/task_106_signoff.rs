@@ -107,7 +107,7 @@ fn task_106_signoff_requires_all_five_acceptance_criteria_but_not_release_approv
         manifest.to_string().contains("TASK-106"),
         "canonical coverage must still identify its owning task"
     );
-    let release = include_str!("../.backlog/tasks/task-91 - physical-source-release-gates.md");
+    let release = include_str!("../.backlog/tasks/task-91 - gate-single-protocol-3-release-on-tdg-signoff.md");
     assert!(
         !release.lines().any(|line| line == "status: Done"),
         "TASK-106 sign-off must not silently approve TASK-91"
