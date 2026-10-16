@@ -7,8 +7,9 @@
 use std::collections::BTreeSet;
 use std::path::Path;
 
-const TASK: &str =
-    include_str!("../.backlog/tasks/task-106 - compose-computed-predicates-across-relational-graphs.md");
+const TASK: &str = include_str!(
+    "../.backlog/tasks/task-106 - compose-computed-predicates-across-relational-graphs.md"
+);
 const TESTS: &str = include_str!("task_106_composed_predicates.rs");
 const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
 
@@ -103,7 +104,9 @@ fn task_106_signoff_requires_all_five_acceptance_criteria_but_not_release_approv
         manifest.to_string().contains("TASK-106"),
         "canonical coverage must still identify its owning task"
     );
-    let release = include_str!("../.backlog/tasks/task-91 - gate-single-protocol-3-release-on-tdg-signoff.md");
+    let release = include_str!(
+        "../.backlog/tasks/task-91 - gate-single-protocol-3-release-on-tdg-signoff.md"
+    );
     assert!(release.contains("id: TASK-91"), "release gate task exists");
     assert!(
         TASK.contains("Protocol 3.0.0 release remains gated by TASK-91"),
