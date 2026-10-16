@@ -98,6 +98,14 @@ fn frozen_variant_dialect_inventory_matches_the_authoritative_task_66_scope() {
                     cell.get("conditional_boundary").is_none(),
                     "{id}: mandatory case downgraded"
                 );
+                assert!(
+                    matches!(
+                        name(cell, "semantic_exactness_evidence"),
+                        "pending_independent_typed_true_not_true_proof_review"
+                            | "verified_exact_or_impossible"
+                    ),
+                    "{id}: missing separate positive/negative semantic evidence"
+                );
             }
             "conditional" => {
                 assert!(
@@ -112,6 +120,14 @@ fn frozen_variant_dialect_inventory_matches_the_authoritative_task_66_scope() {
                     name(cell, "release_disposition"),
                     "review_required_before_release",
                     "{id}: cannot preapprove deferral"
+                );
+                assert!(
+                    matches!(
+                        name(cell, "conditional_semantic_evidence"),
+                        "pending_review_of_residual_or_guarded_exactness"
+                            | "reviewed_residual_or_exact_under_guards"
+                    ),
+                    "{id}: conditional SQL needs an independent proof boundary"
                 );
             }
             classification => panic!("{id}: invalid proof classification {classification}"),
@@ -282,6 +298,21 @@ fn unfinished_criteria_cannot_be_signed_off_by_a_green_partial_suite() {
                     .all(|criterion| criterion.starts_with("- [x]"))
         );
         for cell in entries(&freeze, "inventory_cells") {
+            if cell["classification"] == "exact_required" {
+                assert_eq!(
+                    name(cell, "semantic_exactness_evidence"),
+                    "verified_exact_or_impossible",
+                    "{}: typed TRUE/NOT TRUE exactness still unverified",
+                    name(cell, "id")
+                );
+            } else {
+                assert_eq!(
+                    name(cell, "conditional_semantic_evidence"),
+                    "reviewed_residual_or_exact_under_guards",
+                    "{}: conditional residual semantics not signed off",
+                    name(cell, "id")
+                );
+            }
             for dialect in cell["dialect_cells"]
                 .as_object()
                 .expect("dialect object")
