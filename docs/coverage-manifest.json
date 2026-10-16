@@ -114,7 +114,9 @@
       "reflexive_and_null_clash_text_impossibility_with_empty_outputs",
       "validated_gregorian_date_literal_identity_and_year_month_day_extraction",
       "ordered_date_domain_intersection_negation_and_impossible_intervals",
-      "source_sql_null_truth_for_temporal_json_and_nested_types"
+      "source_sql_null_truth_for_temporal_json_and_nested_types",
+      "composed_transparent_layer_filter_conjunction_with_joint_true_not_true",
+      "contradictory_composed_filters_with_impossible_qualifying_and_feasible_rejection"
     ],
     "unproved_scope": [
       "general_arithmetic_overflow",
@@ -226,17 +228,17 @@
       },
       {
         "family": "computed_join_group_write_expressions",
-        "status": "unproved_residual",
-        "scope": "general expression projections/aliases across joins, grouped aggregates, inserts and merges",
-        "evidence": "docs/semantics.md",
+        "status": "bounded_composed_exact_with_computed_residual",
+        "scope": "typed single-source filters conjoin across transparent layers, filtered single-layer INNER join keys and grouped HAVING output domains compose; computed projections across materialization boundaries stay explicit residual",
+        "evidence": "tests/task_106_composed_predicates.rs; src/composition.rs; docs/semantics.md",
         "release_blocking": true,
         "implementation_task": "TASK-106"
       },
       {
         "family": "whole_graph_physical_realization",
-        "status": "unproved_residual",
-        "scope": "joint physical-source construction and negative output evidence across general DAGs",
-        "evidence": "docs/semantics.md",
+        "status": "bounded_joint_exact_with_general_residual",
+        "scope": "joint TRUE versus NOT TRUE physical-source proofs across filtered transparent chains including contradictory impossibility with feasible rejection and DuckDB positive/negative oracles; general multi-operator DAGs stay residual",
+        "evidence": "tests/task_106_composed_predicates.rs; src/physical_realization/graph.rs; docs/semantics.md",
         "release_blocking": true,
         "implementation_task": "TASK-106"
       }

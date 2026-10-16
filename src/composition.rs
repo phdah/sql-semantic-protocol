@@ -677,6 +677,11 @@ impl<'a> Composer<'a> {
 
     // A column may have exact identity lineage without a row surviving an
     // intermediate filter. A physical witness requires row-set identity too.
+    // Filtered single-source producers keep column identity: the joint
+    // terminal proof retains every layer filter and conjoins them against one
+    // shared physical row, so mapping through an exact or residual upstream
+    // filter never invents rows. Mirrors the physical DAG resolver, which
+    // already permits `filter_only_row_shape` identity chains.
     fn boolean_source_has_passthrough_path(
         &self,
         consumer: &TransformationLayer,
@@ -700,7 +705,12 @@ impl<'a> Composer<'a> {
                 let [source] = query.sources() else {
                     return false;
                 };
-                query.row_preserving_projection()
+                (query.row_preserving_projection() || query.filter_only_row_shape())
+                    && query.joins().is_empty()
+                    && query.aggregation().is_none()
+                    && query.set_operation().is_none()
+                    && query.window_witness().is_none()
+                    && query.diagnostics().is_empty()
                     && self.boolean_source_has_passthrough_path(producer, source.name())
             }
             RelationResolution::Missing

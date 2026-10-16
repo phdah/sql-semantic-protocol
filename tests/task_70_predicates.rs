@@ -132,8 +132,14 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
             "json_array_struct_and_vendor_functions",
             "bounded_sql_null_exact_with_nested_residual",
         ),
-        ("computed_join_group_write_expressions", "unproved_residual"),
-        ("whole_graph_physical_realization", "unproved_residual"),
+        (
+            "computed_join_group_write_expressions",
+            "bounded_composed_exact_with_computed_residual",
+        ),
+        (
+            "whole_graph_physical_realization",
+            "bounded_joint_exact_with_general_residual",
+        ),
     ] {
         let entry = families
             .iter()

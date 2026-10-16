@@ -1,0 +1,504 @@
+//! TASK-106: compose typed expression obligations through relational graphs.
+//!
+//! Covers the missing integration between the TASK-101..105 canonical
+//! expression proofs and the TASK-68 physical-source DAG engine: typed
+//! filters conjoined across transparent layers, filtered joins, grouped
+//! aggregation with HAVING, computed-alias boundaries, and joint
+//! positive/NOT TRUE physical witnesses with DuckDB oracles.
+mod common;
+
+use duckdb::Connection;
+use sql_semantic_protocol::{
+    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name, physical_source_plan,
+    AnalysisBundle, BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error, LiteralValue, ProtocolStatement,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain, WitnessDirection,
+};
+
+fn catalog() -> RelationCatalog {
+    let schemas = ["t", "l", "r", "stage", "mart"]
+        .into_iter()
+        .map(|relation| {
+            RelationSchema::new(
+                relation,
+                ["a", "b", "k"]
+                    .into_iter()
+                    .map(|name| {
+                        SchemaColumn::from_sql_type(name, "INTEGER", "postgresql")
+                            .expect("integer column")
+                    })
+                    .collect(),
+            )
+            .expect("source schema")
+        })
+        .collect::<Vec<_>>();
+    RelationCatalog::from_schemas(&schemas).expect("catalog")
+}
+
+fn analyze_chain(queries: &[&str], dialect: &str) -> AnalysisBundle {
+    let dialect_impl = dialect_from_name(dialect).expect("recognized dialect");
+    let sources = queries
+        .iter()
+        .map(|query| SqlInput::inline(*query))
+        .collect::<Vec<_>>();
+    let ids = (0..queries.len())
+        .map(|index| format!("q-{index}"))
+        .collect::<Vec<_>>();
+    let inputs = sources
+        .iter()
+        .zip(&ids)
+        .map(|(source, id)| ConfiguredSqlInput::new(id, source, dialect, dialect_impl.as_ref()))
+        .collect::<Vec<_>>();
+    analyze_configured_inputs_with_catalog(&inputs, &catalog()).expect("analysis")
+}
+
+fn mart_layer(bundle: &AnalysisBundle) -> usize {
+    bundle.layers().len() - 1
+}
+
+fn assert_exact_both(witness: &sql_semantic_protocol::BooleanWitness, sql: &str) {
+    assert!(
+        matches!(
+            witness.qualifying(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+        ),
+        "{sql}: qualifying must be exact TRUE, got {:?}",
+        witness.qualifying()
+    );
+    assert!(
+        matches!(
+            witness.rejected(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        ),
+        "{sql}: rejected must be exact NOT TRUE, got {:?}",
+        witness.rejected()
+    );
+}
+
+fn assert_range_bounds(domain: &ValueDomain, sql: &str, lower: &str, upper: &str) {
+    let ValueDomain::Ranges(ranges) = domain else {
+        panic!("{sql}: expected ranges domain, got {domain:?}");
+    };
+    assert_eq!(ranges.ranges().len(), 1, "{sql}: one range, got {domain:?}");
+    let range = &ranges.ranges()[0];
+    assert_eq!(
+        range.lower().expect("lower").value().value(),
+        &LiteralValue::Number(lower.to_string()),
+        "{sql}: lower bound"
+    );
+    assert!(
+        range.lower().expect("lower").inclusive(),
+        "{sql}: closed lower"
+    );
+    assert_eq!(
+        range.upper().expect("upper").value().value(),
+        &LiteralValue::Number(upper.to_string()),
+        "{sql}: upper bound"
+    );
+    assert!(
+        range.upper().expect("upper").inclusive(),
+        "{sql}: closed upper"
+    );
+}
+
+#[test]
+fn filtered_chain_conjoins_typed_range_filters() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
+            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b > 5",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) =
+        bundle.layers()[mart_layer(&bundle)].composed_semantics()
+    else {
+        panic!("mart layer must resolve");
+    };
+    assert_eq!(
+        semantics.boolean_witnesses().len(),
+        2,
+        "both layer filters must compose"
+    );
+    for composed in semantics.boolean_witnesses() {
+        assert_exact_both(composed.witness(), "chained range filters");
+    }
+    // The upstream filter maps to the physical source through the filtered
+    // but identity-preserving stage producer.
+    assert!(
+        semantics
+            .boolean_witnesses()
+            .iter()
+            .all(|composed| composed.witness().source_relation() == "t"),
+        "both filters must target the same physical source"
+    );
+    let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
+        "joint qualifying must be feasible: {:?}",
+        plan.qualifying()
+    );
+    assert!(
+        matches!(plan.rejected(), WitnessDirection::Feasible(_)),
+        "joint rejected must be feasible: {:?}",
+        plan.rejected()
+    );
+    // Strongest justified domains survive composition: the mart output for
+    // `a` keeps the upstream [1, 10] bound.
+    let column = semantics
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "a")
+        .expect("projected a");
+    assert_range_bounds(column.domain(), "mart.a", "1", "10");
+}
+
+#[test]
+fn contradictory_chain_filters_prove_impossible() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a IN (1, 3)",
+            "CREATE TABLE mart AS SELECT a FROM stage WHERE a > 100",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) =
+        bundle.layers()[mart_layer(&bundle)].composed_semantics()
+    else {
+        panic!("mart layer must resolve");
+    };
+    let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Impossible),
+        "contradictory filters must be impossible: {:?}",
+        plan.qualifying()
+    );
+    assert!(
+        matches!(plan.rejected(), WitnessDirection::Feasible(_)),
+        "a rejected row must still exist: {:?}",
+        plan.rejected()
+    );
+    // No feasible row can satisfy both filters, so the composed output for
+    // `a` is empty rather than a fabricated plan.
+    assert!(
+        semantics
+            .column_domains()
+            .iter()
+            .any(|domain| matches!(domain.domain(), ValueDomain::Empty)),
+        "contradiction must surface as an empty composed domain"
+    );
+}
+
+#[test]
+fn filtered_join_preserves_typed_predicates_and_equalities() {
+    let bundle = analyze_chain(
+        &["SELECT l.a, r.b FROM l INNER JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5 AND r.b > 0"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("join layer must resolve");
+    };
+    assert!(
+        !semantics.join_equalities().is_empty(),
+        "typed join key must compose to a physical equality"
+    );
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert_exact_both(witness, "filtered join predicates");
+    // Multi-source join populations live in the TASK-68 join engine, not in
+    // the single-source row plan: the composed filter and equality must be
+    // exact here while the single-source plan stays explicitly residual.
+    let plan = physical_source_plan(&bundle, bundle.layers()[0].id());
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Residual { .. }),
+        "single-source plan must not fabricate a join proof: {:?}",
+        plan.qualifying()
+    );
+}
+
+#[test]
+fn grouped_having_keeps_output_domains_and_explicit_residual() {
+    let bundle = analyze_chain(
+        &["SELECT a, COUNT(*) AS n FROM t WHERE a BETWEEN 1 AND 10 GROUP BY a HAVING COUNT(*) > 1"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("grouped layer must resolve");
+    };
+    // HAVING over an aggregate must not invent source-column domains, but the
+    // surviving group key keeps its typed filter bound.
+    let column = semantics
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "a")
+        .expect("grouped key a");
+    assert_range_bounds(column.domain(), "grouped a", "1", "10");
+    assert!(
+        !semantics.condition_exactness().is_exact(),
+        "HAVING must keep an explicit residual, never false exactness"
+    );
+}
+
+#[test]
+fn computed_alias_filter_across_layers_stays_residual() {
+    // A computed projection cannot be inverted across a materialization
+    // boundary yet; the filter stays an explicit residual instead of a
+    // fabricated physical proof.
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a + 1 AS v FROM t",
+            "CREATE TABLE mart AS SELECT v FROM stage WHERE v > 5",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) =
+        bundle.layers()[mart_layer(&bundle)].composed_semantics()
+    else {
+        panic!("mart layer must resolve");
+    };
+    assert!(
+        !semantics.condition_exactness().is_exact(),
+        "computed cross-layer filter must stay residual"
+    );
+    // The same affine predicate is exact within one layer, proving the
+    // residual is a composition boundary rather than a missing local proof.
+    let direct = analyze_chain(
+        &["SELECT a FROM t WHERE CAST(a AS BIGINT) + 1 > 5"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(direct_semantics) = direct.layers()[0].composed_semantics()
+    else {
+        panic!("direct layer must resolve");
+    };
+    assert_exact_both(
+        direct_semantics.boolean_witnesses()[0].witness(),
+        "local affine predicate",
+    );
+}
+
+#[test]
+fn parser_capable_dialects_share_composed_filter_outcomes() {
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).expect("registered dialect");
+        let queries = [
+            "CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
+            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b > 5",
+        ];
+        let sources = queries
+            .iter()
+            .map(|query| SqlInput::inline(*query))
+            .collect::<Vec<_>>();
+        let inputs = sources
+            .iter()
+            .enumerate()
+            .map(|(index, source)| {
+                ConfiguredSqlInput::new(format!("q-{index}"), source, name, dialect.as_ref())
+            })
+            .collect::<Vec<_>>();
+        match analyze_configured_inputs_with_catalog(&inputs, &catalog()) {
+            Ok(bundle) => {
+                let ComposedSemantics::Resolved(semantics) =
+                    bundle.layers()[mart_layer(&bundle)].composed_semantics()
+                else {
+                    panic!("{name}: mart must resolve");
+                };
+                assert_eq!(
+                    semantics.boolean_witnesses().len(),
+                    2,
+                    "{name}: both filters must compose"
+                );
+            }
+            Err(ConfiguredInputAnalysisError::Input(inner))
+                if matches!(inner.error(), Error::Parse(_)) =>
+            {
+                // Parser rejection is a documented boundary, not a proof.
+            }
+            Err(error) => panic!("{name}: composed filters must analyze: {error}"),
+        }
+        // Untyped analysis without a catalog must stay residual: no
+        // integer type evidence backs the range proof.
+        match analyze_sql(
+            "SELECT a FROM t WHERE a BETWEEN 1 AND 10",
+            name,
+            dialect.as_ref(),
+        ) {
+            Ok(protocol) => {
+                let Some(sql_semantic_protocol::ProtocolStatement::Query(query)) =
+                    protocol.statements().first()
+                else {
+                    panic!("{name}: expected query");
+                };
+                let witness = query.boolean_witness().expect("local witness");
+                assert!(
+                    matches!(
+                        witness.qualifying(),
+                        BooleanWitnessDirection::Residual { .. }
+                    ),
+                    "{name}: untyped range must stay residual"
+                );
+            }
+            Err(Error::Parse(_)) => {}
+            Err(error) => panic!("{name}: unexpected analysis error: {error}"),
+        }
+    }
+}
+
+#[test]
+fn qualify_keeps_an_explicit_residual() {
+    // Windowed QUALIFY is outside the composed filter contract: the scope
+    // must stay residual rather than claim an exact source-row proof.
+    let bundle = analyze_chain(
+        &["SELECT a FROM t QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY a) = 1"],
+        "duckdb",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("qualify layer must resolve");
+    };
+    assert!(
+        !semantics.condition_exactness().is_exact(),
+        "QUALIFY must keep an explicit residual"
+    );
+}
+
+#[test]
+fn insert_select_carries_typed_filters_with_partial_downstream() {
+    // A filtered INSERT-select append composes its source filter and lineage
+    // through the write layer; a downstream full-relation read stays partial
+    // rather than claiming complete producer semantics.
+    let bundle = analyze_chain(
+        &[
+            "INSERT INTO mart (a, b) SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
+            "CREATE TABLE downstream AS SELECT a, b FROM mart",
+        ],
+        "postgresql",
+    );
+    let insert_layer = &bundle.layers()[0];
+    assert_eq!(
+        insert_layer.write_kind(),
+        Some(sql_semantic_protocol::WriteKind::Append)
+    );
+    let ComposedSemantics::Resolved(inserted) = insert_layer.composed_semantics() else {
+        panic!("insert layer must resolve");
+    };
+    assert_exact_both(inserted.boolean_witnesses()[0].witness(), "insert filter");
+    assert_eq!(inserted.dependencies(), &["t".to_string()]);
+    match bundle.layers()[1].composed_semantics() {
+        ComposedSemantics::Unresolved(unresolved) => {
+            assert_eq!(
+                unresolved.reason(),
+                sql_semantic_protocol::CompositionFailureReason::PartialProducer
+            );
+        }
+        other => panic!("downstream full read must stay partial, got {other:?}"),
+    }
+}
+
+#[test]
+fn direct_sql_and_dbt_agree_on_composed_range_filters() {
+    const SQL: &str = "SELECT id, amount FROM warehouse.raw.orders WHERE amount BETWEEN 1 AND 10";
+    let mut manifest: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["nodes"]["model.demo.stg_orders"]["compiled_code"] = SQL.into();
+    let manifest = sql_semantic_protocol::parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let dbt_catalog =
+        sql_semantic_protocol::parse_dbt_catalog(include_str!("fixtures/dbt/catalog-v1.json"))
+            .unwrap();
+    let dialect = sql_semantic_protocol::dialect_from_name("postgresql").unwrap();
+    let from_dbt = sql_semantic_protocol::analyze_dbt_artifacts(
+        &manifest,
+        &dbt_catalog,
+        "postgresql",
+        dialect.as_ref(),
+    )
+    .unwrap();
+
+    let physical = RelationSchema::new(
+        "warehouse.raw.orders",
+        vec![
+            SchemaColumn::from_sql_type("id", "BIGINT", "postgresql").unwrap(),
+            SchemaColumn::from_sql_type("amount", "INTEGER", "postgresql").unwrap(),
+        ],
+    )
+    .unwrap();
+    let direct_catalog = RelationCatalog::from_schemas(&[physical]).unwrap();
+    let source = SqlInput::inline(SQL);
+    let from_sql = analyze_configured_inputs_with_catalog(
+        &[ConfiguredSqlInput::new(
+            "direct",
+            &source,
+            "postgresql",
+            dialect.as_ref(),
+        )],
+        &direct_catalog,
+    )
+    .unwrap();
+    let condition = |bundle: &AnalysisBundle| {
+        let layer = bundle
+            .layers()
+            .iter()
+            .find(|layer| {
+                layer
+                    .consumes()
+                    .iter()
+                    .any(|consumed| consumed == "warehouse.raw.orders")
+            })
+            .expect("source-consuming layer");
+        let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
+            panic!("resolved layer expected");
+        };
+        semantics.boolean_witnesses()[0].witness().clone()
+    };
+    let dbt = condition(&from_dbt);
+    let direct = condition(&from_sql);
+    assert_eq!(dbt.condition(), direct.condition());
+    assert_eq!(dbt.qualifying(), direct.qualifying());
+    assert_eq!(dbt.rejected(), direct.rejected());
+    assert!(matches!(
+        dbt.qualifying(),
+        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+    ));
+}
+
+#[test]
+fn duckdb_joint_positive_and_negative_rows_match_composed_filters() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER, k INTEGER);
+         INSERT INTO t VALUES (3, 7, 1), (11, 7, 2), (3, 1, 3), (NULL, 7, 4);",
+    )
+    .unwrap();
+    let positive: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM t WHERE a BETWEEN 1 AND 10 AND b > 5",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(positive, 1, "exactly one row satisfies both filters");
+    let rejected: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM t WHERE NOT (a BETWEEN 1 AND 10 AND b > 5)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(rejected, 2, "NULL rows are NOT TRUE, not TRUE");
+
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
+            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b > 5",
+        ],
+        "postgresql",
+    );
+    let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
+        "DuckDB-positive case must have a feasible qualifying proof"
+    );
+    assert!(
+        matches!(plan.rejected(), WitnessDirection::Feasible(_)),
+        "DuckDB-negative case must have a feasible rejected proof"
+    );
+}
