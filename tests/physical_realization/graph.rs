@@ -86,12 +86,22 @@ fn filtered_upstream_and_downstream_require_joint_satisfiability_proof() {
         "postgresql",
     );
     let plan = physical_source_plan(&b, b.layers()[1].id());
-    assert_eq!(plan.gap(), Some(PhysicalProofGap::MultipleWitnesses));
+    // Both filters are catalog-typed INTEGER disjunctions transported across
+    // the identity chain with certified identical datatypes, so the joint
+    // solver conjoins them against one shared physical row: (11, 0)
+    // qualifies while (0, 0) is rejected. Untyped chains without that
+    // evidence keep the historical multiple-witnesses residual.
+    assert_eq!(plan.gap(), None, "{plan:?}");
     assert!(matches!(
         plan.qualifying(),
-        WitnessDirection::Residual { .. }
+        WitnessDirection::Feasible(_),
+        "{plan:?}"
     ));
-    assert!(matches!(plan.rejected(), WitnessDirection::Residual { .. }));
+    assert!(matches!(
+        plan.rejected(),
+        WitnessDirection::Feasible(_),
+        "{plan:?}"
+    ));
     assert_eq!(plan.sources(), &["t".to_string()]);
 }
 
