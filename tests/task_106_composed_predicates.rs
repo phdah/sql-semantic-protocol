@@ -2196,3 +2196,33 @@ fn composed_affine_projection_preserves_open_interval_boundaries() {
     assert_eq!(upper.value().value(), &LiteralValue::Number("12".into()));
     assert!(!lower.inclusive() && !upper.inclusive());
 }
+
+#[test]
+fn decimal_producer_does_not_gain_integer_affine_certification_from_bounds_alone() {
+    let sql = [
+        SqlInput::inline("CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10"),
+        SqlInput::inline("SELECT CAST(a AS BIGINT) + 2 AS v FROM stage"),
+    ];
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let inputs = sql
+        .iter()
+        .zip(["stage", "mart"])
+        .map(|(source, id)| ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let schema = |relation: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type("a", "DECIMAL(8,2)", "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let catalog = RelationCatalog::from_schemas(&[schema("t"), schema("stage")]).unwrap();
+    let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog).unwrap();
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("typed semantic graph");
+    };
+    assert!(
+        !matches!(mart.output().columns()[0].domain(), ValueDomain::Ranges(_)),
+        "decimal or fractional producer values cannot be recast as proven whole-integer bounds"
+    );
+}
