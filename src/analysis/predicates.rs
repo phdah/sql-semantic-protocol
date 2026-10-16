@@ -289,13 +289,7 @@ pub(super) fn analyze_predicate_with_windows(
 // Only an unescaped alphabetic/digit prefix and one final wildcard is
 // independent of dialect-specific LIKE escape, collation and tokenization rules.
 // Non-ASCII and embedded wildcards remain regular unsupported SQL expressions.
-pub(super) // Normalize the finite SQL-standard ESCAPE '!' shape into the same
-// parser-independent literal-prefix model as ordinary ASCII LIKE. Only
-// escaped underscores are recognized: unescaped '_', interior '%', locale
-// characters, escaping the terminal wildcard, or other escape syntaxes
-// remain explicit residuals. Exactness still requires binary/no-padding
-// comparison attestations at the typed source boundary.
-fn safe_escaped_underscore_like_prefix(
+pub(super) fn safe_escaped_underscore_like_prefix(
     pattern: &Expr,
     escape_char: Option<&sqlparser::ast::Value>,
 ) -> Option<String> {
