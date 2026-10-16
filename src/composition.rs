@@ -11,7 +11,9 @@ use crate::bundle::{
     ComposedSetOperation, CompositionDiagnostic, CompositionFailureReason, GraphEdge,
     RelationResolution, TransformationLayer,
 };
+use crate::data_type::DataType;
 use crate::domain::{intersect_case_domain_values, intersect_domains};
+use crate::relation::RelationSchema;
 use crate::join_witness::JoinWitness;
 use crate::protocol::{
     BinaryOperator, Bound, CaseBranch, CaseExpression, CaseSourceDomainAlternative,
@@ -26,14 +28,16 @@ pub(crate) fn compose_layers(
     inputs: &[AnalyzedInput],
     layers: &[TransformationLayer],
     graph: &AnalysisGraph,
+    schemas: &[RelationSchema],
 ) -> Vec<ComposedSemantics> {
-    Composer::new(inputs, layers, graph).compose_all()
+    Composer::new(inputs, layers, graph, schemas).compose_all()
 }
 
 struct Composer<'a> {
     inputs: &'a [AnalyzedInput],
     layers: &'a [TransformationLayer],
     graph: &'a AnalysisGraph,
+    schemas: &'a [RelationSchema],
     layer_indices: BTreeMap<String, usize>,
     memo: BTreeMap<String, ComposedSemantics>,
 }
@@ -43,6 +47,7 @@ impl<'a> Composer<'a> {
         inputs: &'a [AnalyzedInput],
         layers: &'a [TransformationLayer],
         graph: &'a AnalysisGraph,
+        schemas: &'a [RelationSchema],
     ) -> Self {
         let layer_indices = layers
             .iter()
@@ -54,6 +59,7 @@ impl<'a> Composer<'a> {
             inputs,
             layers,
             graph,
+            schemas,
             layer_indices,
             memo: BTreeMap::new(),
         }
@@ -1167,6 +1173,30 @@ impl<'a> Composer<'a> {
         let [producer_id] = edge.producer_layer_ids() else {
             return None;
         };
+        // Integer-valued bounds alone are not proof of the underlying SQL
+        // column datatype: a decimal or text source might be truncated or
+        // rounded by CAST. Require an actual catalog-attested integer column
+        // before treating this mapping as lossless.
+        let declared = self
+            .schemas
+            .iter()
+            .find(|schema| schema.relation() == edge.relation())?
+            .columns()
+            .iter()
+            .find(|column| column.name() == source.name())?
+            .data_type();
+        fn signed_width(data_type: &DataType) -> Option<u16> {
+            match data_type {
+                DataType::SignedInteger { bits: Some(bits) } if *bits > 0 && *bits <= 64 => {
+                    Some(*bits)
+                }
+                DataType::Nullable(inner) => signed_width(inner),
+                _ => None,
+            }
+        }
+        if signed_width(declared)? > cast.target_bits() {
+            return None;
+        }
         let layer = self.layer_by_id(producer_id)?;
         if !matches!(layer.write_kind(), None | Some(WriteKind::Definition)) {
             return None;
