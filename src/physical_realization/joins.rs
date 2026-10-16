@@ -174,6 +174,22 @@ fn combined_filter(filters: &[WitnessFormula]) -> WitnessFormula {
     }
 }
 
+/// Flatten an ON conjunction without changing SQL operator semantics.
+///
+/// Parser normalization may produce nested AND trees. Treating a nested AND
+/// that includes the join key as a scalar source restriction would reject an
+/// otherwise independently provable non-key predicate.
+fn join_conjuncts<'a>(predicate: &'a Predicate, output: &mut Vec<&'a Predicate>) {
+    match predicate {
+        Predicate::And(and) => {
+            for operand in and.operands() {
+                join_conjuncts(operand, output);
+            }
+        }
+        _ => output.push(predicate),
+    }
+}
+
 /// Split a single-equijoin condition into its key equality and scalar filters.
 ///
 /// Accepts exactly one cross-relation `=` key plus any number of scalar `ON`
@@ -189,10 +205,8 @@ fn join_key_and_scalar_filters(
     use crate::protocol::ComparisonOperator;
 
     let condition = query.joins().first()?.condition()?;
-    let operands = match condition {
-        Predicate::And(and) => and.operands().iter().collect::<Vec<_>>(),
-        predicate => vec![predicate],
-    };
+    let mut operands = Vec::new();
+    join_conjuncts(condition, &mut operands);
     let mut key = None;
     let mut filters = Vec::new();
     for operand in operands {
