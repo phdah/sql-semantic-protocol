@@ -1967,6 +1967,132 @@ fn affine_composition_does_not_invent_domains_for_unknown_producer_values() {
 }
 
 #[test]
+fn nested_affine_chain_transports_bounded_domain() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT (CAST(a AS BIGINT) + 1) + 2 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("materialized computed output");
+    assert_range_bounds(value.domain(), "nested affine output", "8", "13");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (2),(5),(7),(10),(12),(NULL);
+         CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10;
+         CREATE TABLE mart AS SELECT (CAST(a AS BIGINT) + 1) + 2 AS v FROM stage;",
+    )
+    .unwrap();
+    let (minimum, maximum): (i64, i64) = db
+        .query_row("SELECT MIN(v), MAX(v) FROM mart", [], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        })
+        .unwrap();
+    assert_eq!((minimum, maximum), (8, 13));
+}
+
+#[test]
+fn affine_without_recast_transports_across_materialization() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mid AS SELECT CAST(a AS BIGINT) + 1 AS v FROM stage",
+            "CREATE TABLE mart AS SELECT v + 2 AS w FROM mid",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[2].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "w")
+        .expect("materialized computed output");
+    assert_range_bounds(value.domain(), "recast-free affine output", "8", "13");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (2),(5),(7),(10),(12),(NULL);
+         CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10;
+         CREATE TABLE mid AS SELECT CAST(a AS BIGINT) + 1 AS v FROM stage;
+         CREATE TABLE mart AS SELECT v + 2 AS w FROM mid;",
+    )
+    .unwrap();
+    let (minimum, maximum): (i64, i64) = db
+        .query_row("SELECT MIN(w), MAX(w) FROM mart", [], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        })
+        .unwrap();
+    assert_eq!((minimum, maximum), (8, 13));
+}
+
+#[test]
+fn nested_narrowing_cast_stays_residual() {
+    // Values 6..11 would fit SMALLINT, but narrowing by declared width stays
+    // fail-closed under the widening-only contract.
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT CAST(CAST(a AS BIGINT) + 1 AS SMALLINT) AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("materialized computed output");
+    assert!(
+        !matches!(value.domain(), ValueDomain::Ranges(_)),
+        "narrowing casts must not certify bounded domains: {:?}",
+        value.domain()
+    );
+}
+
+#[test]
+fn overflowing_nested_affine_stays_residual() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT (CAST(a AS BIGINT) + 9223372036854775800) + 100 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("materialized computed output");
+    assert!(
+        !matches!(value.domain(), ValueDomain::Ranges(_)),
+        "overflowing nested arithmetic must not certify bounded domains: {:?}",
+        value.domain()
+    );
+}
+
+#[test]
 fn identical_group_operator_histograms_are_shared_once_across_terminals() {
     let bundle = analyze_chain(
         &[
