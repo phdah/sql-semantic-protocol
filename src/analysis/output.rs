@@ -5,6 +5,41 @@ use crate::domain::{numeric_literals_equal, set_literals_provably_distinct};
 
 pub(super) type LocalOutputMap = BTreeMap<String, Output>;
 
+pub(super) fn apply_output_column_aliases(
+    output: Output,
+    alias: &sqlparser::ast::TableAlias,
+) -> Output {
+    if alias.columns.is_empty() {
+        return output;
+    }
+    let arity_matches = alias.columns.len() <= output.columns().len();
+    Output::new(
+        output
+            .columns()
+            .iter()
+            .enumerate()
+            .map(|(index, column)| {
+                let domain = if arity_matches {
+                    column.domain().clone()
+                } else {
+                    ValueDomain::unknown(
+                        "positional column alias list exceeds the known local output arity",
+                    )
+                };
+                OutputColumn::new(
+                    alias
+                        .columns
+                        .get(index)
+                        .map_or_else(|| column.name().to_string(), |name| name.name.value.clone()),
+                    column.expression().clone(),
+                    domain,
+                    column.lineage().to_vec(),
+                )
+            })
+            .collect(),
+    )
+}
+
 #[derive(Clone)]
 pub(super) struct OutputRelation {
     pub(super) qualifiers: Vec<String>,
@@ -54,7 +89,10 @@ pub(super) fn analyze_query_output_with_outer_scope(
                 &mut cte_diagnostics,
                 metadata,
             );
-            local_outputs.insert(cte.alias.name.to_string(), output);
+            local_outputs.insert(
+                cte.alias.name.to_string(),
+                apply_output_column_aliases(output, &cte.alias),
+            );
         }
     }
 
@@ -1088,8 +1126,8 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
         return ValueDomain::unknown(format!(
             "arithmetic {} on {} and {} requires safely bounded, typed operands",
             binary.operator().as_str(),
-            crate::protocol::arithmetic_operand_kind(binary.left()),
-            crate::protocol::arithmetic_operand_kind(binary.right())
+            crate::protocol::expression_residual_label(binary.left()),
+            crate::protocol::expression_residual_label(binary.right())
         ));
     };
     let left_width = explicit_signed_integer_width(binary.left());
@@ -1136,8 +1174,8 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
                 ValueDomain::unknown(format!(
                     "arithmetic {} on {} and {} requires attested result width, zero-divisor and rounding laws",
                     binary.operator().as_str(),
-                    crate::protocol::arithmetic_operand_kind(binary.left()),
-                    crate::protocol::arithmetic_operand_kind(binary.right())
+                    crate::protocol::expression_residual_label(binary.left()),
+                    crate::protocol::expression_residual_label(binary.right())
                 ))
             },
             |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),

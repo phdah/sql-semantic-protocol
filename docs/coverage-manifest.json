@@ -53,7 +53,17 @@
       {"id":"date_trunc","family":"vendor_function","ast":"Function","expression":"DATE_TRUNC('day', d)","outcome":"unknown","reason":"return type, calendar and session laws absent","parser_rejected":[]},
       {"id":"dateadd","family":"vendor_function","ast":"Function","expression":"DATEADD(day, 1, d)","outcome":"unknown","reason":"vendor date arithmetic execution law absent","parser_rejected":[]},
       {"id":"opaque_udf","family":"opaque_udf","ast":"Function","expression":"MY_UDF(payload)","outcome":"unknown","reason":"no externally validated deterministic type/NULL/execution evidence","parser_rejected":[]},
-      {"id":"qualified_builtin_name","family":"opaque_udf","ast":"Function","expression":"custom.EXTRACT_YEAR(d)","outcome":"unknown","reason":"a UDF spelling must not inherit built-in EXTRACT semantics","parser_rejected":[]}
+      {"id":"qualified_builtin_name","family":"opaque_udf","ast":"Function","expression":"custom.EXTRACT_YEAR(d)","outcome":"unknown","reason":"a UDF spelling must not inherit built-in EXTRACT semantics","parser_rejected":[]},
+      {"id":"time_literal_precision","family":"clock","ast":"TypedString/Time(precision)","expression":"TIME(3) '12:34:56.123456'","outcome":"unknown","reason":"declared literal precision would require rounding/truncation","parser_rejected":[]},
+      {"id":"time_default_precision","family":"clock","ast":"TypedString/Time(None)","expression":"TIME '12:34:56.123456789'","outcome":"unknown","reason":"engine default literal precision is not attested","parser_rejected":[]},
+      {"id":"timestamp_literal_precision","family":"timezone","ast":"TypedString/Timestamp(precision)","expression":"TIMESTAMP(3) '2024-02-29 12:34:56.123456'","outcome":"unknown","reason":"declared literal precision would require rounding/truncation","parser_rejected":[]},
+      {"id":"timestamp_default_precision","family":"timezone","ast":"TypedString/Timestamp(None)","expression":"TIMESTAMP '2024-02-29 12:34:56.123456789'","outcome":"unknown","reason":"engine default literal precision is not attested","parser_rejected":[]},
+      {"id":"timestamp_zone_without_offset","family":"timezone","ast":"TypedString/Timestamp(WithTimeZone)","expression":"TIMESTAMP WITH TIME ZONE '2024-02-29 12:34:56'","outcome":"unknown","reason":"literal instant requires a session zone before source-column interpretation","parser_rejected":[]},
+      {"id":"timestamp_without_zone_offset","family":"timezone","ast":"TypedString/Timestamp(WithoutTimeZone)","expression":"TIMESTAMP WITHOUT TIME ZONE '2024-02-29 12:34:56+02:00'","outcome":"unknown","reason":"offset-discard/coercion law is not certified","parser_rejected":[]},
+      {"id":"timestamp_unqualified_offset","family":"timezone","ast":"TypedString/Timestamp(None)","expression":"TIMESTAMP '2024-02-29 12:34:56+02:00'","outcome":"unknown","reason":"offset must not silently turn a timestamp into timestamptz","parser_rejected":[]},
+      {"id":"unicode_clock_suffix","family":"clock","ast":"TypedString","expression":"TIME '12:34:56💥'","outcome":"unknown","reason":"invalid UTF-8 character boundary for an ASCII offset token must fail closed","parser_rejected":[]},
+      {"id":"unicode_timestamp_suffix","family":"timezone","ast":"TypedString","expression":"TIMESTAMP '2024-02-29 12:34:56é'","outcome":"unknown","reason":"invalid non-ASCII offset token must fail closed","parser_rejected":[]},
+      {"id":"explicit_zoned_fraction","family":"timezone","ast":"TypedString/Timestamp(precision,WithTimeZone)","expression":"TIMESTAMP(6) WITH TIME ZONE '2024-02-29 12:34:56.123456+02:00'","outcome":"timestamp","value":"2024-02-29 12:34:56.123456+02:00","parser_rejected":[]}
     ]
   },
   "task_70_predicate_evidence": {

@@ -225,15 +225,19 @@ The certified calendar subset is:
   existing canonical literal nodes, rather than interpreted by a consumer.
 - Clock literals require valid hours/minutes/seconds and no offset; leap seconds
   and `24:00:00` remain unsupported. Timestamp literals require the existing
-  Gregorian/clock/numeric-offset representation. Offset-free timestamp bounds
-  on timezone-aware or unqualified timestamp columns remain conditional on
-  `session_time_zone`, including timezone-qualified literal spellings. No
+  Gregorian/clock/numeric-offset representation. Fractional values require an
+  explicit precision modifier they fit; engine defaults and reducing precision
+  are not guessed. Explicitly timezone-aware literals need numeric offsets;
+  offset-bearing timezone-free/unqualified literals remain unsupported because
+  engines may discard the offset. Offset-free wall-clock bounds on timezone-aware
+  or unqualified source columns remain conditional on `session_time_zone`. No
   session zone is inferred. Source comparison preconditions still come from
   explicit column zone evidence and declarations, as documented above.
 - Plain copies from a single ungrouped local relation preserve its output domains,
   including folded calendar constants. Joins, grouping and ambiguous scopes do
   not inherit a non-NULL constant through this path, because they can synthesize
-  NULL or lack proven identity. Existing producer composition carries DATE bounds.
+  NULL or lack proven identity. Positional CTE/derived-table column aliases are
+  applied before inheritance. Existing producer composition carries DATE bounds.
 
 Source-level SQL NULL tests are exact independently of the value's temporal,
 JSON, array or struct datatype. Their canonical row constraints preserve TRUE,

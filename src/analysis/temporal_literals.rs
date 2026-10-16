@@ -4,10 +4,48 @@
 
 use super::*;
 
+pub(super) fn temporal_modifiers_are_certified(
+    datatype: &sqlparser::ast::DataType,
+    text: &str,
+) -> bool {
+    use sqlparser::ast::{DataType as SqlDataType, TimezoneInfo};
+    let (precision, zone, timestamp) = match datatype {
+        SqlDataType::Date => return true,
+        SqlDataType::Time(precision, zone) => (*precision, zone, false),
+        SqlDataType::Timestamp(precision, zone) => (*precision, zone, true),
+        _ => return false,
+    };
+    let fraction_digits = text.split_once('.').map_or(0, |(_, fraction)| {
+        fraction.bytes().take_while(u8::is_ascii_digit).count()
+    });
+    if precision.is_none() && fraction_digits > 0 {
+        return false;
+    }
+    if precision.is_some_and(|precision| {
+        u64::try_from(fraction_digits).map_or(true, |used| used > precision)
+    }) {
+        // Even trailing zeroes may exceed a warehouse's representable literal
+        // precision. Do not pick a truncation/rounding/storage rule.
+        return false;
+    }
+    let has_offset = if timestamp {
+        let Some((_, offset)) = canonical_timestamp_text(text) else {
+            return false;
+        };
+        offset
+    } else {
+        false
+    };
+    match zone {
+        TimezoneInfo::WithTimeZone | TimezoneInfo::Tz => timestamp && has_offset,
+        TimezoneInfo::None | TimezoneInfo::WithoutTimeZone => !has_offset,
+    }
+}
+
 pub(super) fn validated_temporal_text(kind: LiteralType, text: &str) -> Option<String> {
     match kind {
         LiteralType::Date => {
-            crate::temporal::canonical_date_text(text)?;
+            crate::temporal::canonical_date_text(text).ok()?;
             Some(text.to_string())
         }
         LiteralType::Time => {

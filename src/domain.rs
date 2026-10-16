@@ -1443,8 +1443,9 @@ fn compare_literals(left: &LiteralExpression, right: &LiteralExpression) -> Opti
         if let (LiteralValue::Text(left), LiteralValue::Text(right)) = (left.value(), right.value())
         {
             return Some(
-                crate::temporal::canonical_date_text(left)?
-                    .cmp(crate::temporal::canonical_date_text(right)?),
+                crate::temporal::canonical_date_text(left)
+                    .ok()?
+                    .cmp(crate::temporal::canonical_date_text(right).ok()?),
             );
         }
     }

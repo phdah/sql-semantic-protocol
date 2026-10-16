@@ -225,7 +225,7 @@ fn timestamp_lower_bound(semantics: &ResolvedComposedSemantics) -> String {
 fn offset_bearing_literals_never_constrain_timezone_free_timestamp_columns() {
     use sql_semantic_protocol::{ConditionExactnessStatus, ResidualConditionReason};
     for offset in ["Z", "+02", "+0230", "+02:30", "-07:45"] {
-        let sql = format!("SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 12:34:56{offset}'");
+        let sql = format!("SELECT ts FROM t WHERE ts >= TIMESTAMPTZ '2024-01-01 12:34:56{offset}'");
         let semantics = analyze(&sql, &[("ts", "TIMESTAMP WITHOUT TIME ZONE")]);
         assert!(
             matches!(
@@ -285,8 +285,14 @@ fn timestamp_domain_bounds_are_canonical_for_every_known_zone_kind() {
             ConditionExactnessStatus::Conditional,
         ),
     ] {
-        let sql =
-            format!("SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01T12:34:56.1200{suffix}'");
+        let literal_type = if suffix.is_empty() {
+            "TIMESTAMP(6)"
+        } else {
+            "TIMESTAMP(6) WITH TIME ZONE"
+        };
+        let sql = format!(
+            "SELECT ts FROM t WHERE ts >= {literal_type} '2024-01-01T12:34:56.1200{suffix}'"
+        );
         let semantics = analyze(&sql, &[("ts", schema_type)]);
         assert_eq!(
             semantics.condition_exactness().status(),
@@ -315,7 +321,7 @@ fn timestamp_offset_normalization_is_independent_of_parser_dialect() {
         .unwrap();
         let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
         let input =
-            SqlInput::inline("SELECT ts FROM t WHERE ts >= TIMESTAMP '2024-01-01 00:00:00Z'");
+            SqlInput::inline("SELECT ts FROM t WHERE ts >= TIMESTAMPTZ '2024-01-01 00:00:00Z'");
         let dialect = sql_semantic_protocol::dialect_from_name(dialect_name).unwrap();
         let configured = [ConfiguredSqlInput::new(
             "tz-test",
@@ -372,7 +378,7 @@ fn analyze_zoned_timestamp_for_dialect(
 }
 
 #[test]
-fn equivalent_timestamp_literal_spellings_normalize_across_parsing_dialects() {
+fn timestamp_literal_spellings_preserve_zone_qualification_across_parsing_dialects() {
     use sql_semantic_protocol::ConditionExactnessStatus;
 
     for spelling in ["TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP"] {
@@ -394,6 +400,19 @@ fn equivalent_timestamp_literal_spellings_normalize_across_parsing_dialects() {
                     continue;
                 };
                 parsed += 1;
+                if spelling == "TIMESTAMP" {
+                    // An offset does not turn an unqualified timestamp into
+                    // TIMESTAMPTZ. Engines may ignore that offset entirely.
+                    assert_eq!(
+                        semantics.condition_exactness().status(),
+                        ConditionExactnessStatus::Residual
+                    );
+                    assert!(matches!(
+                        semantics.column_domains()[0].domain(),
+                        ValueDomain::Unknown(_)
+                    ));
+                    continue;
+                }
                 assert_eq!(
                     semantics.condition_exactness().status(),
                     ConditionExactnessStatus::Exact,
@@ -411,7 +430,7 @@ fn equivalent_timestamp_literal_spellings_normalize_across_parsing_dialects() {
 }
 
 #[test]
-fn offset_free_timestamp_spelling_remains_session_dependent() {
+fn offset_free_timestamp_spellings_do_not_invent_session_interpretation() {
     use sql_semantic_protocol::ConditionExactnessStatus;
 
     for spelling in ["TIMESTAMPTZ", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP"] {
@@ -422,6 +441,17 @@ fn offset_free_timestamp_spelling_remains_session_dependent() {
                 continue;
             };
             parsed += 1;
+            if spelling != "TIMESTAMP" {
+                assert_eq!(
+                    semantics.condition_exactness().status(),
+                    ConditionExactnessStatus::Residual
+                );
+                assert!(matches!(
+                    semantics.column_domains()[0].domain(),
+                    ValueDomain::Unknown(_)
+                ));
+                continue;
+            }
             assert_eq!(
                 semantics.condition_exactness().status(),
                 ConditionExactnessStatus::Conditional,

@@ -297,12 +297,9 @@ pub(super) fn analyze_expression_with_windows(
         }
         Expr::CompoundIdentifier(identifiers) => analyze_compound_identifier(identifiers),
         Expr::Value(value) => analyze_value(&value.value, expression, diagnostics),
-        Expr::TypedString { data_type, value } => analyze_typed_string(
-            data_type.to_string().as_str(),
-            &value.value,
-            expression,
-            diagnostics,
-        ),
+        Expr::TypedString { data_type, value } => {
+            analyze_typed_string(data_type, &value.value, expression, diagnostics)
+        }
         Expr::Function(function) => {
             analyze_function(function, expression, named_windows, diagnostics)
         }
@@ -496,12 +493,12 @@ pub(super) fn analyze_number(
 }
 
 pub(super) fn analyze_typed_string(
-    data_type: &str,
+    datatype: &sqlparser::ast::DataType,
     value: &Value,
     expression: &Expr,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
-    let data_type = data_type.to_ascii_uppercase();
+    let data_type = datatype.to_string().to_ascii_uppercase();
     if matches!(data_type.as_str(), "JSON" | "JSONB" | "VARIANT") {
         // A document containing JSON null is a non-NULL SQL value. There is no
         // canonical scalar literal type for that document, so never turn it
@@ -529,10 +526,10 @@ pub(super) fn analyze_typed_string(
 
     match (literal_type, string_literal_value(value)) {
         (Some(literal_type), Some(value)) => {
-            if literal_type == LiteralType::Time && data_type.contains("WITH TIME ZONE") {
+            if !temporal_literals::temporal_modifiers_are_certified(datatype, value) {
                 return unsupported_expression_with_reason(
                     "temporal_literal", expression, DiagnosticArea::Expression, diagnostics,
-                    "an explicit offset and certified time-zone representation are required; no session zone is inferred",
+                    "literal precision or timezone qualification requires uncertified rounding/session/coercion laws",
                 );
             }
             match temporal_literals::validated_temporal_text(literal_type, value) {

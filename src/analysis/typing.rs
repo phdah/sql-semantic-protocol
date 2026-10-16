@@ -485,7 +485,7 @@ pub(super) fn canonical_timestamp_text(input: &str) -> Option<(String, bool)> {
         return None;
     }
 
-    crate::temporal::canonical_date_text(value.get(..10)?)?;
+    crate::temporal::canonical_date_text(value.get(..10)?).ok()?;
     let hour = value.get(11..13)?.parse::<u8>().ok()?;
     let minute = value.get(14..16)?.parse::<u8>().ok()?;
     let second = value.get(17..19)?.parse::<u8>().ok()?;
@@ -510,7 +510,8 @@ pub(super) fn canonical_timestamp_text(input: &str) -> Option<(String, bool)> {
     } else if suffix.eq_ignore_ascii_case("z") {
         ("+00:00".to_string(), true)
     } else {
-        let (sign, digits) = suffix.split_at(1);
+        let sign = suffix.get(..1)?;
+        let digits = suffix.get(1..)?;
         if sign != "+" && sign != "-" {
             return None;
         }

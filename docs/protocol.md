@@ -349,18 +349,23 @@ exist, and `residual` means at least one predicate still cannot be represented.
 
 A timestamp without time zone compared to an offset-free typed literal is unconditional exact
 when schema evidence explicitly identifies the column as timezone-free. A timezone-aware
-timestamp comparison with an explicit literal UTC offset is also unconditional exact.
+timestamp comparison with an explicitly timezone-aware literal and numeric UTC offset is also unconditional exact.
 Unqualified timestamp types remain conditional. Contradictory timezone-free schema evidence
 and an offset-bearing literal produce Unknown with a `literal_type_mismatch` residual,
 never an invented domain; declaring `session_time_zone` cannot override that conflict.
 
 SQL typed literals recognized by sqlparser include `TIMESTAMP '...'`,
 `TIMESTAMP WITH TIME ZONE '...'`, and the `TIMESTAMPTZ '...'` alias.
-Other dialect-specific timestamp aliases are treated equivalently when sqlparser
-recognizes them. The spelling alone does not grant exactness: an explicit UTC offset
-and timezone-aware *column* schema evidence are required for unconditional exactness.
-With no literal offset, a timezone-aware column requires `session_time_zone`
-regardless of the typed literal spelling. Accepted offset spellings are `Z`/`z`,
+The AST's literal precision and timezone qualification are preserved when deciding
+whether a scalar value is certified. `TIMESTAMPTZ` and `TIMESTAMP WITH TIME ZONE`
+require a literal offset; without one, the literal itself remains unsupported,
+even before source comparison. An offset on plain `TIMESTAMP` or explicit
+`TIMESTAMP WITHOUT TIME ZONE` also remains unsupported: engines can discard it,
+so column schema evidence cannot silently reinterpret that literal as an instant.
+An offset-free, timezone-free literal compared with a timezone-aware column
+still requires `session_time_zone`. Declaring this comparison assumption does
+not evaluate unsupported literal coercions. Accepted offset spellings for
+explicitly timezone-aware literals are `Z`/`z`,
 `+HH`/`-HH`, `+HHMM`/`-HHMM`, and `+HH:MM`/`-HH:MM`; these all
 normalize to signed `HH:MM` form.
 
@@ -371,6 +376,8 @@ the decimal point if the fraction becomes empty. The wall-clock portion is not s
 by the analyzer. An explicit offset is normalized to `+HH:MM` or `-HH:MM`;
 `Z` and `z` normalize to `+00:00`, and `+HH` / `+HHMM` normalize to
 `+HH:00` / `+HH:MM`. Offsets beyond 14 hours are not accepted.
+Fractional literals require an explicit precision modifier and must fit it;
+unattested engine defaults and precision-reducing rounding/truncation remain unsupported.
 
 - `timestamp_zone: without_time_zone` only emits offset-free bounds; an offset-bearing
   literal instead gives Unknown and a residual.
@@ -380,8 +387,10 @@ by the analyzer. An explicit offset is normalized to `+HH:MM` or `-HH:MM`;
 - An unqualified timestamp column preserves a normalized literal, but remains
   conditional on `session_time_zone` because its storage timezone semantics are unknown.
 
-Malformed or noncanonicalizable timestamp values produce Unknown with the
-`comparison_semantics` residual rather than a misleading exact domain.
+Malformed, noncanonicalizable or unsupported precision/zone-qualified literals
+produce an unsupported expression and Unknown output, with a `computed_expression`
+row residual when used in a predicate. A later source-typing failure may instead
+produce a `comparison_semantics` or `literal_type_mismatch` residual.
 String comparisons lacking a typed schema use the same binary-collation requirement as
 typed strings, so no schema path is silently declared exact. NULL-only conditions
 do not depend on any comparison setting. NaN is excluded by the declared `no_nan`

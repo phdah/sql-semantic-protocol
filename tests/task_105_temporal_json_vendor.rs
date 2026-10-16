@@ -93,8 +93,17 @@ fn invalid_or_session_sensitive_temporal_literals_have_unknown_outcomes() {
         "TIME '24:00:00'",
         "TIME '12:00:60'",
         "TIME '12:00:00+02:00'",
+        "TIME '12:00:00💥'",
+        "TIME(3) '12:34:56.123456'",
+        "TIME '12:34:56.123456789'",
         "TIMESTAMP '2024-02-30 12:00:00'",
         "TIMESTAMP '2024-03-10 02:30:00 America/New_York'",
+        "TIMESTAMP '2024-02-29 12:00:00é'",
+        "TIMESTAMP(3) '2024-02-29 12:34:56.123456'",
+        "TIMESTAMP '2024-02-29 12:34:56.123456789'",
+        "TIMESTAMP WITH TIME ZONE '2024-02-29 12:34:56'",
+        "TIMESTAMP WITHOUT TIME ZONE '2024-02-29 12:34:56+02:00'",
+        "TIMESTAMP '2024-02-29 12:34:56+02:00'",
     ] {
         let sql = format!("SELECT {literal} AS v");
         let analyzed = query(&sql);
@@ -440,6 +449,34 @@ fn duckdb_calendar_oracle_matches_literal_domains_at_century_boundaries() {
     }
 }
 
+#[test]
+fn duckdb_precision_and_offset_counterexamples_remain_outside_certified_literals() {
+    let db = duckdb::Connection::open_in_memory().unwrap();
+    let (offset_is_discarded, precision_changes_value): (bool, bool) = db.query_row(
+        "SELECT TIMESTAMP '2024-02-29 12:34:56+02:00' = TIMESTAMP '2024-02-29 12:34:56', TIMESTAMP(3) '2024-02-29 12:34:56.123456' <> TIMESTAMP(6) '2024-02-29 12:34:56.123456'",
+        [], |row| Ok((row.get(0)?, row.get(1)?)),
+    ).unwrap();
+    assert!(offset_is_discarded);
+    assert!(precision_changes_value);
+    for literal in [
+        "TIMESTAMP '2024-02-29 12:34:56+02:00'",
+        "TIMESTAMP(3) '2024-02-29 12:34:56.123456'",
+    ] {
+        assert!(matches!(
+            query(&format!("SELECT {literal} AS v")).output().columns()[0].domain(),
+            ValueDomain::Unknown(_)
+        ));
+    }
+    assert_single_value(
+        query("SELECT TIMESTAMP(3) '2024-02-29 12:34:56.123' AS v")
+            .output()
+            .columns()[0]
+            .domain(),
+        LiteralType::Timestamp,
+        "2024-02-29 12:34:56.123",
+    );
+}
+
 fn date_domain_selects(domain: &ValueDomain, date: Option<&str>) -> bool {
     match domain {
         ValueDomain::Empty => false,
@@ -612,6 +649,17 @@ fn local_calendar_domain_inheritance_does_not_hide_rollup_nulls() {
 }
 
 #[test]
+fn local_calendar_domains_follow_positional_column_aliases() {
+    for sql in [
+        "SELECT v FROM (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) c(w, v)",
+        "WITH c(w, v) AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c",
+        "WITH c AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c AS renamed(w, v)",
+    ] {
+        assert_single_value(query(sql).output().columns()[0].domain(), LiteralType::Date, "2024-01-01");
+    }
+}
+
+#[test]
 fn dbt_catalog_and_manifest_schema_evidence_match_direct_temporal_and_json_outcomes() {
     use serde_json::json;
     use sql_semantic_protocol::{
@@ -777,8 +825,13 @@ fn timestamp_comparison_requires_zone_evidence_and_keeps_typed_bounds() {
                 ConditionExactnessStatus::Conditional,
             ),
         ] {
+            let literal_type = if literal.contains('+') {
+                "TIMESTAMPTZ"
+            } else {
+                "TIMESTAMP"
+            };
             let mut bundle = typed_bundle(
-                &format!("SELECT ts FROM t WHERE ts >= TIMESTAMP '{literal}'"),
+                &format!("SELECT ts FROM t WHERE ts >= {literal_type} '{literal}'"),
                 "t",
                 &[("ts", datatype)],
                 dialect_name,

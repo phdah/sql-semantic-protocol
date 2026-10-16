@@ -1011,7 +1011,7 @@ fn normalize(
         .unwrap_or_else(|| {
             residual(&format!(
                 "NULL test involves an unproven computed expression: {}",
-                crate::protocol::arithmetic_operand_kind(test.expression()),
+                crate::protocol::expression_residual_label(test.expression()),
             ))
         }),
         Predicate::Comparison(comparison) => {
@@ -1326,7 +1326,7 @@ fn normalize(
         }
         Predicate::BooleanExpression(expression) => residual(&format!(
             "boolean expression has no certified truth law: {}",
-            crate::protocol::arithmetic_operand_kind(expression),
+            crate::protocol::expression_residual_label(expression),
         )),
         _ => residual("computed, function, collation, cast or other predicate is not invertible"),
     }

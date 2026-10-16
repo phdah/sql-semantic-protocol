@@ -1719,7 +1719,7 @@
       }
     },
     "literalExpression": {
-      "description": "A typed scalar literal, including certified constant folding of validated DATE identity casts and YEAR/MONTH/DAY extraction. Temporal literals outside the certified calendar/clock/offset subset are unsupported, not guessed scalar values. JSON document null is not a SQL null literal.",
+      "description": "A typed scalar literal, including certified constant folding of validated DATE identity casts and YEAR/MONTH/DAY extraction. Temporal literals outside the certified calendar/clock/precision/zone subset are unsupported, not guessed scalar values; source comparison settings do not attest unsupported literal coercions. JSON document null is not a SQL null literal.",
       "type": "object",
       "additionalProperties": false,
       "required": [

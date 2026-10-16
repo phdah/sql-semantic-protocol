@@ -34,15 +34,15 @@ pub enum Expression {
     Unsupported(UnsupportedSemantic),
 }
 
-/// Canonical structural operand class for explicit arithmetic residuals.
+/// Canonical structural expression label for explicit semantic residuals.
 ///
 /// This is a diagnostic label, not a claim that a source column's physical
 /// datatype is attested. A `signed-integer-cast` carries its explicit target
 /// width because that width is part of the cast expression itself; a
 /// `source-column` stays structural unless the caller qualifies it with
 /// catalog-attested datatype evidence. The caller must still establish type
-/// and width laws.
-pub(crate) fn arithmetic_operand_kind(expression: &Expression) -> String {
+/// evaluation, type and width laws.
+pub(crate) fn expression_residual_label(expression: &Expression) -> String {
     match expression {
         Expression::Column(_) => "source-column".to_string(),
         Expression::SignedIntegerCast(cast) => {
