@@ -950,7 +950,11 @@ materialized relation are not silently inherited from its upstream physical
 source: identity and widening inverses remain residual unless these additional
 laws have been transported and verified. Join-key
 restrictions, ambiguous source predicates, unsupported join shapes and
-unattested source types remain residual.
+unattested source types remain residual. Separate filtered join targets can
+share one joint count proof when their complete physical source bags are
+disjoint; the composer retains each source's certified TRUE filter and its
+join-key population. Overlapping physical sources with different filters or
+unreconciled join-key histograms remain residual, not optimistically combined.
 
 Existing operator-specific laws remain authoritative for grouped
 `COUNT`/`HAVING` and `ROW_NUMBER`/`QUALIFY` populations. Unsupported aggregate
