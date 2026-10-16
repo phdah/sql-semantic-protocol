@@ -2000,3 +2000,76 @@ fn identical_group_operator_histograms_are_shared_once_across_terminals() {
     ).unwrap();
     assert_eq!(count, 2);
 }
+
+#[test]
+fn distinct_group_keys_share_one_joint_source_assignment() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+            "SELECT b, COUNT(*) AS n FROM t GROUP BY b",
+        ],
+        "postgresql",
+    );
+    let goal = [
+        (bundle.layers()[0].id(), 2),
+        (bundle.layers()[1].id(), 2),
+    ];
+    let plan = physical_joint_row_count_plan(&bundle, &goal);
+    let WitnessDirection::Feasible(cases) = plan else {
+        panic!("two independent distinct group keys can be assigned to one bag: {plan:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations()
+            .iter()
+            .filter(|obligation| matches!(obligation, WitnessObligation::OperatorPopulation { .. }))
+            .count()
+            == 2
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+                .count()
+                == 1
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                .count()
+                == 2
+    }), "both group histograms refer to one physical t relation");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER,b INTEGER);
+         INSERT INTO t VALUES (0,1),(1,0);",
+    )
+    .unwrap();
+    let counts = [
+        "SELECT COUNT(*) FROM (SELECT a,COUNT(*) AS n FROM t GROUP BY a)",
+        "SELECT COUNT(*) FROM (SELECT b,COUNT(*) AS n FROM t GROUP BY b)",
+    ]
+    .map(|sql| db.query_row(sql, [], |row| row.get::<_, i64>(0)).unwrap());
+    assert_eq!(counts, [2, 2]);
+}
+
+#[test]
+fn uncorrelated_nonunit_group_histograms_stay_residual() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+            "SELECT b, COUNT(*) AS n FROM t GROUP BY b HAVING COUNT(*) > 1",
+        ],
+        "postgresql",
+    );
+    let plan = physical_joint_row_count_plan(
+        &bundle,
+        &[
+            (bundle.layers()[0].id(), 2),
+            (bundle.layers()[1].id(), 1),
+        ],
+    );
+    assert!(
+        !matches!(plan, WitnessDirection::Feasible(_)),
+        "unreconciled independent group multiplicities require correlation proof: {plan:?}"
+    );
+}
