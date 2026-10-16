@@ -31,12 +31,16 @@ fn computed_boolean_truth_tests_keep_unknown_rejected_with_typed_domains() {
         let sql = format!("SELECT a FROM t WHERE {predicate}");
         let source = SqlInput::inline(&sql);
         let bundle = analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new("task107", &source, "postgresql", dialect.as_ref())],
+            &[ConfiguredSqlInput::new(
+                "task107",
+                &source,
+                "postgresql",
+                dialect.as_ref(),
+            )],
             &catalog,
         )
         .unwrap();
-        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics()
-        else {
+        let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
             panic!("{predicate}: typed WHERE semantic resolution must succeed");
         };
         assert!(
@@ -52,7 +56,11 @@ fn computed_boolean_truth_tests_keep_unknown_rejected_with_typed_domains() {
                 .map(|row| row.unwrap())
                 .collect::<Vec<_>>()
         };
-        assert_eq!(sql_ids(&sql_true), expected_true, "{predicate}: positive DuckDB bag");
+        assert_eq!(
+            sql_ids(&sql_true),
+            expected_true,
+            "{predicate}: positive DuckDB bag"
+        );
         assert_eq!(
             sql_ids(&sql_rejected),
             expected_not_true,
