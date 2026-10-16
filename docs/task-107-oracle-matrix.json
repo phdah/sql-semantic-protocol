@@ -1,16 +1,16 @@
 {
   "version": 1,
   "owner": "TASK-107",
-  "status": "representative_oracles_with_full_family_traceability_pending_variant_closure",
+  "status": "frozen_variants_dialect_source_and_adapter_parity_verified_pending_conditional_signoff",
   "release_approved": false,
   "baseline": "b75b16a29234fc207af0014bf662d39223b2502f",
   "scope": "Representative implementation/test references; all required cells and precise signoff gates are independently frozen in acceptance_freeze. Evidence completion remains pending.",
   "acceptance_criteria_status": {
-    "1": "in_progress",
-    "2": "in_progress",
-    "3": "in_progress",
-    "4": "in_progress",
-    "5": "not_verified"
+    "#1": "substantial_verified_evidence__28_mandatory_variants_and_14_families__remaining_conditional_proof_review",
+    "#2": "546_parser_and_canonical_statuses_verified__540_parsed_equivalent__6_parse_rejections__no_vendor_execution",
+    "#3": "9_golden_cases_9_compositions_28_mandatory_duckdb_physical_TRUE_NOT_TRUE_cases_and_4_seed_overflow_oracles",
+    "#4": "sql_dbt_28_variant_typed_JSON_parity_and_representative_ODCS_parity__conditional_adapter_disposition_pending",
+    "#5": "tests_ci_final_sha_and_14_conditional_maintainer_dispositions_pending"
   },
   "dialects": [
     "generic",
@@ -36,11 +36,10 @@
   "oracle_source": "tests/task_107_expression_oracles.rs::seeded_values",
   "oracle_runtime": "DuckDB only. This is not a native execution certification for any other dialect.",
   "outstanding": [
-    "Resolve every unverified frozen acceptance cell with independently asserted SQL/dbt/dialect/ODCS evidence.",
-    "Run all nine golden source/terminal DuckDB fixtures and nine required operator-composition pairings.",
-    "Enforce exact-versus-impossible/residual outcomes for both SQL TRUE and NOT TRUE and all typed bounds/nullability.",
-    "Classify all 546 parser/canonical dialect cells with explicit non-equivalent assumptions.",
-    "Review conditional dispositions; run final full CI and dbt E2E on the final head SHA before TASK-107 signoff."
+    "Review and explicitly approve or reject all 14 conditional dialect/session/vendor-boundary release dispositions. Keep unsupported forms typed Residual or certified Impossible with evidence; no silent mandatory Exact downgrades.",
+    "Verify the latest full CI (fmt, lint, tests, docs, no-default-feature matrix and dbt E2E), including 28 hand-worked DuckDB cases and 4-seed overflow regression, on the final PR commit.",
+    "Independently audit typed Exact/Impossible/Residual positive and NOT TRUE assertions for every TASK-101..106 family. Neither parser equivalence nor passing adapter equality alone constitutes exactness proof.",
+    "Do not mark TASK-107 Done without all five original AC and the frozen acceptance matrix verified; TASK-108 and release TASK-91 retain separate gates."
   ],
   "fixtures": [
     {
@@ -281,5 +280,12 @@
     "child_family_count": 14,
     "golden_cases": 9,
     "composition_cases": 9
-  }
+  },
+  "verification_files": [
+    "tests/task_107_acceptance_freeze.rs",
+    "tests/task_107_dialect_classifications.rs",
+    "tests/task_107_frozen_execution_oracles.rs",
+    "tests/task_107_full_variant_adapters.rs",
+    "tests/task_107_expression_oracles.rs"
+  ]
 }
