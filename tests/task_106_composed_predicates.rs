@@ -1952,3 +1952,51 @@ fn affine_composition_does_not_invent_domains_for_unknown_producer_values() {
         "unbounded or unknown producer values cannot certify bounded arithmetic"
     );
 }
+
+#[test]
+fn identical_group_operator_histograms_are_shared_once_across_terminals() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+            "SELECT a, COUNT(*) AS n FROM t GROUP BY a",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (bundle.layers()[0].id(), 2),
+        (bundle.layers()[1].id(), 2),
+    ];
+    let result = physical_joint_row_count_plan(&bundle, &goals);
+    let WitnessDirection::Feasible(cases) = result else {
+        panic!("identical grouping populations must share one physical input: {result:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations()
+            .iter()
+            .filter(|obligation| matches!(obligation, WitnessObligation::OperatorPopulation { .. }))
+            .count()
+            == 1
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+                .count()
+                == 1
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                .count()
+                == 2
+    }), "one physical grouping histogram supports two output goals");
+
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (0),(1);")
+        .expect("group inputs");
+    let count: i64 = db.query_row(
+        "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM t GROUP BY a)",
+        [],
+        |row| row.get(0),
+    ).unwrap();
+    assert_eq!(count, 2);
+}
