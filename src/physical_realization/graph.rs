@@ -461,6 +461,12 @@ pub(super) fn joint_physical_filters(
         };
         let layer = walker.layers.get(id.as_str()).copied()?;
         let query = query_for(bundle, layer)?;
+        // An append, update or merge reads an existing target state and
+        // cannot be modeled as an independently constructed filter chain.
+        // Only full definitions and plain read-only queries are safe here.
+        if !matches!(node.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
         if origin_ids.contains(layer.id()) {
             if !query.filter_only_row_shape()
                 || query.sources().len() != 1
