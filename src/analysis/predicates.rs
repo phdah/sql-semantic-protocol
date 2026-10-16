@@ -164,6 +164,24 @@ pub(super) fn analyze_predicate_with_windows(
             analyze_predicate_expression(inner, named_windows, output_aliases, scope, diagnostics),
             true,
         )),
+        // At a WHERE/HAVING predicate seam, E IS TRUE admits exactly the
+        // rows for which E evaluates TRUE; E IS FALSE admits exactly the
+        // rows for which NOT E evaluates TRUE. Both reject UNKNOWN, while the
+        // NOT TRUE/rejected source direction still includes UNKNOWN.
+        // Preserve the older scalar Boolean-column comparison contract:
+        // only computed Boolean predicate trees use this transformation.
+        Expr::IsTrue(inner) if !is_plain_boolean_column(inner) => {
+            analyze_predicate_with_windows(inner, named_windows, output_aliases, scope, diagnostics)
+        }
+        Expr::IsFalse(inner) if !is_plain_boolean_column(inner) => {
+            Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
+                inner,
+                named_windows,
+                output_aliases,
+                scope,
+                diagnostics,
+            )))
+        }
         Expr::IsTrue(inner)
         | Expr::IsFalse(inner)
         | Expr::IsNotTrue(inner)
