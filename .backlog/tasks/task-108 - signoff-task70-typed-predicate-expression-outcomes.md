@@ -51,6 +51,13 @@ The existing **AC #1..#5 remain required**. Interpret and verify them through th
 
 **Acceptance sign-off:** Before implementation, register each original named AC variant as a versioned feature/dialect cell and freeze fixture IDs in `docs/coverage-manifest.json`. Every mandatory core cell needs typed output domains (including NULL and interval inclusivity), positive/rejected membership and `Exact`/`Impossible` physical-source proof as applicable, complete DuckDB source/terminal oracles where executable, and representable SQL/dbt/ODCS parity plus 13-dialect parser equivalence evidence. Conditional cells need a documented parser/runtime boundary, typed `Residual` or justified `Impossible`, named owner, and explicit release disposition, **not a shortcut for missing implementation**. Sign off AC #1..#5 only after required cells and final CI are verified. Do not approve independent release gates through this task.
 
+**Upstream signoff prerequisite:** Independently verify TASK-107 against
+`docs/task-107-acceptance-freeze.json` (all 42 variants, 546 dialect cells,
+14 family obligations, 9 goldens, 9 pairings, seeded oracles and adapter gates).
+A frozen matrix alone is not evidence of passed semantics or TASK-107
+completion. TASK-108 still needs its own frozen closure matrix before work and
+must not inherit TASK-107's proof signoff automatically.
+
 ## Implementation and verification
 
 - **Parent:** [TASK-70](task-70%20-%20solve-expression-and-predicate-variants.md), still **In Progress** until TASK-108 verifies all six original acceptance criteria.

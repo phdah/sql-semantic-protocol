@@ -240,6 +240,28 @@ parent itself for new implementation work or mark it Done until the child
 closure checks and original acceptance criteria are verified. The parent
 task file owns the concrete queue; keep general routing guidance here.
 
+### Bounded acceptance before implementation
+
+An acceptance criterion is **not** bounded merely because it references the
+project-wide Definition of Done, the TASK-66 inventory, or another task's
+acceptance matrix. Before beginning a backlog implementation task, freeze **that
+task's own** finite, versioned acceptance inventory: stable fixture/variant IDs,
+mandatory exact outcomes, conditional parser/session boundaries, applicable
+dialects/adapters, typed expected domains and positive/NOT TRUE proofs, source
+and terminal execution oracles, seed/data boundaries, and explicit CI signoff.
+Map every original AC to the inventory, with no implicit "where supported"
+exclusions. See `docs/backlog-acceptance-contracts.md` and the TASK-107 example
+`docs/task-107-acceptance-freeze.json`.
+
+An unverified required cell **blocks Done** even when the current test suite is
+green. Conditional cells need a justified boundary, named owner and reviewed
+release disposition; a missing mandatory implementation is never an approved
+residual. New variants discovered after freezing are separate backlog scope
+unless they invalidate a currently claimed semantic outcome; do not silently
+expand or weaken the frozen acceptance contract. Review any changes to the
+frozen task-specific matrix explicitly. Parent signoff and release gates retain
+their own independent acceptance requirements.
+
 ## Agent skills
 
 ### Issue tracker

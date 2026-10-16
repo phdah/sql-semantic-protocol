@@ -4,6 +4,27 @@ This review freezes a **finite verification floor**, not a ceiling on protocol f
 
 **Snapshot boundary:** Feature-family membership is fixed by this review and the approved `docs/coverage-manifest.json` inventory at baseline commit `b75b16a29234fc207af0014bf662d39223b2502f`. The eventual implementation task registers specific fixture IDs before changing semantics; adding newly discovered SQL/operator variants later does not silently expand that task. Mandatory core families listed here cannot be reclassified as residual solely because implementation is difficult. If the inventory genuinely needs changing, revise the task contract explicitly in a separate reviewed change and retain the required release-blocking richness.
 
+## Applying bounded contracts to each backlog task
+
+The per-task table below is a **minimum scope floor**, not a completed
+fixture-by-fixture acceptance matrix. Updating TASK-107 does not implicitly
+freeze TASK-108, TASK-71..90, TASK-91 or any other unfinished task. Before
+each task is implemented, freeze its *own* immutable inventory of expected
+SQL/dialect/adapter cases and executable signoff assertions, linked from that
+task and the canonical coverage manifest. The repository's `AGENTS.md` now
+makes this a default prerequisite for all future implementation work. Completed
+tasks do not need retroactive ticket rewrites solely for this policy.
+
+**TASK-107 reference:** `docs/task-107-acceptance-freeze.json` fixes 42
+TASK-66 predicate variants, 13 dialects (546 individually identified
+parser/canonical classification cells), all 14 TASK-70 child-family obligations,
+9 concrete source/output golden cases, 9 composition pairings, four random
+seeds, and five explicit AC gates. Unverified dialects/cases are blockers, **not**
+test passes. All original TASK-107 acceptance criteria remain mandatory; the
+matrix pins their finite interpretation without accepting unimplemented exact
+features. Its `tests/task_107_acceptance_freeze.rs` contract checks
+intentionally validate scope rather than pretend to certify semantics.
+
 ## Release-quality completion rules
 
 1. **Inventory closure:** Before implementing a task, map every explicitly named operator, syntax variant, proof and adapter in its original AC to a versioned matrix cell: `exact_required`, `conditional` (with evidence prerequisites), or `approved_deferred` (explicit owner, reason, follow-up and release approval). No implicit `where supported` exclusions. Freeze the matrix and review any scope changes.

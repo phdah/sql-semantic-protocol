@@ -920,3 +920,64 @@ fn dbt_compiled_pattern_sql_matches_direct_analysis() {
         "computed pattern operands must stay residual on both paths"
     );
 }
+
+#[test]
+fn explicitly_escaped_ascii_underscore_prefix_is_exact_only_with_binary_laws() {
+    use sql_semantic_protocol::BooleanRowConstraint;
+
+    for (predicate, prefix) in [
+        ("a LIKE 'ab!_%' ESCAPE '!'", "ab_"),
+        ("a NOT LIKE 'ab!_%' ESCAPE '!'", "ab_"),
+        ("a LIKE 'foo!_bar%' ESCAPE '!'", "foo_bar"),
+    ] {
+        let unattested = text_witness(predicate);
+        assert!(
+            matches!(
+                unattested.qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            ),
+            "{predicate}: escaped prefix needs source binary/no-padding attestation"
+        );
+        let proven = attested_text_witness(predicate);
+        assert!(
+            matches!(
+                proven.qualifying(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+            ),
+            "{predicate}: exact TRUE under certified comparison laws"
+        );
+        assert!(
+            matches!(
+                proven.rejected(),
+                BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+            ),
+            "{predicate}: exact NOT TRUE including SQL NULL"
+        );
+        assert!(
+            matches!(
+                proven.condition(),
+                BooleanRowConstraint::StringPrefix { prefix: actual, .. } if actual == prefix
+            ),
+            "{predicate}: must preserve literal '_' in parser-independent prefix constraint"
+        );
+    }
+
+    for predicate in [
+        "a LIKE 'ab_%' ESCAPE '!'",
+        "a LIKE 'ab!%cd%' ESCAPE '!'",
+        "a LIKE 'ab!!_%' ESCAPE '!'",
+        "a LIKE 'ab!_%' ESCAPE '%'",
+        "a LIKE 'ab!_%' ESCAPE '!' OR a ILIKE 'ab%'",
+    ] {
+        let witness = single_witness(&text_bundle(predicate, true));
+        // Mixed Boolean predicates can preserve an exact branch, but cannot
+        // certify an unmodelled escape pattern as fully Exact.
+        assert!(
+            witness.as_ref().is_none_or(|witness| matches!(
+                witness.qualifying(),
+                BooleanWitnessDirection::Residual { .. }
+            )),
+            "{predicate}: unsupported ESCAPE variants cannot be exact"
+        );
+    }
+}

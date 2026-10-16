@@ -1,0 +1,290 @@
+{
+  "version": 1,
+  "owner": "TASK-107",
+  "status": "task_107_frozen_acceptance_signed_off",
+  "release_approved": false,
+  "baseline": "b75b16a29234fc207af0014bf662d39223b2502f",
+  "scope": "Frozen TASK-107 evidence and conditional protocol limits are independently reviewed; global cross-dialect and release gates remain outside this task.",
+  "acceptance_criteria_status": {
+    "#1": "complete__28_required__14_families__9_goldens__independent_typed_truth_and_output_oracles",
+    "#2": "complete__546_dialect_cells__540_canonical_equivalent__6_parser_rejected__no_vendor_execution_claim",
+    "#3": "complete__9_compositions__9_goldens__28_mandatory_closed_world__4_reproducible_seeds",
+    "#4": "complete__SQL_dbt_emitted_JSON_and_representable_ODCS_parity__unsupported_metadata_explicit",
+    "#5": "complete_subject_to_green_final_PR_head_CI__28_verified_mandatory__14_reviewed_conditional__all_independent_release_gates_retained"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "oracle_seeds": [
+    0,
+    1,
+    42,
+    20261016
+  ],
+  "oracle_source": "tests/task_107_expression_oracles.rs::seeded_values",
+  "oracle_runtime": "DuckDB only. This is not a native execution certification for any other dialect.",
+  "outstanding": [
+    "TASK-108 independently audits TASK-70 parent closure.",
+    "TASK-88 and TASK-89 own additional cross-dialect/vendor execution and operator gates; conditional residuals do not imply their approval.",
+    "TASK-91 owns the separate protocol 3.0.0 release gate."
+  ],
+  "fixtures": [
+    {
+      "id": "E107-ARITH-001",
+      "family": "signed_arithmetic_and_cast",
+      "classification": "exact_required",
+      "test_file": "tests/task_101_arithmetic.rs",
+      "test_name": "signed_multiplication_inverts_rounded_thresholds",
+      "expected_domain": "typed signed integer bounds after checked widening/multiplication",
+      "positive": "exact",
+      "not_true": "exact",
+      "task_70_family": "signed_integer_affine_casts"
+    },
+    {
+      "id": "E107-ARITH-002",
+      "family": "signed_arithmetic_and_cast",
+      "classification": "exact_required",
+      "test_file": "tests/task_101_arithmetic.rs",
+      "test_name": "catalog_decimal_finite_operations_have_precision_scale_evidence",
+      "expected_domain": "finite exact decimal projection domains with precision/scale",
+      "positive": "exact",
+      "not_true": "exact",
+      "task_70_family": "numeric_general_arithmetic"
+    },
+    {
+      "id": "E107-COMPUTED-001",
+      "family": "case_coalesce_nullif",
+      "classification": "exact_required",
+      "test_file": "tests/task_102_computed_expressions.rs",
+      "test_name": "computed_integer_comparisons_preserve_true_and_unknown_regions",
+      "expected_domain": "guard-refined finite computed integer domains",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-COMPUTED-002",
+      "family": "case_coalesce_nullif",
+      "classification": "exact_required",
+      "test_file": "tests/task_102_computed_expressions.rs",
+      "test_name": "coalesce_with_null_free_fallback_proves_impossible_and_trivially_true",
+      "expected_domain": "NULL excluded from COALESCE with non-NULL fallback",
+      "positive": "impossible",
+      "not_true": "exact",
+      "task_70_family": "computed_null_tests"
+    },
+    {
+      "id": "E107-CORRELATED-001",
+      "family": "correlated_cross_column",
+      "classification": "exact_required",
+      "test_file": "tests/task_103_cross_column.rs",
+      "test_name": "strict_and_nonstrict_order_cycles_are_impossible",
+      "expected_domain": "empty domain on impossible cyclic inequalities",
+      "positive": "impossible",
+      "not_true": "exact",
+      "task_70_family": "signed_integer_cross_column"
+    },
+    {
+      "id": "E107-CORRELATED-002",
+      "family": "correlated_cross_column",
+      "classification": "exact_required",
+      "test_file": "tests/task_103_cross_column.rs",
+      "test_name": "mixed_disjunctions_share_one_conjunctive_assignment",
+      "expected_domain": "coupled source-row constraints without independent-branch fabrication",
+      "positive": "exact",
+      "not_true": "exact"
+    },
+    {
+      "id": "E107-PATTERN-001",
+      "family": "pattern_collation_nullsafe",
+      "classification": "exact_required",
+      "test_file": "tests/task_104_pattern_collation_nullsafe.rs",
+      "test_name": "exact_like_without_wildcard_is_certified_string_equality",
+      "expected_domain": "typed text equality under certified comparison settings",
+      "positive": "exact",
+      "not_true": "exact",
+      "task_70_family": "string_binary_equality_and_like_prefix"
+    },
+    {
+      "id": "E107-PATTERN-002",
+      "family": "pattern_collation_nullsafe",
+      "classification": "conditional",
+      "test_file": "tests/task_104_pattern_collation_nullsafe.rs",
+      "test_name": "cross_text_column_equality_is_exact_only_when_attested",
+      "expected_domain": "text comparison domains restricted by attested binary collation and no padding",
+      "positive": "conditional_exact",
+      "not_true": "conditional_exact",
+      "boundary": "Unknown collation/character-padding settings do not justify binary equality.",
+      "followup_owner": "TASK-88"
+    },
+    {
+      "id": "E107-CALENDAR-001",
+      "family": "temporal_json_vendor",
+      "classification": "exact_required",
+      "test_file": "tests/task_105_temporal_json_vendor.rs",
+      "test_name": "explicit_date_literal_identity_cast_has_an_exact_calendar_domain",
+      "expected_domain": "singleton Gregorian DATE domain with validated leap day",
+      "positive": "not_applicable_projection",
+      "not_true": "not_applicable_projection",
+      "task_70_family": "date_time_zone_and_calendar"
+    },
+    {
+      "id": "E107-JSON-001",
+      "family": "temporal_json_vendor",
+      "classification": "conditional",
+      "test_file": "tests/task_105_temporal_json_vendor.rs",
+      "test_name": "nested_comparisons_and_path_null_tests_stay_residual_despite_schema_evidence",
+      "expected_domain": "explicit unknown domain for unsupported nested paths",
+      "positive": "residual",
+      "not_true": "residual",
+      "boundary": "Unavailable portable JSON missing-path and nested comparison semantics.",
+      "followup_owner": "TASK-88",
+      "task_70_family": "json_array_struct_and_vendor_functions"
+    },
+    {
+      "id": "E107-COMPOSE-001",
+      "family": "composed_relational_predicates",
+      "classification": "exact_required",
+      "test_file": "tests/task_106_composed_predicates.rs",
+      "test_name": "filtered_chain_conjoins_typed_range_filters",
+      "expected_domain": "composed interval intersection preserving inclusivity",
+      "positive": "exact",
+      "not_true": "exact",
+      "task_70_family": "computed_join_group_write_expressions"
+    },
+    {
+      "id": "E107-COMPOSE-002",
+      "family": "composed_relational_predicates",
+      "classification": "exact_required",
+      "test_file": "tests/task_106_composed_predicates.rs",
+      "test_name": "filtered_join_and_negative_terminals_share_one_complete_assignment",
+      "expected_domain": "joint closed physical-source rows and terminal membership",
+      "positive": "exact",
+      "not_true": "exact",
+      "task_70_family": "whole_graph_physical_realization"
+    },
+    {
+      "id": "E107-ORACLE-001",
+      "family": "composed_relational_predicates",
+      "classification": "exact_required",
+      "test_file": "tests/task_107_expression_oracles.rs",
+      "test_name": "multi_seed_duckdb_true_and_not_true_oracles_check_exact_impossible_and_null",
+      "expected_domain": "bounded seeded integer/null/duplicate source rows and complete three-valued partition",
+      "positive": "exact_or_impossible_per_case",
+      "not_true": "exact_or_impossible_per_case"
+    },
+    {
+      "id": "E107-ADAPTER-001",
+      "family": "case_coalesce_nullif",
+      "classification": "exact_required",
+      "test_file": "tests/task_107_expression_oracles.rs",
+      "test_name": "compiled_dbt_and_catalog_match_direct_sql_typed_expression_semantics",
+      "expected_domain": "canonical SQL/dbt output and source typed domains are equal",
+      "positive": "exact_or_impossible_per_case",
+      "not_true": "exact_or_impossible_per_case"
+    },
+    {
+      "id": "E107-DIALECT-001",
+      "family": "pattern_collation_nullsafe",
+      "classification": "conditional",
+      "test_file": "tests/task_107_expression_oracles.rs",
+      "test_name": "shared_expression_sql_has_parser_classifications_for_all_13_dialects",
+      "expected_domain": "identical canonical protocol JSON on parser-equivalent ASTs",
+      "positive": "parser_classified",
+      "not_true": "parser_classified",
+      "boundary": "Dialect parser acceptance is not vendor runtime equivalence.",
+      "followup_owner": "TASK-88"
+    },
+    {
+      "id": "E107-BOOLEAN-001",
+      "family": "signed_arithmetic_and_cast",
+      "classification": "exact_required",
+      "test_file": "tests/task_70_predicates.rs",
+      "test_name": "null_membership_obligations_preserve_unknown_in_both_directions",
+      "expected_domain": "three-valued finite integer membership including explicit NULL-bearing IN lists",
+      "positive": "exact_or_impossible_per_case",
+      "not_true": "exact_or_impossible_per_case",
+      "task_70_family": "three_valued_boolean_and_membership"
+    },
+    {
+      "id": "E107-CAST-001",
+      "family": "signed_arithmetic_and_cast",
+      "classification": "conditional",
+      "test_file": "tests/task_101_arithmetic.rs",
+      "test_name": "attested_binary_text_casts_preserve_finite_ascii_and_failure_semantics",
+      "expected_domain": "finite binary-attested ASCII casts and explicit conversion failure domains",
+      "positive": "conditional_exact",
+      "not_true": "conditional_exact",
+      "boundary": "General text/session coercion is not portable without binary comparison and type attestation.",
+      "followup_owner": "TASK-88",
+      "task_70_family": "noninteger_casts_and_implicit_coercions"
+    },
+    {
+      "id": "E107-REGEX-001",
+      "family": "pattern_collation_nullsafe",
+      "classification": "conditional",
+      "test_file": "tests/task_104_pattern_collation_nullsafe.rs",
+      "test_name": "inventoried_variants_have_explicit_exact_or_residual_classification",
+      "expected_domain": "unknown domain when vendor regex or ILIKE semantics cannot be proven",
+      "positive": "residual",
+      "not_true": "residual",
+      "boundary": "Regex flags, nonprefix patterns and vendor operators require engine/session laws.",
+      "followup_owner": "TASK-88",
+      "task_70_family": "regex_and_nonprefix_patterns"
+    },
+    {
+      "id": "E107-COLLATION-001",
+      "family": "pattern_collation_nullsafe",
+      "classification": "conditional",
+      "test_file": "tests/task_104_pattern_collation_nullsafe.rs",
+      "test_name": "fixed_width_char_columns_never_claim_binary_laws",
+      "expected_domain": "nonbinary/CHAR-padding unknown comparison domain",
+      "positive": "residual",
+      "not_true": "residual",
+      "boundary": "Locale collation and fixed CHAR padding lack portable exact byte comparison semantics.",
+      "followup_owner": "TASK-88",
+      "task_70_family": "nonbinary_collations_and_padding"
+    },
+    {
+      "id": "E107-NULLSAFE-001",
+      "family": "pattern_collation_nullsafe",
+      "classification": "conditional",
+      "test_file": "tests/task_104_pattern_collation_nullsafe.rs",
+      "test_name": "mysql_spaceship_is_null_safe_equality_under_proven_laws",
+      "expected_domain": "NULL-safe integer comparison with separately attested text settings",
+      "positive": "conditional_exact",
+      "not_true": "conditional_exact",
+      "boundary": "Dialect-specific <=> operator parse/AST differences and text collation attestations.",
+      "followup_owner": "TASK-88",
+      "task_70_family": "dialect_specific_nullsafe_operators"
+    }
+  ],
+  "task_70_family_inventory_source": "docs/coverage-manifest.json::task_70_predicate_evidence.family_evidence",
+  "acceptance_freeze": "docs/task-107-acceptance-freeze.json",
+  "acceptance_freeze_facts": {
+    "predicate_variant_count": 42,
+    "dialect_count": 13,
+    "dialect_cells": 546,
+    "child_family_count": 14,
+    "golden_cases": 9,
+    "composition_cases": 9
+  },
+  "verification_files": [
+    "tests/task_107_acceptance_freeze.rs",
+    "tests/task_107_dialect_classifications.rs",
+    "tests/task_107_frozen_execution_oracles.rs",
+    "tests/task_107_full_variant_adapters.rs",
+    "tests/task_107_expression_oracles.rs"
+  ]
+}
