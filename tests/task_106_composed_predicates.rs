@@ -60,6 +60,35 @@ fn mart_layer(bundle: &AnalysisBundle) -> usize {
     bundle.layers().len() - 1
 }
 
+/// Analyze one layer chain in every registered dialect, skipping dialects
+/// whose parser rejects the syntax. Parser rejection is a documented
+/// boundary, not a proof; any other analysis failure is fatal.
+fn analyze_capable_dialects(queries: &[&str]) -> Vec<(String, AnalysisBundle)> {
+    let mut capable = Vec::new();
+    for name in common::DIALECTS {
+        let dialect = dialect_from_name(name).expect("registered dialect");
+        let sources = queries
+            .iter()
+            .map(|query| SqlInput::inline(*query))
+            .collect::<Vec<_>>();
+        let ids = (0..queries.len())
+            .map(|index| format!("q-{index}"))
+            .collect::<Vec<_>>();
+        let inputs = sources
+            .iter()
+            .zip(&ids)
+            .map(|(source, id)| ConfiguredSqlInput::new(id, source, name, dialect.as_ref()))
+            .collect::<Vec<_>>();
+        match analyze_configured_inputs_with_catalog(&inputs, &catalog()) {
+            Ok(bundle) => capable.push((name.to_string(), bundle)),
+            Err(ConfiguredInputAnalysisError::Input(inner))
+                if matches!(inner.error(), Error::Parse(_)) => {}
+            Err(error) => panic!("{name}: layers must analyze: {error}"),
+        }
+    }
+    capable
+}
+
 fn assert_exact_both(witness: &sql_semantic_protocol::BooleanWitness, sql: &str) {
     assert!(
         matches!(
@@ -669,105 +698,61 @@ fn direct_sql_and_dbt_agree_on_composed_range_filters() {
 
 #[test]
 fn parser_capable_dialects_share_nested_affine_domains() {
+    let capable = analyze_capable_dialects(&[
+        "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+        "CREATE TABLE mart AS SELECT (CAST(a AS BIGINT) + 1) + 2 AS v FROM stage",
+    ]);
+    assert!(
+        !capable.is_empty(),
+        "at least one dialect must accept the chain"
+    );
     let mut expected = None;
-    let mut capable = 0;
-    for name in common::DIALECTS {
-        let dialect = dialect_from_name(name).expect("registered dialect");
-        let queries = [
-            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
-            "CREATE TABLE mart AS SELECT (CAST(a AS BIGINT) + 1) + 2 AS v FROM stage",
-        ];
-        let sources = queries
+    for (name, bundle) in &capable {
+        let ComposedSemantics::Resolved(semantics) =
+            bundle.layers()[mart_layer(bundle)].composed_semantics()
+        else {
+            panic!("{name}: mart must resolve");
+        };
+        let value = semantics
+            .output()
+            .columns()
             .iter()
-            .map(|query| SqlInput::inline(*query))
-            .collect::<Vec<_>>();
-        let ids = (0..queries.len())
-            .map(|index| format!("q-{index}"))
-            .collect::<Vec<_>>();
-        let inputs = sources
-            .iter()
-            .zip(&ids)
-            .map(|(source, id)| ConfiguredSqlInput::new(id, source, name, dialect.as_ref()))
-            .collect::<Vec<_>>();
-        match analyze_configured_inputs_with_catalog(&inputs, &catalog()) {
-            Ok(bundle) => {
-                let ComposedSemantics::Resolved(semantics) =
-                    bundle.layers()[mart_layer(&bundle)].composed_semantics()
-                else {
-                    panic!("{name}: mart must resolve");
-                };
-                let value = semantics
-                    .output()
-                    .columns()
-                    .iter()
-                    .find(|column| column.name() == "v")
-                    .expect("nested affine output");
-                assert_range_bounds(value.domain(), name, "8", "13");
-                let actual = value.domain().clone();
-                if let Some(expected) = &expected {
-                    assert_eq!(&actual, expected, "{name}: canonical domain drift");
-                } else {
-                    expected = Some(actual);
-                }
-                capable += 1;
-            }
-            Err(ConfiguredInputAnalysisError::Input(inner))
-                if matches!(inner.error(), Error::Parse(_)) =>
-            {
-                // Parser rejection is a documented boundary, not a proof.
-            }
-            Err(error) => panic!("{name}: nested affine chain must analyze: {error}"),
+            .find(|column| column.name() == "v")
+            .expect("nested affine output");
+        assert_range_bounds(value.domain(), name, "8", "13");
+        let actual = value.domain().clone();
+        if let Some(expected) = &expected {
+            assert_eq!(&actual, expected, "{name}: canonical domain drift");
+        } else {
+            expected = Some(actual);
         }
     }
-    assert!(capable > 0, "at least one dialect must accept the chain");
 }
 
 #[test]
 fn parser_capable_dialects_share_identical_group_joint_plans() {
+    let capable = analyze_capable_dialects(&[
+        "SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
+        "SELECT b, COUNT(*) AS n FROM t GROUP BY b HAVING COUNT(*) >= 2",
+    ]);
+    assert!(
+        !capable.is_empty(),
+        "at least one dialect must accept the layers"
+    );
     let mut expected = None;
-    let mut capable = 0;
-    for name in common::DIALECTS {
-        let dialect = dialect_from_name(name).expect("registered dialect");
-        let queries = [
-            "SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2",
-            "SELECT b, COUNT(*) AS n FROM t GROUP BY b HAVING COUNT(*) >= 2",
-        ];
-        let sources = queries
-            .iter()
-            .map(|query| SqlInput::inline(*query))
-            .collect::<Vec<_>>();
-        let ids = (0..queries.len())
-            .map(|index| format!("q-{index}"))
-            .collect::<Vec<_>>();
-        let inputs = sources
-            .iter()
-            .zip(&ids)
-            .map(|(source, id)| ConfiguredSqlInput::new(id, source, name, dialect.as_ref()))
-            .collect::<Vec<_>>();
-        match analyze_configured_inputs_with_catalog(&inputs, &catalog()) {
-            Ok(bundle) => {
-                let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
-                let plan = physical_joint_row_count_plan(&bundle, &goals);
-                let WitnessDirection::Feasible(_) = &plan else {
-                    panic!("{name}: identical histograms must share one bag: {plan:?}");
-                };
-                let actual = plan.clone();
-                if let Some(expected) = &expected {
-                    assert_eq!(&actual, expected, "{name}: canonical joint plan drift");
-                } else {
-                    expected = Some(actual);
-                }
-                capable += 1;
-            }
-            Err(ConfiguredInputAnalysisError::Input(inner))
-                if matches!(inner.error(), Error::Parse(_)) =>
-            {
-                // Parser rejection is a documented boundary, not a proof.
-            }
-            Err(error) => panic!("{name}: grouped layers must analyze: {error}"),
+    for (name, bundle) in &capable {
+        let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 2)];
+        let plan = physical_joint_row_count_plan(bundle, &goals);
+        let WitnessDirection::Feasible(_) = &plan else {
+            panic!("{name}: identical histograms must share one bag: {plan:?}");
+        };
+        let actual = plan.clone();
+        if let Some(expected) = &expected {
+            assert_eq!(&actual, expected, "{name}: canonical joint plan drift");
+        } else {
+            expected = Some(actual);
         }
     }
-    assert!(capable > 0, "at least one dialect must accept the layers");
 }
 
 #[test]

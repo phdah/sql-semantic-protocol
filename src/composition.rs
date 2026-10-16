@@ -1508,7 +1508,9 @@ fn catalog_signed_width(schemas: &[RelationSchema], relation: &str, column: &str
 
 /// Infer the execution width of an affine-shaped expression: integer literals
 /// coerce to the operand type, so additions keep their left width and casts
-/// fix theirs. Anything else has no provable width here.
+/// fix theirs. The literal must be integer-typed, mirroring the domain
+/// proof: a non-integer operand has no portable arithmetic meaning.
+/// Anything else has no provable width here.
 fn affine_expression_width(expression: &Expression) -> Option<u16> {
     match expression {
         Expression::SignedIntegerCast(cast) => Some(cast.target_bits()),
@@ -1516,8 +1518,13 @@ fn affine_expression_width(expression: &Expression) -> Option<u16> {
             if !matches!(
                 binary.operator(),
                 BinaryOperator::Add | BinaryOperator::Subtract
-            ) || !matches!(binary.right(), Expression::Literal(_))
-            {
+            ) {
+                return None;
+            }
+            let Expression::Literal(literal) = binary.right() else {
+                return None;
+            };
+            if literal.literal_type() != LiteralType::Integer {
                 return None;
             }
             affine_expression_width(binary.left())

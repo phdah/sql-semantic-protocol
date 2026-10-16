@@ -306,6 +306,10 @@ pub(super) fn physical_operator_population_case(
 /// Identical grouping histograms share one bag through block-diagonal
 /// pairing: N groups of r rows on one key and N groups of r rows on another
 /// key are jointly realized by pairing the i-th keys with r rows each.
+/// This is sound for every `Groups` producer because group constructors only
+/// certify COUNT-based populations without same-layer `WHERE`: the witnesses
+/// pin full closed-world key histograms, so no value-level predicate can
+/// distinguish the paired keys.
 /// Singleton GROUP BY rows are numbered 0..N-1 on their key. ROW_NUMBER
 /// partitioned by the *same* singleton grouping key sees exactly one row
 /// per partition, regardless of its independently typed ORDER BY column. An
