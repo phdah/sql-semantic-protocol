@@ -1,0 +1,1655 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-108",
+  "freeze_date": "2026-10-17",
+  "baseline_commit": "b3510e9cd1bbde03cc5ea9d85d403099874fbeee",
+  "scope": "Independent TASK-70 parent-criteria closure; no TASK-88/89/91 or protocol 3.0.0 release approval.",
+  "requirements_source": ".backlog/tasks/task-108 - signoff-task70-typed-predicate-expression-outcomes.md",
+  "parent_task": ".backlog/tasks/task-70 - solve-expression-and-predicate-variants.md",
+  "upstream_contract": "docs/task-107-acceptance-freeze.json",
+  "upstream_final_ci": {
+    "head_sha": "e6473af66f80ffe445a18e6630e119317f4fc200",
+    "workflow_run_id": 38975931061,
+    "conclusion": "success"
+  },
+  "upstream_children": [
+    {
+      "task": "TASK-101",
+      "task_file": ".backlog/tasks/task-101 - prove-overflow-safe-arithmetic-and-typed-conversions.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/109",
+      "merge_commit": "3632c82e7c55bfb84530d41a8debc6cee5fbae44",
+      "expected_state": "Done"
+    },
+    {
+      "task": "TASK-102",
+      "task_file": ".backlog/tasks/task-102 - normalize-case-coalesce-nullif-and-computed-aliases.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/110",
+      "merge_commit": "7ca42b11e3508ce06ca5b429b54c803c13ba3456",
+      "expected_state": "Done"
+    },
+    {
+      "task": "TASK-103",
+      "task_file": ".backlog/tasks/task-103 - prove-correlated-cross-column-predicate-constraints.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/111",
+      "merge_commit": "e7396c47b53ee1055f7e70c0b36cb6c5bf734bef",
+      "expected_state": "Done"
+    },
+    {
+      "task": "TASK-104",
+      "task_file": ".backlog/tasks/task-104 - certify-pattern-collation-and-nullsafe-expression-laws.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/112",
+      "merge_commit": "18e5beb3be1d690d46a688461c8f620ca95dfdeb",
+      "expected_state": "Done"
+    },
+    {
+      "task": "TASK-105",
+      "task_file": ".backlog/tasks/task-105 - classify-temporal-json-and-vendor-expression-semantics.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/113",
+      "merge_commit": "3b78dcb71b61b5b7a032d4fa3142d6ea6ec5d6e9",
+      "expected_state": "Done"
+    },
+    {
+      "task": "TASK-106",
+      "task_file": ".backlog/tasks/task-106 - compose-computed-predicates-across-relational-graphs.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/114",
+      "merge_commit": "771f6ccbffa946e54e950a6e17e17bfd792163b9",
+      "expected_state": "Done"
+    },
+    {
+      "task": "TASK-107",
+      "task_file": ".backlog/tasks/task-107 - certify-expression-predicate-dialect-dbt-oracles.md",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/115",
+      "merge_commit": "b3510e9cd1bbde03cc5ea9d85d403099874fbeee",
+      "expected_state": "Done"
+    }
+  ],
+  "original_ac_map": [
+    {
+      "ac": "AC1",
+      "requires": [
+        "arithmetic and overflow",
+        "typed CAST/TRY_CAST/SAFE_CAST",
+        "BETWEEN and IN lists",
+        "IS NULL / IS DISTINCT FROM",
+        "CASE COALESCE NULLIF",
+        "LIKE/ESCAPE",
+        "JOIN/GROUP/write expression contexts"
+      ],
+      "family_ids": [
+        "signed_integer_affine_casts",
+        "numeric_general_arithmetic",
+        "noninteger_casts_and_implicit_coercions",
+        "three_valued_boolean_and_membership",
+        "computed_null_tests",
+        "string_binary_equality_and_like_prefix",
+        "computed_join_group_write_expressions"
+      ],
+      "modules": [
+        "src/boolean_witness/numeric.rs",
+        "src/analysis/cast_domains.rs",
+        "src/analysis/output.rs",
+        "src/analysis/writes.rs"
+      ],
+      "tests": [
+        "tests/task_101_arithmetic.rs",
+        "tests/task_102_computed_expressions.rs",
+        "tests/task_104_pattern_collation_nullsafe.rs",
+        "tests/task_106_composed_predicates.rs"
+      ],
+      "adapters": [
+        "src/dbt.rs",
+        "src/odcs.rs"
+      ],
+      "docs": [
+        "docs/semantics.md",
+        "docs/coverage-manifest.json"
+      ]
+    },
+    {
+      "ac": "AC2",
+      "requires": [
+        "SQL AND OR NOT three-valued logic",
+        "cross-column constraints",
+        "reversible computed projections",
+        "computed aliases and expression guards"
+      ],
+      "family_ids": [
+        "three_valued_boolean_and_membership",
+        "signed_integer_cross_column",
+        "computed_null_tests",
+        "computed_join_group_write_expressions"
+      ],
+      "modules": [
+        "src/boolean_witness.rs",
+        "src/analysis/predicates.rs",
+        "src/analysis/output.rs",
+        "src/physical_realization/graph.rs"
+      ],
+      "tests": [
+        "tests/task_102_computed_expressions.rs",
+        "tests/task_103_cross_column.rs",
+        "tests/task_106_composed_predicates.rs"
+      ],
+      "adapters": [
+        "src/dbt.rs"
+      ],
+      "docs": [
+        "docs/semantics.md"
+      ]
+    },
+    {
+      "ac": "AC3",
+      "requires": [
+        "regex/pattern and binary collations",
+        "implicit casts",
+        "date/time and JSON vendor/session boundaries",
+        "opaque UDF fail-closed residuals"
+      ],
+      "family_ids": [
+        "string_binary_equality_and_like_prefix",
+        "regex_and_nonprefix_patterns",
+        "nonbinary_collations_and_padding",
+        "date_time_zone_and_calendar",
+        "json_array_struct_and_vendor_functions",
+        "dialect_specific_nullsafe_operators"
+      ],
+      "modules": [
+        "src/analysis/expressions.rs",
+        "src/analysis/temporal_literals.rs",
+        "src/boolean_witness.rs"
+      ],
+      "tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs",
+        "tests/task_105_temporal_json_vendor.rs",
+        "tests/task_107_conditional_environment.rs"
+      ],
+      "adapters": [
+        "src/dbt.rs",
+        "src/odcs.rs"
+      ],
+      "docs": [
+        "docs/task-107-conditional-review.md",
+        "docs/semantics.md"
+      ]
+    },
+    {
+      "ac": "AC4",
+      "requires": [
+        "positive SQL TRUE",
+        "negative SQL NOT TRUE including UNKNOWN",
+        "typed output domains and inclusivity",
+        "physical source exact/impossible/residual",
+        "comparison assumptions and deterministic coercion"
+      ],
+      "family_ids": [
+        "three_valued_boolean_and_membership",
+        "signed_integer_affine_casts",
+        "signed_integer_cross_column",
+        "whole_graph_physical_realization"
+      ],
+      "modules": [
+        "src/boolean_witness.rs",
+        "src/domain.rs",
+        "src/physical_realization/graph.rs",
+        "src/physical_realization/joins.rs"
+      ],
+      "tests": [
+        "tests/task_103_cross_column.rs",
+        "tests/task_106_signoff.rs",
+        "tests/task_107_frozen_execution_oracles.rs",
+        "tests/task_107_projection_proofs.rs"
+      ],
+      "adapters": [
+        "src/dbt.rs"
+      ],
+      "docs": [
+        "docs/task-107-acceptance-freeze.json",
+        "docs/semantics.md"
+      ]
+    },
+    {
+      "ac": "AC5",
+      "requires": [
+        "direct SQL and compiled dbt catalog",
+        "all 13 parser/canonical dialect paths",
+        "reproducible DuckDB positive negative NULL duplicate overflow",
+        "representable ODCS/schema parity"
+      ],
+      "family_ids": [
+        "three_valued_boolean_and_membership",
+        "signed_integer_affine_casts",
+        "computed_null_tests",
+        "signed_integer_cross_column",
+        "string_binary_equality_and_like_prefix",
+        "numeric_general_arithmetic",
+        "noninteger_casts_and_implicit_coercions",
+        "regex_and_nonprefix_patterns",
+        "nonbinary_collations_and_padding",
+        "date_time_zone_and_calendar",
+        "json_array_struct_and_vendor_functions",
+        "dialect_specific_nullsafe_operators",
+        "computed_join_group_write_expressions",
+        "whole_graph_physical_realization"
+      ],
+      "modules": [
+        "src/dbt.rs",
+        "src/odcs.rs"
+      ],
+      "tests": [
+        "tests/task_107_dialect_classifications.rs",
+        "tests/task_107_full_variant_adapters.rs",
+        "tests/task_107_frozen_execution_oracles.rs",
+        "tests/task_107_expression_oracles.rs"
+      ],
+      "adapters": [
+        "src/dbt.rs",
+        "src/odcs.rs"
+      ],
+      "docs": [
+        "docs/task-107-acceptance-freeze.json",
+        "docs/task-107-conditional-review.md"
+      ]
+    },
+    {
+      "ac": "AC6",
+      "requires": [
+        "unit and cross-dialect integration",
+        "DuckDB differential and impossible/NULL/duplicate/residual cases",
+        "protocol JSON snapshots/schema",
+        "doc and adapter parity"
+      ],
+      "family_ids": [
+        "three_valued_boolean_and_membership",
+        "signed_integer_affine_casts",
+        "computed_null_tests",
+        "signed_integer_cross_column",
+        "string_binary_equality_and_like_prefix",
+        "numeric_general_arithmetic",
+        "noninteger_casts_and_implicit_coercions",
+        "regex_and_nonprefix_patterns",
+        "nonbinary_collations_and_padding",
+        "date_time_zone_and_calendar",
+        "json_array_struct_and_vendor_functions",
+        "dialect_specific_nullsafe_operators",
+        "computed_join_group_write_expressions",
+        "whole_graph_physical_realization"
+      ],
+      "modules": [
+        "src/emission/document.rs",
+        "src/protocol/values.rs"
+      ],
+      "tests": [
+        "tests/task_107_acceptance_freeze.rs",
+        "tests/task_107_frozen_execution_oracles.rs",
+        "tests/task_107_full_variant_adapters.rs",
+        "tests/emission_contract.rs",
+        "tests/version_contract.rs"
+      ],
+      "adapters": [
+        "src/dbt.rs",
+        "src/odcs.rs"
+      ],
+      "docs": [
+        "schema/protocol.schema.json",
+        "docs/protocol.md",
+        "docs/coverage-manifest.json"
+      ]
+    }
+  ],
+  "family_cells": [
+    {
+      "id": "E108-F001",
+      "family": "three_valued_boolean_and_membership",
+      "owner": "TASK-107",
+      "evidence": "tests/task_70_predicates.rs",
+      "certified_boundary": "catalog-typed signed integer comparisons, BETWEEN/IN including NULL members, NOT/AND/OR",
+      "status_at_freeze": "bounded_local_exact",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F002",
+      "family": "signed_integer_affine_casts",
+      "owner": "TASK-101",
+      "evidence": "tests/task_101_arithmetic.rs",
+      "certified_boundary": "catalog-certified CAST/TRY_CAST/SAFE_CAST and signed bounds-checked nested affine +/-/* inversion; narrowing only when values fit",
+      "status_at_freeze": "bounded_local_exact",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F003",
+      "family": "computed_null_tests",
+      "owner": "TASK-102",
+      "evidence": "tests/task_102_computed_expressions.rs; tests/task_70_predicates.rs",
+      "certified_boundary": "typed COALESCE/NULLIF NULL tests and output domains plus simple/searched CASE total integer arms with exact two-valued NULL witnesses including nullable 3VL guards and implicit NULL ELSE",
+      "status_at_freeze": "bounded_local_exact",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F004",
+      "family": "signed_integer_cross_column",
+      "owner": "TASK-103",
+      "evidence": "tests/task_103_cross_column.rs; tests/task_70_predicates.rs",
+      "certified_boundary": "source-row signed cross-column conjunctions prove joint impossibility from total-order invariants, difference constraints with exhaustive type bounds and accepted values, plus null-safe complementary tautologies; disjunctive IN and unparenthesized null-safe AND/OR stay residual",
+      "status_at_freeze": "bounded_joint_exact",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F005",
+      "family": "string_binary_equality_and_like_prefix",
+      "owner": "TASK-104",
+      "evidence": "tests/boolean_witness.rs; tests/task_104_pattern_collation_nullsafe.rs",
+      "certified_boundary": "variable-length strings; binary collation, no CHAR padding; safe nonescaping ASCII LIKE prefix, wildcard-free LIKE/NOT LIKE as string equality, attested cross-text-column equality with shared byte candidates, reflexive and null-clash text impossibility with empty outputs, mixed Boolean couplings; ILIKE/regex/COLLATE/CHAR/Unicode/ordering remain residual",
+      "status_at_freeze": "conditional_local_exact",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F006",
+      "family": "numeric_general_arithmetic",
+      "owner": "TASK-101",
+      "evidence": "tests/task_101_arithmetic.rs; tests/output_domains.rs",
+      "certified_boundary": "catalog-certified signed affine +/-/*, unary and correlated addition/cancellation/squares, finite integer sets/ranges/disjoint interval unions/exclusions, deterministic signed literal width with explicit widening, integral binary64-exact division and unit inverse, positive-source positive-divisor remainder bounds, impossible universal modulo comparisons, finite catalog DECIMAL precision/scale checked exact binary64 arithmetic; fractional division, signed/zero-divisor errors, unbounded decimals and unproved dialect laws residual",
+      "status_at_freeze": "bounded_local_exact_with_general_residual",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F007",
+      "family": "noninteger_casts_and_implicit_coercions",
+      "owner": "TASK-101",
+      "evidence": "tests/output_domains.rs; tests/task_101_arithmetic.rs",
+      "certified_boundary": "finite canonical ASCII text and integral decimal literal casts plus catalog-attested finite decimal-to-integer and enforced binary-text-to-integer conversion; identity/widening/narrowing TRY/SAFE_CAST finite SQL NULL and source-row NULL tests, explicit runtime-dependent ordinary CAST vs NULL-on-failure provenance; arbitrary text, implicit/session-dependent coercion and fractional rounding remain residual",
+      "status_at_freeze": "bounded_literal_exact_with_source_residual",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F008",
+      "family": "regex_and_nonprefix_patterns",
+      "owner": "TASK-104",
+      "evidence": "docs/semantics.md; tests/task_104_pattern_collation_nullsafe.rs",
+      "certified_boundary": "regex flags, backtracking, ILIKE, unsafe LIKE ESCAPE, Unicode and vendor pattern laws; wildcard-free portable LIKE and safe ESCAPE variants are exact under attestations (see string_binary_equality_and_like_prefix)",
+      "status_at_freeze": "unproved_residual",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F009",
+      "family": "nonbinary_collations_and_padding",
+      "owner": "TASK-104",
+      "evidence": "docs/semantics.md; tests/task_104_pattern_collation_nullsafe.rs",
+      "certified_boundary": "locale comparison and trailing-space semantics without explicit binary/no-pad proof; CHAR operands stay residual even when attested, text ordering has no proven collation order",
+      "status_at_freeze": "unproved_residual",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F010",
+      "family": "date_time_zone_and_calendar",
+      "owner": "TASK-105",
+      "evidence": "tests/task_105_temporal_json_vendor.rs; task_105_expression_evidence.variants; tests/typed_domains.rs; docs/semantics.md",
+      "certified_boundary": "Gregorian DATE literal identity CAST/TRY_CAST/SAFE_CAST, literal YEAR/MONTH/DAY extraction, ordered DATE threshold/domain intersection and scalar NOT, portable calendar/clock validation and explicit existing timestamp-zone comparison preconditions; source extraction, general casts, intervals, precision conversion, timezone arithmetic and DST/session functions remain residual",
+      "status_at_freeze": "bounded_calendar_exact_with_temporal_residual",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F011",
+      "family": "json_array_struct_and_vendor_functions",
+      "owner": "TASK-105",
+      "evidence": "tests/task_105_temporal_json_vendor.rs; task_105_expression_evidence.variants; docs/semantics.md",
+      "certified_boundary": "source SQL NULL tests and ordinary literal-NULL UNKNOWN witnesses are exact for temporal/JSON/array/struct values; JSON document null is not SQL NULL, paths, nested comparisons/coercion and all opaque/vendor/stochastic/session function executions retain named unknown output domains and residual predicates",
+      "status_at_freeze": "bounded_sql_null_exact_with_nested_residual",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F012",
+      "family": "dialect_specific_nullsafe_operators",
+      "owner": "TASK-104",
+      "evidence": "tests/task_104_pattern_collation_nullsafe.rs; tests/task_103_cross_column.rs",
+      "certified_boundary": "MySQL <=> normalizes to IS NOT DISTINCT FROM with the same typed laws (integers exact unattested, text exact only when attested); unparenthesized null-safe AND/OR and other dialect-specific spellings without scoped evidence stay residual",
+      "status_at_freeze": "bounded_local_exact_with_general_residual",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F013",
+      "family": "computed_join_group_write_expressions",
+      "owner": "TASK-106",
+      "evidence": "tests/task_106_composed_predicates.rs; tests/advanced_target_validation.rs; tests/physical_write_adapter_parity.rs; src/composition.rs; src/analysis/arithmetic_domains.rs; src/analysis/writes.rs; src/physical_realization/joins.rs; docs/semantics.md",
+      "certified_boundary": "typed single-source filters conjoin across transparent layers; complete single-equijoin populations carry jointly satisfiable non-key scalar ON filters and, for INNER joins only, WHERE filters as closed physical row obligations; outer-join WHERE is residual; grouped HAVING and ranked QUALIFY output domains use their existing operator laws; downstream filters narrow computed-alias outputs while unsupported source inversion stays residual; certified lossless signed widening casts and total constant-affine expressions admit physical TRUE/NOT TRUE inversion with per-hop type/NULL/overflow and bag-shape checks; nested constant-affine CAST/+/- and constant-scale spines and recast-free references to computed producer outputs transport finite value domains stepwise at each hop's execution width with overflow fail-closed, while narrowing casts, non-constant operands, zero scales, division/modulo and unknown producers stay residual; catalog-typed computed UPDATE and MERGE assignments retain exact finite arithmetic domains; unsupported aggregates, join-key filters, lossy inverses and unverified writes remain explicit residuals",
+      "status_at_freeze": "bounded_composed_and_write_exact_with_explicit_residuals",
+      "release_approved": false
+    },
+    {
+      "id": "E108-F014",
+      "family": "whole_graph_physical_realization",
+      "owner": "TASK-106",
+      "evidence": "tests/task_106_composed_predicates.rs; tests/physical_realization/joins.rs; tests/physical_write_states.rs; tests/physical_write_adapter_parity.rs; src/physical_realization/graph.rs; src/physical_realization/joins.rs; src/physical_realization/joint_counts.rs; src/physical_realization/composition.rs; docs/semantics.md",
+      "certified_boundary": "joint TRUE versus NOT TRUE physical-source proofs across transparent chains, certified widening projections, contradictory filter impossibility, duplicate/NULL joint assignments, and filtered equijoin populations sharing complete physical leaves with conjunctive non-key TRUE restrictions and independent NOT TRUE negative terminal filters; independent intermediate CHECK/default/diagnostic laws prevent uncertified inversion; supported GROUP HAVING and ranked QUALIFY populations retain complete source bags and bounded outcomes; closed-world ordered INSERT UPDATE MERGE with computed projections is verified against DuckDB intermediates and direct SQL/dbt catalog parity; independent and compatible overlapping filtered join DAGs share certified closed-source populations; distinct join keys correlate with same-key singleton GROUP targets and independent distinct group keys share one source assignment; identical non-singleton group histograms share one source assignment via block-diagonal pairing; singleton groups share with same-key partitioned ranks and with unpartitioned ranks covering all rows; mismatched multiplicities, predecessor-requiring ranks, noncertified overlapping multi-operator DAGs and correlated key predicates stay residual",
+      "status_at_freeze": "bounded_joint_exact_with_general_residual",
+      "release_approved": false
+    }
+  ],
+  "predicate_variant_cells": [
+    {
+      "id": "E108-E107-V001",
+      "upstream_id": "E107-V001",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "=",
+      "classification": "exact_required",
+      "owner": "TASK-101",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V001-ansi",
+        "E107-V001-bigquery",
+        "E107-V001-clickhouse",
+        "E107-V001-databricks",
+        "E107-V001-duckdb",
+        "E107-V001-generic",
+        "E107-V001-hive",
+        "E107-V001-mssql",
+        "E107-V001-mysql",
+        "E107-V001-postgresql",
+        "E107-V001-redshift",
+        "E107-V001-snowflake",
+        "E107-V001-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V002",
+      "upstream_id": "E107-V002",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<>",
+      "classification": "exact_required",
+      "owner": "TASK-101",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V002-ansi",
+        "E107-V002-bigquery",
+        "E107-V002-clickhouse",
+        "E107-V002-databricks",
+        "E107-V002-duckdb",
+        "E107-V002-generic",
+        "E107-V002-hive",
+        "E107-V002-mssql",
+        "E107-V002-mysql",
+        "E107-V002-postgresql",
+        "E107-V002-redshift",
+        "E107-V002-snowflake",
+        "E107-V002-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V003",
+      "upstream_id": "E107-V003",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<",
+      "classification": "exact_required",
+      "owner": "TASK-101",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V003-ansi",
+        "E107-V003-bigquery",
+        "E107-V003-clickhouse",
+        "E107-V003-databricks",
+        "E107-V003-duckdb",
+        "E107-V003-generic",
+        "E107-V003-hive",
+        "E107-V003-mssql",
+        "E107-V003-mysql",
+        "E107-V003-postgresql",
+        "E107-V003-redshift",
+        "E107-V003-snowflake",
+        "E107-V003-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V004",
+      "upstream_id": "E107-V004",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<=",
+      "classification": "exact_required",
+      "owner": "TASK-101",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V004-ansi",
+        "E107-V004-bigquery",
+        "E107-V004-clickhouse",
+        "E107-V004-databricks",
+        "E107-V004-duckdb",
+        "E107-V004-generic",
+        "E107-V004-hive",
+        "E107-V004-mssql",
+        "E107-V004-mysql",
+        "E107-V004-postgresql",
+        "E107-V004-redshift",
+        "E107-V004-snowflake",
+        "E107-V004-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V005",
+      "upstream_id": "E107-V005",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">",
+      "classification": "exact_required",
+      "owner": "TASK-101",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V005-ansi",
+        "E107-V005-bigquery",
+        "E107-V005-clickhouse",
+        "E107-V005-databricks",
+        "E107-V005-duckdb",
+        "E107-V005-generic",
+        "E107-V005-hive",
+        "E107-V005-mssql",
+        "E107-V005-mysql",
+        "E107-V005-postgresql",
+        "E107-V005-redshift",
+        "E107-V005-snowflake",
+        "E107-V005-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V006",
+      "upstream_id": "E107-V006",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">=",
+      "classification": "exact_required",
+      "owner": "TASK-101",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V006-ansi",
+        "E107-V006-bigquery",
+        "E107-V006-clickhouse",
+        "E107-V006-databricks",
+        "E107-V006-duckdb",
+        "E107-V006-generic",
+        "E107-V006-hive",
+        "E107-V006-mssql",
+        "E107-V006-mysql",
+        "E107-V006-postgresql",
+        "E107-V006-redshift",
+        "E107-V006-snowflake",
+        "E107-V006-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V007",
+      "upstream_id": "E107-V007",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "BETWEEN",
+      "classification": "exact_required",
+      "owner": "TASK-101",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V007-ansi",
+        "E107-V007-bigquery",
+        "E107-V007-clickhouse",
+        "E107-V007-databricks",
+        "E107-V007-duckdb",
+        "E107-V007-generic",
+        "E107-V007-hive",
+        "E107-V007-mssql",
+        "E107-V007-mysql",
+        "E107-V007-postgresql",
+        "E107-V007-redshift",
+        "E107-V007-snowflake",
+        "E107-V007-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V008",
+      "upstream_id": "E107-V008",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "NOT BETWEEN",
+      "classification": "exact_required",
+      "owner": "TASK-101",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V008-ansi",
+        "E107-V008-bigquery",
+        "E107-V008-clickhouse",
+        "E107-V008-databricks",
+        "E107-V008-duckdb",
+        "E107-V008-generic",
+        "E107-V008-hive",
+        "E107-V008-mssql",
+        "E107-V008-mysql",
+        "E107-V008-postgresql",
+        "E107-V008-redshift",
+        "E107-V008-snowflake",
+        "E107-V008-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V009",
+      "upstream_id": "E107-V009",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "AND",
+      "classification": "exact_required",
+      "owner": "TASK-103",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V009-ansi",
+        "E107-V009-bigquery",
+        "E107-V009-clickhouse",
+        "E107-V009-databricks",
+        "E107-V009-duckdb",
+        "E107-V009-generic",
+        "E107-V009-hive",
+        "E107-V009-mssql",
+        "E107-V009-mysql",
+        "E107-V009-postgresql",
+        "E107-V009-redshift",
+        "E107-V009-snowflake",
+        "E107-V009-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V010",
+      "upstream_id": "E107-V010",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "OR",
+      "classification": "exact_required",
+      "owner": "TASK-103",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V010-ansi",
+        "E107-V010-bigquery",
+        "E107-V010-clickhouse",
+        "E107-V010-databricks",
+        "E107-V010-duckdb",
+        "E107-V010-generic",
+        "E107-V010-hive",
+        "E107-V010-mssql",
+        "E107-V010-mysql",
+        "E107-V010-postgresql",
+        "E107-V010-redshift",
+        "E107-V010-snowflake",
+        "E107-V010-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V011",
+      "upstream_id": "E107-V011",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "NOT",
+      "classification": "exact_required",
+      "owner": "TASK-103",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V011-ansi",
+        "E107-V011-bigquery",
+        "E107-V011-clickhouse",
+        "E107-V011-databricks",
+        "E107-V011-duckdb",
+        "E107-V011-generic",
+        "E107-V011-hive",
+        "E107-V011-mssql",
+        "E107-V011-mysql",
+        "E107-V011-postgresql",
+        "E107-V011-redshift",
+        "E107-V011-snowflake",
+        "E107-V011-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V012",
+      "upstream_id": "E107-V012",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "parenthesized",
+      "classification": "exact_required",
+      "owner": "TASK-103",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V012-ansi",
+        "E107-V012-bigquery",
+        "E107-V012-clickhouse",
+        "E107-V012-databricks",
+        "E107-V012-duckdb",
+        "E107-V012-generic",
+        "E107-V012-hive",
+        "E107-V012-mssql",
+        "E107-V012-mysql",
+        "E107-V012-postgresql",
+        "E107-V012-redshift",
+        "E107-V012-snowflake",
+        "E107-V012-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V013",
+      "upstream_id": "E107-V013",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "correlated column truth",
+      "classification": "exact_required",
+      "owner": "TASK-103",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V013-ansi",
+        "E107-V013-bigquery",
+        "E107-V013-clickhouse",
+        "E107-V013-databricks",
+        "E107-V013-duckdb",
+        "E107-V013-generic",
+        "E107-V013-hive",
+        "E107-V013-mssql",
+        "E107-V013-mysql",
+        "E107-V013-postgresql",
+        "E107-V013-redshift",
+        "E107-V013-snowflake",
+        "E107-V013-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V014",
+      "upstream_id": "E107-V014",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS NULL",
+      "classification": "exact_required",
+      "owner": "TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V014-ansi",
+        "E107-V014-bigquery",
+        "E107-V014-clickhouse",
+        "E107-V014-databricks",
+        "E107-V014-duckdb",
+        "E107-V014-generic",
+        "E107-V014-hive",
+        "E107-V014-mssql",
+        "E107-V014-mysql",
+        "E107-V014-postgresql",
+        "E107-V014-redshift",
+        "E107-V014-snowflake",
+        "E107-V014-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V015",
+      "upstream_id": "E107-V015",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS NOT NULL",
+      "classification": "exact_required",
+      "owner": "TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V015-ansi",
+        "E107-V015-bigquery",
+        "E107-V015-clickhouse",
+        "E107-V015-databricks",
+        "E107-V015-duckdb",
+        "E107-V015-generic",
+        "E107-V015-hive",
+        "E107-V015-mssql",
+        "E107-V015-mysql",
+        "E107-V015-postgresql",
+        "E107-V015-redshift",
+        "E107-V015-snowflake",
+        "E107-V015-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V016",
+      "upstream_id": "E107-V016",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS TRUE",
+      "classification": "exact_required",
+      "owner": "TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V016-ansi",
+        "E107-V016-bigquery",
+        "E107-V016-clickhouse",
+        "E107-V016-databricks",
+        "E107-V016-duckdb",
+        "E107-V016-generic",
+        "E107-V016-hive",
+        "E107-V016-mssql",
+        "E107-V016-mysql",
+        "E107-V016-postgresql",
+        "E107-V016-redshift",
+        "E107-V016-snowflake",
+        "E107-V016-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V017",
+      "upstream_id": "E107-V017",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS FALSE",
+      "classification": "exact_required",
+      "owner": "TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V017-ansi",
+        "E107-V017-bigquery",
+        "E107-V017-clickhouse",
+        "E107-V017-databricks",
+        "E107-V017-duckdb",
+        "E107-V017-generic",
+        "E107-V017-hive",
+        "E107-V017-mssql",
+        "E107-V017-mysql",
+        "E107-V017-postgresql",
+        "E107-V017-redshift",
+        "E107-V017-snowflake",
+        "E107-V017-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V018",
+      "upstream_id": "E107-V018",
+      "feature_id": "predicates.null_truth",
+      "variant": "UNKNOWN",
+      "classification": "exact_required",
+      "owner": "TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V018-ansi",
+        "E107-V018-bigquery",
+        "E107-V018-clickhouse",
+        "E107-V018-databricks",
+        "E107-V018-duckdb",
+        "E107-V018-generic",
+        "E107-V018-hive",
+        "E107-V018-mssql",
+        "E107-V018-mysql",
+        "E107-V018-postgresql",
+        "E107-V018-redshift",
+        "E107-V018-snowflake",
+        "E107-V018-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V019",
+      "upstream_id": "E107-V019",
+      "feature_id": "predicates.null_truth",
+      "variant": "IN with NULL",
+      "classification": "exact_required",
+      "owner": "TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V019-ansi",
+        "E107-V019-bigquery",
+        "E107-V019-clickhouse",
+        "E107-V019-databricks",
+        "E107-V019-duckdb",
+        "E107-V019-generic",
+        "E107-V019-hive",
+        "E107-V019-mssql",
+        "E107-V019-mysql",
+        "E107-V019-postgresql",
+        "E107-V019-redshift",
+        "E107-V019-snowflake",
+        "E107-V019-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V020",
+      "upstream_id": "E107-V020",
+      "feature_id": "predicates.string_pattern",
+      "variant": "LIKE",
+      "classification": "exact_required",
+      "owner": "TASK-104",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V020-ansi",
+        "E107-V020-bigquery",
+        "E107-V020-clickhouse",
+        "E107-V020-databricks",
+        "E107-V020-duckdb",
+        "E107-V020-generic",
+        "E107-V020-hive",
+        "E107-V020-mssql",
+        "E107-V020-mysql",
+        "E107-V020-postgresql",
+        "E107-V020-redshift",
+        "E107-V020-snowflake",
+        "E107-V020-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V021",
+      "upstream_id": "E107-V021",
+      "feature_id": "predicates.string_pattern",
+      "variant": "ILIKE",
+      "classification": "conditional",
+      "owner": "TASK-104",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::inventoried_variants_have_explicit_exact_or_residual_classification"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V021-ansi",
+        "E107-V021-bigquery",
+        "E107-V021-clickhouse",
+        "E107-V021-databricks",
+        "E107-V021-duckdb",
+        "E107-V021-generic",
+        "E107-V021-hive",
+        "E107-V021-mssql",
+        "E107-V021-mysql",
+        "E107-V021-postgresql",
+        "E107-V021-redshift",
+        "E107-V021-snowflake",
+        "E107-V021-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V022",
+      "upstream_id": "E107-V022",
+      "feature_id": "predicates.string_pattern",
+      "variant": "ESCAPE",
+      "classification": "exact_required",
+      "owner": "TASK-104",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V022-ansi",
+        "E107-V022-bigquery",
+        "E107-V022-clickhouse",
+        "E107-V022-databricks",
+        "E107-V022-duckdb",
+        "E107-V022-generic",
+        "E107-V022-hive",
+        "E107-V022-mssql",
+        "E107-V022-mysql",
+        "E107-V022-postgresql",
+        "E107-V022-redshift",
+        "E107-V022-snowflake",
+        "E107-V022-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V023",
+      "upstream_id": "E107-V023",
+      "feature_id": "predicates.string_pattern",
+      "variant": "SIMILAR TO",
+      "classification": "conditional",
+      "owner": "TASK-104",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::inventoried_variants_have_explicit_exact_or_residual_classification"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V023-ansi",
+        "E107-V023-bigquery",
+        "E107-V023-clickhouse",
+        "E107-V023-databricks",
+        "E107-V023-duckdb",
+        "E107-V023-generic",
+        "E107-V023-hive",
+        "E107-V023-mssql",
+        "E107-V023-mysql",
+        "E107-V023-postgresql",
+        "E107-V023-redshift",
+        "E107-V023-snowflake",
+        "E107-V023-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V024",
+      "upstream_id": "E107-V024",
+      "feature_id": "predicates.string_pattern",
+      "variant": "regex",
+      "classification": "conditional",
+      "owner": "TASK-104",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::inventoried_variants_have_explicit_exact_or_residual_classification",
+        "tests/task_105_temporal_json_vendor.rs::opaque_function_domains_and_predicate_residuals_name_the_function"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V024-ansi",
+        "E107-V024-bigquery",
+        "E107-V024-clickhouse",
+        "E107-V024-databricks",
+        "E107-V024-duckdb",
+        "E107-V024-generic",
+        "E107-V024-hive",
+        "E107-V024-mssql",
+        "E107-V024-mysql",
+        "E107-V024-postgresql",
+        "E107-V024-redshift",
+        "E107-V024-snowflake",
+        "E107-V024-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V025",
+      "upstream_id": "E107-V025",
+      "feature_id": "predicates.string_pattern",
+      "variant": "prefix",
+      "classification": "exact_required",
+      "owner": "TASK-104",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V025-ansi",
+        "E107-V025-bigquery",
+        "E107-V025-clickhouse",
+        "E107-V025-databricks",
+        "E107-V025-duckdb",
+        "E107-V025-generic",
+        "E107-V025-hive",
+        "E107-V025-mssql",
+        "E107-V025-mysql",
+        "E107-V025-postgresql",
+        "E107-V025-redshift",
+        "E107-V025-snowflake",
+        "E107-V025-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V026",
+      "upstream_id": "E107-V026",
+      "feature_id": "predicates.string_pattern",
+      "variant": "collations",
+      "classification": "conditional",
+      "owner": "TASK-104",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::inventoried_variants_have_explicit_exact_or_residual_classification"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V026-ansi",
+        "E107-V026-bigquery",
+        "E107-V026-clickhouse",
+        "E107-V026-databricks",
+        "E107-V026-duckdb",
+        "E107-V026-generic",
+        "E107-V026-hive",
+        "E107-V026-mssql",
+        "E107-V026-mysql",
+        "E107-V026-postgresql",
+        "E107-V026-redshift",
+        "E107-V026-snowflake",
+        "E107-V026-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V027",
+      "upstream_id": "E107-V027",
+      "feature_id": "predicates.computed",
+      "variant": "arithmetic",
+      "classification": "exact_required",
+      "owner": "TASK-101/TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V027-ansi",
+        "E107-V027-bigquery",
+        "E107-V027-clickhouse",
+        "E107-V027-databricks",
+        "E107-V027-duckdb",
+        "E107-V027-generic",
+        "E107-V027-hive",
+        "E107-V027-mssql",
+        "E107-V027-mysql",
+        "E107-V027-postgresql",
+        "E107-V027-redshift",
+        "E107-V027-snowflake",
+        "E107-V027-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V028",
+      "upstream_id": "E107-V028",
+      "feature_id": "predicates.computed",
+      "variant": "casts",
+      "classification": "exact_required",
+      "owner": "TASK-101/TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V028-ansi",
+        "E107-V028-bigquery",
+        "E107-V028-clickhouse",
+        "E107-V028-databricks",
+        "E107-V028-duckdb",
+        "E107-V028-generic",
+        "E107-V028-hive",
+        "E107-V028-mssql",
+        "E107-V028-mysql",
+        "E107-V028-postgresql",
+        "E107-V028-redshift",
+        "E107-V028-snowflake",
+        "E107-V028-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V029",
+      "upstream_id": "E107-V029",
+      "feature_id": "predicates.computed",
+      "variant": "CASE",
+      "classification": "exact_required",
+      "owner": "TASK-101/TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V029-ansi",
+        "E107-V029-bigquery",
+        "E107-V029-clickhouse",
+        "E107-V029-databricks",
+        "E107-V029-duckdb",
+        "E107-V029-generic",
+        "E107-V029-hive",
+        "E107-V029-mssql",
+        "E107-V029-mysql",
+        "E107-V029-postgresql",
+        "E107-V029-redshift",
+        "E107-V029-snowflake",
+        "E107-V029-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V030",
+      "upstream_id": "E107-V030",
+      "feature_id": "predicates.computed",
+      "variant": "COALESCE",
+      "classification": "exact_required",
+      "owner": "TASK-101/TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V030-ansi",
+        "E107-V030-bigquery",
+        "E107-V030-clickhouse",
+        "E107-V030-databricks",
+        "E107-V030-duckdb",
+        "E107-V030-generic",
+        "E107-V030-hive",
+        "E107-V030-mssql",
+        "E107-V030-mysql",
+        "E107-V030-postgresql",
+        "E107-V030-redshift",
+        "E107-V030-snowflake",
+        "E107-V030-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V031",
+      "upstream_id": "E107-V031",
+      "feature_id": "predicates.computed",
+      "variant": "NULLIF",
+      "classification": "exact_required",
+      "owner": "TASK-101/TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V031-ansi",
+        "E107-V031-bigquery",
+        "E107-V031-clickhouse",
+        "E107-V031-databricks",
+        "E107-V031-duckdb",
+        "E107-V031-generic",
+        "E107-V031-hive",
+        "E107-V031-mssql",
+        "E107-V031-mysql",
+        "E107-V031-postgresql",
+        "E107-V031-redshift",
+        "E107-V031-snowflake",
+        "E107-V031-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V032",
+      "upstream_id": "E107-V032",
+      "feature_id": "predicates.computed",
+      "variant": "scalar functions",
+      "classification": "conditional",
+      "owner": "TASK-101/TASK-102",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::opaque_function_domains_and_predicate_residuals_name_the_function"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V032-ansi",
+        "E107-V032-bigquery",
+        "E107-V032-clickhouse",
+        "E107-V032-databricks",
+        "E107-V032-duckdb",
+        "E107-V032-generic",
+        "E107-V032-hive",
+        "E107-V032-mssql",
+        "E107-V032-mysql",
+        "E107-V032-postgresql",
+        "E107-V032-redshift",
+        "E107-V032-snowflake",
+        "E107-V032-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V033",
+      "upstream_id": "E107-V033",
+      "feature_id": "predicates.computed",
+      "variant": "overflow",
+      "classification": "exact_required",
+      "owner": "TASK-101/TASK-102",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V033-ansi",
+        "E107-V033-bigquery",
+        "E107-V033-clickhouse",
+        "E107-V033-databricks",
+        "E107-V033-duckdb",
+        "E107-V033-generic",
+        "E107-V033-hive",
+        "E107-V033-mssql",
+        "E107-V033-mysql",
+        "E107-V033-postgresql",
+        "E107-V033-redshift",
+        "E107-V033-snowflake",
+        "E107-V033-sqlite"
+      ]
+    },
+    {
+      "id": "E108-E107-V034",
+      "upstream_id": "E107-V034",
+      "feature_id": "predicates.temporal",
+      "variant": "DATE/TIME/TIMESTAMP/INTERVAL",
+      "classification": "conditional",
+      "owner": "TASK-105",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::date_literal_calendar_fields_are_folded_to_exact_integer_domains",
+        "tests/task_105_temporal_json_vendor.rs::inventoried_variants_are_certified_or_fail_closed_in_every_exposed_dialect"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V034-ansi",
+        "E107-V034-bigquery",
+        "E107-V034-clickhouse",
+        "E107-V034-databricks",
+        "E107-V034-duckdb",
+        "E107-V034-generic",
+        "E107-V034-hive",
+        "E107-V034-mssql",
+        "E107-V034-mysql",
+        "E107-V034-postgresql",
+        "E107-V034-redshift",
+        "E107-V034-snowflake",
+        "E107-V034-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V035",
+      "upstream_id": "E107-V035",
+      "feature_id": "predicates.temporal",
+      "variant": "timezone",
+      "classification": "conditional",
+      "owner": "TASK-105",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::inventoried_variants_are_certified_or_fail_closed_in_every_exposed_dialect"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V035-ansi",
+        "E107-V035-bigquery",
+        "E107-V035-clickhouse",
+        "E107-V035-databricks",
+        "E107-V035-duckdb",
+        "E107-V035-generic",
+        "E107-V035-hive",
+        "E107-V035-mssql",
+        "E107-V035-mysql",
+        "E107-V035-postgresql",
+        "E107-V035-redshift",
+        "E107-V035-snowflake",
+        "E107-V035-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V036",
+      "upstream_id": "E107-V036",
+      "feature_id": "predicates.temporal",
+      "variant": "coercion",
+      "classification": "conditional",
+      "owner": "TASK-105",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::explicit_date_literal_identity_cast_has_an_exact_calendar_domain",
+        "tests/task_105_temporal_json_vendor.rs::inventoried_variants_are_certified_or_fail_closed_in_every_exposed_dialect"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V036-ansi",
+        "E107-V036-bigquery",
+        "E107-V036-clickhouse",
+        "E107-V036-databricks",
+        "E107-V036-duckdb",
+        "E107-V036-generic",
+        "E107-V036-hive",
+        "E107-V036-mssql",
+        "E107-V036-mysql",
+        "E107-V036-postgresql",
+        "E107-V036-redshift",
+        "E107-V036-snowflake",
+        "E107-V036-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V037",
+      "upstream_id": "E107-V037",
+      "feature_id": "predicates.temporal",
+      "variant": "DST",
+      "classification": "conditional",
+      "owner": "TASK-105",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::unsupported_temporal_and_nested_ast_shapes_expose_their_family",
+        "tests/task_107_dialect_classifications.rs::all_frozen_dialect_cells_are_actually_parsed_and_equivalence_checked"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V037-ansi",
+        "E107-V037-bigquery",
+        "E107-V037-clickhouse",
+        "E107-V037-databricks",
+        "E107-V037-duckdb",
+        "E107-V037-generic",
+        "E107-V037-hive",
+        "E107-V037-mssql",
+        "E107-V037-mysql",
+        "E107-V037-postgresql",
+        "E107-V037-redshift",
+        "E107-V037-snowflake",
+        "E107-V037-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V038",
+      "upstream_id": "E107-V038",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "binary/locale collation",
+      "classification": "conditional",
+      "owner": "TASK-104/TASK-105",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::cross_text_column_equality_is_exact_only_when_attested"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V038-ansi",
+        "E107-V038-bigquery",
+        "E107-V038-clickhouse",
+        "E107-V038-databricks",
+        "E107-V038-duckdb",
+        "E107-V038-generic",
+        "E107-V038-hive",
+        "E107-V038-mssql",
+        "E107-V038-mysql",
+        "E107-V038-postgresql",
+        "E107-V038-redshift",
+        "E107-V038-snowflake",
+        "E107-V038-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V039",
+      "upstream_id": "E107-V039",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "padding",
+      "classification": "conditional",
+      "owner": "TASK-104/TASK-105",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::fixed_width_char_columns_never_claim_binary_laws"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V039-ansi",
+        "E107-V039-bigquery",
+        "E107-V039-clickhouse",
+        "E107-V039-databricks",
+        "E107-V039-duckdb",
+        "E107-V039-generic",
+        "E107-V039-hive",
+        "E107-V039-mssql",
+        "E107-V039-mysql",
+        "E107-V039-postgresql",
+        "E107-V039-redshift",
+        "E107-V039-snowflake",
+        "E107-V039-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V040",
+      "upstream_id": "E107-V040",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "NaN",
+      "classification": "conditional",
+      "owner": "TASK-104/TASK-105",
+      "truth_proof_tests": [
+        "tests/task_107_conditional_environment.rs::unproven_nan_and_signed_zero_cannot_be_certified_as_exact_integer_equalities"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V040-ansi",
+        "E107-V040-bigquery",
+        "E107-V040-clickhouse",
+        "E107-V040-databricks",
+        "E107-V040-duckdb",
+        "E107-V040-generic",
+        "E107-V040-hive",
+        "E107-V040-mssql",
+        "E107-V040-mysql",
+        "E107-V040-postgresql",
+        "E107-V040-redshift",
+        "E107-V040-snowflake",
+        "E107-V040-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V041",
+      "upstream_id": "E107-V041",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "signed zero",
+      "classification": "conditional",
+      "owner": "TASK-104/TASK-105",
+      "truth_proof_tests": [
+        "tests/task_107_conditional_environment.rs::unproven_nan_and_signed_zero_cannot_be_certified_as_exact_integer_equalities"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V041-ansi",
+        "E107-V041-bigquery",
+        "E107-V041-clickhouse",
+        "E107-V041-databricks",
+        "E107-V041-duckdb",
+        "E107-V041-generic",
+        "E107-V041-hive",
+        "E107-V041-mssql",
+        "E107-V041-mysql",
+        "E107-V041-postgresql",
+        "E107-V041-redshift",
+        "E107-V041-snowflake",
+        "E107-V041-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    },
+    {
+      "id": "E108-E107-V042",
+      "upstream_id": "E107-V042",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "NULL sorting",
+      "classification": "conditional",
+      "owner": "TASK-104/TASK-105",
+      "truth_proof_tests": [
+        "tests/task_107_dialect_classifications.rs::all_frozen_dialect_cells_are_actually_parsed_and_equivalence_checked"
+      ],
+      "dialect_fixture_ids": [
+        "E107-V042-ansi",
+        "E107-V042-bigquery",
+        "E107-V042-clickhouse",
+        "E107-V042-databricks",
+        "E107-V042-duckdb",
+        "E107-V042-generic",
+        "E107-V042-hive",
+        "E107-V042-mssql",
+        "E107-V042-mysql",
+        "E107-V042-postgresql",
+        "E107-V042-redshift",
+        "E107-V042-snowflake",
+        "E107-V042-sqlite"
+      ],
+      "conditional_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88"
+    }
+  ],
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "frozen_predicate_variant_count": 42,
+  "frozen_dialect_cell_count": 546,
+  "frozen_family_count": 14,
+  "frozen_golden_ids": [
+    "E107-G001",
+    "E107-G002",
+    "E107-G003",
+    "E107-G004",
+    "E107-G005",
+    "E107-G006",
+    "E107-G007",
+    "E107-G008",
+    "E107-G009"
+  ],
+  "frozen_composition_ids": [
+    "E107-C001",
+    "E107-C002",
+    "E107-C003",
+    "E107-C004",
+    "E107-C005",
+    "E107-C006",
+    "E107-C007",
+    "E107-C008",
+    "E107-C009"
+  ],
+  "seeded_differential_oracles": [
+    0,
+    1,
+    42,
+    20261016
+  ],
+  "independently_owned_tests": [
+    "tests/task_107_acceptance_freeze.rs::frozen_variant_dialect_inventory_matches_the_authoritative_task_66_scope",
+    "tests/task_107_dialect_classifications.rs::all_frozen_dialect_cells_are_actually_parsed_and_equivalence_checked",
+    "tests/task_107_frozen_execution_oracles.rs::frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership",
+    "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership",
+    "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+    "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+    "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+    "tests/task_107_expression_oracles.rs::multi_seed_duckdb_true_and_not_true_oracles_check_exact_impossible_and_null",
+    "tests/task_107_expression_oracles.rs::odcs_physical_schema_matches_sql_and_compiled_dbt_expression_outcomes",
+    "tests/task_107_conditional_environment.rs::unproven_nan_and_signed_zero_cannot_be_certified_as_exact_integer_equalities",
+    "tests/task_106_signoff.rs::bounded_task_106_has_a_frozen_complete_evidence_matrix"
+  ],
+  "required_final_gates": [
+    "Rust / fmt",
+    "Rust / lint",
+    "Rust / test",
+    "Rust / doc",
+    "Rust (no default features) / lint",
+    "Rust (no default features) / test",
+    "Rust (no default features) / doc",
+    "Rust (no default features) / dependencies",
+    "dbt Core E2E"
+  ],
+  "source_executable_oracles": "tests/task_107_frozen_execution_oracles.rs",
+  "adapter_evidence": "tests/task_107_full_variant_adapters.rs",
+  "dialect_parser_evidence": "tests/task_107_dialect_classifications.rs",
+  "conditional_review": "docs/task-107-conditional-review.md",
+  "signoff": {
+    "status": "pending_final_ci",
+    "task_108_checked": false,
+    "task_70_checked": false,
+    "final_head_sha": null,
+    "all_required_checks_green": false,
+    "no_vendor_runtime_claim": true,
+    "downstream_release_gate": "TASK-91"
+  }
+}

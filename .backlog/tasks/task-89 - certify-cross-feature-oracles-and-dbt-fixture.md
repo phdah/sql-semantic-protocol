@@ -74,3 +74,7 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 ## Maintainer decision (2026-10-09)
 
 Approved [unified E2E gate](../../docs/coverage-signoff.md): rebuild/extend dbt model DAG for all feasible transformations and add a **required scripted DML/DDL suite invoked by the same top-level `make all`**, not an unrelated optional job. Include CREATE/ALTER/REPLACE/DROP, INSERT/UPDATE/DELETE/MERGE/conflicts, transactions, snapshots, complete output snapshots and per-terminal randomized negatives. No false universal claims for unsupported opaque external behavior.
+
+## TASK-108 expression parent closure handoff (2026-10-17)
+
+The TASK-108 independent acceptance freeze at `docs/task-108-acceptance-freeze.json` maps all six unchanged TASK-70 AC to 14 family owners, all 42 TASK-107 variant cases, 546 dialect cells, nine goldens, nine compositions and four seeds. `tests/task_108_parent_signoff.rs` guards this traceability and requires distinct semantic/oracle CI owners. This does not upgrade global TASK-88/89/91 release evidence or claim unexecuted vendor-engine semantics. TASK-70 remains In Progress pending final TASK-108 PR-head CI and parent signoff.

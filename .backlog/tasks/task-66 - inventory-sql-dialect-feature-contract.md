@@ -96,3 +96,7 @@ inventory records exact conditions and unresolved dialect-sensitive families.
 All entries remain release-blocking: this is **bounded local evidence**, not
 TASK-88/89 exhaustive dialect/engine or generator validation. TASK-66 stays
 Done for the inventory, without waiving TASK-70 or TASK-91.
+
+## TASK-108 expression parent closure handoff (2026-10-17)
+
+The TASK-108 independent acceptance freeze at `docs/task-108-acceptance-freeze.json` maps all six unchanged TASK-70 AC to 14 family owners, all 42 TASK-107 variant cases, 546 dialect cells, nine goldens, nine compositions and four seeds. `tests/task_108_parent_signoff.rs` guards this traceability and requires distinct semantic/oracle CI owners. This does not upgrade global TASK-88/89/91 release evidence or claim unexecuted vendor-engine semantics. TASK-70 remains In Progress pending final TASK-108 PR-head CI and parent signoff.

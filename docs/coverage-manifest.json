@@ -4,14 +4,16 @@
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
   "task_107_oracle_evidence": {
     "owner": "TASK-107",
-    "status": "implementation_in_progress",
+    "status": "certified_bounded_expression_oracles",
     "matrix": "docs/task-107-oracle-matrix.json",
     "acceptance_freeze": "docs/task-107-acceptance-freeze.json",
     "frozen_variant_cells": 42,
     "frozen_dialect_cells": 546,
     "test": "tests/task_107_expression_oracles.rs",
-    "coverage": "registered representative SQL, dbt, dialect and seeded DuckDB evidence; acceptance matrix and full CI remain incomplete",
-    "release_approved": false
+    "coverage": "42 frozen predicate variants (28 mandatory exact, 14 independently reviewed conditional), 546 parser/canonical dialect cells, 14 families, nine closed-world goldens, nine compositions, four deterministic seeds; verified by TASK-107 test owners and successful merged PR #115 CI; TASK-88/89/91 remain independent release blockers.",
+    "release_approved": false,
+    "final_ci_workflow_run": 38975931061,
+    "final_ci_head_sha": "e6473af66f80ffe445a18e6630e119317f4fc200"
   },
   "task_105_expression_evidence": {
     "owner": "TASK-105",
@@ -21,67 +23,572 @@
     "engine_oracle": "DuckDB only; parser acceptance never attests vendor execution equivalence",
     "release_approved": false,
     "positional_alias_cases": [
-      {"id":"derived_alias_swap","sql":"SELECT v FROM (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) c(w, v)","value":"2024-01-01","parser_rejected":[]},
-      {"id":"cte_alias_swap","sql":"WITH c(w, v) AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c","value":"2024-01-01","parser_rejected":[]},
-      {"id":"local_table_alias_swap","sql":"WITH c AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c AS renamed(w, v)","value":"2024-01-01","parser_rejected":[]}
+      {
+        "id": "derived_alias_swap",
+        "sql": "SELECT v FROM (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) c(w, v)",
+        "value": "2024-01-01",
+        "parser_rejected": []
+      },
+      {
+        "id": "cte_alias_swap",
+        "sql": "WITH c(w, v) AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c",
+        "value": "2024-01-01",
+        "parser_rejected": []
+      },
+      {
+        "id": "local_table_alias_swap",
+        "sql": "WITH c AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c AS renamed(w, v)",
+        "value": "2024-01-01",
+        "parser_rejected": []
+      }
     ],
     "variants": [
-      {"id":"date_identity","family":"calendar","ast":"Cast/TypedString","expression":"CAST(DATE '2024-02-29' AS DATE)","outcome":"date","value":"2024-02-29","parser_rejected":[]},
-      {"id":"date_try_identity","family":"calendar","ast":"Cast/TypedString","expression":"TRY_CAST(DATE '2024-02-29' AS DATE)","outcome":"date","value":"2024-02-29","parser_rejected":[]},
-      {"id":"date_safe_identity","family":"calendar","ast":"Cast/TypedString","expression":"SAFE_CAST(DATE '2024-02-29' AS DATE)","outcome":"date","value":"2024-02-29","parser_rejected":[]},
-      {"id":"date_year","family":"calendar","ast":"Extract/TypedString","expression":"EXTRACT(YEAR FROM DATE '2000-02-29')","outcome":"integer","value":"2000","parser_rejected":[]},
-      {"id":"date_month","family":"calendar","ast":"Extract/TypedString","expression":"EXTRACT(MONTH FROM DATE '2000-02-29')","outcome":"integer","value":"2","parser_rejected":[]},
-      {"id":"date_day","family":"calendar","ast":"Extract/TypedString","expression":"EXTRACT(DAY FROM DATE '2000-02-29')","outcome":"integer","value":"29","parser_rejected":[]},
-      {"id":"invalid_date","family":"calendar","ast":"TypedString","expression":"DATE '1900-02-29'","outcome":"unknown","reason":"Gregorian calendar invalid or outside portable fixed-width years","parser_rejected":[]},
-      {"id":"infinite_date","family":"calendar","ast":"TypedString","expression":"DATE 'infinity'","outcome":"unknown","reason":"engine-specific infinity representation","parser_rejected":[]},
-      {"id":"date_string_cast","family":"temporal_cast","ast":"Cast","expression":"CAST('2024-02-29' AS DATE)","outcome":"unknown","reason":"text parsing/date-style law absent","parser_rejected":[]},
-      {"id":"date_try_invalid","family":"temporal_cast","ast":"Cast","expression":"TRY_CAST('bad' AS DATE)","outcome":"unknown","reason":"conversion and invalid-input execution laws not certified","parser_rejected":[]},
-      {"id":"source_date_cast","family":"temporal_cast","ast":"Cast","expression":"CAST(d AS DATE)","outcome":"unknown","reason":"source type and conversion identity not certified","parser_rejected":[]},
-      {"id":"source_extract","family":"calendar","ast":"Extract","expression":"EXTRACT(YEAR FROM d)","outcome":"unknown","reason":"source domain extraction/inversion not implemented","parser_rejected":[]},
-      {"id":"week_extract","family":"calendar","ast":"Extract","expression":"EXTRACT(WEEK FROM DATE '2024-01-01')","outcome":"unknown","reason":"week/calendar numbering execution law absent","parser_rejected":[]},
-      {"id":"time_literal","family":"clock","ast":"TypedString","expression":"TIME '12:34:56'","outcome":"time","value":"12:34:56","parser_rejected":[]},
-      {"id":"time_offset","family":"clock","ast":"TypedString","expression":"TIME '12:34:56+02:00'","outcome":"unknown","reason":"offset-bearing TIME is not a portable zone-free clock","parser_rejected":[]},
-      {"id":"time_leap_second","family":"clock","ast":"TypedString","expression":"TIME '23:59:60'","outcome":"unknown","reason":"leap-second execution law absent","parser_rejected":[]},
-      {"id":"time_precision_cast","family":"temporal_cast","ast":"Cast","expression":"CAST(TIME '12:34:56.1234' AS TIME(3))","outcome":"unknown","reason":"precision rounding/truncation law absent","parser_rejected":[]},
-      {"id":"timestamp_wall_clock","family":"timezone","ast":"TypedString","expression":"TIMESTAMP '2024-02-29 12:34:56'","outcome":"timestamp","value":"2024-02-29 12:34:56","parser_rejected":[]},
-      {"id":"timestamp_invalid","family":"timezone","ast":"TypedString","expression":"TIMESTAMP '2024-02-30 12:34:56'","outcome":"unknown","reason":"invalid Gregorian date","parser_rejected":[]},
-      {"id":"named_zone_dst_gap","family":"timezone","ast":"TypedString","expression":"TIMESTAMP '2024-03-10 02:30:00 America/New_York'","outcome":"unknown","reason":"timezone database and DST resolution law absent","parser_rejected":[]},
-      {"id":"named_zone_dst_fold","family":"timezone","ast":"TypedString","expression":"TIMESTAMP '2024-11-03 01:30:00 America/New_York'","outcome":"unknown","reason":"ambiguous local instant and DST fold law absent","parser_rejected":[]},
-      {"id":"at_timezone","family":"timezone","ast":"AtTimeZone","expression":"d AT TIME ZONE 'UTC'","outcome":"unknown","reason":"source zone/session/conversion law absent","parser_rejected":[]},
-      {"id":"day_interval","family":"interval","ast":"Interval","expression":"INTERVAL '1 day'","outcome":"unknown","reason":"interval units, normalization and arithmetic law absent","parser_rejected":["mysql","hive","clickhouse","bigquery","ansi","databricks"]},
-      {"id":"month_interval","family":"interval","ast":"Interval","expression":"INTERVAL '1' MONTH","outcome":"unknown","reason":"calendar month boundary law absent","parser_rejected":[]},
-      {"id":"interval_arithmetic","family":"interval","ast":"BinaryOp/Interval","expression":"d + INTERVAL '1 month'","outcome":"unknown","reason":"month-end clamping, result type and calendar law absent","parser_rejected":["mysql","hive","clickhouse","bigquery","ansi","databricks"]},
-      {"id":"json_null","family":"json","ast":"TypedString","expression":"JSON 'null'","outcome":"unknown","reason":"JSON document null must not become SQL NULL","parser_rejected":[]},
-      {"id":"json_arrow","family":"json","ast":"BinaryOp","expression":"payload -> 'a'","outcome":"unknown","reason":"document/path/missing-key/JSON-null law absent","parser_rejected":[]},
-      {"id":"json_text_arrow","family":"json","ast":"BinaryOp","expression":"payload ->> 'a'","outcome":"unknown","reason":"text coercion and SQL NULL versus JSON null law absent","parser_rejected":[]},
-      {"id":"json_path_arrow","family":"json","ast":"BinaryOp","expression":"payload #> '{a,0}'","outcome":"unknown","reason":"path/index/type law absent","parser_rejected":["mysql","hive","snowflake","bigquery"]},
-      {"id":"json_path_text","family":"json","ast":"BinaryOp","expression":"payload #>> '{a,0}'","outcome":"unknown","reason":"path/index/text conversion law absent","parser_rejected":["mysql","hive","snowflake","bigquery"]},
-      {"id":"json_extract","family":"json","ast":"Function","expression":"JSON_EXTRACT(payload, '$.a')","outcome":"unknown","reason":"function/path/return-type execution law absent","parser_rejected":[]},
-      {"id":"json_value","family":"json","ast":"Function","expression":"JSON_VALUE(payload, '$.a')","outcome":"unknown","reason":"function/error/SQL NULL execution law absent","parser_rejected":[]},
-      {"id":"array_literal","family":"nested","ast":"Array","expression":"ARRAY[1, 2]","outcome":"unknown","reason":"nested output domain not represented by scalar domains","parser_rejected":["sqlite","mssql"]},
-      {"id":"array_index","family":"nested","ast":"CompoundFieldAccess","expression":"payload[1]","outcome":"unknown","reason":"index origin, bounds and nested type law absent","parser_rejected":["sqlite","mssql"]},
-      {"id":"struct_literal","family":"nested","ast":"Struct","expression":"STRUCT(1 AS a)","outcome":"unknown","reason":"struct field and nested value domain law absent","parser_rejected":["mysql","postgresql","postgres","hive","sqlite","snowflake","redshift","mssql","clickhouse","ansi","duckdb"]},
-      {"id":"tuple_literal","family":"nested","ast":"Tuple","expression":"(1, 2)","outcome":"unknown","reason":"tuple/nested scalar comparison law absent","parser_rejected":[]},
-      {"id":"current_date","family":"session","ast":"Function","expression":"CURRENT_DATE","outcome":"unknown","reason":"clock and session timezone not fixed","parser_rejected":[]},
-      {"id":"current_timestamp","family":"session","ast":"Function","expression":"CURRENT_TIMESTAMP","outcome":"unknown","reason":"clock and session timezone not fixed","parser_rejected":[]},
-      {"id":"random","family":"stochastic","ast":"Function","expression":"RANDOM()","outcome":"unknown","reason":"stochastic function has no deterministic result","parser_rejected":[]},
-      {"id":"uuid","family":"stochastic","ast":"Function","expression":"UUID()","outcome":"unknown","reason":"generated identity and volatility law absent","parser_rejected":[]},
-      {"id":"date_trunc","family":"vendor_function","ast":"Function","expression":"DATE_TRUNC('day', d)","outcome":"unknown","reason":"return type, calendar and session laws absent","parser_rejected":[]},
-      {"id":"dateadd","family":"vendor_function","ast":"Function","expression":"DATEADD(day, 1, d)","outcome":"unknown","reason":"vendor date arithmetic execution law absent","parser_rejected":[]},
-      {"id":"opaque_udf","family":"opaque_udf","ast":"Function","expression":"MY_UDF(payload)","outcome":"unknown","reason":"no externally validated deterministic type/NULL/execution evidence","parser_rejected":[]},
-      {"id":"qualified_builtin_name","family":"opaque_udf","ast":"Function","expression":"custom.EXTRACT_YEAR(d)","outcome":"unknown","reason":"a UDF spelling must not inherit built-in EXTRACT semantics","parser_rejected":[]},
-      {"id":"time_literal_precision","family":"clock","ast":"TypedString/Time(precision)","expression":"TIME(3) '12:34:56.123456'","outcome":"unknown","reason":"declared literal precision would require rounding/truncation","parser_rejected":[]},
-      {"id":"time_default_precision","family":"clock","ast":"TypedString/Time(None)","expression":"TIME '12:34:56.123456789'","outcome":"unknown","reason":"engine default literal precision is not attested","parser_rejected":[]},
-      {"id":"timestamp_literal_precision","family":"timezone","ast":"TypedString/Timestamp(precision)","expression":"TIMESTAMP(3) '2024-02-29 12:34:56.123456'","outcome":"unknown","reason":"declared literal precision would require rounding/truncation","parser_rejected":[]},
-      {"id":"timestamp_default_precision","family":"timezone","ast":"TypedString/Timestamp(None)","expression":"TIMESTAMP '2024-02-29 12:34:56.123456789'","outcome":"unknown","reason":"engine default literal precision is not attested","parser_rejected":[]},
-      {"id":"timestamp_zone_without_offset","family":"timezone","ast":"TypedString/Timestamp(WithTimeZone)","expression":"TIMESTAMP WITH TIME ZONE '2024-02-29 12:34:56'","outcome":"unknown","reason":"literal instant requires a session zone before source-column interpretation","parser_rejected":[]},
-      {"id":"timestamp_without_zone_offset","family":"timezone","ast":"TypedString/Timestamp(WithoutTimeZone)","expression":"TIMESTAMP WITHOUT TIME ZONE '2024-02-29 12:34:56+02:00'","outcome":"unknown","reason":"offset-discard/coercion law is not certified","parser_rejected":[]},
-      {"id":"timestamp_unqualified_offset","family":"timezone","ast":"TypedString/Timestamp(None)","expression":"TIMESTAMP '2024-02-29 12:34:56+02:00'","outcome":"unknown","reason":"offset must not silently turn a timestamp into timestamptz","parser_rejected":[]},
-      {"id":"unicode_clock_suffix","family":"clock","ast":"TypedString","expression":"TIME '12:34:56💥'","outcome":"unknown","reason":"invalid UTF-8 character boundary for an ASCII offset token must fail closed","parser_rejected":[]},
-      {"id":"unicode_timestamp_suffix","family":"timezone","ast":"TypedString","expression":"TIMESTAMP '2024-02-29 12:34:56é'","outcome":"unknown","reason":"invalid non-ASCII offset token must fail closed","parser_rejected":[]},
-      {"id":"explicit_zoned_fraction","family":"timezone","ast":"TypedString/Timestamp(precision,WithTimeZone)","expression":"TIMESTAMP(6) WITH TIME ZONE '2024-02-29 12:34:56.123456+02:00'","outcome":"timestamp","value":"2024-02-29 12:34:56.123456+02:00","parser_rejected":[]},
-      {"id":"unsupported_time_precision","family":"clock","ast":"TypedString/Time(9)","expression":"TIME(9) '12:34:56.123456789'","outcome":"unknown","reason":"nanosecond literal precision is outside the certified microsecond subset","parser_rejected":[]},
-      {"id":"unsupported_timestamp_precision","family":"timezone","ast":"TypedString/Timestamp(9)","expression":"TIMESTAMP(9) '2024-02-29 12:34:56.123456789'","outcome":"unknown","reason":"nanosecond literal precision is outside the certified microsecond subset","parser_rejected":[]}
+      {
+        "id": "date_identity",
+        "family": "calendar",
+        "ast": "Cast/TypedString",
+        "expression": "CAST(DATE '2024-02-29' AS DATE)",
+        "outcome": "date",
+        "value": "2024-02-29",
+        "parser_rejected": []
+      },
+      {
+        "id": "date_try_identity",
+        "family": "calendar",
+        "ast": "Cast/TypedString",
+        "expression": "TRY_CAST(DATE '2024-02-29' AS DATE)",
+        "outcome": "date",
+        "value": "2024-02-29",
+        "parser_rejected": []
+      },
+      {
+        "id": "date_safe_identity",
+        "family": "calendar",
+        "ast": "Cast/TypedString",
+        "expression": "SAFE_CAST(DATE '2024-02-29' AS DATE)",
+        "outcome": "date",
+        "value": "2024-02-29",
+        "parser_rejected": []
+      },
+      {
+        "id": "date_year",
+        "family": "calendar",
+        "ast": "Extract/TypedString",
+        "expression": "EXTRACT(YEAR FROM DATE '2000-02-29')",
+        "outcome": "integer",
+        "value": "2000",
+        "parser_rejected": []
+      },
+      {
+        "id": "date_month",
+        "family": "calendar",
+        "ast": "Extract/TypedString",
+        "expression": "EXTRACT(MONTH FROM DATE '2000-02-29')",
+        "outcome": "integer",
+        "value": "2",
+        "parser_rejected": []
+      },
+      {
+        "id": "date_day",
+        "family": "calendar",
+        "ast": "Extract/TypedString",
+        "expression": "EXTRACT(DAY FROM DATE '2000-02-29')",
+        "outcome": "integer",
+        "value": "29",
+        "parser_rejected": []
+      },
+      {
+        "id": "invalid_date",
+        "family": "calendar",
+        "ast": "TypedString",
+        "expression": "DATE '1900-02-29'",
+        "outcome": "unknown",
+        "reason": "Gregorian calendar invalid or outside portable fixed-width years",
+        "parser_rejected": []
+      },
+      {
+        "id": "infinite_date",
+        "family": "calendar",
+        "ast": "TypedString",
+        "expression": "DATE 'infinity'",
+        "outcome": "unknown",
+        "reason": "engine-specific infinity representation",
+        "parser_rejected": []
+      },
+      {
+        "id": "date_string_cast",
+        "family": "temporal_cast",
+        "ast": "Cast",
+        "expression": "CAST('2024-02-29' AS DATE)",
+        "outcome": "unknown",
+        "reason": "text parsing/date-style law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "date_try_invalid",
+        "family": "temporal_cast",
+        "ast": "Cast",
+        "expression": "TRY_CAST('bad' AS DATE)",
+        "outcome": "unknown",
+        "reason": "conversion and invalid-input execution laws not certified",
+        "parser_rejected": []
+      },
+      {
+        "id": "source_date_cast",
+        "family": "temporal_cast",
+        "ast": "Cast",
+        "expression": "CAST(d AS DATE)",
+        "outcome": "unknown",
+        "reason": "source type and conversion identity not certified",
+        "parser_rejected": []
+      },
+      {
+        "id": "source_extract",
+        "family": "calendar",
+        "ast": "Extract",
+        "expression": "EXTRACT(YEAR FROM d)",
+        "outcome": "unknown",
+        "reason": "source domain extraction/inversion not implemented",
+        "parser_rejected": []
+      },
+      {
+        "id": "week_extract",
+        "family": "calendar",
+        "ast": "Extract",
+        "expression": "EXTRACT(WEEK FROM DATE '2024-01-01')",
+        "outcome": "unknown",
+        "reason": "week/calendar numbering execution law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "time_literal",
+        "family": "clock",
+        "ast": "TypedString",
+        "expression": "TIME '12:34:56'",
+        "outcome": "time",
+        "value": "12:34:56",
+        "parser_rejected": []
+      },
+      {
+        "id": "time_offset",
+        "family": "clock",
+        "ast": "TypedString",
+        "expression": "TIME '12:34:56+02:00'",
+        "outcome": "unknown",
+        "reason": "offset-bearing TIME is not a portable zone-free clock",
+        "parser_rejected": []
+      },
+      {
+        "id": "time_leap_second",
+        "family": "clock",
+        "ast": "TypedString",
+        "expression": "TIME '23:59:60'",
+        "outcome": "unknown",
+        "reason": "leap-second execution law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "time_precision_cast",
+        "family": "temporal_cast",
+        "ast": "Cast",
+        "expression": "CAST(TIME '12:34:56.1234' AS TIME(3))",
+        "outcome": "unknown",
+        "reason": "precision rounding/truncation law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "timestamp_wall_clock",
+        "family": "timezone",
+        "ast": "TypedString",
+        "expression": "TIMESTAMP '2024-02-29 12:34:56'",
+        "outcome": "timestamp",
+        "value": "2024-02-29 12:34:56",
+        "parser_rejected": []
+      },
+      {
+        "id": "timestamp_invalid",
+        "family": "timezone",
+        "ast": "TypedString",
+        "expression": "TIMESTAMP '2024-02-30 12:34:56'",
+        "outcome": "unknown",
+        "reason": "invalid Gregorian date",
+        "parser_rejected": []
+      },
+      {
+        "id": "named_zone_dst_gap",
+        "family": "timezone",
+        "ast": "TypedString",
+        "expression": "TIMESTAMP '2024-03-10 02:30:00 America/New_York'",
+        "outcome": "unknown",
+        "reason": "timezone database and DST resolution law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "named_zone_dst_fold",
+        "family": "timezone",
+        "ast": "TypedString",
+        "expression": "TIMESTAMP '2024-11-03 01:30:00 America/New_York'",
+        "outcome": "unknown",
+        "reason": "ambiguous local instant and DST fold law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "at_timezone",
+        "family": "timezone",
+        "ast": "AtTimeZone",
+        "expression": "d AT TIME ZONE 'UTC'",
+        "outcome": "unknown",
+        "reason": "source zone/session/conversion law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "day_interval",
+        "family": "interval",
+        "ast": "Interval",
+        "expression": "INTERVAL '1 day'",
+        "outcome": "unknown",
+        "reason": "interval units, normalization and arithmetic law absent",
+        "parser_rejected": [
+          "mysql",
+          "hive",
+          "clickhouse",
+          "bigquery",
+          "ansi",
+          "databricks"
+        ]
+      },
+      {
+        "id": "month_interval",
+        "family": "interval",
+        "ast": "Interval",
+        "expression": "INTERVAL '1' MONTH",
+        "outcome": "unknown",
+        "reason": "calendar month boundary law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "interval_arithmetic",
+        "family": "interval",
+        "ast": "BinaryOp/Interval",
+        "expression": "d + INTERVAL '1 month'",
+        "outcome": "unknown",
+        "reason": "month-end clamping, result type and calendar law absent",
+        "parser_rejected": [
+          "mysql",
+          "hive",
+          "clickhouse",
+          "bigquery",
+          "ansi",
+          "databricks"
+        ]
+      },
+      {
+        "id": "json_null",
+        "family": "json",
+        "ast": "TypedString",
+        "expression": "JSON 'null'",
+        "outcome": "unknown",
+        "reason": "JSON document null must not become SQL NULL",
+        "parser_rejected": []
+      },
+      {
+        "id": "json_arrow",
+        "family": "json",
+        "ast": "BinaryOp",
+        "expression": "payload -> 'a'",
+        "outcome": "unknown",
+        "reason": "document/path/missing-key/JSON-null law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "json_text_arrow",
+        "family": "json",
+        "ast": "BinaryOp",
+        "expression": "payload ->> 'a'",
+        "outcome": "unknown",
+        "reason": "text coercion and SQL NULL versus JSON null law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "json_path_arrow",
+        "family": "json",
+        "ast": "BinaryOp",
+        "expression": "payload #> '{a,0}'",
+        "outcome": "unknown",
+        "reason": "path/index/type law absent",
+        "parser_rejected": [
+          "mysql",
+          "hive",
+          "snowflake",
+          "bigquery"
+        ]
+      },
+      {
+        "id": "json_path_text",
+        "family": "json",
+        "ast": "BinaryOp",
+        "expression": "payload #>> '{a,0}'",
+        "outcome": "unknown",
+        "reason": "path/index/text conversion law absent",
+        "parser_rejected": [
+          "mysql",
+          "hive",
+          "snowflake",
+          "bigquery"
+        ]
+      },
+      {
+        "id": "json_extract",
+        "family": "json",
+        "ast": "Function",
+        "expression": "JSON_EXTRACT(payload, '$.a')",
+        "outcome": "unknown",
+        "reason": "function/path/return-type execution law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "json_value",
+        "family": "json",
+        "ast": "Function",
+        "expression": "JSON_VALUE(payload, '$.a')",
+        "outcome": "unknown",
+        "reason": "function/error/SQL NULL execution law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "array_literal",
+        "family": "nested",
+        "ast": "Array",
+        "expression": "ARRAY[1, 2]",
+        "outcome": "unknown",
+        "reason": "nested output domain not represented by scalar domains",
+        "parser_rejected": [
+          "sqlite",
+          "mssql"
+        ]
+      },
+      {
+        "id": "array_index",
+        "family": "nested",
+        "ast": "CompoundFieldAccess",
+        "expression": "payload[1]",
+        "outcome": "unknown",
+        "reason": "index origin, bounds and nested type law absent",
+        "parser_rejected": [
+          "sqlite",
+          "mssql"
+        ]
+      },
+      {
+        "id": "struct_literal",
+        "family": "nested",
+        "ast": "Struct",
+        "expression": "STRUCT(1 AS a)",
+        "outcome": "unknown",
+        "reason": "struct field and nested value domain law absent",
+        "parser_rejected": [
+          "mysql",
+          "postgresql",
+          "postgres",
+          "hive",
+          "sqlite",
+          "snowflake",
+          "redshift",
+          "mssql",
+          "clickhouse",
+          "ansi",
+          "duckdb"
+        ]
+      },
+      {
+        "id": "tuple_literal",
+        "family": "nested",
+        "ast": "Tuple",
+        "expression": "(1, 2)",
+        "outcome": "unknown",
+        "reason": "tuple/nested scalar comparison law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "current_date",
+        "family": "session",
+        "ast": "Function",
+        "expression": "CURRENT_DATE",
+        "outcome": "unknown",
+        "reason": "clock and session timezone not fixed",
+        "parser_rejected": []
+      },
+      {
+        "id": "current_timestamp",
+        "family": "session",
+        "ast": "Function",
+        "expression": "CURRENT_TIMESTAMP",
+        "outcome": "unknown",
+        "reason": "clock and session timezone not fixed",
+        "parser_rejected": []
+      },
+      {
+        "id": "random",
+        "family": "stochastic",
+        "ast": "Function",
+        "expression": "RANDOM()",
+        "outcome": "unknown",
+        "reason": "stochastic function has no deterministic result",
+        "parser_rejected": []
+      },
+      {
+        "id": "uuid",
+        "family": "stochastic",
+        "ast": "Function",
+        "expression": "UUID()",
+        "outcome": "unknown",
+        "reason": "generated identity and volatility law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "date_trunc",
+        "family": "vendor_function",
+        "ast": "Function",
+        "expression": "DATE_TRUNC('day', d)",
+        "outcome": "unknown",
+        "reason": "return type, calendar and session laws absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "dateadd",
+        "family": "vendor_function",
+        "ast": "Function",
+        "expression": "DATEADD(day, 1, d)",
+        "outcome": "unknown",
+        "reason": "vendor date arithmetic execution law absent",
+        "parser_rejected": []
+      },
+      {
+        "id": "opaque_udf",
+        "family": "opaque_udf",
+        "ast": "Function",
+        "expression": "MY_UDF(payload)",
+        "outcome": "unknown",
+        "reason": "no externally validated deterministic type/NULL/execution evidence",
+        "parser_rejected": []
+      },
+      {
+        "id": "qualified_builtin_name",
+        "family": "opaque_udf",
+        "ast": "Function",
+        "expression": "custom.EXTRACT_YEAR(d)",
+        "outcome": "unknown",
+        "reason": "a UDF spelling must not inherit built-in EXTRACT semantics",
+        "parser_rejected": []
+      },
+      {
+        "id": "time_literal_precision",
+        "family": "clock",
+        "ast": "TypedString/Time(precision)",
+        "expression": "TIME(3) '12:34:56.123456'",
+        "outcome": "unknown",
+        "reason": "declared literal precision would require rounding/truncation",
+        "parser_rejected": []
+      },
+      {
+        "id": "time_default_precision",
+        "family": "clock",
+        "ast": "TypedString/Time(None)",
+        "expression": "TIME '12:34:56.123456789'",
+        "outcome": "unknown",
+        "reason": "engine default literal precision is not attested",
+        "parser_rejected": []
+      },
+      {
+        "id": "timestamp_literal_precision",
+        "family": "timezone",
+        "ast": "TypedString/Timestamp(precision)",
+        "expression": "TIMESTAMP(3) '2024-02-29 12:34:56.123456'",
+        "outcome": "unknown",
+        "reason": "declared literal precision would require rounding/truncation",
+        "parser_rejected": []
+      },
+      {
+        "id": "timestamp_default_precision",
+        "family": "timezone",
+        "ast": "TypedString/Timestamp(None)",
+        "expression": "TIMESTAMP '2024-02-29 12:34:56.123456789'",
+        "outcome": "unknown",
+        "reason": "engine default literal precision is not attested",
+        "parser_rejected": []
+      },
+      {
+        "id": "timestamp_zone_without_offset",
+        "family": "timezone",
+        "ast": "TypedString/Timestamp(WithTimeZone)",
+        "expression": "TIMESTAMP WITH TIME ZONE '2024-02-29 12:34:56'",
+        "outcome": "unknown",
+        "reason": "literal instant requires a session zone before source-column interpretation",
+        "parser_rejected": []
+      },
+      {
+        "id": "timestamp_without_zone_offset",
+        "family": "timezone",
+        "ast": "TypedString/Timestamp(WithoutTimeZone)",
+        "expression": "TIMESTAMP WITHOUT TIME ZONE '2024-02-29 12:34:56+02:00'",
+        "outcome": "unknown",
+        "reason": "offset-discard/coercion law is not certified",
+        "parser_rejected": []
+      },
+      {
+        "id": "timestamp_unqualified_offset",
+        "family": "timezone",
+        "ast": "TypedString/Timestamp(None)",
+        "expression": "TIMESTAMP '2024-02-29 12:34:56+02:00'",
+        "outcome": "unknown",
+        "reason": "offset must not silently turn a timestamp into timestamptz",
+        "parser_rejected": []
+      },
+      {
+        "id": "unicode_clock_suffix",
+        "family": "clock",
+        "ast": "TypedString",
+        "expression": "TIME '12:34:56💥'",
+        "outcome": "unknown",
+        "reason": "invalid UTF-8 character boundary for an ASCII offset token must fail closed",
+        "parser_rejected": []
+      },
+      {
+        "id": "unicode_timestamp_suffix",
+        "family": "timezone",
+        "ast": "TypedString",
+        "expression": "TIMESTAMP '2024-02-29 12:34:56é'",
+        "outcome": "unknown",
+        "reason": "invalid non-ASCII offset token must fail closed",
+        "parser_rejected": []
+      },
+      {
+        "id": "explicit_zoned_fraction",
+        "family": "timezone",
+        "ast": "TypedString/Timestamp(precision,WithTimeZone)",
+        "expression": "TIMESTAMP(6) WITH TIME ZONE '2024-02-29 12:34:56.123456+02:00'",
+        "outcome": "timestamp",
+        "value": "2024-02-29 12:34:56.123456+02:00",
+        "parser_rejected": []
+      },
+      {
+        "id": "unsupported_time_precision",
+        "family": "clock",
+        "ast": "TypedString/Time(9)",
+        "expression": "TIME(9) '12:34:56.123456789'",
+        "outcome": "unknown",
+        "reason": "nanosecond literal precision is outside the certified microsecond subset",
+        "parser_rejected": []
+      },
+      {
+        "id": "unsupported_timestamp_precision",
+        "family": "timezone",
+        "ast": "TypedString/Timestamp(9)",
+        "expression": "TIMESTAMP(9) '2024-02-29 12:34:56.123456789'",
+        "outcome": "unknown",
+        "reason": "nanosecond literal precision is outside the certified microsecond subset",
+        "parser_rejected": []
+      }
     ]
   },
   "task_70_predicate_evidence": {
@@ -389,15 +896,21 @@
     "acceptance_criteria": {
       "1": {
         "scope": "verified_typed_branch_domains_with_3VL_fall_through_for_CASE_COALESCE_NULLIF",
-        "tests": ["tests/task_102_computed_expressions.rs"]
+        "tests": [
+          "tests/task_102_computed_expressions.rs"
+        ]
       },
       "2": {
         "scope": "verified_rename_invariant_canonical_computed_alias_references_without_AST_leak",
-        "tests": ["tests/task_102_computed_expressions.rs"]
+        "tests": [
+          "tests/task_102_computed_expressions.rs"
+        ]
       },
       "3": {
         "scope": "verified_guard_refined_branch_domains_reversible_source_constraints_and_explicit_residuals",
-        "tests": ["tests/task_102_computed_expressions.rs"]
+        "tests": [
+          "tests/task_102_computed_expressions.rs"
+        ]
       },
       "4": {
         "scope": "verified_positive_not_true_impossible_and_residual_witnesses_including_nested_and_null_branches",
@@ -408,7 +921,9 @@
       },
       "5": {
         "scope": "verified_direct_dbt_parser_capable_dialect_DuckDB_alias_shadowing_and_numeric_boundary_oracles",
-        "tests": ["tests/task_102_computed_expressions.rs"]
+        "tests": [
+          "tests/task_102_computed_expressions.rs"
+        ]
       }
     }
   },
@@ -11353,5 +11868,26 @@
       "compare": "full_protocol_except_source_dialect",
       "status": "representative_not_complete_coverage"
     }
-  ]
+  ],
+  "task_108_parent_signoff": {
+    "owner": "TASK-108",
+    "status": "pending_final_ci",
+    "acceptance_freeze": "docs/task-108-acceptance-freeze.json",
+    "evidence_audit": "docs/task-108-acceptance-audit.md",
+    "verification_test": "tests/task_108_parent_signoff.rs",
+    "parent": "TASK-70",
+    "original_parent_criteria": 6,
+    "merged_children": 7,
+    "registered_family_cells": 14,
+    "registered_predicate_variant_cells": 42,
+    "registered_dialect_cells": 546,
+    "seeded_duckdb_oracles": [
+      0,
+      1,
+      42,
+      20261016
+    ],
+    "coverage": "Independent parent mapping of original six criteria, 14 families and frozen TASK-107 cases; does not imply 3.0.0 release.",
+    "release_approved": false
+  }
 }

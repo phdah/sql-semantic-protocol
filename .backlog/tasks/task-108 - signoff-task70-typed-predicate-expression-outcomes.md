@@ -1,7 +1,7 @@
 ---
 id: TASK-108
 title: Sign off TASK-70 typed predicate and expression outcomes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-13'
 updated_date: '2026-10-13'
@@ -64,3 +64,7 @@ must not inherit TASK-107's proof signoff automatically.
 - **Delivery:** one focused PR to `main`; finish all the child AC before marking it Done and verify complete relevant CI after implementing (not after every commit). Update canonical API/schema/docs, adapter parity and coverage evidence as applicable.
 - **Scope boundary:** Parent TASK-70 closes only with original AC mapped to verifiable evidence. Do not mark all 3.0.0 dialect/feature inventory or downstream sql-tdg generation approved by completing this child.
 - **Next:** After completion, verify the TASK-70 parent and mark its original AC Done only when fully evidenced.
+
+## Independent frozen acceptance audit (2026-10-17)
+
+The immutable closure matrix lives in [docs/task-108-acceptance-freeze.json](../../docs/task-108-acceptance-freeze.json). Its six-AC evidence map and merge/variant/dialect/adapter/oracle audit are documented in [docs/task-108-acceptance-audit.md](../../docs/task-108-acceptance-audit.md) and verified by `tests/task_108_parent_signoff.rs`. All nine final PR-head checks must pass before TASK-108 and TASK-70 are marked Done; TASK-88/89/90/91 retain independent gates.

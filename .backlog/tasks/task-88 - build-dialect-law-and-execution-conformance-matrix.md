@@ -68,3 +68,7 @@ Implement in the protocol repository before releasing 3.0.0. Do not solve missin
 ## Maintainer decision (2026-10-09)
 
 Approved [13-dialect canonical-equivalence acceptance](../../docs/coverage-signoff.md): parsing runs in CI without vendor databases and equivalent SQL in every supported dialect must emit **semantically identical canonical protocol outcomes**, not only parse. DuckDB executes the equivalent common SQL and validates actual generated data. Externally unavailable engines must never be marked execution-certified. Fixture baseline tests in TASK-66 are representative, not sufficient for TASK-88 acceptance.
+
+## TASK-108 expression parent closure handoff (2026-10-17)
+
+The TASK-108 independent acceptance freeze at `docs/task-108-acceptance-freeze.json` maps all six unchanged TASK-70 AC to 14 family owners, all 42 TASK-107 variant cases, 546 dialect cells, nine goldens, nine compositions and four seeds. `tests/task_108_parent_signoff.rs` guards this traceability and requires distinct semantic/oracle CI owners. This does not upgrade global TASK-88/89/91 release evidence or claim unexecuted vendor-engine semantics. TASK-70 remains In Progress pending final TASK-108 PR-head CI and parent signoff.
