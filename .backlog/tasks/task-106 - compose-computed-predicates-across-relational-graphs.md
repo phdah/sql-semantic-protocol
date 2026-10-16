@@ -1,7 +1,7 @@
 ---
 id: TASK-106
 title: Compose typed expression obligations through relational graphs
-status: Done
+status: In Progress
 assignee:
   - OpenCode
 created_date: '2026-10-13'
@@ -58,11 +58,11 @@ Consume canonical expression and predicate proofs from TASK-101..105 across actu
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
-- [x] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
-- [x] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
-- [x] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
-- [x] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
+- [ ] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
+- [ ] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
+- [ ] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
+- [ ] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
+- [ ] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -96,7 +96,7 @@ Hardening follow-up complete: documented join helpers and gate-bypass soundness,
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-TASK-106 complete within its documented operator-evidence contract. Typed expression and truth obligations propagate through the supported transparent, filtered-join, grouped/ranked and ordered-DML paths, preserving domains, physical identities and SQL TRUE/NOT TRUE. Supported complete-population proofs share one physical assignment; unproved generalized correlation, lossy inverse, missing metadata and unsupported operator shapes remain explicit residuals, as mandated by AC4. All five AC are verified by the evidence matrix below. Full Rust, no-default-features, dbt E2E, formatting, Clippy and docs passed at fae14cac735763d2223b14b88d705d1deedec265 (workflow 38919948845). No new wire format was necessary.
+TASK-106 bounded implementation under strict AC reassessment. Typed expression and truth obligations propagate through the supported transparent, filtered-join, grouped/ranked and ordered-DML paths, preserving domains, physical identities and SQL TRUE/NOT TRUE. Supported complete-population proofs share one physical assignment; unproved generalized correlation, lossy inverse, missing metadata and unsupported operator shapes remain explicit residuals, as mandated by AC4. The existing bounded evidence matrix does not yet demonstrate arbitrary composable computed projections and multi-operator shared-source proofs. Full Rust, no-default-features, dbt E2E, formatting, Clippy and docs passed at fae14cac735763d2223b14b88d705d1deedec265 (workflow 38919948845). No new wire format was necessary.
 <!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Bounded implementation evidence (2026-10-16, PR #114)
@@ -201,7 +201,7 @@ These are scoped implementation results. General graph/operator combinations
 without certified semantics intentionally remain explicit residuals under AC4.
 TASK-106 does not claim exact physical proofs for those cases.
 
-## Acceptance-criteria sign-off (2026-10-16)
+## Bounded implementation evidence, not strict acceptance (2026-10-16)
 
 Scope interpretation: `where existing operator semantics permit` in AC1 and
 `after each supported operator` in AC2 are **bounded, proof-backed support**.
@@ -209,19 +209,19 @@ AC4 requires explicit residuals for unsupported paths. The child does not
 require exact constructive results for every arbitrary SQL graph, nor may it
 pretend those unproved paths are exact.
 
-- **AC1, verified:** `tests/task_106_composed_predicates.rs` checks typed
+- **AC1, partial coverage:** `tests/task_106_composed_predicates.rs` checks typed
   WHERE-through-materialization truth, JOIN key identity and ON restrictions,
   HAVING/QUALIFY operator classification, alias bounds and computed INSERT
   domains. `tests/physical_write_states.rs` validates computed
   INSERT/UPDATE/MERGE against ordered complete state. Operator variants beyond
   certified support retain residual semantics.
-- **AC2, verified:** Inclusive/exclusive ranges, bounded downstream alias
+- **AC2, partial coverage:** Inclusive/exclusive ranges, bounded downstream alias
   domains and finite arithmetic write domains are asserted in
   `tests/task_106_composed_predicates.rs` and
   `tests/advanced_target_validation.rs`. Physical reference identity and
   per-hop widening-type/NULL certification are asserted; unproved numeric
   overflow or nonlinear/lossy inversion is not silently sharpened.
-- **AC3, verified:** Same-row TRUE/NOT TRUE conjunctions, contradictory
+- **AC3, partial coverage:** Same-row TRUE/NOT TRUE conjunctions, contradictory
   filters, duplicate/NULL bags, shared source join+negative terminals, multiple
   scalar ON conjuncts and independent filtered join DAGs have canonical joint
   plans and execution oracles in `tests/task_106_composed_predicates.rs` and
@@ -229,13 +229,13 @@ pretend those unproved paths are exact.
   combinations have dedicated tests in `tests/physical_realization/mixed.rs`;
   ordered write-state sources are checked in `tests/physical_write_states.rs`.
   Unreconciled correlated join-key histograms remain residual.
-- **AC4, verified:** Contradictory positive-count goals require a necessary
+- **AC4, partial coverage:** Contradictory positive-count goals require a necessary
   contradiction; empty closed-world sources remain separately constructible.
   `tests/task_106_composed_predicates.rs` explicitly tests partial producers,
   unsupported HAVING, lossy inverses, missing schemas, outer JOIN WHERE and
   independent intermediate constraints. No partial or unconstrained unknown
   source is silently upgraded to an exact physical plan.
-- **AC5, verified:** Direct SQL/dbt typed parity and emitted JSON/schema
+- **AC5, partial coverage:** Direct SQL/dbt typed parity and emitted JSON/schema
   validation exist in `tests/task_106_composed_predicates.rs`,
   `tests/physical_write_adapter_parity.rs`, and
   `tests/advanced_target_validation.rs`. Complete DuckDB row populations
@@ -243,10 +243,14 @@ pretend those unproved paths are exact.
   DML. Canonical contract, code map, coverage manifest and semantic guides are
   updated. No wire schema changed, so a schema migration is not required.
 
-**Final verification:** CI workflow
+**Bounded implementation verification:** CI workflow
 https://github.com/phdah/sql-semantic-protocol/actions/runs/38919948845
 passed at `fae14cac735763d2223b14b88d705d1deedec265`, including full
 Rust tests, no-default-features, Clippy, formatting, docs and dbt E2E.
 Broader SQL semantics, where future tasks can prove stronger outcomes,
 remain eligible for separate development without reopening this bounded
 integration child. Parent TASK-70 and release TASK-91 retain their own gates.
+
+## Strict acceptance reopening (2026-10-16)
+
+All five AC have been reopened at the user's request. Under strict reading, bounded exactness plus generic fallback residuals are insufficient when composable computed-expression transformations have deterministic proofs that the canonical graph should transport. Remaining blockers include (i) cross-materialization affine arithmetic inversion with width/overflow/null evidence; (ii) corresponding strongest output domains across those boundaries; (iii) physically consistent shared-source multi-operator DAG assignments, including overlapping join/group/negative-filter interactions; and (iv) raw SQL/dbt/DuckDB evidence over these combinations. Keep the task In Progress until explicit regression cases verify all five, not merely CI on earlier bounded cases.
