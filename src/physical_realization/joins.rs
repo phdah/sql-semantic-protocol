@@ -998,7 +998,7 @@ pub(super) fn joint_join_and_distinct_group_goals(
                 false
             };
             if !owned
-                || key.relation() != Some(source)
+                || key.relation() != Some(source.as_str())
                 || !join_case.obligations().iter().any(|obligation| {
                     matches!(
                         obligation,
