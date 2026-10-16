@@ -50,6 +50,17 @@ Parser support does not prove executed semantics. A release-quality protocol nee
 - [ ] #8 When SQL syntax or engine semantics genuinely differ, declare explicit dialect/session assumptions and equivalence mappings; block any unverified advertised semantic support. Native vendor-engine execution evidence remains distinct from parsing/canonical proof and DuckDB oracles.
 <!-- AC:END -->
 
+
+## Reviewed finite acceptance contract (2026-10-16)
+
+The existing **AC #1..#8 remain required**. Interpret and verify them through the frozen TASK-88 row of [the backlog acceptance contracts](../../docs/backlog-acceptance-contracts.md), additive to the approved TASK-66 feature/dialect inventory. This specifies a finite **minimum exactness floor**, not permission to omit named feature families or mark unimplemented mandatory cases `Residual`.
+
+1. **Mandatory exact core:** Complete inventory: all 13 project dialects crossed with the approved TASK-66 feature/variant IDs and parser statuses; no implicit skipping of parse-capable variants.
+2. **Mandatory cross-operator / adapter evidence:** Exact equivalence: for each approved shared semantic class assert equal canonical domains, lineage, membership, cardinality and write effects, with minimal AST-specific SQL fixtures.
+3. **Conditional and non-exact boundary:** Conditional boundaries: vendor-dependent NULL order, collation, floating/timezone, coercion, DML match/transaction rules get version/session assumptions; native engine claims only when executed.
+
+**Acceptance sign-off:** Before implementation, register each original named AC variant as a versioned feature/dialect cell and freeze fixture IDs in `docs/coverage-manifest.json`. Every mandatory core cell needs typed output domains (including NULL and interval inclusivity), positive/rejected membership and `Exact`/`Impossible` physical-source proof as applicable, complete DuckDB source/terminal oracles where executable, and representable SQL/dbt/ODCS parity plus 13-dialect parser equivalence evidence. Conditional cells need a documented parser/runtime boundary, typed `Residual` or justified `Impossible`, named owner, and explicit release disposition, **not a shortcut for missing implementation**. Sign off AC #1..#8 only after required cells and final CI are verified. Do not approve independent release gates through this task.
+
 ## Delivery guidance
 
 Implement in the protocol repository before releasing 3.0.0. Do not solve missing protocol facts through sql-tdg heuristics. Update the machine-readable coverage manifest and cross-repo dependency map in TASK-66/91. Independent implementation PRs may land on main while 3.0.0 remains held; no intermediate releases are required.
