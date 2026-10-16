@@ -14,12 +14,8 @@ const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
 
 #[test]
 fn bounded_task_106_has_a_frozen_complete_evidence_matrix() {
-    let expected: BTreeSet<&str> = [
-        "F1", "F2", "F3", "J1", "J2", "G1", "G2", "R1", "R2", "JG1", "W1", "X1",
-        "A1", "A2", "A3",
-    ]
-    .into_iter()
-    .collect();
+    const EXPECTED_IDS: &str = "F1 F2 F3 J1 J2 G1 G2 R1 R2 JG1 W1 X1 A1 A2 A3";
+    let expected: BTreeSet<_> = EXPECTED_IDS.split_whitespace().collect();
 
     let rows: Vec<_> = TASK
         .split_once("## Frozen TASK-106 acceptance scope")
