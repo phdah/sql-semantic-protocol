@@ -515,7 +515,7 @@ fn widened_or_copied_source(
 /// followed by an integer addition or subtraction.
 ///
 /// `CAST(a AS BIGINT) + k` is total only if every value of the
- /// catalog-attested source type fits the declared output width after adding
+/// catalog-attested source type fits the declared output width after adding
 /// `k`. An implicit arithmetic coercion cannot substitute for the explicit
 /// CAST because overflow could occur before materialization.
 fn total_affine_source(
@@ -529,9 +529,7 @@ fn total_affine_source(
 
     fn signed_width(value: &DataType) -> Option<u16> {
         match value {
-            DataType::SignedInteger { bits: Some(bits) } if *bits <= 64 && *bits > 0 => {
-                Some(*bits)
-            }
+            DataType::SignedInteger { bits: Some(bits) } if *bits <= 64 && *bits > 0 => Some(*bits),
             DataType::Nullable(inner) => signed_width(inner),
             _ => None,
         }
@@ -578,10 +576,8 @@ fn total_affine_source(
         return None;
     }
     let from = bundle_column_datatype(bundle, &physical)?;
-    let output_ref = crate::protocol::ColumnRef::new(
-        Some(relation.to_string()),
-        output.name().to_string(),
-    );
+    let output_ref =
+        crate::protocol::ColumnRef::new(Some(relation.to_string()), output.name().to_string());
     let to = bundle_column_datatype(bundle, &output_ref)?;
     if matches!(&from, DataType::Nullable(_)) != matches!(&to, DataType::Nullable(_)) {
         return None;
@@ -621,14 +617,10 @@ fn total_widening_producer(
         && query.predicates().qualify_predicate().is_none()
         && query.diagnostics().is_empty()
         && !query.output().columns().is_empty()
-        && query
-            .output()
-            .columns()
-            .iter()
-            .all(|column| {
-                widened_or_copied_source(bundle, relation, column, query).is_some()
-                    || total_affine_source(bundle, relation, column, query).is_some()
-            })
+        && query.output().columns().iter().all(|column| {
+            widened_or_copied_source(bundle, relation, column, query).is_some()
+                || total_affine_source(bundle, relation, column, query).is_some()
+        })
 }
 
 /// Resolve only those computed materializations whose entire producer chain
@@ -748,13 +740,8 @@ fn resolve_affine_filter_column(
                     widened_or_copied_source(bundle, &canonical, output, query)
                         .map(|physical| (physical, 0))
                 })?;
-            let (physical, upstream_offset) = resolve_affine_filter_column(
-                bundle,
-                walker,
-                producer.id(),
-                &upstream,
-                depth + 1,
-            )?;
+            let (physical, upstream_offset) =
+                resolve_affine_filter_column(bundle, walker, producer.id(), &upstream, depth + 1)?;
             Some((physical, upstream_offset.checked_add(offset)?))
         }
         _ => None,
