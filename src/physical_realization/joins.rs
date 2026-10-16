@@ -315,8 +315,7 @@ pub(super) fn physical_join_population_with_source_counts(
         return None;
     };
     let join_query = query_for(bundle, join_layer)?;
-    if !(join_query.plain_goal_output_shape()
-        || join_query.filtered_join_goal_output_shape())
+    if !(join_query.plain_goal_output_shape() || join_query.filtered_join_goal_output_shape())
         || join_query.joins().len() != 1
         || join_query.sources().len() != 2
         || join_query.aggregation().is_some()
