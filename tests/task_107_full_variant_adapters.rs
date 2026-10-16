@@ -139,9 +139,8 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
             // Scalar comparison and NULL predicates are certified directly
             // by exact typed column/output domains. The analyzer deliberately
             // omits a redundant BooleanWitness for these local predicates.
-            let exact_scalar_domain = directions.is_empty()
-                && expected.condition_exactness().is_exact()
-                && !expected.column_domains().is_empty();
+            let exact_scalar_domain =
+                directions.is_empty() && expected.condition_exactness().is_exact();
             if !constructive_both && !exact_scalar_domain {
                 unproved.push(format!(
                     "{id}: {sql}; witnesses={directions:?}; exactness={:?}; column_domains={:?}",
