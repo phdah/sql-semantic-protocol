@@ -57,6 +57,7 @@ use crate::protocol::{
     WindowOrderExpression, WindowSpecification, WriteDefinitionMode, WriteOperation, WriteValue,
 };
 use crate::relation::{RelationCatalog, RelationContext, SchemaColumn, TimestampZone};
+use temporal_literals::normalize_temporal_identity_cast;
 
 /// Error produced after parsing succeeds but protocol analysis cannot proceed.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -327,6 +328,7 @@ mod queries;
 mod relations;
 mod sets;
 mod subqueries;
+mod temporal_literals;
 mod typing;
 mod writes;
 

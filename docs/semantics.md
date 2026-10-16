@@ -183,7 +183,7 @@ for the complete residual reason contract.
 
 When typed source-schema evidence is available, predicate-domain literals are checked against the
 canonical datatype before a domain can participate in the exact row-condition contract. Exact
-boolean, integer, date, time, and interval literals retain their canonical literal type; integer
+boolean, integer, validated date and time literals retain their canonical literal type; integer
 literals used with decimal columns normalize to decimal literals. Integer bounds are range-checked
 against declared signedness and bit width. Lossy numeric coercions are never treated as exact.
 
@@ -197,9 +197,72 @@ vendor-defined, and otherwise opaque types remain residual unless a future contr
 scalar comparison semantics for them.
 
 A lexical string is never implicitly converted to DATE, TIME, TIMESTAMP, numeric, or another typed
-domain. If SQL parsing produced a typed DATE/TIME/INTERVAL literal, that literal may be exact for the
-matching canonical family. Without schema evidence, existing lexical-literal domain derivation is
+domain. If SQL parsing produced a validated typed DATE/TIME literal, that literal may be exact for the
+matching canonical family. Interval expressions remain explicitly unsupported. Without schema evidence, existing lexical-literal domain derivation is
 preserved, but it does not claim datatype-aware coercion semantics.
+
+### Temporal, JSON and opaque-expression boundary (TASK-105)
+
+The machine-readable inventory is
+[`task_105_expression_evidence.variants`](coverage-manifest.json), exercised by
+`tests/task_105_temporal_json_vendor.rs` across every exposed parser dialect,
+including the `postgres` alias. Each entry identifies its SQL expression, AST
+family, certified outcome or missing law, and explicit parser rejections.
+Hash-prefixed JSON operators can start comments in some dialects; the fixtures
+are parenthesized so that tokenization cannot silently certify a different query.
+Parser acceptance is not evidence of execution support in a warehouse.
+
+The certified calendar subset is:
+
+- A DATE literal must be a valid fixed-width Gregorian `YYYY-MM-DD` in years
+  0001..9999, including century/leap-day validation. Calendar ordering composes
+  DATE thresholds into inclusive/exclusive intervals and proves contradictory
+  intervals empty. Scalar `NOT` of a direct DATE threshold reverses its operator
+  while preserving SQL UNKNOWN for a NULL source value.
+- Formatting-free `CAST`, `TRY_CAST`, and `SAFE_CAST` from an already validated
+  DATE literal to DATE are identities. YEAR, MONTH and DAY `EXTRACT` from such
+  a literal produce exact integer singleton domains. These are normalized to
+  existing canonical literal nodes, rather than interpreted by a consumer.
+- Clock literals require valid hours/minutes/seconds and no offset; leap seconds
+  and `24:00:00` remain unsupported. Timestamp literals require the existing
+  Gregorian/clock/numeric-offset representation. Fractional values require an
+  explicit precision modifier in 0..6 they fit; engine defaults and reducing precision
+  are not guessed. Explicitly timezone-aware literals need numeric offsets;
+  offset-bearing timezone-free/unqualified literals remain unsupported because
+  engines may discard the offset. Offset-free wall-clock bounds on timezone-aware
+  or unqualified source columns remain conditional on `session_time_zone`. No
+  session zone is inferred. Source comparison preconditions still come from
+  explicit column zone evidence and declarations, as documented above.
+- Plain copies from a single ungrouped local relation preserve its output domains,
+  including folded calendar constants. Joins, grouping and ambiguous scopes do
+  not inherit a non-NULL constant through this path, because they can synthesize
+  NULL or lack proven identity. Positional CTE/derived-table column aliases are
+  applied before inheritance. Existing producer composition carries DATE bounds.
+
+Source-level SQL NULL tests are exact independently of the value's temporal,
+JSON, array or struct datatype. Their canonical row constraints preserve TRUE,
+NOT TRUE, tautological and impossible directions; an ordinary comparison with
+literal SQL NULL stays UNKNOWN. This does **not** evaluate a JSON path or compare
+nested values. JSON document `null`, SQL NULL and a missing JSON path are distinct;
+`JSON 'null'` never becomes a scalar SQL NULL or an ordinary text literal.
+
+General temporal casts, text parsing/date styles, precision changes, source-valued
+EXTRACT, weeks/epochs, month-end arithmetic, intervals, named zones, DST folds/gaps,
+JSON paths/operators, array indexing, struct comparisons and vendor functions
+remain explicit unsupported expressions or residual predicates. Output domains
+retain their family-specific reason. Opaque UDF/function nodes preserve their
+names and arguments and have named unknown domains and residual truth obligations;
+no return datatype, NULL behavior, determinism, stochastic result, clock value or
+session law is invented. The protocol remains extensible through these existing
+nodes; externally validated UDF execution evidence is not accepted by this task.
+
+Direct SQL, paired dbt artifacts and manifest-declared-schema analysis share these
+rules. Catalog datatypes are authoritative when present; declared manifest types
+are the schema fallback. The legacy relation-only manifest API does not provide
+equivalent typed zone evidence. Existing ODCS evidence enters the same catalog
+analysis path. DuckDB oracles cover certified calendar outcomes, NULL/duplicate
+filter membership and counterexamples separating JSON null from SQL NULL; no
+other vendor engine or whole-graph physical realization is certified here.
 
 ## Relation constraint metadata
 

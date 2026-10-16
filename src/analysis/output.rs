@@ -5,6 +5,41 @@ use crate::domain::{numeric_literals_equal, set_literals_provably_distinct};
 
 pub(super) type LocalOutputMap = BTreeMap<String, Output>;
 
+pub(super) fn apply_output_column_aliases(
+    output: Output,
+    alias: &sqlparser::ast::TableAlias,
+) -> Output {
+    if alias.columns.is_empty() {
+        return output;
+    }
+    let arity_matches = alias.columns.len() <= output.columns().len();
+    Output::new(
+        output
+            .columns()
+            .iter()
+            .enumerate()
+            .map(|(index, column)| {
+                let domain = if arity_matches {
+                    column.domain().clone()
+                } else {
+                    ValueDomain::unknown(
+                        "positional column alias list exceeds the known local output arity",
+                    )
+                };
+                OutputColumn::new(
+                    alias
+                        .columns
+                        .get(index)
+                        .map_or_else(|| column.name().to_string(), |name| name.name.value.clone()),
+                    column.expression().clone(),
+                    domain,
+                    column.lineage().to_vec(),
+                )
+            })
+            .collect(),
+    )
+}
+
 #[derive(Clone)]
 pub(super) struct OutputRelation {
     pub(super) qualifiers: Vec<String>,
@@ -54,7 +89,10 @@ pub(super) fn analyze_query_output_with_outer_scope(
                 &mut cte_diagnostics,
                 metadata,
             );
-            local_outputs.insert(cte.alias.name.to_string(), output);
+            local_outputs.insert(
+                cte.alias.name.to_string(),
+                apply_output_column_aliases(output, &cte.alias),
+            );
         }
     }
 
@@ -270,11 +308,56 @@ pub(super) fn analyze_select_output_with_outer_scope(
         ));
     }
 
+    // A plain copy from one local row source cannot introduce new values.
+    // In particular, constant-folded calendar results must survive this hop.
+    // Joins are excluded because an outer join can NULL-extend even a non-NULL
+    // constant; correlated/ambiguous scopes are not identity evidence either.
+    inherit_single_local_output_domains(select, &scope, &mut columns);
+
     if let Some(qualify) = &select.qualify {
         refine_output_domains_from_predicate(&mut columns, qualify);
     }
 
     Output::new(columns)
+}
+
+fn inherit_single_local_output_domains(
+    select: &Select,
+    scope: &[OutputRelation],
+    columns: &mut [OutputColumn],
+) {
+    let [source] = select.from.as_slice() else {
+        return;
+    };
+    if !source.joins.is_empty()
+        || !matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers) if items.is_empty() && modifiers.is_empty())
+    {
+        return;
+    }
+    let [relation] = scope else { return };
+    let OutputRelationSource::Local(output) = &relation.source else {
+        return;
+    };
+    for column in columns {
+        let Expression::Column(reference) = column.expression() else {
+            continue;
+        };
+        if reference
+            .relation()
+            .is_some_and(|qualifier| !relation.qualifiers.iter().any(|name| name == qualifier))
+        {
+            continue;
+        }
+        let mut matches = output
+            .columns()
+            .iter()
+            .filter(|source| source.name() == reference.name());
+        if let Some(source) = matches.next() {
+            if matches.next().is_none() {
+                *column = column.clone().with_domain(source.domain().clone());
+            }
+        }
+    }
 }
 
 pub(super) fn analyze_output_item(
@@ -594,12 +677,17 @@ fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain
                 ),
             }
         }
-        Expression::Function(_) => {
-            ValueDomain::unknown("scalar-function output domain is not known safely")
+        Expression::Function(function) => {
+            ValueDomain::unknown(format!(
+                "scalar-function {} output requires certified datatype, NULL, volatility and execution laws",
+                function.name()
+            ))
         }
         Expression::Unknown(semantic) => ValueDomain::unknown(semantic.reason()),
-        Expression::Unsupported(_) => {
-            ValueDomain::unknown("unsupported expression has no safely known output domain")
+        Expression::Unsupported(semantic) => {
+            ValueDomain::unknown(semantic.reason().unwrap_or(
+                "unsupported expression has no safely known output domain",
+            ))
         }
     }
 }
@@ -1038,8 +1126,8 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
         return ValueDomain::unknown(format!(
             "arithmetic {} on {} and {} requires safely bounded, typed operands",
             binary.operator().as_str(),
-            crate::protocol::arithmetic_operand_kind(binary.left()),
-            crate::protocol::arithmetic_operand_kind(binary.right())
+            crate::protocol::expression_residual_label(binary.left()),
+            crate::protocol::expression_residual_label(binary.right())
         ));
     };
     let left_width = explicit_signed_integer_width(binary.left());
@@ -1086,8 +1174,8 @@ pub(super) fn derive_binary_output_domain(binary: &BinaryExpression) -> ValueDom
                 ValueDomain::unknown(format!(
                     "arithmetic {} on {} and {} requires attested result width, zero-divisor and rounding laws",
                     binary.operator().as_str(),
-                    crate::protocol::arithmetic_operand_kind(binary.left()),
-                    crate::protocol::arithmetic_operand_kind(binary.right())
+                    crate::protocol::expression_residual_label(binary.left()),
+                    crate::protocol::expression_residual_label(binary.right())
                 ))
             },
             |value| ValueDomain::set(SetMode::Include, vec![integer_literal(value)]),

@@ -1607,7 +1607,12 @@ fn timestamp_offset_exactness_and_canonical_bounds_match_duckdb() {
         ),
     ];
     for (data_type, offset, expected, canonical) in cases {
-        let predicate = format!("value >= TIMESTAMP '2024-01-01 00:00:00{offset}'");
+        let literal_type = if offset.is_empty() {
+            "TIMESTAMP"
+        } else {
+            "TIMESTAMPTZ"
+        };
+        let predicate = format!("value >= {literal_type} '2024-01-01 00:00:00{offset}'");
         let sql = format!("SELECT row_id FROM typed_rows WHERE {predicate}");
         let semantics = typed_conformance(&sql, data_type);
         assert_eq!(
@@ -1690,6 +1695,17 @@ fn timezone_aware_literal_aliases_match_duckdb_and_canonical_bounds() {
             }
             supported += 1;
             let semantics = typed_conformance(&sql, "TIMESTAMP WITH TIME ZONE");
+            if spelling == "TIMESTAMP" {
+                assert_eq!(
+                    semantics.condition_exactness().status(),
+                    ConditionExactnessStatus::Residual
+                );
+                assert!(matches!(
+                    semantics.column_domains()[0].domain(),
+                    ValueDomain::Unknown(_)
+                ));
+                continue;
+            }
             assert_eq!(
                 semantics.condition_exactness().status(),
                 ConditionExactnessStatus::Exact,

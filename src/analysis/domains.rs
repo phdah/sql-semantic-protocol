@@ -34,7 +34,10 @@ pub(super) fn analyze_query_column_domains(
             );
 
             local_relations.insert(name.clone());
-            local_outputs.insert(name.clone(), output);
+            local_outputs.insert(
+                name.clone(),
+                apply_output_column_aliases(output, &cte.alias),
+            );
             local_domains.insert(name, domains);
         }
     }

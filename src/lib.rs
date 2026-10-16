@@ -72,6 +72,7 @@ mod physical_realization;
 pub mod protocol;
 mod relation;
 mod subquery_witness;
+mod temporal;
 mod window_witness;
 
 use std::fmt;

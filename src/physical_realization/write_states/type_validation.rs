@@ -213,34 +213,14 @@ pub(super) fn validate_value(value: &LiteralValue, kind: &DataType) -> StateResu
 }
 
 fn validate_iso_date(text: &str) -> StateResult<()> {
-    let bytes = text.as_bytes();
-    if bytes.len() != 10
-        || bytes[4] != b'-'
-        || bytes[7] != b'-'
-        || bytes
-            .iter()
-            .enumerate()
-            .any(|(i, c)| i != 4 && i != 7 && !c.is_ascii_digit())
-    {
-        return Err(residual("date requires YYYY-MM-DD calendar syntax"));
-    }
-    let year = text[..4].parse::<u32>().unwrap_or(0);
-    let month = text[5..7].parse::<u32>().unwrap_or(0);
-    let day = text[8..10].parse::<u32>().unwrap_or(0);
-    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
-    let max_day = match month {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
-        4 | 6 | 9 | 11 => 30,
-        2 if leap => 29,
-        2 => 28,
-        _ => 0,
-    };
-    if year == 0 || day == 0 || day > max_day {
-        Err(impossible(
+    match crate::temporal::canonical_date_text(text) {
+        Ok(_) => Ok(()),
+        Err(crate::temporal::DateTextError::Syntax) => {
+            Err(residual("date requires YYYY-MM-DD calendar syntax"))
+        }
+        Err(crate::temporal::DateTextError::Calendar) => Err(impossible(
             "canonical date violates Gregorian calendar bounds",
-        ))
-    } else {
-        Ok(())
+        )),
     }
 }
 

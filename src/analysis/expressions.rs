@@ -297,14 +297,61 @@ pub(super) fn analyze_expression_with_windows(
         }
         Expr::CompoundIdentifier(identifiers) => analyze_compound_identifier(identifiers),
         Expr::Value(value) => analyze_value(&value.value, expression, diagnostics),
-        Expr::TypedString { data_type, value } => analyze_typed_string(
-            data_type.to_string().as_str(),
-            &value.value,
-            expression,
-            diagnostics,
-        ),
+        Expr::TypedString { data_type, value } => {
+            analyze_typed_string(data_type, &value.value, expression, diagnostics)
+        }
         Expr::Function(function) => {
             analyze_function(function, expression, named_windows, diagnostics)
+        }
+        Expr::Extract { field, expr, .. } => {
+            let operand = analyze_expression_with_windows(expr, named_windows, diagnostics);
+            match temporal_literals::normalize_date_literal_extract(field, &operand) {
+                Some(extracted) => extracted,
+                None => unsupported_expression_with_reason(
+                    "temporal_extract",
+                    expression,
+                    DiagnosticArea::Expression,
+                    diagnostics,
+                    "only YEAR/MONTH/DAY of a validated DATE literal have certified calendar laws",
+                ),
+            }
+        }
+        Expr::AtTimeZone { .. } => unsupported_expression_with_reason(
+            "temporal_timezone",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+            "source zone, session, timezone database and DST conversion laws are not certified",
+        ),
+        Expr::Interval(_) => unsupported_expression_with_reason(
+            "temporal_interval",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+            "interval units, calendar arithmetic and engine normalization laws are not certified",
+        ),
+        Expr::JsonAccess { .. } => unsupported_expression_with_reason(
+            "json_path",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+            "path/type evidence and missing-key, JSON-null and SQL-NULL laws are not certified",
+        ),
+        Expr::CompoundFieldAccess { .. } => unsupported_expression_with_reason(
+            "nested_access",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+            "nested field/index types, index origin and out-of-bounds laws are not certified",
+        ),
+        Expr::Array(_) | Expr::Struct { .. } | Expr::Tuple(_) => {
+            unsupported_expression_with_reason(
+                "nested_literal",
+                expression,
+                DiagnosticArea::Expression,
+                diagnostics,
+                "nested result domains and comparison laws are not represented by scalar literals",
+            )
         }
         Expr::UnaryOp { op, expr } => {
             analyze_unary_expression(op, expr, expression, named_windows, diagnostics)
@@ -318,14 +365,19 @@ pub(super) fn analyze_expression_with_windows(
             expr,
             data_type,
             format: None,
-        } => normalize_signed_integer_cast(
-            kind,
-            data_type,
-            analyze_expression_with_windows(expr, named_windows, diagnostics),
-        )
-        .unwrap_or_else(|| {
-            unsupported_expression("cast", expression, DiagnosticArea::Expression, diagnostics)
-        }),
+        } => {
+            let operand = analyze_expression_with_windows(expr, named_windows, diagnostics);
+            normalize_temporal_identity_cast(kind, data_type, &operand)
+                .or_else(|| normalize_signed_integer_cast(kind, data_type, operand))
+                .unwrap_or_else(|| {
+                    unsupported_expression(
+                        "cast",
+                        expression,
+                        DiagnosticArea::Expression,
+                        diagnostics,
+                    )
+                })
+        }
         Expr::Case {
             operand,
             conditions,
@@ -441,12 +493,24 @@ pub(super) fn analyze_number(
 }
 
 pub(super) fn analyze_typed_string(
-    data_type: &str,
+    datatype: &sqlparser::ast::DataType,
     value: &Value,
     expression: &Expr,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
-    let data_type = data_type.to_ascii_uppercase();
+    let data_type = datatype.to_string().to_ascii_uppercase();
+    if matches!(data_type.as_str(), "JSON" | "JSONB" | "VARIANT") {
+        // A document containing JSON null is a non-NULL SQL value. There is no
+        // canonical scalar literal type for that document, so never turn it
+        // into SQL NULL or a text value merely from this spelling.
+        return unsupported_expression_with_reason(
+            "json_literal",
+            expression,
+            DiagnosticArea::Expression,
+            diagnostics,
+            "JSON document values, including JSON null, are not scalar SQL NULL/text literals",
+        );
+    }
     let literal_type = match data_type.as_str() {
         "DATE" => Some(LiteralType::Date),
         data_type
@@ -461,10 +525,27 @@ pub(super) fn analyze_typed_string(
     };
 
     match (literal_type, string_literal_value(value)) {
-        (Some(literal_type), Some(value)) => Expression::Literal(LiteralExpression::new(
-            literal_type,
-            LiteralValue::Text(value.to_string()),
-        )),
+        (Some(literal_type), Some(value)) => {
+            if !temporal_literals::temporal_modifiers_are_certified(datatype, value) {
+                return unsupported_expression_with_reason(
+                    "temporal_literal", expression, DiagnosticArea::Expression, diagnostics,
+                    "literal precision or timezone qualification requires uncertified rounding/session/coercion laws",
+                );
+            }
+            match temporal_literals::validated_temporal_text(literal_type, value) {
+                Some(value) => Expression::Literal(LiteralExpression::new(
+                    literal_type,
+                    LiteralValue::Text(value),
+                )),
+                None => unsupported_expression_with_reason(
+                    "temporal_literal",
+                    expression,
+                    DiagnosticArea::Expression,
+                    diagnostics,
+                    "the calendar/clock/offset value is outside the certified portable temporal subset",
+                ),
+            }
+        }
         _ => unsupported_expression(
             "typed_literal",
             expression,

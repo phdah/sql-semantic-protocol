@@ -485,12 +485,28 @@ pub(super) fn unsupported_expression(
     area: DiagnosticArea,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Expression {
+    unsupported_expression_with_reason(
+        feature,
+        expression,
+        area,
+        diagnostics,
+        "its semantics are not implemented",
+    )
+}
+
+pub(super) fn unsupported_expression_with_reason(
+    feature: &str,
+    expression: &Expr,
+    area: DiagnosticArea,
+    diagnostics: &mut Vec<Diagnostic>,
+    missing_law: &str,
+) -> Expression {
     let code = if area == DiagnosticArea::Function {
         "unsupported_function"
     } else {
         "unsupported_expression"
     };
-    let reason = format!("{feature} {expression} is parsed but its semantics are not implemented");
+    let reason = format!("{feature} {expression} is parsed but {missing_law}");
 
     diagnostics.push(warning(code, area, &reason));
 

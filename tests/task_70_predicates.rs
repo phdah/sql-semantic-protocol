@@ -121,19 +121,25 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
         .map(|item| item["family"].as_str().unwrap())
         .collect();
     assert_eq!(names.len(), families.len());
-    for family in [
-        "regex_and_nonprefix_patterns",
-        "nonbinary_collations_and_padding",
-        "date_time_zone_and_calendar",
-        "json_array_struct_and_vendor_functions",
-        "computed_join_group_write_expressions",
-        "whole_graph_physical_realization",
+    for (family, status) in [
+        ("regex_and_nonprefix_patterns", "unproved_residual"),
+        ("nonbinary_collations_and_padding", "unproved_residual"),
+        (
+            "date_time_zone_and_calendar",
+            "bounded_calendar_exact_with_temporal_residual",
+        ),
+        (
+            "json_array_struct_and_vendor_functions",
+            "bounded_sql_null_exact_with_nested_residual",
+        ),
+        ("computed_join_group_write_expressions", "unproved_residual"),
+        ("whole_graph_physical_realization", "unproved_residual"),
     ] {
         let entry = families
             .iter()
             .find(|item| item["family"] == family)
             .unwrap();
-        assert_eq!(entry["status"], "unproved_residual", "{family}");
+        assert_eq!(entry["status"], status, "{family}");
         assert_eq!(entry["release_blocking"], true, "{family}");
         assert!(entry["scope"]
             .as_str()

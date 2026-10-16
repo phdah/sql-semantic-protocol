@@ -66,7 +66,10 @@ pub(super) fn register_output_table_factor(
             let qualifiers =
                 relation_qualifiers(&relation_name, alias.as_ref().map(|a| a.name.to_string()));
             let source = match local_outputs.get(&relation_name) {
-                Some(output) => OutputRelationSource::Local(output.clone()),
+                Some(output) => OutputRelationSource::Local(alias.as_ref().map_or_else(
+                    || output.clone(),
+                    |alias| apply_output_column_aliases(output.clone(), alias),
+                )),
                 None => OutputRelationSource::Physical {
                     columns: metadata.and_then(|metadata| metadata.schema_columns(&relation_name)),
                     relation: relation_name,
@@ -88,6 +91,10 @@ pub(super) fn register_output_table_factor(
                 diagnostics,
                 metadata,
             );
+            let output = match alias {
+                Some(alias) => apply_output_column_aliases(output, alias),
+                None => output,
+            };
             let qualifiers = alias
                 .as_ref()
                 .map(|alias| vec![alias.name.to_string()])

@@ -34,15 +34,15 @@ pub enum Expression {
     Unsupported(UnsupportedSemantic),
 }
 
-/// Canonical structural operand class for explicit arithmetic residuals.
+/// Canonical structural expression label for explicit semantic residuals.
 ///
 /// This is a diagnostic label, not a claim that a source column's physical
 /// datatype is attested. A `signed-integer-cast` carries its explicit target
 /// width because that width is part of the cast expression itself; a
 /// `source-column` stays structural unless the caller qualifies it with
 /// catalog-attested datatype evidence. The caller must still establish type
-/// and width laws.
-pub(crate) fn arithmetic_operand_kind(expression: &Expression) -> String {
+/// evaluation, type and width laws.
+pub(crate) fn expression_residual_label(expression: &Expression) -> String {
     match expression {
         Expression::Column(_) => "source-column".to_string(),
         Expression::SignedIntegerCast(cast) => {
@@ -54,19 +54,28 @@ pub(crate) fn arithmetic_operand_kind(expression: &Expression) -> String {
             LiteralType::String => "string-literal",
             LiteralType::Boolean => "boolean-literal",
             LiteralType::Null => "sql-null",
-            _ => "other-literal",
+            LiteralType::Date => "date-literal",
+            LiteralType::Time => "time-literal",
+            LiteralType::Timestamp => "timestamp-literal",
+            LiteralType::Interval => "interval-literal",
         }
         .to_string(),
         Expression::Binary(_) => "computed-binary-expression".to_string(),
         Expression::Unary(_) => "computed-unary-expression".to_string(),
-        Expression::Function(_)
-        | Expression::AggregateFunction(_)
+        Expression::Function(function) => format!("scalar-function:{}", function.name()),
+        Expression::Unsupported(semantic) => format!(
+            "unsupported-expression:{} ({})",
+            semantic.feature(),
+            semantic
+                .reason()
+                .unwrap_or("execution laws are not certified"),
+        ),
+        Expression::AggregateFunction(_)
         | Expression::WindowFunction(_)
         | Expression::Case(_)
         | Expression::BooleanPredicate(_)
         | Expression::ScalarSubquery(_)
-        | Expression::Unknown(_)
-        | Expression::Unsupported(_) => "unsupported-expression".to_string(),
+        | Expression::Unknown(_) => "unsupported-expression".to_string(),
     }
 }
 

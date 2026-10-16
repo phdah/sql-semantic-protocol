@@ -10,7 +10,7 @@ use super::{signed_integer_literal, BooleanOperands, BooleanRowConstraint, Signe
 use crate::data_type::DataType;
 use crate::domain::resolve_column;
 use crate::protocol::{
-    arithmetic_operand_kind, BinaryOperator, ColumnExpression, ColumnRef, ComparisonOperator,
+    expression_residual_label, BinaryOperator, ColumnExpression, ColumnRef, ComparisonOperator,
     Expression, SignedIntegerWidth, SourceRelation, UnaryOperator,
 };
 
@@ -291,7 +291,7 @@ fn operand_label(
             return format!("source-column({})", datatype_label(&data_type));
         }
     }
-    arithmetic_operand_kind(expression)
+    expression_residual_label(expression)
 }
 
 /// Canonical attested-datatype label for typed residual diagnostics.

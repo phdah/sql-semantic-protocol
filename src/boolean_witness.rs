@@ -1008,7 +1008,12 @@ fn normalize(
             string_evidence,
             column_datatype,
         )
-        .unwrap_or_else(|| residual("NULL test involves an unproven computed expression")),
+        .unwrap_or_else(|| {
+            residual(&format!(
+                "NULL test involves an unproven computed expression: {}",
+                crate::protocol::expression_residual_label(test.expression()),
+            ))
+        }),
         Predicate::Comparison(comparison) => {
             // Ordinary SQL comparison with literal NULL yields UNKNOWN for
             // every source value. Keep that truth leaf inside IN/BETWEEN/NOT
@@ -1319,6 +1324,10 @@ fn normalize(
                 negated: test.negated(),
             }
         }
+        Predicate::BooleanExpression(expression) => residual(&format!(
+            "boolean expression has no certified truth law: {}",
+            crate::protocol::expression_residual_label(expression),
+        )),
         _ => residual("computed, function, collation, cast or other predicate is not invertible"),
     }
 }
@@ -2152,7 +2161,7 @@ fn negate_constraint(condition: BooleanRowConstraint) -> BooleanRowConstraint {
     }
 }
 
-fn negated_comparison_operator(operator: ComparisonOperator) -> ComparisonOperator {
+pub(crate) fn negated_comparison_operator(operator: ComparisonOperator) -> ComparisonOperator {
     match operator {
         ComparisonOperator::Eq => ComparisonOperator::Neq,
         ComparisonOperator::Neq => ComparisonOperator::Eq,

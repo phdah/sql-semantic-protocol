@@ -50,7 +50,10 @@ pub(super) fn diagnose_local_query_predicates(
                 &mut output_diagnostics,
                 metadata,
             );
-            local_outputs.insert(cte.alias.name.to_string(), output);
+            local_outputs.insert(
+                cte.alias.name.to_string(),
+                apply_output_column_aliases(output, &cte.alias),
+            );
         }
     }
 
@@ -438,7 +441,10 @@ pub(super) fn analyze_query_relations_with_locals(
                 metadata,
             );
             extend_unique_diagnostics(&mut cte_diagnostics, &output_diagnostics);
-            local_outputs.insert(name.clone(), output);
+            local_outputs.insert(
+                name.clone(),
+                apply_output_column_aliases(output, &cte.alias),
+            );
             local_analyses.insert(
                 name,
                 LocalRelationAnalysis {

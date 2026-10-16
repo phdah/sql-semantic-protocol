@@ -330,7 +330,7 @@ not perform network or filesystem fetching.
 
 When typed source-schema evidence is available, predicate-domain literals are checked against the
 canonical datatype before a domain can participate in the exact row-condition contract. Exact
-boolean, integer, date, time, and interval literals retain their canonical literal type; integer
+boolean, integer, validated date and time literals retain their canonical literal type; integer
 literals used with decimal columns normalize to decimal literals. Integer bounds are range-checked
 against declared signedness and bit width. Lossy numeric coercions are never treated as exact.
 
@@ -349,18 +349,23 @@ exist, and `residual` means at least one predicate still cannot be represented.
 
 A timestamp without time zone compared to an offset-free typed literal is unconditional exact
 when schema evidence explicitly identifies the column as timezone-free. A timezone-aware
-timestamp comparison with an explicit literal UTC offset is also unconditional exact.
+timestamp comparison with an explicitly timezone-aware literal and numeric UTC offset is also unconditional exact.
 Unqualified timestamp types remain conditional. Contradictory timezone-free schema evidence
 and an offset-bearing literal produce Unknown with a `literal_type_mismatch` residual,
 never an invented domain; declaring `session_time_zone` cannot override that conflict.
 
 SQL typed literals recognized by sqlparser include `TIMESTAMP '...'`,
 `TIMESTAMP WITH TIME ZONE '...'`, and the `TIMESTAMPTZ '...'` alias.
-Other dialect-specific timestamp aliases are treated equivalently when sqlparser
-recognizes them. The spelling alone does not grant exactness: an explicit UTC offset
-and timezone-aware *column* schema evidence are required for unconditional exactness.
-With no literal offset, a timezone-aware column requires `session_time_zone`
-regardless of the typed literal spelling. Accepted offset spellings are `Z`/`z`,
+The AST's literal precision and timezone qualification are preserved when deciding
+whether a scalar value is certified. `TIMESTAMPTZ` and `TIMESTAMP WITH TIME ZONE`
+require a literal offset; without one, the literal itself remains unsupported,
+even before source comparison. An offset on plain `TIMESTAMP` or explicit
+`TIMESTAMP WITHOUT TIME ZONE` also remains unsupported: engines can discard it,
+so column schema evidence cannot silently reinterpret that literal as an instant.
+An offset-free, timezone-free literal compared with a timezone-aware column
+still requires `session_time_zone`. Declaring this comparison assumption does
+not evaluate unsupported literal coercions. Accepted offset spellings for
+explicitly timezone-aware literals are `Z`/`z`,
 `+HH`/`-HH`, `+HHMM`/`-HHMM`, and `+HH:MM`/`-HH:MM`; these all
 normalize to signed `HH:MM` form.
 
@@ -371,6 +376,8 @@ the decimal point if the fraction becomes empty. The wall-clock portion is not s
 by the analyzer. An explicit offset is normalized to `+HH:MM` or `-HH:MM`;
 `Z` and `z` normalize to `+00:00`, and `+HH` / `+HHMM` normalize to
 `+HH:00` / `+HH:MM`. Offsets beyond 14 hours are not accepted.
+Fractional literals require an explicit precision modifier in 0..6 and must fit it;
+unattested engine defaults and precision-reducing rounding/truncation remain unsupported.
 
 - `timestamp_zone: without_time_zone` only emits offset-free bounds; an offset-bearing
   literal instead gives Unknown and a residual.
@@ -380,8 +387,10 @@ by the analyzer. An explicit offset is normalized to `+HH:MM` or `-HH:MM`;
 - An unqualified timestamp column preserves a normalized literal, but remains
   conditional on `session_time_zone` because its storage timezone semantics are unknown.
 
-Malformed or noncanonicalizable timestamp values produce Unknown with the
-`comparison_semantics` residual rather than a misleading exact domain.
+Malformed, noncanonicalizable or unsupported precision/zone-qualified literals
+produce an unsupported expression and Unknown output, with a `computed_expression`
+row residual when used in a predicate. A later source-typing failure may instead
+produce a `comparison_semantics` or `literal_type_mismatch` residual.
 String comparisons lacking a typed schema use the same binary-collation requirement as
 typed strings, so no schema path is silently declared exact. NULL-only conditions
 do not depend on any comparison setting. NaN is excluded by the declared `no_nan`
@@ -765,6 +774,33 @@ The diagnostic policy is deterministic. These diagnostics are non-membership met
 `unsupported_expression` and `unsupported_function` are also not converted directly from diagnostics because their membership effect is classified from the normalized predicate when they occur in a row condition. Likewise, `unsupported_top`, `unsupported_prewhere`, `unsupported_connect_by`, `unsupported_limit`, `unsupported_fetch`, `set_operation_arity_mismatch`, `unresolved_set_operation_output`, and `unsupported_set_operation_alignment` are not duplicated as `analysis_diagnostic` residuals because their owning AST construct already emits a specific residual condition. Every other statement-level or nested-query diagnostic is default-denied into an `analysis_diagnostic` residual.
 
 NULL membership is part of the value-domain contract and is available through `ValueDomain::admits_null()`: `unbounded` admits NULL; ordered `ranges` do not; an include set admits NULL only when NULL is listed; an exclude set admits NULL unless NULL is listed; `empty` rejects NULL; and `unknown` returns an unknown NULL-membership result. Consequently, `IS NULL`, `IS NOT NULL`, `<>`, `NOT IN`, `IS DISTINCT FROM`, and range predicates preserve their SQL NULL behavior in the emitted domains.
+
+## Certified calendar constants and opaque expressions (TASK-105)
+
+Validated Gregorian DATE literal identity casts (`CAST`/`TRY_CAST`/`SAFE_CAST`)
+emit the same `literal` expression and singleton `set` domain as their input.
+YEAR/MONTH/DAY `EXTRACT` of a validated DATE literal emits an integer `literal`
+and singleton domain. DATE threshold ordering and scalar negation preserve
+inclusive/exclusive bounds; contradictory intervals emit `empty`. Copies from
+one ungrouped local relation preserve these outcomes without expanding
+transitive expression semantics. Joins and grouping do not certify constant
+inheritance through this path.
+
+Invalid or unproved temporal literals emit `unsupported`, never a guessed exact
+value. Family-specific unsupported `feature` names include `temporal_literal`,
+`temporal_extract`, `temporal_timezone`, `temporal_interval`, `json_literal`,
+`json_path`, `nested_access`, and `nested_literal`. Existing generic `cast` and
+`binary_expression` residuals retain the unsupported SQL spelling. Unknown output
+domains preserve the expression's reason; opaque scalar function reasons name
+the function. A `function` node records identity/arguments, not execution proof.
+JSON document null is not representable as a scalar SQL NULL literal.
+
+Pure source SQL NULL tests reuse the existing `null_test` and
+`unknown_null_comparison` row constraints for temporal and nested datatypes;
+these do not certify path extraction or nested equality. Timestamp comparisons
+continue to require explicit zone evidence/assumptions. See the
+[semantic boundary](semantics.md#temporal-json-and-opaque-expression-boundary-task-105)
+and the executable variant inventory in `coverage-manifest.json`.
 
 ## Output value domains
 
