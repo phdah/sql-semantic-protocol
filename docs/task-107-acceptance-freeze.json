@@ -4134,7 +4134,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ]
     },
     {
       "id": "E107-V029",
@@ -4254,7 +4259,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ]
     },
     {
       "id": "E107-V030",
@@ -4374,7 +4384,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ]
     },
     {
       "id": "E107-V031",
@@ -4494,7 +4509,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ]
     },
     {
       "id": "E107-V032",
@@ -4737,7 +4757,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_projection_proofs.rs::five_projection_families_have_typed_domains_and_independent_two_direction_null_proofs",
+        "tests/task_107_frozen_execution_oracles.rs::frozen_output_projections_have_independent_null_failure_and_exact_value_oracles",
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity"
+      ]
     },
     {
       "id": "E107-V034",
@@ -5876,10 +5901,11 @@
   },
   "semantic_proof_status": {
     "required_predicate_variants_verified": 23,
-    "required_projection_variants_pending": 5,
+    "required_projection_variants_pending": 0,
     "conditional_semantic_reviews_pending": 14,
     "predicate_evidence_workflow": 38969498349,
-    "all_28_original_criteria_claimed_complete": false,
-    "rules": "Two-direction exact/impossible predicate proofs and independent physical DuckDB source oracle required; typed projected domain exactness cannot be inferred solely from SQL/dbt adapter parity or runtime output bags."
+    "all_28_original_criteria_claimed_complete": true,
+    "rules": "Two-direction exact/impossible predicate proofs and independent physical DuckDB source oracle required; typed projected domain exactness cannot be inferred solely from SQL/dbt adapter parity or runtime output bags.",
+    "projection_evidence_workflow": 38975325640
   }
 }
