@@ -1545,3 +1545,72 @@ fn filtered_join_population_respects_independently_enforced_stage_laws() {
         "complete join populations must not silently bypass stage-specific constraints: {after:?}"
     );
 }
+
+#[test]
+fn multiple_join_source_filters_reconcile_joint_true_and_not_true_terminals() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a FROM l INNER JOIN r ON l.k = r.k AND l.a BETWEEN 1 AND 5 AND l.b BETWEEN 2 AND 6",
+            "SELECT a FROM l WHERE a > 5",
+            "SELECT b FROM r WHERE b < 0",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (bundle.layers()[0].id(), 2),
+        (bundle.layers()[1].id(), 0),
+        (bundle.layers()[2].id(), 0),
+    ];
+    let plan = physical_joint_row_count_plan(&bundle, &goals);
+    let WitnessDirection::Feasible(cases) = plan else {
+        panic!("two source predicates must remain jointly constructible with negative terminals: {plan:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::Rows {
+                    boundary,
+                    predicate: WitnessFormula::All(items),
+                    closed_world: true,
+                    ..
+                } if boundary.relation() == "l" && items.len() == 3
+            )
+        })
+    }), "l requires two ON conjuncts and one NOT TRUE terminal");
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER,b INTEGER,k INTEGER);
+         CREATE TABLE r(a INTEGER,b INTEGER,k INTEGER);
+         INSERT INTO l VALUES (3,4,0),(4,5,1);
+         INSERT INTO r VALUES (1,1,0),(2,2,1);",
+    )
+    .expect("physical rows");
+    let counts = [
+        "SELECT COUNT(*) FROM l JOIN r ON l.k=r.k AND l.a BETWEEN 1 AND 5 AND l.b BETWEEN 2 AND 6",
+        "SELECT COUNT(*) FROM l WHERE a > 5",
+        "SELECT COUNT(*) FROM r WHERE b < 0",
+    ]
+    .map(|sql| db.query_row(sql, [], |row| row.get::<_, i64>(0)).expect("oracle"));
+    assert_eq!(counts, [2, 0, 0]);
+}
+
+#[test]
+fn multiple_join_source_filters_with_incompatible_negative_terminal_are_impossible() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a FROM l INNER JOIN r ON l.k = r.k AND l.a BETWEEN 1 AND 5 AND l.b BETWEEN 2 AND 6",
+            "SELECT a FROM l WHERE a <= 5",
+        ],
+        "postgresql",
+    );
+    let targets = [
+        (bundle.layers()[0].id(), 2),
+        (bundle.layers()[1].id(), 0),
+    ];
+    let result = physical_joint_row_count_plan(&bundle, &targets);
+    assert!(
+        matches!(result, WitnessDirection::Impossible),
+        "positive inner-join rows must satisfy a BETWEEN 1 AND 5, while zero rows for a <= 5 requires every row to reject it: {result:?}"
+    );
+}
