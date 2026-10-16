@@ -1,10 +1,10 @@
 ---
 id: TASK-106
 title: Compose typed expression obligations through relational graphs
-status: Done
+status: In Progress
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-13'
+updated_date: '2026-10-16'
 labels: []
 milestone: m-3
 dependencies:
@@ -34,17 +34,19 @@ Consume canonical expression and predicate proofs from TASK-101..105 across actu
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [x] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
-- [x] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
-- [x] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
-- [x] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
-- [x] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
+- [ ] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
+- [ ] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
+- [ ] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
+- [ ] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
+- [ ] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
 <!-- AC:END -->
 
-## Completion evidence (2026-10-16, PR #114)
+## Bounded implementation evidence (2026-10-16, PR #114)
 
-Bounded increment on `feat/task-106-composed-predicate-graphs`, all CI green
-(fmt, strict Clippy, tests, docs, no-default-features, dbt E2E):
+Increment on `feat/task-106-composed-predicate-graphs`. The initial
+implementation passed CI (fmt, strict Clippy, tests, docs,
+no-default-features, dbt E2E); subsequent review fixes require revalidation.
+This evidence does **not** discharge the five acceptance criteria:
 
 - `src/physical_realization/graph.rs`: `joint_physical_filters` now tries the
   type-certified identity mapping first (identical datatypes at both chain
@@ -66,12 +68,14 @@ Bounded increment on `feat/task-106-composed-predicate-graphs`, all CI green
   families to bounded exact with residual) and
   `tests/task_70_predicates.rs` inventory updated. No protocol wire change.
   General multi-operator DAGs, computed cross-layer inversion, and vendor
-  execution remain explicit residuals owned by TASK-107/108 and the 3.0.0
-  gate (TASK-91 stays blocked).
+  execution remain explicit residuals. TASK-106 must either implement its
+  remaining operator/physical-source AC or explicitly rescope the child task
+  before closure. TASK-107/108 are separate follow-up tasks, not substitutes
+  for unverified TASK-106 acceptance criteria (TASK-91 stays blocked).
 
 ## Implementation and verification
 
 - **Parent:** [TASK-70](task-70%20-%20solve-expression-and-predicate-variants.md), still **In Progress** until TASK-108 verifies all six original acceptance criteria.
 - **Delivery:** one focused PR to `main`; finish all the child AC before marking it Done and verify complete relevant CI after implementing (not after every commit). Update canonical API/schema/docs, adapter parity and coverage evidence as applicable.
 - **Scope boundary:** Reuse TASK-68/93..100 physical machinery and TASK-79 schema laws. This child owns the **missing computed-expression integration**, not an independent rewrite of joins, groups or DML nor global end-to-end TASK-89 certification.
-- **Next:** After completion, pick **TASK-107**.
+- **Next:** Complete and independently verify every TASK-106 AC before marking Done; then pick **TASK-107**.
