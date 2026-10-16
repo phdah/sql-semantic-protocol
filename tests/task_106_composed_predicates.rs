@@ -14,9 +14,9 @@ use sql_semantic_protocol::{
     BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics, ConfiguredInputAnalysisError,
     ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
     ConstraintSourceKind, ConstraintValue, Error, GroupBoundaryKind, JoinKind, LiteralValue,
-    PhysicalProofGap, ProtocolStatement, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput, ValueDomain,
-    WitnessDirection, WitnessFormula, WitnessObligation,
+    PhysicalProofGap, ProtocolStatement, RelationCatalog, RelationConstraint,
+    RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput, ValueDomain, WitnessDirection,
+    WitnessFormula, WitnessObligation,
 };
 
 fn catalog() -> RelationCatalog {
@@ -1478,15 +1478,13 @@ fn constrained_stage_restriction() -> RelationConstraintSet {
     )];
     RelationConstraintSet::new(
         "stage",
-        vec![
-            RelationConstraint::accepted_values(
-                "a",
-                vec![ConstraintValue::Integer(20)],
-                false,
-                evidence,
-            )
-            .expect("warehouse restriction"),
-        ],
+        vec![RelationConstraint::accepted_values(
+            "a",
+            vec![ConstraintValue::Integer(20)],
+            false,
+            evidence,
+        )
+        .expect("warehouse restriction")],
     )
     .expect("relation constraints")
 }
@@ -1565,19 +1563,22 @@ fn multiple_join_source_filters_reconcile_joint_true_and_not_true_terminals() {
     let WitnessDirection::Feasible(cases) = plan else {
         panic!("two source predicates must remain jointly constructible with negative terminals: {plan:?}");
     };
-    assert!(cases.iter().any(|case| {
-        case.obligations().iter().any(|obligation| {
-            matches!(
-                obligation,
-                WitnessObligation::Rows {
-                    boundary,
-                    predicate: WitnessFormula::All(items),
-                    closed_world: true,
-                    ..
-                } if boundary.relation() == "l" && items.len() == 3
-            )
-        })
-    }), "l requires two ON conjuncts and one NOT TRUE terminal");
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations().iter().any(|obligation| {
+                matches!(
+                    obligation,
+                    WitnessObligation::Rows {
+                        boundary,
+                        predicate: WitnessFormula::All(items),
+                        closed_world: true,
+                        ..
+                    } if boundary.relation() == "l" && items.len() == 3
+                )
+            })
+        }),
+        "l requires two ON conjuncts and one NOT TRUE terminal"
+    );
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(
         "CREATE TABLE l(a INTEGER,b INTEGER,k INTEGER);
@@ -1591,7 +1592,10 @@ fn multiple_join_source_filters_reconcile_joint_true_and_not_true_terminals() {
         "SELECT COUNT(*) FROM l WHERE a > 5",
         "SELECT COUNT(*) FROM r WHERE b < 0",
     ]
-    .map(|sql| db.query_row(sql, [], |row| row.get::<_, i64>(0)).expect("oracle"));
+    .map(|sql| {
+        db.query_row(sql, [], |row| row.get::<_, i64>(0))
+            .expect("oracle")
+    });
     assert_eq!(counts, [2, 0, 0]);
 }
 
@@ -1604,10 +1608,7 @@ fn multiple_join_source_filters_with_incompatible_negative_terminal_are_impossib
         ],
         "postgresql",
     );
-    let targets = [
-        (bundle.layers()[0].id(), 2),
-        (bundle.layers()[1].id(), 0),
-    ];
+    let targets = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 0)];
     let result = physical_joint_row_count_plan(&bundle, &targets);
     assert!(
         matches!(result, WitnessDirection::Impossible),
@@ -1624,28 +1625,41 @@ fn independent_filtered_join_dags_share_one_joint_closed_physical_plan() {
         ],
         "postgresql",
     );
-    let goals = [
-        (bundle.layers()[0].id(), 2),
-        (bundle.layers()[1].id(), 3),
-    ];
+    let goals = [(bundle.layers()[0].id(), 2), (bundle.layers()[1].id(), 3)];
     let result = physical_joint_row_count_plan(&bundle, &goals);
     let WitnessDirection::Feasible(cases) = result else {
         panic!("disjoint certified filtered joins must admit one combined physical population: {result:?}");
     };
-    assert!(cases.iter().any(|case| {
-        case.obligations().iter().filter(|item| {
-            matches!(
-                item,
-                WitnessObligation::JoinPopulation { closed_world: true, .. }
-            )
-        }).count() == 2
-            && case.obligations().iter().filter(|item| {
-                matches!(item, WitnessObligation::ClosedWorld { .. })
-            }).count() == 4
-            && case.obligations().iter().filter(|item| {
-                matches!(item, WitnessObligation::OutputRows { .. })
-            }).count() == 2
-    }), "each physical leaf is closed once, both join populations survive");
+    assert!(
+        cases.iter().any(|case| {
+            case.obligations()
+                .iter()
+                .filter(|item| {
+                    matches!(
+                        item,
+                        WitnessObligation::JoinPopulation {
+                            closed_world: true,
+                            ..
+                        }
+                    )
+                })
+                .count()
+                == 2
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|item| matches!(item, WitnessObligation::ClosedWorld { .. }))
+                    .count()
+                    == 4
+                && case
+                    .obligations()
+                    .iter()
+                    .filter(|item| matches!(item, WitnessObligation::OutputRows { .. }))
+                    .count()
+                    == 2
+        }),
+        "each physical leaf is closed once, both join populations survive"
+    );
 
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(
@@ -1663,6 +1677,9 @@ fn independent_filtered_join_dags_share_one_joint_closed_physical_plan() {
         "SELECT COUNT(*) FROM l JOIN r ON l.k=r.k WHERE l.a BETWEEN 1 AND 5",
         "SELECT COUNT(*) FROM stage JOIN mart ON stage.k=mart.k WHERE stage.a BETWEEN 10 AND 15",
     ]
-    .map(|sql| db.query_row(sql, [], |row| row.get::<_, i64>(0)).expect("join oracle"));
+    .map(|sql| {
+        db.query_row(sql, [], |row| row.get::<_, i64>(0))
+            .expect("join oracle")
+    });
     assert_eq!(actual, [2, 3]);
 }
