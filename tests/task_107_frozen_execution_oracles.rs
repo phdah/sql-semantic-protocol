@@ -137,21 +137,46 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
         match domain["type"].as_str().expect("typed output expectation") {
             "empty" => assert!(true_ids.is_empty(), "{id}: false impossibility"),
             "integer" => {
-                let bounds = (domain["lower"].as_str(), domain["upper"].as_str());
-                if let (Some(lower), Some(upper)) = bounds {
-                    let lower: i64 = lower.parse().unwrap();
-                    let upper: i64 = upper.parse().unwrap();
-                    let selected = format!("SELECT a FROM t WHERE {predicate}");
-                    let mut stmt = db.prepare(&selected).unwrap();
-                    let rows = stmt
-                        .query_map([], |row| row.get::<_, Option<i64>>(0))
-                        .unwrap();
-                    for value in rows {
-                        let value = value.unwrap().expect("bounded exact integer not NULL");
-                        assert!(
-                            value >= lower && value <= upper,
-                            "{id}: {value} outside inclusive domain"
-                        );
+                let selected = original;
+                let mut stmt = db.prepare(selected).unwrap();
+                let rows = stmt
+                    .query_map([], |row| row.get::<_, Option<i64>>(0))
+                    .unwrap();
+                let expected_set: Option<BTreeSet<i64>> =
+                    domain["set"].as_array().map(|values| {
+                        values
+                            .iter()
+                            .map(|value| value.as_str().unwrap().parse::<i64>().unwrap())
+                            .collect()
+                    });
+                let lower = domain["lower"].as_str().map(|s| s.parse::<i64>().unwrap());
+                let upper = domain["upper"].as_str().map(|s| s.parse::<i64>().unwrap());
+                let non_null = domain["null"] == false;
+                for value in rows {
+                    match value.unwrap() {
+                        Some(value) => {
+                            if let Some(set) = &expected_set {
+                                assert!(set.contains(&value), "{id}: {value} outside frozen finite output domain");
+                            }
+                            if let Some(lower) = lower {
+                                assert!(
+                                    value > lower || (value == lower && domain["lower_inclusive"] == true),
+                                    "{id}: {value} below frozen interval"
+                                );
+                            }
+                            if let Some(upper) = upper {
+                                assert!(
+                                    value < upper || (value == upper && domain["upper_inclusive"] == true),
+                                    "{id}: {value} above frozen interval"
+                                );
+                            }
+                        }
+                        None => {
+                            assert!(
+                                !non_null && domain["nullable"] == true,
+                                "{id}: NULL outside certified non-nullable output domain"
+                            );
+                        }
                     }
                 }
             }
