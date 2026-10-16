@@ -4,6 +4,10 @@
 
 use super::*;
 
+// This literal subset certifies at most microsecond precision; a parsed
+// modifier is not evidence that an engine preserves finer representations.
+const CERTIFIED_LITERAL_PRECISION_MAX: u64 = 6;
+
 pub(super) fn temporal_modifiers_are_certified(
     datatype: &sqlparser::ast::DataType,
     text: &str,
@@ -22,7 +26,8 @@ pub(super) fn temporal_modifiers_are_certified(
         return false;
     }
     if precision.is_some_and(|precision| {
-        u64::try_from(fraction_digits).map_or(true, |used| used > precision)
+        precision > CERTIFIED_LITERAL_PRECISION_MAX
+            || u64::try_from(fraction_digits).map_or(true, |used| used > precision)
     }) {
         // Even trailing zeroes may exceed a warehouse's representable literal
         // precision. Do not pick a truncation/rounding/storage rule.

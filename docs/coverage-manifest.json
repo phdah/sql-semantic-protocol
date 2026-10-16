@@ -9,6 +9,11 @@
     "dialects": "tests/common/mod.rs::DIALECTS",
     "engine_oracle": "DuckDB only; parser acceptance never attests vendor execution equivalence",
     "release_approved": false,
+    "positional_alias_cases": [
+      {"id":"derived_alias_swap","sql":"SELECT v FROM (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) c(w, v)","value":"2024-01-01","parser_rejected":[]},
+      {"id":"cte_alias_swap","sql":"WITH c(w, v) AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c","value":"2024-01-01","parser_rejected":[]},
+      {"id":"local_table_alias_swap","sql":"WITH c AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c AS renamed(w, v)","value":"2024-01-01","parser_rejected":[]}
+    ],
     "variants": [
       {"id":"date_identity","family":"calendar","ast":"Cast/TypedString","expression":"CAST(DATE '2024-02-29' AS DATE)","outcome":"date","value":"2024-02-29","parser_rejected":[]},
       {"id":"date_try_identity","family":"calendar","ast":"Cast/TypedString","expression":"TRY_CAST(DATE '2024-02-29' AS DATE)","outcome":"date","value":"2024-02-29","parser_rejected":[]},
@@ -63,7 +68,9 @@
       {"id":"timestamp_unqualified_offset","family":"timezone","ast":"TypedString/Timestamp(None)","expression":"TIMESTAMP '2024-02-29 12:34:56+02:00'","outcome":"unknown","reason":"offset must not silently turn a timestamp into timestamptz","parser_rejected":[]},
       {"id":"unicode_clock_suffix","family":"clock","ast":"TypedString","expression":"TIME '12:34:56💥'","outcome":"unknown","reason":"invalid UTF-8 character boundary for an ASCII offset token must fail closed","parser_rejected":[]},
       {"id":"unicode_timestamp_suffix","family":"timezone","ast":"TypedString","expression":"TIMESTAMP '2024-02-29 12:34:56é'","outcome":"unknown","reason":"invalid non-ASCII offset token must fail closed","parser_rejected":[]},
-      {"id":"explicit_zoned_fraction","family":"timezone","ast":"TypedString/Timestamp(precision,WithTimeZone)","expression":"TIMESTAMP(6) WITH TIME ZONE '2024-02-29 12:34:56.123456+02:00'","outcome":"timestamp","value":"2024-02-29 12:34:56.123456+02:00","parser_rejected":[]}
+      {"id":"explicit_zoned_fraction","family":"timezone","ast":"TypedString/Timestamp(precision,WithTimeZone)","expression":"TIMESTAMP(6) WITH TIME ZONE '2024-02-29 12:34:56.123456+02:00'","outcome":"timestamp","value":"2024-02-29 12:34:56.123456+02:00","parser_rejected":[]},
+      {"id":"unsupported_time_precision","family":"clock","ast":"TypedString/Time(9)","expression":"TIME(9) '12:34:56.123456789'","outcome":"unknown","reason":"nanosecond literal precision is outside the certified microsecond subset","parser_rejected":[]},
+      {"id":"unsupported_timestamp_precision","family":"timezone","ast":"TypedString/Timestamp(9)","expression":"TIMESTAMP(9) '2024-02-29 12:34:56.123456789'","outcome":"unknown","reason":"nanosecond literal precision is outside the certified microsecond subset","parser_rejected":[]}
     ]
   },
   "task_70_predicate_evidence": {

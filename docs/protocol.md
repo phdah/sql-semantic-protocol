@@ -376,7 +376,7 @@ the decimal point if the fraction becomes empty. The wall-clock portion is not s
 by the analyzer. An explicit offset is normalized to `+HH:MM` or `-HH:MM`;
 `Z` and `z` normalize to `+00:00`, and `+HH` / `+HHMM` normalize to
 `+HH:00` / `+HH:MM`. Offsets beyond 14 hours are not accepted.
-Fractional literals require an explicit precision modifier and must fit it;
+Fractional literals require an explicit precision modifier in 0..6 and must fit it;
 unattested engine defaults and precision-reducing rounding/truncation remain unsupported.
 
 - `timestamp_zone: without_time_zone` only emits offset-free bounds; an offset-bearing

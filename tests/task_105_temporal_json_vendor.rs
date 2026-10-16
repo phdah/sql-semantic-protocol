@@ -17,6 +17,10 @@ fn query(sql: &str) -> sql_semantic_protocol::QueryStatement {
     query.clone()
 }
 
+fn coverage_manifest() -> serde_json::Value {
+    serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap()
+}
+
 fn assert_single_value(domain: &ValueDomain, kind: LiteralType, value: &str) {
     let ValueDomain::Set(set) = domain else {
         panic!("expected singleton domain, got {domain:?}");
@@ -95,11 +99,13 @@ fn invalid_or_session_sensitive_temporal_literals_have_unknown_outcomes() {
         "TIME '12:00:00+02:00'",
         "TIME '12:00:00💥'",
         "TIME(3) '12:34:56.123456'",
+        "TIME(9) '12:34:56.123456789'",
         "TIME '12:34:56.123456789'",
         "TIMESTAMP '2024-02-30 12:00:00'",
         "TIMESTAMP '2024-03-10 02:30:00 America/New_York'",
         "TIMESTAMP '2024-02-29 12:00:00é'",
         "TIMESTAMP(3) '2024-02-29 12:34:56.123456'",
+        "TIMESTAMP(9) '2024-02-29 12:34:56.123456789'",
         "TIMESTAMP '2024-02-29 12:34:56.123456789'",
         "TIMESTAMP WITH TIME ZONE '2024-02-29 12:34:56'",
         "TIMESTAMP WITHOUT TIME ZONE '2024-02-29 12:34:56+02:00'",
@@ -233,8 +239,7 @@ fn unsupported_temporal_and_nested_ast_shapes_expose_their_family() {
 
 #[test]
 fn inventoried_variants_are_certified_or_fail_closed_in_every_exposed_dialect() {
-    let manifest: serde_json::Value =
-        serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
+    let manifest = coverage_manifest();
     let evidence = &manifest["task_105_expression_evidence"];
     assert_eq!(evidence["owner"], "TASK-105");
     assert_eq!(evidence["release_approved"], false);
@@ -650,12 +655,36 @@ fn local_calendar_domain_inheritance_does_not_hide_rollup_nulls() {
 
 #[test]
 fn local_calendar_domains_follow_positional_column_aliases() {
-    for sql in [
-        "SELECT v FROM (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) c(w, v)",
-        "WITH c(w, v) AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c",
-        "WITH c AS (SELECT DATE '2000-02-29' AS v, DATE '2024-01-01' AS w) SELECT v FROM c AS renamed(w, v)",
-    ] {
-        assert_single_value(query(sql).output().columns()[0].domain(), LiteralType::Date, "2024-01-01");
+    let manifest = coverage_manifest();
+    for case in manifest["task_105_expression_evidence"]["positional_alias_cases"]
+        .as_array()
+        .unwrap()
+    {
+        let sql = case["sql"].as_str().unwrap();
+        for dialect_name in common::DIALECTS {
+            let dialect = dialect_from_name(dialect_name).unwrap();
+            let analyzed = analyze_sql(sql, dialect_name, dialect.as_ref());
+            let rejected = case["parser_rejected"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|name| name == dialect_name);
+            assert_eq!(
+                analyzed.is_err(),
+                rejected,
+                "{dialect_name}: {sql}: {:?}",
+                analyzed.as_ref().err()
+            );
+            let Ok(protocol) = analyzed else { continue };
+            let ProtocolStatement::Query(query) = &protocol.statements()[0] else {
+                panic!("SELECT expected")
+            };
+            assert_single_value(
+                query.output().columns()[0].domain(),
+                LiteralType::Date,
+                case["value"].as_str().unwrap(),
+            );
+        }
     }
 }
 

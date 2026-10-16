@@ -4,7 +4,7 @@ title: Classify temporal, JSON and vendor expression outcomes
 status: In Progress
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-15'
+updated_date: '2026-10-16'
 labels: []
 milestone: m-3
 dependencies:
@@ -49,13 +49,14 @@ Audit existing portable typed DATE/TIME comparisons, explicit timestamp-zone evi
 <!-- SECTION:NOTES:BEGIN -->
 - Public TDD seams confirmed: SQL analysis (domains and truth/exactness), JSON emission (full canonical document), dbt artifacts/schema analysis; independent DuckDB execution oracles.
 - Certified subset: Gregorian DATE identity casts and literal YEAR/MONTH/DAY extraction; ordered DATE interval intersection, scalar negation and impossible bounds; valid calendar/clock representations; existing typed timestamp comparison assumptions; datatype-independent source SQL NULL witnesses.
-- Added a 54-variant executable AST/dialect inventory under `docs/coverage-manifest.json.task_105_expression_evidence`; explicit parser boundaries prevent hash-comment and interval/array/struct syntax from becoming false semantic claims.
+- Added a 56-expression executable AST/dialect inventory plus three positional-alias fixtures under `docs/coverage-manifest.json.task_105_expression_evidence`; explicit parser boundaries prevent hash-comment and interval/array/struct syntax from becoming false semantic claims. Alias regressions run in every exposed dialect.
 - Unknown outcomes preserve family-specific unsupported reasons and opaque function names. JSON document null/path extraction, nested equality, timezone/DST/interval execution, vendor/UDF/clock/stochastic functions remain fail-closed.
 - Preserved literal domains through ungrouped single-local-source copies, with regression coverage for outer-join and ROLLUP NULL synthesis. Producer composition preserves DATE bounds.
 - Adapter evidence: direct SQL, paired dbt catalog artifacts, manifest-declared schemas and feature-gated ODCS physical types use equivalent canonical outcomes; no new adapter-specific semantic rules or dependencies.
 - Two-axis review: addressed the input-triggered Unicode suffix panic, positional local-column alias mismatch, precision-qualified literal overclaim, and loss of literal timezone qualification. Added checked UTF-8 suffix parsing and modifier-aware fail-closed normalization, preserving source comparison assumptions only for independently valid literals. Temporal precision and zone regression/oracle tests now use explicit AST evidence rather than unsafe timestamp spelling equivalence.
 - Standards review: consolidated physical and analysis Gregorian validation under `src/temporal.rs`, preserving malformed-versus-impossible physical classifications; renamed the general expression residual label helper. Alias application has one shared analysis owner used by CTE/derived scopes.
-- Verification before final review closure: 21 TASK-105 tests, 20 typed-domain tests, 21 differential tests and six focused physical type-validation unit tests pass. Full suite, fmt/clippy/doc passed before review fixes; final rerun and remote CI pending. Two existing artifact-generated dbt E2E tests are explicitly ignored by the default suite and owned by the CI dbt job.
+- Final review closure: both reviewers verified all findings resolved. Literal precision is bounded to the certified 0..6 subset; all three positional-alias paths now have all-dialect fixtures and explicit parser-boundary expectations.
+- Final local verification: full `cargo test --quiet --no-fail-fast`, `cargo fmt`, `cargo clippy --all-targets --all-features -- -D warnings`, and `cargo doc --no-deps` pass. Focused evidence includes 21 TASK-105 tests, 20 typed-domain tests, 21 differential tests and six physical type-validation unit tests. Two existing artifact-generated dbt E2E tests are explicitly ignored by the default suite and owned by the CI dbt job. Remote CI pending before task closure.
 <!-- SECTION:NOTES:END -->
 
 ## Implementation and verification

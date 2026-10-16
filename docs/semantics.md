@@ -226,7 +226,7 @@ The certified calendar subset is:
 - Clock literals require valid hours/minutes/seconds and no offset; leap seconds
   and `24:00:00` remain unsupported. Timestamp literals require the existing
   Gregorian/clock/numeric-offset representation. Fractional values require an
-  explicit precision modifier they fit; engine defaults and reducing precision
+  explicit precision modifier in 0..6 they fit; engine defaults and reducing precision
   are not guessed. Explicitly timezone-aware literals need numeric offsets;
   offset-bearing timezone-free/unqualified literals remain unsupported because
   engines may discard the offset. Offset-free wall-clock bounds on timezone-aware
