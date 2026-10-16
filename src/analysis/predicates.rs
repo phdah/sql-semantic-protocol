@@ -340,7 +340,7 @@ fn is_null_rejecting_literal_comparison(expression: &Expr) -> bool {
     let is_null_literal = |expression: &Expr| {
         matches!(
             expression,
-            Expr::Value(value) if matches!(value.value, sqlparser::ast::Value::Null)
+            Expr::Value(value) if matches!(&value.value, sqlparser::ast::Value::Null)
         )
     };
     ordinary && (is_null_literal(left) || is_null_literal(right))
