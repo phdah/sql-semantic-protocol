@@ -956,7 +956,7 @@ fn explicitly_escaped_ascii_underscore_prefix_is_exact_only_with_binary_laws() {
         assert!(
             matches!(
                 proven.condition(),
-                BooleanRowConstraint::StringLikePrefix { prefix: actual, .. } if actual == prefix
+                BooleanRowConstraint::StringPrefix { prefix: actual, .. } if actual == prefix
             ),
             "{predicate}: must preserve literal '_' in parser-independent prefix constraint"
         );
