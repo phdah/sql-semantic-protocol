@@ -600,7 +600,7 @@ fn reconcile_zero_terminals(
 
 /// Check joint satisfiability of all per-source TRUE/NOT TRUE restrictions.
 ///
-/// Returns `Some(Impossible)` only for certified INNER contradictions over
+/// Returns `Some(false)` only for certified INNER contradictions over
 /// nonempty sources; outer-join contradictions and unverified combinations
 /// return `None` so callers stay residual rather than guessing impossibility.
 fn joint_restrictions_satisfiable(
