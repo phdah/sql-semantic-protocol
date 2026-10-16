@@ -484,9 +484,7 @@ fn widened_or_copied_source(
             let from = bundle_column_datatype(bundle, &physical)?;
             // A declared NOT NULL boundary cannot silently discard source
             // NULLs. Preserve the complete SQL NULL domain across the cast.
-            if matches!(&from, DataType::Nullable(_))
-                != matches!(&to, DataType::Nullable(_))
-            {
+            if matches!(&from, DataType::Nullable(_)) != matches!(&to, DataType::Nullable(_)) {
                 return None;
             }
             let source_bits = signed_width(&from)?;
