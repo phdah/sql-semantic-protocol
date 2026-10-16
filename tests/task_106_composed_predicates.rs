@@ -1614,3 +1614,55 @@ fn multiple_join_source_filters_with_incompatible_negative_terminal_are_impossib
         "positive inner-join rows must satisfy a BETWEEN 1 AND 5, while zero rows for a <= 5 requires every row to reject it: {result:?}"
     );
 }
+
+#[test]
+fn independent_filtered_join_dags_share_one_joint_closed_physical_plan() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a FROM l INNER JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5",
+            "SELECT stage.a FROM stage INNER JOIN mart ON stage.k = mart.k WHERE stage.a BETWEEN 10 AND 15",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (bundle.layers()[0].id(), 2),
+        (bundle.layers()[1].id(), 3),
+    ];
+    let result = physical_joint_row_count_plan(&bundle, &goals);
+    let WitnessDirection::Feasible(cases) = result else {
+        panic!("disjoint certified filtered joins must admit one combined physical population: {result:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().filter(|item| {
+            matches!(
+                item,
+                WitnessObligation::JoinPopulation { closed_world: true, .. }
+            )
+        }).count() == 2
+            && case.obligations().iter().filter(|item| {
+                matches!(item, WitnessObligation::ClosedWorld { .. })
+            }).count() == 4
+            && case.obligations().iter().filter(|item| {
+                matches!(item, WitnessObligation::OutputRows { .. })
+            }).count() == 2
+    }), "each physical leaf is closed once, both join populations survive");
+
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER,k INTEGER);
+         CREATE TABLE r(a INTEGER,k INTEGER);
+         CREATE TABLE stage(a INTEGER,k INTEGER);
+         CREATE TABLE mart(a INTEGER,k INTEGER);
+         INSERT INTO l VALUES (1,0),(2,1);
+         INSERT INTO r VALUES (0,0),(0,1);
+         INSERT INTO stage VALUES (10,0),(11,1),(12,2);
+         INSERT INTO mart VALUES (0,0),(0,1),(0,2);",
+    )
+    .expect("complete independent source bags");
+    let actual = [
+        "SELECT COUNT(*) FROM l JOIN r ON l.k=r.k WHERE l.a BETWEEN 1 AND 5",
+        "SELECT COUNT(*) FROM stage JOIN mart ON stage.k=mart.k WHERE stage.a BETWEEN 10 AND 15",
+    ]
+    .map(|sql| db.query_row(sql, [], |row| row.get::<_, i64>(0)).expect("join oracle"));
+    assert_eq!(actual, [2, 3]);
+}
