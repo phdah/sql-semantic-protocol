@@ -191,7 +191,7 @@ fn contradictory_single_layer_filter_is_impossible() {
 }
 
 #[test]
-fn contradictory_chain_filters_yield_empty_domains_and_explicit_gap() {
+fn contradictory_chain_filters_prove_impossible_true_and_feasible_rejection() {
     let bundle = analyze_chain(
         &[
             "CREATE TABLE stage AS SELECT a FROM t WHERE a IN (1, 3)",
@@ -213,17 +213,18 @@ fn contradictory_chain_filters_yield_empty_domains_and_explicit_gap() {
             .any(|domain| matches!(domain.domain(), ValueDomain::Empty)),
         "contradiction must surface as an empty composed domain"
     );
-    // Empty composed domains fail closed in the physical plan with an
-    // explicit conflicting-domains gap instead of a feasible row.
+    // Certified same-row filters contradict each other, so TRUE is
+    // impossible and NOT TRUE remains feasible. This is stronger than
+    // reporting a conflicting-domains gap without a row-level proof.
     let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
-    assert_eq!(plan.gap(), Some(PhysicalProofGap::ConflictingDomains));
+    assert_eq!(plan.gap(), None, "{plan:?}");
     assert!(
-        matches!(
-            plan.qualifying(),
-            WitnessDirection::Residual { reason } if reason == "conflicting_domains"
-        ),
-        "contradictory filters must not yield a feasible row: {:?}",
-        plan.qualifying()
+        matches!(plan.qualifying(), WitnessDirection::Impossible),
+        "necessary contradiction must prove TRUE impossible: {plan:?}"
+    );
+    assert!(
+        matches!(plan.rejected(), WitnessDirection::Feasible(_)),
+        "a row failing the conjunction must remain constructible: {plan:?}"
     );
 }
 
