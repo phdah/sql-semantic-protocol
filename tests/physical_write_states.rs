@@ -241,7 +241,7 @@ fn merge_first_applicable_branches_are_realized_once_per_row() {
 #[test]
 fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
     let queries = [
-        "INSERT INTO target (id, score) SELECT id, score FROM source WHERE id > 1",
+        "INSERT INTO target (id, score) SELECT id, score + 1 FROM source WHERE id > 1",
         "UPDATE target SET score = score + 2 WHERE id = 2",
         "MERGE INTO target USING source ON target.id = source.id
          WHEN MATCHED AND source.score < 0 THEN DELETE
@@ -259,6 +259,24 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
     let (transitions, states) = outcome(&plan);
     assert_eq!(transitions.len(), 3);
     assert_eq!(transitions[0].affected().inserted(), 2);
+    assert_eq!(
+        transitions[0].after().rows(),
+        &[
+            row(Some(1), Some(4)),
+            row(Some(2), Some(10)),
+            row(Some(3), Some(-4))
+        ],
+        "INSERT must evaluate the computed SELECT projection"
+    );
+    assert_eq!(
+        transitions[1].after().rows(),
+        &[
+            row(Some(1), Some(4)),
+            row(Some(2), Some(12)),
+            row(Some(3), Some(-4))
+        ],
+        "UPDATE must compose with the actual computed INSERT values"
+    );
     assert_eq!(transitions[1].affected().updated(), 1);
     assert_eq!(transitions[2].affected().deleted(), 1);
     assert_eq!(transitions[2].affected().updated(), 1);
