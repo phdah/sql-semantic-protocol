@@ -338,9 +338,8 @@ fn bundle_column_datatype(
 pub(super) fn untransported_materialization_laws(bundle: &AnalysisBundle, relation: &str) -> bool {
     bundle.relation_constraints().iter().any(|set| {
         set.relation() == relation
-            && (!set.constraints().is_empty()
-                || !set.column_value_sources().is_empty()
-                || !set.diagnostics().is_empty())
+            && (set.blocks_unconstrained_physical_plans()
+                || !set.column_value_sources().is_empty())
     })
 }
 
