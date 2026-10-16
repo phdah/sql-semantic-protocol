@@ -673,92 +673,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V001-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V001-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V001-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V001-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V001-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V001-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V001-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V001-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V001-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V001-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V001-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V001-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V001-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -792,92 +792,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V002-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V002-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V002-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V002-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V002-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V002-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V002-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V002-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V002-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V002-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V002-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V002-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V002-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -911,92 +911,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V003-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V003-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V003-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V003-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V003-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V003-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V003-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V003-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V003-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V003-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V003-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V003-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V003-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1030,92 +1030,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V004-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V004-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V004-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V004-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V004-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V004-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V004-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V004-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V004-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V004-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V004-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V004-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V004-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1149,92 +1149,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V005-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V005-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V005-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V005-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V005-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V005-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V005-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V005-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V005-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V005-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V005-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V005-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V005-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1268,92 +1268,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V006-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V006-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V006-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V006-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V006-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V006-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V006-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V006-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V006-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V006-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V006-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V006-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V006-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1387,92 +1387,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V007-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V007-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V007-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V007-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V007-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V007-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V007-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V007-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V007-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V007-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V007-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V007-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V007-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1506,92 +1506,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V008-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V008-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V008-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V008-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V008-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V008-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V008-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V008-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V008-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V008-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V008-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V008-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V008-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1625,92 +1625,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V009-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V009-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V009-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V009-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V009-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V009-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V009-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V009-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V009-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V009-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V009-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V009-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V009-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1744,92 +1744,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V010-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V010-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V010-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V010-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V010-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V010-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V010-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V010-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V010-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V010-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V010-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V010-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V010-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1863,92 +1863,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V011-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V011-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V011-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V011-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V011-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V011-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V011-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V011-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V011-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V011-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V011-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V011-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V011-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -1982,92 +1982,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V012-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V012-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V012-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V012-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V012-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V012-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V012-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V012-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V012-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V012-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V012-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V012-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V012-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -2101,92 +2101,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V013-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V013-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V013-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V013-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V013-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V013-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V013-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V013-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V013-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V013-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V013-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V013-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V013-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -2220,92 +2220,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V014-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V014-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V014-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V014-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V014-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V014-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V014-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V014-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V014-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V014-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V014-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V014-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V014-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -2339,92 +2339,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V015-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V015-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V015-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V015-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V015-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V015-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V015-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V015-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V015-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V015-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V015-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V015-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V015-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -2458,92 +2458,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V016-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V016-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V016-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V016-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V016-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V016-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V016-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V016-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V016-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V016-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V016-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V016-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V016-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -2577,92 +2577,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V017-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V017-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V017-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V017-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V017-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V017-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V017-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V017-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V017-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V017-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V017-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V017-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V017-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -2696,92 +2696,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V018-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V018-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V018-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V018-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V018-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V018-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V018-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V018-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V018-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V018-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V018-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V018-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V018-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -2815,92 +2815,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V019-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V019-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V019-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V019-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V019-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V019-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V019-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V019-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V019-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V019-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V019-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V019-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V019-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -2934,92 +2934,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V020-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V020-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V020-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V020-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V020-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V020-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V020-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V020-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V020-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V020-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V020-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V020-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V020-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -3056,92 +3056,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V021-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V021-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V021-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V021-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V021-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V021-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V021-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V021-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V021-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V021-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V021-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V021-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V021-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -3175,92 +3175,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V022-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V022-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V022-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V022-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V022-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V022-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V022-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V022-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V022-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V022-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V022-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V022-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V022-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -3297,92 +3297,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V023-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V023-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V023-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V023-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V023-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V023-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V023-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V023-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V023-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V023-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V023-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V023-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V023-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -3419,92 +3419,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V024-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V024-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V024-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V024-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V024-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V024-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V024-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V024-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V024-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V024-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V024-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V024-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V024-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -3538,92 +3538,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V025-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V025-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V025-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V025-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V025-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V025-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V025-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V025-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V025-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V025-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V025-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V025-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V025-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -3660,92 +3660,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V026-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V026-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V026-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V026-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V026-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V026-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V026-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V026-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V026-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V026-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V026-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V026-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V026-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -3779,92 +3779,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V027-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V027-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V027-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V027-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V027-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V027-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V027-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V027-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V027-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V027-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V027-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V027-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V027-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -3898,92 +3898,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V028-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V028-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V028-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V028-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V028-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V028-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V028-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V028-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V028-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V028-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V028-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V028-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V028-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -4017,92 +4017,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V029-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V029-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V029-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V029-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V029-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V029-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V029-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V029-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V029-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V029-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V029-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V029-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V029-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -4136,92 +4136,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V030-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V030-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V030-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V030-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V030-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V030-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V030-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V030-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V030-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V030-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V030-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V030-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V030-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -4255,92 +4255,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V031-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V031-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V031-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V031-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V031-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V031-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V031-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V031-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V031-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V031-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V031-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V031-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V031-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -4377,92 +4377,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V032-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V032-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V032-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V032-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V032-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V032-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V032-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V032-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V032-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V032-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V032-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V032-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V032-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -4496,92 +4496,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V033-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V033-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V033-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V033-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V033-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V033-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V033-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V033-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V033-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V033-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V033-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V033-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V033-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "same_canonical_meaning_if_parsed",
           "vendor_execution": "not_claimed"
         }
@@ -4618,92 +4618,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V034-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V034-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V034-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V034-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V034-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V034-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V034-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V034-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V034-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V034-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V034-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V034-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V034-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -4740,92 +4740,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V035-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V035-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V035-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V035-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V035-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V035-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V035-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V035-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V035-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V035-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V035-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V035-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V035-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -4862,92 +4862,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V036-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V036-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V036-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V036-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V036-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V036-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V036-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V036-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V036-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V036-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V036-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V036-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V036-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -4984,92 +4984,98 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V037-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parse_rejected",
+          "canonical": "not_applicable_parse",
           "semantic_expectation": "must_record_ast_and_session_boundary",
-          "vendor_execution": "not_claimed"
+          "vendor_execution": "not_claimed",
+          "boundary_observed": "sqlparser 0.58 rejects this exact SQL shape; no vendor execution or runtime claim"
         },
         "bigquery": {
           "fixture_id": "E107-V037-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parse_rejected",
+          "canonical": "not_applicable_parse",
           "semantic_expectation": "must_record_ast_and_session_boundary",
-          "vendor_execution": "not_claimed"
+          "vendor_execution": "not_claimed",
+          "boundary_observed": "sqlparser 0.58 rejects this exact SQL shape; no vendor execution or runtime claim"
         },
         "clickhouse": {
           "fixture_id": "E107-V037-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parse_rejected",
+          "canonical": "not_applicable_parse",
           "semantic_expectation": "must_record_ast_and_session_boundary",
-          "vendor_execution": "not_claimed"
+          "vendor_execution": "not_claimed",
+          "boundary_observed": "sqlparser 0.58 rejects this exact SQL shape; no vendor execution or runtime claim"
         },
         "databricks": {
           "fixture_id": "E107-V037-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parse_rejected",
+          "canonical": "not_applicable_parse",
           "semantic_expectation": "must_record_ast_and_session_boundary",
-          "vendor_execution": "not_claimed"
+          "vendor_execution": "not_claimed",
+          "boundary_observed": "sqlparser 0.58 rejects this exact SQL shape; no vendor execution or runtime claim"
         },
         "duckdb": {
           "fixture_id": "E107-V037-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V037-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V037-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parse_rejected",
+          "canonical": "not_applicable_parse",
           "semantic_expectation": "must_record_ast_and_session_boundary",
-          "vendor_execution": "not_claimed"
+          "vendor_execution": "not_claimed",
+          "boundary_observed": "sqlparser 0.58 rejects this exact SQL shape; no vendor execution or runtime claim"
         },
         "mssql": {
           "fixture_id": "E107-V037-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V037-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parse_rejected",
+          "canonical": "not_applicable_parse",
           "semantic_expectation": "must_record_ast_and_session_boundary",
-          "vendor_execution": "not_claimed"
+          "vendor_execution": "not_claimed",
+          "boundary_observed": "sqlparser 0.58 rejects this exact SQL shape; no vendor execution or runtime claim"
         },
         "postgresql": {
           "fixture_id": "E107-V037-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V037-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V037-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V037-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -5106,92 +5112,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V038-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V038-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V038-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V038-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V038-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V038-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V038-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V038-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V038-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V038-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V038-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V038-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V038-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -5228,92 +5234,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V039-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V039-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V039-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V039-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V039-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V039-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V039-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V039-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V039-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V039-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V039-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V039-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V039-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -5350,92 +5356,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V040-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V040-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V040-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V040-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V040-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V040-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V040-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V040-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V040-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V040-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V040-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V040-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V040-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -5472,92 +5478,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V041-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V041-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V041-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V041-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V041-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V041-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V041-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V041-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V041-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V041-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V041-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V041-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V041-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -5594,92 +5600,92 @@
       "dialect_cells": {
         "ansi": {
           "fixture_id": "E107-V042-ansi",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "bigquery": {
           "fixture_id": "E107-V042-bigquery",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "clickhouse": {
           "fixture_id": "E107-V042-clickhouse",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "databricks": {
           "fixture_id": "E107-V042-databricks",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "duckdb": {
           "fixture_id": "E107-V042-duckdb",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "duckdb_oracle_required_where_executable"
         },
         "generic": {
           "fixture_id": "E107-V042-generic",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "hive": {
           "fixture_id": "E107-V042-hive",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mssql": {
           "fixture_id": "E107-V042-mssql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "mysql": {
           "fixture_id": "E107-V042-mysql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "postgresql": {
           "fixture_id": "E107-V042-postgresql",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "redshift": {
           "fixture_id": "E107-V042-redshift",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "snowflake": {
           "fixture_id": "E107-V042-snowflake",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         },
         "sqlite": {
           "fixture_id": "E107-V042-sqlite",
-          "parser": "unverified",
-          "canonical": "unverified",
+          "parser": "parsed",
+          "canonical": "equivalent",
           "semantic_expectation": "must_record_ast_and_session_boundary",
           "vendor_execution": "not_claimed"
         }
@@ -5692,5 +5698,13 @@
     "engine_claims": "Only DuckDB executed; parser acceptance never attests execution on other vendor engines",
     "new_variants": "Newly discovered SQL variants after freeze go to separate backlog tasks unless they invalidate a mandatory current correctness claim",
     "parents": "TASK-108 signs off TASK-70; TASK-88/89/91 maintain independent gates; no change in this freeze marks them Done"
+  },
+  "dialect_verification": {
+    "verification_method": "tests/task_107_dialect_classifications.rs::all_frozen_dialect_cells_are_actually_parsed_and_equivalence_checked",
+    "evidence_run_id": 38965434692,
+    "covered_cells": 546,
+    "parsed_equivalent": 540,
+    "parse_rejected": 6,
+    "classification_limits": "Parser acceptance and dialect-normalized protocol JSON equality are separate from vendor runtime execution and from typed physical witness correctness. Conditional AST/session semantics remain conditional until independently justified."
   }
 }
