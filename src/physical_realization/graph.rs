@@ -542,6 +542,21 @@ fn resolve_widened_filter_column(
             column.name().to_string(),
         )),
         RelationResolution::Resolved => {
+            // A materialized relation may carry its own CHECK, key, default
+            // or generated-column law not entailed by a copied source value.
+            // Until those laws are transported, such edges are not invertible.
+            if bundle
+                .relation_constraints()
+                .iter()
+                .any(|set| {
+                    set.relation() == canonical
+                        && (!set.constraints().is_empty()
+                            || !set.column_value_sources().is_empty()
+                            || !set.diagnostics().is_empty())
+                })
+            {
+                return None;
+            }
             let [producer_id] = edge.producer_layer_ids() else {
                 return None;
             };
@@ -587,6 +602,15 @@ pub(super) fn joint_physical_filters(
         return None;
     }
     let source = walker.sources.iter().next()?;
+    // No source-row population may silently ignore enforced or unverified
+    // physical constraints when transporting an intermediate witness.
+    if bundle
+        .relation_constraints()
+        .iter()
+        .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
+    {
+        return None;
+    }
     if filters
         .iter()
         .any(|filter| filter.boundary_kind() == GroupBoundaryKind::Unresolved)
