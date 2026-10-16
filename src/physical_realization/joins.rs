@@ -934,7 +934,8 @@ pub(super) fn jointly_realized_join_goals(
                             }
                             if *prior_filter == count_tautology() {
                                 *prior_filter = predicate.clone();
-                            } else if *predicate != count_tautology() && *prior_filter != *predicate {
+                            } else if *predicate != count_tautology() && *prior_filter != *predicate
+                            {
                                 // Different restrictions over the same physical bag
                                 // require an independent joint satisfiability and
                                 // key-population proof, not a free cross-product.
@@ -1009,7 +1010,9 @@ pub(super) fn jointly_realized_join_goals(
         if counts.iter().any(|(source, (_, filter))| {
             populations.iter().any(|population| {
                 if let WitnessObligation::JoinPopulation {
-                    left_key, right_key, ..
+                    left_key,
+                    right_key,
+                    ..
                 } = population
                 {
                     (left_key.relation() == Some(source.as_str())
