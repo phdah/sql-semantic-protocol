@@ -1688,3 +1688,102 @@ fn independent_filtered_join_dags_share_one_joint_closed_physical_plan() {
     });
     assert_eq!(actual, [2, 3]);
 }
+
+#[test]
+fn total_affine_projection_transports_true_and_not_true_through_materialization() {
+    // The explicit BIGINT cast makes +1 total across every INTEGER source
+    // value. The materialized predicate v BETWEEN 5 AND 10 therefore has
+    // the exact source-row inverse a BETWEEN 4 AND 9, including SQL NULL.
+    let sql = [
+        "CREATE TABLE stage AS SELECT CAST(a AS BIGINT) + 1 AS v FROM t",
+        "CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10",
+    ];
+    let dialect = dialect_from_name("postgresql").expect("postgresql");
+    let sources = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let inputs = sources
+        .iter()
+        .zip(["stage", "mart"])
+        .map(|(source, id)| ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let schema = |relation: &str, name: &str, datatype: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(name, datatype, "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let catalog = RelationCatalog::from_schemas(&[
+        schema("t", "a", "INTEGER"),
+        schema("stage", "v", "BIGINT"),
+        schema("mart", "v", "BIGINT"),
+    ])
+    .unwrap();
+    let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog).unwrap();
+    let target = bundle.layers()[1].id();
+    let plan = physical_source_plan(&bundle, target);
+    assert_eq!(plan.sources(), &["t".to_string()]);
+    assert!(
+        matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
+        "invert the total computed expression through its producer: {plan:?}"
+    );
+    assert!(
+        matches!(plan.rejected(), WitnessDirection::Feasible(_)),
+        "NULL and out-of-range rows must remain SQL NOT TRUE: {plan:?}"
+    );
+
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (3),(4),(7),(9),(10),(NULL);
+         CREATE TABLE stage AS SELECT CAST(a AS BIGINT) + 1 AS v FROM t;
+         CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10;",
+    )
+    .expect("affine oracle inputs");
+    let positive: i64 = db
+        .query_row("SELECT COUNT(*) FROM mart", [], |row| row.get(0))
+        .unwrap();
+    let negative: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM stage WHERE (v BETWEEN 5 AND 10) IS NOT TRUE",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!((positive, negative), (3, 3));
+}
+
+#[test]
+fn overflowing_affine_projections_remain_residual() {
+    // No source restriction makes INTEGER + 1 total on its full signed
+    // range; unlike BIGINT widening it would overflow for the max value.
+    let sql = [
+        "CREATE TABLE stage AS SELECT CAST(a AS INTEGER) + 1 AS v FROM t",
+        "CREATE TABLE mart AS SELECT v FROM stage WHERE v BETWEEN 5 AND 10",
+    ];
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let sources = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let inputs = sources
+        .iter()
+        .zip(["stage", "mart"])
+        .map(|(source, id)| ConfiguredSqlInput::new(id, source, "postgresql", dialect.as_ref()))
+        .collect::<Vec<_>>();
+    let schema = |relation: &str, name: &str, datatype: &str| {
+        RelationSchema::new(
+            relation,
+            vec![SchemaColumn::from_sql_type(name, datatype, "postgresql").unwrap()],
+        )
+        .unwrap()
+    };
+    let catalog = RelationCatalog::from_schemas(&[
+        schema("t", "a", "INTEGER"),
+        schema("stage", "v", "INTEGER"),
+        schema("mart", "v", "INTEGER"),
+    ])
+    .unwrap();
+    let bundle = analyze_configured_inputs_with_catalog(&inputs, &catalog).unwrap();
+    let plan = physical_source_plan(&bundle, bundle.layers()[1].id());
+    assert!(
+        !matches!(plan.qualifying(), WitnessDirection::Feasible(_)),
+        "potential overflow may not be represented as an exact physical row witness: {plan:?}"
+    );
+}
