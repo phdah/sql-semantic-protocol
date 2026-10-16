@@ -170,6 +170,17 @@ pub(super) fn analyze_predicate_with_windows(
         // NOT TRUE/rejected source direction still includes UNKNOWN.
         // Preserve the older scalar Boolean-column comparison contract:
         // only computed Boolean predicate trees use this transformation.
+        // An ordinary SQL comparison with a literal NULL is UNKNOWN for
+        // every input row in the standard three-valued model. Consequently,
+        // (a = NULL) IS UNKNOWN is TRUE for every row, including NULL a.
+        // Do not generalize this law to NULL-safe comparison operators or
+        // engine-specific session behaviors.
+        Expr::IsUnknown(inner) if is_null_rejecting_literal_comparison(inner) => {
+            Predicate::BooleanExpression(Expression::Literal(LiteralExpression::new(
+                LiteralType::Boolean,
+                LiteralValue::Boolean(true),
+            )))
+        }
         Expr::IsTrue(inner) if !is_plain_boolean_column(inner) => {
             analyze_predicate_with_windows(inner, named_windows, output_aliases, scope, diagnostics)
         }
@@ -307,7 +318,35 @@ pub(super) fn analyze_predicate_with_windows(
 // Only an unescaped alphabetic/digit prefix and one final wildcard is
 // independent of dialect-specific LIKE escape, collation and tokenization rules.
 // Non-ASCII and embedded wildcards remain regular unsupported SQL expressions.
-pub(super) fn safe_escaped_underscore_like_prefix(
+pub(super) // Only the ISO ordinary comparison operators propagate a literal SQL
+// NULL to UNKNOWN; IS DISTINCT FROM and NULL-safe vendor operators do not.
+fn is_null_rejecting_literal_comparison(expression: &Expr) -> bool {
+    let expression = match expression {
+        Expr::Nested(inner) => inner.as_ref(),
+        other => other,
+    };
+    let Expr::BinaryOp { left, op, right } = expression else {
+        return false;
+    };
+    let ordinary = matches!(
+        op,
+        SqlBinaryOperator::Eq
+            | SqlBinaryOperator::NotEq
+            | SqlBinaryOperator::Lt
+            | SqlBinaryOperator::LtEq
+            | SqlBinaryOperator::Gt
+            | SqlBinaryOperator::GtEq
+    );
+    let is_null_literal = |expression: &Expr| {
+        matches!(
+            expression,
+            Expr::Value(value) if matches!(value.value, sqlparser::ast::Value::Null)
+        )
+    };
+    ordinary && (is_null_literal(left) || is_null_literal(right))
+}
+
+fn safe_escaped_underscore_like_prefix(
     pattern: &Expr,
     escape_char: Option<&sqlparser::ast::Value>,
 ) -> Option<String> {
