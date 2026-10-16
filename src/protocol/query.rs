@@ -158,6 +158,7 @@ impl QueryStatement {
         self.plain_goal_output_shape
     }
 
+    /// Store the parser-certified row shape for WHERE-bearing joins.
     pub(crate) fn with_filtered_join_goal_shape(mut self, proven: bool) -> Self {
         self.filtered_join_goal_output_shape = proven;
         self
