@@ -8,7 +8,7 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ComparisonAssumption, ComposedSemantics,
+    parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, BooleanWitnessDirection, ComparisonAssumption, ComposedSemantics,
     ConfiguredSqlInput, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -61,6 +61,7 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
     .unwrap();
     let direct_catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
     let mut confirmed = 0_usize;
+    let mut unproved = Vec::new();
 
     for cell in freeze["inventory_cells"].as_array().unwrap() {
         if cell["classification"] != "exact_required" {
@@ -119,6 +120,25 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
 
         let expected = source_semantics(&direct);
         let actual = source_semantics(&dbt);
+        if sql.contains(" WHERE ") {
+            let directions: Vec<_> = expected
+                .boolean_witnesses()
+                .iter()
+                .map(|w| w.witness())
+                .collect();
+            let proved = directions.len() == 1
+                && matches!(
+                    directions[0].qualifying(),
+                    BooleanWitnessDirection::Exact(_) | BooleanWitnessDirection::Impossible
+                )
+                && matches!(
+                    directions[0].rejected(),
+                    BooleanWitnessDirection::Exact(_) | BooleanWitnessDirection::Impossible
+                );
+            if !proved {
+                unproved.push(format!("{id}: {sql}; witnesses={directions:?}"));
+            }
+        }
         assert_eq!(
             actual.output(),
             expected.output(),
@@ -165,6 +185,11 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
             );
         }
     }
+    assert!(
+        unproved.is_empty(),
+        "Mandatory variant has no independent exact/impossible TRUE and NOT TRUE proof:\\n{}",
+        unproved.join("\\n")
+    );
     assert_eq!(
         confirmed, 28,
         "mandatory exact feature inventory silently changed"
