@@ -299,7 +299,14 @@ fn check_direction(
 
 fn seeded_values(seed: u64) -> Vec<(Option<i64>, Option<i64>)> {
     let mut state = seed;
-    let mut rows = vec![(None, None), (Some(1), Some(1)), (Some(1), Some(1))];
+    let mut rows = vec![
+        (None, None),
+        (Some(1), Some(1)),
+        (Some(1), Some(1)),
+        (Some(i32::MIN as i64), Some(0)),
+        (Some(i32::MAX as i64), Some(i32::MIN as i64)),
+        (Some(0), Some(i32::MAX as i64)),
+    ];
     for _ in 0..96 {
         state = state
             .wrapping_mul(6_364_136_223_846_793_005)
@@ -363,6 +370,26 @@ fn multi_seed_duckdb_true_and_not_true_oracles_check_exact_impossible_and_null()
         db.execute_batch(&format!("INSERT INTO t VALUES {inserts}"))
             .expect("load seeded complete source");
         let total = values.len() as i64;
+
+        // Executable overflow witness. Unsafe INTEGER arithmetic must not be
+        // equated with total widened BIGINT arithmetic, even for known rows.
+        let unsafe_increment = "SELECT a + 1 FROM t WHERE a = 2147483647";
+        assert!(
+            db.query_row(unsafe_increment, [], |row| row.get::<_, i64>(0))
+                .is_err(),
+            "seed {seed}: DuckDB must report INTEGER overflow for {unsafe_increment}"
+        );
+        let safe_increment = "SELECT CAST(a AS BIGINT) + 1 FROM t WHERE a = 2147483647";
+        let widened: i64 = db
+            .query_row(safe_increment, [], |row| row.get(0))
+            .unwrap_or_else(|error| panic!("seed {seed}: {safe_increment}: {error}"));
+        assert_eq!(widened, i32::MAX as i64 + 1, "seed {seed}: widened integer proof");
+        let unsafe_decrement = "SELECT a - 1 FROM t WHERE a = -2147483648";
+        assert!(
+            db.query_row(unsafe_decrement, [], |row| row.get::<_, i64>(0))
+                .is_err(),
+            "seed {seed}: DuckDB must reject negative INTEGER underflow"
+        );
 
         for (predicate, positive, rejected) in cases {
             let sql = format!("SELECT a FROM t WHERE {predicate}");
