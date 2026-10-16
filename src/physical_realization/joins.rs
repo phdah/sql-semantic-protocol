@@ -2,16 +2,223 @@
 
 use super::*;
 
-/// Exact positive row selector for a direct filtered producer. The filter
-/// fixes one typed non-join column to a concrete literal. Repeating that row
-/// is safe for an unconstrained physical bag; a join-key restriction must be
-/// reconciled separately and is intentionally unsupported here.
+fn exact_source_filter(
+    bundle: &AnalysisBundle,
+    source: &crate::protocol::SourceRelation,
+    predicate: &Predicate,
+) -> Option<(String, WitnessFormula)> {
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == source.name())?;
+    if bundle
+        .relation_constraints()
+        .iter()
+        .any(|set| set.relation() == source.name() && set.blocks_unconstrained_physical_plans())
+    {
+        return None;
+    }
+    let witness = crate::boolean_witness::analyze_physical_scalar(
+        Some(predicate),
+        std::slice::from_ref(source),
+        |column| {
+            (column.relation() == Some(source.name()))
+                .then(|| physical_integer_evidence(schema, column))
+                .flatten()
+        },
+        |_column| None,
+        |column| {
+            (column.relation() == Some(source.name()))
+                .then(|| physical_column_datatype(schema, column))
+                .flatten()
+        },
+    );
+    if let Some(witness) = witness.filter(|witness| {
+        matches!(
+            witness.qualifying(),
+            crate::boolean_witness::BooleanWitnessDirection::Exact(
+                crate::boolean_witness::BooleanTruthCase::True
+            )
+        )
+    }) {
+        let row = RowVariable::new(source.name(), source.name(), "candidate")?;
+        return Some((
+            source.name().to_string(),
+            WitnessFormula::RowTruth {
+                row,
+                predicate: witness.condition().clone(),
+                truth: crate::boolean_witness::BooleanTruthCase::True,
+            },
+        ));
+    }
+    typed_literal_equality_filter(source, schema, predicate)
+}
+
+fn typed_literal_equality_filter(
+    source: &crate::protocol::SourceRelation,
+    schema: &crate::relation::RelationSchema,
+    predicate: &Predicate,
+) -> Option<(String, WitnessFormula)> {
+    use crate::protocol::{ComparisonOperator, LiteralType, LiteralValue};
+
+    let Predicate::Comparison(comparison) = predicate else {
+        return None;
+    };
+    if comparison.operator() != ComparisonOperator::Eq {
+        return None;
+    }
+    let (Expression::Column(column), Expression::Literal(literal)) =
+        (comparison.left(), comparison.right())
+    else {
+        return None;
+    };
+    if column
+        .relation()
+        .is_some_and(|relation| relation != source.name())
+    {
+        return None;
+    }
+    let resolved =
+        crate::protocol::ColumnRef::new(Some(source.name().to_string()), column.name().to_string());
+    let typed = schema
+        .columns()
+        .iter()
+        .find(|item| item.name() == resolved.name())?;
+    let term = match (literal.literal_type(), literal.value()) {
+        (LiteralType::Boolean, LiteralValue::Boolean(value))
+            if typed.data_type().kind() == "boolean" =>
+        {
+            WitnessTerm::Boolean(*value)
+        }
+        (LiteralType::Integer, LiteralValue::Number(value)) => {
+            let integer = value.parse::<i64>().ok()?;
+            let bounds = physical_integer_evidence(schema, &resolved)?;
+            if i128::from(integer) < bounds.minimum || i128::from(integer) > bounds.maximum {
+                return None;
+            }
+            WitnessTerm::Integer(integer)
+        }
+        _ => return None,
+    };
+    Some((
+        source.name().to_string(),
+        WitnessFormula::Comparison {
+            left: WitnessTerm::Column {
+                row: RowVariable::new(source.name(), source.name(), "filtered_source")?,
+                column: resolved,
+            },
+            operator: ComparisonOperator::Eq,
+            right: term,
+        },
+    ))
+}
+
+fn source_filter_for_predicate(
+    bundle: &AnalysisBundle,
+    sources: &[crate::protocol::SourceRelation],
+    predicate: &Predicate,
+) -> Option<(String, WitnessFormula)> {
+    let mut filters = sources
+        .iter()
+        .filter_map(|source| exact_source_filter(bundle, source, predicate));
+    let filter = filters.next()?;
+    filters.next().is_none().then_some(filter)
+}
+
+fn formula_references_column(
+    formula: &WitnessFormula,
+    column: &crate::protocol::ColumnRef,
+) -> bool {
+    match formula {
+        WitnessFormula::All(items) | WitnessFormula::Any(items) => items
+            .iter()
+            .any(|item| formula_references_column(item, column)),
+        WitnessFormula::Not(item) => formula_references_column(item, column),
+        WitnessFormula::RowTruth { predicate, .. } => predicate.references_column(column),
+        WitnessFormula::Comparison { left, right, .. } => {
+            term_references_column(left, column) || term_references_column(right, column)
+        }
+        WitnessFormula::IsNull { term, .. } | WitnessFormula::StringPrefix { term, .. } => {
+            term_references_column(term, column)
+        }
+        WitnessFormula::TupleComparison { left, right, .. } => left
+            .iter()
+            .chain(right)
+            .any(|term| term_references_column(term, column)),
+    }
+}
+
+fn term_references_column(term: &WitnessTerm, column: &crate::protocol::ColumnRef) -> bool {
+    matches!(term, WitnessTerm::Column { column: actual, .. } if actual == column)
+}
+
+fn combined_filter(filters: &[WitnessFormula]) -> WitnessFormula {
+    match filters {
+        [one] => one.clone(),
+        many => WitnessFormula::All(many.to_vec()),
+    }
+}
+
+fn join_key_and_scalar_filters(
+    query: &QueryStatement,
+) -> Option<(
+    &crate::protocol::ColumnExpression,
+    &crate::protocol::ColumnExpression,
+    Vec<&Predicate>,
+)> {
+    use crate::protocol::ComparisonOperator;
+
+    let condition = query.joins().first()?.condition()?;
+    let operands = match condition {
+        Predicate::And(and) => and.operands().iter().collect::<Vec<_>>(),
+        predicate => vec![predicate],
+    };
+    let mut key = None;
+    let mut filters = Vec::new();
+    for operand in operands {
+        let Predicate::Comparison(comparison) = operand else {
+            filters.push(operand);
+            continue;
+        };
+        let (Expression::Column(left), Expression::Column(right)) =
+            (comparison.left(), comparison.right())
+        else {
+            filters.push(operand);
+            continue;
+        };
+        let left = crate::domain::resolve_column(left, query.sources());
+        let right = crate::domain::resolve_column(right, query.sources());
+        if comparison.operator() == ComparisonOperator::Eq
+            && left.relation().is_some()
+            && right.relation().is_some()
+            && left.relation() != right.relation()
+        {
+            if key.is_some() {
+                return None;
+            }
+            key = Some(match (comparison.left(), comparison.right()) {
+                (Expression::Column(left), Expression::Column(right)) => (left, right),
+                _ => return None,
+            });
+        } else {
+            filters.push(operand);
+        }
+    }
+    let (left, right) = key?;
+    if let Some(predicate) = query.predicates().where_predicate() {
+        filters.push(predicate);
+    }
+    Some((left, right, filters))
+}
+
+/// Exact positive row selector for a direct filtered producer. Repeating a
+/// typed row is safe for an unconstrained physical bag; a join-key restriction
+/// must be reconciled separately and is intentionally unsupported here.
 fn direct_filtered_source(
     bundle: &AnalysisBundle,
     walker: &Walker<'_>,
     node: &PhysicalPlanNode,
-) -> Option<(String, crate::protocol::ColumnRef, WitnessFormula)> {
-    use crate::protocol::{ComparisonOperator, LiteralType, LiteralValue};
+) -> Option<(String, WitnessFormula)> {
     let [PhysicalPlanRef::Source(source)] = node.inputs() else {
         return None;
     };
@@ -42,61 +249,7 @@ fn direct_filtered_source(
     {
         return None;
     }
-    let Predicate::Comparison(comparison) = query.predicates().where_predicate()? else {
-        return None;
-    };
-    if comparison.operator() != ComparisonOperator::Eq {
-        return None;
-    }
-    let (Expression::Column(column), Expression::Literal(literal)) =
-        (comparison.left(), comparison.right())
-    else {
-        return None;
-    };
-    if column.relation().is_some_and(|relation| relation != source) {
-        return None;
-    }
-    let resolved = crate::protocol::ColumnRef::new(Some(source.clone()), column.name().to_string());
-    let schema = bundle
-        .source_schemas()
-        .iter()
-        .find(|schema| schema.relation() == source)?;
-    let typed = schema
-        .columns()
-        .iter()
-        .find(|item| item.name() == resolved.name())?;
-    let term = match (literal.literal_type(), literal.value()) {
-        (LiteralType::Boolean, LiteralValue::Boolean(value))
-            if typed.data_type().kind() == "boolean" =>
-        {
-            WitnessTerm::Boolean(*value)
-        }
-        (LiteralType::Integer, LiteralValue::Number(value)) => {
-            let integer = value.parse::<i64>().ok()?;
-            let bounds = physical_integer_evidence(schema, &resolved)?;
-            if i128::from(integer) < bounds.minimum || i128::from(integer) > bounds.maximum {
-                return None;
-            }
-            WitnessTerm::Integer(integer)
-        }
-        _ => return None,
-    };
-    if bundle
-        .relation_constraints()
-        .iter()
-        .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
-    {
-        return None;
-    }
-    let formula = WitnessFormula::Comparison {
-        left: WitnessTerm::Column {
-            row: RowVariable::new(source, source, "filtered_source")?,
-            column: resolved.clone(),
-        },
-        operator: ComparisonOperator::Eq,
-        right: term,
-    };
-    Some((source.clone(), resolved, formula))
+    exact_source_filter(bundle, input, query.predicates().where_predicate()?)
 }
 
 /// Realize one local equijoin through a complete physical source population
@@ -142,18 +295,12 @@ pub(super) fn physical_join_population_with_source_counts(
         return None;
     };
     let join_query = query_for(bundle, join_layer)?;
-    if !join_query.plain_goal_output_shape()
-        || join_query.joins().len() != 1
-        || !matches!(
-            join_query.joins()[0].condition(),
-            Some(Predicate::Comparison(_))
-        )
+    if join_query.joins().len() != 1
         || join_query.sources().len() != 2
         || join_query.aggregation().is_some()
         || join_query.set_operation().is_some()
         || join_query.window_witness().is_some()
         || !join_query.subquery_witnesses().is_empty()
-        || join_query.predicates().where_predicate().is_some()
         || join_query.predicates().having_predicate().is_some()
         || join_query.predicates().qualify_predicate().is_some()
         || !join_query.diagnostics().is_empty()
@@ -166,16 +313,18 @@ pub(super) fn physical_join_population_with_source_counts(
     {
         return None;
     }
+    let (left_key_expression, right_key_expression, scalar_filters) =
+        join_key_and_scalar_filters(join_query)?;
 
     let ComposedSemantics::Resolved(semantics) = join_layer.composed_semantics() else {
         return None;
     };
-    let [join] = semantics.join_witnesses() else {
-        return None;
+    let join = match semantics.join_witnesses() {
+        [join] if join.origin_layer_id() == join_layer.id() => Some(join),
+        _ => None,
     };
-    if join.origin_layer_id() != join_layer.id()
-        || matches!(join.kind(), JoinKind::Cross | JoinKind::Unknown)
-    {
+    let join_kind = join_query.joins()[0].kind();
+    if matches!(join_kind, JoinKind::Cross | JoinKind::Unknown) {
         return None;
     }
 
@@ -183,8 +332,12 @@ pub(super) fn physical_join_population_with_source_counts(
     // producer may additionally select a typed, repeatable literal equality
     // on an independent column. Its computed projection must be total so
     // that it cannot change row count. No derived input is writable.
-    let mut source_filters =
-        BTreeMap::<String, (crate::protocol::ColumnRef, WitnessFormula)>::new();
+    let mut source_filters = BTreeMap::<String, Vec<WitnessFormula>>::new();
+    for predicate in scalar_filters {
+        let (source, formula) =
+            source_filter_for_predicate(bundle, join_query.sources(), predicate)?;
+        source_filters.entry(source).or_default().push(formula);
+    }
     for node in &walker.nodes {
         let PhysicalPlanRef::Layer(id) = node.id() else {
             continue;
@@ -199,17 +352,15 @@ pub(super) fn physical_join_population_with_source_counts(
         if transparent_projection(query_for(bundle, layer)?) {
             continue;
         }
-        let (source, column, predicate) = direct_filtered_source(bundle, &walker, node)?;
-        if source_filters.insert(source, (column, predicate)).is_some() {
-            return None;
-        }
+        let (source, predicate) = direct_filtered_source(bundle, &walker, node)?;
+        source_filters.entry(source).or_default().push(predicate);
     }
 
     // A residual local join witness cannot certify source rows through a
     // filtered producer. The physical construction below independently
     // proves an ordinary typed equijoin over complete filtered source bags.
     // Without such a filter, retain the stronger original local gate.
-    if source_filters.is_empty() && !matches!(join.qualifying(), JoinWitnessDirection::Exact(_)) {
+    if source_filters.is_empty() && !matches!(join?.qualifying(), JoinWitnessDirection::Exact(_)) {
         return None;
     }
 
@@ -234,6 +385,7 @@ pub(super) fn physical_join_population_with_source_counts(
     }
 
     let (left_key, left_instance, right_key, right_instance) = if source_filters.is_empty() {
+        let join = join?;
         if join.comparison() != Some(crate::protocol::ComparisonOperator::Eq) {
             return None;
         }
@@ -266,15 +418,6 @@ pub(super) fn physical_join_population_with_source_counts(
         // A composed local witness may be residual for filtered parents
         // and therefore have no endpoints. Recover them from the *same*
         // canonical query's typed ON comparison, never by reparsing SQL.
-        let Some(Predicate::Comparison(on)) = join_query.joins()[0].condition() else {
-            return None;
-        };
-        if on.operator() != crate::protocol::ComparisonOperator::Eq {
-            return None;
-        }
-        let (Expression::Column(left), Expression::Column(right)) = (on.left(), on.right()) else {
-            return None;
-        };
         let map = |column: &crate::protocol::ColumnExpression| {
             let instance = column.relation()?;
             let source = crate::protocol::ColumnRef::new(
@@ -285,10 +428,10 @@ pub(super) fn physical_join_population_with_source_counts(
             walker
                 .sources
                 .contains(mapped.relation()?)
-                .then(|| (mapped, instance.to_string()))
+                .then_some((mapped, instance.to_string()))
         };
-        let (left, left_instance) = map(left)?;
-        let (right, right_instance) = map(right)?;
+        let (left, left_instance) = map(left_key_expression)?;
+        let (right, right_instance) = map(right_key_expression)?;
         (left, left_instance, right, right_instance)
     };
     if left_instance == right_instance {
@@ -299,9 +442,15 @@ pub(super) fn physical_join_population_with_source_counts(
     // The construction controls join keys independently of source filters.
     // If a filter mentions either join key, the literal must instead be
     // reconciled with each candidate population, which is not done here.
-    if source_filters.iter().any(|(source, (column, _))| {
-        (source == left_source && column == &left_key)
-            || (source == right_source && column == &right_key)
+    if source_filters.iter().any(|(source, filters)| {
+        (source == left_source
+            && filters
+                .iter()
+                .any(|filter| formula_references_column(filter, &left_key)))
+            || (source == right_source
+                && filters
+                    .iter()
+                    .any(|filter| formula_references_column(filter, &right_key)))
     }) {
         return None;
     }
@@ -390,7 +539,7 @@ pub(super) fn physical_join_population_with_source_counts(
     }
     let mut cases = Vec::new();
     for (pattern, left_rows, right_rows) in candidates {
-        if pattern.output_rows(join.kind(), left_rows, right_rows) != Some(wanted)
+        if pattern.output_rows(join_kind, left_rows, right_rows) != Some(wanted)
             || (left_source == right_source && left_rows != right_rows)
         {
             continue;
@@ -421,7 +570,7 @@ pub(super) fn physical_join_population_with_source_counts(
                 bounds,
                 predicate: source_filters
                     .get(relation)
-                    .map(|(_, predicate)| predicate.clone())
+                    .map(|filters| combined_filter(filters))
                     .unwrap_or_else(count_tautology),
                 closed_world: true,
             });
@@ -435,7 +584,7 @@ pub(super) fn physical_join_population_with_source_counts(
             right_row: right_row.clone(),
             left_key: left_key.clone(),
             right_key: right_key.clone(),
-            join_kind: join.kind(),
+            join_kind,
             pattern,
             left_rows,
             right_rows,
@@ -465,7 +614,7 @@ pub(super) fn physical_join_population_with_source_counts(
                     comparison: crate::protocol::ComparisonOperator::Eq,
                     left: left_key.clone(),
                     right: right_key.clone(),
-                    null_extended: matches!(join.kind(), JoinKind::Left | JoinKind::Full)
+                    null_extended: matches!(join_kind, JoinKind::Left | JoinKind::Full)
                         .then_some(crate::join_witness::JoinSide::Right),
                     closed_world: true,
                 });
@@ -477,7 +626,7 @@ pub(super) fn physical_join_population_with_source_counts(
                     comparison: crate::protocol::ComparisonOperator::Eq,
                     left: right_key.clone(),
                     right: left_key.clone(),
-                    null_extended: matches!(join.kind(), JoinKind::Right | JoinKind::Full)
+                    null_extended: matches!(join_kind, JoinKind::Right | JoinKind::Full)
                         .then_some(crate::join_witness::JoinSide::Left),
                     closed_world: true,
                 });

@@ -228,17 +228,17 @@
       },
       {
         "family": "computed_join_group_write_expressions",
-        "status": "bounded_composed_exact_with_computed_residual",
-        "scope": "typed single-source filters conjoin across transparent layers, filtered INNER join keys with exact scalar ON conjuncts and grouped HAVING output domains compose, downstream filters narrow computed-alias outputs while source inversion stays residual; certified lossless signed widening casts admit bounded physical TRUE/NOT TRUE inversion with per-hop type/NULL checks; general computed projections, unsupported aggregates and writes remain explicit semantic residuals",
-        "evidence": "tests/task_106_composed_predicates.rs; src/composition.rs; docs/semantics.md",
+        "status": "bounded_composed_and_write_exact_with_explicit_residuals",
+        "scope": "typed single-source filters conjoin across transparent layers; complete single-equijoin populations carry exact non-key scalar ON and WHERE filters as closed RowTruth obligations; grouped HAVING and ranked QUALIFY output domains use their existing operator laws; downstream filters narrow computed-alias outputs while unsupported source inversion stays residual; certified lossless signed widening casts admit bounded physical TRUE/NOT TRUE inversion with per-hop type/NULL checks; catalog-typed computed UPDATE and MERGE assignments retain exact finite arithmetic domains; unsupported aggregates, join-key filters, lossy inverses and unverified writes remain explicit residuals",
+        "evidence": "tests/task_106_composed_predicates.rs; tests/advanced_target_validation.rs; tests/physical_write_adapter_parity.rs; src/composition.rs; src/analysis/arithmetic_domains.rs; src/analysis/writes.rs; src/physical_realization/joins.rs; docs/semantics.md",
         "release_blocking": true,
         "implementation_task": "TASK-106"
       },
       {
         "family": "whole_graph_physical_realization",
         "status": "bounded_joint_exact_with_general_residual",
-        "scope": "joint TRUE versus NOT TRUE physical-source proofs across transparent chains, certified widening projections, contradictory filter impossibility, duplicate/NULL joint assignments, and equijoin populations sharing complete physical leaves with independent non-key negative terminal filters; closed-world ordered INSERT UPDATE MERGE with computed projections separately verified against DuckDB intermediates; general multi-operator DAGs and correlated key predicates stay residual",
-        "evidence": "tests/task_106_composed_predicates.rs; tests/physical_write_states.rs; src/physical_realization/graph.rs; docs/semantics.md",
+        "scope": "joint TRUE versus NOT TRUE physical-source proofs across transparent chains, certified widening projections, contradictory filter impossibility, duplicate/NULL joint assignments, and filtered equijoin populations sharing complete physical leaves with independent non-key negative terminal filters; supported GROUP HAVING and ranked QUALIFY populations retain complete source bags and bounded outcomes; closed-world ordered INSERT UPDATE MERGE with computed projections is verified against DuckDB intermediates and direct SQL/dbt catalog parity; general multi-operator DAGs and correlated key predicates stay residual",
+        "evidence": "tests/task_106_composed_predicates.rs; tests/physical_realization/joins.rs; tests/physical_write_states.rs; tests/physical_write_adapter_parity.rs; src/physical_realization/graph.rs; src/physical_realization/joins.rs; src/physical_realization/joint_counts.rs; docs/semantics.md",
         "release_blocking": true,
         "implementation_task": "TASK-106"
       }

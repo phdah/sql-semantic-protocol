@@ -245,15 +245,24 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
         "UPDATE target SET score = score + 2 WHERE id = 2",
         "MERGE INTO target USING source ON target.id = source.id
          WHEN MATCHED AND source.score < 0 THEN DELETE
-         WHEN MATCHED THEN UPDATE SET score = source.score
-         WHEN NOT MATCHED THEN INSERT (id,score) VALUES (source.id,source.score)",
+         WHEN MATCHED THEN UPDATE SET score = source.score + 4
+         WHEN NOT MATCHED AND source.score > 0 THEN
+             INSERT (id,score) VALUES (source.id,source.score + 4)",
     ];
     let bundle = bundle(&queries, "duckdb");
     let plan = physical_ordered_write_state_plan(
         &bundle,
         &[
             state("target", &[(Some(1), Some(4))]),
-            state("source", &[(Some(2), Some(9)), (Some(3), Some(-5))]),
+            state(
+                "source",
+                &[
+                    (Some(2), Some(9)),
+                    (Some(3), Some(-5)),
+                    (Some(0), Some(5)),
+                    (Some(-1), None),
+                ],
+            ),
         ],
     );
     let (transitions, states) = outcome(&plan);
@@ -280,6 +289,7 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
     assert_eq!(transitions[1].affected().updated(), 1);
     assert_eq!(transitions[2].affected().deleted(), 1);
     assert_eq!(transitions[2].affected().updated(), 1);
+    assert_eq!(transitions[2].affected().inserted(), 1);
     assert_eq!(
         transitions[1].before().rows(),
         transitions[0].after().rows()
@@ -294,7 +304,11 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
         .expect("final target");
     assert_eq!(
         target.rows(),
-        &[row(Some(1), Some(4)), row(Some(2), Some(9))]
+        &[
+            row(Some(1), Some(4)),
+            row(Some(2), Some(13)),
+            row(Some(0), Some(9))
+        ]
     );
 
     let db = Connection::open_in_memory().unwrap();
@@ -302,7 +316,7 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
         "CREATE TABLE target(id INTEGER,score INTEGER);
          CREATE TABLE source(id INTEGER,score INTEGER);
          INSERT INTO target VALUES (1,4);
-         INSERT INTO source VALUES (2,9),(3,-5);
+         INSERT INTO source VALUES (2,9),(3,-5),(0,5),(-1,NULL);
          INSERT INTO target (id,score) SELECT id,score + 1 FROM source WHERE id > 1;",
     )
     .unwrap();
@@ -324,8 +338,9 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
         "UPDATE target SET score = score + 2 WHERE id = 2;
          MERGE INTO target USING source ON target.id = source.id
             WHEN MATCHED AND source.score < 0 THEN DELETE
-            WHEN MATCHED THEN UPDATE SET score = source.score
-            WHEN NOT MATCHED THEN INSERT (id,score) VALUES (source.id,source.score);",
+            WHEN MATCHED THEN UPDATE SET score = source.score + 4
+            WHEN NOT MATCHED AND source.score > 0 THEN
+                INSERT (id,score) VALUES (source.id,source.score + 4);",
     )
     .unwrap();
     let mut stmt = db
@@ -336,7 +351,7 @@ fn task_106_composed_insert_update_merge_share_one_ordered_source_state() {
         .unwrap()
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
-    assert_eq!(observed, vec![(1, 4), (2, 9)]);
+    assert_eq!(observed, vec![(0, 9), (1, 4), (2, 13)]);
 }
 
 #[test]

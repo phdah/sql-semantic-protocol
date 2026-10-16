@@ -472,6 +472,7 @@ pub(super) fn joint_join_with_rejected_filters(
         };
 
         let mut counts = BTreeMap::<String, u64>::new();
+        let mut restrictions = BTreeMap::<String, Vec<WitnessFormula>>::new();
         let mut safe = true;
         for obligation in case.obligations() {
             if let WitnessObligation::Rows {
@@ -483,7 +484,6 @@ pub(super) fn joint_join_with_rejected_filters(
             } = obligation
             {
                 if boundary.kind() != GroupBoundaryKind::Physical
-                    || *predicate != count_tautology()
                     || bounds.maximum() != Some(bounds.minimum())
                     || counts
                         .insert(boundary.relation().to_string(), bounds.minimum())
@@ -492,13 +492,36 @@ pub(super) fn joint_join_with_rejected_filters(
                     safe = false;
                     break;
                 }
+                if *predicate == count_tautology() {
+                    continue;
+                }
+                let WitnessFormula::RowTruth {
+                    row,
+                    predicate: condition,
+                    truth: crate::boolean_witness::BooleanTruthCase::True,
+                } = predicate
+                else {
+                    safe = false;
+                    break;
+                };
+                if row.relation() != boundary.relation()
+                    || !condition.is_exact()
+                    || condition.references_column(left_key)
+                    || condition.references_column(right_key)
+                {
+                    safe = false;
+                    break;
+                }
+                restrictions
+                    .entry(boundary.relation().to_string())
+                    .or_default()
+                    .push(predicate.clone());
             }
         }
         if !safe || counts.is_empty() {
             continue;
         }
 
-        let mut restrictions = BTreeMap::<String, Vec<WitnessFormula>>::new();
         for &zero_id in &zeros {
             let physical = physical_source_plan(bundle, zero_id);
             let [source] = physical.sources() else {

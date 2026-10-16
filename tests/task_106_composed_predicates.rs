@@ -12,8 +12,9 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
     physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan, AnalysisBundle,
     BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics, ConfiguredInputAnalysisError,
-    ConfiguredSqlInput, Error, GroupBoundaryKind, JoinKind, LiteralValue, ProtocolStatement,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain, WitnessDirection,
+    ConfiguredSqlInput, Error, GroupBoundaryKind, JoinKind, LiteralValue, PhysicalProofGap,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
+    WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
 fn catalog() -> RelationCatalog {
@@ -447,6 +448,10 @@ fn certified_signed_widening_cast_survives_materialized_filter_inversion() {
     let narrowing_bundle =
         analyze_configured_inputs_with_catalog(&narrowing_inputs, &narrowing_catalog).unwrap();
     let narrowing_plan = physical_source_plan(&narrowing_bundle, narrowing_bundle.layers()[1].id());
+    assert_eq!(
+        narrowing_plan.gap(),
+        Some(PhysicalProofGap::LocalWitnessUnproven)
+    );
     assert!(
         !matches!(narrowing_plan.qualifying(), WitnessDirection::Feasible(_)),
         "lossy narrowing must not fabricate a physical qualifying row: {narrowing_plan:?}"
@@ -455,6 +460,7 @@ fn certified_signed_widening_cast_survives_materialized_filter_inversion() {
 
 #[test]
 fn parser_capable_dialects_share_composed_filter_outcomes() {
+    let mut expected = None;
     for name in common::DIALECTS {
         let dialect = dialect_from_name(name).expect("registered dialect");
         let queries = [
@@ -485,6 +491,20 @@ fn parser_capable_dialects_share_composed_filter_outcomes() {
                     2,
                     "{name}: both filters must compose"
                 );
+                let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
+                let actual = (
+                    semantics.boolean_witnesses().to_vec(),
+                    semantics.output().clone(),
+                    semantics.column_domains().to_vec(),
+                    plan.sources().to_vec(),
+                    plan.qualifying().clone(),
+                    plan.rejected().clone(),
+                );
+                if let Some(expected) = &expected {
+                    assert_eq!(&actual, expected, "{name}: canonical outcome drift");
+                } else {
+                    expected = Some(actual);
+                }
             }
             Err(ConfiguredInputAnalysisError::Input(inner))
                 if matches!(inner.error(), Error::Parse(_)) =>
@@ -608,17 +628,20 @@ fn direct_sql_and_dbt_agree_on_composed_range_filters() {
         &direct_catalog,
     )
     .unwrap();
-    let condition = |bundle: &AnalysisBundle| {
-        let layer = bundle
+    let source_layer = |bundle: &AnalysisBundle| {
+        bundle
             .layers()
             .iter()
-            .find(|layer| {
+            .position(|layer| {
                 layer
                     .consumes()
                     .iter()
                     .any(|consumed| consumed == "warehouse.raw.orders")
             })
-            .expect("source-consuming layer");
+            .expect("source-consuming layer")
+    };
+    let condition = |bundle: &AnalysisBundle| {
+        let layer = &bundle.layers()[source_layer(bundle)];
         let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
             panic!("resolved layer expected");
         };
@@ -633,6 +656,13 @@ fn direct_sql_and_dbt_agree_on_composed_range_filters() {
         dbt.qualifying(),
         BooleanWitnessDirection::Exact(BooleanTruthCase::True)
     ));
+    let dbt_plan = physical_source_plan(&from_dbt, from_dbt.layers()[source_layer(&from_dbt)].id());
+    let direct_plan =
+        physical_source_plan(&from_sql, from_sql.layers()[source_layer(&from_sql)].id());
+    assert_eq!(dbt_plan.sources(), direct_plan.sources());
+    assert_eq!(dbt_plan.gap(), direct_plan.gap());
+    assert_eq!(dbt_plan.qualifying(), direct_plan.qualifying());
+    assert_eq!(dbt_plan.rejected(), direct_plan.rejected());
 }
 
 #[test]
@@ -792,6 +822,89 @@ fn join_on_typed_filter_stays_residual_while_key_stays_exact() {
 }
 
 #[test]
+fn filtered_inner_join_builds_one_complete_typed_population() {
+    let bundle = analyze_chain(
+        &["SELECT l.a, r.b FROM l INNER JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5"],
+        "postgresql",
+    );
+    let target = bundle.layers()[0].id();
+    let proof = physical_row_count_plan(&bundle, target, 2);
+    let WitnessDirection::Feasible(cases) = proof else {
+        panic!("typed non-key WHERE must compose with the complete join population: {proof:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::Rows {
+                    boundary,
+                    predicate: WitnessFormula::RowTruth { .. },
+                    closed_world: true,
+                    ..
+                } if boundary.relation() == "l"
+            )
+        })
+    }));
+
+    let on_bundle = analyze_chain(
+        &["SELECT l.a, r.b FROM l INNER JOIN r ON l.k = r.k AND l.a > 0"],
+        "postgresql",
+    );
+    assert!(
+        matches!(
+            physical_row_count_plan(&on_bundle, on_bundle.layers()[0].id(), 2),
+            WitnessDirection::Feasible(_)
+        ),
+        "typed non-key ON conjunct must compose with the key population"
+    );
+
+    let key_filter = analyze_chain(
+        &["SELECT l.a FROM l INNER JOIN r ON l.k = r.k WHERE l.k > 0"],
+        "postgresql",
+    );
+    assert!(
+        matches!(
+            physical_row_count_plan(&key_filter, key_filter.layers()[0].id(), 2),
+            WitnessDirection::Residual { .. }
+        ),
+        "join-key restrictions need a key-aware population proof"
+    );
+}
+
+#[test]
+fn filtered_join_and_negative_terminals_share_one_complete_assignment() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a, r.b FROM l INNER JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5",
+            "SELECT a FROM l WHERE a > 5",
+            "SELECT b FROM r WHERE b < 0",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (bundle.layers()[0].id(), 2),
+        (bundle.layers()[1].id(), 0),
+        (bundle.layers()[2].id(), 0),
+    ];
+    let WitnessDirection::Feasible(cases) = physical_joint_row_count_plan(&bundle, &goals) else {
+        panic!("positive filtered join and NOT TRUE terminals need one source assignment");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations()
+            .iter()
+            .filter(|obligation| matches!(obligation, WitnessObligation::ClosedWorld { .. }))
+            .count()
+            == 2
+            && case
+                .obligations()
+                .iter()
+                .filter(|obligation| matches!(obligation, WitnessObligation::OutputRows { .. }))
+                .count()
+                == 3
+    }));
+}
+
+#[test]
 fn grouped_having_duckdb_oracle_matches_output_domains() {
     // GROUP BY keeps the typed filter bound on the group key while HAVING
     // over COUNT(*) stays an explicit residual: no source-column domain is
@@ -837,6 +950,69 @@ fn grouped_having_duckdb_oracle_matches_output_domains() {
 }
 
 #[test]
+fn supported_grouped_having_reaches_complete_physical_rows() {
+    let bundle = analyze_chain(
+        &["SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2"],
+        "postgresql",
+    );
+    let target = bundle.layers()[0].id();
+    let WitnessDirection::Feasible(cases) = physical_row_count_plan(&bundle, target, 2) else {
+        panic!("supported COUNT/HAVING must construct complete grouped rows");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::Rows { boundary, closed_world: true, .. }
+                    if boundary.relation() == "t"
+            )
+        }) && case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::OutputRows { layer_id, bounds }
+                    if layer_id == target && bounds.minimum() == 2 && bounds.maximum() == Some(2)
+            )
+        })
+    }));
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("grouped layer must resolve");
+    };
+    let count = semantics
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "n")
+        .expect("COUNT output");
+    let ValueDomain::Ranges(ranges) = count.domain() else {
+        panic!(
+            "COUNT output must retain a lower bound: {:?}",
+            count.domain()
+        );
+    };
+    let range = &ranges.ranges()[0];
+    assert_eq!(
+        range.lower().expect("lower").value().value(),
+        &LiteralValue::Number("2".to_string())
+    );
+    assert!(range.lower().expect("lower").inclusive());
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER, k INTEGER);
+         INSERT INTO t VALUES (0,10,0),(0,11,1),(1,20,2),(1,21,3);",
+    )
+    .unwrap();
+    let rows: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) >= 2)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(rows, 2);
+}
+
+#[test]
 fn qualify_residual_contrasts_duckdb_execution() {
     // QUALIFY is outside the composed filter contract: the scope stays
     // residual even though DuckDB executes the windowed filter.
@@ -874,6 +1050,52 @@ fn qualify_residual_contrasts_duckdb_execution() {
         rows, 2,
         "DuckDB executes QUALIFY while the protocol stays residual"
     );
+}
+
+#[test]
+fn supported_qualify_reaches_complete_ranked_rows() {
+    let bundle = analyze_chain(
+        &["SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn <= 2"],
+        "duckdb",
+    );
+    let target = bundle.layers()[0].id();
+    let WitnessDirection::Feasible(cases) = physical_row_count_plan(&bundle, target, 4) else {
+        panic!("supported ROW_NUMBER/QUALIFY must construct complete partitions");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().any(|obligation| {
+            matches!(
+                obligation,
+                WitnessObligation::Rows { boundary, closed_world: true, .. }
+                    if boundary.relation() == "t"
+            )
+        })
+    }));
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("ranked layer must resolve");
+    };
+    let rank = semantics
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "rn")
+        .expect("ROW_NUMBER output");
+    assert_range_bounds(rank.domain(), "rn", "1", "2");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER, b INTEGER, k INTEGER);
+         INSERT INTO t VALUES (0,10,0),(0,11,1),(0,12,2),(1,20,3),(1,21,4),(1,22,5);",
+    )
+    .unwrap();
+    let rows: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM (SELECT a, ROW_NUMBER() OVER (PARTITION BY a ORDER BY b ASC NULLS LAST) AS rn FROM t QUALIFY rn <= 2)",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(rows, 4);
 }
 
 #[test]
@@ -993,11 +1215,16 @@ fn partial_unsupported_lossy_and_missing_evidence_stay_residual() {
         "postgresql",
     );
     match partial.layers()[1].composed_semantics() {
-        ComposedSemantics::Unresolved(_) => {}
+        ComposedSemantics::Unresolved(unresolved) => assert_eq!(
+            unresolved.reason(),
+            sql_semantic_protocol::CompositionFailureReason::PartialProducer
+        ),
         other => {
             panic!("downstream full read over a partial write must stay unresolved: {other:?}")
         }
     }
+    let partial_plan = physical_source_plan(&partial, partial.layers()[1].id());
+    assert_eq!(partial_plan.gap(), Some(PhysicalProofGap::PartialProducer));
 
     let unsupported = analyze_chain(
         &["SELECT a, COUNT(*) AS n FROM t GROUP BY a HAVING COUNT(*) + 1 > 2"],
@@ -1011,6 +1238,11 @@ fn partial_unsupported_lossy_and_missing_evidence_stay_residual() {
     assert!(
         !unsupported_semantics.condition_exactness().is_exact(),
         "unsupported aggregate HAVING must stay residual"
+    );
+    let unsupported_plan = physical_source_plan(&unsupported, unsupported.layers()[0].id());
+    assert_eq!(
+        unsupported_plan.gap(),
+        Some(PhysicalProofGap::UnsupportedOperator)
     );
 
     // Lossy narrowing TRY_CAST inversion must not fabricate a physical row;
@@ -1040,6 +1272,7 @@ fn partial_unsupported_lossy_and_missing_evidence_stay_residual() {
     let narrowing_bundle =
         analyze_configured_inputs_with_catalog(&narrowing_inputs, &narrowing_catalog).unwrap();
     let narrowing_plan = physical_source_plan(&narrowing_bundle, narrowing_bundle.layers()[0].id());
+    assert_eq!(narrowing_plan.gap(), Some(PhysicalProofGap::NoWitness));
     assert!(
         matches!(
             narrowing_plan.qualifying(),
@@ -1059,13 +1292,10 @@ fn partial_unsupported_lossy_and_missing_evidence_stay_residual() {
                 panic!("expected query");
             };
             let witness = query.boolean_witness().expect("local witness");
-            assert!(
-                matches!(
-                    witness.qualifying(),
-                    BooleanWitnessDirection::Residual { .. }
-                ),
-                "untyped range must stay residual without catalog evidence"
-            );
+            let BooleanWitnessDirection::Residual { reason } = witness.qualifying() else {
+                panic!("untyped range must stay residual without catalog evidence");
+            };
+            assert_eq!(reason, "predicate has no resolved source columns");
         }
         Err(Error::Parse(_)) => {}
         Err(error) => panic!("unexpected analysis error: {error}"),

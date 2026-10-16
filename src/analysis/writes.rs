@@ -62,6 +62,17 @@ pub(super) fn analyze_insert(
     ProtocolStatement::Query(query)
 }
 
+fn refine_write_value_domain(
+    expression: &Expression,
+    domain: ValueDomain,
+    column_domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> ValueDomain {
+    refine_catalog_arithmetic_domain(expression, &domain, column_domains, sources, metadata)
+        .unwrap_or(domain)
+}
+
 pub(super) fn analyze_update(
     table: &TableWithJoins,
     assignments: &[sqlparser::ast::Assignment],
@@ -69,6 +80,7 @@ pub(super) fn analyze_update(
     selection: Option<&Expr>,
     has_returning: bool,
     has_conflict_modifier: bool,
+    metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
     if has_from
         || has_returning
@@ -133,6 +145,13 @@ pub(super) fn analyze_update(
                 &expression,
                 &domains,
                 std::slice::from_ref(&target_source),
+            );
+            let domain = refine_write_value_domain(
+                &expression,
+                domain,
+                &domains,
+                std::slice::from_ref(&target_source),
+                metadata,
             );
             MergeAssignment::new(
                 assignment.target.to_string(),
@@ -257,6 +276,7 @@ pub(super) fn analyze_merge(
     on: &Expr,
     clauses: &[SqlMergeClause],
     has_output: bool,
+    metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
     let Some(target_source) = merge_target_relation(table) else {
         return unsupported_write_statement(
@@ -311,6 +331,7 @@ pub(super) fn analyze_merge(
                 &mut diagnostics,
                 &mut derived_index,
                 &mut dependencies,
+                metadata,
             )
         })
         .collect();
@@ -366,6 +387,7 @@ pub(super) fn analyze_merge_clause(
     diagnostics: &mut Vec<Diagnostic>,
     derived_index: &mut usize,
     dependencies: &mut BTreeSet<String>,
+    metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolMergeClause {
     let match_kind = match clause.clause_kind {
         SqlMergeClauseKind::Matched => MergeMatchKind::Matched,
@@ -417,6 +439,13 @@ pub(super) fn analyze_merge_clause(
                         &branch_domains,
                         sources,
                     );
+                    let domain = refine_write_value_domain(
+                        &expression,
+                        domain,
+                        &branch_domains,
+                        sources,
+                        metadata,
+                    );
                     MergeAssignment::new(
                         assignment.target.to_string(),
                         WriteValue::new(expression, domain),
@@ -450,6 +479,13 @@ pub(super) fn analyze_merge_clause(
                                     &expression,
                                     &branch_domains,
                                     sources,
+                                );
+                                let domain = refine_write_value_domain(
+                                    &expression,
+                                    domain,
+                                    &branch_domains,
+                                    sources,
+                                    metadata,
                                 );
                                 WriteValue::new(expression, domain)
                             })

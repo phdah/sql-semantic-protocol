@@ -926,6 +926,34 @@ rows may be fabricated for copied branches.
 
 Complete mixed join/group, group/rank, grouped COUNT filter and certified empty/nonempty-inner membership populations can be composed across separate terminal targets when their sets of physical source relations are disjoint. Each local case must prove an exact entire-relation closed source count; the joint case carries both operator laws and any transparent source terminal counts. A repeated physical source across different mixed cases still requires a correlated proof and remains residual, even if the sampled row counts happen to agree.
 
+### Composed typed predicate graphs (TASK-106)
+
+Typed `WHERE` predicates compose through transparent materializations while
+retaining physical column identity, output domains, bound inclusivity and SQL
+TRUE versus NOT TRUE. A certified signed widening cast can be inverted one
+materialization at a time. Computed aliases still preserve their narrowed
+output domain and lineage when source inversion is not certified; their
+physical construction remains residual rather than guessing a source value.
+
+A complete single-equijoin population may also carry exact scalar `ON` and
+`WHERE` predicates that resolve to exactly one input and do not reference a
+join key. The predicate is attached as `RowTruth(TRUE)` to every row in that
+input's closed physical bag. Joint count construction reuses the same filtered
+join assignment with independent positive or zero-output terminals. Join-key
+restrictions, ambiguous source predicates, unsupported join shapes and
+unattested source types remain residual.
+
+Existing operator-specific laws remain authoritative for grouped
+`COUNT`/`HAVING` and `ROW_NUMBER`/`QUALIFY` populations. Unsupported aggregate
+or window expressions do not become exact merely because a neighboring
+predicate is typed. Complete ordered INSERT, UPDATE and MERGE plans evaluate
+their supported computed assignments against one shared state. Catalog-typed
+integer assignment expressions reuse the arithmetic-domain prover, so a
+branch-constrained `score BETWEEN 1 AND 5` followed by `score + 4` has the
+exact finite write domain `{5, 6, 7, 8, 9}`. The normalized expression and
+domain are emitted together. Partial producers, missing source schemas, lossy
+casts and unverified DML forms retain their specific residual gap.
+
 
 ### Ordered physical write-state construction (TASK-98)
 

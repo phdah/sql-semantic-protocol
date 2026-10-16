@@ -1,10 +1,11 @@
 ---
 id: TASK-106
 title: Compose typed expression obligations through relational graphs
-status: In Progress
-assignee: []
+status: Done
+assignee:
+  - OpenCode
 created_date: '2026-10-13'
-updated_date: '2026-10-16 11:56'
+updated_date: '2026-10-16 13:59'
 labels: []
 milestone: m-3
 dependencies:
@@ -17,6 +18,22 @@ references:
   - TASK-80
   - TASK-81
   - TASK-82
+modified_files:
+  - src/analysis.rs
+  - src/analysis/arithmetic_domains.rs
+  - src/analysis/writes.rs
+  - src/physical_realization/joins.rs
+  - src/physical_realization/joint_counts.rs
+  - tests/advanced_target_validation.rs
+  - tests/physical_realization/joins.rs
+  - tests/physical_write_adapter_parity.rs
+  - tests/physical_write_states.rs
+  - tests/task_106_composed_predicates.rs
+  - tests/task_70_predicates.rs
+  - docs/code-map.md
+  - docs/coverage-manifest.json
+  - docs/protocol.md
+  - docs/semantics.md
 priority: high
 type: feature
 ---
@@ -32,26 +49,56 @@ Consume canonical expression and predicate proofs from TASK-101..105 across actu
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
-
 <!-- AC:BEGIN -->
-- [ ] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
-- [ ] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
-- [ ] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
-- [ ] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
-- [ ] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
+- [x] #1 Propagate typed expression truth, output domains and stable column references through WHERE/HAVING/QUALIFY, SELECT and computed aliases, JOIN keys/ON conditions, GROUP BY and aggregation, and computed INSERT/UPDATE/MERGE assignments where existing operator semantics permit.
+- [x] #2 Derive strongest justified output value domains, lower/upper bounds and inclusion/exclusion after each supported operator and materialization boundary; preserve lineage and producer reference identity without SQL AST or consumer heuristics.
+- [x] #3 Lift a single consistent, jointly satisfying typed source-row assignment through shared/multiple physical producers for positive and NOT TRUE rejected targets, including duplicate, NULL, grouping, join and write-state interactions.
+- [x] #4 Prove impossibility only for necessary contradictions or complete closed-world absence; ensure partial producers, unsupported aggregations, lossy inverses, missing source constraints and unverified DML semantics report typed residual, never fabricated feasible plans.
+- [x] #5 Exercise raw SQL/dbt with complete physical source rows, filtered joins, groups/HAVING, aliases, ordered DML and joint terminal negative tests against DuckDB where supported; update canonical witness/API, emitted schema, adapters, code map and coverage evidence.
 <!-- AC:END -->
 
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-Continue bounded TASK-106 increment on feat/task-106-composed-predicate-graphs toward AC closure without overclaiming general DAGs.
+Finish TASK-106 with a finite support matrix over existing canonical operator laws; unsupported general SQL remains typed residual per AC4.
 
-1. Fix masked oracle bug: DuckDB oracle in task_106 ordered INSERT/UPDATE/MERGE must execute computed score+1 projection and assert intermediate INSERT state, matching protocol transitions. Verify: cargo test physical_write_states task_106.
-2. Strengthen relational-operator evidence in tests/task_106_composed_predicates.rs (public API only, TDD): filtered INNER JOIN with DuckDB oracle + key-equality stability; grouped HAVING with DuckDB oracle + output-domain + residual exactness; QUALIFY residual with DuckDB execution contrast; ON-clause typed filter stays residual while key equality stays exact; SELECT computed-alias output domain after composition (unbounded, lineage preserved); joint duplicate/NULL typed assignment sharing one physical source (positive + NOT TRUE). Verify: cargo test --test task_106_composed_predicates.
-3. Add AC4 residual guards: partial-producer filter chain, unsupported aggregation, narrowing TRY_CAST inversion, missing schema, unverified DML remain typed residual (no feasible plan). Reuse existing gaps (PartialProducer, NonInvertibleTransformation, ConflictingDomains) with TASK-106 typed predicates. Verify: same test binary.
-4. Update canonical evidence: docs/semantics.md bounded TASK-106 paragraph, docs/coverage-manifest.json whole_graph/computed families, docs/code-map.md if ownership changes, no protocol wire change. Verify: cargo test --test coverage_manifest, cargo doc --no-deps.
-5. Full verification: cargo fmt, cargo clippy --all-targets --all-features -- -D warnings, cargo test, plus no-default-features and dbt E2E if present. Update task notes, keep AC unchecked until evidence reviewed; commit on branch.
+1. TDD filtered join composition: add failing public-API tests for direct INNER JOIN WHERE and ON scalar restrictions on non-key typed columns, including complete positive populations and a joint positive plus NOT TRUE source assignment. Extend src/physical_realization/joins.rs and joint_counts.rs by attaching exact typed row restrictions to existing closed-world join populations; join-key restrictions and unsupported predicates remain residual.
+2. Verify existing GROUP/HAVING and ROW_NUMBER/QUALIFY engines as TASK-106 integration controls: add public tests for exact positive physical counts, output domains/bounds, stable source identities and DuckDB results; retain unsupported aggregate/window residual twins with exact non-impossible classification.
+3. Complete computed write evidence: exercise computed INSERT, UPDATE, MERGE UPDATE and MERGE INSERT assignments over one ordered complete state; compare direct SQL and dbt-catalog schema paths; assert normalized expressions/domains survive emitted JSON and active schema validation. No wire/schema change unless tests expose a missing canonical field.
+4. Close output/reference and adapter cells: assert computed alias and widening materialization domains, inclusivity/NULL behavior, lineage, producer identity; strengthen parser-capable dialect checks to compare canonical outcomes rather than counts; add raw SQL/dbt whole-graph parity where artifacts can represent the same SELECT facts.
+5. Close fail-closed cells with exact evidence: partial producers, unsupported aggregation, lossy inversion, missing source schema/constraints and unverified DML must be Residual/Unresolved with specific gaps, never Impossible or Feasible.
+6. Update code map, semantics, coverage manifest and TASK-106 evidence. Run focused tests after each seam, then fmt, strict clippy, full tests, docs, no-default-features proportional checks. Run /code-review against main, fix findings, finalize/check all AC with objective evidence, mark Done and commit.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Completed the bounded TASK-106 implementation matrix. Complete single-equijoin populations now carry exact typed non-key ON/WHERE RowTruth filters and joint positive/NOT TRUE terminal counts reuse one closed source assignment. Added supported GROUP/HAVING and ROW_NUMBER/QUALIFY physical controls, computed ordered INSERT/UPDATE/MERGE DuckDB coverage, and direct SQL/dbt-catalog state parity.
+
+Schema-valid emission testing exposed that computed UPDATE/MERGE write values retained expression trees but did not reuse catalog-certified arithmetic domain refinement. Routed write assignment domains through the existing arithmetic prover with analysis metadata; branch-constrained score BETWEEN 1 AND 5 plus 4 now emits the exact set {5,6,7,8,9}. No wire shape or schema change was required.
+
+Strengthened parser-capable dialect checks to compare canonical witnesses, outputs, domains and physical directions; raw SQL/dbt checks now compare complete physical source plans. Residual controls assert typed gaps for partial producers, unsupported HAVING, lossy casts, no-witness projections and missing schema evidence. Focused TASK-106, DML, output-domain, write-adapter, write-state, join and strict all-target Clippy checks pass.
+
+Fixed TASK-106 regression found by full suite: generalized exact_source_filter dropped the legacy typed Boolean/integer literal equality fallback, breaking filtered producer joins on active = TRUE. Restored that fallback alongside the typed scalar witness path, keeping join-key and ambiguous predicates residual. All 16 protocol_conformance_physical tests pass. Full cargo test, strict clippy, cargo doc and no-default-features lib checks are green after updating the TASK-70 inventory expectation to the new bounded_composed_and_write_exact_with_explicit_residuals status.
+
+Code review fixed: added missing /// docs on refine_catalog_arithmetic_domain and extracted refine_write_value_domain to remove 3x duplication in UPDATE/MERGE write paths. Spec review confirmed bounded scope is intentional; flagged join-gate bypass and outer-join residual paths are fail-closed by design with conformance coverage. Full gates re-run green.
+<!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+TASK-106: compose typed expression obligations across relational graphs (bounded matrix).
+
+What changed:
+- Filtered single-equijoin populations carry exact non-key scalar ON/WHERE RowTruth restrictions; joint positive + NOT TRUE terminals share one closed source assignment.
+- Supported GROUP/HAVING and ROW_NUMBER/QUALIFY retain complete physical bags and bounded outcomes with DuckDB oracles; unsupported variants stay residual.
+- Computed UPDATE/MERGE assignments reuse catalog-certified arithmetic refinement (score BETWEEN 1 AND 5 plus 4 yields exact {5,6,7,8,9}) with schema-valid emitted JSON; no wire change.
+- Parser-capable dialect and raw SQL/dbt parity compare canonical witnesses, outputs, domains and physical plans; fail-closed residuals assert typed gaps.
+
+Tests: full cargo test green, strict clippy --all-targets --all-features green, cargo fmt --check green, cargo doc --no-deps green, cargo test --no-default-features --lib green; 23 TASK-106 tests, 16 physical conformance tests, DML/output-domain/join/adapter suites pass.
+
+Follow-ups: general multi-join DAGs, key-constraining negatives, correlated sources and general aggregates/windows remain explicit residuals per AC4.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Bounded implementation evidence (2026-10-16, PR #114)
 

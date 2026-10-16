@@ -991,29 +991,42 @@ pub(super) fn refine_catalog_arithmetic_output_domains(
                 if matches!(column.expression(), Expression::Column(_)) {
                     return column;
                 }
-                if let Some(excluded) =
-                    affine_excluded_domain(column.expression(), domains, sources, metadata)
-                {
-                    return column.with_domain(excluded);
-                }
-                let proved = if let Some(decimal) =
-                    catalog_decimal_domain(column.expression(), domains, sources, metadata)
-                {
-                    decimal
-                } else if let Some(integer) =
-                    typed_expression(column.expression(), domains, sources, metadata)
-                {
-                    to_domain(integer.values)
-                } else {
-                    return column;
-                };
-                let refined = if matches!(column.domain(), ValueDomain::Unknown(_)) {
-                    proved
-                } else {
-                    intersect_domains(column.domain(), &proved)
-                };
-                column.with_domain(refined)
+                refine_catalog_arithmetic_domain(
+                    column.expression(),
+                    column.domain(),
+                    domains,
+                    sources,
+                    metadata,
+                )
+                .map_or(column.clone(), |domain| column.with_domain(domain))
             })
             .collect(),
     )
+}
+
+/// Refine one computed expression domain with catalog-certified arithmetic.
+///
+/// Returns `None` when no arithmetic law proves a tighter domain, leaving the
+/// caller to retain its existing domain as an explicit residual.
+pub(super) fn refine_catalog_arithmetic_domain(
+    expression: &Expression,
+    domain: &ValueDomain,
+    domains: &[ColumnDomain],
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<ValueDomain> {
+    let proved = if let Some(excluded) =
+        affine_excluded_domain(expression, domains, sources, metadata)
+    {
+        excluded
+    } else if let Some(decimal) = catalog_decimal_domain(expression, domains, sources, metadata) {
+        decimal
+    } else {
+        to_domain(typed_expression(expression, domains, sources, metadata)?.values)
+    };
+    Some(if matches!(domain, ValueDomain::Unknown(_)) {
+        proved
+    } else {
+        intersect_domains(domain, &proved)
+    })
 }

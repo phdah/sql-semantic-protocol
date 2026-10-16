@@ -134,7 +134,7 @@ fn expression_family_inventory_has_explicit_fail_closed_scope() {
         ),
         (
             "computed_join_group_write_expressions",
-            "bounded_composed_exact_with_computed_residual",
+            "bounded_composed_and_write_exact_with_explicit_residuals",
         ),
         (
             "whole_graph_physical_realization",

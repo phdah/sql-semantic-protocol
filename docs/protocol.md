@@ -1241,6 +1241,17 @@ An additional narrowly specified filtered-producer path is described below.
 Unsupported CROSS or multi-join local semantics, implicit coercion,
 unknown schema evidence and partial writes stay typed residual.
 
+For a single canonical equijoin, exact scalar `ON` conjuncts and `WHERE`
+predicates may be added to the complete population when each predicate
+resolves to exactly one physical input, its typed TRUE witness is exact, and
+it does not reference either join key. The input's complete `Rows` obligation
+then carries that predicate as `RowTruth(TRUE)`. Multiple predicates on one
+input are one conjunctive `all` formula. This is a sufficient closed-world
+population proof, not a claim that arbitrary filtered joins are invertible.
+Join-key filters, ambiguous predicates and unattested source types remain
+residual. Joint count plans may reuse the same population with independent
+positive and zero-output terminals without duplicating either physical bag.
+
 ### Complete filtered join and singleton GROUP/HAVING populations
 
 A distinct positive proof path applies to a **single INNER equijoin** over
