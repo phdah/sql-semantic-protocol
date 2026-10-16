@@ -383,7 +383,11 @@ fn multi_seed_duckdb_true_and_not_true_oracles_check_exact_impossible_and_null()
         let widened: i64 = db
             .query_row(safe_increment, [], |row| row.get(0))
             .unwrap_or_else(|error| panic!("seed {seed}: {safe_increment}: {error}"));
-        assert_eq!(widened, i32::MAX as i64 + 1, "seed {seed}: widened integer proof");
+        assert_eq!(
+            widened,
+            i32::MAX as i64 + 1,
+            "seed {seed}: widened integer proof"
+        );
         let unsafe_decrement = "SELECT a - 1 FROM t WHERE a = -2147483648";
         assert!(
             db.query_row(unsafe_decrement, [], |row| row.get::<_, i64>(0))
