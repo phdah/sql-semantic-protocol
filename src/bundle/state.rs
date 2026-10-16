@@ -287,7 +287,7 @@ impl AnalysisBundle {
 
         let mut layers = build_layers(&inputs, resolver)?;
         let graph = build_graph(&layers);
-        let composed = crate::composition::compose_layers(&inputs, &layers, &graph);
+        let composed = crate::composition::compose_layers(&inputs, &layers, &graph, &source_schemas);
         for (layer, semantics) in layers.iter_mut().zip(composed) {
             layer.composed_semantics = semantics;
         }
