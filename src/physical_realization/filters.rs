@@ -177,10 +177,7 @@ pub(super) fn repeatable_row_truth(
         .source_schemas()
         .iter()
         .any(|schema| schema.relation() == source)
-        || bundle
-            .relation_constraints()
-            .iter()
-            .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
+        || blocks_unconstrained_physical_plans(bundle, source)
     {
         return None;
     }
@@ -274,11 +271,7 @@ pub(super) fn scalar_physical_row_truth(
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == source)?;
-    if bundle
-        .relation_constraints()
-        .iter()
-        .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
-    {
+    if blocks_unconstrained_physical_plans(bundle, source) {
         return None;
     }
 
@@ -325,11 +318,7 @@ pub(super) fn scalar_physical_row_truth(
         .source_schemas()
         .iter()
         .find(|candidate| candidate.relation() == filter_source)?;
-    if bundle
-        .relation_constraints()
-        .iter()
-        .any(|set| set.relation() == filter_source && set.blocks_unconstrained_physical_plans())
-    {
+    if blocks_unconstrained_physical_plans(bundle, filter_source) {
         return None;
     }
     let witness = crate::boolean_witness::analyze_physical_scalar(

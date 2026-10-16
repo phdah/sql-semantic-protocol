@@ -2,6 +2,11 @@
 
 use super::*;
 
+/// Derive an exact typed TRUE row restriction for one physical source.
+///
+/// Tries the certified scalar witness first, then falls back to the legacy
+/// typed Boolean/integer literal equality used by filtered producers. Returns
+/// `None` for join-key or ambiguous predicates so callers fail closed.
 fn exact_source_filter(
     bundle: &AnalysisBundle,
     source: &crate::protocol::SourceRelation,
@@ -11,11 +16,7 @@ fn exact_source_filter(
         .source_schemas()
         .iter()
         .find(|schema| schema.relation() == source.name())?;
-    if bundle
-        .relation_constraints()
-        .iter()
-        .any(|set| set.relation() == source.name() && set.blocks_unconstrained_physical_plans())
-    {
+    if blocks_unconstrained_physical_plans(bundle, source.name()) {
         return None;
     }
     let witness = crate::boolean_witness::analyze_physical_scalar(
@@ -54,6 +55,10 @@ fn exact_source_filter(
     typed_literal_equality_filter(source, schema, predicate)
 }
 
+/// Legacy typed `column = literal` equality for filtered producers.
+///
+/// Supports only Boolean and range-checked integer literals against the
+/// declared column type. Anything else stays residual by returning `None`.
 fn typed_literal_equality_filter(
     source: &crate::protocol::SourceRelation,
     schema: &crate::relation::RelationSchema,
@@ -113,6 +118,10 @@ fn typed_literal_equality_filter(
     ))
 }
 
+/// Attach a scalar predicate to exactly one physical input.
+///
+/// Succeeds only when the predicate resolves to a single source; ambiguous
+/// or multi-source predicates return `None` so join construction fails closed.
 fn source_filter_for_predicate(
     bundle: &AnalysisBundle,
     sources: &[crate::protocol::SourceRelation],
@@ -125,6 +134,10 @@ fn source_filter_for_predicate(
     filters.next().is_none().then_some(filter)
 }
 
+/// Whether a join filter formula mentions a join-key column.
+///
+/// Used to reject key restrictions that would need reconciliation with each
+/// candidate key population, which this bounded construction does not attempt.
 fn formula_references_column(
     formula: &WitnessFormula,
     column: &crate::protocol::ColumnRef,
@@ -148,10 +161,12 @@ fn formula_references_column(
     }
 }
 
+/// Whether a witness term references a join-key column.
 fn term_references_column(term: &WitnessTerm, column: &crate::protocol::ColumnRef) -> bool {
     matches!(term, WitnessTerm::Column { column: actual, .. } if actual == column)
 }
 
+/// Combine several per-input restrictions into one conjunctive formula.
 fn combined_filter(filters: &[WitnessFormula]) -> WitnessFormula {
     match filters {
         [one] => one.clone(),
@@ -159,6 +174,11 @@ fn combined_filter(filters: &[WitnessFormula]) -> WitnessFormula {
     }
 }
 
+/// Split a single-equijoin condition into its key equality and scalar filters.
+///
+/// Accepts exactly one cross-relation `=` key plus any number of scalar `ON`
+/// conjuncts; also carries the query `WHERE` predicate. Returns `None` for
+/// multi-key, CROSS/UNKNOWN, or otherwise unsupported join shapes.
 fn join_key_and_scalar_filters(
     query: &QueryStatement,
 ) -> Option<(
@@ -358,8 +378,11 @@ pub(super) fn physical_join_population_with_source_counts(
 
     // A residual local join witness cannot certify source rows through a
     // filtered producer. The physical construction below independently
-    // proves an ordinary typed equijoin over complete filtered source bags.
-    // Without such a filter, retain the stronger original local gate.
+    // proves an ordinary typed equijoin over complete filtered source bags:
+    // each filter is an exact typed TRUE restriction on its own closed
+    // physical bag, and keys are recovered from the same canonical query.
+    // This bypasses the local gate only when such filters exist; without
+    // them, retain the stronger original local gate.
     if source_filters.is_empty() && !matches!(join?.qualifying(), JoinWitnessDirection::Exact(_)) {
         return None;
     }
@@ -470,12 +493,9 @@ pub(super) fn physical_join_population_with_source_counts(
         || right_bounds.minimum > 0
         || left_bounds.maximum < 0
         || right_bounds.maximum < 0
-        || [left_source, right_source].iter().any(|relation| {
-            bundle
-                .relation_constraints()
-                .iter()
-                .any(|set| set.relation() == *relation && set.blocks_unconstrained_physical_plans())
-        })
+        || [left_source, right_source]
+            .iter()
+            .any(|relation| blocks_unconstrained_physical_plans(bundle, relation))
     {
         return None;
     }

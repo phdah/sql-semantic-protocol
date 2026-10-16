@@ -363,9 +363,7 @@ pub fn physical_unconditional_delete_plan(
             .source_schemas()
             .iter()
             .any(|schema| schema.relation() == write.target())
-        || bundle.relation_constraints().iter().any(|set| {
-            set.relation() == write.target() && set.blocks_unconstrained_physical_plans()
-        })
+        || blocks_unconstrained_physical_plans(bundle, write.target())
         || effect.resulting_rows(
             initial_rows,
             crate::protocol::WriteRowCounts::new(0, 0, initial_rows),

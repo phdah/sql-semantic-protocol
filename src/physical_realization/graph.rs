@@ -607,11 +607,7 @@ pub(super) fn joint_physical_filters(
     let source = walker.sources.iter().next()?;
     // No source-row population may silently ignore enforced or unverified
     // physical constraints when transporting an intermediate witness.
-    if bundle
-        .relation_constraints()
-        .iter()
-        .any(|set| set.relation() == source && set.blocks_unconstrained_physical_plans())
-    {
+    if blocks_unconstrained_physical_plans(bundle, source) {
         return None;
     }
     if filters

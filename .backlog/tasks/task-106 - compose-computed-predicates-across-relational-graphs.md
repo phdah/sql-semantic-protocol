@@ -5,7 +5,7 @@ status: Done
 assignee:
   - OpenCode
 created_date: '2026-10-13'
-updated_date: '2026-10-16 13:59'
+updated_date: '2026-10-16 14:11'
 labels: []
 milestone: m-3
 dependencies:
@@ -22,8 +22,16 @@ modified_files:
   - src/analysis.rs
   - src/analysis/arithmetic_domains.rs
   - src/analysis/writes.rs
+  - src/physical_realization.rs
+  - src/physical_realization/counts.rs
+  - src/physical_realization/distributions.rs
+  - src/physical_realization/filters.rs
+  - src/physical_realization/graph.rs
   - src/physical_realization/joins.rs
   - src/physical_realization/joint_counts.rs
+  - src/physical_realization/membership.rs
+  - src/physical_realization/ranking.rs
+  - src/physical_realization/sets.rs
   - tests/advanced_target_validation.rs
   - tests/physical_realization/joins.rs
   - tests/physical_write_adapter_parity.rs
@@ -60,14 +68,13 @@ Consume canonical expression and predicate proofs from TASK-101..105 across actu
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-Finish TASK-106 with a finite support matrix over existing canonical operator laws; unsupported general SQL remains typed residual per AC4.
+Harden TASK-106 follow-up without expanding bounded scope. General multi-join DAGs, correlated sources, general aggregates/windows stay residual by design per AC4.
 
-1. TDD filtered join composition: add failing public-API tests for direct INNER JOIN WHERE and ON scalar restrictions on non-key typed columns, including complete positive populations and a joint positive plus NOT TRUE source assignment. Extend src/physical_realization/joins.rs and joint_counts.rs by attaching exact typed row restrictions to existing closed-world join populations; join-key restrictions and unsupported predicates remain residual.
-2. Verify existing GROUP/HAVING and ROW_NUMBER/QUALIFY engines as TASK-106 integration controls: add public tests for exact positive physical counts, output domains/bounds, stable source identities and DuckDB results; retain unsupported aggregate/window residual twins with exact non-impossible classification.
-3. Complete computed write evidence: exercise computed INSERT, UPDATE, MERGE UPDATE and MERGE INSERT assignments over one ordered complete state; compare direct SQL and dbt-catalog schema paths; assert normalized expressions/domains survive emitted JSON and active schema validation. No wire/schema change unless tests expose a missing canonical field.
-4. Close output/reference and adapter cells: assert computed alias and widening materialization domains, inclusivity/NULL behavior, lineage, producer identity; strengthen parser-capable dialect checks to compare canonical outcomes rather than counts; add raw SQL/dbt whole-graph parity where artifacts can represent the same SELECT facts.
-5. Close fail-closed cells with exact evidence: partial producers, unsupported aggregation, lossy inversion, missing source schema/constraints and unverified DML must be Residual/Unresolved with specific gaps, never Impossible or Feasible.
-6. Update code map, semantics, coverage manifest and TASK-106 evidence. Run focused tests after each seam, then fmt, strict clippy, full tests, docs, no-default-features proportional checks. Run /code-review against main, fix findings, finalize/check all AC with objective evidence, mark Done and commit.
+1. Document private join helpers in src/physical_realization/joins.rs (exact_source_filter, typed_literal_equality_filter, source_filter_for_predicate, join_key_and_scalar_filters); clarify why independent filtered-join proof is sound when local witness is residual.
+2. Extract shared blocks_unconstrained_physical_plans helper in physical_realization to remove 11x duplicated constraint-chain (DRY, single source of truth).
+3. Split joint_join_with_rejected_filters into key-extraction, closed-source restriction, zero-terminal reconciliation, and joint-satisfiability helpers; preserve behavior exactly.
+4. Add evidence tests: computed INSERT SELECT arithmetic domain exactness (already via analyze_query path); outer-join contradictory filters stay residual not impossible; positive cardinality >1 stays Impossible under certified TRUE contradiction; join-gate bypass soundness already covered by filtered join tests.
+5. Run fmt, strict clippy, full tests, doc, no-default-features lib; update backlog notes and recommit.
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
@@ -82,22 +89,14 @@ Strengthened parser-capable dialect checks to compare canonical witnesses, outpu
 Fixed TASK-106 regression found by full suite: generalized exact_source_filter dropped the legacy typed Boolean/integer literal equality fallback, breaking filtered producer joins on active = TRUE. Restored that fallback alongside the typed scalar witness path, keeping join-key and ambiguous predicates residual. All 16 protocol_conformance_physical tests pass. Full cargo test, strict clippy, cargo doc and no-default-features lib checks are green after updating the TASK-70 inventory expectation to the new bounded_composed_and_write_exact_with_explicit_residuals status.
 
 Code review fixed: added missing /// docs on refine_catalog_arithmetic_domain and extracted refine_write_value_domain to remove 3x duplication in UPDATE/MERGE write paths. Spec review confirmed bounded scope is intentional; flagged join-gate bypass and outer-join residual paths are fail-closed by design with conformance coverage. Full gates re-run green.
+
+Hardening follow-up complete: documented join helpers and gate-bypass soundness, extracted blocks_unconstrained_physical_plans helper (11 sites), split joint_join_with_rejected_filters into key/restriction/reconcile/satisfiability/rebuild helpers with identical behavior. Added 3 evidence tests: computed INSERT SELECT arithmetic exact {5..9}, single-layer contradiction never feasible for 1/2/5 rows with zero feasible, outer-join contradiction stays residual not impossible. Full gates green: 74 ok suites, 0 failed, strict clippy, fmt, doc, no-default-features lib.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-TASK-106: compose typed expression obligations across relational graphs (bounded matrix).
-
-What changed:
-- Filtered single-equijoin populations carry exact non-key scalar ON/WHERE RowTruth restrictions; joint positive + NOT TRUE terminals share one closed source assignment.
-- Supported GROUP/HAVING and ROW_NUMBER/QUALIFY retain complete physical bags and bounded outcomes with DuckDB oracles; unsupported variants stay residual.
-- Computed UPDATE/MERGE assignments reuse catalog-certified arithmetic refinement (score BETWEEN 1 AND 5 plus 4 yields exact {5,6,7,8,9}) with schema-valid emitted JSON; no wire change.
-- Parser-capable dialect and raw SQL/dbt parity compare canonical witnesses, outputs, domains and physical plans; fail-closed residuals assert typed gaps.
-
-Tests: full cargo test green, strict clippy --all-targets --all-features green, cargo fmt --check green, cargo doc --no-deps green, cargo test --no-default-features --lib green; 23 TASK-106 tests, 16 physical conformance tests, DML/output-domain/join/adapter suites pass.
-
-Follow-ups: general multi-join DAGs, key-constraining negatives, correlated sources and general aggregates/windows remain explicit residuals per AC4.
+TASK-106 hardening: documented join helpers and independent filtered-join soundness, extracted shared blocks_unconstrained helper across 11 engines, split joint_join_with_rejected_filters into focused helpers with identical behavior. Added INSERT arithmetic exactness, single-layer contradiction fail-closed, and outer-join residual evidence. Full gates green.
 <!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Bounded implementation evidence (2026-10-16, PR #114)

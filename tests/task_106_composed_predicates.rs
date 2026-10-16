@@ -1301,3 +1301,93 @@ fn partial_unsupported_lossy_and_missing_evidence_stay_residual() {
         Err(error) => panic!("unexpected analysis error: {error}"),
     }
 }
+
+#[test]
+fn computed_insert_select_arithmetic_uses_catalog_domains() {
+    // INSERT SELECT reuses the same catalog-certified arithmetic prover as
+    // SELECT projections (via analyze_query), so a branch-constrained
+    // `a BETWEEN 1 AND 5` plus 4 yields the exact finite set {5,..,9}.
+    let bundle = analyze_chain(
+        &["INSERT INTO mart (a) SELECT a + 4 AS a FROM t WHERE a BETWEEN 1 AND 5"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("insert layer must resolve");
+    };
+    let column = semantics
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "a")
+        .expect("projected a");
+    let ValueDomain::Set(set) = column.domain() else {
+        panic!(
+            "computed INSERT must carry exact set domain: {:?}",
+            column.domain()
+        );
+    };
+    let mut values = set
+        .values()
+        .iter()
+        .map(|literal| literal.value().clone())
+        .collect::<Vec<_>>();
+    values.sort_by(|left, right| format!("{left:?}").cmp(&format!("{right:?}")));
+    assert_eq!(
+        values,
+        vec![
+            LiteralValue::Number("5".to_string()),
+            LiteralValue::Number("6".to_string()),
+            LiteralValue::Number("7".to_string()),
+            LiteralValue::Number("8".to_string()),
+            LiteralValue::Number("9".to_string()),
+        ]
+    );
+}
+
+#[test]
+fn single_layer_contradiction_rules_out_any_positive_count() {
+    // A necessary single-layer contradiction must fail closed for every
+    // positive cardinality (Residual conflicting_domains here, Impossible in
+    // the two-layer chain). Zero stays feasible as empty construction.
+    let bundle = analyze_chain(
+        &["SELECT a FROM t WHERE a IN (1, 3) AND a BETWEEN 101 AND 200"],
+        "postgresql",
+    );
+    let target = bundle.layers()[0].id();
+    for rows in [1, 2, 5] {
+        assert!(
+            !matches!(
+                physical_row_count_plan(&bundle, target, rows),
+                WitnessDirection::Feasible(_)
+            ),
+            "necessary contradiction must never yield feasible rows"
+        );
+    }
+    assert!(
+        matches!(
+            physical_row_count_plan(&bundle, target, 0),
+            WitnessDirection::Feasible(_)
+        ),
+        "empty source remains feasible"
+    );
+}
+
+#[test]
+fn outer_join_contradiction_stays_residual_not_impossible() {
+    // Outer joins preserve unmatched sides, so a contradictory NOT TRUE
+    // combination must fail closed as residual, never as proven impossible.
+    // Only certified INNER contradictions may become Impossible.
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a FROM l LEFT JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5",
+            "SELECT a FROM l WHERE a > 100",
+        ],
+        "postgresql",
+    );
+    let goals = [(bundle.layers()[0].id(), 1), (bundle.layers()[1].id(), 0)];
+    let joint = physical_joint_row_count_plan(&bundle, &goals);
+    assert!(
+        !matches!(joint, WitnessDirection::Impossible),
+        "outer-join contradiction must not be proven impossible: {joint:?}"
+    );
+}
