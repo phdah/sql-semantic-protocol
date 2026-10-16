@@ -457,16 +457,17 @@ pub(super) fn joint_join_with_rejected_filters(
             if let WitnessObligation::JoinPopulation {
                 left_key,
                 right_key,
+                join_kind,
                 closed_world: true,
                 ..
             } = obligation
             {
-                Some((left_key, right_key))
+                Some((left_key, right_key, join_kind))
             } else {
                 None
             }
         });
-        let Some((left_key, right_key)) = keys else {
+        let Some((left_key, right_key, join_kind)) = keys else {
             continue;
         };
 
@@ -569,9 +570,28 @@ pub(super) fn joint_join_with_rejected_filters(
         if !safe {
             continue;
         }
-        if restrictions.iter().any(|(source, predicates)| {
-            joint_source_truths_satisfiable(bundle, source, predicates) != Some(true)
-        }) {
+        let mut uncertain = false;
+        for (source, predicates) in &restrictions {
+            match joint_source_truths_satisfiable(bundle, source, predicates) {
+                Some(true) => {}
+                Some(false)
+                    if *join_kind == crate::protocol::JoinKind::Inner
+                        && counts.get(source).is_some_and(|count| *count > 0) =>
+                {
+                    // Positive INNER joins necessarily consume a nonempty
+                    // left and right source. If every source row would have
+                    // to satisfy contradictory NOT TRUE filters, no complete
+                    // physical assignment exists, independent of the join
+                    // key population chosen.
+                    return Some(WitnessDirection::Impossible);
+                }
+                Some(false) | None => {
+                    uncertain = true;
+                    break;
+                }
+            }
+        }
+        if uncertain {
             continue;
         }
 
