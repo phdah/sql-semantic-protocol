@@ -997,6 +997,18 @@ domain are emitted together. Partial producers, missing source schemas, lossy
 casts and unverified DML forms retain their specific residual gap.
 
 
+The TASK-106 implementation is certified against the **frozen fifteen-case
+support matrix** in
+[`TASK-106`](../.backlog/tasks/task-106%20-%20compose-computed-predicates-across-relational-graphs.md).
+Each entry names its expected proof classification and public-API regression
+evidence. This is finite closure of documented transfer and source-population
+laws, not a claim to solve arbitrary correlated operator graphs or symbolic
+expression domains. The fail-closed residual boundaries above are part of the
+completed TASK-106 contract; extending them to new exact cases requires a
+separate scoped task. The protocol 3.0.0 release remains independently gated
+by TASK-91.
+
+
 ### Ordered physical write-state construction (TASK-98)
 
 `physical_ordered_write_state_plan(&bundle, &complete_initial_states)` realizes each
