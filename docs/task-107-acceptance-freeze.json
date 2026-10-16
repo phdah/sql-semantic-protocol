@@ -3178,7 +3178,7 @@
       ],
       "owner": "TASK-104",
       "conditional_boundary": "Engine/collation-dependent case folding and Unicode behavior; cannot silently reuse binary LIKE.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -3273,7 +3273,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::inventoried_variants_have_explicit_exact_or_residual_classification"
+      ]
     },
     {
       "id": "E107-V022",
@@ -3425,7 +3429,7 @@
       ],
       "owner": "TASK-104",
       "conditional_boundary": "Regex grammar and dialect operator semantics differ.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -3520,7 +3524,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::inventoried_variants_have_explicit_exact_or_residual_classification"
+      ]
     },
     {
       "id": "E107-V024",
@@ -3548,7 +3556,7 @@
       ],
       "owner": "TASK-104",
       "conditional_boundary": "Regex engine, flags, escaping and runtime laws are not portable.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -3643,7 +3651,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::inventoried_variants_have_explicit_exact_or_residual_classification",
+        "tests/task_105_temporal_json_vendor.rs::opaque_function_domains_and_predicate_residuals_name_the_function"
+      ]
     },
     {
       "id": "E107-V025",
@@ -3795,7 +3808,7 @@
       ],
       "owner": "TASK-104",
       "conditional_boundary": "Locale collation must be attested; binary equality is mandatory when its preconditions hold.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -3890,7 +3903,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::inventoried_variants_have_explicit_exact_or_residual_classification"
+      ]
     },
     {
       "id": "E107-V027",
@@ -4542,7 +4559,7 @@
       ],
       "owner": "TASK-101/TASK-102",
       "conditional_boundary": "Opaque UDF execution and side effects cannot be inferred.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -4637,7 +4654,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::opaque_function_domains_and_predicate_residuals_name_the_function"
+      ]
     },
     {
       "id": "E107-V033",
@@ -4790,7 +4811,7 @@
       ],
       "owner": "TASK-105",
       "conditional_boundary": "DATE literal identity and EXTRACT are mandatory; time/interval/DST arithmetic needs additional type and session evidence.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -4885,7 +4906,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::date_literal_calendar_fields_are_folded_to_exact_integer_domains",
+        "tests/task_105_temporal_json_vendor.rs::inventoried_variants_are_certified_or_fail_closed_in_every_exposed_dialect"
+      ]
     },
     {
       "id": "E107-V035",
@@ -4913,7 +4939,7 @@
       ],
       "owner": "TASK-105",
       "conditional_boundary": "Timezone identity and DST/session environment must be attested.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -5008,7 +5034,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::inventoried_variants_are_certified_or_fail_closed_in_every_exposed_dialect"
+      ]
     },
     {
       "id": "E107-V036",
@@ -5036,7 +5066,7 @@
       ],
       "owner": "TASK-105",
       "conditional_boundary": "Implicit and precision/timezone conversion rules require explicit type/session evidence.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -5131,7 +5161,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::explicit_date_literal_identity_cast_has_an_exact_calendar_domain",
+        "tests/task_105_temporal_json_vendor.rs::inventoried_variants_are_certified_or_fail_closed_in_every_exposed_dialect"
+      ]
     },
     {
       "id": "E107-V037",
@@ -5159,7 +5194,7 @@
       ],
       "owner": "TASK-105",
       "conditional_boundary": "Gap/fold and session zone laws cannot be fabricated.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -5260,7 +5295,12 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_105_temporal_json_vendor.rs::unsupported_temporal_and_nested_ast_shapes_expose_their_family",
+        "tests/task_107_dialect_classifications.rs::all_frozen_dialect_cells_are_actually_parsed_and_equivalence_checked"
+      ]
     },
     {
       "id": "E107-V038",
@@ -5288,7 +5328,7 @@
       ],
       "owner": "TASK-104/TASK-105",
       "conditional_boundary": "Binary/no-pad exact subset is mandatory, locale collation requires external evidence.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -5383,7 +5423,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::cross_text_column_equality_is_exact_only_when_attested"
+      ]
     },
     {
       "id": "E107-V039",
@@ -5411,7 +5455,7 @@
       ],
       "owner": "TASK-104/TASK-105",
       "conditional_boundary": "Fixed CHAR/trailing-space semantics require explicit engine/type evidence.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -5506,7 +5550,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_104_pattern_collation_nullsafe.rs::fixed_width_char_columns_never_claim_binary_laws"
+      ]
     },
     {
       "id": "E107-V040",
@@ -5534,7 +5582,7 @@
       ],
       "owner": "TASK-104/TASK-105",
       "conditional_boundary": "IEEE NaN comparison and order are dialect/runtime-dependent.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -5629,7 +5677,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_107_conditional_environment.rs::unproven_nan_and_signed_zero_cannot_be_certified_as_exact_integer_equalities"
+      ]
     },
     {
       "id": "E107-V041",
@@ -5657,7 +5709,7 @@
       ],
       "owner": "TASK-104/TASK-105",
       "conditional_boundary": "Floating signed-zero behavior requires engine semantics; do not infer from signed integer rules.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -5752,7 +5804,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_107_conditional_environment.rs::unproven_nan_and_signed_zero_cannot_be_certified_as_exact_integer_equalities"
+      ]
     },
     {
       "id": "E107-V042",
@@ -5780,7 +5836,7 @@
       ],
       "owner": "TASK-104/TASK-105",
       "conditional_boundary": "Explicit NULLS FIRST/LAST is parser-evidence; default ordering is dialect/session-dependent.",
-      "release_disposition": "review_required_before_release",
+      "release_disposition": "reviewed_residual_or_guarded_exactness_deferred_to_TASK88",
       "defer_owner": "TASK-88",
       "dialect_cells": {
         "ansi": {
@@ -5875,7 +5931,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "conditional_semantic_evidence": "pending_review_of_residual_or_guarded_exactness"
+      "conditional_semantic_evidence": "reviewed_residual_or_exact_under_guards",
+      "review_document": "docs/task-107-conditional-review.md",
+      "truth_proof_tests": [
+        "tests/task_107_dialect_classifications.rs::all_frozen_dialect_cells_are_actually_parsed_and_equivalence_checked"
+      ]
     }
   ],
   "scope_policy": {
@@ -5902,10 +5962,11 @@
   "semantic_proof_status": {
     "required_predicate_variants_verified": 23,
     "required_projection_variants_pending": 0,
-    "conditional_semantic_reviews_pending": 14,
+    "conditional_semantic_reviews_pending": 0,
     "predicate_evidence_workflow": 38969498349,
     "all_28_original_criteria_claimed_complete": true,
     "rules": "Two-direction exact/impossible predicate proofs and independent physical DuckDB source oracle required; typed projected domain exactness cannot be inferred solely from SQL/dbt adapter parity or runtime output bags.",
-    "projection_evidence_workflow": 38975325640
+    "projection_evidence_workflow": 38975325640,
+    "conditional_evidence_review": "docs/task-107-conditional-review.md"
   }
 }
