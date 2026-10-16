@@ -14,11 +14,12 @@ use crate::bundle::{
 use crate::domain::{intersect_case_domain_values, intersect_domains};
 use crate::join_witness::JoinWitness;
 use crate::protocol::{
-    CaseBranch, CaseExpression, CaseSourceDomainAlternative, CaseSourceDomains, ColumnDomain,
-    ColumnExpression, ColumnRef, ComparisonOperator, ConditionClause, ConditionExactness,
-    Expression, Join, JoinKind, LineageSource, Output, OutputColumn, Predicate, ProtocolStatement,
-    QueryStatement, RelationRef, ResidualCondition, ResidualConditionReason, SourceRelation,
-    ValueDomain, WriteKind,
+    BinaryOperator, Bound, CaseBranch, CaseExpression, CaseSourceDomainAlternative,
+    CaseSourceDomains, ColumnDomain, ColumnExpression, ColumnRef, ComparisonOperator,
+    ConditionClause, ConditionExactness, Expression, Join, JoinKind, LineageSource,
+    LiteralExpression, LiteralType, LiteralValue, Output, OutputColumn, Predicate,
+    ProtocolStatement, QueryStatement, RelationRef, ResidualCondition,
+    ResidualConditionReason, SetMode, SourceRelation, ValueDomain, ValueRange, WriteKind,
 };
 
 pub(crate) fn compose_layers(
@@ -1081,7 +1082,9 @@ impl<'a> Composer<'a> {
     ) -> ValueDomain {
         let domain = column.domain().clone();
         let Some(source) = column.plain_copy_source() else {
-            return domain;
+            return self
+                .compose_affine_output_domain(consumer, column.expression())
+                .map_or(domain.clone(), |inherited| intersect_domains(&domain, &inherited));
         };
         let Some(edge) = self
             .edge_for_source(consumer.id(), source.relation())
@@ -1110,6 +1113,71 @@ impl<'a> Composer<'a> {
         };
 
         intersect_domains(&domain, producer_column.domain())
+    }
+
+    /// Reuse the canonical upstream value domain for an explicit, total
+    /// signed-integer CAST followed by a constant affine translation. The
+    /// composed producer already owns any WHERE, HAVING or prior source
+    /// restrictions; a fully bounded domain proves both no overflow and the
+    /// strongest representable translated interval without SQL reparsing.
+    fn compose_affine_output_domain(
+        &mut self,
+        consumer: &TransformationLayer,
+        expression: &Expression,
+    ) -> Option<ValueDomain> {
+        let Expression::Binary(binary) = expression else {
+            return None;
+        };
+        if !matches!(binary.operator(), BinaryOperator::Add | BinaryOperator::Subtract) {
+            return None;
+        }
+        let Expression::SignedIntegerCast(cast) = binary.left() else {
+            return None;
+        };
+        let Expression::Column(column) = cast.expression() else {
+            return None;
+        };
+        let Expression::Literal(literal) = binary.right() else {
+            return None;
+        };
+        if literal.literal_type() != LiteralType::Integer {
+            return None;
+        }
+        let LiteralValue::Number(number) = literal.value() else {
+            return None;
+        };
+        let mut offset = number.parse::<i128>().ok()?;
+        if binary.operator() == BinaryOperator::Subtract {
+            offset = offset.checked_neg()?;
+        }
+        let query = self.query_for_layer(consumer)?;
+        let source = crate::domain::resolve_column(column, query.sources());
+        let edge = self
+            .edge_for_source(consumer.id(), source.relation()?)
+            .cloned()?;
+        if edge.resolution() != RelationResolution::Resolved {
+            return None;
+        }
+        let [producer_id] = edge.producer_layer_ids() else {
+            return None;
+        };
+        let layer = self.layer_by_id(producer_id)?;
+        if !matches!(layer.write_kind(), None | Some(WriteKind::Definition)) {
+            return None;
+        }
+        let ComposedSemantics::Resolved(upstream) = self.compose_layer(producer_id) else {
+            return None;
+        };
+        let mut columns = upstream
+            .output()
+            .columns()
+            .iter()
+            .filter(|candidate| candidate.name() == source.name());
+        let input = columns.next()?;
+        if columns.next().is_some() {
+            return None;
+        }
+        translated_signed_domain(input.domain(), cast.target_bits(), offset)
     }
 
     fn expand_lineage_source(
@@ -1216,6 +1284,61 @@ impl<'a> Composer<'a> {
             edge.consumer_layer_id() == consumer_layer_id
                 && edge.relation() == canonical_relation.as_str()
         })
+    }
+}
+
+/// Move a fully proven integer value domain through `CAST(value AS
+/// SIGNED(width)) + offset`. An unknown, unbounded, noninteger or
+/// overflowing region is deliberately not sharpened.
+fn translated_signed_domain(domain: &ValueDomain, bits: u16, offset: i128) -> Option<ValueDomain> {
+    if bits == 0 || bits > 64 {
+        return None;
+    }
+    let magnitude = 1_i128.checked_shl(u32::from(bits.checked_sub(1)?))?;
+    let minimum = -magnitude;
+    let maximum = magnitude - 1;
+    let shift = |literal: &LiteralExpression| -> Option<LiteralExpression> {
+        if literal.literal_type() == LiteralType::Null {
+            return Some(literal.clone());
+        }
+        if literal.literal_type() != LiteralType::Integer {
+            return None;
+        }
+        let LiteralValue::Number(text) = literal.value() else {
+            return None;
+        };
+        let value = text.parse::<i128>().ok()?;
+        let translated = value.checked_add(offset)?;
+        if value < minimum || value > maximum || translated < minimum || translated > maximum {
+            return None;
+        }
+        Some(LiteralExpression::new(
+            LiteralType::Integer,
+            LiteralValue::Number(translated.to_string()),
+        ))
+    };
+    match domain {
+        ValueDomain::Empty => Some(ValueDomain::Empty),
+        ValueDomain::Set(set) if set.mode() == SetMode::Include => Some(ValueDomain::set(
+            SetMode::Include,
+            set.values().iter().map(shift).collect::<Option<Vec<_>>>()?,
+        )),
+        ValueDomain::Ranges(ranges) => {
+            let translated = ranges
+                .ranges()
+                .iter()
+                .map(|range| {
+                    let lower = range.lower()?;
+                    let upper = range.upper()?;
+                    Some(ValueRange::new(
+                        Some(Bound::new(shift(lower.value())?, lower.inclusive())),
+                        Some(Bound::new(shift(upper.value())?, upper.inclusive())),
+                    ))
+                })
+                .collect::<Option<Vec<_>>>()?;
+            Some(ValueDomain::ranges(translated))
+        }
+        ValueDomain::Unbounded | ValueDomain::Unknown(_) | ValueDomain::Set(_) => None,
     }
 }
 
