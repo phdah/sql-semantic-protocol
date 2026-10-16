@@ -4,7 +4,7 @@
   "status": "representative_oracles_with_full_family_traceability_pending_variant_closure",
   "release_approved": false,
   "baseline": "b75b16a29234fc207af0014bf662d39223b2502f",
-  "scope": "Incremental oracle registrations. This is NOT a completed inventory of all original TASK-107 acceptance cells.",
+  "scope": "Representative implementation/test references; all required cells and precise signoff gates are independently frozen in acceptance_freeze. Evidence completion remains pending.",
   "acceptance_criteria_status": {
     "1": "in_progress",
     "2": "in_progress",
@@ -36,11 +36,11 @@
   "oracle_source": "tests/task_107_expression_oracles.rs::seeded_values",
   "oracle_runtime": "DuckDB only. This is not a native execution certification for any other dialect.",
   "outstanding": [
-    "Expand the frozen matrix to every advertised exact expression variant in TASK-101..106, with typed independent source/output/witness fixtures.",
-    "Record exhaustive per-feature per-dialect parse/equivalence outcomes, including dialect/session assumptions, without treating parser acceptance as engine execution.",
-    "Extend randomized property oracles from bounded TRUE/NOT TRUE to full physical-source and negative terminal outputs, overflow, type boundary and residual reasons.",
-    "Execute compiled dbt Core E2E and ODCS/source-independent parity for every representable matrix family, not only representative regression cases.",
-    "Audit schema/API/examples/docs and all mandatory coverage cells; run full fmt/clippy/test/doc, no-default-features and dbt E2E CI."
+    "Resolve every unverified frozen acceptance cell with independently asserted SQL/dbt/dialect/ODCS evidence.",
+    "Run all nine golden source/terminal DuckDB fixtures and nine required operator-composition pairings.",
+    "Enforce exact-versus-impossible/residual outcomes for both SQL TRUE and NOT TRUE and all typed bounds/nullability.",
+    "Classify all 546 parser/canonical dialect cells with explicit non-equivalent assumptions.",
+    "Review conditional dispositions; run final full CI and dbt E2E on the final head SHA before TASK-107 signoff."
   ],
   "fixtures": [
     {
@@ -272,5 +272,14 @@
       "task_70_family": "dialect_specific_nullsafe_operators"
     }
   ],
-  "task_70_family_inventory_source": "docs/coverage-manifest.json::task_70_predicate_evidence.family_evidence"
+  "task_70_family_inventory_source": "docs/coverage-manifest.json::task_70_predicate_evidence.family_evidence",
+  "acceptance_freeze": "docs/task-107-acceptance-freeze.json",
+  "acceptance_freeze_facts": {
+    "predicate_variant_count": 42,
+    "dialect_count": 13,
+    "dialect_cells": 546,
+    "child_family_count": 14,
+    "golden_cases": 9,
+    "composition_cases": 9
+  }
 }
