@@ -1892,3 +1892,63 @@ fn conflicting_overlapping_filtered_join_populations_are_not_fabricated() {
         "one all-TRUE l source cannot simultaneously meet disjoint intervals: {plan:?}"
     );
 }
+
+#[test]
+fn computed_materialization_inherits_strongest_bounded_producer_domain() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10",
+            "CREATE TABLE mart AS SELECT CAST(a AS BIGINT) + 2 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("computed materialization must have resolved semantics");
+    };
+    let value = mart
+        .output()
+        .columns()
+        .iter()
+        .find(|column| column.name() == "v")
+        .expect("materialized computed output");
+    assert_range_bounds(value.domain(), "composed affine output", "7", "12");
+    assert_eq!(
+        (value.lineage()[0].relation(), value.lineage()[0].column()),
+        ("t", "a"),
+        "computed output keeps stable physical lineage"
+    );
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE t(a INTEGER);
+         INSERT INTO t VALUES (2),(5),(7),(10),(12),(NULL);
+         CREATE TABLE stage AS SELECT a FROM t WHERE a BETWEEN 5 AND 10;
+         CREATE TABLE mart AS SELECT CAST(a AS BIGINT) + 2 AS v FROM stage;",
+    )
+    .expect("materialization");
+    let (minimum, maximum): (i64, i64) = db
+        .query_row("SELECT MIN(v), MAX(v) FROM mart", [], |row| {
+            Ok((row.get(0)?, row.get(1)?))
+        })
+        .unwrap();
+    assert_eq!((minimum, maximum), (7, 12));
+}
+
+#[test]
+fn affine_composition_does_not_invent_domains_for_unknown_producer_values() {
+    let bundle = analyze_chain(
+        &[
+            "CREATE TABLE stage AS SELECT a FROM t",
+            "CREATE TABLE mart AS SELECT CAST(a AS BIGINT) + 2 AS v FROM stage",
+        ],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(mart) = bundle.layers()[1].composed_semantics() else {
+        panic!("semantic graph resolved");
+    };
+    let output = mart.output().columns().first().unwrap();
+    assert!(
+        !matches!(output.domain(), ValueDomain::Ranges(_)),
+        "unbounded or unknown producer values cannot certify bounded arithmetic"
+    );
+}
