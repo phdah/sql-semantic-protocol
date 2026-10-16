@@ -46,6 +46,17 @@ pub fn physical_row_count_plan(
                 .unwrap_or_else(|| residual(PhysicalProofGap::NoWitness));
         }
     }
+    // An exact TRUE contradiction across a certified, row-preserving
+    // filter chain rules out every positive terminal cardinality, not only
+    // a single candidate row. Do not infer impossibility from a residual or
+    // an empty *sample*: the complete conjunction must prove it.
+    if rows > 0
+        && physical.gap().is_none()
+        && matches!(physical.qualifying(), WitnessDirection::Impossible)
+        && matches!(physical.zero_output(), WitnessDirection::Feasible(_))
+    {
+        return WitnessDirection::Impossible;
+    }
     if physical.nodes().is_empty() {
         return residual(physical.gap().unwrap_or(PhysicalProofGap::NoWitness));
     }
