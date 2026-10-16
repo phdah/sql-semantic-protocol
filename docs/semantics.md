@@ -931,7 +931,10 @@ Complete mixed join/group, group/rank, grouped COUNT filter and certified empty/
 Typed `WHERE` predicates compose through transparent materializations while
 retaining physical column identity, output domains, bound inclusivity and SQL
 TRUE versus NOT TRUE. A certified signed widening cast can be inverted one
-materialization at a time. This includes an explicit widening CAST followed
+materialization at a time. Derived affine output intervals across producers
+also require catalog-certified *signed integer* column widths: numeric-looking
+bounds alone are not proof that an underlying DECIMAL or TEXT CAST is lossless.
+Computed CAST operand lineage is retained through the canonical dependency graph. This includes an explicit widening CAST followed
 by a constant affine addition or subtraction when its full catalog-attested
 source range fits the declared output width. Canonical integer comparisons,
 NULL tests and their same-row AND/OR expressions are inverted with their
