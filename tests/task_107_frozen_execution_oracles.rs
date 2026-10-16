@@ -261,7 +261,10 @@ fn all_mandatory_variants_match_independent_duckdb_closed_source_membership() {
 
     for (cell, (name, truth)) in exact.iter().zip(expected) {
         let id = cell["id"].as_str().unwrap();
-        assert_eq!(id, name, "the reviewed independent oracle inventory changed");
+        assert_eq!(
+            id, name,
+            "the reviewed independent oracle inventory changed"
+        );
         let original = cell["sql_shape"].as_str().unwrap();
         let predicate = original.split_once(" WHERE ").map(|(_, p)| p);
         let sql = predicate.map_or_else(
@@ -269,15 +272,16 @@ fn all_mandatory_variants_match_independent_duckdb_closed_source_membership() {
             |p| format!("SELECT id FROM t WHERE {p} ORDER BY id"),
         );
         let observed = ids_for(&db, &sql);
-        assert_eq!(observed, truth, "{id}: DuckDB physical TRUE membership; SQL={sql}");
+        assert_eq!(
+            observed, truth,
+            "{id}: DuckDB physical TRUE membership; SQL={sql}"
+        );
         if let Some(predicate) = predicate {
             let rejected_sql =
                 format!("SELECT id FROM t WHERE ({predicate}) IS NOT TRUE ORDER BY id");
             let rejected = ids_for(&db, &rejected_sql);
             let true_set: BTreeSet<_> = truth.iter().copied().collect();
-            let not_true: Vec<_> = (1..=9)
-                .filter(|row| !true_set.contains(row))
-                .collect();
+            let not_true: Vec<_> = (1..=9).filter(|row| !true_set.contains(row)).collect();
             assert_eq!(
                 rejected, not_true,
                 "{id}: SQL NOT TRUE must retain FALSE and UNKNOWN; SQL={rejected_sql}"
