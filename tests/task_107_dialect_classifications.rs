@@ -14,7 +14,10 @@ const FREEZE: &str = include_str!("../docs/task-107-acceptance-freeze.json");
 fn canonical(sql: &str, dialect: &str, parser: &dyn sqlparser::dialect::Dialect) -> Option<Value> {
     let protocol = analyze_sql(sql, dialect, parser).ok()?;
     let mut value: Value = serde_json::from_str(&to_json(&protocol)).ok()?;
-    if let Some(input) = value["inputs"].as_array_mut().and_then(|inputs| inputs.first_mut()) {
+    if let Some(input) = value["inputs"]
+        .as_array_mut()
+        .and_then(|inputs| inputs.first_mut())
+    {
         input["dialect"] = Value::Null;
     }
     Some(value)
@@ -63,10 +66,13 @@ fn all_frozen_dialect_cells_are_actually_parsed_and_equivalence_checked() {
                     }
                 },
             };
-            outcomes.insert(name.to_owned(), json!({
-                "parser": parser_status,
-                "canonical": canonical_status
-            }));
+            outcomes.insert(
+                name.to_owned(),
+                json!({
+                    "parser": parser_status,
+                    "canonical": canonical_status
+                }),
+            );
             if expected["parser"] == "unverified" || expected["canonical"] == "unverified" {
                 missing += 1;
             } else {
