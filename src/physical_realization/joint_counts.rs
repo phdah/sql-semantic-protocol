@@ -423,13 +423,13 @@ pub(super) fn conjoin_source_row_truths(
 ///
 /// Returns `None` when the case carries no single closed-world join
 /// population, so callers skip it without failing the whole goal.
-fn positive_join_keys(
-    case: &WitnessCase,
-) -> Option<(
-    crate::protocol::ColumnRef,
-    crate::protocol::ColumnRef,
-    crate::protocol::JoinKind,
-)> {
+struct PositiveJoinKeys {
+    left_key: crate::protocol::ColumnRef,
+    right_key: crate::protocol::ColumnRef,
+    join_kind: crate::protocol::JoinKind,
+}
+
+fn positive_join_keys(case: &WitnessCase) -> Option<PositiveJoinKeys> {
     case.obligations().iter().find_map(|obligation| {
         if let WitnessObligation::JoinPopulation {
             left_key,
@@ -439,7 +439,11 @@ fn positive_join_keys(
             ..
         } = obligation
         {
-            Some((left_key.clone(), right_key.clone(), *join_kind))
+            Some(PositiveJoinKeys {
+                left_key: left_key.clone(),
+                right_key: right_key.clone(),
+                join_kind: *join_kind,
+            })
         } else {
             None
         }
@@ -447,12 +451,15 @@ fn positive_join_keys(
 }
 
 /// Exact closed source counts with their non-key TRUE restrictions.
-type ClosedSourceRestrictions = (BTreeMap<String, u64>, BTreeMap<String, Vec<WitnessFormula>>);
+struct ClosedSourceRestrictions {
+    counts: BTreeMap<String, u64>,
+    filters: BTreeMap<String, Vec<WitnessFormula>>,
+}
 
 /// Extract exact closed source counts and non-key TRUE restrictions.
 ///
-/// Rejects tautologies, key references, inexact conditions, and duplicate
-/// source counts so joint construction fails closed.
+/// Skips tautologies and rejects key references, inexact conditions and
+/// duplicate source counts so joint construction fails closed.
 fn closed_source_restrictions(
     case: &WitnessCase,
     left_key: &crate::protocol::ColumnRef,
@@ -501,7 +508,10 @@ fn closed_source_restrictions(
                 .push(predicate.clone());
         }
     }
-    (!counts.is_empty()).then_some((counts, restrictions))
+    (!counts.is_empty()).then_some(ClosedSourceRestrictions {
+        counts,
+        filters: restrictions,
+    })
 }
 
 /// Outcome of reconciling zero-output terminals with a positive join case.
@@ -593,12 +603,12 @@ fn reconcile_zero_terminals(
 /// Returns `Some(Impossible)` only for certified INNER contradictions over
 /// nonempty sources; outer-join contradictions and unverified combinations
 /// return `None` so callers stay residual rather than guessing impossibility.
-fn joint_restrictions_contradiction(
+fn joint_restrictions_satisfiable(
     bundle: &AnalysisBundle,
     counts: &BTreeMap<String, u64>,
     restrictions: &BTreeMap<String, Vec<WitnessFormula>>,
     join_kind: crate::protocol::JoinKind,
-) -> Option<WitnessDirection> {
+) -> Option<bool> {
     for (source, predicates) in restrictions {
         match joint_source_truths_satisfiable(bundle, source, predicates) {
             Some(true) => {}
@@ -611,12 +621,12 @@ fn joint_restrictions_contradiction(
                 // to satisfy contradictory NOT TRUE filters, no complete
                 // physical assignment exists, independent of the join
                 // key population chosen.
-                return Some(WitnessDirection::Impossible);
+                return Some(false);
             }
             Some(false) | None => return None,
         }
     }
-    Some(WitnessDirection::Feasible(Vec::new()))
+    Some(true)
 }
 
 /// Rebuild one joint case by conjoining collected restrictions per source.
@@ -695,10 +705,18 @@ pub(super) fn joint_join_with_rejected_filters(
 
     let mut satisfied = Vec::new();
     for case in cases {
-        let Some((left_key, right_key, join_kind)) = positive_join_keys(&case) else {
+        let Some(PositiveJoinKeys {
+            left_key,
+            right_key,
+            join_kind,
+        }) = positive_join_keys(&case)
+        else {
             continue;
         };
-        let Some((counts, restrictions)) = closed_source_restrictions(&case, &left_key, &right_key)
+        let Some(ClosedSourceRestrictions {
+            counts,
+            filters: restrictions,
+        }) = closed_source_restrictions(&case, &left_key, &right_key)
         else {
             continue;
         };
@@ -713,12 +731,12 @@ pub(super) fn joint_join_with_rejected_filters(
             ZeroReconciliation::Satisfied(restrictions) => restrictions,
             ZeroReconciliation::Unsafe => continue,
         };
-        let Some(contradiction) =
-            joint_restrictions_contradiction(bundle, &counts, &restrictions, join_kind)
+        let Some(satisfiable) =
+            joint_restrictions_satisfiable(bundle, &counts, &restrictions, join_kind)
         else {
             continue;
         };
-        if matches!(contradiction, WitnessDirection::Impossible) {
+        if !satisfiable {
             return Some(WitnessDirection::Impossible);
         }
         if let Some(joint) = rebuild_joint_case(&case, &restrictions, &zeros) {
