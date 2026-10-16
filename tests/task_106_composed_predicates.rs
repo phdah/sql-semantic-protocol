@@ -2073,3 +2073,76 @@ fn uncorrelated_nonunit_group_histograms_stay_residual() {
         "unreconciled independent group multiplicities require correlation proof: {plan:?}"
     );
 }
+
+#[test]
+fn join_population_and_group_of_same_key_share_one_complete_source_bag() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a FROM l INNER JOIN r ON l.k = r.k",
+            "SELECT k, COUNT(*) AS n FROM l GROUP BY k",
+        ],
+        "postgresql",
+    );
+    let goals = [
+        (bundle.layers()[0].id(), 2),
+        (bundle.layers()[1].id(), 2),
+    ];
+    let plan = physical_joint_row_count_plan(&bundle, &goals);
+    let WitnessDirection::Feasible(cases) = plan else {
+        panic!("distinct matched join keys certify exactly two singleton groups: {plan:?}");
+    };
+    assert!(cases.iter().any(|case| {
+        case.obligations().iter().filter(|obligation| {
+            matches!(obligation, WitnessObligation::ClosedWorld { .. })
+        }).count() == 2
+            && case.obligations().iter().any(|obligation| {
+                matches!(
+                    obligation,
+                    WitnessObligation::JoinPopulation { closed_world: true, .. }
+                )
+            })
+            && case.obligations().iter().any(|obligation| {
+                matches!(obligation, WitnessObligation::OperatorPopulation { .. })
+            })
+            && case.obligations().iter().filter(|obligation| {
+                matches!(obligation, WitnessObligation::OutputRows { .. })
+            }).count() == 2
+    }), "both operators share l's DISTINCT key histogram");
+
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(a INTEGER,b INTEGER,k INTEGER);
+         CREATE TABLE r(a INTEGER,b INTEGER,k INTEGER);
+         INSERT INTO l VALUES (3,4,0),(5,6,1);
+         INSERT INTO r VALUES (0,0,0),(0,0,1);",
+    )
+    .unwrap();
+    let counts = [
+        "SELECT COUNT(*) FROM l JOIN r ON l.k=r.k",
+        "SELECT COUNT(*) FROM (SELECT k,COUNT(*) AS n FROM l GROUP BY k)",
+    ]
+    .map(|sql| db.query_row(sql, [], |row| row.get::<_, i64>(0)).unwrap());
+    assert_eq!(counts, [2, 2]);
+}
+
+#[test]
+fn grouping_a_non_join_key_does_not_inherit_join_key_uniqueness() {
+    let bundle = analyze_chain(
+        &[
+            "SELECT l.a FROM l INNER JOIN r ON l.k = r.k",
+            "SELECT b, COUNT(*) AS n FROM l GROUP BY b",
+        ],
+        "postgresql",
+    );
+    let result = physical_joint_row_count_plan(
+        &bundle,
+        &[
+            (bundle.layers()[0].id(), 2),
+            (bundle.layers()[1].id(), 2),
+        ],
+    );
+    assert!(
+        !matches!(result, WitnessDirection::Impossible),
+        "distinct join keys do not make an independently grouped column necessarily impossible"
+    );
+}
