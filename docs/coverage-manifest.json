@@ -2,6 +2,14 @@
   "schema_version": 1,
   "release_target": "3.0.0",
   "review_status": "maintainer_scope_approved_coverage_evidence_pending",
+  "task_107_oracle_evidence": {
+    "owner": "TASK-107",
+    "status": "implementation_in_progress",
+    "matrix": "docs/task-107-oracle-matrix.json",
+    "test": "tests/task_107_expression_oracles.rs",
+    "coverage": "registered representative SQL, dbt, dialect and seeded DuckDB evidence; acceptance matrix and full CI remain incomplete",
+    "release_approved": false
+  },
   "task_105_expression_evidence": {
     "owner": "TASK-105",
     "status": "bounded_certified_literals_and_explicit_residual_boundary",
