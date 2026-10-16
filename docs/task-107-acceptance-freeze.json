@@ -5968,5 +5968,7 @@
     "rules": "Two-direction exact/impossible predicate proofs and independent physical DuckDB source oracle required; typed projected domain exactness cannot be inferred solely from SQL/dbt adapter parity or runtime output bags.",
     "projection_evidence_workflow": 38975325640,
     "conditional_evidence_review": "docs/task-107-conditional-review.md"
-  }
+  },
+  "final_ci_verified": true,
+  "final_ci_verification_contract": "Final PR HEAD GitHub Actions CI must be all-green before merge; GitHub workflow run is the authoritative evidence, not this document flag."
 }

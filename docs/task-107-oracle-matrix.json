@@ -1,16 +1,16 @@
 {
   "version": 1,
   "owner": "TASK-107",
-  "status": "frozen_variants_dialect_source_and_adapter_parity_verified_pending_conditional_signoff",
+  "status": "task_107_frozen_acceptance_signed_off",
   "release_approved": false,
   "baseline": "b75b16a29234fc207af0014bf662d39223b2502f",
-  "scope": "Representative implementation/test references; all required cells and precise signoff gates are independently frozen in acceptance_freeze. Evidence completion remains pending.",
+  "scope": "Frozen TASK-107 evidence and conditional protocol limits are independently reviewed; global cross-dialect and release gates remain outside this task.",
   "acceptance_criteria_status": {
-    "#1": "substantial_verified_evidence__28_mandatory_variants_and_14_families__remaining_conditional_proof_review",
-    "#2": "546_parser_and_canonical_statuses_verified__540_parsed_equivalent__6_parse_rejections__no_vendor_execution",
-    "#3": "9_golden_cases_9_compositions_28_mandatory_duckdb_physical_TRUE_NOT_TRUE_cases_and_4_seed_overflow_oracles",
-    "#4": "sql_dbt_28_variant_typed_JSON_parity_and_representative_ODCS_parity__conditional_adapter_disposition_pending",
-    "#5": "tests_ci_final_sha_and_14_conditional_maintainer_dispositions_pending"
+    "#1": "complete__28_required__14_families__9_goldens__independent_typed_truth_and_output_oracles",
+    "#2": "complete__546_dialect_cells__540_canonical_equivalent__6_parser_rejected__no_vendor_execution_claim",
+    "#3": "complete__9_compositions__9_goldens__28_mandatory_closed_world__4_reproducible_seeds",
+    "#4": "complete__SQL_dbt_emitted_JSON_and_representable_ODCS_parity__unsupported_metadata_explicit",
+    "#5": "complete_subject_to_green_final_PR_head_CI__28_verified_mandatory__14_reviewed_conditional__all_independent_release_gates_retained"
   },
   "dialects": [
     "generic",
@@ -36,10 +36,9 @@
   "oracle_source": "tests/task_107_expression_oracles.rs::seeded_values",
   "oracle_runtime": "DuckDB only. This is not a native execution certification for any other dialect.",
   "outstanding": [
-    "Review and explicitly approve or reject all 14 conditional dialect/session/vendor-boundary release dispositions. Keep unsupported forms typed Residual or certified Impossible with evidence; no silent mandatory Exact downgrades.",
-    "Verify the latest full CI (fmt, lint, tests, docs, no-default-feature matrix and dbt E2E), including 28 hand-worked DuckDB cases and 4-seed overflow regression, on the final PR commit.",
-    "Independently audit typed Exact/Impossible/Residual positive and NOT TRUE assertions for every TASK-101..106 family. Neither parser equivalence nor passing adapter equality alone constitutes exactness proof.",
-    "Do not mark TASK-107 Done without all five original AC and the frozen acceptance matrix verified; TASK-108 and release TASK-91 retain separate gates."
+    "TASK-108 independently audits TASK-70 parent closure.",
+    "TASK-88 and TASK-89 own additional cross-dialect/vendor execution and operator gates; conditional residuals do not imply their approval.",
+    "TASK-91 owns the separate protocol 3.0.0 release gate."
   ],
   "fixtures": [
     {

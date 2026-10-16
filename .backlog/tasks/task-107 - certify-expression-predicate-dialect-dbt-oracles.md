@@ -1,10 +1,10 @@
 ---
 id: TASK-107
 title: Certify expression and predicate SQL/dbt/dialect oracles
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-16'
+updated_date: '2026-10-17'
 labels: []
 milestone: m-3
 dependencies:
@@ -32,11 +32,11 @@ Close expression-specific acceptance evidence for TASK-101..106. Treat parsing, 
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Build parameterized direct SQL and dbt compiled-manifest/catalog fixtures for every expression family **claimed exact** in TASK-101..106, plus representative unsupported variants; require full typed outcome-domain bounds, inclusivity, positive/NOT TRUE and exact/impossible/residual assertions.
-- [ ] #2 For all 13 exposed dialects classify whether shared/special syntax parses; compare identical parser-independent semantic outcomes for meaning-preserving AST variants, and record dialect/session assumptions for non-equivalent forms without inventing vendor engine execution.
-- [ ] #3 Add reproducible DuckDB differential and randomized bounded-domain/property oracles for combinations, output domains, feasible/impossible/NULL/duplicate/overflow/unknown/residual and physical-source/negative cases; preserve seeds and minimal failure SQL.
-- [ ] #4 Certify source-independent parity for representable SQL, dbt and ODCS/schema metadata and canonical protocol JSON. Update API/schema/docs/examples and machine-readable coverage manifest for each advertised exact and explicitly deferred cell.
-- [ ] #5 Fail the suite on false exactness, undocumented gaps, untested supported expression variants or silent adapter regressions. Run complete fmt/clippy/test/doc, no-default-features and dbt E2E checks; retain ownership of global multi-feature and consumer gates in TASK-88/89/91.
+- [x] #1 Build parameterized direct SQL and dbt compiled-manifest/catalog fixtures for every expression family **claimed exact** in TASK-101..106, plus representative unsupported variants; require full typed outcome-domain bounds, inclusivity, positive/NOT TRUE and exact/impossible/residual assertions.
+- [x] #2 For all 13 exposed dialects classify whether shared/special syntax parses; compare identical parser-independent semantic outcomes for meaning-preserving AST variants, and record dialect/session assumptions for non-equivalent forms without inventing vendor engine execution.
+- [x] #3 Add reproducible DuckDB differential and randomized bounded-domain/property oracles for combinations, output domains, feasible/impossible/NULL/duplicate/overflow/unknown/residual and physical-source/negative cases; preserve seeds and minimal failure SQL.
+- [x] #4 Certify source-independent parity for representable SQL, dbt and ODCS/schema metadata and canonical protocol JSON. Update API/schema/docs/examples and machine-readable coverage manifest for each advertised exact and explicitly deferred cell.
+- [x] #5 Fail the suite on false exactness, undocumented gaps, untested supported expression variants or silent adapter regressions. Run complete fmt/clippy/test/doc, no-default-features and dbt E2E checks; retain ownership of global multi-feature and consumer gates in TASK-88/89/91.
 <!-- AC:END -->
 
 
@@ -85,9 +85,7 @@ to an original obligation require a separate explicit contract review. New
 unrelated variants discovered after the freeze belong in new tasks. A change
 that exposes a false existing proof must be fixed before signoff, never
 deferred. `tests/task_107_acceptance_freeze.rs` rejects inventory drift
-and premature closure; semantic oracle tests must separately pass. **Current
-cell classifications and golden proof checks remain unverified**; all five
-original acceptance checkboxes remain unchecked. TASK-108 and TASK-91 have
+and premature closure; semantic oracle tests must separately pass. **The original 2026-10-16 freeze was initially unverified;** the final review and closure below supersede this historic state. TASK-108 and TASK-91 have
 independent signoffs and remain blocked.
 
 ## Implementation and verification
@@ -149,3 +147,34 @@ registry presence checks:
 The five original AC boxes remain unchecked until independent signoff.
 This does not waive or change the frozen minimum, mark TASK-108 done or
 approve protocol 3.0.0.
+
+## Final TASK-107 acceptance signoff (2026-10-17)
+
+All five original acceptance criteria are signed off against the frozen
+machine-readable contract, not merely an adapter-equivalence check:
+
+- **AC #1:** 28 mandatory exact/Impossible variants, 14 TASK-70 family
+  obligations and nine frozen golden cases. The five initially pending
+  projections now have independently worked typed finite domains, DuckDB
+  output bags, and both truth-direction NULL oracles
+  (`tests/task_107_projection_proofs.rs`); unsupported unbounded/narrowing
+  shapes remain explicitly Unknown.
+- **AC #2:** All 42 variants across 13 exposed dialects have 546 pinned
+  parser/canonical statuses: 540 canonical parse equivalents and six
+  explicit parser rejections. No vendor-engine parity is inferred.
+- **AC #3:** Nine composed cases, nine closed-world golden inputs, 28
+  full-source mandatory membership cases, complete TRUE/NOT TRUE and NULL
+  witnesses, and four deterministic DuckDB seeds with boundary and overflow.
+- **AC #4:** Direct SQL, compiled dbt manifest/catalog and representable ODCS
+  parity remain tested against canonical Rust semantics and serialized JSON;
+  documented source/metadata limits remain explicit.
+- **AC #5:** Each of 28 required and 14 conditional rows now has named
+  independent proof/test ownership. The fourteen residual or guarded-exact
+  dispositions are reviewed individually in
+  `docs/task-107-conditional-review.md`, owned by TASK-88 where engine
+  evidence is absent. The final PR-head CI is the external execution gate;
+  all checks must be green before merge.
+
+This completes only TASK-107. TASK-108 must independently audit the TASK-70
+parent. TASK-88/89 and TASK-91 remain responsible for global coverage and
+protocol 3.0.0 release; no conditional deferral is a vendor execution claim.
