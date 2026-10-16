@@ -55,12 +55,22 @@ This evidence does **not** discharge the five acceptance criteria:
   composed-semantics relabeling (Intermediate provenance contract kept).
 - `tests/task_106_composed_predicates.rs` (new, public API only): chained
   range-filter conjunction with joint TRUE/NOT TRUE feasibility, single-layer
-  and chained contradiction handling (Impossible vs Empty plus
-  ConflictingDomains gap), filtered INNER JOIN key equalities with explicit
+  and chained contradiction handling (certified Impossible TRUE,
+  feasible NOT TRUE, and Empty composed domains), filtered INNER JOIN key equalities with explicit
   single-source boundaries, GROUP BY/HAVING output domains with residual
   scope, computed cross-layer residual vs exact local affine proof, QUALIFY
   residual, INSERT-select composition with partial downstream, dbt parity,
   13-dialect parser/equivalence cells, DuckDB TRUE/IS NOT TRUE oracles.
+- Follow-up review fixes: necessary contradictory filter chains now
+  return Impossible for positive row-count goals. Complete single-source
+  definitions with certified signed-integer widening CAST can transport
+  typed physical TRUE/NOT TRUE predicates without treating unsupported
+  composed semantic domains as exact. An equijoin population and two
+  independent negative terminal filters share a complete physical source
+  assignment when those filters do not constrain join keys. Ordered
+  INSERT/UPDATE/MERGE is checked against complete DuckDB source/target
+  states; partial DML paths remain excluded from source filter inversion.
+  These are bounded capabilities, not a proof of every graph/operator AC.
 - Promoted one pinned OR-filter chain
   (`tests/physical_realization/graph.rs`) from multiple-witnesses residual
   to joint feasibility; untyped chains keep the residual.
