@@ -162,7 +162,12 @@
                   "on_failure": "runtime_dependent",
                   "target_bits": 32
                 },
-                "lineage": [],
+                "lineage": [
+                  {
+                    "column": "a",
+                    "relation": "t"
+                  }
+                ],
                 "name": "v"
               }
             ]
@@ -215,7 +220,12 @@
                 "on_failure": "runtime_dependent",
                 "target_bits": 32
               },
-              "lineage": [],
+              "lineage": [
+                {
+                  "column": "a",
+                  "relation": "t"
+                }
+              ],
               "name": "v"
             }
           ]
