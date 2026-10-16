@@ -790,7 +790,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V002",
@@ -910,7 +914,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V003",
@@ -1030,7 +1038,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V004",
@@ -1150,7 +1162,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V005",
@@ -1270,7 +1286,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V006",
@@ -1390,7 +1410,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V007",
@@ -1510,7 +1534,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V008",
@@ -1630,7 +1658,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V009",
@@ -1750,7 +1782,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V010",
@@ -1870,7 +1906,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V011",
@@ -1990,7 +2030,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V012",
@@ -2110,7 +2154,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V013",
@@ -2230,7 +2278,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V014",
@@ -2350,7 +2402,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V015",
@@ -2470,7 +2526,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V016",
@@ -2590,7 +2650,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V017",
@@ -2710,7 +2774,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V018",
@@ -2830,7 +2898,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V019",
@@ -2950,7 +3022,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V020",
@@ -3070,7 +3146,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V021",
@@ -3313,7 +3393,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V023",
@@ -3679,7 +3763,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V026",
@@ -3922,7 +4010,11 @@
           "vendor_execution": "not_claimed"
         }
       },
-      "semantic_exactness_evidence": "pending_independent_typed_true_not_true_proof_review"
+      "semantic_exactness_evidence": "verified_exact_or_impossible",
+      "truth_proof_tests": [
+        "tests/task_107_full_variant_adapters.rs::all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity",
+        "tests/task_107_frozen_execution_oracles.rs::all_mandatory_variants_match_independent_duckdb_closed_source_membership"
+      ]
     },
     {
       "id": "E107-V028",
@@ -5781,5 +5873,13 @@
     "composition_regressions_passed": 9,
     "evidence_run_id": 38965801816,
     "evidence_limits": "Reproducible DuckDB golden sources and existing TASK-101..106 composition tests; not a certification that all 28 mandatory variants are semantically exact or that every adapter/conditional cell is closed."
+  },
+  "semantic_proof_status": {
+    "required_predicate_variants_verified": 23,
+    "required_projection_variants_pending": 5,
+    "conditional_semantic_reviews_pending": 14,
+    "predicate_evidence_workflow": 38969498349,
+    "all_28_original_criteria_claimed_complete": false,
+    "rules": "Two-direction exact/impossible predicate proofs and independent physical DuckDB source oracle required; typed projected domain exactness cannot be inferred solely from SQL/dbt adapter parity or runtime output bags."
   }
 }
