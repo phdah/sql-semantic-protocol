@@ -545,16 +545,12 @@ fn resolve_widened_filter_column(
             // A materialized relation may carry its own CHECK, key, default
             // or generated-column law not entailed by a copied source value.
             // Until those laws are transported, such edges are not invertible.
-            if bundle
-                .relation_constraints()
-                .iter()
-                .any(|set| {
-                    set.relation() == canonical
-                        && (!set.constraints().is_empty()
-                            || !set.column_value_sources().is_empty()
-                            || !set.diagnostics().is_empty())
-                })
-            {
+            if bundle.relation_constraints().iter().any(|set| {
+                set.relation() == canonical
+                    && (!set.constraints().is_empty()
+                        || !set.column_value_sources().is_empty()
+                        || !set.diagnostics().is_empty())
+            }) {
                 return None;
             }
             let [producer_id] = edge.producer_layer_ids() else {
