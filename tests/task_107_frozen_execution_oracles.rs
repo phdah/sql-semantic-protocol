@@ -142,13 +142,12 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
                 let rows = stmt
                     .query_map([], |row| row.get::<_, Option<i64>>(0))
                     .unwrap();
-                let expected_set: Option<BTreeSet<i64>> =
-                    domain["set"].as_array().map(|values| {
-                        values
-                            .iter()
-                            .map(|value| value.as_str().unwrap().parse::<i64>().unwrap())
-                            .collect()
-                    });
+                let expected_set: Option<BTreeSet<i64>> = domain["set"].as_array().map(|values| {
+                    values
+                        .iter()
+                        .map(|value| value.as_str().unwrap().parse::<i64>().unwrap())
+                        .collect()
+                });
                 let lower = domain["lower"].as_str().map(|s| s.parse::<i64>().unwrap());
                 let upper = domain["upper"].as_str().map(|s| s.parse::<i64>().unwrap());
                 let non_null = domain["null"] == false;
@@ -156,17 +155,22 @@ fn frozen_golden_sources_match_duckdb_true_not_true_and_unknown_membership() {
                     match value.unwrap() {
                         Some(value) => {
                             if let Some(set) = &expected_set {
-                                assert!(set.contains(&value), "{id}: {value} outside frozen finite output domain");
+                                assert!(
+                                    set.contains(&value),
+                                    "{id}: {value} outside frozen finite output domain"
+                                );
                             }
                             if let Some(lower) = lower {
                                 assert!(
-                                    value > lower || (value == lower && domain["lower_inclusive"] == true),
+                                    value > lower
+                                        || (value == lower && domain["lower_inclusive"] == true),
                                     "{id}: {value} below frozen interval"
                                 );
                             }
                             if let Some(upper) = upper {
                                 assert!(
-                                    value < upper || (value == upper && domain["upper_inclusive"] == true),
+                                    value < upper
+                                        || (value == upper && domain["upper_inclusive"] == true),
                                     "{id}: {value} above frozen interval"
                                 );
                             }
