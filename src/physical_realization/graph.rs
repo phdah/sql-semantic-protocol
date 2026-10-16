@@ -432,6 +432,152 @@ pub(super) fn resolve_filter_column_with_evidence(
     }
 }
 
+/// The one certified computed projection this physical mapper can invert:
+/// an explicit, total signed-integer widening CAST of a single physical
+/// column. Its declared materialized width must match the CAST result.
+/// Plain copies are permitted alongside it but must retain equal datatypes.
+fn widened_or_copied_source(
+    bundle: &AnalysisBundle,
+    relation: &str,
+    output: &crate::protocol::OutputColumn,
+    query: &QueryStatement,
+) -> Option<crate::protocol::ColumnRef> {
+    use crate::data_type::DataType;
+
+    fn signed_width(value: &DataType) -> Option<u16> {
+        match value {
+            DataType::SignedInteger { bits: Some(bits) } if *bits <= 64 => Some(*bits),
+            DataType::Nullable(inner) => signed_width(inner),
+            _ => None,
+        }
+    }
+
+    let [lineage] = output.lineage() else {
+        return None;
+    };
+    let [input] = query.sources() else {
+        return None;
+    };
+    if lineage.relation() != input.name() {
+        return None;
+    }
+    let physical = crate::protocol::ColumnRef::new(
+        Some(lineage.relation().to_string()),
+        lineage.column().to_string(),
+    );
+    let produced = crate::protocol::ColumnRef::new(
+        Some(relation.to_string()),
+        output.name().to_string(),
+    );
+    let from = bundle_column_datatype(bundle, &physical)?;
+    let to = bundle_column_datatype(bundle, &produced)?;
+    match output.expression() {
+        crate::protocol::Expression::Column(_) => {
+            (output.plain_copy_source().is_some() && from == to).then_some(physical)
+        }
+        crate::protocol::Expression::SignedIntegerCast(cast) => {
+            let crate::protocol::Expression::Column(column) = cast.expression() else {
+                return None;
+            };
+            if crate::domain::resolve_column(column, query.sources()) != physical {
+                return None;
+            }
+            let source_bits = signed_width(&from)?;
+            let target_bits = signed_width(&to)?;
+            (source_bits <= target_bits && target_bits == cast.target_bits()).then_some(physical)
+        }
+        _ => None,
+    }
+}
+
+/// Only complete, unfiltered producer definitions with total projections
+/// are admissible. CAST inversion cannot make a partial DML producer physical.
+fn total_widening_producer(
+    bundle: &AnalysisBundle,
+    node: &PhysicalPlanNode,
+    query: &QueryStatement,
+) -> bool {
+    let [relation] = node.produced_relations() else {
+        return false;
+    };
+    matches!(node.write_kind(), Some(WriteKind::Definition))
+        && query.sources().len() == 1
+        && query.joins().is_empty()
+        && query.aggregation().is_none()
+        && query.set_operation().is_none()
+        && query.window_witness().is_none()
+        && query.subquery_witnesses().is_empty()
+        && query.predicates().where_predicate().is_none()
+        && query.predicates().having_predicate().is_none()
+        && query.predicates().qualify_predicate().is_none()
+        && query.diagnostics().is_empty()
+        && !query.output().columns().is_empty()
+        && query
+            .output()
+            .columns()
+            .iter()
+            .all(|column| widened_or_copied_source(bundle, relation, column, query).is_some())
+}
+
+/// Resolve only those computed materializations whose entire producer chain
+/// consists of identity columns or certified lossless signed widening casts.
+fn resolve_widened_filter_column(
+    bundle: &AnalysisBundle,
+    walker: &Walker<'_>,
+    consumer_id: &str,
+    column: &crate::protocol::ColumnRef,
+    depth: usize,
+) -> Option<crate::protocol::ColumnRef> {
+    if depth > walker.layers.len() {
+        return None;
+    }
+    let layer = walker.layers.get(consumer_id).copied()?;
+    let canonical = layer.canonical_relation(column.relation()?);
+    let edge = bundle
+        .graph()
+        .edges()
+        .iter()
+        .find(|edge| edge.consumer_layer_id() == consumer_id && edge.relation() == canonical)?;
+    match edge.resolution() {
+        RelationResolution::External => Some(crate::protocol::ColumnRef::new(
+            Some(edge.relation().to_string()),
+            column.name().to_string(),
+        )),
+        RelationResolution::Resolved => {
+            let [producer_id] = edge.producer_layer_ids() else {
+                return None;
+            };
+            let node = walker
+                .nodes
+                .iter()
+                .find(|node| node.id() == &PhysicalPlanRef::Layer(producer_id.clone()))?;
+            let producer = walker.layers.get(producer_id.as_str()).copied()?;
+            let query = query_for(bundle, producer)?;
+            if !total_widening_producer(bundle, node, query) {
+                return None;
+            }
+            let mut outputs = query
+                .output()
+                .columns()
+                .iter()
+                .filter(|output| output.name() == column.name());
+            let output = outputs.next()?;
+            if outputs.next().is_some() {
+                return None;
+            }
+            let physical = widened_or_copied_source(bundle, &canonical, output, query)?;
+            resolve_widened_filter_column(
+                bundle,
+                walker,
+                producer.id(),
+                &physical,
+                depth + 1,
+            )
+        }
+        _ => None,
+    }
+}
+
 /// Normalize sequential physical WHERE filters into one candidate-row
 /// formula, then solve TRUE versus FALSE/UNKNOWN jointly. Distinct independent
 /// sufficient examples must never simply be conjoined without this proof.
@@ -441,7 +587,12 @@ pub(super) fn joint_physical_filters(
     semantics: &crate::bundle::ResolvedComposedSemantics,
 ) -> Option<(WitnessDirection, WitnessDirection)> {
     let filters = semantics.boolean_witnesses();
-    if filters.len() <= 1 || filters.len() > 12 || walker.sources.len() != 1 {
+    if filters.is_empty()
+        || filters.len() > 12
+        || walker.sources.len() != 1
+        || (filters.len() == 1
+            && filters[0].boundary_kind() != GroupBoundaryKind::Intermediate)
+    {
         return None;
     }
     let source = walker.sources.iter().next()?;
@@ -487,7 +638,9 @@ pub(super) fn joint_physical_filters(
             {
                 return None;
             }
-        } else if !transparent_projection(query) {
+        } else if !transparent_projection(query)
+            && !total_widening_producer(bundle, node, query)
+        {
             return None;
         }
     }
@@ -520,11 +673,30 @@ pub(super) fn joint_physical_filters(
                         original_type.is_some() && original_type == mapped_type
                     },
                 );
-                certified.or_else(|| {
-                    filter.witness().mapped_to_physical(|column| {
-                        resolve_filter_column(bundle, walker, filter.origin_layer_id(), column, 0)
+                certified
+                    .or_else(|| {
+                        filter.witness().mapped_to_physical(|column| {
+                            resolve_filter_column(bundle, walker, filter.origin_layer_id(), column, 0)
+                        })
                     })
-                })
+                    .or_else(|| {
+                        let schema = bundle
+                            .source_schemas()
+                            .iter()
+                            .find(|schema| schema.relation() == source)?;
+                        filter.witness().mapped_to_physical_widened(
+                            |column| {
+                                resolve_widened_filter_column(
+                                    bundle,
+                                    walker,
+                                    filter.origin_layer_id(),
+                                    column,
+                                    0,
+                                )
+                            },
+                            |column| physical_integer_evidence(schema, column),
+                        )
+                    })
             }
             GroupBoundaryKind::Unresolved => None,
         })
