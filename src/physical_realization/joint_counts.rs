@@ -871,6 +871,9 @@ pub fn physical_joint_row_count_plan(
             return proof;
         }
     }
+    if let Some(witness) = joint_join_and_distinct_group_goals(bundle, &ordered) {
+        return witness;
+    }
     if let Some(witness) = joint_mixed_operator_and_source_goals(bundle, &ordered) {
         return witness;
     }
