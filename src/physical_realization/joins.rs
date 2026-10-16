@@ -858,10 +858,7 @@ fn exact_positive_source_filter(formula: &WitnessFormula, relation: &str) -> boo
 /// Restrict overlap reconciliation to the same physical row's certified
 /// non-key TRUE predicates. A residual, a different row variable or a
 /// disjunction over separate row bags cannot establish joint feasibility.
-fn source_true_conjuncts(
-    formula: &WitnessFormula,
-    source: &str,
-) -> Option<Vec<WitnessFormula>> {
+fn source_true_conjuncts(formula: &WitnessFormula, source: &str) -> Option<Vec<WitnessFormula>> {
     if *formula == count_tautology() {
         return Some(Vec::new());
     }
@@ -870,9 +867,7 @@ fn source_true_conjuncts(
             row,
             predicate,
             truth: crate::boolean_witness::BooleanTruthCase::True,
-        } if row.relation() == source && predicate.is_exact() => {
-            Some(vec![formula.clone()])
-        }
+        } if row.relation() == source && predicate.is_exact() => Some(vec![formula.clone()]),
         WitnessFormula::All(children) if !children.is_empty() => {
             let mut conjuncts = Vec::new();
             for child in children {
@@ -965,26 +960,24 @@ pub(super) fn joint_join_and_distinct_group_goals(
 
     let mut cases = Vec::new();
     for join_case in join_cases {
-        let Some((
-            left_key,
-            right_key,
-            left_rows,
-            right_rows,
-        )) = join_case.obligations().iter().find_map(|obligation| {
-            if let WitnessObligation::JoinPopulation {
-                left_key,
-                right_key,
-                left_rows,
-                right_rows,
-                pattern: JoinPopulationPattern::DistinctMatched,
-                closed_world: true,
-                ..
-            } = obligation {
-                Some((left_key, right_key, *left_rows, *right_rows))
-            } else {
-                None
-            }
-        }) else {
+        let Some((left_key, right_key, left_rows, right_rows)) =
+            join_case.obligations().iter().find_map(|obligation| {
+                if let WitnessObligation::JoinPopulation {
+                    left_key,
+                    right_key,
+                    left_rows,
+                    right_rows,
+                    pattern: JoinPopulationPattern::DistinctMatched,
+                    closed_world: true,
+                    ..
+                } = obligation
+                {
+                    Some((left_key, right_key, *left_rows, *right_rows))
+                } else {
+                    None
+                }
+            })
+        else {
             continue;
         };
         let mut obligations = join_case.obligations().to_vec();
