@@ -1084,7 +1084,10 @@ impl<'a> Composer<'a> {
         let Some(source) = column.plain_copy_source() else {
             return self
                 .compose_affine_output_domain(consumer, column.expression())
-                .map_or(domain.clone(), |inherited| intersect_domains(&domain, &inherited));
+                .map_or(domain.clone(), |inherited| match &domain {
+                    ValueDomain::Unknown(_) | ValueDomain::Unbounded => inherited,
+                    _ => intersect_domains(&domain, &inherited),
+                });
         };
         let Some(edge) = self
             .edge_for_source(consumer.id(), source.relation())
