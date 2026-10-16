@@ -231,8 +231,15 @@ fn frozen_child_families_and_golden_cases_are_nonvacuous_and_closed_world() {
             compositions.insert(name(case, "id"), case).is_none(),
             "duplicate composition ID"
         );
-        assert!(!name(case, "test_file").is_empty());
-        assert!(!name(case, "test_name").is_empty());
+        let file = name(case, "test_file");
+        let test = name(case, "test_name");
+        let source = std::fs::read_to_string(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(file))
+            .unwrap_or_else(|error| panic!("{}: missing test file {file}: {error}", case["id"]));
+        assert!(
+            source.contains(&format!("fn {test}(")),
+            "{}: no executable regression {file}::{test}",
+            case["id"]
+        );
     }
     assert_eq!(compositions.len(), 9);
 }
