@@ -572,6 +572,32 @@ impl BooleanWitness {
         })
     }
 
+    /// Transport a typed integer predicate through a caller-certified
+    /// lossless widening materialization. The producer must independently
+    /// prove every expression and hop are total and injective; the physical
+    /// source width replaces (rather than inherits) the wider intermediate
+    /// bounds before either truth direction is rechecked.
+    pub(crate) fn mapped_to_physical_widened(
+        &self,
+        resolve: impl FnMut(&ColumnRef) -> Option<ColumnRef>,
+        mut physical_integer: impl FnMut(&ColumnRef) -> Option<SignedIntegerEvidence>,
+    ) -> Option<Self> {
+        if !self.condition.is_exact()
+            || self.condition.requires_binary_string_assumptions()
+            || self.integer_bounds.is_empty()
+        {
+            return None;
+        }
+        let mut mapped = self.mapped_to_physical_certified(resolve, |_, _| true)?;
+        let mut integer_bounds = BTreeMap::new();
+        for column in mapped.integer_bounds.keys() {
+            integer_bounds.insert(column.clone(), physical_integer(column)?);
+        }
+        mapped.integer_bounds = integer_bounds;
+        mapped.recheck_truth_directions();
+        Some(mapped)
+    }
+
     /// Recheck a sequence of WHERE filters on the *same physical row* jointly.
     ///
     /// Each input must have been independently resolved through transparent
