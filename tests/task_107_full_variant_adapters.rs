@@ -145,7 +145,8 @@ fn all_frozen_mandatory_expression_variants_have_direct_sql_and_dbt_parity() {
             if !constructive_both && !exact_scalar_domain {
                 unproved.push(format!(
                     "{id}: {sql}; witnesses={directions:?}; exactness={:?}; column_domains={:?}",
-                    expected.condition_exactness(), expected.column_domains()
+                    expected.condition_exactness(),
+                    expected.column_domains()
                 ));
             }
         }
