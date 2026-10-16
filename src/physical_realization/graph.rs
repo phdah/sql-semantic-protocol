@@ -335,10 +335,7 @@ fn bundle_column_datatype(
 /// independently on the produced table. Defaults, generated expressions,
 /// CHECKs and even unresolved diagnostics must not silently disappear when
 /// its rows are mapped back to a physical source.
-pub(super) fn untransported_materialization_laws(
-    bundle: &AnalysisBundle,
-    relation: &str,
-) -> bool {
+pub(super) fn untransported_materialization_laws(bundle: &AnalysisBundle, relation: &str) -> bool {
     bundle.relation_constraints().iter().any(|set| {
         set.relation() == relation
             && (!set.constraints().is_empty()
