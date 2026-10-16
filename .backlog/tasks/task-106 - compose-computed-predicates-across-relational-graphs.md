@@ -1,11 +1,11 @@
 ---
 id: TASK-106
 title: Compose typed expression obligations through relational graphs
-status: In Progress
+status: Done
 assignee:
   - OpenCode
 created_date: '2026-10-13'
-updated_date: '2026-10-16 17:53'
+updated_date: '2026-10-16 21:32'
 labels: []
 milestone: m-3
 dependencies:
@@ -37,6 +37,7 @@ modified_files:
   - tests/physical_write_adapter_parity.rs
   - tests/physical_write_states.rs
   - tests/task_106_composed_predicates.rs
+  - tests/task_106_signoff.rs
   - tests/task_70_predicates.rs
   - docs/code-map.md
   - docs/coverage-manifest.json
@@ -58,11 +59,11 @@ Consume canonical expression and predicate proofs from TASK-101..105 across actu
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 **Typed operator propagation:** For the **frozen TASK-106 matrix below**, propagate SQL TRUE/NOT TRUE, typed output domains and physical column references through the enumerated transparent/affine projection, filtered equijoin, grouping/HAVING, ROW_NUMBER/QUALIFY and computed INSERT/UPDATE/MERGE cases. Do not promise arbitrary combinations.
-- [ ] #2 **Strongest domain within certified rules:** For each enumerated producer/materialization case, preserve the strongest value set/interval proven by its documented transfer laws, including bound inclusivity, NULL, integer width/overflow, lineage and stable producer identity; emit unknown/residual when the rule's preconditions fail. Do not require novel symbolic solvers.
-- [ ] #3 **Joint physical assignments within the matrix:** Prove one consistent complete typed source-row assignment for the enumerated positive and SQL NOT TRUE targets, compatible filtered joins, grouping/ranking combinations and ordered writes. Other correlated DAG shapes must remain typed residuals.
-- [ ] #4 **Soundness and fail-closed behavior:** For matrix contradiction/closed-world cases require `Impossible`; for certified constructive cases require complete `Feasible`/exact plans; for the named unsafe/unsupported cases require `Residual` rather than fabricated feasibility. Every constructive plan must honor all represented physical relation constraints.
-- [ ] #5 **Finite conformance and sign-off:** Each matrix case must identify existing public-API regression evidence; constructive cases require an independent DuckDB oracle where executable, and applicable SQL/dbt, parser-capable dialect, schema, adapter and documentation parity checks must pass. Full Rust/Clippy/fmt/docs/no-default/dbt E2E CI is the final gate, run after canonical changes.
+- [x] #1 **Typed operator propagation:** For the **frozen TASK-106 matrix below**, propagate SQL TRUE/NOT TRUE, typed output domains and physical column references through the enumerated transparent/affine projection, filtered equijoin, grouping/HAVING, ROW_NUMBER/QUALIFY and computed INSERT/UPDATE/MERGE cases. Do not promise arbitrary combinations.
+- [x] #2 **Strongest domain within certified rules:** For each enumerated producer/materialization case, preserve the strongest value set/interval proven by its documented transfer laws, including bound inclusivity, NULL, integer width/overflow, lineage and stable producer identity; emit unknown/residual when the rule's preconditions fail. Do not require novel symbolic solvers.
+- [x] #3 **Joint physical assignments within the matrix:** Prove one consistent complete typed source-row assignment for the enumerated positive and SQL NOT TRUE targets, compatible filtered joins, grouping/ranking combinations and ordered writes. Other correlated DAG shapes must remain typed residuals.
+- [x] #4 **Soundness and fail-closed behavior:** For matrix contradiction/closed-world cases require `Impossible`; for certified constructive cases require complete `Feasible`/exact plans; for the named unsafe/unsupported cases require `Residual` rather than fabricated feasibility. Every constructive plan must honor all represented physical relation constraints.
+- [x] #5 **Finite conformance and sign-off:** Each matrix case must identify existing public-API regression evidence; constructive cases require an independent DuckDB oracle where executable, and applicable SQL/dbt, parser-capable dialect, schema, adapter and documentation parity checks must pass. Full Rust/Clippy/fmt/docs/no-default/dbt E2E CI is the final gate, run after canonical changes.
 <!-- AC:END -->
 
 ## Frozen TASK-106 acceptance scope (2026-10-16)
@@ -367,3 +368,15 @@ coverage manifest scope updated to match. 4 new tests; focused file green
 Still open for Done: multi-column/nonlinear symbolic domains, general
 multi-join DAGs, correlated sources, general aggregates/windows,
 rank-over-join proofs, and the full family support matrix.
+
+## Final finite-scope acceptance sign-off (2026-10-16)
+
+**TASK-106 Done for the frozen fifteen-row matrix above.** All five acceptance criteria are independently traceable to public API and oracle evidence; the earlier open-ended "strict" entries below are historical superseded notes rather than unbounded remaining work.
+
+- **AC1:** typed propagation: F1-F3, J1-J2, G1-G2, R1-R2, JG1 and W1.
+- **AC2:** materialized strongest certified domains: F2-F3, G1, W1, X1; includes finite signed sets/ranges, boundary inclusivity, NULL/overflow and producer identities.
+- **AC3:** one consistent source bag: F1, J1-J2, G2, R2, JG1 and W1; conflicting assignments do not become feasible.
+- **AC4:** fail-closed SQL three-valued truth: F1-F3, J1-J2, R1-R2, X1; impossibility requires certified contradiction, other cases remain residual.
+- **AC5:** A1-A3 plus the independent DuckDB oracles in `tests/task_106_composed_predicates.rs` and `tests/physical_write_states.rs`, adapter parity, code-map and coverage evidence. `tests/task_106_signoff.rs` permanently guards the frozen matrix and evidence references.
+
+The closure is limited to the enumerated evidence paths; it does **not** assert universal SQL-expression exactness or an arbitrary source-DAG solver. The project-wide "never over-claim" invariant remains mandatory. TASK-107 and TASK-91 own subsequent conformance/release gates.
