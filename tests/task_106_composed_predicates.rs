@@ -11,9 +11,9 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name, physical_source_plan,
     AnalysisBundle, BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error, GroupBoundaryKind, LiteralValue,
-    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
-    WitnessDirection,
+    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error, GroupBoundaryKind, JoinKind,
+    LiteralValue, PhysicalProofGap, ProtocolStatement, RelationCatalog, RelationSchema,
+    SchemaColumn, SqlInput, ValueDomain, WitnessDirection,
 };
 
 fn catalog() -> RelationCatalog {
@@ -104,10 +104,13 @@ fn assert_range_bounds(domain: &ValueDomain, sql: &str, lower: &str, upper: &str
 
 #[test]
 fn filtered_chain_conjoins_typed_range_filters() {
+    // Both layers use witness-candidate range predicates: a lone
+    // column-to-literal comparison already has a scalar domain and emits no
+    // separate boolean witness by design.
     let bundle = analyze_chain(
         &[
             "CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
-            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b > 5",
+            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b BETWEEN 6 AND 100",
         ],
         "postgresql",
     );
@@ -161,11 +164,38 @@ fn filtered_chain_conjoins_typed_range_filters() {
 }
 
 #[test]
-fn contradictory_chain_filters_prove_impossible() {
+fn contradictory_single_layer_filter_is_impossible() {
+    // One conjunctive scope already proves the empty TRUE region locally:
+    // neither arm alone is contradictory, only their conjunction is.
+    let bundle = analyze_chain(
+        &["SELECT a FROM t WHERE a IN (1, 3) AND a BETWEEN 101 AND 200"],
+        "postgresql",
+    );
+    let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
+        panic!("layer must resolve");
+    };
+    let witness = semantics.boolean_witnesses()[0].witness();
+    assert!(
+        matches!(witness.qualifying(), BooleanWitnessDirection::Impossible),
+        "empty TRUE region must be impossible: {:?}",
+        witness.qualifying()
+    );
+    assert!(
+        matches!(
+            witness.rejected(),
+            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+        ),
+        "rejection stays feasible: {:?}",
+        witness.rejected()
+    );
+}
+
+#[test]
+fn contradictory_chain_filters_yield_empty_domains_and_explicit_gap() {
     let bundle = analyze_chain(
         &[
             "CREATE TABLE stage AS SELECT a FROM t WHERE a IN (1, 3)",
-            "CREATE TABLE mart AS SELECT a FROM stage WHERE a > 100",
+            "CREATE TABLE mart AS SELECT a FROM stage WHERE a BETWEEN 101 AND 200",
         ],
         "postgresql",
     );
@@ -174,17 +204,6 @@ fn contradictory_chain_filters_prove_impossible() {
     else {
         panic!("mart layer must resolve");
     };
-    let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
-    assert!(
-        matches!(plan.qualifying(), WitnessDirection::Impossible),
-        "contradictory filters must be impossible: {:?}",
-        plan.qualifying()
-    );
-    assert!(
-        matches!(plan.rejected(), WitnessDirection::Feasible(_)),
-        "a rejected row must still exist: {:?}",
-        plan.rejected()
-    );
     // No feasible row can satisfy both filters, so the composed output for
     // `a` is empty rather than a fabricated plan.
     assert!(
@@ -194,26 +213,53 @@ fn contradictory_chain_filters_prove_impossible() {
             .any(|domain| matches!(domain.domain(), ValueDomain::Empty)),
         "contradiction must surface as an empty composed domain"
     );
+    // Empty composed domains fail closed in the physical plan with an
+    // explicit conflicting-domains gap instead of a feasible row.
+    let plan = physical_source_plan(&bundle, bundle.layers()[mart_layer(&bundle)].id());
+    assert_eq!(plan.gap(), Some(PhysicalProofGap::ConflictingDomains));
+    assert!(
+        matches!(
+            plan.qualifying(),
+            WitnessDirection::Residual { reason } if reason == "conflicting_domains"
+        ),
+        "contradictory filters must not yield a feasible row: {:?}",
+        plan.qualifying()
+    );
 }
 
 #[test]
-fn filtered_join_preserves_typed_predicates_and_equalities() {
+fn filtered_join_preserves_typed_key_equalities() {
     let bundle = analyze_chain(
-        &["SELECT l.a, r.b FROM l INNER JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5 AND r.b > 0"],
+        &["SELECT l.a, r.b FROM l INNER JOIN r ON l.k = r.k WHERE l.a BETWEEN 1 AND 5"],
         "postgresql",
     );
     let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
         panic!("join layer must resolve");
     };
-    assert!(
-        !semantics.join_equalities().is_empty(),
-        "typed join key must compose to a physical equality"
+    // The typed join key composes to a physical equality with stable
+    // relation-instance endpoints.
+    let equality = semantics
+        .join_equalities()
+        .iter()
+        .find(|equality| equality.join_kind() == JoinKind::Inner)
+        .expect("typed inner join key must compose");
+    assert_eq!(
+        (equality.left().relation(), equality.left().column()),
+        ("l", "k")
     );
-    let witness = semantics.boolean_witnesses()[0].witness();
-    assert_exact_both(witness, "filtered join predicates");
+    assert_eq!(
+        (equality.right().relation(), equality.right().column()),
+        ("r", "k")
+    );
+    // Boolean row witnesses are single-source by design: a two-source join
+    // scope emits no local witness, so consumers must use the join equality
+    // contract instead of a scalar row proof.
+    assert!(
+        semantics.boolean_witnesses().is_empty(),
+        "multi-source scope must not emit a single-source witness"
+    );
     // Multi-source join populations live in the TASK-68 join engine, not in
-    // the single-source row plan: the composed filter and equality must be
-    // exact here while the single-source plan stays explicitly residual.
+    // the single-source row plan, which stays explicitly residual.
     let plan = physical_source_plan(&bundle, bundle.layers()[0].id());
     assert!(
         matches!(plan.qualifying(), WitnessDirection::Residual { .. }),
@@ -289,7 +335,7 @@ fn parser_capable_dialects_share_composed_filter_outcomes() {
         let dialect = dialect_from_name(name).expect("registered dialect");
         let queries = [
             "CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
-            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b > 5",
+            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b BETWEEN 6 AND 100",
         ];
         let sources = queries
             .iter()
@@ -475,15 +521,17 @@ fn duckdb_joint_positive_and_negative_rows_match_composed_filters() {
     .unwrap();
     let positive: i64 = db
         .query_row(
-            "SELECT COUNT(*) FROM t WHERE a BETWEEN 1 AND 10 AND b > 5",
+            "SELECT COUNT(*) FROM t WHERE a BETWEEN 1 AND 10 AND b BETWEEN 6 AND 100",
             [],
             |row| row.get(0),
         )
         .unwrap();
     assert_eq!(positive, 1, "exactly one row satisfies both filters");
+    // IS NOT TRUE counts FALSE plus UNKNOWN rows: the NULL row is NOT
+    // TRUE without being FALSE, which a plain NOT would filter away.
     let rejected: i64 = db
         .query_row(
-            "SELECT COUNT(*) FROM t WHERE NOT (a BETWEEN 1 AND 10 AND b > 5)",
+            "SELECT COUNT(*) FROM t WHERE (a BETWEEN 1 AND 10 AND b BETWEEN 6 AND 100) IS NOT TRUE",
             [],
             |row| row.get(0),
         )
@@ -496,7 +544,7 @@ fn duckdb_joint_positive_and_negative_rows_match_composed_filters() {
     let bundle = analyze_chain(
         &[
             "CREATE TABLE stage AS SELECT a, b FROM t WHERE a BETWEEN 1 AND 10",
-            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b > 5",
+            "CREATE TABLE mart AS SELECT a, b FROM stage WHERE b BETWEEN 6 AND 100",
         ],
         "postgresql",
     );
