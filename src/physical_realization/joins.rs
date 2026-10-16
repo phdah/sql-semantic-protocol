@@ -821,6 +821,26 @@ pub(super) fn necessarily_nonempty_preserved_join_side(
         })
 }
 
+/// Whether the entire counted physical bag is certified to satisfy one
+/// or more TRUE row constraints. This deliberately excludes negative filters,
+/// general symbolic obligations, and unproved disjunctions.
+fn exact_positive_source_filter(formula: &WitnessFormula, relation: &str) -> bool {
+    match formula {
+        WitnessFormula::RowTruth {
+            row,
+            predicate,
+            truth: crate::boolean_witness::BooleanTruthCase::True,
+        } => row.relation() == relation && predicate.is_exact(),
+        WitnessFormula::All(parts) => {
+            !parts.is_empty()
+                && parts
+                    .iter()
+                    .all(|part| exact_positive_source_filter(part, relation))
+        }
+        _ => false,
+    }
+}
+
 /// Compose closed physical key populations across multiple terminal goals.
 /// Never cross-product independently feasible examples unless every selected
 /// case can share identical source-row counts and compatible key assignments.
@@ -883,7 +903,7 @@ pub(super) fn jointly_realized_join_goals(
     }
     let mut cases = Vec::new();
     for obligations in conjunctions {
-        let mut counts = BTreeMap::<String, u64>::new();
+        let mut counts = BTreeMap::<String, (u64, WitnessFormula)>::new();
         let mut assignments = BTreeMap::<(String, String), (JoinPopulationPattern, u64)>::new();
         let mut populations = Vec::new();
         let mut valid = true;
@@ -897,15 +917,31 @@ pub(super) fn jointly_realized_join_goals(
                     closed_world: true,
                 } if boundary.kind() == GroupBoundaryKind::Physical
                     && bounds.maximum() == Some(bounds.minimum())
-                    && *predicate == count_tautology() =>
+                    && (*predicate == count_tautology()
+                        || exact_positive_source_filter(predicate, boundary.relation())) =>
                 {
                     let count = bounds.minimum();
-                    if counts
-                        .insert(boundary.relation().to_string(), count)
-                        .is_some_and(|prior| prior != count)
-                    {
-                        valid = false;
-                        break;
+                    let entry = counts.entry(boundary.relation().to_string());
+                    match entry {
+                        std::collections::btree_map::Entry::Vacant(slot) => {
+                            slot.insert((count, predicate.clone()));
+                        }
+                        std::collections::btree_map::Entry::Occupied(mut slot) => {
+                            let (prior_count, prior_filter) = slot.get_mut();
+                            if *prior_count != count {
+                                valid = false;
+                                break;
+                            }
+                            if *prior_filter == count_tautology() {
+                                *prior_filter = predicate.clone();
+                            } else if *predicate != count_tautology() && *prior_filter != *predicate {
+                                // Different restrictions over the same physical bag
+                                // require an independent joint satisfiability and
+                                // key-population proof, not a free cross-product.
+                                valid = false;
+                                break;
+                            }
+                        }
                     }
                 }
                 WitnessObligation::JoinPopulation {
@@ -967,9 +1003,29 @@ pub(super) fn jointly_realized_join_goals(
         if !valid {
             continue;
         }
+        // Filters on any controlled key require a different key-aware
+        // population construction. Independent non-key TRUE filters may
+        // coexist with complete join populations, including disjoint joins.
+        if counts.iter().any(|(source, (_, filter))| {
+            populations.iter().any(|population| {
+                if let WitnessObligation::JoinPopulation {
+                    left_key, right_key, ..
+                } = population
+                {
+                    (left_key.relation() == Some(source.as_str())
+                        && formula_references_column(filter, left_key))
+                        || (right_key.relation() == Some(source.as_str())
+                            && formula_references_column(filter, right_key))
+                } else {
+                    false
+                }
+            })
+        }) {
+            continue;
+        }
         let mut result = Vec::new();
         let origin = goals[0].0;
-        for (source, rows) in &counts {
+        for (source, (rows, predicate)) in &counts {
             let Some(boundary) = WitnessBoundary::new(source, GroupBoundaryKind::Physical, origin)
             else {
                 valid = false;
@@ -983,7 +1039,7 @@ pub(super) fn jointly_realized_join_goals(
                 boundary: boundary.clone(),
                 quantifier: RowQuantifier::ForAll,
                 bounds,
-                predicate: count_tautology(),
+                predicate: predicate.clone(),
                 closed_world: true,
             });
             result.push(WitnessObligation::ClosedWorld {
