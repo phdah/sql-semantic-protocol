@@ -157,6 +157,15 @@ impl BooleanRowConstraint {
         }
     }
 
+    /// Whether this canonical predicate constrains the given physical column.
+    /// Joint operator construction uses this to keep independently selected
+    /// non-key values separate from join key assignments.
+    pub(crate) fn references_column(&self, column: &ColumnRef) -> bool {
+        let mut columns = Vec::new();
+        self.columns(&mut columns);
+        columns.contains(column)
+    }
+
     fn mapped_columns(&self, mapped: &BTreeMap<ColumnRef, ColumnRef>) -> Option<Self> {
         match self {
             Self::All(items) => Some(Self::All(BooleanOperands::new(
