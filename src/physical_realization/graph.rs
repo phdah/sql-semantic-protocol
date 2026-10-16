@@ -465,10 +465,8 @@ fn widened_or_copied_source(
         Some(lineage.relation().to_string()),
         lineage.column().to_string(),
     );
-    let produced = crate::protocol::ColumnRef::new(
-        Some(relation.to_string()),
-        output.name().to_string(),
-    );
+    let produced =
+        crate::protocol::ColumnRef::new(Some(relation.to_string()), output.name().to_string());
     let from = bundle_column_datatype(bundle, &physical)?;
     let to = bundle_column_datatype(bundle, &produced)?;
     match output.expression() {
@@ -566,13 +564,7 @@ fn resolve_widened_filter_column(
                 return None;
             }
             let physical = widened_or_copied_source(bundle, &canonical, output, query)?;
-            resolve_widened_filter_column(
-                bundle,
-                walker,
-                producer.id(),
-                &physical,
-                depth + 1,
-            )
+            resolve_widened_filter_column(bundle, walker, producer.id(), &physical, depth + 1)
         }
         _ => None,
     }
@@ -590,8 +582,7 @@ pub(super) fn joint_physical_filters(
     if filters.is_empty()
         || filters.len() > 12
         || walker.sources.len() != 1
-        || (filters.len() == 1
-            && filters[0].boundary_kind() != GroupBoundaryKind::Intermediate)
+        || (filters.len() == 1 && filters[0].boundary_kind() != GroupBoundaryKind::Intermediate)
     {
         return None;
     }
@@ -638,9 +629,7 @@ pub(super) fn joint_physical_filters(
             {
                 return None;
             }
-        } else if !transparent_projection(query)
-            && !total_widening_producer(bundle, node, query)
-        {
+        } else if !transparent_projection(query) && !total_widening_producer(bundle, node, query) {
             return None;
         }
     }
@@ -676,7 +665,13 @@ pub(super) fn joint_physical_filters(
                 certified
                     .or_else(|| {
                         filter.witness().mapped_to_physical(|column| {
-                            resolve_filter_column(bundle, walker, filter.origin_layer_id(), column, 0)
+                            resolve_filter_column(
+                                bundle,
+                                walker,
+                                filter.origin_layer_id(),
+                                column,
+                                0,
+                            )
                         })
                     })
                     .or_else(|| {
