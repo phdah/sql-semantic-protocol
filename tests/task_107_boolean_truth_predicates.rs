@@ -8,7 +8,7 @@ use sql_semantic_protocol::{
 };
 
 #[test]
-fn computed_is_true_and_is_false_keep_unknown_rejected_with_typed_domains() {
+fn computed_boolean_truth_tests_keep_unknown_rejected_with_typed_domains() {
     let relation = RelationSchema::new(
         "t",
         vec![SchemaColumn::from_sql_type("a", "INTEGER", "postgresql").unwrap()],
@@ -26,6 +26,7 @@ fn computed_is_true_and_is_false_keep_unknown_rejected_with_typed_domains() {
     for (predicate, expected_true, expected_not_true) in [
         ("(a = 1) IS TRUE", vec![3], vec![1, 2, 4]),
         ("(a = 1) IS FALSE", vec![2, 4], vec![1, 3]),
+        ("(a = NULL) IS UNKNOWN", vec![1, 2, 3, 4], vec![]),
     ] {
         let sql = format!("SELECT a FROM t WHERE {predicate}");
         let source = SqlInput::inline(&sql);
