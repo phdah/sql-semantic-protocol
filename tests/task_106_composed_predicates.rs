@@ -9,7 +9,8 @@ mod common;
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name, physical_source_plan,
+    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
+    physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan,
     AnalysisBundle, BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
     ConfiguredInputAnalysisError, ConfiguredSqlInput, Error, GroupBoundaryKind, JoinKind,
     LiteralValue, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
@@ -225,6 +226,18 @@ fn contradictory_chain_filters_prove_impossible_true_and_feasible_rejection() {
     assert!(
         matches!(plan.rejected(), WitnessDirection::Feasible(_)),
         "a row failing the conjunction must remain constructible: {plan:?}"
+    );
+    assert!(
+        matches!(physical_row_count_plan(&bundle, bundle.layers()[1].id(), 2), WitnessDirection::Impossible),
+        "positive rows cannot appear from a necessarily contradictory filter chain"
+    );
+    assert!(
+        matches!(physical_joint_row_count_plan(&bundle, &[(bundle.layers()[1].id(), 1)]), WitnessDirection::Impossible),
+        "joint count goals must preserve necessary impossibility"
+    );
+    assert!(
+        matches!(physical_row_count_plan(&bundle, bundle.layers()[1].id(), 0), WitnessDirection::Feasible(_)),
+        "empty physical source remains a valid zero-output construction"
     );
 }
 
