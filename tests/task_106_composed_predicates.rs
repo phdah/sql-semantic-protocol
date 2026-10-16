@@ -10,11 +10,10 @@ mod common;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
-    physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan,
-    AnalysisBundle, BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
-    ConfiguredInputAnalysisError, ConfiguredSqlInput, Error, GroupBoundaryKind, JoinKind,
-    LiteralValue, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
-    ValueDomain, WitnessDirection,
+    physical_joint_row_count_plan, physical_row_count_plan, physical_source_plan, AnalysisBundle,
+    BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics, ConfiguredInputAnalysisError,
+    ConfiguredSqlInput, Error, GroupBoundaryKind, JoinKind, LiteralValue, ProtocolStatement,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain, WitnessDirection,
 };
 
 fn catalog() -> RelationCatalog {
