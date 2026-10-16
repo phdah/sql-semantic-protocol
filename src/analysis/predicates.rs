@@ -220,13 +220,30 @@ pub(super) fn analyze_predicate_with_windows(
         Expr::UnaryOp {
             op: SqlUnaryOperator::Not | SqlUnaryOperator::BangNot,
             expr,
-        } => Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
-            expr,
-            named_windows,
-            output_aliases,
-            scope,
-            diagnostics,
-        ))),
+        } => {
+            let operand = analyze_predicate_with_windows(
+                expr,
+                named_windows,
+                output_aliases,
+                scope,
+                diagnostics,
+            );
+            // A validated DATE threshold has an order-preserving scalar
+            // complement. Negating the operator keeps SQL NULL UNKNOWN and
+            // allows the existing calendar-domain contract to own this fact.
+            if let Predicate::Comparison(comparison) = &operand {
+                if matches!(comparison.left(), Expression::Column(_))
+                    && matches!(comparison.right(), Expression::Literal(literal) if literal.literal_type() == LiteralType::Date)
+                {
+                    return normalize_comparison(
+                        comparison.left().clone(),
+                        crate::boolean_witness::negated_comparison_operator(comparison.operator()),
+                        comparison.right().clone(),
+                    );
+                }
+            }
+            Predicate::Not(NotPredicate::new(operand))
+        }
         Expr::Identifier(_) | Expr::CompoundIdentifier(_) => normalize_boolean_test(
             analyze_predicate_expression(
                 expression,

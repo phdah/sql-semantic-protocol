@@ -330,7 +330,7 @@ not perform network or filesystem fetching.
 
 When typed source-schema evidence is available, predicate-domain literals are checked against the
 canonical datatype before a domain can participate in the exact row-condition contract. Exact
-boolean, integer, date, time, and interval literals retain their canonical literal type; integer
+boolean, integer, validated date and time literals retain their canonical literal type; integer
 literals used with decimal columns normalize to decimal literals. Integer bounds are range-checked
 against declared signedness and bit width. Lossy numeric coercions are never treated as exact.
 
@@ -765,6 +765,33 @@ The diagnostic policy is deterministic. These diagnostics are non-membership met
 `unsupported_expression` and `unsupported_function` are also not converted directly from diagnostics because their membership effect is classified from the normalized predicate when they occur in a row condition. Likewise, `unsupported_top`, `unsupported_prewhere`, `unsupported_connect_by`, `unsupported_limit`, `unsupported_fetch`, `set_operation_arity_mismatch`, `unresolved_set_operation_output`, and `unsupported_set_operation_alignment` are not duplicated as `analysis_diagnostic` residuals because their owning AST construct already emits a specific residual condition. Every other statement-level or nested-query diagnostic is default-denied into an `analysis_diagnostic` residual.
 
 NULL membership is part of the value-domain contract and is available through `ValueDomain::admits_null()`: `unbounded` admits NULL; ordered `ranges` do not; an include set admits NULL only when NULL is listed; an exclude set admits NULL unless NULL is listed; `empty` rejects NULL; and `unknown` returns an unknown NULL-membership result. Consequently, `IS NULL`, `IS NOT NULL`, `<>`, `NOT IN`, `IS DISTINCT FROM`, and range predicates preserve their SQL NULL behavior in the emitted domains.
+
+## Certified calendar constants and opaque expressions (TASK-105)
+
+Validated Gregorian DATE literal identity casts (`CAST`/`TRY_CAST`/`SAFE_CAST`)
+emit the same `literal` expression and singleton `set` domain as their input.
+YEAR/MONTH/DAY `EXTRACT` of a validated DATE literal emits an integer `literal`
+and singleton domain. DATE threshold ordering and scalar negation preserve
+inclusive/exclusive bounds; contradictory intervals emit `empty`. Copies from
+one ungrouped local relation preserve these outcomes without expanding
+transitive expression semantics. Joins and grouping do not certify constant
+inheritance through this path.
+
+Invalid or unproved temporal literals emit `unsupported`, never a guessed exact
+value. Family-specific unsupported `feature` names include `temporal_literal`,
+`temporal_extract`, `temporal_timezone`, `temporal_interval`, `json_literal`,
+`json_path`, `nested_access`, and `nested_literal`. Existing generic `cast` and
+`binary_expression` residuals retain the unsupported SQL spelling. Unknown output
+domains preserve the expression's reason; opaque scalar function reasons name
+the function. A `function` node records identity/arguments, not execution proof.
+JSON document null is not representable as a scalar SQL NULL literal.
+
+Pure source SQL NULL tests reuse the existing `null_test` and
+`unknown_null_comparison` row constraints for temporal and nested datatypes;
+these do not certify path extraction or nested equality. Timestamp comparisons
+continue to require explicit zone evidence/assumptions. See the
+[semantic boundary](semantics.md#temporal-json-and-opaque-expression-boundary-task-105)
+and the executable variant inventory in `coverage-manifest.json`.
 
 ## Output value domains
 

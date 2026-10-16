@@ -485,21 +485,11 @@ pub(super) fn canonical_timestamp_text(input: &str) -> Option<(String, bool)> {
         return None;
     }
 
-    let year = value.get(0..4)?.parse::<u16>().ok()?;
-    let month = value.get(5..7)?.parse::<u8>().ok()?;
-    let day = value.get(8..10)?.parse::<u8>().ok()?;
+    crate::temporal::canonical_date_text(value.get(..10)?)?;
     let hour = value.get(11..13)?.parse::<u8>().ok()?;
     let minute = value.get(14..16)?.parse::<u8>().ok()?;
     let second = value.get(17..19)?.parse::<u8>().ok()?;
-    let leap_year = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
-    let max_day = match month {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
-        4 | 6 | 9 | 11 => 30,
-        2 if leap_year => 29,
-        2 => 28,
-        _ => return None,
-    };
-    if year == 0 || day == 0 || day > max_day || hour > 23 || minute > 59 || second > 59 {
+    if hour > 23 || minute > 59 || second > 59 {
         return None;
     }
 

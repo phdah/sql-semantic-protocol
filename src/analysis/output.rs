@@ -270,11 +270,56 @@ pub(super) fn analyze_select_output_with_outer_scope(
         ));
     }
 
+    // A plain copy from one local row source cannot introduce new values.
+    // In particular, constant-folded calendar results must survive this hop.
+    // Joins are excluded because an outer join can NULL-extend even a non-NULL
+    // constant; correlated/ambiguous scopes are not identity evidence either.
+    inherit_single_local_output_domains(select, &scope, &mut columns);
+
     if let Some(qualify) = &select.qualify {
         refine_output_domains_from_predicate(&mut columns, qualify);
     }
 
     Output::new(columns)
+}
+
+fn inherit_single_local_output_domains(
+    select: &Select,
+    scope: &[OutputRelation],
+    columns: &mut [OutputColumn],
+) {
+    let [source] = select.from.as_slice() else {
+        return;
+    };
+    if !source.joins.is_empty()
+        || !matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers) if items.is_empty() && modifiers.is_empty())
+    {
+        return;
+    }
+    let [relation] = scope else { return };
+    let OutputRelationSource::Local(output) = &relation.source else {
+        return;
+    };
+    for column in columns {
+        let Expression::Column(reference) = column.expression() else {
+            continue;
+        };
+        if reference
+            .relation()
+            .is_some_and(|qualifier| !relation.qualifiers.iter().any(|name| name == qualifier))
+        {
+            continue;
+        }
+        let mut matches = output
+            .columns()
+            .iter()
+            .filter(|source| source.name() == reference.name());
+        if let Some(source) = matches.next() {
+            if matches.next().is_none() {
+                *column = column.clone().with_domain(source.domain().clone());
+            }
+        }
+    }
 }
 
 pub(super) fn analyze_output_item(
@@ -594,12 +639,17 @@ fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain
                 ),
             }
         }
-        Expression::Function(_) => {
-            ValueDomain::unknown("scalar-function output domain is not known safely")
+        Expression::Function(function) => {
+            ValueDomain::unknown(format!(
+                "scalar-function {} output requires certified datatype, NULL, volatility and execution laws",
+                function.name()
+            ))
         }
         Expression::Unknown(semantic) => ValueDomain::unknown(semantic.reason()),
-        Expression::Unsupported(_) => {
-            ValueDomain::unknown("unsupported expression has no safely known output domain")
+        Expression::Unsupported(semantic) => {
+            ValueDomain::unknown(semantic.reason().unwrap_or(
+                "unsupported expression has no safely known output domain",
+            ))
         }
     }
 }

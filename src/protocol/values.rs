@@ -54,19 +54,28 @@ pub(crate) fn arithmetic_operand_kind(expression: &Expression) -> String {
             LiteralType::String => "string-literal",
             LiteralType::Boolean => "boolean-literal",
             LiteralType::Null => "sql-null",
-            _ => "other-literal",
+            LiteralType::Date => "date-literal",
+            LiteralType::Time => "time-literal",
+            LiteralType::Timestamp => "timestamp-literal",
+            LiteralType::Interval => "interval-literal",
         }
         .to_string(),
         Expression::Binary(_) => "computed-binary-expression".to_string(),
         Expression::Unary(_) => "computed-unary-expression".to_string(),
-        Expression::Function(_)
-        | Expression::AggregateFunction(_)
+        Expression::Function(function) => format!("scalar-function:{}", function.name()),
+        Expression::Unsupported(semantic) => format!(
+            "unsupported-expression:{} ({})",
+            semantic.feature(),
+            semantic
+                .reason()
+                .unwrap_or("execution laws are not certified"),
+        ),
+        Expression::AggregateFunction(_)
         | Expression::WindowFunction(_)
         | Expression::Case(_)
         | Expression::BooleanPredicate(_)
         | Expression::ScalarSubquery(_)
-        | Expression::Unknown(_)
-        | Expression::Unsupported(_) => "unsupported-expression".to_string(),
+        | Expression::Unknown(_) => "unsupported-expression".to_string(),
     }
 }
 

@@ -1439,6 +1439,16 @@ fn compare_literals(left: &LiteralExpression, right: &LiteralExpression) -> Opti
         return Some(Ordering::Equal);
     }
 
+    if left.literal_type() == LiteralType::Date && right.literal_type() == LiteralType::Date {
+        if let (LiteralValue::Text(left), LiteralValue::Text(right)) = (left.value(), right.value())
+        {
+            return Some(
+                crate::temporal::canonical_date_text(left)?
+                    .cmp(crate::temporal::canonical_date_text(right)?),
+            );
+        }
+    }
+
     match (numeric_text(left), numeric_text(right)) {
         (Some(left), Some(right)) => compare_numeric_text(left, right),
         _ => None,

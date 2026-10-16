@@ -1,10 +1,10 @@
 ---
 id: TASK-105
 title: Classify temporal, JSON and vendor expression outcomes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-13'
-updated_date: '2026-10-13'
+updated_date: '2026-10-15'
 labels: []
 milestone: m-3
 dependencies:
@@ -37,6 +37,24 @@ Audit date/time, JSON/nested values and vendor functions against the existing sc
 - [ ] #4 For certified variants provide reversible constraints where possible, typed output domains, canonical TRUE/NOT TRUE/impossible witnesses and comparison assumptions; ensure all other inventoried variants remain fail-closed with traceable reasons.
 - [ ] #5 Add direct SQL/dbt adapter parity and parser boundary tests for all relevant dialects, focused DuckDB differential oracles for executable semantics, residual regression tests, and machine-readable per-family coverage plus docs/schema changes.
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Audit existing portable typed DATE/TIME comparisons, explicit timestamp-zone evidence, source-level NULL tests, and opaque temporal/JSON/vendor AST boundaries. Certify only deterministic literal identity casts whose explicit input and target types agree; preserve calendar validity and fail closed on precision, timezone, path, engine/session laws and opaque functions. Exercise public SQL analysis/domain/exactness, JSON emission and dbt artifacts with per-dialect parser boundaries and independent DuckDB oracles. Preserve TASK-70/TASK-91 release gates.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+- Public TDD seams confirmed: SQL analysis (domains and truth/exactness), JSON emission (full canonical document), dbt artifacts/schema analysis; independent DuckDB execution oracles.
+- Certified subset: Gregorian DATE identity casts and literal YEAR/MONTH/DAY extraction; ordered DATE interval intersection, scalar negation and impossible bounds; valid calendar/clock representations; existing typed timestamp comparison assumptions; datatype-independent source SQL NULL witnesses.
+- Added a 44-variant executable AST/dialect inventory under `docs/coverage-manifest.json.task_105_expression_evidence`; explicit parser boundaries prevent hash-comment and interval/array/struct syntax from becoming false semantic claims.
+- Unknown outcomes preserve family-specific unsupported reasons and opaque function names. JSON document null/path extraction, nested equality, timezone/DST/interval execution, vendor/UDF/clock/stochastic functions remain fail-closed.
+- Preserved literal domains through ungrouped single-local-source copies, with regression coverage for outer-join and ROLLUP NULL synthesis. Producer composition preserves DATE bounds.
+- Adapter evidence: direct SQL, paired dbt catalog artifacts, manifest-declared schemas and feature-gated ODCS physical types use equivalent canonical outcomes; no new adapter-specific semantic rules or dependencies.
+- Verification: 19 TASK-105 tests, 20 local-relation tests and 20 typed-domain tests pass; full `cargo test --quiet` passes (two existing artifact-generated dbt E2E tests remain explicitly ignored); `cargo fmt`, clippy all targets/features with `-D warnings`, and `cargo doc --no-deps` pass. Two-axis review and remote CI pending before closure.
+<!-- SECTION:NOTES:END -->
 
 ## Implementation and verification
 
