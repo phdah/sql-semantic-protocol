@@ -50,6 +50,46 @@ The existing **AC #1..#5 remain required**. Interpret and verify them through th
 
 **Acceptance sign-off:** Before implementation, register each original named AC variant as a versioned feature/dialect cell and freeze fixture IDs in `docs/coverage-manifest.json`. Every mandatory core cell needs typed output domains (including NULL and interval inclusivity), positive/rejected membership and `Exact`/`Impossible` physical-source proof as applicable, complete DuckDB source/terminal oracles where executable, and representable SQL/dbt/ODCS parity plus 13-dialect parser equivalence evidence. Conditional cells need a documented parser/runtime boundary, typed `Residual` or justified `Impossible`, named owner, and explicit release disposition, **not a shortcut for missing implementation**. Sign off AC #1..#5 only after required cells and final CI are verified. Do not approve independent release gates through this task.
 
+## Frozen TASK-107 acceptance contract (2026-10-16)
+
+**Normative machine-readable freeze:** [TASK-107 acceptance matrix](../../docs/task-107-acceptance-freeze.json)
+and [evidence owners](../../docs/task-107-oracle-matrix.json), tied to the
+TASK-66 baseline commit `b75b16a29234fc207af0014bf662d39223b2502f`.
+The original AC #1..#5 above remain unchanged and additive.
+
+The exact **completion boundary** is:
+- **AC #1:** 42 explicit TASK-66 predicate/expression variants, 14 separately
+  owned TASK-70 family obligations and 9 closed-world golden fixtures;
+  independently assert typed domains/bounds/inclusivity/NULL and both SQL
+  TRUE/NOT TRUE proof directions. Mandatory exactness is never met by residual.
+- **AC #2:** all 42 × 13 = **546** named dialect/parser-canonical cells
+  classified with executable fixture evidence, semantic equivalence where
+  applicable, or documented non-equivalent/session assumptions. No vendor
+  runtime inference from parsing.
+- **AC #3:** 9 frozen composition pairings plus 4 deterministic seeds
+  (`0, 1, 42, 20261016`), including known NULL/duplicate/overflow/boundary
+  input cases. All executable physical positive and negative source/terminal
+  cases must match independent DuckDB outputs; residual/unknown paths must
+  fail closed.
+- **AC #4:** direct SQL + compiled dbt manifest/catalog parity and ODCS when
+  equivalent metadata can supply the fact; protocol output + emitted JSON,
+  schema/docs and explicit adapter exceptions recorded per applicable cell.
+- **AC #5:** **zero** unverified required cells, unreviewed conditional
+  dispositions, silent residuals or false exactness; final full CI on the
+  implementation SHA: fmt, strict clippy, regular and no-default tests, docs,
+  dbt E2E and active schema snapshots.
+
+Each case has a frozen stable ID. The machine-readable contract is the
+enumerated minimum, not permission to skip originally named features: changes
+to an original obligation require a separate explicit contract review. New
+unrelated variants discovered after the freeze belong in new tasks. A change
+that exposes a false existing proof must be fixed before signoff, never
+deferred. `tests/task_107_acceptance_freeze.rs` rejects inventory drift
+and premature closure; semantic oracle tests must separately pass. **Current
+cell classifications and golden proof checks remain unverified**; all five
+original acceptance checkboxes remain unchecked. TASK-108 and TASK-91 have
+independent signoffs and remain blocked.
+
 ## Implementation and verification
 
 - **Parent:** [TASK-70](task-70%20-%20solve-expression-and-predicate-variants.md), still **In Progress** until TASK-108 verifies all six original acceptance criteria.
