@@ -144,7 +144,11 @@ fn all_task_70_evidence_families_have_an_explicit_task_107_oracle_owner() {
         registered, expected,
         "every authoritative TASK-70 family needs a named TASK-107 oracle owner"
     );
-    assert_eq!(registered.len(), 14, "approved expression inventory changed");
+    assert_eq!(
+        registered.len(),
+        14,
+        "approved expression inventory changed"
+    );
 }
 
 #[test]
