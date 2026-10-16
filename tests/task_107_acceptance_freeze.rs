@@ -154,6 +154,24 @@ fn frozen_variant_dialect_inventory_matches_the_authoritative_task_66_scope() {
             classification => panic!("{id}: invalid proof classification {classification}"),
         }
 
+        // A review pointer alone is not proof, but it must at least resolve
+        // to a compiling, independently run test. The CI suite supplies the
+        // executable semantic and physical outcome oracle.
+        for evidence in entries(cell, "truth_proof_tests") {
+            let reference = evidence.as_str().expect("owned executable proof");
+            let (path, function) = reference
+                .split_once("::")
+                .expect("test reference must name a test function");
+            let source = std::fs::read_to_string(
+                std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(path),
+            )
+            .unwrap_or_else(|error| panic!("{id}: missing proof {reference}: {error}"));
+            assert!(
+                source.contains(&format!("fn {function}(")),
+                "{id}: unowned proof {reference}"
+            );
+        }
+
         let cells = cell["dialect_cells"]
             .as_object()
             .expect("per-dialect cells");
