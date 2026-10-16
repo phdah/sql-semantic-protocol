@@ -315,6 +315,20 @@ pub(super) fn prove_zero_rows(
         .unwrap_or_else(|| residual(PhysicalProofGap::UnresolvedSemantics))
 }
 
+/// Catalog-attested datatype for a column reference, when its relation
+/// declares the column. Missing schemas or columns stay unproved.
+fn bundle_column_datatype(
+    bundle: &AnalysisBundle,
+    column: &crate::protocol::ColumnRef,
+) -> Option<crate::data_type::DataType> {
+    let relation = column.relation()?;
+    let schema = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == relation)?;
+    super::joint_counts::physical_column_datatype(schema, column)
+}
+
 /// Follow an identity-only column through an intermediate producer. The
 /// producer is permitted to filter its own rows because the *joint* terminal
 /// proof later requires all filters, but the intermediate's local witness is
@@ -477,9 +491,35 @@ pub(super) fn joint_physical_filters(
             GroupBoundaryKind::Physical => {
                 (filter.witness().source_relation() == source).then(|| filter.witness().clone())
             }
-            GroupBoundaryKind::Intermediate => filter.witness().mapped_to_physical(|column| {
-                resolve_filter_column(bundle, walker, filter.origin_layer_id(), column, 0)
-            }),
+            GroupBoundaryKind::Intermediate => {
+                // Typed comparisons cross a materialization boundary only
+                // with certified identical datatypes at both ends of the
+                // identity chain. Conditions needing no type evidence keep
+                // the historical uncertified path so untyped NULL-test
+                // chains still conjoin.
+                let certified = filter.witness().mapped_to_physical_certified(
+                    |column| {
+                        resolve_filter_column_with_evidence(
+                            bundle,
+                            walker,
+                            filter.origin_layer_id(),
+                            column,
+                            0,
+                            true,
+                        )
+                    },
+                    |original, mapped| {
+                        let original_type = bundle_column_datatype(bundle, original);
+                        let mapped_type = bundle_column_datatype(bundle, mapped);
+                        original_type.is_some() && original_type == mapped_type
+                    },
+                );
+                certified.or_else(|| {
+                    filter.witness().mapped_to_physical(|column| {
+                        resolve_filter_column(bundle, walker, filter.origin_layer_id(), column, 0)
+                    })
+                })
+            }
             GroupBoundaryKind::Unresolved => None,
         })
         .collect::<Option<Vec<_>>>()?;
