@@ -691,9 +691,7 @@ impl BooleanWitness {
         mut resolve: impl FnMut(&ColumnRef) -> Option<(ColumnRef, i64)>,
         mut physical_integer: impl FnMut(&ColumnRef) -> Option<SignedIntegerEvidence>,
     ) -> Option<Self> {
-        if !self.condition.is_exact()
-            || self.condition.requires_binary_string_assumptions()
-        {
+        if !self.condition.is_exact() || self.condition.requires_binary_string_assumptions() {
             return None;
         }
         let mut columns = Vec::new();
