@@ -855,6 +855,60 @@ fn exact_positive_source_filter(formula: &WitnessFormula, relation: &str) -> boo
     }
 }
 
+/// Restrict overlap reconciliation to the same physical row's certified
+/// non-key TRUE predicates. A residual, a different row variable or a
+/// disjunction over separate row bags cannot establish joint feasibility.
+fn source_true_conjuncts(
+    formula: &WitnessFormula,
+    source: &str,
+) -> Option<Vec<WitnessFormula>> {
+    if *formula == count_tautology() {
+        return Some(Vec::new());
+    }
+    match formula {
+        WitnessFormula::RowTruth {
+            row,
+            predicate,
+            truth: crate::boolean_witness::BooleanTruthCase::True,
+        } if row.relation() == source && predicate.is_exact() => {
+            Some(vec![formula.clone()])
+        }
+        WitnessFormula::All(children) if !children.is_empty() => {
+            let mut conjuncts = Vec::new();
+            for child in children {
+                conjuncts.extend(source_true_conjuncts(child, source)?);
+            }
+            Some(conjuncts)
+        }
+        _ => None,
+    }
+}
+
+/// Reconcile multiple complete source restrictions without independently
+/// sampling each join's source rows. The positive source population must be
+/// nonempty for a satisfiability proof to constrain the assignment.
+fn joined_source_true_filters(
+    bundle: &AnalysisBundle,
+    source: &str,
+    rows: u64,
+    left: &WitnessFormula,
+    right: &WitnessFormula,
+) -> Option<WitnessFormula> {
+    let mut truths = source_true_conjuncts(left, source)?;
+    truths.extend(source_true_conjuncts(right, source)?);
+    truths.dedup();
+    if truths.is_empty() {
+        return Some(count_tautology());
+    }
+    if rows > 0 && joint_source_truths_satisfiable(bundle, source, &truths) != Some(true) {
+        return None;
+    }
+    Some(match truths.as_slice() {
+        [one] => one.clone(),
+        many => WitnessFormula::All(many.to_vec()),
+    })
+}
+
 /// Compose closed physical key populations across multiple terminal goals.
 /// Never cross-product independently feasible examples unless every selected
 /// case can share identical source-row counts and compatible key assignments.
@@ -946,16 +1000,21 @@ pub(super) fn jointly_realized_join_goals(
                                 valid = false;
                                 break;
                             }
-                            if *prior_filter == count_tautology() {
-                                *prior_filter = predicate.clone();
-                            } else if *predicate != count_tautology() && *prior_filter != *predicate
-                            {
-                                // Different restrictions over the same physical bag
-                                // require an independent joint satisfiability and
-                                // key-population proof, not a free cross-product.
+                            let Some(joint) = joined_source_true_filters(
+                                bundle,
+                                boundary.relation(),
+                                count,
+                                prior_filter,
+                                predicate,
+                            ) else {
+                                // Conflicting or unverified predicates cannot be
+                                // conjoined into one physical source assignment.
+                                // Alternative source bags might still exist, so
+                                // this is residual rather than impossible.
                                 valid = false;
                                 break;
-                            }
+                            };
+                            *prior_filter = joint;
                         }
                     }
                 }
