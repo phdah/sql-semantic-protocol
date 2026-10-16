@@ -115,3 +115,37 @@ independent signoffs and remain blocked.
 - Original AC #1..#5 remain unchecked. Do not mark Done or release 3.0.0
   until the original task and frozen acceptance contract are independently
   satisfied and CI passes.
+
+## Final implement-skill verification pass (2026-10-16)
+
+This PR now has executable, independent acceptance evidence rather than only
+registry presence checks:
+
+- **AC #1:** `tests/task_107_full_variant_adapters.rs` analyzes all **28**
+  frozen `exact_required` variants through independently constructed direct
+  SQL and dbt manifest/catalog adapters, comparing typed output/input domains,
+  proof strength, both Boolean directions and emitted canonical JSON.
+  Original TASK-101..106 expression-family tests remain the named exactness
+  owners; adapter agreement alone cannot certify exactness.
+- **AC #2:** `tests/task_107_dialect_classifications.rs` executes each of the
+  **546** parser/canonical cells and detects inventory drift. The pinned matrix
+  records **540** parsed/canonically equivalent outcomes and **6** explicit
+  parser rejections, none of which claim vendor runtime execution.
+- **AC #3:** `tests/task_107_frozen_execution_oracles.rs` executes all
+  **nine** golden full-source/TRUE/NOT TRUE/UNKNOWN assertions and independent
+  positive/rejected row-ID membership for all **28** mandatory variants;
+  nine operator composition regression tests and the four frozen random seeds
+  cover cross-feature cases, duplicates, NULL, INT32 boundaries, overflow and
+  safe BIGINT widening.
+- **AC #4:** `tests/task_107_expression_oracles.rs` checks canonical
+  direct-SQL/dbt/ODCS parity on representable typed source metadata.
+  `tests/task_107_full_variant_adapters.rs` also compares serialized
+  SQL/dbt semantic JSON, not solely Rust internal values.
+- **AC #5:** Task remains **In Progress** pending a final all-green CI result
+  on the last SHA **and maintainer review** of the **14 conditional**
+  vendor/session/unknown-semantic release dispositions. Conditional parser
+  acceptance is not warehouse engine authority.
+
+The five original AC boxes remain unchecked until independent signoff.
+This does not waive or change the frozen minimum, mark TASK-108 done or
+approve protocol 3.0.0.
